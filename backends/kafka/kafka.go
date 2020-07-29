@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 	"github.com/urfave/cli/v2"
@@ -24,9 +23,8 @@ type IKafka interface {
 }
 
 type Kafka struct {
-	Options           *Options
-	Dialer            *skafka.Dialer
-	MessageDescriptor *desc.MessageDescriptor
+	Options *Options
+	Dialer  *skafka.Dialer
 }
 
 type Options struct {
@@ -44,6 +42,9 @@ type Options struct {
 	ProtobufDir         string
 	ProtobufRootMessage string
 	Output              string
+	InputType           string
+	OutputType          string
+	File                string
 }
 
 func parseOptions(c *cli.Context) (*Options, error) {
@@ -70,5 +71,8 @@ func parseOptions(c *cli.Context) (*Options, error) {
 		ProtobufDir:         c.String("protobuf-dir"),
 		ProtobufRootMessage: c.String("protobuf-root-message"),
 		Output:              c.String("output"),
+		InputType:           c.String("input-type"),
+		OutputType:          c.String("output-type"),
+		File:                c.String("file"),
 	}, nil
 }

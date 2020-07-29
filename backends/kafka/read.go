@@ -73,9 +73,8 @@ func Read(c *cli.Context) error {
 	}
 
 	k := &Kafka{
-		Options:           opts,
-		Dialer:            dialer,
-		MessageDescriptor: md,
+		Options: opts,
+		Dialer:  dialer,
 	}
 
 	return k.NewReader("plumber-reader", md, opts).Read(opts.Context)

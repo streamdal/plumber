@@ -116,7 +116,7 @@ func setupCLI() *cli.App {
 									},
 									&cli.GenericFlag{
 										Name:  "type",
-										Usage: "The type of message(s) to expect on the bus",
+										Usage: "The type of message(s) you will receive on the bus",
 										Value: &EnumValue{
 											Enum:    []string{"plain", "json", "protobuf"},
 											Default: "json",
@@ -172,9 +172,36 @@ func setupCLI() *cli.App {
 										Value: "plumber-default-key",
 									},
 									&cli.StringFlag{
-										Name:     "value",
-										Usage:    "Value to write to kafka",
-										Required: true,
+										Name:  "value",
+										Usage: "Value to write to kafka",
+									},
+									&cli.GenericFlag{
+										Name:  "output-type",
+										Usage: "Convert the input to this type when writing message",
+										Value: &EnumValue{
+											Enum:    []string{"plain", "protobuf"},
+											Default: "plain",
+										},
+									},
+									&cli.GenericFlag{
+										Name:  "input-type",
+										Usage: "Treat input data as this type to enable output conversion",
+										Value: &EnumValue{
+											Enum:    []string{"plain", "base64", "jsonpb"},
+											Default: "plain",
+										},
+									},
+									&cli.StringFlag{
+										Name:  "file",
+										Usage: "File containing input data (1 file = 1 message)",
+									},
+									&cli.StringFlag{
+										Name:  "protobuf-dir",
+										Usage: "Directory with .proto files",
+									},
+									&cli.StringFlag{
+										Name:  "protobuf-root-message",
+										Usage: "Specifies the root message in a protobuf descriptor set (required if protobuf-dir set)",
 									},
 								}...),
 							},
