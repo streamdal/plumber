@@ -2,19 +2,58 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
+	"strings"
 
+	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 
 	"github.com/batchcorp/plumber/backends/kafka"
 )
 
 var (
-	Version = "N/A"
+	Version = "UNSET"
 )
 
 func main() {
+	app := setupCLI()
+
+	if err := app.Run(os.Args); err != nil {
+		logrus.Fatalf("Unable to complete '%s' run: %s", os.Args, err)
+	}
+}
+
+type EnumValue struct {
+	Enum     []string
+	Default  string
+	selected string
+}
+
+func (e *EnumValue) Set(value string) error {
+	for _, enum := range e.Enum {
+		if enum == value {
+			e.selected = value
+			return nil
+		}
+	}
+
+	return fmt.Errorf("allowed values are %s", strings.Join(e.Enum, ", "))
+}
+
+func (e EnumValue) String() string {
+	if e.selected == "" {
+		return e.Default
+	}
+	return e.selected
+}
+
+func setupCLI() *cli.App {
+	cli.VersionFlag = &cli.BoolFlag{
+		Name:    "version",
+		Usage:   "Print the version of plumber",
+		Aliases: []string{"v"},
+	}
+
 	kafkaFlags := []cli.Flag{
 		&cli.StringFlag{
 			Name:     "host",
@@ -39,7 +78,17 @@ func main() {
 		&cli.BoolFlag{Name: "line-numbers"},
 	}
 
+	globalFlags := []cli.Flag{
+		&cli.BoolFlag{
+			Name:  "debug",
+			Usage: "Enable debug output",
+			Value: true,
+		},
+	}
+
 	app := &cli.App{
+		Name:    "plumber",
+		Version: Version,
 		Commands: []*cli.Command{
 			{
 				Name:  "read",
@@ -58,11 +107,27 @@ func main() {
 									&cli.StringFlag{
 										Name:  "group-id",
 										Usage: "Specify a specific group-id to use when reading from kafka",
-										Value: kafka.DefaultGroupId, // TODO: Concat UUID string
+										Value: kafka.DefaultGroupId,
 									},
 									&cli.BoolFlag{
 										Name:    "follow",
 										Aliases: []string{"f"},
+									},
+									&cli.GenericFlag{
+										Name:  "type",
+										Usage: "The type of message(s) to expect on the bus",
+										Value: &EnumValue{
+											Enum:    []string{"plain", "json", "protobuf"},
+											Default: "json",
+										},
+									},
+									&cli.StringFlag{
+										Name:  "protobuf-dir",
+										Usage: "Directory with .proto files",
+									},
+									&cli.StringFlag{
+										Name:  "protobuf-root",
+										Usage: "Specifies the root message in a protobuf descriptor set (required if protobuf-dir set)",
 									},
 								}...),
 							},
@@ -117,10 +182,17 @@ func main() {
 				},
 			},
 		},
+		Flags: globalFlags,
+		Before: func(c *cli.Context) error {
+			if c.Bool("debug") {
+				logrus.SetLevel(logrus.DebugLevel)
+
+				logrus.Debug("Enabled debug mode")
+			}
+
+			return nil
+		},
 	}
 
-	err := app.Run(os.Args)
-	if err != nil {
-		log.Fatal(err)
-	}
+	return app
 }
