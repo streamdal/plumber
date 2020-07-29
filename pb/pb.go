@@ -3,6 +3,7 @@ package pb
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -20,10 +21,10 @@ func FindMessageDescriptor(protobufDir, protobufRootMessage string) (*desc.Messa
 	}
 
 	if len(files) == 0 {
-		return nil, fmt.Errorf("no protofiles found in dir '%s'", protobufDir)
+		return nil, fmt.Errorf("no .proto found in dir '%s'", protobufDir)
 	}
 
-	fds, err := readFileDescriptors(files)
+	fds, err := readFileDescriptors(protobufDir, files)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to read file descriptors")
 	}
@@ -63,7 +64,7 @@ func findMessageDescriptor(fds []*desc.FileDescriptor, rootMessage string) (*des
 	return nil, errors.New("message descriptor not found in file descriptor(s)")
 }
 
-func readFileDescriptors(files []string) ([]*desc.FileDescriptor, error) {
+func readFileDescriptors(dir string, files []string) ([]*desc.FileDescriptor, error) {
 	contents := make(map[string]string, 0)
 	keys := make([]string, 0)
 
@@ -73,10 +74,19 @@ func readFileDescriptors(files []string) ([]*desc.FileDescriptor, error) {
 			return nil, fmt.Errorf("unable to read file '%s': %s", f, err)
 		}
 
-		_, fpath := filepath.Split("/some/path/to/remove/file.name")
+		if !strings.HasSuffix(dir, "/") {
+			dir = dir + "/"
+		}
 
-		contents[fpath] = string(data)
-		keys = append(keys, fpath)
+		// Strip base path
+		relative := strings.Split(f, dir)
+
+		if len(relative) != 2 {
+			return nil, fmt.Errorf("unexpected lenght of split path (%d)", len(relative))
+		}
+
+		contents[relative[1]] = string(data)
+		keys = append(keys, relative[1])
 	}
 
 	var p protoparse.Parser
@@ -92,22 +102,27 @@ func readFileDescriptors(files []string) ([]*desc.FileDescriptor, error) {
 }
 
 func getProtoFiles(dir string) ([]string, error) {
-	files, err := ioutil.ReadDir(dir)
+	var protos []string
+
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return fmt.Errorf("unable to walk path '%s': %s", dir, err)
+		}
+
+		if info.IsDir() {
+			// Nothing to do if this is a dir
+			return nil
+		}
+
+		if strings.HasSuffix(info.Name(), ".proto") {
+			protos = append(protos, path)
+		}
+
+		return nil
+	})
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to ReadDir")
+		return nil, fmt.Errorf("error walking the path '%s': %v", dir, err)
 	}
 
-	var protofiles []string
-
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-
-		if strings.HasSuffix(file.Name(), ".proto") {
-			protofiles = append(protofiles, file.Name())
-		}
-	}
-
-	return protofiles, nil
+	return protos, nil
 }

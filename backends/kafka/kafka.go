@@ -43,6 +43,7 @@ type Options struct {
 	Type                string
 	ProtobufDir         string
 	ProtobufRootMessage string
+	Output              string
 }
 
 func parseOptions(c *cli.Context) (*Options, error) {
@@ -68,5 +69,6 @@ func parseOptions(c *cli.Context) (*Options, error) {
 		Type:                c.String("type"),
 		ProtobufDir:         c.String("protobuf-dir"),
 		ProtobufRootMessage: c.String("protobuf-root-message"),
+		Output:              c.String("output"),
 	}, nil
 }

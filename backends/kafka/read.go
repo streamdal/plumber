@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"crypto/tls"
+	"encoding/base64"
 	"fmt"
 	"os"
 	"time"
@@ -160,6 +161,10 @@ func (r *Reader) Read(ctx context.Context) error {
 		if r.Options.LineNumbers {
 			str = fmt.Sprintf("%d: ", lineNumber) + str
 			lineNumber++
+		}
+
+		if r.Options.Output == "base64" {
+			str = base64.StdEncoding.EncodeToString([]byte(str))
 		}
 
 		printer.Print(str)

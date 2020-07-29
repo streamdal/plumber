@@ -57,7 +57,7 @@ func setupCLI() *cli.App {
 	kafkaFlags := []cli.Flag{
 		&cli.StringFlag{
 			Name:     "host",
-			Usage:    "Destination host address (Example: localhost:9042)",
+			Usage:    "Destination host address (Example: localhost:9092)",
 			Required: true,
 		},
 		&cli.StringFlag{
@@ -80,9 +80,10 @@ func setupCLI() *cli.App {
 
 	globalFlags := []cli.Flag{
 		&cli.BoolFlag{
-			Name:  "debug",
-			Usage: "Enable debug output",
-			Value: true,
+			Name:    "debug",
+			Aliases: []string{"d"},
+			Usage:   "Enable debug output",
+			Value:   false,
 		},
 	}
 
@@ -126,8 +127,16 @@ func setupCLI() *cli.App {
 										Usage: "Directory with .proto files",
 									},
 									&cli.StringFlag{
-										Name:  "protobuf-root",
+										Name:  "protobuf-root-message",
 										Usage: "Specifies the root message in a protobuf descriptor set (required if protobuf-dir set)",
+									},
+									&cli.GenericFlag{
+										Name:  "output",
+										Usage: "Convert received messages to output type",
+										Value: &EnumValue{
+											Enum:    []string{"base64"},
+											Default: "",
+										},
 									},
 								}...),
 							},
