@@ -1,0 +1,149 @@
+plumber
+=======
+
+plumber is a CLI devtool for inspecting, piping, massaging and redirecting data
+in message systems like Kafka, RabbitMQ , Amazon SQS and 
+[many more](#supported-messaging-systems). \[1]
+
+The tool enables you to:
+
+* See what's passing through your message systems
+* Pipe data from one place to another
+* Decode protobuf data in real-time
+* Replay historical data (using [Batch](https://batch.sh))
+
+<sub>\[1] It's like `curl` for messaging systems.</sub>
+
+## Why do you need it?
+
+Messaging systems are black boxes - gaining visibility into what is passing
+through them is an involved process that requires you to write consumer code
+that you will likely throw away.
+
+`plumber` enables you to stop wasting time writing throw-away code - use it to
+look into your queues, use it to connect disparate systems together or use it
+for debugging your event driven systems.
+
+## Demo
+
+< GIF HERE >
+
+## Install
+
+Brew: `brew install plumber`
+
+Packages:
+
+* [macOS](link)
+* [Linux](link)
+* [Windows](link)
+
+## Usage
+
+**Keep it simple**: Read & write messages
+
+```bash
+$ plumber read messages kafka --host some-machine.domain.com --topic orders --with-line-numbers -f
+1: {"sample" : "message 1"}
+2: {"sample" : "message 2"}
+3: {"sample" : "message 3"}
+4: {"sample" : "message 4"}
+5: {"sample" : "message 5"}
+6: {"sample" : "message 6"}
+7: {"sample" : "message 7"}
+8: {"sample" : "message 8"}
+9: {"sample" : "message 9"}
+10: {"sample" : "message 10"}
+11: {"sample" : "message 11"}
+^C
+
+Read Stats:
+
+Runtime: 5s
+Events:  11
+Rate:    2.2/s
+
+$ cat some-data.json | plumber write message kafka --host some-machine.domain.com --topic orders
+Success! Wrote '1' message(s) to 'some-machine.domain.com'.
+```
+
+**Getting fancy**: Decoding protobuf encoded messages and viewing them live
+
+```bash
+$ plumber read messages kafka --host some-machine.domain.com --topic orders --with-line-numbers -f --type protobuf --protobuf-dir ./pbschemas --protobuf-root-message Message
+1: {"some-attribute": 123, "numbers" : [1, 2, 3]}
+2: {"some-attribute": 424, "numbers" : [325]}
+3: {"some-attribute": 49, "numbers" : [958, 288, 289, 290]}
+4: ERROR: Cannot decode message as protobuf "Message"
+5: {"some-attribute": 394, "numbers" : [4, 5, 6, 7, 8]}
+
+^C
+
+Read Stats:
+
+Runtime: 5s
+Events:  5
+Rate:    1/s
+```
+
+**Get your leisure suit on**: Collecting and replaying all historical data 
+(using Batch):
+
+```bash
+$ plumber create sink kafka --host some-machine.domain.com --topic orders --background
+>> Launched plumber instance id 'abdea293-orders'
+
+$ plumber get sinks
+    [Name]                 [Host]           [Type]         [Online]         [Receieved] 
+abdea293-orders      |  221.20.101.85  |     kafka    |     <1 mins    |       184,492
+
+$ plumber create destination http --address http://localhost:8080 --name mikelaptop --batch --background
+>> Launched destination id 'bfde92cd-laptop'
+
+$ plumber get destinations
+    [Name]                 [Host]          [Type]          [Online]         [Received]
+bfde92cd-laptop    |  142.20.32.235  |      http       |   <1 mins      |       0
+b593acbe-wabbit    |  142.20.32.238  |     rabbitmq    |   32 mins      |       0
+
+$ plumber replay abdea293-orders --query '*' --destination bfde92cd-laptop
+>> Replaying 1,202,293 matching events ...
+
+[=========>---------------------------------------------]  17.00% 00m08s
+
+>> Replay complete!
+
+Replay Stats:
+
+Total:       29m 13s
+Rate:        73,200/minute
+Success %:   99.8%
+NumSuccess:  1,202,290
+NumFailed:   3
+```
+
+## Hmm, what is this Batch thing?
+
+We are event sourcing enthusiasts that are working on a platform to enable folks
+to replay events on their message busses.
+
+While building our [company](https://batch.sh), we built a tool for reading and
+writing messages from our message systems and realized that there is a serious
+lack of tooling in this space.
+
+We wanted a swiss army knife type of tool for working with messaging systems
+(since we use Kafka and RabbitMQ internally) and so we created `plumber`.
+
+## Supported Messaging Systems
+
+* Kafka
+* RabbitMQ
+* Amazon SQS (coming soon)
+* NATS (coming soon)
+* ActiveMQ (coming soon)
+* Redis (coming soon)
+
+## Contribute
+
+We love contributions! Prior to sending us a PR - open an issue to discuss what
+you intend to work on. When ready to open PR - add good tests and let's get this
+thing merged!
