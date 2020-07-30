@@ -43,7 +43,7 @@ func DecodeProtobufToJSON(m *dynamic.Message, data []byte) ([]byte, error) {
 		return nil, fmt.Errorf("unable to unmarshal protobuf to dynamic message: %s", err)
 	}
 
-	jsonData, err := m.MarshalJSON()
+	jsonData, err := m.MarshalJSONIndent()
 	if err != nil {
 		return nil, fmt.Errorf("unable to marshal decoded message to JSON: %s", err)
 	}
