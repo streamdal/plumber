@@ -26,7 +26,7 @@ for debugging your event driven systems.
 
 ## Demo
 
-< GIF HERE >
+![Brief Demo](./assets/demo.gif)
 
 ## Install
 
@@ -43,7 +43,7 @@ Packages:
 **Keep it simple**: Read & write messages
 
 ```bash
-$ plumber read messages kafka --address some-machine.domain.com --topic orders --with-line-numbers -f
+$ plumber read messages kafka --topic orders --with-line-numbers --follow
 1: {"sample" : "message 1"}
 2: {"sample" : "message 2"}
 3: {"sample" : "message 3"}
@@ -63,7 +63,7 @@ Runtime: 5s
 Events:  11
 Rate:    2.2/s
 
-$ cat some-data.json | plumber write message kafka --address some-machine.domain.com --topic orders
+$ plumber write message kafka --topic orders --input-data "plain-text"
 Success! Wrote '1' message(s) to 'some-machine.domain.com'.
 ```
 
@@ -71,8 +71,8 @@ Success! Wrote '1' message(s) to 'some-machine.domain.com'.
 
 ```bash
 $ plumber read messages rabbitmq --exchange events --routing-key \# \
-  --line-numbers --output-type protobuf --protobuf-dir ~/Code/batch/schemas/events \
-  --protobuf-root-message Message
+  --line-numbers --output-type protobuf --protobuf-dir ~/schemas \
+  --protobuf-root-message Message --follow
 1: {"some-attribute": 123, "numbers" : [1, 2, 3]}
 2: {"some-attribute": 424, "numbers" : [325]}
 3: {"some-attribute": 49, "numbers" : [958, 288, 289, 290]}
