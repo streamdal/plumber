@@ -68,9 +68,9 @@ func Write(c *cli.Context) error {
 	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(opts.ConnectTimeout))
 
 	// Attempt to establish connection on startup
-	if _, err := dialer.DialLeader(ctxDeadline, "tcp", opts.Host, opts.Topic, 0); err != nil {
+	if _, err := dialer.DialLeader(ctxDeadline, "tcp", opts.Address, opts.Topic, 0); err != nil {
 		return fmt.Errorf("unable to create initial connection to host '%s': %s",
-			opts.Host, err)
+			opts.Address, err)
 	}
 
 	k := &Kafka{
@@ -189,7 +189,7 @@ func validateWriteOptions(opts *Options) error {
 // GetWriterByTopic returns a new writer per topic
 func (k *Kafka) NewWriter(id string, opts *Options) *Writer {
 	writerConfig := skafka.WriterConfig{
-		Brokers:   []string{opts.Host},
+		Brokers:   []string{opts.Address},
 		Topic:     opts.Topic,
 		Dialer:    k.Dialer,
 		BatchSize: DefaultBatchSize,

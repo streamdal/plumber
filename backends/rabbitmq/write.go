@@ -64,18 +64,18 @@ func validateWriteOptions(opts *Options) error {
 	// are set as well
 	if opts.OutputType == "protobuf" {
 		if opts.ProtobufDir == "" {
-			return errors.New("'protobuf-dir' must be set when type " +
+			return errors.New("'--protobuf-dir' must be set when type " +
 				"is set to 'protobuf'")
 		}
 
 		if opts.ProtobufRootMessage == "" {
-			return errors.New("'protobuf-root-message' must be when " +
+			return errors.New("'--protobuf-root-message' must be when " +
 				"type is set to 'protobuf'")
 		}
 
 		// Does given dir exist?
 		if _, err := os.Stat(opts.ProtobufDir); os.IsNotExist(err) {
-			return fmt.Errorf("protobuf-dir '%s' does not exist", opts.ProtobufDir)
+			return fmt.Errorf("--protobuf-dir '%s' does not exist", opts.ProtobufDir)
 		}
 	}
 
@@ -86,7 +86,7 @@ func validateWriteOptions(opts *Options) error {
 
 	if opts.InputFile != "" {
 		if _, err := os.Stat(opts.InputFile); os.IsNotExist(err) {
-			return fmt.Errorf("--file '%s' does not exist", opts.InputFile)
+			return fmt.Errorf("--input-file '%s' does not exist", opts.InputFile)
 		}
 	}
 

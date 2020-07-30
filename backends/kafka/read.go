@@ -67,9 +67,9 @@ func Read(c *cli.Context) error {
 	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(opts.ConnectTimeout))
 
 	// Attempt to establish connection on startup
-	if _, err := dialer.DialLeader(ctxDeadline, "tcp", opts.Host, opts.Topic, 0); err != nil {
+	if _, err := dialer.DialLeader(ctxDeadline, "tcp", opts.Address, opts.Topic, 0); err != nil {
 		return fmt.Errorf("unable to create initial connection to host '%s': %s",
-			opts.Host, err)
+			opts.Address, err)
 	}
 
 	k := &Kafka{
@@ -105,7 +105,7 @@ func validateReadOptions(opts *Options) error {
 
 func (k *Kafka) NewReader(id string, md *desc.MessageDescriptor, opts *Options) *Reader {
 	readerConfig := skafka.ReaderConfig{
-		Brokers:       []string{opts.Host},
+		Brokers:       []string{opts.Address},
 		GroupID:       opts.GroupId,
 		Topic:         opts.Topic,
 		Dialer:        k.Dialer,

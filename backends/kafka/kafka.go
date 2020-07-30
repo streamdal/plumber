@@ -28,7 +28,7 @@ type Kafka struct {
 }
 
 type Options struct {
-	Host                string
+	Address             string
 	Topic               string
 	GroupId             string
 	ConnectTimeout      time.Duration
@@ -47,30 +47,30 @@ type Options struct {
 }
 
 func parseOptions(c *cli.Context) (*Options, error) {
-	if c.String("host") == "" {
-		return nil, errors.New("host cannot be empty")
+	if c.String("address") == "" {
+		return nil, errors.New("--address cannot be empty")
 	}
 
 	if c.String("topic") == "" {
-		return nil, errors.New("topic cannot be empty")
+		return nil, errors.New("--topic cannot be empty")
 	}
 
 	return &Options{
 		ConnectTimeout:      c.Duration("timeout"),
 		Topic:               c.String("topic"),
-		Host:                c.String("host"),
+		Address:             c.String("address"),
 		GroupId:             c.String("group-id"),
 		UseInsecureTLS:      c.Bool("insecure-tls"),
 		Context:             context.Background(),
 		Follow:              c.Bool("follow"),
 		Key:                 c.String("key"),
-		InputData:           c.String("value"),
 		LineNumbers:         c.Bool("line-numbers"),
 		ProtobufDir:         c.String("protobuf-dir"),
 		ProtobufRootMessage: c.String("protobuf-root-message"),
 		InputType:           c.String("input-type"),
+		InputData:           c.String("input-data"),
+		InputFile:           c.String("input-file"),
 		OutputType:          c.String("output-type"),
-		InputFile:           c.String("file"),
 		Convert:             c.String("convert"),
 	}, nil
 }
