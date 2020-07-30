@@ -37,12 +37,12 @@ type Options struct {
 	LineNumbers         bool
 	Follow              bool
 	Key                 string
-	Value               string
+	InputData           string
 	ProtobufDir         string
 	ProtobufRootMessage string
 	InputType           string
 	OutputType          string
-	File                string
+	InputFile           string
 	Convert             string
 }
 
@@ -64,13 +64,13 @@ func parseOptions(c *cli.Context) (*Options, error) {
 		Context:             context.Background(),
 		Follow:              c.Bool("follow"),
 		Key:                 c.String("key"),
-		Value:               c.String("value"),
+		InputData:           c.String("value"),
 		LineNumbers:         c.Bool("line-numbers"),
 		ProtobufDir:         c.String("protobuf-dir"),
 		ProtobufRootMessage: c.String("protobuf-root-message"),
 		InputType:           c.String("input-type"),
 		OutputType:          c.String("output-type"),
-		File:                c.String("file"),
+		InputFile:           c.String("file"),
 		Convert:             c.String("convert"),
 	}, nil
 }

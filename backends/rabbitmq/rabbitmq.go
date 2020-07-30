@@ -34,6 +34,9 @@ type Options struct {
 	Convert             string
 	ProtobufDir         string
 	ProtobufRootMessage string
+	InputFile           string
+	InputData           string
+	InputType           string
 }
 
 func parseOptions(c *cli.Context) (*Options, error) {
@@ -60,6 +63,9 @@ func parseOptions(c *cli.Context) (*Options, error) {
 		Convert:             c.String("convert"),
 		ProtobufDir:         c.String("protobuf-dir"),
 		ProtobufRootMessage: c.String("protobuf-root-message"),
+		InputData:           c.String("input-data"),
+		InputFile:           c.String("input-file"),
+		InputType:           c.String("input-type"),
 	}, nil
 }
 

@@ -90,16 +90,16 @@ func generateWriteValue(md *desc.MessageDescriptor, opts *Options) ([]byte, erro
 	// Do we read value or file?
 	var data []byte
 
-	if opts.Value != "" {
-		data = []byte(opts.Value)
+	if opts.InputData != "" {
+		data = []byte(opts.InputData)
 	}
 
-	if opts.File != "" {
+	if opts.InputFile != "" {
 		var readErr error
 
-		data, readErr = ioutil.ReadFile(opts.File)
+		data, readErr = ioutil.ReadFile(opts.InputFile)
 		if readErr != nil {
-			return nil, fmt.Errorf("unable to read file '%s': %s", opts.File, readErr)
+			return nil, fmt.Errorf("unable to read file '%s': %s", opts.InputFile, readErr)
 		}
 	}
 
@@ -172,14 +172,14 @@ func validateWriteOptions(opts *Options) error {
 		}
 	}
 
-	// Value and file cannot be set at the same time
-	if opts.Value != "" && opts.File != "" {
+	// InputData and file cannot be set at the same time
+	if opts.InputData != "" && opts.InputFile != "" {
 		return fmt.Errorf("--value and --file cannot both be set")
 	}
 
-	if opts.File != "" {
-		if _, err := os.Stat(opts.File); os.IsNotExist(err) {
-			return fmt.Errorf("--file '%s' does not exist", opts.File)
+	if opts.InputFile != "" {
+		if _, err := os.Stat(opts.InputFile); os.IsNotExist(err) {
+			return fmt.Errorf("--file '%s' does not exist", opts.InputFile)
 		}
 	}
 

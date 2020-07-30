@@ -228,7 +228,7 @@ func setupCLI() *cli.App {
 					{
 						Name:    "message",
 						Aliases: []string{"messages"},
-						Usage:   "What to read off of queue",
+						Usage:   "What to write to queue",
 						Subcommands: []*cli.Command{
 							{
 								Name:   "kafka",
@@ -241,16 +241,12 @@ func setupCLI() *cli.App {
 										Value: "plumber-default-key",
 									},
 									&cli.StringFlag{
-										Name:  "value",
-										Usage: "Value to write to kafka",
+										Name:  "input-data",
+										Usage: "The data to write to kafka",
 									},
-									&cli.GenericFlag{
-										Name:  "output-type",
-										Usage: "Convert the input to this type when writing message",
-										Value: &EnumValue{
-											Enum:    []string{"plain", "protobuf"},
-											Default: "plain",
-										},
+									&cli.StringFlag{
+										Name:  "input-file",
+										Usage: "File containing input data (1 file = 1 message)",
 									},
 									&cli.GenericFlag{
 										Name:  "input-type",
@@ -260,9 +256,13 @@ func setupCLI() *cli.App {
 											Default: "plain",
 										},
 									},
-									&cli.StringFlag{
-										Name:  "file",
-										Usage: "File containing input data (1 file = 1 message)",
+									&cli.GenericFlag{
+										Name:  "output-type",
+										Usage: "Convert the input to this type when writing message",
+										Value: &EnumValue{
+											Enum:    []string{"plain", "protobuf"},
+											Default: "plain",
+										},
 									},
 									&cli.StringFlag{
 										Name:  "protobuf-dir",
@@ -275,13 +275,48 @@ func setupCLI() *cli.App {
 								}...),
 							},
 							{
-								// Just need exchange and routing key
-								Name:  "rabbitmq",
-								Usage: "RabbitMQ message system",
-								Action: func(c *cli.Context) error {
-									fmt.Println("new task template: ", c.Args().First())
-									return nil
-								},
+								Name:   "rabbitmq",
+								Usage:  "RabbitMQ message system",
+								Action: rabbitmq.Write,
+								Flags: append(rabbitmqFlags, []cli.Flag{
+									&cli.StringFlag{
+										Name:  "key",
+										Usage: "Key to write to rabbitmq",
+										Value: "plumber-default-key",
+									},
+									&cli.StringFlag{
+										Name:  "input-data",
+										Usage: "The data to write to rabbitmq",
+									},
+									&cli.StringFlag{
+										Name:  "input-file",
+										Usage: "File containing input data (1 file = 1 message)",
+									},
+									&cli.GenericFlag{
+										Name:  "input-type",
+										Usage: "Treat input data as this type to enable output conversion",
+										Value: &EnumValue{
+											Enum:    []string{"plain", "base64", "jsonpb"},
+											Default: "plain",
+										},
+									},
+									&cli.GenericFlag{
+										Name:  "output-type",
+										Usage: "Convert the input to this type when writing message",
+										Value: &EnumValue{
+											Enum:    []string{"plain", "protobuf"},
+											Default: "plain",
+										},
+									},
+									&cli.StringFlag{
+										Name:  "protobuf-dir",
+										Usage: "Directory with .proto files",
+									},
+									&cli.StringFlag{
+										Name:  "protobuf-root-message",
+										Usage: "Specifies the root message in a protobuf descriptor set (required if protobuf-dir set)",
+									},
+								}...),
 							},
 						},
 					},
