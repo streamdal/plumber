@@ -30,8 +30,6 @@ for debugging your event driven systems.
 
 ## Install
 
-Brew: `brew install plumber`
-
 Packages:
 
 * [macOS](https://github.com/batchcorp/plumber/releases/download/v0.0.1/plumber-darwin)
