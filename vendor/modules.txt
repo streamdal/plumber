@@ -1,6 +1,7 @@
 # github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d
 github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/golang/protobuf v1.3.1
+## explicit
 github.com/golang/protobuf/jsonpb
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/protoc-gen-go/descriptor
@@ -39,6 +40,9 @@ github.com/shurcooL/sanitized_anchor_name
 # github.com/sirupsen/logrus v1.6.0
 ## explicit
 github.com/sirupsen/logrus
+# github.com/streadway/amqp v1.0.0
+## explicit
+github.com/streadway/amqp
 # github.com/urfave/cli/v2 v2.2.0
 ## explicit
 github.com/urfave/cli/v2

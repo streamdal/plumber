@@ -44,7 +44,7 @@ func Read(c *cli.Context) error {
 	var mdErr error
 	var md *desc.MessageDescriptor
 
-	if opts.Type == "protobuf" {
+	if opts.OutputType == "protobuf" {
 		md, mdErr = pb.FindMessageDescriptor(opts.ProtobufDir, opts.ProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")
@@ -83,20 +83,20 @@ func Read(c *cli.Context) error {
 func validateReadOptions(opts *Options) error {
 	// If type is protobuf, ensure both --protobuf-dir and --protobuf-root-message
 	// are set as well
-	if opts.Type == "protobuf" {
+	if opts.OutputType == "protobuf" {
 		if opts.ProtobufDir == "" {
-			return errors.New("'protobuf-dir' must be set when type " +
+			return errors.New("'--protobuf-dir' must be set when type " +
 				"is set to 'protobuf'")
 		}
 
 		if opts.ProtobufRootMessage == "" {
-			return errors.New("'protobuf-root-message' must be when " +
+			return errors.New("'--protobuf-root-message' must be when " +
 				"type is set to 'protobuf'")
 		}
 
 		// Does given dir exist?
 		if _, err := os.Stat(opts.ProtobufDir); os.IsNotExist(err) {
-			return fmt.Errorf("protobuf-dir '%s' does not exist", opts.ProtobufDir)
+			return fmt.Errorf("--protobuf-dir '%s' does not exist", opts.ProtobufDir)
 		}
 	}
 
@@ -141,7 +141,7 @@ func (r *Reader) Read(ctx context.Context) error {
 			continue
 		}
 
-		if r.Options.Type == "protobuf" {
+		if r.Options.OutputType == "protobuf" {
 			decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(r.MessageDescriptor), msg.Value)
 			if err != nil {
 				if !r.Options.Follow {
@@ -155,15 +155,17 @@ func (r *Reader) Read(ctx context.Context) error {
 			msg.Value = decoded
 		}
 
-		str := string(msg.Value)
+		var str string
+
+		if r.Options.Convert == "base64" {
+			str = base64.StdEncoding.EncodeToString(msg.Value)
+		} else {
+			str = string(msg.Value)
+		}
 
 		if r.Options.LineNumbers {
 			str = fmt.Sprintf("%d: ", lineNumber) + str
 			lineNumber++
-		}
-
-		if r.Options.Output == "base64" {
-			str = base64.StdEncoding.EncodeToString([]byte(str))
 		}
 
 		printer.Print(str)

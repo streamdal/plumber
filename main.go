@@ -9,6 +9,7 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/batchcorp/plumber/backends/kafka"
+	"github.com/batchcorp/plumber/backends/rabbitmq"
 )
 
 var (
@@ -56,9 +57,9 @@ func setupCLI() *cli.App {
 
 	kafkaFlags := []cli.Flag{
 		&cli.StringFlag{
-			Name:     "host",
-			Usage:    "Destination host address (Example: localhost:9092)",
-			Required: true,
+			Name:  "address",
+			Usage: "Destination host address",
+			Value: "localhost:9092",
 		},
 		&cli.StringFlag{
 			Name:     "topic",
@@ -76,6 +77,24 @@ func setupCLI() *cli.App {
 			Value: false,
 		},
 		&cli.BoolFlag{Name: "line-numbers"},
+	}
+
+	rabbitmqFlags := []cli.Flag{
+		&cli.StringFlag{
+			Name:  "address",
+			Usage: "Destination host address",
+			Value: "amqp://localhost",
+		},
+		&cli.StringFlag{
+			Name:     "exchange",
+			Usage:    "Name of the exchange",
+			Required: true,
+		},
+		&cli.StringFlag{
+			Name:     "routing-key",
+			Usage:    "Routing key",
+			Required: true,
+		},
 	}
 
 	globalFlags := []cli.Flag{
@@ -115,11 +134,11 @@ func setupCLI() *cli.App {
 										Aliases: []string{"f"},
 									},
 									&cli.GenericFlag{
-										Name:  "type",
+										Name:  "output-type",
 										Usage: "The type of message(s) you will receive on the bus",
 										Value: &EnumValue{
-											Enum:    []string{"plain", "json", "protobuf"},
-											Default: "json",
+											Enum:    []string{"plain", "protobuf"},
+											Default: "plain",
 										},
 									},
 									&cli.StringFlag{
@@ -131,8 +150,8 @@ func setupCLI() *cli.App {
 										Usage: "Specifies the root message in a protobuf descriptor set (required if protobuf-dir set)",
 									},
 									&cli.GenericFlag{
-										Name:  "output",
-										Usage: "Convert received messages to output type",
+										Name:  "convert",
+										Usage: "Convert messages received on the bus",
 										Value: &EnumValue{
 											Enum:    []string{"base64"},
 											Default: "",
@@ -141,12 +160,62 @@ func setupCLI() *cli.App {
 								}...),
 							},
 							{
-								Name:  "rabbitmq",
-								Usage: "RabbitMQ message system",
-								Action: func(c *cli.Context) error {
-									fmt.Println("new task template: ", c.Args().First())
-									return nil
-								},
+								Name:   "rabbitmq",
+								Usage:  "RabbitMQ message system",
+								Action: rabbitmq.Read,
+								Flags: append(rabbitmqFlags, []cli.Flag{
+									&cli.StringFlag{
+										Name:  "queue",
+										Usage: "Name of the queue where messages will be routed to",
+									},
+									&cli.BoolFlag{
+										Name:  "queue-durable",
+										Usage: "Whether the created queue will remain after restart",
+										Value: false,
+									},
+									&cli.BoolFlag{
+										Name:  "queue-auto-delete",
+										Usage: "Whether to auto-delete the queue after plumber has disconnected",
+										Value: true,
+									},
+									&cli.BoolFlag{
+										Name:  "queue-exclusive",
+										Usage: "Whether plumber should be the only one using the newly defined queue",
+										Value: true,
+									},
+									&cli.BoolFlag{
+										Name:  "line-numbers",
+										Usage: "Display line numbers for each message",
+									},
+									&cli.BoolFlag{
+										Name:  "follow",
+										Usage: "Continue reading until cancelled (like tail -f)",
+									},
+									&cli.StringFlag{
+										Name:  "protobuf-dir",
+										Usage: "Directory with .proto files",
+									},
+									&cli.StringFlag{
+										Name:  "protobuf-root-message",
+										Usage: "Specifies the root message in a protobuf descriptor set (required if protobuf-dir set)",
+									},
+									&cli.GenericFlag{
+										Name:  "output-type",
+										Usage: "The type of message(s) you will receive on the bus",
+										Value: &EnumValue{
+											Enum:    []string{"plain", "protobuf"},
+											Default: "plain",
+										},
+									},
+									&cli.GenericFlag{
+										Name:  "convert",
+										Usage: "Convert messages received on the bus",
+										Value: &EnumValue{
+											Enum:    []string{"base64"},
+											Default: "",
+										},
+									},
+								}...),
 							},
 						},
 					},
@@ -206,6 +275,7 @@ func setupCLI() *cli.App {
 								}...),
 							},
 							{
+								// Just need exchange and routing key
 								Name:  "rabbitmq",
 								Usage: "RabbitMQ message system",
 								Action: func(c *cli.Context) error {
