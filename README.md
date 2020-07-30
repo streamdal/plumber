@@ -43,7 +43,7 @@ Packages:
 **Keep it simple**: Read & write messages
 
 ```bash
-$ plumber read messages kafka --host some-machine.domain.com --topic orders --with-line-numbers -f
+$ plumber read messages kafka --address some-machine.domain.com --topic orders --with-line-numbers -f
 1: {"sample" : "message 1"}
 2: {"sample" : "message 2"}
 3: {"sample" : "message 3"}
@@ -63,14 +63,16 @@ Runtime: 5s
 Events:  11
 Rate:    2.2/s
 
-$ cat some-data.json | plumber write message kafka --host some-machine.domain.com --topic orders
+$ cat some-data.json | plumber write message kafka --address some-machine.domain.com --topic orders
 Success! Wrote '1' message(s) to 'some-machine.domain.com'.
 ```
 
 **Getting fancy**: Decoding protobuf encoded messages and viewing them live
 
 ```bash
-$ plumber read messages kafka --host some-machine.domain.com --topic orders --with-line-numbers -f --type protobuf --protobuf-dir ./pbschemas --protobuf-root-message Message
+$ plumber read messages rabbitmq --exchange events --routing-key \# \
+  --line-numbers --output-type protobuf --protobuf-dir ~/Code/batch/schemas/events \
+  --protobuf-root-message Message
 1: {"some-attribute": 123, "numbers" : [1, 2, 3]}
 2: {"some-attribute": 424, "numbers" : [325]}
 3: {"some-attribute": 49, "numbers" : [958, 288, 289, 290]}
@@ -90,7 +92,7 @@ Rate:    1/s
 (using Batch):
 
 ```bash
-$ plumber create sink kafka --host some-machine.domain.com --topic orders --background
+$ plumber create sink kafka --address some-machine.domain.com --topic orders --background
 >> Launched plumber instance id 'abdea293-orders'
 
 $ plumber get sinks
@@ -142,8 +144,14 @@ We wanted a swiss army knife type of tool for working with messaging systems
 * ActiveMQ (coming soon)
 * Redis (coming soon)
 
+## Acknowledgments
+
+**Huge** shoutout to [jhump](https://github.com/jhump) and for his excellent
+[protoreflect](https://github.com/jhump/protoreflect) library, without which
+`plumber` would not be anywhere *near* as easy to implement. _Thank you!_
+
 ## Contribute
 
-We love contributions! Prior to sending us a PR - open an issue to discuss what
+We love contributions! Prior to sending us a PR, open an issue to discuss what
 you intend to work on. When ready to open PR - add good tests and let's get this
 thing merged!
