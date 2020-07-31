@@ -32,8 +32,8 @@ for debugging your event driven systems.
 
 Packages:
 
-* [macOS](https://github.com/batchcorp/plumber/releases/download/v0.0.1/plumber-darwin)
-* [Linux](https://github.com/batchcorp/plumber/releases/download/v0.0.1/plumber-linux)
+* [macOS](https://github.com/batchcorp/plumber/releases/download/v0.0.2/plumber-darwin)
+* [Linux](https://github.com/batchcorp/plumber/releases/download/v0.0.2/plumber-linux)
 
 ## Usage
 
@@ -119,6 +119,13 @@ Success %:   99.8%
 NumSuccess:  1,202,290
 NumFailed:   3
 ```
+
+## Features
+
+* Dynamic protobuf encode & decode
+* Gzip decompress
+* `--follow` support (ie. `tail -f`)
+* Single-binary, zero-config, easy-install
 
 ## Hmm, what is this Batch thing?
 
