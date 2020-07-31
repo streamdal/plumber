@@ -152,7 +152,7 @@ func setupCLI() *cli.App {
 										Name:  "convert",
 										Usage: "Convert messages received on the bus",
 										Value: &EnumValue{
-											Enum:    []string{"base64"},
+											Enum:    []string{"base64", "gzip"},
 											Default: "",
 										},
 									},
@@ -210,7 +210,7 @@ func setupCLI() *cli.App {
 										Name:  "convert",
 										Usage: "Convert messages received on the bus",
 										Value: &EnumValue{
-											Enum:    []string{"base64"},
+											Enum:    []string{"base64", "gzip"},
 											Default: "",
 										},
 									},

@@ -14,6 +14,7 @@ import (
 
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/util"
 )
 
 type Reader struct {
@@ -111,13 +112,28 @@ func (r *RabbitMQ) Read() error {
 			msg.Body = decoded
 		}
 
-		var str string
+		var data []byte
+		var convertErr error
 
-		if r.Options.Convert == "base64" {
-			str = base64.StdEncoding.EncodeToString(msg.Body)
-		} else {
-			str = string(msg.Body)
+		switch r.Options.Convert {
+		case "base64":
+			_, convertErr = base64.StdEncoding.Decode(data, msg.Body)
+		case "gzip":
+			data, convertErr = util.Gunzip(msg.Body)
+		default:
+			data = msg.Body
 		}
+
+		if convertErr != nil {
+			if !r.Options.Follow {
+				return errors.Wrap(convertErr, "unable to complete conversion")
+			}
+
+			printer.Error(fmt.Sprintf("unable to complete conversion for message: %s", convertErr))
+			continue
+		}
+
+		str := string(data)
 
 		if r.Options.LineNumbers {
 			str = fmt.Sprintf("%d: ", lineNumber) + str

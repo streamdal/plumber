@@ -17,6 +17,7 @@ import (
 
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/util"
 )
 
 type IReader interface {
@@ -155,13 +156,28 @@ func (r *Reader) Read(ctx context.Context) error {
 			msg.Value = decoded
 		}
 
-		var str string
+		var data []byte
+		var convertErr error
 
-		if r.Options.Convert == "base64" {
-			str = base64.StdEncoding.EncodeToString(msg.Value)
-		} else {
-			str = string(msg.Value)
+		switch r.Options.Convert {
+		case "base64":
+			_, convertErr = base64.StdEncoding.Decode(data, msg.Value)
+		case "gzip":
+			data, convertErr = util.Gunzip(msg.Value)
+		default:
+			data = msg.Value
 		}
+
+		if convertErr != nil {
+			if !r.Options.Follow {
+				return errors.Wrap(convertErr, "unable to complete conversion")
+			}
+
+			printer.Error(fmt.Sprintf("unable to complete conversion for message: %s", convertErr))
+			continue
+		}
+
+		str := string(data)
 
 		if r.Options.LineNumbers {
 			str = fmt.Sprintf("%d: ", lineNumber) + str
