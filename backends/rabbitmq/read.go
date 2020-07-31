@@ -60,10 +60,6 @@ func validateReadOptions(opts *Options) error {
 		return errors.New("--address cannot be empty")
 	}
 
-	if opts.ExchangeName == "" {
-		return errors.New("--exchange-name cannot be empty")
-	}
-
 	if opts.Action == "write" && opts.RoutingKey == "" {
 		return errors.New("--routing-key cannot be empty with write action")
 	}

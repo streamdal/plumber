@@ -86,9 +86,8 @@ func setupCLI() *cli.App {
 			Value: "amqp://localhost",
 		},
 		&cli.StringFlag{
-			Name:     "exchange",
-			Usage:    "Name of the exchange",
-			Required: true,
+			Name:  "exchange",
+			Usage: "Name of the exchange (leave empty if default)",
 		},
 		&cli.StringFlag{
 			Name:     "routing-key",

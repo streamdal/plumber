@@ -92,14 +92,17 @@ func connect(opts *Options) (*amqp.Channel, error) {
 			return nil, errors.Wrap(err, "unable to declare queue")
 		}
 
-		if err := ch.QueueBind(
-			opts.QueueName,
-			opts.RoutingKey,
-			opts.ExchangeName,
-			false,
-			nil,
-		); err != nil {
-			return nil, errors.Wrap(err, "unable to bind queue")
+		// Do not bind if using default exchange
+		if opts.ExchangeName != "" {
+			if err := ch.QueueBind(
+				opts.QueueName,
+				opts.RoutingKey,
+				opts.ExchangeName,
+				false,
+				nil,
+			); err != nil {
+				return nil, errors.Wrap(err, "unable to bind queue")
+			}
 		}
 	}
 
