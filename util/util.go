@@ -8,6 +8,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Gunzip decompresses a slice of bytes and returns a slice of decompressed
+// bytes or an error.
 func Gunzip(data []byte) ([]byte, error) {
 	b := bytes.NewBuffer(data)
 

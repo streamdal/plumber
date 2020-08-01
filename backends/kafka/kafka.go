@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	skafka "github.com/segmentio/kafka-go"
 	"github.com/urfave/cli/v2"
 )
 
@@ -17,16 +16,10 @@ const (
 	DefaultBatchSize      = 1
 )
 
-type IKafka interface {
-	NewReader(id, topic string) *Reader
-	NewWriter(id, topic string) *Writer
-}
-
-type Kafka struct {
-	Options *Options
-	Dialer  *skafka.Dialer
-}
-
+// Options contains the values parsed from urfave args and flags. This struct
+// gets filled out by helper parse* func(s).
+//
+// TODO: This should be populated by urfave at startup.
 type Options struct {
 	Address             string
 	Topic               string

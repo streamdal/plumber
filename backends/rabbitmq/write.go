@@ -18,6 +18,11 @@ import (
 	"github.com/batchcorp/plumber/pb"
 )
 
+// Write is the entry point function for performing write operations in RabbitMQ.
+//
+// This is where we verify that the passed args and flags combo makes sense,
+// attempt to establish a connection, parse protobuf before finally attempting
+// to perform the write.
 func Write(c *cli.Context) error {
 	opts, err := parseOptions(c)
 	if err != nil {
@@ -56,6 +61,14 @@ func Write(c *cli.Context) error {
 	}
 
 	return r.Write(msg)
+}
+
+// Write is a wrapper for amqp Publish method. We wrap it so that we can mock
+// it in tests, add logging etc.
+func (r *RabbitMQ) Write(value []byte) error {
+	return r.Channel.Publish(r.Options.ExchangeName, r.Options.RoutingKey, false, false, amqp.Publishing{
+		Body: value,
+	})
 }
 
 func validateWriteOptions(opts *Options) error {
@@ -154,10 +167,4 @@ func convertJSONPBToProtobuf(data []byte, m *dynamic.Message) ([]byte, error) {
 	}
 
 	return pbBytes, nil
-}
-
-func (r *RabbitMQ) Write(value []byte) error {
-	return r.Channel.Publish(r.Options.ExchangeName, r.Options.RoutingKey, false, false, amqp.Publishing{
-		Body: value,
-	})
 }

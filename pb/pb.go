@@ -14,6 +14,15 @@ import (
 	"github.com/pkg/errors"
 )
 
+// FindMessageDescriptor is a wrapper that will:
+//
+//   1. Recursively find all .proto files in a directory
+//   2. Attempt to read and parse all files as proto FileDescriptors
+//   3. Attempt to find the specified "protobufRootMessage" type in the parsed
+//      FileDescriptors; if found, return the related MessageDescriptor
+//
+// With the found MessageDescriptor, we are able to generate new dynamic
+// messages via dynamic.NewMessage(..).
 func FindMessageDescriptor(protobufDir, protobufRootMessage string) (*desc.MessageDescriptor, error) {
 	files, err := getProtoFiles(protobufDir)
 	if err != nil {
@@ -38,6 +47,8 @@ func FindMessageDescriptor(protobufDir, protobufRootMessage string) (*desc.Messa
 	return md, nil
 }
 
+// DecodeProtobufToJSON is a wrapper for decoding/unmarshalling []byte of
+// protobuf into a dynamic.Message and then marshalling that into JSON.
 func DecodeProtobufToJSON(m *dynamic.Message, data []byte) ([]byte, error) {
 	if err := proto.Unmarshal(data, m); err != nil {
 		return nil, fmt.Errorf("unable to unmarshal protobuf to dynamic message: %s", err)

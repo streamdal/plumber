@@ -21,10 +21,13 @@ import (
 	"github.com/batchcorp/plumber/pb"
 )
 
+// IWriter enables us to mock the actual write operation.
 type IWriter interface {
 	Write(key, value []byte) error
 }
 
+// Writer holds all attributes required for performing a write to Kafka. This
+// struct should be instantiated via the kafka.Write(..) func.
 type Writer struct {
 	Id      string
 	Writer  *skafka.Writer
@@ -32,6 +35,11 @@ type Writer struct {
 	log     *logrus.Entry
 }
 
+// Write is the entry point function for performing write operations in Kafka.
+//
+// This is where we verify that the passed args and flags combo makes sense,
+// attempt to establish a connection, parse protobuf before finally attempting
+// to perform the write.
 func Write(c *cli.Context) error {
 	opts, err := parseOptions(c)
 	if err != nil {
@@ -73,17 +81,35 @@ func Write(c *cli.Context) error {
 			opts.Address, err)
 	}
 
-	k := &Kafka{
-		Options: opts,
-		Dialer:  dialer,
-	}
-
 	value, err := generateWriteValue(md, opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}
 
-	return k.NewWriter("plumber-writer", opts).Write([]byte(opts.Key), value)
+	w := &Writer{
+		Options: opts,
+		Writer: skafka.NewWriter(skafka.WriterConfig{
+			Brokers:   []string{opts.Address},
+			Topic:     opts.Topic,
+			Dialer:    dialer,
+			BatchSize: DefaultBatchSize,
+		}),
+		log: logrus.WithField("pkg", "kafka/write.go"),
+	}
+
+	return w.Write([]byte(opts.Key), value)
+}
+
+// Write writes a message to a kafka topic. It is a wrapper for WriteMessages.
+func (w *Writer) Write(key, value []byte) error {
+	if err := w.Writer.WriteMessages(w.Options.Context, skafka.Message{
+		Key:   key,
+		Value: value,
+	}); err != nil {
+		return errors.Wrap(err, "unable to publish message(s)")
+	}
+
+	return nil
 }
 
 func generateWriteValue(md *desc.MessageDescriptor, opts *Options) ([]byte, error) {
@@ -181,35 +207,6 @@ func validateWriteOptions(opts *Options) error {
 		if _, err := os.Stat(opts.InputFile); os.IsNotExist(err) {
 			return fmt.Errorf("--file '%s' does not exist", opts.InputFile)
 		}
-	}
-
-	return nil
-}
-
-// GetWriterByTopic returns a new writer per topic
-func (k *Kafka) NewWriter(id string, opts *Options) *Writer {
-	writerConfig := skafka.WriterConfig{
-		Brokers:   []string{opts.Address},
-		Topic:     opts.Topic,
-		Dialer:    k.Dialer,
-		BatchSize: DefaultBatchSize,
-	}
-
-	return &Writer{
-		Id:      id,
-		Options: opts,
-		Writer:  skafka.NewWriter(writerConfig),
-		log:     logrus.WithField("writerId", id),
-	}
-}
-
-// Publish a message into Kafka
-func (w *Writer) Write(key, value []byte) error {
-	if err := w.Writer.WriteMessages(w.Options.Context, skafka.Message{
-		Key:   key,
-		Value: value,
-	}); err != nil {
-		return errors.Wrap(err, "unable to publish message(s)")
 	}
 
 	return nil

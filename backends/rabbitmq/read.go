@@ -9,7 +9,6 @@ import (
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"github.com/streadway/amqp"
 	"github.com/urfave/cli/v2"
 
 	"github.com/batchcorp/plumber/pb"
@@ -17,10 +16,10 @@ import (
 	"github.com/batchcorp/plumber/util"
 )
 
-type Reader struct {
-	Channel *amqp.Channel
-}
-
+// Read is the entry point function for performing read operations in RabbitMQ.
+//
+// This is where we verify that the provided arguments and flag combination
+// makes sense/are valid; this is also where we will perform our initial conn.
 func Read(c *cli.Context) error {
 	opts, err := parseOptions(c)
 	if err != nil {
@@ -56,35 +55,11 @@ func Read(c *cli.Context) error {
 	return r.Read()
 }
 
-func validateReadOptions(opts *Options) error {
-	if opts.Address == "" {
-		return errors.New("--address cannot be empty")
-	}
-
-	if opts.Action == "write" && opts.RoutingKey == "" {
-		return errors.New("--routing-key cannot be empty with write action")
-	}
-
-	if opts.OutputType == "protobuf" {
-		if opts.ProtobufDir == "" {
-			return errors.New("'--protobuf-dir' must be set when type " +
-				"is set to 'protobuf'")
-		}
-
-		if opts.ProtobufRootMessage == "" {
-			return errors.New("'--protobuf-root-message' must be when " +
-				"type is set to 'protobuf'")
-		}
-
-		// Does given dir exist?
-		if _, err := os.Stat(opts.ProtobufDir); os.IsNotExist(err) {
-			return fmt.Errorf("--protobuf-dir '%s' does not exist", opts.ProtobufDir)
-		}
-	}
-
-	return nil
-}
-
+// Read will attempt to consume one or more messages from the established rabbit
+// channel.
+//
+// NOTE: This method will not tolerate network hiccups. If you plan on running
+// this long-term - we should add reconnect support.
 func (r *RabbitMQ) Read() error {
 	r.log.Info("Waiting for a message on the bus...")
 
@@ -148,6 +123,35 @@ func (r *RabbitMQ) Read() error {
 	}
 
 	r.log.Debug("reader exiting")
+
+	return nil
+}
+
+func validateReadOptions(opts *Options) error {
+	if opts.Address == "" {
+		return errors.New("--address cannot be empty")
+	}
+
+	if opts.Action == "write" && opts.RoutingKey == "" {
+		return errors.New("--routing-key cannot be empty with write action")
+	}
+
+	if opts.OutputType == "protobuf" {
+		if opts.ProtobufDir == "" {
+			return errors.New("'--protobuf-dir' must be set when type " +
+				"is set to 'protobuf'")
+		}
+
+		if opts.ProtobufRootMessage == "" {
+			return errors.New("'--protobuf-root-message' must be when " +
+				"type is set to 'protobuf'")
+		}
+
+		// Does given dir exist?
+		if _, err := os.Stat(opts.ProtobufDir); os.IsNotExist(err) {
+			return fmt.Errorf("--protobuf-dir '%s' does not exist", opts.ProtobufDir)
+		}
+	}
 
 	return nil
 }

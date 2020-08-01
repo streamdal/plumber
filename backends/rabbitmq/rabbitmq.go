@@ -12,6 +12,9 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+// Reader holds all attributes required for performing a read/write operations
+// in RabbitMQ. This struct should be instantiated via the rabbitmq.Read(..) or
+// rabbitmq.Write(..) functions.
 type RabbitMQ struct {
 	Options *Options
 	Channel *amqp.Channel
@@ -19,6 +22,10 @@ type RabbitMQ struct {
 	log     *logrus.Entry
 }
 
+// Options contains the values parsed from urfave args and flags. This struct
+// gets filled out by helper parse* func(s).
+//
+// TODO: This should be populated by urfave at startup.
 type Options struct {
 	Action              string
 	Address             string
