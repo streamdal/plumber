@@ -3,7 +3,8 @@ module github.com/batchcorp/plumber
 go 1.14
 
 require (
-	github.com/golang/protobuf v1.3.1
+	cloud.google.com/go/pubsub v1.6.1
+	github.com/golang/protobuf v1.4.2
 	github.com/jhump/protoreflect v1.7.0
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/pkg/errors v0.9.1

@@ -51,6 +51,7 @@ func parseOptions(c *cli.Context) (*Options, error) {
 		return nil, fmt.Errorf("unexpected number of args (%d)", len(os.Args))
 	}
 
+	// Need this so we can figure out action (so we know whether to declare queue or not)
 	if strings.HasPrefix(os.Args[1], "-") {
 		return nil, errors.New("first arg cannot be a flag")
 	}
