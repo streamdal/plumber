@@ -2,9 +2,14 @@ package kafka
 
 import (
 	"context"
+	"crypto/tls"
+	"fmt"
 	"time"
 
+	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
+	skafka "github.com/segmentio/kafka-go"
+	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 )
 
@@ -16,10 +21,19 @@ const (
 	DefaultBatchSize      = 1
 )
 
+// Kafka holds all attributes required for performing a write to Kafka. This
+// struct should be instantiated via the kafka.Read(..) func.
+type Kafka struct {
+	Id          string
+	Reader      *skafka.Reader
+	Writer      *skafka.Writer
+	Options     *Options
+	MessageDesc *desc.MessageDescriptor
+	log         *logrus.Entry
+}
+
 // Options contains the values parsed from urfave args and flags. This struct
 // gets filled out by helper parse* func(s).
-//
-// TODO: This should be populated by urfave at startup.
 type Options struct {
 	Address             string
 	Topic               string
@@ -37,6 +51,69 @@ type Options struct {
 	OutputType          string
 	InputFile           string
 	Convert             string
+}
+
+func NewReader(opts *Options) (*skafka.Reader, error) {
+	dialer := &skafka.Dialer{
+		Timeout: opts.ConnectTimeout,
+	}
+
+	if opts.UseInsecureTLS {
+		dialer.TLS = &tls.Config{
+			InsecureSkipVerify: true,
+		}
+	}
+
+	// The dialer timeout does not get utilized under some conditions (such as
+	// when kafka is configured to NOT auto create topics) - we need a
+	// mechanism to bail out early.
+	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(opts.ConnectTimeout))
+
+	// Attempt to establish connection on startup
+	if _, err := dialer.DialLeader(ctxDeadline, "tcp", opts.Address, opts.Topic, 0); err != nil {
+		return nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
+			opts.Address, err)
+	}
+
+	return skafka.NewReader(skafka.ReaderConfig{
+		Brokers:       []string{opts.Address},
+		GroupID:       opts.GroupId,
+		Topic:         opts.Topic,
+		Dialer:        dialer,
+		MaxWait:       DefaultMaxWait,
+		MaxBytes:      DefaultMaxBytes,
+		QueueCapacity: 1,
+	}), nil
+}
+
+func NewWriter(opts *Options) (*skafka.Writer, error) {
+	dialer := &skafka.Dialer{
+		Timeout: opts.ConnectTimeout,
+	}
+
+	if opts.UseInsecureTLS {
+		dialer.TLS = &tls.Config{
+			InsecureSkipVerify: true,
+		}
+	}
+
+	// The dialer timeout does not get utilized under some conditions (such as
+	// when kafka is configured to NOT auto create topics) - we need a
+	// mechanism to bail out early.
+	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(opts.ConnectTimeout))
+
+	// Attempt to establish connection on startup
+	if _, err := dialer.DialLeader(ctxDeadline, "tcp", opts.Address, opts.Topic, 0); err != nil {
+		return nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
+			opts.Address, err)
+	}
+
+	return skafka.NewWriter(skafka.WriterConfig{
+		Brokers:   []string{opts.Address},
+		Topic:     opts.Topic,
+		Dialer:    dialer,
+		BatchSize: DefaultBatchSize,
+	}), nil
 }
 
 func parseOptions(c *cli.Context) (*Options, error) {

@@ -2,12 +2,9 @@ package kafka
 
 import (
 	"bytes"
-	"context"
-	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"os"
-	"time"
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
@@ -20,20 +17,6 @@ import (
 
 	"github.com/batchcorp/plumber/pb"
 )
-
-// IWriter enables us to mock the actual write operation.
-type IWriter interface {
-	Write(key, value []byte) error
-}
-
-// Writer holds all attributes required for performing a write to Kafka. This
-// struct should be instantiated via the kafka.Write(..) func.
-type Writer struct {
-	Id      string
-	Writer  *skafka.Writer
-	Options *Options
-	log     *logrus.Entry
-}
 
 // Write is the entry point function for performing write operations in Kafka.
 //
@@ -60,49 +43,28 @@ func Write(c *cli.Context) error {
 		}
 	}
 
-	dialer := &skafka.Dialer{
-		Timeout: opts.ConnectTimeout,
-	}
-
-	if opts.UseInsecureTLS {
-		dialer.TLS = &tls.Config{
-			InsecureSkipVerify: true,
-		}
-	}
-
-	// The dialer timeout does not get utilized under some conditions (such as
-	// when kafka is configured to NOT auto create topics) - we need a
-	// mechanism to bail out early.
-	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(opts.ConnectTimeout))
-
-	// Attempt to establish connection on startup
-	if _, err := dialer.DialLeader(ctxDeadline, "tcp", opts.Address, opts.Topic, 0); err != nil {
-		return fmt.Errorf("unable to create initial connection to host '%s': %s",
-			opts.Address, err)
-	}
-
 	value, err := generateWriteValue(md, opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}
 
-	w := &Writer{
-		Options: opts,
-		Writer: skafka.NewWriter(skafka.WriterConfig{
-			Brokers:   []string{opts.Address},
-			Topic:     opts.Topic,
-			Dialer:    dialer,
-			BatchSize: DefaultBatchSize,
-		}),
-		log: logrus.WithField("pkg", "kafka/write.go"),
+	writer, err := NewWriter(opts)
+	if err != nil {
+		return errors.Wrap(err, "unable to create new writer")
 	}
 
-	return w.Write([]byte(opts.Key), value)
+	k := &Kafka{
+		Options: opts,
+		Writer:  writer,
+		log:     logrus.WithField("pkg", "kafka/write.go"),
+	}
+
+	return k.Write([]byte(opts.Key), value)
 }
 
 // Write writes a message to a kafka topic. It is a wrapper for WriteMessages.
-func (w *Writer) Write(key, value []byte) error {
-	if err := w.Writer.WriteMessages(w.Options.Context, skafka.Message{
+func (k *Kafka) Write(key, value []byte) error {
+	if err := k.Writer.WriteMessages(k.Options.Context, skafka.Message{
 		Key:   key,
 		Value: value,
 	}); err != nil {

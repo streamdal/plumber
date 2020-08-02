@@ -133,7 +133,7 @@ func (g *GCPPubSub) Read() error {
 		return errors.Wrap(err, "unable to complete msg receive")
 	}
 
-	g.log.Info("read completed")
+	g.log.Debug("Reader exiting")
 
 	return nil
 }

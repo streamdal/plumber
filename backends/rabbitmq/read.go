@@ -122,7 +122,7 @@ func (r *RabbitMQ) Read() error {
 		}
 	}
 
-	r.log.Debug("reader exiting")
+	r.log.Debug("Reader exiting")
 
 	return nil
 }
