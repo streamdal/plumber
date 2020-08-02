@@ -2,7 +2,7 @@ plumber
 =======
 
 plumber is a CLI devtool for inspecting, piping, massaging and redirecting data
-in message systems like Kafka, RabbitMQ , Amazon SQS and 
+in message systems like Kafka, RabbitMQ , GCP PubSub and 
 [many more](#supported-messaging-systems). \[1]
 
 The tool enables you to:
@@ -143,6 +143,7 @@ We wanted a swiss army knife type of tool for working with messaging systems
 
 * Kafka
 * RabbitMQ
+* Google Cloud Platform PubSub
 * Amazon SQS (coming soon)
 * NATS (coming soon)
 * ActiveMQ (coming soon)

@@ -103,7 +103,7 @@ func Read(c *cli.Context) error {
 //
 // This method SHOULD be able to recover from network hiccups.
 func (r *Reader) Read() error {
-	r.log.Info("Initializing (could take a minute or two)")
+	r.log.Info("Initializing (could take a minute or two) ...")
 
 	lineNumber := 1
 

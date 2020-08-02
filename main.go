@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 
+	gcppubsub "github.com/batchcorp/plumber/backends/gcp-pubsub"
 	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/backends/rabbitmq"
 )
@@ -92,6 +93,14 @@ func setupCLI() *cli.App {
 		&cli.StringFlag{
 			Name:     "routing-key",
 			Usage:    "Routing key",
+			Required: true,
+		},
+	}
+
+	gcpPubSubFlags := []cli.Flag{
+		&cli.StringFlag{
+			Name:     "project-id",
+			Usage:    "Project Id",
 			Required: true,
 		},
 	}
@@ -216,6 +225,55 @@ func setupCLI() *cli.App {
 									},
 								}...),
 							},
+							{
+								Name:   "gcp-pubsub",
+								Usage:  "Google Cloud Platform PubSub",
+								Action: gcppubsub.Read,
+								Flags: append(gcpPubSubFlags, []cli.Flag{
+									&cli.StringFlag{
+										Name:     "sub-id",
+										Usage:    "Subscription Id",
+										Required: true,
+									},
+									&cli.StringFlag{
+										Name:  "protobuf-dir",
+										Usage: "Directory with .proto files",
+									},
+									&cli.StringFlag{
+										Name:  "protobuf-root-message",
+										Usage: "Specifies the root message in a protobuf descriptor set (required if protobuf-dir set)",
+									},
+									&cli.GenericFlag{
+										Name:  "output-type",
+										Usage: "The type of message(s) you will receive on the bus",
+										Value: &EnumValue{
+											Enum:    []string{"plain", "protobuf"},
+											Default: "plain",
+										},
+									},
+									&cli.BoolFlag{
+										Name:  "ack",
+										Usage: "Acknowledge message receive",
+										Value: true,
+									},
+									&cli.BoolFlag{
+										Name:  "follow",
+										Usage: "Continue reading until cancelled (like tail -f)",
+									},
+									&cli.BoolFlag{
+										Name:  "line-numbers",
+										Usage: "Display line numbers for each message",
+									},
+									&cli.GenericFlag{
+										Name:  "convert",
+										Usage: "Convert messages received on the bus",
+										Value: &EnumValue{
+											Enum:    []string{"base64", "gzip"},
+											Default: "",
+										},
+									},
+								}...),
+							},
 						},
 					},
 				},
@@ -282,6 +340,50 @@ func setupCLI() *cli.App {
 										Name:  "key",
 										Usage: "Key to write to rabbitmq",
 										Value: "plumber-default-key",
+									},
+									&cli.StringFlag{
+										Name:  "input-data",
+										Usage: "The data to write to rabbitmq",
+									},
+									&cli.StringFlag{
+										Name:  "input-file",
+										Usage: "File containing input data (1 file = 1 message)",
+									},
+									&cli.GenericFlag{
+										Name:  "input-type",
+										Usage: "Treat input data as this type to enable output conversion",
+										Value: &EnumValue{
+											Enum:    []string{"plain", "base64", "jsonpb"},
+											Default: "plain",
+										},
+									},
+									&cli.GenericFlag{
+										Name:  "output-type",
+										Usage: "Convert the input to this type when writing message",
+										Value: &EnumValue{
+											Enum:    []string{"plain", "protobuf"},
+											Default: "plain",
+										},
+									},
+									&cli.StringFlag{
+										Name:  "protobuf-dir",
+										Usage: "Directory with .proto files",
+									},
+									&cli.StringFlag{
+										Name:  "protobuf-root-message",
+										Usage: "Specifies the root message in a protobuf descriptor set (required if protobuf-dir set)",
+									},
+								}...),
+							},
+							{
+								Name:   "gcp-pubsub",
+								Usage:  "Google Cloud Platform PubSub",
+								Action: gcppubsub.Write,
+								Flags: append(gcpPubSubFlags, []cli.Flag{
+									&cli.StringFlag{
+										Name:     "topic-id",
+										Usage:    "Topic Id",
+										Required: true,
 									},
 									&cli.StringFlag{
 										Name:  "input-data",
