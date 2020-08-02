@@ -13,6 +13,7 @@ import (
 type Options struct {
 	ProjectId           string
 	SubscriptionId      string
+	TopicId             string
 	OutputType          string
 	ProtobufDir         string
 	ProtobufRootMessage string
@@ -20,6 +21,9 @@ type Options struct {
 	Convert             string
 	LineNumbers         bool
 	Ack                 bool
+	InputData           string
+	InputFile           string
+	InputType           string
 }
 
 type GCPPubSub struct {
@@ -33,10 +37,14 @@ func parseOptions(c *cli.Context) (*Options, error) {
 	return &Options{
 		ProjectId:           c.String("project-id"),
 		SubscriptionId:      c.String("sub-id"),
+		TopicId:             c.String("topic-id"),
 		OutputType:          c.String("output-type"),
 		Convert:             c.String("convert"),
 		ProtobufDir:         c.String("protobuf-dir"),
 		ProtobufRootMessage: c.String("protobuf-root-message"),
+		InputData:           c.String("input-data"),
+		InputFile:           c.String("input-file"),
+		InputType:           c.String("input-type"),
 		Follow:              c.Bool("follow"),
 		LineNumbers:         c.Bool("line-numbers"),
 		Ack:                 c.Bool("ack"),
