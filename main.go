@@ -221,7 +221,7 @@ func setupCLI() *cli.App {
 								Name:   "gcp-pubsub",
 								Usage:  "Google Cloud Platform PubSub",
 								Action: gcppubsub.Read,
-								Flags: append(rabbitmqFlags, []cli.Flag{
+								Flags: []cli.Flag{
 									&cli.StringFlag{
 										Name:  "project-id",
 										Usage: "Project Id",
@@ -247,6 +247,11 @@ func setupCLI() *cli.App {
 										},
 									},
 									&cli.BoolFlag{
+										Name:  "ack",
+										Usage: "Acknowledge message receive",
+										Value: true,
+									},
+									&cli.BoolFlag{
 										Name:  "follow",
 										Usage: "Continue reading until cancelled (like tail -f)",
 									},
@@ -262,7 +267,7 @@ func setupCLI() *cli.App {
 											Default: "",
 										},
 									},
-								}...),
+								},
 							},
 						},
 					},

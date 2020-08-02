@@ -61,7 +61,7 @@ func Read(c *cli.Context) error {
 // NOTE: This method will not tolerate network hiccups. If you plan on running
 // this long-term - we should add reconnect support.
 func (r *RabbitMQ) Read() error {
-	r.log.Info("Waiting for a message on the bus...")
+	r.log.Info("Listening for message(s) ...")
 
 	msgChan, err := r.Channel.Consume(r.Options.QueueName, "", true, true, false, false, nil)
 	if err != nil {

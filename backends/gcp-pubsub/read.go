@@ -55,6 +55,8 @@ func Read(c *cli.Context) error {
 }
 
 func (g *GCPPubSub) Read() error {
+	g.log.Info("Listening for message(s) ...")
+
 	sub := g.Client.Subscription(g.Options.SubscriptionId)
 
 	// Receive launches several goroutines to exec func, need to use a mutex
@@ -68,6 +70,10 @@ func (g *GCPPubSub) Read() error {
 	if err := sub.Receive(cctx, func(ctx context.Context, msg *pubsub.Message) {
 		m.Lock()
 		defer m.Unlock()
+
+		if g.Options.Ack {
+			defer msg.Ack()
+		}
 
 		if g.Options.OutputType == "protobuf" {
 			decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(g.MsgDesc), msg.Data)
@@ -133,9 +139,8 @@ func (g *GCPPubSub) Read() error {
 }
 
 func validateReadOptions(opts *Options) error {
-	// Either service account or API key must be present
-	if os.Getenv("GOOGLE_APPLICATION_CREDENTIALS") == "" && opts.APIKey == "" {
-		return errors.New("either GOOGLE_APPLICATION_CREDENTIALS or --api-key must be set")
+	if os.Getenv("GOOGLE_APPLICATION_CREDENTIALS") == "" {
+		return errors.New("GOOGLE_APPLICATION_CREDENTIALS must be set")
 	}
 
 	if opts.OutputType == "protobuf" {
