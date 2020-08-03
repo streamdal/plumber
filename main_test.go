@@ -9,18 +9,25 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os/exec"
 	"runtime"
 	"time"
 
 	"cloud.google.com/go/pubsub"
+	"github.com/golang/protobuf/proto"
 	. "github.com/onsi/ginkgo"
+	"github.com/onsi/ginkgo/config"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 	"github.com/streadway/amqp"
+
+	"github.com/batchcorp/plumber/test-assets/pbs"
 )
 
 var (
@@ -33,7 +40,7 @@ var (
 var _ = Describe("Functional", func() {
 	var (
 		kafkaAddress         = "localhost:9092"
-		kafkaTopic           = "test"
+		kafkaTopic           = fmt.Sprintf("plumber-test-%d", rand.Int())
 		gcpPubSubProjectId   = "projectId"
 		rabbitAddress        = "amqp://localhost:5672"
 		binary               = "./build/plumber-" + runtime.GOOS
@@ -42,6 +49,9 @@ var _ = Describe("Functional", func() {
 	)
 
 	BeforeSuite(func() {
+		// Suppress "slow test" warning
+		config.DefaultReporterConfig.SlowSpecThreshold = (5 * time.Minute).Seconds()
+
 		if err := setupConnections(
 			kafkaAddress,
 			kafkaTopic,
@@ -96,6 +106,7 @@ var _ = Describe("Functional", func() {
 
 			FContext("jsonpb input, protobuf output", func() {
 				It("should work", func() {
+					// We use "Outbound" here because it's simple
 					cmd := exec.Command(binary, "write", "message", "kafka", "--address", kafkaAddress,
 						"--topic", kafkaTopic, "--input-type", "jsonpb", "--output-type", "protobuf",
 						"--input-file", sampleOutboundJSONPB, "--protobuf-dir", protoSchemasDir,
@@ -112,7 +123,29 @@ var _ = Describe("Functional", func() {
 
 					Expect(err).ToNot(HaveOccurred())
 
-					fmt.Printf("Received value: %+v\n", string(value))
+					// Verify we wrote a valid protobuf message
+					outbound := &pbs.Outbound{}
+
+					err = proto.Unmarshal(value, outbound)
+
+					Expect(err).ToNot(HaveOccurred())
+
+					// Verify that the values are the same
+					jsonData, err := ioutil.ReadFile(sampleOutboundJSONPB)
+					Expect(err).ToNot(HaveOccurred())
+
+					jsonMap := make(map[string]string, 0)
+
+					err = json.Unmarshal(jsonData, &jsonMap)
+					Expect(err).ToNot(HaveOccurred())
+
+					Expect(outbound.ReplayId).To(Equal(jsonMap["replay_id"]))
+
+					// []byte is encoded as base64, so we have to encode it to
+					// verify against source JSON
+					encodedBlob := base64.StdEncoding.EncodeToString(outbound.Blob)
+
+					Expect(encodedBlob).To(Equal(jsonMap["blob"]))
 				})
 			})
 		})
@@ -227,7 +260,7 @@ func newKafkaReader(address, topic string) (*skafka.Reader, error) {
 
 	return skafka.NewReader(skafka.ReaderConfig{
 		Brokers: []string{address},
-		GroupID: "plumber-func-test",
+		GroupID: "plumber-test",
 		Topic:   topic,
 		Dialer:  dialer,
 	}), nil

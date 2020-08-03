@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/batchcorp/schemas/build/go/events/destinations";
+option go_package = "github.com/batchcorp/plumber/test-assets/pbs/destinations";
 
 package destinations;
 
