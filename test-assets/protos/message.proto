@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option go_package = "github.com/batchcorp/schemas/build/go/events";
+
+package events;
+
+import "collect.proto";
+import "replay.proto";
+import "info.proto";
+import "schema.proto";
+import "team.proto";
+
+message Message {
+    enum Type {
+        CREATE_COLLECTION  = 0;
+        CREATE_SCHEMA      = 1;
+        DELETE_COLLECTION  = 2;
+        CREATE_REPLAY      = 3;
+        DELETE_REPLAY      = 4;
+        UPDATE_REPLAY      = 5;
+        PAUSE_REPLAY       = 6;
+        RESUME_REPLAY      = 7;
+    }
+
+    // What kind of a message is this?
+    Type type = 1;
+
+    // Who does this message pertain to?
+    Team team = 2;
+
+    // Contains event debug info
+    Info info = 3;
+
+    oneof event {
+        // Info used by collectors to manage event collection
+        Collect collect = 100;
+
+        // Contains configuration used for event replay
+        Replay replay = 101;
+
+        // Contains info about a schema
+        Schema schema = 102;
+    }
+}

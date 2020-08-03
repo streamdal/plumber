@@ -79,6 +79,9 @@ func readFileDescriptors(dir string, files []string) ([]*desc.FileDescriptor, er
 	contents := make(map[string]string, 0)
 	keys := make([]string, 0)
 
+	// cleanup dir
+	dir = filepath.Clean(dir)
+
 	for _, f := range files {
 		data, err := ioutil.ReadFile(f)
 		if err != nil {

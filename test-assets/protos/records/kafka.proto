@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option go_package = "github.com/batchcorp/schemas/build/go/events/records";
+
+package records;
+
+// Inbound messages from kafka sink connector will arrive at the gRPC collector
+// encoded as this record. The gRPC collector will stuff this message into a
+// Manifest.record (events/manifest.proto) and put it on the HSB.
+//
+// Authorization will be passed via gRPC metadata under the 'BatchToken' key.
+// Metadata ref: https://github.com/grpc/grpc-go/blob/master/Documentation/grpc-metadata.md
+
+option java_package = "sh.batch.events.records";
+
+message KafkaSinkRecord {
+    string topic = 1;
+    bytes key = 2;
+    bytes value = 3;
+    int64 timestamp = 4;
+    int64 offset = 5;
+    int32 partition = 6;
+}

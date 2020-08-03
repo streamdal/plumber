@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option go_package = "github.com/batchcorp/schemas/build/go/events";
+
+package events;
+
+// Emitted by the reader to HSB which is then consumed by the replayer
+message Outbound {
+    string replay_id = 1;
+    bytes blob = 2;
+}

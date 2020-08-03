@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+option go_package = "github.com/batchcorp/schemas/build/go/events";
+
+package events;
+
+message Schema {
+    enum Type {
+        UNKNOWN  = 0;
+        PLAIN    = 1;
+        JSON     = 2;
+        PROTOBUF = 3;
+    }
+
+    // The collector will ONLY fill out the 'id' for incoming messages - it is
+    // the responsibility of downstream consumers to lookup the corresponding
+    // schema configuration by 'id'.
+    string id = 1;
+
+    Type type = 2;
+    map<string, bytes> raw  = 3;
+
+    // Only used when Type == PROTOBUF
+    string protobuf_message_name = 4;
+    bytes protobuf_file_descriptor_set = 5;
+}

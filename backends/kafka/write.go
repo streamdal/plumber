@@ -128,8 +128,6 @@ func convertJSONPBToProtobuf(data []byte, m *dynamic.Message) ([]byte, error) {
 		return nil, errors.Wrap(err, "unable to unmarshal data into dynamic message")
 	}
 
-	fmt.Printf("This is what our marshalled dynamic message looks like: %+v\n", m)
-
 	// Now let's encode that into a proper protobuf message
 	pbBytes, err := proto.Marshal(m)
 	if err != nil {

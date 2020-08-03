@@ -8,10 +8,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"os/exec"
 	"runtime"
+	"time"
 
 	"cloud.google.com/go/pubsub"
 	. "github.com/onsi/ginkgo"
@@ -30,15 +32,21 @@ var (
 
 var _ = Describe("Functional", func() {
 	var (
-		kafkaAddress = "localhost:9092"
-		kafkaTopic   = "test"
-		binary       = "./build/plumber-" + runtime.GOOS
+		kafkaAddress         = "localhost:9092"
+		kafkaTopic           = "test"
+		gcpPubSubProjectId   = "projectId"
+		rabbitAddress        = "amqp://localhost:5672"
+		binary               = "./build/plumber-" + runtime.GOOS
+		sampleOutboundJSONPB = "./test-assets/messages/sample-outbound.json"
+		protoSchemasDir      = "./test-assets/protos"
 	)
 
 	BeforeSuite(func() {
 		if err := setupConnections(
 			kafkaAddress,
 			kafkaTopic,
+			gcpPubSubProjectId,
+			rabbitAddress,
 		); err != nil {
 			Fail(fmt.Sprintf("unable to setup connection(s): %s", err))
 		}
@@ -86,8 +94,25 @@ var _ = Describe("Functional", func() {
 				})
 			})
 
-			Context("jsonpb input, protobuf output", func() {
+			FContext("jsonpb input, protobuf output", func() {
 				It("should work", func() {
+					cmd := exec.Command(binary, "write", "message", "kafka", "--address", kafkaAddress,
+						"--topic", kafkaTopic, "--input-type", "jsonpb", "--output-type", "protobuf",
+						"--input-file", sampleOutboundJSONPB, "--protobuf-dir", protoSchemasDir,
+						"--protobuf-root-message", "Outbound")
+
+					output, err := cmd.CombinedOutput()
+
+					fmt.Println(string(output))
+
+					Expect(err).ToNot(HaveOccurred())
+
+					// Read message from kafka topic; verify it matches what we wrote
+					value, err := getMessageFromKafka(kafkaAddress, kafkaTopic)
+
+					Expect(err).ToNot(HaveOccurred())
+
+					fmt.Printf("Received value: %+v\n", string(value))
 				})
 			})
 		})
@@ -184,9 +209,28 @@ func setupConnections(kafkaAddress, kafkaTopic, gcpPubSubProjectId, rabbitAddres
 	return nil
 }
 
-// TODO: Implement
 func newKafkaReader(address, topic string) (*skafka.Reader, error) {
-	return nil, nil
+	dialer := &skafka.Dialer{
+		Timeout: 5 * time.Second,
+	}
+
+	// The dialer timeout does not get utilized under some conditions (such as
+	// when kafka is configured to NOT auto create topics) - we need a
+	// mechanism to bail out early.
+	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(5*time.Second))
+
+	// Attempt to establish connection on startup
+	if _, err := dialer.DialLeader(ctxDeadline, "tcp", address, topic, 0); err != nil {
+		return nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
+			address, err)
+	}
+
+	return skafka.NewReader(skafka.ReaderConfig{
+		Brokers: []string{address},
+		GroupID: "plumber-func-test",
+		Topic:   topic,
+		Dialer:  dialer,
+	}), nil
 }
 
 // TODO: Implement
@@ -205,5 +249,14 @@ func newGCPPubSubClient(projectId string) (*pubsub.Client, error) {
 }
 
 func getMessageFromKafka(address, topic string) ([]byte, error) {
-	return nil, nil
+	if kafkaReader == nil {
+		return nil, errors.New("kafkaReader should not be nil")
+	}
+
+	msg, err := kafkaReader.ReadMessage(context.Background())
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to read message from kafka")
+	}
+
+	return msg.Value, nil
 }

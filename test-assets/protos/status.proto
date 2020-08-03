@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "github.com/batchcorp/schemas/build/go/events";
+
+package events;
+
+option java_package = "sh.batch.events";
+option java_outer_classname = "ResponseStatus";
+
+message Status {
+    // A simple error code that can be easily handled by the client. The
+    // actual error code is defined by `google.rpc.Code`.
+    int32 code = 1;
+
+    // A developer-facing human-readable error message in English. It should
+    // both explain the error and offer an actionable resolution to it.
+    string message = 2;
+}
