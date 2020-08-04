@@ -91,12 +91,13 @@ func (k *Kafka) Read() error {
 			msg.Value = decoded
 		}
 
-		var data []byte
+		data := make([]byte, 0)
+
 		var convertErr error
 
 		switch k.Options.Convert {
 		case "base64":
-			_, convertErr = base64.StdEncoding.Decode(data, msg.Value)
+			data, convertErr = base64.StdEncoding.DecodeString(string(msg.Value))
 		case "gzip":
 			data, convertErr = util.Gunzip(msg.Value)
 		default:

@@ -112,6 +112,11 @@ func setupCLI() *cli.App {
 			Usage:   "Enable debug output",
 			Value:   false,
 		},
+		&cli.BoolFlag{
+			Name:  "quiet",
+			Usage: "Supress any non-essential output",
+			Value: false,
+		},
 	}
 
 	app := &cli.App{
@@ -426,7 +431,9 @@ func setupCLI() *cli.App {
 		},
 		Flags: globalFlags,
 		Before: func(c *cli.Context) error {
-			if c.Bool("debug") {
+			if c.Bool("quiet") {
+				logrus.SetLevel(logrus.ErrorLevel)
+			} else if c.Bool("debug") {
 				logrus.SetLevel(logrus.DebugLevel)
 
 				logrus.Debug("Enabled debug mode")

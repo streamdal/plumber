@@ -16,6 +16,7 @@ import (
 	"math/rand"
 	"os/exec"
 	"runtime"
+	"strings"
 	"time"
 
 	"cloud.google.com/go/pubsub"
@@ -33,9 +34,15 @@ import (
 var (
 	kafkaReader     *skafka.Reader
 	kafkaWriter     *skafka.Writer
+	kafkaConn       *skafka.Conn
+	kafkaDialer     *skafka.Dialer
 	rabbitChannel   *amqp.Channel
 	gcpPubSubClient *pubsub.Client
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 var _ = Describe("Functional", func() {
 	var (
@@ -52,7 +59,7 @@ var _ = Describe("Functional", func() {
 		// Suppress "slow test" warning
 		config.DefaultReporterConfig.SlowSpecThreshold = (5 * time.Minute).Seconds()
 
-		if err := setupConnections(
+		if err := initConnections(
 			kafkaAddress,
 			kafkaTopic,
 			gcpPubSubProjectId,
@@ -83,6 +90,12 @@ var _ = Describe("Functional", func() {
 		Expect(binary).To(BeAnExistingFile())
 	})
 
+	AfterSuite(func() {
+		// Get rid of the topic we just created
+		err := kafkaConn.DeleteTopics(kafkaTopic)
+		Expect(err).ToNot(HaveOccurred())
+	})
+
 	Describe("Kafka", func() {
 		Describe("write", func() {
 			Context("plain input, plain output", func() {
@@ -104,7 +117,7 @@ var _ = Describe("Functional", func() {
 				})
 			})
 
-			FContext("jsonpb input, protobuf output", func() {
+			Context("jsonpb input, protobuf output", func() {
 				It("should work", func() {
 					// We use "Outbound" here because it's simple
 					cmd := exec.Command(binary, "write", "message", "kafka", "--address", kafkaAddress,
@@ -153,11 +166,114 @@ var _ = Describe("Functional", func() {
 		Describe("read", func() {
 			Context("plain output", func() {
 				It("should work", func() {
+					testValue := []byte("test-value-123")
+
+					cmdCtx, cmdCancel := context.WithDeadline(context.Background(), time.Now().Add(30*time.Second))
+					outputCh := make(chan []byte, 0)
+
+					// Start reading in goroutine, timeout 30s
+					go func() {
+						defer GinkgoRecover()
+
+						cmd := exec.CommandContext(cmdCtx, binary, "--quiet", "read", "message", "kafka",
+							"--address", kafkaAddress, "--topic", kafkaTopic)
+
+						data, err := cmd.CombinedOutput()
+						if err != nil {
+							cmdCancel()
+							Fail(fmt.Sprintf("unable to fetch combined output for read: %s", err))
+						}
+
+						outputCh <- data
+					}()
+
+					// Perform a write
+					writeCtx, _ := context.WithDeadline(context.Background(), time.Now().Add(30*time.Second))
+
+					go func() {
+						defer GinkgoRecover()
+
+						err := kafkaWriter.WriteMessages(writeCtx, skafka.Message{
+							Value: testValue,
+						})
+
+						Expect(err).ToNot(HaveOccurred())
+					}()
+
+					// Receive data or wait for timeout to hit
+					var data []byte
+
+					select {
+					case data = <-outputCh:
+						close(outputCh)
+					case <-writeCtx.Done():
+						Fail("kafka write time out")
+					case <-cmdCtx.Done():
+						Fail("command timed out")
+					}
+
+					// Ensure that we received the appropriate data
+					Expect(strings.Contains(string(data), string(testValue)))
 				})
 			})
 
-			Context("protobuf output", func() {
+			FContext("protobuf output", func() {
 				It("should work", func() {
+					cmdCtx, cmdCancel := context.WithDeadline(context.Background(), time.Now().Add(30*time.Second))
+					outputCh := make(chan []byte, 0)
+
+					go func() {
+						defer GinkgoRecover()
+
+						// TODO: Output type should be set to protobuf w/ Outbound message type
+						cmd := exec.CommandContext(cmdCtx, binary, "--quiet", "read", "message", "kafka",
+							"--address", kafkaAddress, "--topic", kafkaTopic)
+
+						data, err := cmd.CombinedOutput()
+						if err != nil {
+							cmdCancel()
+							Fail(fmt.Sprintf("unable to fetch combined output for read: %s", err))
+						}
+
+						outputCh <- data
+					}()
+
+					// Create a protobuf encoded message
+					msg := &pbs.Outbound{
+						ReplayId: "replay-id-1234",
+						Blob:     []byte("test"),
+					}
+
+					pbData, err := proto.Marshal(msg)
+
+					Expect(err).ToNot(HaveOccurred())
+
+					// Write protobuf message to kafka
+					writeCtx, _ := context.WithDeadline(context.Background(), time.Now().Add(30*time.Second))
+
+					go func() {
+						defer GinkgoRecover()
+
+						err := kafkaWriter.WriteMessages(writeCtx, skafka.Message{
+							Value: pbData,
+						})
+
+						Expect(err).ToNot(HaveOccurred())
+					}()
+
+					// Receive data or wait for timeout to hit
+					var data []byte
+
+					select {
+					case data = <-outputCh:
+						close(outputCh)
+					case <-writeCtx.Done():
+						Fail("kafka write time out")
+					case <-cmdCtx.Done():
+						Fail("command timed out")
+					}
+
+					fmt.Printf("This is our data: %s\n", string(data))
 				})
 			})
 		})
@@ -216,18 +332,26 @@ var _ = Describe("Functional", func() {
 	})
 })
 
-func setupConnections(kafkaAddress, kafkaTopic, gcpPubSubProjectId, rabbitAddress string) error {
+func initConnections(kafkaAddress, kafkaTopic, gcpPubSubProjectId, rabbitAddress string) error {
 	var err error
 
-	kafkaReader, err = newKafkaReader(kafkaAddress, kafkaTopic)
+	kafkaConn, kafkaDialer, err = newKafka(kafkaAddress, kafkaTopic)
 	if err != nil {
-		return errors.Wrap(err, "unable to setup new kafka reader")
+		return errors.Wrap(err, "unable to setup new kafka")
 	}
 
-	kafkaWriter, err = newKafkaWriter(kafkaAddress, kafkaTopic)
-	if err != nil {
-		return errors.Wrap(err, "unable to setup new kafka writer")
-	}
+	kafkaReader = skafka.NewReader(skafka.ReaderConfig{
+		Brokers: []string{kafkaAddress},
+		GroupID: "plumber-test",
+		Topic:   kafkaTopic,
+		Dialer:  kafkaDialer,
+	})
+
+	kafkaWriter = skafka.NewWriter(skafka.WriterConfig{
+		Brokers: []string{kafkaAddress},
+		Topic:   kafkaTopic,
+		Dialer:  kafkaDialer,
+	})
 
 	rabbitChannel, err = newRabbitChannel(rabbitAddress)
 	if err != nil {
@@ -242,7 +366,7 @@ func setupConnections(kafkaAddress, kafkaTopic, gcpPubSubProjectId, rabbitAddres
 	return nil
 }
 
-func newKafkaReader(address, topic string) (*skafka.Reader, error) {
+func newKafka(address, topic string) (*skafka.Conn, *skafka.Dialer, error) {
 	dialer := &skafka.Dialer{
 		Timeout: 5 * time.Second,
 	}
@@ -253,22 +377,13 @@ func newKafkaReader(address, topic string) (*skafka.Reader, error) {
 	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(5*time.Second))
 
 	// Attempt to establish connection on startup
-	if _, err := dialer.DialLeader(ctxDeadline, "tcp", address, topic, 0); err != nil {
-		return nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
+	conn, err := dialer.DialLeader(ctxDeadline, "tcp", address, topic, 0)
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
 			address, err)
 	}
 
-	return skafka.NewReader(skafka.ReaderConfig{
-		Brokers: []string{address},
-		GroupID: "plumber-test",
-		Topic:   topic,
-		Dialer:  dialer,
-	}), nil
-}
-
-// TODO: Implement
-func newKafkaWriter(address, topic string) (*skafka.Writer, error) {
-	return nil, nil
+	return conn, dialer, nil
 }
 
 // TODO: Implement
