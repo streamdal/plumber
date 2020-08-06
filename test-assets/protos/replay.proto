@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option go_package = "github.com/batchcorp/plumber/test-assets/pbs";
+
+package events;
+
+import "filter.proto";
+import "destinations/http.proto";
+
+message Replay {
+    // Replay id in DB
+    string id = 1;
+
+    // Filter is used by the search service to find fitting events and pushing
+    // them to HSB for consumption by the replay service.
+    Filter filter = 2;
+
+    // Used by reader to know which index to use
+    string collect_id = 3;
+
+    // Used by the replay service
+    oneof dst {
+        destinations.HTTP http = 100;
+    }
+}

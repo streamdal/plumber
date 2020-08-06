@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option go_package = "github.com/batchcorp/plumber/test-assets/pbs/records";
+
+package records;
+
+message GenericRecord {
+    bytes body = 1;
+    string source = 2;
+    int64 timestamp = 3; // client unix nano
+    map<string, string> metadata = 4;
+}

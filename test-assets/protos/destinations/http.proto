@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option go_package = "github.com/batchcorp/plumber/test-assets/pbs/destinations";
+
+package destinations;
+
+message HTTP {
+    string url = 1;
+    map<string, string> headers = 2;
+}

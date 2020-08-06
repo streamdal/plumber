@@ -14,8 +14,8 @@ import (
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
 
+	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
 )
 
@@ -24,12 +24,7 @@ import (
 // This is where we verify that the passed args and flags combo makes sense,
 // attempt to establish a connection, parse protobuf before finally attempting
 // to perform the write.
-func Write(c *cli.Context) error {
-	opts, err := parseOptions(c)
-	if err != nil {
-		return errors.Wrap(err, "unable to parse options")
-	}
-
+func Write(opts *cli.Options) error {
 	if err := validateWriteOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
@@ -37,8 +32,8 @@ func Write(c *cli.Context) error {
 	var mdErr error
 	var md *desc.MessageDescriptor
 
-	if opts.OutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.ProtobufDir, opts.ProtobufRootMessage)
+	if opts.GCPPubSub.WriteOutputType == "protobuf" {
+		md, mdErr = pb.FindMessageDescriptor(opts.GCPPubSub.WriteProtobufDir, opts.GCPPubSub.WriteProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")
 		}
@@ -58,7 +53,7 @@ func Write(c *cli.Context) error {
 		Options: opts,
 		MsgDesc: md,
 		Client:  client,
-		log:     logrus.WithField("pkg", "rabbitmq/read.go"),
+		log:     logrus.WithField("pkg", "gcppubsub/read.go"),
 	}
 
 	return g.Write(context.Background(), msg)
@@ -67,7 +62,7 @@ func Write(c *cli.Context) error {
 // Write is a wrapper for amqp Publish method. We wrap it so that we can mock
 // it in tests, add logging etc.
 func (g *GCPPubSub) Write(ctx context.Context, value []byte) error {
-	t := g.Client.Topic(g.Options.TopicId)
+	t := g.Client.Topic(g.Options.GCPPubSub.WriteTopicId)
 
 	result := t.Publish(ctx, &pubsub.Message{
 		Data: value,
@@ -83,68 +78,68 @@ func (g *GCPPubSub) Write(ctx context.Context, value []byte) error {
 	return nil
 }
 
-func validateWriteOptions(opts *Options) error {
+func validateWriteOptions(opts *cli.Options) error {
 	// If output-type is protobuf, ensure that protobuf flags are set
 	// If type is protobuf, ensure both --protobuf-dir and --protobuf-root-message
 	// are set as well
-	if opts.OutputType == "protobuf" {
-		if opts.ProtobufDir == "" {
+	if opts.GCPPubSub.WriteOutputType == "protobuf" {
+		if opts.GCPPubSub.WriteProtobufDir == "" {
 			return errors.New("'--protobuf-dir' must be set when type " +
 				"is set to 'protobuf'")
 		}
 
-		if opts.ProtobufRootMessage == "" {
+		if opts.GCPPubSub.WriteProtobufRootMessage == "" {
 			return errors.New("'--protobuf-root-message' must be when " +
 				"type is set to 'protobuf'")
 		}
 
 		// Does given dir exist?
-		if _, err := os.Stat(opts.ProtobufDir); os.IsNotExist(err) {
-			return fmt.Errorf("--protobuf-dir '%s' does not exist", opts.ProtobufDir)
+		if _, err := os.Stat(opts.GCPPubSub.WriteProtobufDir); os.IsNotExist(err) {
+			return fmt.Errorf("--protobuf-dir '%s' does not exist", opts.GCPPubSub.WriteProtobufDir)
 		}
 	}
 
 	// InputData and file cannot be set at the same time
-	if opts.InputData != "" && opts.InputFile != "" {
+	if opts.GCPPubSub.WriteInputData != "" && opts.GCPPubSub.WriteInputFile != "" {
 		return fmt.Errorf("--input-data and --input-file cannot both be set (choose one!)")
 	}
 
-	if opts.InputFile != "" {
-		if _, err := os.Stat(opts.InputFile); os.IsNotExist(err) {
-			return fmt.Errorf("--input-file '%s' does not exist", opts.InputFile)
+	if opts.GCPPubSub.WriteInputFile != "" {
+		if _, err := os.Stat(opts.GCPPubSub.WriteInputFile); os.IsNotExist(err) {
+			return fmt.Errorf("--input-file '%s' does not exist", opts.GCPPubSub.WriteInputFile)
 		}
 	}
 
 	return nil
 }
 
-func generateWriteValue(md *desc.MessageDescriptor, opts *Options) ([]byte, error) {
+func generateWriteValue(md *desc.MessageDescriptor, opts *cli.Options) ([]byte, error) {
 	// Do we read value or file?
 	var data []byte
 
-	if opts.InputData != "" {
-		data = []byte(opts.InputData)
-	} else if opts.InputFile != "" {
+	if opts.GCPPubSub.WriteInputData != "" {
+		data = []byte(opts.GCPPubSub.WriteInputData)
+	} else if opts.GCPPubSub.WriteInputFile != "" {
 		var readErr error
 
-		data, readErr = ioutil.ReadFile(opts.InputFile)
+		data, readErr = ioutil.ReadFile(opts.GCPPubSub.WriteInputFile)
 		if readErr != nil {
-			return nil, fmt.Errorf("unable to read file '%s': %s", opts.InputFile, readErr)
+			return nil, fmt.Errorf("unable to read file '%s': %s", opts.GCPPubSub.WriteInputFile, readErr)
 		}
 	}
 
 	// Ensure we do not try to operate on a nil md
-	if opts.OutputType == "protobuf" && md == nil {
+	if opts.GCPPubSub.WriteOutputType == "protobuf" && md == nil {
 		return nil, errors.New("message descriptor cannot be nil when --output-type is protobuf")
 	}
 
 	// Input: Plain Output: Plain
-	if opts.InputType == "plain" && opts.OutputType == "plain" {
+	if opts.GCPPubSub.WriteInputType == "plain" && opts.GCPPubSub.WriteOutputType == "plain" {
 		return data, nil
 	}
 
 	// Input: JSONPB Output: Protobuf
-	if opts.InputType == "jsonpb" && opts.OutputType == "protobuf" {
+	if opts.GCPPubSub.WriteInputType == "jsonpb" && opts.GCPPubSub.WriteOutputType == "protobuf" {
 		var convertErr error
 
 		data, convertErr = convertJSONPBToProtobuf(data, dynamic.NewMessage(md))

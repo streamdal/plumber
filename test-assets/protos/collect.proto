@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option go_package = "github.com/batchcorp/plumber/test-assets/pbs";
+
+package events;
+
+import "schema.proto";
+
+// This type is used to convey info about a collection request; it includes
+// auth details that enables the collector to associate intake events with a
+// particular team's collection request.
+message Collect {
+    string id = 1;
+    string token = 2;
+    Schema schema = 3;
+}

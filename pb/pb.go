@@ -24,6 +24,8 @@ import (
 // With the found MessageDescriptor, we are able to generate new dynamic
 // messages via dynamic.NewMessage(..).
 func FindMessageDescriptor(protobufDir, protobufRootMessage string) (*desc.MessageDescriptor, error) {
+	fmt.Printf("Dir: %s Root: %s\n", protobufDir, protobufRootMessage)
+
 	files, err := getProtoFiles(protobufDir)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to get proto files")
@@ -78,6 +80,9 @@ func findMessageDescriptor(fds []*desc.FileDescriptor, rootMessage string) (*des
 func readFileDescriptors(dir string, files []string) ([]*desc.FileDescriptor, error) {
 	contents := make(map[string]string, 0)
 	keys := make([]string, 0)
+
+	// cleanup dir
+	dir = filepath.Clean(dir)
 
 	for _, f := range files {
 		data, err := ioutil.ReadFile(f)

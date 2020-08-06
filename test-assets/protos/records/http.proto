@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "github.com/batchcorp/plumber/test-assets/pbs/records";
+
+package records;
+
+// The HTTP collector will receive payloads via HTTP, translate and encode them
+// to an HTTPRecord, followed by stuffing it into a Manifest.record
+// (events/manifest.proto) and publishing the record on the HSB.
+
+message HTTPRecord {
+    string method = 1;
+    map<string, string> headers = 2;
+    string path = 3;
+    string source = 4;
+    bytes body = 5;
+    int64 timestamp = 6;
+}

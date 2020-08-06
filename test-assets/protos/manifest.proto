@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+option go_package = "github.com/batchcorp/plumber/test-assets/pbs";
+
+package events;
+
+import "team.proto";
+import "collect.proto";
+import "info.proto";
+import "records/kafka.proto";
+import "records/http.proto";
+import "records/generic.proto";
+
+// This type is used during data collection -- the collector emits it to the
+// inbound queue which is then consumed by the writer.
+message Manifest {
+    // Info indicating which team the inbound message belongs to,
+    // what collection config the writer should use and debug info.
+    message Context {
+        Team team = 1;
+        Collect collect = 2;
+        Info info = 3;
+    }
+
+    Context context = 1;
+
+    oneof record {
+        records.KafkaSinkRecord kafka = 100;
+        records.HTTPRecord http = 101;
+        records.GenericRecord generic = 102;
+    }
+}

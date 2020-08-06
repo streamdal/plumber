@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "github.com/batchcorp/plumber/test-assets/pbs";
+
+package events;
+
+message Filter {
+    enum Type {
+        LUCENE = 0;
+        ES_SQL = 1;
+    }
+
+    Type type = 1;
+
+    string query = 2;
+
+    int32 pagesize = 3; // So that BFF can control pagination size.
+}

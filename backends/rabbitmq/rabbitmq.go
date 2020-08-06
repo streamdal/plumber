@@ -1,84 +1,26 @@
 package rabbitmq
 
 import (
-	"fmt"
-	"os"
-	"strings"
-
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
-	"github.com/urfave/cli/v2"
+
+	"github.com/batchcorp/plumber/cli"
 )
 
 // Reader holds all attributes required for performing a read/write operations
 // in RabbitMQ. This struct should be instantiated via the rabbitmq.Read(..) or
 // rabbitmq.Write(..) functions.
 type RabbitMQ struct {
-	Options *Options
+	Options *cli.Options
 	Channel *amqp.Channel
 	MsgDesc *desc.MessageDescriptor
 	log     *logrus.Entry
 }
 
-// Options contains the values parsed from urfave args and flags. This struct
-// gets filled out by helper parse* func(s).
-//
-// TODO: This should be populated by urfave at startup.
-type Options struct {
-	Action              string
-	Address             string
-	ExchangeName        string
-	RoutingKey          string
-	QueueName           string
-	QueueDurable        bool
-	QueueAutoDelete     bool
-	QueueExclusive      bool
-	Follow              bool
-	LineNumbers         bool
-	OutputType          string
-	Convert             string
-	ProtobufDir         string
-	ProtobufRootMessage string
-	InputFile           string
-	InputData           string
-	InputType           string
-}
-
-func parseOptions(c *cli.Context) (*Options, error) {
-	if len(os.Args) < 1 {
-		return nil, fmt.Errorf("unexpected number of args (%d)", len(os.Args))
-	}
-
-	// Need this so we can figure out action (so we know whether to declare queue or not)
-	if strings.HasPrefix(os.Args[1], "-") {
-		return nil, errors.New("first arg cannot be a flag")
-	}
-
-	return &Options{
-		Action:              os.Args[1],
-		Address:             c.String("address"),
-		ExchangeName:        c.String("exchange"),
-		RoutingKey:          c.String("routing-key"),
-		QueueName:           c.String("queue"),
-		QueueDurable:        c.Bool("queue-durable"),
-		QueueAutoDelete:     c.Bool("queue-auto-delete"),
-		QueueExclusive:      c.Bool("queue-exclusive"),
-		LineNumbers:         c.Bool("line-numbers"),
-		Follow:              c.Bool("follow"),
-		OutputType:          c.String("output-type"),
-		Convert:             c.String("convert"),
-		ProtobufDir:         c.String("protobuf-dir"),
-		ProtobufRootMessage: c.String("protobuf-root-message"),
-		InputData:           c.String("input-data"),
-		InputFile:           c.String("input-file"),
-		InputType:           c.String("input-type"),
-	}, nil
-}
-
-func connect(opts *Options) (*amqp.Channel, error) {
-	ac, err := amqp.Dial(opts.Address)
+func connect(opts *cli.Options) (*amqp.Channel, error) {
+	ac, err := amqp.Dial(opts.Rabbit.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -90,10 +32,10 @@ func connect(opts *Options) (*amqp.Channel, error) {
 
 	if opts.Action == "read" {
 		if _, err = ch.QueueDeclare(
-			opts.QueueName,
-			opts.QueueDurable,
-			opts.QueueAutoDelete,
-			opts.QueueExclusive,
+			opts.Rabbit.ReadQueue,
+			opts.Rabbit.ReadQueueDurable,
+			opts.Rabbit.ReadQueueAutoDelete,
+			opts.Rabbit.ReadQueueExclusive,
 			false,
 			nil,
 		); err != nil {
@@ -101,11 +43,11 @@ func connect(opts *Options) (*amqp.Channel, error) {
 		}
 
 		// Do not bind if using default exchange
-		if opts.ExchangeName != "" {
+		if opts.Rabbit.Exchange != "" {
 			if err := ch.QueueBind(
-				opts.QueueName,
-				opts.RoutingKey,
-				opts.ExchangeName,
+				opts.Rabbit.ReadQueue,
+				opts.Rabbit.RoutingKey,
+				opts.Rabbit.Exchange,
 				false,
 				nil,
 			); err != nil {

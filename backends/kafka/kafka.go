@@ -2,68 +2,93 @@ package kafka
 
 import (
 	"context"
+	"crypto/tls"
+	"fmt"
 	"time"
 
-	"github.com/pkg/errors"
-	"github.com/urfave/cli/v2"
+	"github.com/jhump/protoreflect/desc"
+	skafka "github.com/segmentio/kafka-go"
+	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber/cli"
 )
 
 const (
-	DefaultConnectTimeout = 10 * time.Second
-	DefaultGroupId        = "plumber"
-	DefaultMaxBytes       = 1048576 // 1MB
-	DefaultMaxWait        = 50 * time.Millisecond
-	DefaultBatchSize      = 1
+	DefaultMaxBytes  = 1048576 // 1MB
+	DefaultMaxWait   = 50 * time.Millisecond
+	DefaultBatchSize = 1
 )
 
-// Options contains the values parsed from urfave args and flags. This struct
-// gets filled out by helper parse* func(s).
-//
-// TODO: This should be populated by urfave at startup.
-type Options struct {
-	Address             string
-	Topic               string
-	GroupId             string
-	ConnectTimeout      time.Duration
-	UseInsecureTLS      bool
-	Context             context.Context
-	LineNumbers         bool
-	Follow              bool
-	Key                 string
-	InputData           string
-	ProtobufDir         string
-	ProtobufRootMessage string
-	InputType           string
-	OutputType          string
-	InputFile           string
-	Convert             string
+// Kafka holds all attributes required for performing a write to Kafka. This
+// struct should be instantiated via the kafka.Read(..) func.
+type Kafka struct {
+	Id          string
+	Reader      *skafka.Reader
+	Writer      *skafka.Writer
+	Options     *cli.Options
+	MessageDesc *desc.MessageDescriptor
+	log         *logrus.Entry
 }
 
-func parseOptions(c *cli.Context) (*Options, error) {
-	if c.String("address") == "" {
-		return nil, errors.New("--address cannot be empty")
+func NewReader(opts *cli.Options) (*skafka.Reader, error) {
+	dialer := &skafka.Dialer{
+		Timeout: opts.Kafka.Timeout,
 	}
 
-	if c.String("topic") == "" {
-		return nil, errors.New("--topic cannot be empty")
+	if opts.Kafka.InsecureTLS {
+		dialer.TLS = &tls.Config{
+			InsecureSkipVerify: true,
+		}
 	}
 
-	return &Options{
-		ConnectTimeout:      c.Duration("timeout"),
-		Topic:               c.String("topic"),
-		Address:             c.String("address"),
-		GroupId:             c.String("group-id"),
-		UseInsecureTLS:      c.Bool("insecure-tls"),
-		Context:             context.Background(),
-		Follow:              c.Bool("follow"),
-		Key:                 c.String("key"),
-		LineNumbers:         c.Bool("line-numbers"),
-		ProtobufDir:         c.String("protobuf-dir"),
-		ProtobufRootMessage: c.String("protobuf-root-message"),
-		InputType:           c.String("input-type"),
-		InputData:           c.String("input-data"),
-		InputFile:           c.String("input-file"),
-		OutputType:          c.String("output-type"),
-		Convert:             c.String("convert"),
-	}, nil
+	// The dialer timeout does not get utilized under some conditions (such as
+	// when kafka is configured to NOT auto create topics) - we need a
+	// mechanism to bail out early.
+	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(opts.Kafka.Timeout))
+
+	// Attempt to establish connection on startup
+	if _, err := dialer.DialLeader(ctxDeadline, "tcp", opts.Kafka.Address, opts.Kafka.Topic, 0); err != nil {
+		return nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
+			opts.Kafka.Address, err)
+	}
+
+	return skafka.NewReader(skafka.ReaderConfig{
+		Brokers:       []string{opts.Kafka.Address},
+		GroupID:       opts.Kafka.ReadGroupId,
+		Topic:         opts.Kafka.Topic,
+		Dialer:        dialer,
+		MaxWait:       DefaultMaxWait,
+		MaxBytes:      DefaultMaxBytes,
+		QueueCapacity: 1,
+	}), nil
+}
+
+func NewWriter(opts *cli.Options) (*skafka.Writer, error) {
+	dialer := &skafka.Dialer{
+		Timeout: opts.Kafka.Timeout,
+	}
+
+	if opts.Kafka.InsecureTLS {
+		dialer.TLS = &tls.Config{
+			InsecureSkipVerify: true,
+		}
+	}
+
+	// The dialer timeout does not get utilized under some conditions (such as
+	// when kafka is configured to NOT auto create topics) - we need a
+	// mechanism to bail out early.
+	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(opts.Kafka.Timeout))
+
+	// Attempt to establish connection on startup
+	if _, err := dialer.DialLeader(ctxDeadline, "tcp", opts.Kafka.Address, opts.Kafka.Topic, 0); err != nil {
+		return nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
+			opts.Kafka.Address, err)
+	}
+
+	return skafka.NewWriter(skafka.WriterConfig{
+		Brokers:   []string{opts.Kafka.Address},
+		Topic:     opts.Kafka.Topic,
+		Dialer:    dialer,
+		BatchSize: DefaultBatchSize,
+	}), nil
 }
