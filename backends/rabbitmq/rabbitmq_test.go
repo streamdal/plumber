@@ -9,6 +9,8 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
+
+	"github.com/batchcorp/plumber/cli"
 )
 
 var (
@@ -42,15 +44,17 @@ var _ = Describe("Shared", func() {
 		It("happy path: returns an amqp channel", func() {
 			testBody := []byte(fmt.Sprintf("test-body-contents-%d", rand.Int()))
 
-			opts := &Options{
-				Action:          "foo",
-				Address:         amqpAddress,
-				QueueName:       "should-not-exist",
-				ExchangeName:    testExchangeName,
-				RoutingKey:      testRoutingKey,
-				QueueDurable:    false,
-				QueueAutoDelete: true,
-				QueueExclusive:  true,
+			opts := &cli.Options{
+				Action: "foo",
+				Rabbit: &cli.RabbitOptions{
+					Address:             amqpAddress,
+					Exchange:            testExchangeName,
+					ReadQueue:           "should-not-exist",
+					RoutingKey:          testRoutingKey,
+					ReadQueueDurable:    false,
+					ReadQueueAutoDelete: true,
+					ReadQueueExclusive:  true,
+				},
 			}
 
 			ch, err := connect(opts)
@@ -88,15 +92,17 @@ var _ = Describe("Shared", func() {
 			// This test doesn't need to use the separate rabbit channel
 			testBody := []byte(fmt.Sprintf("test-body-contents-%d", rand.Int()))
 
-			opts := &Options{
-				Action:          "read",
-				Address:         amqpAddress,
-				QueueName:       "should-exist",
-				ExchangeName:    testExchangeName,
-				RoutingKey:      testRoutingKey,
-				QueueDurable:    false,
-				QueueAutoDelete: true,
-				QueueExclusive:  true,
+			opts := &cli.Options{
+				Action: "read",
+				Rabbit: &cli.RabbitOptions{
+					Address:             amqpAddress,
+					Exchange:            testExchangeName,
+					RoutingKey:          testRoutingKey,
+					ReadQueue:           "should-exist",
+					ReadQueueDurable:    false,
+					ReadQueueAutoDelete: true,
+					ReadQueueExclusive:  true,
+				},
 			}
 
 			ch, err := connect(opts)
@@ -124,8 +130,10 @@ var _ = Describe("Shared", func() {
 		})
 
 		It("error: will error when unable to dial destination host", func() {
-			ch, err := connect(&Options{
-				Address: "bad-address",
+			ch, err := connect(&cli.Options{
+				Rabbit: &cli.RabbitOptions{
+					Address: "bad-address",
+				},
 			})
 
 			Expect(err).To(HaveOccurred())

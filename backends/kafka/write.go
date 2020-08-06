@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -13,8 +14,8 @@ import (
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
 
+	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
 )
 
@@ -23,12 +24,7 @@ import (
 // This is where we verify that the passed args and flags combo makes sense,
 // attempt to establish a connection, parse protobuf before finally attempting
 // to perform the write.
-func Write(c *cli.Context) error {
-	opts, err := parseOptions(c)
-	if err != nil {
-		return errors.Wrap(err, "unable to parse options")
-	}
-
+func Write(opts *cli.Options) error {
 	if err := validateWriteOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate write options")
 	}
@@ -36,8 +32,8 @@ func Write(c *cli.Context) error {
 	var mdErr error
 	var md *desc.MessageDescriptor
 
-	if opts.OutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.ProtobufDir, opts.ProtobufRootMessage)
+	if opts.Kafka.WriteOutputType == "protobuf" {
+		md, mdErr = pb.FindMessageDescriptor(opts.Kafka.WriteProtobufDir, opts.Kafka.WriteProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")
 		}
@@ -59,12 +55,12 @@ func Write(c *cli.Context) error {
 		log:     logrus.WithField("pkg", "kafka/write.go"),
 	}
 
-	return k.Write([]byte(opts.Key), value)
+	return k.Write([]byte(opts.Kafka.WriteKey), value)
 }
 
 // Write writes a message to a kafka topic. It is a wrapper for WriteMessages.
 func (k *Kafka) Write(key, value []byte) error {
-	if err := k.Writer.WriteMessages(k.Options.Context, skafka.Message{
+	if err := k.Writer.WriteMessages(context.Background(), skafka.Message{
 		Key:   key,
 		Value: value,
 	}); err != nil {
@@ -74,35 +70,35 @@ func (k *Kafka) Write(key, value []byte) error {
 	return nil
 }
 
-func generateWriteValue(md *desc.MessageDescriptor, opts *Options) ([]byte, error) {
+func generateWriteValue(md *desc.MessageDescriptor, opts *cli.Options) ([]byte, error) {
 	// Do we read value or file?
 	var data []byte
 
-	if opts.InputData != "" {
-		data = []byte(opts.InputData)
+	if opts.Kafka.WriteInputData != "" {
+		data = []byte(opts.Kafka.WriteInputData)
 	}
 
-	if opts.InputFile != "" {
+	if opts.Kafka.WriteInputFile != "" {
 		var readErr error
 
-		data, readErr = ioutil.ReadFile(opts.InputFile)
+		data, readErr = ioutil.ReadFile(opts.Kafka.WriteInputFile)
 		if readErr != nil {
-			return nil, fmt.Errorf("unable to read file '%s': %s", opts.InputFile, readErr)
+			return nil, fmt.Errorf("unable to read file '%s': %s", opts.Kafka.WriteInputFile, readErr)
 		}
 	}
 
 	// Ensure we do not try to operate on a nil md
-	if opts.OutputType == "protobuf" && md == nil {
+	if opts.Kafka.WriteOutputType == "protobuf" && md == nil {
 		return nil, errors.New("message descriptor cannot be nil when --output-type is protobuf")
 	}
 
 	// Input: Plain Output: Plain
-	if opts.InputType == "plain" && opts.OutputType == "plain" {
+	if opts.Kafka.WriteInputType == "plain" && opts.Kafka.WriteOutputType == "plain" {
 		return data, nil
 	}
 
 	// Input: JSONPB Output: Protobuf
-	if opts.InputType == "jsonpb" && opts.OutputType == "protobuf" {
+	if opts.Kafka.WriteInputType == "jsonpb" && opts.Kafka.WriteOutputType == "protobuf" {
 		var convertErr error
 
 		data, convertErr = convertJSONPBToProtobuf(data, dynamic.NewMessage(md))
@@ -137,35 +133,35 @@ func convertJSONPBToProtobuf(data []byte, m *dynamic.Message) ([]byte, error) {
 	return pbBytes, nil
 }
 
-func validateWriteOptions(opts *Options) error {
+func validateWriteOptions(opts *cli.Options) error {
 	// If output-type is protobuf, ensure that protobuf flags are set
 	// If type is protobuf, ensure both --protobuf-dir and --protobuf-root-message
 	// are set as well
-	if opts.OutputType == "protobuf" {
-		if opts.ProtobufDir == "" {
+	if opts.Kafka.WriteOutputType == "protobuf" {
+		if opts.Kafka.WriteProtobufDir == "" {
 			return errors.New("'protobuf-dir' must be set when type " +
 				"is set to 'protobuf'")
 		}
 
-		if opts.ProtobufRootMessage == "" {
+		if opts.Kafka.WriteProtobufRootMessage == "" {
 			return errors.New("'protobuf-root-message' must be when " +
 				"type is set to 'protobuf'")
 		}
 
 		// Does given dir exist?
-		if _, err := os.Stat(opts.ProtobufDir); os.IsNotExist(err) {
-			return fmt.Errorf("protobuf-dir '%s' does not exist", opts.ProtobufDir)
+		if _, err := os.Stat(opts.Kafka.WriteProtobufDir); os.IsNotExist(err) {
+			return fmt.Errorf("protobuf-dir '%s' does not exist", opts.Kafka.WriteProtobufDir)
 		}
 	}
 
 	// InputData and file cannot be set at the same time
-	if opts.InputData != "" && opts.InputFile != "" {
+	if opts.Kafka.WriteInputData != "" && opts.Kafka.WriteInputFile != "" {
 		return fmt.Errorf("--value and --file cannot both be set")
 	}
 
-	if opts.InputFile != "" {
-		if _, err := os.Stat(opts.InputFile); os.IsNotExist(err) {
-			return fmt.Errorf("--file '%s' does not exist", opts.InputFile)
+	if opts.Kafka.WriteInputFile != "" {
+		if _, err := os.Stat(opts.Kafka.WriteInputFile); os.IsNotExist(err) {
+			return fmt.Errorf("--file '%s' does not exist", opts.Kafka.WriteInputFile)
 		}
 	}
 

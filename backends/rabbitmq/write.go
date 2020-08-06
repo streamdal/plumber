@@ -13,8 +13,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
-	"github.com/urfave/cli/v2"
 
+	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
 )
 
@@ -23,12 +23,7 @@ import (
 // This is where we verify that the passed args and flags combo makes sense,
 // attempt to establish a connection, parse protobuf before finally attempting
 // to perform the write.
-func Write(c *cli.Context) error {
-	opts, err := parseOptions(c)
-	if err != nil {
-		return errors.Wrap(err, "unable to parse options")
-	}
-
+func Write(opts *cli.Options) error {
 	if err := validateWriteOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
@@ -36,8 +31,8 @@ func Write(c *cli.Context) error {
 	var mdErr error
 	var md *desc.MessageDescriptor
 
-	if opts.OutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.ProtobufDir, opts.ProtobufRootMessage)
+	if opts.Rabbit.WriteOutputType == "protobuf" {
+		md, mdErr = pb.FindMessageDescriptor(opts.Rabbit.WriteProtobufDir, opts.Rabbit.WriteProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")
 		}
@@ -66,75 +61,75 @@ func Write(c *cli.Context) error {
 // Write is a wrapper for amqp Publish method. We wrap it so that we can mock
 // it in tests, add logging etc.
 func (r *RabbitMQ) Write(value []byte) error {
-	return r.Channel.Publish(r.Options.ExchangeName, r.Options.RoutingKey, false, false, amqp.Publishing{
+	return r.Channel.Publish(r.Options.Rabbit.Exchange, r.Options.Rabbit.RoutingKey, false, false, amqp.Publishing{
 		Body: value,
 	})
 }
 
-func validateWriteOptions(opts *Options) error {
+func validateWriteOptions(opts *cli.Options) error {
 	// If output-type is protobuf, ensure that protobuf flags are set
 	// If type is protobuf, ensure both --protobuf-dir and --protobuf-root-message
 	// are set as well
-	if opts.OutputType == "protobuf" {
-		if opts.ProtobufDir == "" {
+	if opts.Rabbit.WriteOutputType == "protobuf" {
+		if opts.Rabbit.WriteProtobufDir == "" {
 			return errors.New("'--protobuf-dir' must be set when type " +
 				"is set to 'protobuf'")
 		}
 
-		if opts.ProtobufRootMessage == "" {
+		if opts.Rabbit.WriteProtobufRootMessage == "" {
 			return errors.New("'--protobuf-root-message' must be when " +
 				"type is set to 'protobuf'")
 		}
 
 		// Does given dir exist?
-		if _, err := os.Stat(opts.ProtobufDir); os.IsNotExist(err) {
-			return fmt.Errorf("--protobuf-dir '%s' does not exist", opts.ProtobufDir)
+		if _, err := os.Stat(opts.Rabbit.WriteProtobufDir); os.IsNotExist(err) {
+			return fmt.Errorf("--protobuf-dir '%s' does not exist", opts.Rabbit.WriteProtobufDir)
 		}
 	}
 
 	// InputData and file cannot be set at the same time
-	if opts.InputData != "" && opts.InputFile != "" {
+	if opts.Rabbit.WriteInputData != "" && opts.Rabbit.WriteInputFile != "" {
 		return fmt.Errorf("--input-data and --input-file cannot both be set (choose one!)")
 	}
 
-	if opts.InputFile != "" {
-		if _, err := os.Stat(opts.InputFile); os.IsNotExist(err) {
-			return fmt.Errorf("--input-file '%s' does not exist", opts.InputFile)
+	if opts.Rabbit.WriteInputFile != "" {
+		if _, err := os.Stat(opts.Rabbit.WriteInputFile); os.IsNotExist(err) {
+			return fmt.Errorf("--input-file '%s' does not exist", opts.Rabbit.WriteInputFile)
 		}
 	}
 
 	return nil
 }
 
-func generateWriteValue(md *desc.MessageDescriptor, opts *Options) ([]byte, error) {
+func generateWriteValue(md *desc.MessageDescriptor, opts *cli.Options) ([]byte, error) {
 	// Do we read value or file?
 	var data []byte
 
-	if opts.InputData != "" {
-		data = []byte(opts.InputData)
+	if opts.Rabbit.WriteInputData != "" {
+		data = []byte(opts.Rabbit.WriteInputData)
 	}
 
-	if opts.InputFile != "" {
+	if opts.Rabbit.WriteInputFile != "" {
 		var readErr error
 
-		data, readErr = ioutil.ReadFile(opts.InputFile)
+		data, readErr = ioutil.ReadFile(opts.Rabbit.WriteInputFile)
 		if readErr != nil {
-			return nil, fmt.Errorf("unable to read file '%s': %s", opts.InputFile, readErr)
+			return nil, fmt.Errorf("unable to read file '%s': %s", opts.Rabbit.WriteInputFile, readErr)
 		}
 	}
 
 	// Ensure we do not try to operate on a nil md
-	if opts.OutputType == "protobuf" && md == nil {
+	if opts.Rabbit.WriteOutputType == "protobuf" && md == nil {
 		return nil, errors.New("message descriptor cannot be nil when --output-type is protobuf")
 	}
 
 	// Input: Plain Output: Plain
-	if opts.InputType == "plain" && opts.OutputType == "plain" {
+	if opts.Rabbit.WriteInputType == "plain" && opts.Rabbit.WriteOutputType == "plain" {
 		return data, nil
 	}
 
 	// Input: JSONPB Output: Protobuf
-	if opts.InputType == "jsonpb" && opts.OutputType == "protobuf" {
+	if opts.Rabbit.WriteInputType == "jsonpb" && opts.Rabbit.WriteOutputType == "protobuf" {
 		var convertErr error
 
 		data, convertErr = convertJSONPBToProtobuf(data, dynamic.NewMessage(md))

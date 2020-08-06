@@ -2,25 +2,16 @@ package rabbitmq
 
 import (
 	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"github.com/urfave/cli/v2"
-
-	"github.com/batchcorp/plumber/app"
 )
 
 var _ = Describe("Read", func() {
 	Context("Read", func() {
-		var (
-			a *cli.App
-		)
+		var ()
 
 		BeforeEach(func() {
-			a = app.Setup()
 		})
 
 		It("happy path: read plain message", func() {
-			err := a.Run([]string{"read message"})
-			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("happy path: read protobuf message", func() {
