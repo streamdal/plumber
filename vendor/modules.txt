@@ -17,8 +17,6 @@ github.com/alecthomas/template/parse
 # github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d
 ## explicit
 github.com/alecthomas/units
-# github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d
-github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/fsnotify/fsnotify v1.4.9
 github.com/fsnotify/fsnotify
 # github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
@@ -108,14 +106,10 @@ github.com/onsi/gomega/types
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
-# github.com/russross/blackfriday/v2 v2.0.1
-github.com/russross/blackfriday/v2
 # github.com/segmentio/kafka-go v0.3.7
 ## explicit
 github.com/segmentio/kafka-go
 github.com/segmentio/kafka-go/sasl
-# github.com/shurcooL/sanitized_anchor_name v1.0.0
-github.com/shurcooL/sanitized_anchor_name
 # github.com/sirupsen/logrus v1.6.0
 ## explicit
 github.com/sirupsen/logrus
@@ -124,7 +118,6 @@ github.com/sirupsen/logrus
 github.com/streadway/amqp
 # github.com/urfave/cli/v2 v2.2.0
 ## explicit
-github.com/urfave/cli/v2
 # go.opencensus.io v0.22.4
 go.opencensus.io
 go.opencensus.io/internal

@@ -15,6 +15,6 @@ require (
 	github.com/segmentio/kafka-go v0.3.7
 	github.com/sirupsen/logrus v1.6.0
 	github.com/streadway/amqp v1.0.0
-	github.com/urfave/cli/v2 v2.2.0
+	github.com/urfave/cli/v2 v2.2.0 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )
