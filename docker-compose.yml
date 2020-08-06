@@ -1,3 +1,4 @@
+# Used for tests
 version: "3"
 services:
   rabbitmq:
