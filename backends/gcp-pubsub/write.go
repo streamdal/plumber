@@ -53,7 +53,7 @@ func Write(opts *cli.Options) error {
 		Options: opts,
 		MsgDesc: md,
 		Client:  client,
-		log:     logrus.WithField("pkg", "rabbitmq/read.go"),
+		log:     logrus.WithField("pkg", "gcppubsub/read.go"),
 	}
 
 	return g.Write(context.Background(), msg)

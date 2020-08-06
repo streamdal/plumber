@@ -28,7 +28,7 @@ func Read(opts *cli.Options) error {
 	var mdErr error
 	var md *desc.MessageDescriptor
 
-	if opts.Kafka.ReadOutputType == "protobuf" {
+	if opts.Rabbit.ReadOutputType == "protobuf" {
 		md, mdErr = pb.FindMessageDescriptor(opts.Rabbit.ReadProtobufDir, opts.Rabbit.ReadProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")

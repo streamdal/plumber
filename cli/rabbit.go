@@ -78,7 +78,7 @@ func addReadRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 }
 
 func addWriteRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("input-data", "Data to write to kafka").StringVar(&opts.Rabbit.WriteInputData)
+	cmd.Flag("input-data", "Data to write to RabbitMQ").StringVar(&opts.Rabbit.WriteInputData)
 	cmd.Flag("input-file", "File containing input data (overrides input-data; 1 file is 1 message)").
 		ExistingFileVar(&opts.Rabbit.WriteInputFile)
 	cmd.Flag("input-type", "Treat input as this type").Default("plain").

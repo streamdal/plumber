@@ -65,7 +65,7 @@ func addReadGCPPubSubFlags(cmd *kingpin.CmdClause, opts *Options) {
 func addWriteGCPPubSubFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("topic-id", "Topic Id to publish message(s) to").Required().
 		StringVar(&opts.GCPPubSub.WriteTopicId)
-	cmd.Flag("input-data", "Data to write to kafka").StringVar(&opts.GCPPubSub.WriteInputData)
+	cmd.Flag("input-data", "Data to write to GCP PubSub").StringVar(&opts.GCPPubSub.WriteInputData)
 	cmd.Flag("input-file", "File containing input data (overrides input-data; 1 file is 1 message)").
 		ExistingFileVar(&opts.GCPPubSub.WriteInputFile)
 	cmd.Flag("input-type", "Treat input as this type").Default("plain").
