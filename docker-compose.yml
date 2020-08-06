@@ -6,7 +6,7 @@ services:
       - "5672:5672"
       - "15672:15672"
     volumes:
-      - ./backend-data/rabbitmq:/var/lib/rabbitmq
+      - ./test-assets/backend-data/rabbitmq:/var/lib/rabbitmq
     container_name: rabbitmq
 
   kafka:
