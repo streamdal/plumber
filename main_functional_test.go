@@ -148,18 +148,9 @@ var _ = Describe("Functional", func() {
 		})
 
 		Describe("read", func() {
-			var (
-				kafka      *Kafka
-				kafkaTopic string
-			)
+			var ()
 
 			BeforeEach(func() {
-				kafkaTopic = fmt.Sprintf("plumber-test-%d", rand.Int())
-
-				var err error
-				kafka, err = newKafka(kafkaAddress, kafkaTopic)
-
-				Expect(err).ToNot(HaveOccurred())
 			})
 
 			Context("plain output", func() {
