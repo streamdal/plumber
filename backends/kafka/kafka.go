@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	DefaultConnectTimeout = 10 * time.Second
+	DefaultConnectTimeout = "10s"
 	DefaultGroupId        = "plumber"
 	DefaultMaxBytes       = 1048576 // 1MB
 	DefaultMaxWait        = 50 * time.Millisecond

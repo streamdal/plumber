@@ -74,3 +74,9 @@ testv: description = Run Go unit tests (verbose)
 testv: GOFLAGS=
 testv:
 	$(GO) test ./... -v
+
+.PHONY: test/functional
+test/functional: description = Run functional tests
+test/functional: GOFLAGS=
+test/functional:
+	$(GO) test ./... --tags=functional
