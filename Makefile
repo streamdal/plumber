@@ -44,7 +44,7 @@ start/deps:
 
 .PHONY: build
 build: description = Build $(BINARY)
-build: clean build/linux build/darwin
+build: clean build/linux build/darwin build/windows
 
 .PHONY: build/linux
 build/linux: description = Build $(BINARY) for linux
@@ -55,6 +55,12 @@ build/linux: clean
 build/darwin: description = Build $(BINARY) for darwin
 build/darwin: clean
 	GOOS=darwin GOARCH=amd64 $(GO) build $(GO_BUILD_FLAGS) -o ./build/$(BINARY)-darwin
+
+.PHONY: build/windows
+build/windows: description = Build $(BINARY) for darwin
+build/windows: clean
+	GOOS=windows GOARCH=amd64 $(GO) build $(GO_BUILD_FLAGS) -o ./build/$(BINARY)-windows.exe
+
 
 .PHONY: clean
 clean: description = Remove existing build artifacts
