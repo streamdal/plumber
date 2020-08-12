@@ -30,23 +30,27 @@ for debugging your event driven systems.
 
 ## Install
 
-Packages:
+### Via brew
 
-* [macOS](https://github.com/batchcorp/plumber/releases/download/v0.0.2/plumber-darwin)
-* [Linux](https://github.com/batchcorp/plumber/releases/download/v0.0.2/plumber-linux)
+```bash
+$ brew tap batchcorp/public
+$ brew install plumber
+```
+
+### Manually
+
+* [macOS](https://github.com/batchcorp/plumber/releases/latest/download/plumber-darwin)
+* [Linux](https://github.com/batchcorp/plumber/releases/latest/download/plumber-linux)
+* [Windows](https://github.com/batchcorp/plumber/releases/latest/download/plumber-windows.exe)
 
 Plumber is a single binary, to install you simply need to download it, give it executable
 permissions and call it from your shell. Here's an example set of commands to do this:
 
 ```bash
-# Put in the appropriate version and platform in the url, you can find the most up to date urls under
-# Packages heading above
-
-$ curl -o plumber https://github.com/batchcorp/plumber/releases/download/$VERSION/plumber-darwin
+$ curl -o plumber https://github.com/batchcorp/plumber/releases/latest/download/plumber-darwin
 $ chmod +x plumber
 $ mv plumber /usr/local/bin/plumber
 ```
-
 
 ## Usage
 
