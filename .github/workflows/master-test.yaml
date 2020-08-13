@@ -9,6 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
+      - name: Start up dependencies
+        run: docker-compose up -d
+      - name: Wait for dependencies to start up
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '30s'
       - name: Master buld tests
         run: |
           make test   
