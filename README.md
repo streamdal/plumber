@@ -59,7 +59,7 @@ $ mv plumber /usr/local/bin/plumber
 **Keep it simple**: Read & write messages
 
 ```bash
-$ plumber read messages kafka --topic orders --with-line-numbers --follow
+$ plumber read messages kafka --topic orders --line-numbers --follow
 1: {"sample" : "message 1"}
 2: {"sample" : "message 2"}
 3: {"sample" : "message 3"}
