@@ -1,0 +1,14 @@
+name: master
+
+on:
+  push:
+    branches:
+      - master
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Master buld tests
+        run: |
+          make test   

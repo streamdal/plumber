@@ -1,6 +1,8 @@
 plumber
 =======
 
+[![Master build status](https://github.com/batchcorp/plumber/workflows/master/badge.svg)]() [![Go Report Card](https://goreportcard.com/badge/github.com/batchcorp/plumber)]()
+
 plumber is a CLI devtool for inspecting, piping, massaging and redirecting data
 in message systems like Kafka, RabbitMQ , GCP PubSub and 
 [many more](#supported-messaging-systems). \[1]
