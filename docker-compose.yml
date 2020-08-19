@@ -38,11 +38,18 @@ services:
     depends_on:
       - "kafka"
 
+  mosquitto-ssl:
+    container_name: mosquitto_container_ssl
+    image: eclipse-mosquitto:1.6.10
+    volumes:
+      - ./test-assets/mosquitto-ssl:/mosquitto/config/
+    ports:
+      - '8883:8883'
+
   mosquitto:
     container_name: mosquitto_container
     image: eclipse-mosquitto:1.6.10
     volumes:
       - ./test-assets/mosquitto:/mosquitto/config/
     ports:
-      - '8883:8883'
       - '1883:1883'

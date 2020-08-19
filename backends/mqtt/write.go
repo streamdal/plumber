@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
@@ -79,6 +80,20 @@ func (m *MQTT) Write(value []byte) error {
 func validateWriteOptions(opts *cli.Options) error {
 	if opts.MQTT.QoSLevel > 2 || opts.MQTT.QoSLevel < 0 {
 		return errors.New("QoS level can only be 0, 1 or 2")
+	}
+
+	if strings.HasPrefix(opts.MQTT.Address, "ssl") {
+		if opts.MQTT.TLSClientKeyFile == "" {
+			return errors.New("--tls-client-key-file cannot be blank if using ssl")
+		}
+
+		if opts.MQTT.TLSClientCertFile == "" {
+			return errors.New("--tls-client-cert-file cannot be blank if using ssl")
+		}
+
+		if opts.MQTT.TLSCAFile == "" {
+			return errors.New("--tls-ca-file cannot be blank if using ssl")
+		}
 	}
 
 	// If output-type is protobuf, ensure that protobuf flags are set

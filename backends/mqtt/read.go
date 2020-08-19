@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -147,6 +148,20 @@ func validateReadOptions(opts *cli.Options) error {
 
 	if opts.MQTT.Topic == "" {
 		return errors.New("--topic cannot be empty")
+	}
+
+	if strings.HasPrefix(opts.MQTT.Address, "ssl") {
+		if opts.MQTT.TLSClientKeyFile == "" {
+			return errors.New("--tls-client-key-file cannot be blank if using ssl")
+		}
+
+		if opts.MQTT.TLSClientCertFile == "" {
+			return errors.New("--tls-client-cert-file cannot be blank if using ssl")
+		}
+
+		if opts.MQTT.TLSCAFile == "" {
+			return errors.New("--tls-ca-file cannot be blank if using ssl")
+		}
 	}
 
 	if opts.MQTT.QoSLevel > 2 || opts.MQTT.QoSLevel < 0 {

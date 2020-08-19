@@ -19,9 +19,14 @@ type MQTTOptions struct {
 	Topic       string
 	Timeout     time.Duration
 	ClientId    string
-	InsecureTLS bool
 	LineNumbers bool
 	QoSLevel    int
+
+	// TLS-related pieces
+	TLSCAFile         string
+	TLSClientCertFile string
+	TLSClientKeyFile  string
+	InsecureTLS       bool
 
 	// Read
 	ReadFollow              bool
@@ -64,6 +69,13 @@ func addSharedMQTTFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Default(clientId).StringVar(&opts.MQTT.ClientId)
 	cmd.Flag("line-numbers", "Prepend number to each output message").BoolVar(&opts.MQTT.LineNumbers)
 	cmd.Flag("qos", "QoS level to use for pub/sub (0, 1, 2)").Default("0").IntVar(&opts.MQTT.QoSLevel)
+	cmd.Flag("tls-ca-file", "CA file (only needed if addr is ssl://").ExistingFileVar(&opts.MQTT.TLSCAFile)
+	cmd.Flag("tls-client-cert-file", "Client cert file (only needed if addr is ssl://").
+		ExistingFileVar(&opts.MQTT.TLSClientCertFile)
+	cmd.Flag("tls-client-key-file", "Client key file (only needed if addr is ssl://").
+		ExistingFileVar(&opts.MQTT.TLSClientKeyFile)
+	cmd.Flag("insecure-tls", "Whether to verify server certificate").Default("false").
+		BoolVar(&opts.MQTT.InsecureTLS)
 }
 
 func addReadMQTTFlags(cmd *kingpin.CmdClause, opts *Options) {

@@ -1,7 +1,10 @@
 package mqtt
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"io/ioutil"
 	"net/url"
 
 	pahomqtt "github.com/eclipse/paho.mqtt.golang"
@@ -25,7 +28,7 @@ func connect(opts *cli.Options) (pahomqtt.Client, error) {
 		return nil, errors.Wrap(err, "unable to parse address")
 	}
 
-	clientOpts, err := createClientOptions(opts.MQTT.ClientId, uri)
+	clientOpts, err := createClientOptions(opts, uri)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create client options")
 	}
@@ -45,11 +48,20 @@ func connect(opts *cli.Options) (pahomqtt.Client, error) {
 	return client, nil
 }
 
-func createClientOptions(clientId string, uri *url.URL) (*pahomqtt.ClientOptions, error) {
+func createClientOptions(cliOpts *cli.Options, uri *url.URL) (*pahomqtt.ClientOptions, error) {
 	opts := pahomqtt.NewClientOptions()
 
 	if uri.Scheme == "" {
 		return nil, errors.New("URI scheme in address cannot be empty (ie. must begin with ssl:// or tcp://)")
+	}
+
+	if uri.Scheme == "ssl" {
+		tlsConfig, err := generateTLSConfig(cliOpts)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to generate TLS config")
+		}
+
+		opts.SetTLSConfig(tlsConfig)
 	}
 
 	opts.AddBroker(fmt.Sprintf("%s://%s", uri.Scheme, uri.Host))
@@ -62,7 +74,37 @@ func createClientOptions(clientId string, uri *url.URL) (*pahomqtt.ClientOptions
 		opts.SetPassword(password)
 	}
 
-	opts.SetClientID(clientId)
+	opts.SetClientID(cliOpts.MQTT.ClientId)
 
 	return opts, nil
+}
+
+func generateTLSConfig(opts *cli.Options) (*tls.Config, error) {
+	certpool := x509.NewCertPool()
+
+	pemCerts, err := ioutil.ReadFile(opts.MQTT.TLSCAFile)
+	if err == nil {
+		certpool.AppendCertsFromPEM(pemCerts)
+	}
+
+	// Import client certificate/key pair
+	cert, err := tls.LoadX509KeyPair(opts.MQTT.TLSClientCertFile, opts.MQTT.TLSClientKeyFile)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to load ssl keypair")
+	}
+
+	// Just to print out the client certificate..
+	cert.Leaf, err = x509.ParseCertificate(cert.Certificate[0])
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to parse certificate")
+	}
+
+	// Create tls.Config with desired tls properties
+	return &tls.Config{
+		RootCAs:            certpool,
+		ClientAuth:         tls.NoClientCert,
+		ClientCAs:          nil,
+		InsecureSkipVerify: opts.MQTT.InsecureTLS,
+		Certificates:       []tls.Certificate{cert},
+	}, nil
 }
