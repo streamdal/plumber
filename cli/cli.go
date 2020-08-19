@@ -21,6 +21,7 @@ type Options struct {
 	Kafka     *KafkaOptions
 	Rabbit    *RabbitOptions
 	GCPPubSub *GCPPubSubOptions
+	MQTT      *MQTTOptions
 }
 
 func Handle() (string, *Options, error) {
@@ -28,6 +29,7 @@ func Handle() (string, *Options, error) {
 		Kafka:     &KafkaOptions{},
 		Rabbit:    &RabbitOptions{},
 		GCPPubSub: &GCPPubSubOptions{},
+		MQTT:      &MQTTOptions{},
 	}
 
 	app := kingpin.New("plumber", "`curl` for messaging systems. See: https://github.com/batchcorp/plumber")
@@ -41,7 +43,7 @@ func Handle() (string, *Options, error) {
 		Command("read", "Read message(s) from messaging system").
 		Command("message", "What to read off of messaging systems").Alias("messages")
 
-	// GCPPubSub write cmd
+	// Write cmd
 	writeCmd := app.
 		Command("write", "Write message(s) to messaging system").
 		Command("message", "What to write to messaging system").Alias("messages")
@@ -49,6 +51,7 @@ func Handle() (string, *Options, error) {
 	HandleKafkaFlags(readCmd, writeCmd, opts)
 	HandleRabbitFlags(readCmd, writeCmd, opts)
 	HandleGCPPubSubFlags(readCmd, writeCmd, opts)
+	HandleMQTTFlags(readCmd, writeCmd, opts)
 
 	app.Version(version)
 	app.HelpFlag.Short('h')
