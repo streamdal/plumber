@@ -163,6 +163,7 @@ We wanted a swiss army knife type of tool for working with messaging systems
 * Kafka
 * RabbitMQ
 * Google Cloud Platform PubSub
+* MQTT
 * Amazon SQS (coming soon)
 * NATS (coming soon)
 * ActiveMQ (coming soon)

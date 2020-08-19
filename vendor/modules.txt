@@ -17,6 +17,10 @@ github.com/alecthomas/template/parse
 # github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d
 ## explicit
 github.com/alecthomas/units
+# github.com/eclipse/paho.mqtt.golang v1.2.0
+## explicit
+github.com/eclipse/paho.mqtt.golang
+github.com/eclipse/paho.mqtt.golang/packets
 # github.com/fsnotify/fsnotify v1.4.9
 github.com/fsnotify/fsnotify
 # github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
@@ -42,6 +46,9 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
+# github.com/google/uuid v1.1.1
+## explicit
+github.com/google/uuid
 # github.com/googleapis/gax-go/v2 v2.0.5
 github.com/googleapis/gax-go/v2
 # github.com/jhump/protoreflect v1.7.0
@@ -150,8 +157,11 @@ golang.org/x/net/http/httpguts
 golang.org/x/net/http2
 golang.org/x/net/http2/hpack
 golang.org/x/net/idna
+golang.org/x/net/internal/socks
 golang.org/x/net/internal/timeseries
+golang.org/x/net/proxy
 golang.org/x/net/trace
+golang.org/x/net/websocket
 # golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 golang.org/x/oauth2
 golang.org/x/oauth2/google

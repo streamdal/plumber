@@ -9,7 +9,7 @@ import (
 	"github.com/batchcorp/plumber/cli"
 )
 
-// Reader holds all attributes required for performing a read/write operations
+// RabbitMQ holds all attributes required for performing a read/write operations
 // in RabbitMQ. This struct should be instantiated via the rabbitmq.Read(..) or
 // rabbitmq.Write(..) functions.
 type RabbitMQ struct {

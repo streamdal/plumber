@@ -37,3 +37,12 @@ services:
       JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
     depends_on:
       - "kafka"
+
+  mosquitto:
+    container_name: mosquitto_container
+    image: eclipse-mosquitto:1.6.10
+    volumes:
+      - ./test-assets/mosquitto:/mosquitto/config/
+    ports:
+      - '8883:8883'
+      - '1883:1883'
