@@ -22,6 +22,7 @@ type Options struct {
 	Rabbit    *RabbitOptions
 	GCPPubSub *GCPPubSubOptions
 	MQTT      *MQTTOptions
+	AWSSQS    *AWSSQSOptions
 }
 
 func Handle() (string, *Options, error) {
