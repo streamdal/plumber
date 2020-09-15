@@ -49,7 +49,7 @@ Plumber is a single binary, to install you simply need to download it, give it e
 permissions and call it from your shell. Here's an example set of commands to do this:
 
 ```bash
-$ curl -o plumber https://github.com/batchcorp/plumber/releases/latest/download/plumber-darwin
+$ curl -L -o plumber https://github.com/batchcorp/plumber/releases/latest/download/plumber-darwin
 $ chmod +x plumber
 $ mv plumber /usr/local/bin/plumber
 ```
@@ -59,7 +59,7 @@ $ mv plumber /usr/local/bin/plumber
 **Keep it simple**: Read & write messages
 
 ```bash
-$ plumber read messages kafka --topic orders --line-numbers --follow
+$ plumber read messages kafka --address="localhost:9092" --topic orders --line-numbers --follow
 1: {"sample" : "message 1"}
 2: {"sample" : "message 2"}
 3: {"sample" : "message 3"}
@@ -79,14 +79,14 @@ Runtime: 5s
 Events:  11
 Rate:    2.2/s
 
-$ plumber write message kafka --topic orders --input-data "plain-text"
+$ plumber write message kafka --address="some-machine.domain.com:9092" --topic orders --input-data "plain-text"
 Success! Wrote '1' message(s) to 'some-machine.domain.com'.
 ```
 
 **Getting fancy**: Decoding protobuf encoded messages and viewing them live
 
 ```bash
-$ plumber read messages rabbitmq --exchange events --routing-key \# \
+$ plumber read messages rabbit --address="amqp://localhost" --exchange events --routing-key \# \
   --line-numbers --output-type protobuf --protobuf-dir ~/schemas \
   --protobuf-root-message Message --follow
 1: {"some-attribute": 123, "numbers" : [1, 2, 3]}
@@ -102,6 +102,16 @@ Read Stats:
 Runtime: 5s
 Events:  5
 Rate:    1/s
+```
+
+**Getting Help**
+
+A full list of available flags can be displayed using the `--help` flag after the command:
+
+```bash
+$ plumber read message rabbit --help
+$ plumber read message mqtt --help
+$ plumber write message kafka --help
 ```
 
 **Get your leisure suit on (COMING SOON)** : Ability to create sinks and replay
