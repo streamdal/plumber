@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/sirupsen/logrus"
 
+	awssqs "github.com/batchcorp/plumber/backends/aws-sqs"
 	gcppubsub "github.com/batchcorp/plumber/backends/gcp-pubsub"
 	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/backends/mqtt"
@@ -30,6 +31,8 @@ func main() {
 		err = gcppubsub.Read(opts)
 	case "read message mqtt":
 		err = mqtt.Read(opts)
+	case "read message aws-sqs":
+		err = awssqs.Read(opts)
 
 	// Write
 	case "write message rabbit":
@@ -40,6 +43,8 @@ func main() {
 		err = gcppubsub.Write(opts)
 	case "write message mqtt":
 		err = mqtt.Write(opts)
+	case "write message aws-sqs":
+		err = awssqs.Write(opts)
 
 	default:
 		logrus.Fatalf("Unrecognized command: %s", cmd)
