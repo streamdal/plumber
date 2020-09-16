@@ -147,7 +147,7 @@ func (a *AWSSQS) Read() error {
 					QueueUrl:      aws.String(a.QueueURL),
 					ReceiptHandle: m.ReceiptHandle,
 				}); err != nil {
-					printer.Error(fmt.Sprintf("unable to auto-delete message '%s': %s", &m.MessageId, err))
+					printer.Error(fmt.Sprintf("unable to auto-delete message '%s': %s", *m.MessageId, err))
 					continue
 				}
 			}
