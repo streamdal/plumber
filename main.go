@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/sirupsen/logrus"
 
 	awssqs "github.com/batchcorp/plumber/backends/aws-sqs"
@@ -23,28 +25,44 @@ func main() {
 
 	switch cmd {
 	// Read
-	case "read message rabbit":
+	case "read rabbit":
 		err = rabbitmq.Read(opts)
-	case "read message kafka":
+	case "read kafka":
 		err = kafka.Read(opts)
-	case "read message gcp-pubsub":
+	case "read gcp-pubsub":
 		err = gcppubsub.Read(opts)
-	case "read message mqtt":
+	case "read mqtt":
 		err = mqtt.Read(opts)
-	case "read message aws-sqs":
+	case "read aws-sqs":
 		err = awssqs.Read(opts)
 
 	// Write
-	case "write message rabbit":
+	case "write rabbit":
 		err = rabbitmq.Write(opts)
-	case "write message kafka":
+	case "write kafka":
 		err = kafka.Write(opts)
-	case "write message gcp-pubsub":
+	case "write gcp-pubsub":
 		err = gcppubsub.Write(opts)
-	case "write message mqtt":
+	case "write mqtt":
 		err = mqtt.Write(opts)
-	case "write message aws-sqs":
+	case "write aws-sqs":
 		err = awssqs.Write(opts)
+
+	// Relay
+	case "relay rabbit":
+		err = rabbitmq.Relay(opts)
+	case "relay kafka":
+		err = kafka.Relay(opts)
+	case "relay gcp-pubsub":
+		err = gcppubsub.Relay(opts)
+	case "relay mqtt":
+		err = mqtt.Relay(opts)
+	case "relay aws-sqs":
+		err = awssqs.Relay(opts)
+
+	// Relay via env var
+	case "relay":
+		err = ProcessRelayFlags(opts)
 
 	default:
 		logrus.Fatalf("Unrecognized command: %s", cmd)
@@ -53,4 +71,23 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("Unable to complete command: %s", err)
 	}
+}
+
+func ProcessRelayFlags(opts *cli.Options) error {
+	var err error
+
+	switch opts.RelayType {
+	case "kafka":
+		err = kafka.Relay(opts)
+	case "gcp-pubsub":
+		err = gcppubsub.Relay(opts)
+	case "mqtt":
+		err = mqtt.Relay(opts)
+	case "aws-sqs":
+		err = awssqs.Relay(opts)
+	default:
+		err = fmt.Errorf("unsupported messaging system '%s'", opts.RelayType)
+	}
+
+	return err
 }

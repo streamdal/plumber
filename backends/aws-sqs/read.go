@@ -98,6 +98,7 @@ func (a *AWSSQS) Read() error {
 			WaitTimeSeconds:         aws.Int64(a.Options.AWSSQS.ReadWaitTimeSeconds),
 			QueueUrl:                aws.String(a.QueueURL),
 			ReceiveRequestAttemptId: aws.String(a.Options.AWSSQS.ReadReceiveRequestAttemptId),
+			MaxNumberOfMessages:     aws.Int64(a.Options.AWSSQS.ReadMaxNumMessages),
 		})
 		if err != nil {
 			if !a.Options.AWSSQS.ReadFollow {

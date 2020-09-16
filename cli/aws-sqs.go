@@ -9,7 +9,7 @@ type AWSSQSOptions struct {
 	QueueName string
 
 	// Read
-	ReadMaxNumMessages          int
+	ReadMaxNumMessages          int64
 	ReadAutoDelete              bool
 	ReadReceiveRequestAttemptId string
 	ReadWaitTimeSeconds         int64
@@ -29,9 +29,15 @@ type AWSSQSOptions struct {
 	WriteOutputType          string
 	WriteProtobufDir         string
 	WriteProtobufRootMessage string
+
+	// Relay
+	RelayMaxNumMessages          int64
+	RelayReceiveRequestAttemptId string
+	RelayAutoDelete              bool
+	RelayWaitTimeSeconds         int64
 }
 
-func HandleAWSSQSFlags(readCmd, writeCmd *kingpin.CmdClause, opts *Options) {
+func HandleAWSSQSFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Options) {
 	// AWSSQS read cmd
 	rc := readCmd.Command("aws-sqs", "AWS Simple Queue System")
 
@@ -43,15 +49,32 @@ func HandleAWSSQSFlags(readCmd, writeCmd *kingpin.CmdClause, opts *Options) {
 
 	addSharedAWSSQSFlags(wc, opts)
 	addWriteAWSSQSFlags(wc, opts)
+
+	// AWSSQS relay cmd
+	rec := relayCmd.Command("aws-sqs", "AWS Simple Queue System")
+
+	addSharedAWSSQSFlags(rec, opts)
+	addRelayAWSSQSFlags(rec, opts)
 }
 
 func addSharedAWSSQSFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("queue-name", "Queue name").Required().StringVar(&opts.AWSSQS.QueueName)
 }
 
+func addRelayAWSSQSFlags(cmd *kingpin.CmdClause, opts *Options) {
+	cmd.Flag("max-num-messages", "Max number of messages to read").
+		Short('m').Default("1").Int64Var(&opts.AWSSQS.RelayMaxNumMessages)
+	cmd.Flag("receive-request-attempt-id", "An id to identify this read request by").
+		Default("plumber/relay").StringVar(&opts.AWSSQS.RelayReceiveRequestAttemptId)
+	cmd.Flag("auto-delete", "Delete read/received messages").
+		BoolVar(&opts.AWSSQS.RelayAutoDelete)
+	cmd.Flag("wait-time-seconds", "Number of seconds to wait for messages (not used when using 'follow')").
+		Short('w').Default("5").Int64Var(&opts.AWSSQS.RelayWaitTimeSeconds)
+}
+
 func addReadAWSSQSFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("max-num-messages", "Max number of messages to read").
-		Short('m').Default("1").IntVar(&opts.AWSSQS.ReadMaxNumMessages)
+		Short('m').Default("1").Int64Var(&opts.AWSSQS.ReadMaxNumMessages)
 	cmd.Flag("receive-request-attempt-id", "An id to identify this read request by").
 		Default("plumber").StringVar(&opts.AWSSQS.ReadReceiveRequestAttemptId)
 	cmd.Flag("auto-delete", "Delete read/received messages").
