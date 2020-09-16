@@ -51,7 +51,7 @@ func addSharedAWSSQSFlags(cmd *kingpin.CmdClause, opts *Options) {
 
 func addReadAWSSQSFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("max-num-messages", "Max number of messages to read").
-		Short('n').Default("1").IntVar(&opts.AWSSQS.ReadMaxNumMessages)
+		Short('m').Default("1").IntVar(&opts.AWSSQS.ReadMaxNumMessages)
 	cmd.Flag("receive-request-attempt-id", "An id to identify this read request by").
 		Default("plumber").StringVar(&opts.AWSSQS.ReadReceiveRequestAttemptId)
 	cmd.Flag("auto-delete", "Delete read/received messages").
@@ -75,7 +75,7 @@ func addReadAWSSQSFlags(cmd *kingpin.CmdClause, opts *Options) {
 func addWriteAWSSQSFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("delay-seconds", "How many seconds to delay message delivery by").
 		Default("0").Int64Var(&opts.AWSSQS.WriteDelaySeconds)
-	cmd.Flag("attributes", "Add optional attributes to outgoing message").
+	cmd.Flag("attributes", "Add optional attributes to outgoing message (string=string only)").
 		StringMapVar(&opts.AWSSQS.WriteAttributes)
 	cmd.Flag("input-data", "Data to write to GCP PubSub").StringVar(&opts.AWSSQS.WriteInputData)
 	cmd.Flag("input-file", "File containing input data (overrides input-data; 1 file is 1 message)").

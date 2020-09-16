@@ -35,8 +35,8 @@ func Read(opts *cli.Options) error {
 	var mdErr error
 	var md *desc.MessageDescriptor
 
-	if opts.MQTT.ReadOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.MQTT.ReadProtobufDir, opts.MQTT.ReadProtobufRootMessage)
+	if opts.AWSSQS.ReadOutputType == "protobuf" {
+		md, mdErr = pb.FindMessageDescriptor(opts.AWSSQS.ReadProtobufDir, opts.AWSSQS.ReadProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")
 		}
@@ -166,7 +166,13 @@ func (a *AWSSQS) Read() error {
 func (a *AWSSQS) convertMessage(msg []byte) ([]byte, error) {
 	// Protobuf bits
 	if a.Options.AWSSQS.ReadOutputType == "protobuf" {
-		decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(a.MsgDesc), msg)
+		// Our implementation of 'protobuf-over-sqs' encodes protobuf in b64
+		plain, err := base64.StdEncoding.DecodeString(string(msg))
+		if err != nil {
+			return nil, fmt.Errorf("unable to decode base64 to protobuf")
+		}
+
+		decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(a.MsgDesc), plain)
 		if err != nil {
 			return nil, fmt.Errorf("unable to decode protobuf message: %s", err)
 		}

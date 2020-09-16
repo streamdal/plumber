@@ -43,6 +43,8 @@ func main() {
 		err = gcppubsub.Write(opts)
 	case "write message mqtt":
 		err = mqtt.Write(opts)
+	case "write message aws-sqs":
+		err = awssqs.Write(opts)
 
 	default:
 		logrus.Fatalf("Unrecognized command: %s", cmd)
