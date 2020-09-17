@@ -55,6 +55,12 @@ github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
 github.com/aws/aws-sdk-go/service/sqs
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
+# github.com/batchcorp/schemas v0.2.22
+## explicit
+github.com/batchcorp/schemas/build/go/events
+github.com/batchcorp/schemas/build/go/events/destinations
+github.com/batchcorp/schemas/build/go/events/records
+github.com/batchcorp/schemas/build/go/services
 # github.com/eclipse/paho.mqtt.golang v1.2.0
 ## explicit
 github.com/eclipse/paho.mqtt.golang
@@ -184,6 +190,9 @@ go.opencensus.io/trace
 go.opencensus.io/trace/internal
 go.opencensus.io/trace/propagation
 go.opencensus.io/trace/tracestate
+# golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+## explicit
+golang.org/x/crypto/ssh/terminal
 # golang.org/x/lint v0.0.0-20200302205851-738671d3881b
 golang.org/x/lint
 golang.org/x/lint/golint
@@ -217,6 +226,7 @@ golang.org/x/sync/semaphore
 # golang.org/x/sys v0.0.0-20200523222454-059865788121
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
+golang.org/x/sys/windows
 # golang.org/x/text v0.3.3
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
@@ -284,6 +294,7 @@ google.golang.org/genproto/protobuf/field_mask
 google.golang.org/genproto/protobuf/ptype
 google.golang.org/genproto/protobuf/source_context
 # google.golang.org/grpc v1.30.0
+## explicit
 google.golang.org/grpc
 google.golang.org/grpc/attributes
 google.golang.org/grpc/backoff
