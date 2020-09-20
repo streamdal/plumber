@@ -7,9 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/batchcorp/schemas/build/go/services"
-
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/batchcorp/schemas/build/go/services"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh/terminal"
@@ -19,7 +18,7 @@ import (
 )
 
 const (
-	DefaultNumRelayers = 10
+	DefaultNumWorkers = 10
 )
 
 type Relay struct {
@@ -30,8 +29,9 @@ type Relay struct {
 type Config struct {
 	Token       string
 	GRPCAddress string
-	NumRelayers int
+	NumWorkers  int
 	RelayCh     chan interface{}
+	DisableTLS  bool
 	Timeout     time.Duration // general grpc timeout (used for all grpc calls)
 }
 
@@ -73,16 +73,16 @@ func validateConfig(cfg *Config) error {
 		return errors.New("RelayCh cannot be nil")
 	}
 
-	if cfg.NumRelayers <= 0 {
-		logrus.Warningf("NumRelayers cannot be <= 0 - setting to default '%d'", DefaultNumRelayers)
-		cfg.NumRelayers = DefaultNumRelayers
+	if cfg.NumWorkers <= 0 {
+		logrus.Warningf("NumWorkers cannot be <= 0 - setting to default '%d'", DefaultNumWorkers)
+		cfg.NumWorkers = DefaultNumWorkers
 	}
 
 	return nil
 }
 
 func TestConnection(cfg *Config) error {
-	conn, ctx, err := NewConnection(cfg.GRPCAddress, cfg.Token, cfg.Timeout)
+	conn, ctx, err := NewConnection(cfg.GRPCAddress, cfg.Token, cfg.Timeout, cfg.DisableTLS)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new connection")
 	}
@@ -97,14 +97,19 @@ func TestConnection(cfg *Config) error {
 	return nil
 }
 
-func NewConnection(address, token string, timeout time.Duration) (*grpc.ClientConn, context.Context, error) {
+func NewConnection(address, token string, timeout time.Duration, disableTLS bool) (*grpc.ClientConn, context.Context, error) {
 	opts := []grpc.DialOption{
 		grpc.WithBlock(),
-		grpc.WithTransportCredentials(credentials.NewTLS(
+	}
+
+	if !disableTLS {
+		opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(
 			&tls.Config{
 				InsecureSkipVerify: true,
 			},
-		)),
+		)))
+	} else {
+		opts = append(opts, grpc.WithInsecure())
 	}
 
 	dialContext, _ := context.WithTimeout(context.Background(), timeout)
@@ -114,41 +119,52 @@ func NewConnection(address, token string, timeout time.Duration) (*grpc.ClientCo
 		return nil, nil, fmt.Errorf("unable to connect to grpc address '%s': %s", address, err)
 	}
 
-	defer conn.Close()
-
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	ctx, _ := context.WithTimeout(context.Background(), timeout)
 
 	md := metadata.Pairs("batch.token", token)
 	outCtx := metadata.NewOutgoingContext(ctx, md)
 
-	defer cancel()
-
 	return conn, outCtx, nil
 }
 
-func (r *Relay) StartRelayers() {
-	for i := 0; i != r.Config.NumRelayers; i++ {
-		go r.Run(i)
+func (r *Relay) StartWorkers() error {
+	for i := 0; i != r.Config.NumWorkers; i++ {
+		r.log.WithField("workerId", i).Debug("starting worker")
+
+		conn, ctx, err := NewConnection(r.Config.GRPCAddress, r.Config.Token, r.Config.Timeout, r.Config.DisableTLS)
+		if err != nil {
+			return fmt.Errorf("unable to create new gRPC connection for worker %d: %s", i, err)
+		}
+
+		go r.Run(i, conn, ctx)
 	}
+
+	return nil
 }
 
-func (r *Relay) Run(id int) {
+func (r *Relay) Run(id int, conn *grpc.ClientConn, ctx context.Context) {
 	llog := r.log.WithField("relayId", id)
 
 	llog.Debug("Relayer started")
 
-	// TODO: Should add batching support
+	// TODO: Add batching support (this can wait until v2+)
 
 	for {
 		msg := <-r.Config.RelayCh
 
+		var err error
+
 		switch v := msg.(type) {
 		case *sqs.Message:
-			fmt.Printf("Received an SQS message: %v\n", v)
+			err = r.handleSQS(ctx, conn, v)
 		default:
-			fmt.Println("Received unknown message type: ", v)
+			r.log.WithField("type", v).Error("received unknown message type - skipping")
+			continue
+		}
+
+		if err != nil {
+			r.log.WithField("err", err).Error("unable to handle message")
+			continue
 		}
 	}
-
-	llog.Debug("Relayer is exiting")
 }

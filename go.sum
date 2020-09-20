@@ -45,6 +45,10 @@ github.com/aws/aws-sdk-go v1.34.9/go.mod h1:5zCpMtNQVjRREroY7sYe8lOMRSxkhG6MZveU
 github.com/batchcorp/schemas v0.1.8/go.mod h1:OS0jIg50R8wrMJAVwOEirnvpyPKnJlVadifqH4LJlD4=
 github.com/batchcorp/schemas v0.2.22 h1:/7xeQvuMkusbXAUnKoLA3uKTFjr5Ic7tJ39FdFyXdF0=
 github.com/batchcorp/schemas v0.2.22/go.mod h1:rV0bcszms4RkpGOr1khcYS27glm6QOChmxZ4dC4VOaI=
+github.com/batchcorp/schemas v0.2.26 h1:DLvefetbuQ4E3u0VB/pBUzEvZfJLmUkZyiQSOBSUNMI=
+github.com/batchcorp/schemas v0.2.26/go.mod h1:rV0bcszms4RkpGOr1khcYS27glm6QOChmxZ4dC4VOaI=
+github.com/batchcorp/schemas-public v0.0.2 h1:TMIRhlppmbPjWq8IRTb1RhjKkaPhp2u8WvTKuaOrMGo=
+github.com/batchcorp/schemas-public v0.0.2/go.mod h1:2YY+EX7RYrI9rQhfrB5RnhobQaJm+Ab9+NrKbFsuL/A=
 github.com/batchcorp/schemas/util/publish v0.0.0-20200622021112-903044310a85/go.mod h1:zD8BqPOqqGw2wWhGrJx8CguDKKuOPGo1TXOuz5b4OR4=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=

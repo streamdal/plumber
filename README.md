@@ -12,7 +12,7 @@ The tool enables you to:
 * See what's passing through your message systems
 * Pipe data from one place to another
 * Decode protobuf data in real-time
-* Replay historical data (using [Batch](https://batch.sh))
+* Capture and relay data to [Batch platform](https://batch.sh)
 
 <sub>\[1] It's like `curl` for messaging systems.</sub>
 
@@ -59,7 +59,7 @@ $ mv plumber /usr/local/bin/plumber
 **Keep it simple**: Read & write messages
 
 ```bash
-$ plumber read messages kafka --address="localhost:9092" --topic orders --line-numbers --follow
+$ plumber read kafka --topic orders --address="some-machine.domain.com:9092" --line-numbers --follow
 1: {"sample" : "message 1"}
 2: {"sample" : "message 2"}
 3: {"sample" : "message 3"}
@@ -73,20 +73,17 @@ $ plumber read messages kafka --address="localhost:9092" --topic orders --line-n
 11: {"sample" : "message 11"}
 ^C
 
-Read Stats:
-
-Runtime: 5s
-Events:  11
-Rate:    2.2/s
-
-$ plumber write message kafka --address="some-machine.domain.com:9092" --topic orders --input-data "plain-text"
-Success! Wrote '1' message(s) to 'some-machine.domain.com'.
+$ plumber write kafka --address="some-machine.domain.com:9092" --topic orders --input-data "plain text"
+Success! Wrote '1' message(s) to 'localhost:9092'.
 ```
+
+<sub>NOTE: If you want to write JSON either surround the `input-data` in single
+quotes or use `input-file`.
 
 **Getting fancy**: Decoding protobuf encoded messages and viewing them live
 
 ```bash
-$ plumber read messages rabbit --address="amqp://localhost" --exchange events --routing-key \# \
+$ plumber read rabbit --address="amqp://localhost" --exchange events --routing-key \# \
   --line-numbers --output-type protobuf --protobuf-dir ~/schemas \
   --protobuf-root-message Message --follow
 1: {"some-attribute": 123, "numbers" : [1, 2, 3]}
@@ -94,59 +91,40 @@ $ plumber read messages rabbit --address="amqp://localhost" --exchange events --
 3: {"some-attribute": 49, "numbers" : [958, 288, 289, 290]}
 4: ERROR: Cannot decode message as protobuf "Message"
 5: {"some-attribute": 394, "numbers" : [4, 5, 6, 7, 8]}
+^C
+```
+
+**Get your leisure suit on**: Capture and relay data from messaging systems and
+send to the [Batch](https://batch.sh) platform:
+
+```bash
+# Run the relay in the foreground
+$ plumber relay aws-sqs --queue-name TestQueue --collect-token 36e0ab54-1296-4db5-8fb8-e5fe1b54d3aa
+HTTP server listening on localhost:8080
+Relay started
 
 ^C
 
-Read Stats:
-
-Runtime: 5s
-Events:  5
-Rate:    1/s
+# Run it in Docker
+$ docker run -d --name plumber-sqs -p 8080:8080 \
+    -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+    -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+    -e PLUMBER_RELAY_TYPE=aws-sqs \
+    -e PLUMBER_RELAY_TOKEN=47b2b76e-0547-4dac-8b4b-74423fb02d53 \
+    -e PLUMBER_RELAY_SQS_QUEUE_NAME=TestQueue
+    batchcorp/plumber 
 ```
 
 **Getting Help**
 
-A full list of available flags can be displayed using the `--help` flag after the command:
+A full list of available flags can be displayed by using the `--help` flag after
+different parts of the command:
 
 ```bash
 $ plumber read message rabbit --help
 $ plumber read message mqtt --help
 $ plumber write message kafka --help
-```
-
-**Get your leisure suit on (COMING SOON)** : Ability to create sinks and replay
-data using the Batch platform: 
-
-```bash
-$ plumber create sink kafka --address some-machine.domain.com --topic orders --background
->> Launched plumber instance id 'abdea293-orders'
-
-$ plumber get sinks
-    [Name]                 [Host]           [Type]         [Online]         [Receieved] 
-abdea293-orders      |  221.20.101.85  |     kafka    |     <1 mins    |       184,492
-
-$ plumber create destination http --address http://localhost:8080 --name mikelaptop --batch --background
->> Launched destination id 'bfde92cd-laptop'
-
-$ plumber get destinations
-    [Name]                 [Host]          [Type]          [Online]         [Received]
-bfde92cd-laptop    |  142.20.32.235  |      http       |   <1 mins      |       0
-b593acbe-wabbit    |  142.20.32.238  |     rabbitmq    |   32 mins      |       0
-
-$ plumber replay abdea293-orders --query '*' --destination bfde92cd-laptop
->> Replaying 1,202,293 matching events ...
-
-[=========>---------------------------------------------]  17.00% 00m08s
-
->> Replay complete!
-
-Replay Stats:
-
-Total:       29m 13s
-Rate:        73,200/minute
-Success %:   99.8%
-NumSuccess:  1,202,290
-NumFailed:   3
+$ plumber relay --help
 ```
 
 ## Features
@@ -154,19 +132,26 @@ NumFailed:   3
 * Dynamic protobuf encode & decode
 * Gzip decompress
 * `--follow` support (ie. `tail -f`)
+* Relay and archive all messaging system data
 * Single-binary, zero-config, easy-install
 
 ## Hmm, what is this Batch thing?
 
-We are event sourcing enthusiasts that are working on a platform to enable folks
-to replay events on their message busses.
+We are distributed system enthusiasts that started a company called
+[Batch](https://batch.sh). We focus on improving workflows that involve
+messaging systems - specifically, we enable message observability, backups and
+outage recovery via message replays.
 
-While building our [company](https://batch.sh), we built a tool for reading and
-writing messages from our message systems and realized that there is a serious
-lack of tooling in this space.
+While working on our company, we built a tool for reading and writing messages
+from our message systems and realized that there is a serious lack of tooling
+in this space.
 
 We wanted a swiss army knife type of tool for working with messaging systems
-(since we use Kafka and RabbitMQ internally) and so we created `plumber`.
+(we use Kafka and RabbitMQ internally), so we created `plumber`.
+
+## Why the name `plumber`?
+
+We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 
 ## Supported Messaging Systems
 
@@ -178,6 +163,9 @@ We wanted a swiss army knife type of tool for working with messaging systems
 * NATS (coming soon)
 * ActiveMQ (coming soon)
 * Redis (coming soon)
+
+NOTE: If your messaging tech is not supported - submit an issue and we'll do
+our best to make it happen!
 
 ## Acknowledgments
 

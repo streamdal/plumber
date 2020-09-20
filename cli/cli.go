@@ -3,14 +3,17 @@ package cli
 import (
 	"os"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 const (
-	DefaultGRPCAddress      = "grpc-collector.batch.sh:9000"
-	DefaultAPIListenAddress = ":8080"
+	DefaultGRPCAddress       = "grpc-collector.batch.sh:9000"
+	DefaultHTTPListenAddress = ":8080"
+	DefaultGRPCTimeout       = "10s"
+	DefaultNumWorkers        = "10"
 )
 
 var (
@@ -25,10 +28,13 @@ type Options struct {
 	Version string
 
 	// Relay
-	Token            string
-	GRPCAddress      string
-	RelayType        string
-	APIListenAddress string
+	RelayToken             string
+	RelayGRPCAddress       string
+	RelayType              string
+	RelayHTTPListenAddress string
+	RelayNumWorkers        int
+	RelayGRPCTimeout       time.Duration
+	RelayGRPCDisableTLS    bool
 
 	Kafka     *KafkaOptions
 	Rabbit    *RabbitOptions
@@ -85,11 +91,38 @@ func Handle() (string, *Options, error) {
 }
 
 func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
-	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, gcp-pubsub").
-		Envar("PLUMBER_RELAY_TYPE").EnumVar(&opts.RelayType, "aws-sqs")
+	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs").
+		Envar("PLUMBER_RELAY_TYPE").
+		EnumVar(&opts.RelayType, "aws-sqs")
+
 	relayCmd.Flag("token", "Collection token to use when sending data to Batch").
-		Required().Envar("PLUMBER_TOKEN").StringVar(&opts.Token)
+		Required().
+		Envar("PLUMBER_RELAY_TOKEN").
+		StringVar(&opts.RelayToken)
+
 	relayCmd.Flag("grpc-address", "Alternative gRPC collector address").
-		Default(DefaultGRPCAddress).Envar("PLUMBER_GRPC_ADDRESS").
-		StringVar(&opts.GRPCAddress)
+		Default(DefaultGRPCAddress).
+		Envar("PLUMBER_RELAY_GRPC_ADDRESS").
+		StringVar(&opts.RelayGRPCAddress)
+
+	relayCmd.Flag("grpc-disable-tls", "Disable TLS when talking to gRPC collector").
+		Default("false").
+		Envar("PLUMBER_RELAY_GRPC_DISABLE_TLS").
+		BoolVar(&opts.RelayGRPCDisableTLS)
+
+	relayCmd.Flag("grpc-timeout", "gRPC collector timeout").
+		Default(DefaultGRPCTimeout).
+		Envar("PLUMBER_RELAY_GRPC_TIMEOUT").
+		DurationVar(&opts.RelayGRPCTimeout)
+
+	relayCmd.Flag("num-workers", "Number of relay workers").
+		Default(DefaultNumWorkers).
+		Envar("PLUMBER_RELAY_NUM_WORKERS").
+		IntVar(&opts.RelayNumWorkers)
+
+	relayCmd.Flag("listen-address", "Alternative listen address for local HTTP server").
+		Default(DefaultHTTPListenAddress).
+		Envar("PLUMBER_RELAY_HTTP_LISTEN_ADDRESS").
+		StringVar(&opts.RelayHTTPListenAddress)
+
 }
