@@ -48,7 +48,7 @@ func main() {
 	case "write aws-sqs":
 		err = awssqs.Write(opts)
 
-	// Relay
+	// Relay (via CLI flags)
 	case "relay rabbit":
 		err = rabbitmq.Relay(opts)
 	case "relay kafka":
@@ -60,7 +60,7 @@ func main() {
 	case "relay aws-sqs":
 		err = awssqs.Relay(opts)
 
-	// Relay via env var
+	// Relay (via env vars)
 	case "relay":
 		err = ProcessRelayFlags(opts)
 

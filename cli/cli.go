@@ -55,20 +55,26 @@ func Handle() (string, *Options, error) {
 	app := kingpin.New("plumber", "`curl` for messaging systems. See: https://github.com/batchcorp/plumber")
 
 	// Global (apply to all actions)
-	app.Flag("debug", "Enable debug output").Short('d').BoolVar(&opts.Debug)
-	app.Flag("quiet", "Suppress non-essential output").Short('q').BoolVar(&opts.Quiet)
+	app.Flag("debug", "Enable debug output").
+		Short('d').
+		Envar("PLUMBER_DEBUG").
+		BoolVar(&opts.Debug)
+
+	app.Flag("quiet", "Suppress non-essential output").
+		Short('q').
+		BoolVar(&opts.Quiet)
 
 	// Specific actions
 	readCmd := app.Command("read", "Read message(s) from messaging system")
 	writeCmd := app.Command("write", "Write message(s) to messaging system")
 	relayCmd := app.Command("relay", "Relay message(s) from messaging system to Batch")
 
+	HandleRelayFlags(relayCmd, opts)
 	HandleKafkaFlags(readCmd, writeCmd, opts)
 	HandleRabbitFlags(readCmd, writeCmd, opts)
 	HandleGCPPubSubFlags(readCmd, writeCmd, opts)
 	HandleMQTTFlags(readCmd, writeCmd, opts)
 	HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
-	HandleRelayFlags(relayCmd, opts)
 
 	app.Version(version)
 	app.HelpFlag.Short('h')
