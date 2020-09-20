@@ -7,7 +7,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/batchcorp/schemas/build/go/services"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -15,6 +14,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
+
+	sqsTypes "github.com/batchcorp/plumber/backends/aws-sqs/types"
 )
 
 const (
@@ -82,7 +83,7 @@ func validateConfig(cfg *Config) error {
 }
 
 func TestConnection(cfg *Config) error {
-	conn, ctx, err := NewConnection(cfg.GRPCAddress, cfg.Token, cfg.Timeout, cfg.DisableTLS)
+	conn, ctx, err := NewConnection(cfg.GRPCAddress, cfg.Token, cfg.Timeout, cfg.DisableTLS, false)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new connection")
 	}
@@ -97,7 +98,7 @@ func TestConnection(cfg *Config) error {
 	return nil
 }
 
-func NewConnection(address, token string, timeout time.Duration, disableTLS bool) (*grpc.ClientConn, context.Context, error) {
+func NewConnection(address, token string, timeout time.Duration, disableTLS, noCtx bool) (*grpc.ClientConn, context.Context, error) {
 	opts := []grpc.DialOption{
 		grpc.WithBlock(),
 	}
@@ -119,7 +120,13 @@ func NewConnection(address, token string, timeout time.Duration, disableTLS bool
 		return nil, nil, fmt.Errorf("unable to connect to grpc address '%s': %s", address, err)
 	}
 
-	ctx, _ := context.WithTimeout(context.Background(), timeout)
+	var ctx context.Context
+
+	if !noCtx {
+		ctx, _ = context.WithTimeout(context.Background(), timeout)
+	} else {
+		ctx = context.Background()
+	}
 
 	md := metadata.Pairs("batch.token", token)
 	outCtx := metadata.NewOutgoingContext(ctx, md)
@@ -131,7 +138,7 @@ func (r *Relay) StartWorkers() error {
 	for i := 0; i != r.Config.NumWorkers; i++ {
 		r.log.WithField("workerId", i).Debug("starting worker")
 
-		conn, ctx, err := NewConnection(r.Config.GRPCAddress, r.Config.Token, r.Config.Timeout, r.Config.DisableTLS)
+		conn, ctx, err := NewConnection(r.Config.GRPCAddress, r.Config.Token, r.Config.Timeout, r.Config.DisableTLS, true)
 		if err != nil {
 			return fmt.Errorf("unable to create new gRPC connection for worker %d: %s", i, err)
 		}
@@ -155,7 +162,7 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, ctx context.Context) {
 		var err error
 
 		switch v := msg.(type) {
-		case *sqs.Message:
+		case *sqsTypes.RelayMessage:
 			err = r.handleSQS(ctx, conn, v)
 		default:
 			r.log.WithField("type", v).Error("received unknown message type - skipping")

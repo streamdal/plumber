@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/api"
+	"github.com/batchcorp/plumber/backends/aws-sqs/types"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
 )
@@ -53,7 +54,9 @@ func Relay(opts *cli.Options) error {
 	}()
 
 	// Launch gRPC Relayer
-	grpcRelayer.StartWorkers()
+	if err := grpcRelayer.StartWorkers(); err != nil {
+		return errors.Wrap(err, "unable to start gRPC relay workers")
+	}
 
 	r := &Relayer{
 		Service:  svc,
@@ -67,10 +70,25 @@ func Relay(opts *cli.Options) error {
 }
 
 func validateRelayOptions(opts *cli.Options) error {
+	if opts.AWSSQS.RelayMaxNumMessages < 1 || opts.AWSSQS.RelayMaxNumMessages > 10 {
+		return errors.New("RelayMaxNumMessages must be between 1 and 10")
+	}
+
+	if opts.AWSSQS.RelayWaitTimeSeconds < 0 || opts.AWSSQS.RelayWaitTimeSeconds > 20 {
+		return errors.New("RelayWaitTimeSeconds must be between 0 and 20")
+	}
+
 	return nil
 }
 
 func (r *Relayer) Relay() error {
+	r.log.Infof("Relaying AWS SQS messages from '%s' queue -> '%s'",
+		r.Options.AWSSQS.QueueName, r.Options.RelayGRPCAddress)
+
+	r.log.Infof("HTTP server listening on '%s'", r.Options.RelayHTTPListenAddress)
+
+	// TODO: Optionally print out relay and SQS config
+
 	for {
 		// Read message(s) from SQS
 		msgResult, err := r.Service.ReceiveMessage(&sqs.ReceiveMessageInput{
@@ -86,9 +104,16 @@ func (r *Relayer) Relay() error {
 
 		// Send message(s) to relayer
 		for _, v := range msgResult.Messages {
-			r.log.Info("Writing message to relay channel")
+			r.log.Debug("Writing message to relay channel")
 
-			r.RelayCh <- v
+			r.RelayCh <- &types.RelayMessage{
+				Value: v,
+				Options: &types.RelayMessageOptions{
+					Service:    r.Service,
+					QueueURL:   r.QueueURL,
+					AutoDelete: r.Options.AWSSQS.RelayAutoDelete,
+				},
+			}
 		}
 	}
 
