@@ -14,4 +14,4 @@ jobs:
           time: '30s'
       - name: Test
         run: |
-          echo "should run tests here"
+          make test
