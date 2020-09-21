@@ -17,4 +17,6 @@ jobs:
           git config --global url."https://${{ secrets.PERSONAL_ACCESS_TOKEN }}:x-oauth-basic@github.com/batchcorp".insteadOf "https://github.com/batchcorp"
       - name: Test
         run: |
+          pwd
+          echo $GOPATH
           make test
