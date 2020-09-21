@@ -28,7 +28,7 @@ jobs:
 
       - name: Test
         run: |
-          ls /home/runner/work/plumber/ggo/src/github.com/batchcorp/plumber
+          ls /home/runner/work/plumber/go/src/github.com/batchcorp/plumber
           cd /home/runner/work/plumber/go/src/github.com/batchcorp/plumber && make test
         env:
           GOPATH: /home/runner/work/plumber/go
