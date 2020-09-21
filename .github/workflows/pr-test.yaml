@@ -6,17 +6,43 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Start up dependencies
-        run: docker-compose up -d
-      - name: Wait for dependencies to start up
-        uses: jakejarvis/wait-action@master
         with:
-          time: '30s'
+          fetch-depth: 1
+          path: go/src/github.com/batchcorp/plumber
+
+      - name: Debug
+        run: |
+          pwd
+          echo ${HOME}
+          echo ${GITHUB_WORKSPACE}
+          echo ${GOPATH}
+          echo ${GOROOT}
+        env:
+          GOPATH: /home/runner/work/plumber/go
+
       - name: Granting private modules access
         run: |
           git config --global url."https://${{ secrets.PERSONAL_ACCESS_TOKEN }}:x-oauth-basic@github.com/batchcorp".insteadOf "https://github.com/batchcorp"
+        env:
+          GOPATH: /home/runner/work/plumber/go
+
       - name: Test
         run: |
-          pwd
-          echo $GOPATH
           make test
+        env:
+          GOPATH: /home/runner/work/plumber/go
+
+#      - name: Start up dependencies
+#        run: docker-compose up -d
+#      - name: Wait for dependencies to start up
+#        uses: jakejarvis/wait-action@master
+#        with:
+#          time: '30s'
+#      - name: Granting private modules access
+#        run: |
+#          git config --global url."https://${{ secrets.PERSONAL_ACCESS_TOKEN }}:x-oauth-basic@github.com/batchcorp".insteadOf "https://github.com/batchcorp"
+#      - name: Test
+#        run: |
+#          pwd
+#          echo $GOPATH
+#          make test
