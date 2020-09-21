@@ -12,6 +12,9 @@ jobs:
         uses: jakejarvis/wait-action@master
         with:
           time: '30s'
+      - name: Granting private modules access
+        run: |
+          git config --global url."https://${{ secrets.PERSONAL_ACCESS_TOKEN }}:x-oauth-basic@github.com/batchcorp".insteadOf "https://github.com/batchcorp"
       - name: Test
         run: |
-          go test ./...
+          make test
