@@ -11,11 +11,9 @@ cloud.google.com/go/pubsub/apiv1
 cloud.google.com/go/pubsub/internal/distribution
 cloud.google.com/go/pubsub/internal/scheduler
 # github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
-## explicit
 github.com/alecthomas/template
 github.com/alecthomas/template/parse
 # github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d
-## explicit
 github.com/alecthomas/units
 # github.com/aws/aws-sdk-go v1.34.9
 ## explicit
@@ -55,6 +53,12 @@ github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
 github.com/aws/aws-sdk-go/service/sqs
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
+# github.com/batchcorp/schemas v0.2.26
+## explicit
+github.com/batchcorp/schemas/build/go/events
+github.com/batchcorp/schemas/build/go/events/destinations
+github.com/batchcorp/schemas/build/go/events/records
+github.com/batchcorp/schemas/build/go/services
 # github.com/eclipse/paho.mqtt.golang v1.2.0
 ## explicit
 github.com/eclipse/paho.mqtt.golang
@@ -104,6 +108,9 @@ github.com/jmespath/go-jmespath
 github.com/jstemmer/go-junit-report
 github.com/jstemmer/go-junit-report/formatter
 github.com/jstemmer/go-junit-report/parser
+# github.com/julienschmidt/httprouter v1.3.0
+## explicit
+github.com/julienschmidt/httprouter
 # github.com/konsorten/go-windows-terminal-sequences v1.0.3
 github.com/konsorten/go-windows-terminal-sequences
 # github.com/logrusorgru/aurora v2.0.3+incompatible
@@ -163,8 +170,6 @@ github.com/sirupsen/logrus
 # github.com/streadway/amqp v1.0.0
 ## explicit
 github.com/streadway/amqp
-# github.com/urfave/cli/v2 v2.2.0
-## explicit
 # go.opencensus.io v0.22.4
 go.opencensus.io
 go.opencensus.io/internal
@@ -181,6 +186,9 @@ go.opencensus.io/trace
 go.opencensus.io/trace/internal
 go.opencensus.io/trace/propagation
 go.opencensus.io/trace/tracestate
+# golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+## explicit
+golang.org/x/crypto/ssh/terminal
 # golang.org/x/lint v0.0.0-20200302205851-738671d3881b
 golang.org/x/lint
 golang.org/x/lint/golint
@@ -214,6 +222,7 @@ golang.org/x/sync/semaphore
 # golang.org/x/sys v0.0.0-20200523222454-059865788121
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
+golang.org/x/sys/windows
 # golang.org/x/text v0.3.3
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
@@ -281,6 +290,7 @@ google.golang.org/genproto/protobuf/field_mask
 google.golang.org/genproto/protobuf/ptype
 google.golang.org/genproto/protobuf/source_context
 # google.golang.org/grpc v1.30.0
+## explicit
 google.golang.org/grpc
 google.golang.org/grpc/attributes
 google.golang.org/grpc/backoff

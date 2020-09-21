@@ -1,7 +1,7 @@
 VERSION ?= $(shell git rev-parse --short HEAD)
 BINARY   = plumber
 
-GO = CGO_ENABLED=$(CGO_ENABLED) GOFLAGS=-mod=vendor go
+GO = CGO_ENABLED=$(CGO_ENABLED) GONOPROXY=github.com/batchcorp GOFLAGS=-mod=vendor go
 CGO_ENABLED ?= 0
 GO_BUILD_FLAGS = -ldflags "-X github.com/batchcorp/plumber/cli.version=${VERSION}"
 
@@ -57,15 +57,42 @@ build/darwin: clean
 	GOOS=darwin GOARCH=amd64 $(GO) build $(GO_BUILD_FLAGS) -o ./build/$(BINARY)-darwin
 
 .PHONY: build/windows
-build/windows: description = Build $(BINARY) for darwin
+build/windows: description = Build $(BINARY) for windows
 build/windows: clean
 	GOOS=windows GOARCH=amd64 $(GO) build $(GO_BUILD_FLAGS) -o ./build/$(BINARY)-windows.exe
-
 
 .PHONY: clean
 clean: description = Remove existing build artifacts
 clean:
 	$(RM) ./build/$(BINARY)-*
+
+### Docker
+
+docker/build: description = Build docker image
+docker/build:
+	docker build -t batchcorp/$(BINARY):$(VERSION) \
+	-t batchcorp/$(BINARY):latest \
+	-t batchcorp/$(BINARY):local \
+	-f ./Dockerfile .
+
+.PHONY: docker/push
+docker/push: description = Push local docker image
+docker/push:
+	docker push batchcorp/$(BINARY):$(VERSION) && \
+	docker push batchcorp/$(BINARY):latest
+
+.PHONY: docker/run
+docker/run: description = Run local plumber in Docker
+docker/run:
+	docker run --name plumber -p 8080:8080 \
+		-e PLUMBER_RELAY_TOKEN=48b30466-e3cb-4a58-9905-45b74284709f \
+		-e PLUMBER_RELAY_GRPC_ADDRESS=localhost:9000 \
+		-e PLUMBER_RELAY_GRPC_DISABLE_TLS=true \
+		-e PLUMBER_RELAY_TYPE=aws-sqs \
+		-e PLUMBER_RELAY_SQS_QUEUE_NAME=PlumberTestQueue \
+		-e PLUMBER_RELAY_SQS_AUTO_DELETE=true \
+		-e PLUMBER_DEBUG=true \
+		-d batchcorp/$(BINARY):local
 
 ### Test
 

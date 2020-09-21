@@ -3,9 +3,17 @@ package cli
 import (
 	"os"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 	"gopkg.in/alecthomas/kingpin.v2"
+)
+
+const (
+	DefaultGRPCAddress       = "grpc-collector.batch.sh:9000"
+	DefaultHTTPListenAddress = ":8080"
+	DefaultGRPCTimeout       = "10s"
+	DefaultNumWorkers        = "10"
 )
 
 var (
@@ -14,9 +22,19 @@ var (
 
 type Options struct {
 	// Global
-	Debug  bool
-	Quiet  bool
-	Action string
+	Debug   bool
+	Quiet   bool
+	Action  string
+	Version string
+
+	// Relay
+	RelayToken             string
+	RelayGRPCAddress       string
+	RelayType              string
+	RelayHTTPListenAddress string
+	RelayNumWorkers        int
+	RelayGRPCTimeout       time.Duration
+	RelayGRPCDisableTLS    bool
 
 	Kafka     *KafkaOptions
 	Rabbit    *RabbitOptions
@@ -36,25 +54,27 @@ func Handle() (string, *Options, error) {
 
 	app := kingpin.New("plumber", "`curl` for messaging systems. See: https://github.com/batchcorp/plumber")
 
-	// Global
-	app.Flag("debug", "Enable debug output").Short('d').BoolVar(&opts.Debug)
-	app.Flag("quiet", "Suppress non-essential output").Short('q').BoolVar(&opts.Quiet)
+	// Global (apply to all actions)
+	app.Flag("debug", "Enable debug output").
+		Short('d').
+		Envar("PLUMBER_DEBUG").
+		BoolVar(&opts.Debug)
 
-	// Read cmd
-	readCmd := app.
-		Command("read", "Read message(s) from messaging system").
-		Command("message", "What to read off of messaging systems").Alias("messages")
+	app.Flag("quiet", "Suppress non-essential output").
+		Short('q').
+		BoolVar(&opts.Quiet)
 
-	// Write cmd
-	writeCmd := app.
-		Command("write", "Write message(s) to messaging system").
-		Command("message", "What to write to messaging system").Alias("messages")
+	// Specific actions
+	readCmd := app.Command("read", "Read message(s) from messaging system")
+	writeCmd := app.Command("write", "Write message(s) to messaging system")
+	relayCmd := app.Command("relay", "Relay message(s) from messaging system to Batch")
 
+	HandleRelayFlags(relayCmd, opts)
 	HandleKafkaFlags(readCmd, writeCmd, opts)
 	HandleRabbitFlags(readCmd, writeCmd, opts)
 	HandleGCPPubSubFlags(readCmd, writeCmd, opts)
 	HandleMQTTFlags(readCmd, writeCmd, opts)
-	HandleAWSSQSFlags(readCmd, writeCmd, opts)
+	HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
 
 	app.Version(version)
 	app.HelpFlag.Short('h')
@@ -66,6 +86,7 @@ func Handle() (string, *Options, error) {
 	}
 
 	opts.Action = "unknown"
+	opts.Version = version
 
 	cmds := strings.Split(cmd, " ")
 	if len(cmds) > 0 {
@@ -73,4 +94,41 @@ func Handle() (string, *Options, error) {
 	}
 
 	return cmd, opts, err
+}
+
+func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
+	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs").
+		Envar("PLUMBER_RELAY_TYPE").
+		EnumVar(&opts.RelayType, "aws-sqs")
+
+	relayCmd.Flag("token", "Collection token to use when sending data to Batch").
+		Required().
+		Envar("PLUMBER_RELAY_TOKEN").
+		StringVar(&opts.RelayToken)
+
+	relayCmd.Flag("grpc-address", "Alternative gRPC collector address").
+		Default(DefaultGRPCAddress).
+		Envar("PLUMBER_RELAY_GRPC_ADDRESS").
+		StringVar(&opts.RelayGRPCAddress)
+
+	relayCmd.Flag("grpc-disable-tls", "Disable TLS when talking to gRPC collector").
+		Default("false").
+		Envar("PLUMBER_RELAY_GRPC_DISABLE_TLS").
+		BoolVar(&opts.RelayGRPCDisableTLS)
+
+	relayCmd.Flag("grpc-timeout", "gRPC collector timeout").
+		Default(DefaultGRPCTimeout).
+		Envar("PLUMBER_RELAY_GRPC_TIMEOUT").
+		DurationVar(&opts.RelayGRPCTimeout)
+
+	relayCmd.Flag("num-workers", "Number of relay workers").
+		Default(DefaultNumWorkers).
+		Envar("PLUMBER_RELAY_NUM_WORKERS").
+		IntVar(&opts.RelayNumWorkers)
+
+	relayCmd.Flag("listen-address", "Alternative listen address for local HTTP server").
+		Default(DefaultHTTPListenAddress).
+		Envar("PLUMBER_RELAY_HTTP_LISTEN_ADDRESS").
+		StringVar(&opts.RelayHTTPListenAddress)
+
 }
