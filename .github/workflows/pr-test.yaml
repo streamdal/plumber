@@ -14,4 +14,5 @@ jobs:
           time: '30s'
       - name: Test
         run: |
+          go version
           make test
