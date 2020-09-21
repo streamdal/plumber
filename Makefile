@@ -1,7 +1,7 @@
 VERSION ?= $(shell git rev-parse --short HEAD)
 BINARY   = plumber
 
-GO = CGO_ENABLED=$(CGO_ENABLED) GOFLAGS=-mod=vendor go
+GO = CGO_ENABLED=$(CGO_ENABLED) GONOPROXY=github.com/batchcorp GOFLAGS=-mod=vendor go
 CGO_ENABLED ?= 0
 GO_BUILD_FLAGS = -ldflags "-X github.com/batchcorp/plumber/cli.version=${VERSION}"
 
