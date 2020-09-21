@@ -1,4 +1,4 @@
 .idea
-build/
+./build
 .DS*
 test-assets/backend-data/*
