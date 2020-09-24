@@ -78,58 +78,28 @@ func (r *Relayer) Relay() error {
 
 	r.log.Infof("HTTP server listening on '%s'", r.Options.RelayHTTPListenAddress)
 
-	for {
+	msgChan, err := r.Channel.Consume(
+		r.Options.Rabbit.ReadQueue,
+		"",
+		true,
+		r.Options.Rabbit.ReadQueueExclusive,
+		false,
+		false,
+		nil)
 
-		err := r.Channel.ExchangeDeclare(
-			r.Options.Rabbit.Exchange,
-			"topic",
-			true,
-			true,
-			false,
-			false,
-			nil)
+	if err != nil {
+		return errors.Wrap(err, "unable to create initial consume channel")
+	}
 
-		if err != nil {
-			return errors.Wrap(err, "could not declare RabbitMQ exchange")
+	// Send message(s) to relayer
+	for msg := range msgChan {
+		r.log.Debug("Writing RabbitMQ message to relay channel")
+
+		r.RelayCh <- &types.RelayMessage{
+			Value: &msg,
+			Options: &types.RelayMessageOptions{},
 		}
 
-		q, err := r.Channel.QueueDeclare(
-			"",
-			false,
-			false,
-			true,
-			false,
-			nil)
-
-		if err != nil {
-			return errors.Wrap(err, "could not declare RabbitMQ queue")
-		}
-
-		err = r.Channel.QueueBind(
-			q.Name,
-			"routing key here",
-			r.Options.Rabbit.Exchange,
-			false,
-			nil)
-
-		msgs, err := r.Channel.Consume(
-			q.Name,
-			"",
-			true,
-			false,
-			false,
-			false,
-			nil)
-
-		// Send message(s) to relayer
-		for msg := range msgs {
-			r.log.Debug("Writing RabbitMQ message to relay channel")
-
-			r.RelayCh <- &types.RelayMessage{
-				Value: &msg,
-				Options: &types.RelayMessageOptions{},
-			}
-		}
 	}
 
 	return nil
