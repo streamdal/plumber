@@ -1,0 +1,13 @@
+language: go
+
+go:
+  - 1.13.x
+
+sudo: required
+
+install:
+  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.24.0
+
+script:
+  - golangci-lint run -E golint
+  - go test -v -race --timeout 1m

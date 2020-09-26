@@ -160,6 +160,9 @@ github.com/onsi/gomega/types
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
+# github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d
+## explicit
+github.com/relistan/go-director
 # github.com/segmentio/kafka-go v0.3.7
 ## explicit
 github.com/segmentio/kafka-go

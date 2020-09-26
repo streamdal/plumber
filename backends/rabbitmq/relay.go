@@ -1,10 +1,12 @@
 package rabbitmq
 
 import (
+	"context"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
+	"github.com/relistan/go-director"
 
 	"github.com/batchcorp/plumber/api"
 	"github.com/batchcorp/plumber/backends/rabbitmq/types"
@@ -18,12 +20,17 @@ type Relayer struct {
 	MsgDesc *desc.MessageDescriptor
 	RelayCh  chan interface{}
 	log     *logrus.Entry
+	Looper  *director.FreeLooper
+	DefaultContext context.Context
 }
 
 func Relay(opts *cli.Options) error {
 	if err := validateRelayOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to verify options")
 	}
+
+	// TODO: move this up the chain?
+	ctx := context.Background()
 
 	// Create new relayer instance (+ validate token & gRPC address)
 	relayCfg := &relay.Config{
@@ -63,6 +70,8 @@ func Relay(opts *cli.Options) error {
 		Options:  opts,
 		RelayCh:  relayCfg.RelayCh,
 		log:      logrus.WithField("pkg", "rabbitmq/relay"),
+		Looper:   director.NewFreeLooper(director.FOREVER, make(chan error)),
+		DefaultContext: ctx,
 	}
 
 	return r.Relay()
@@ -92,15 +101,21 @@ func (r *Relayer) Relay() error {
 	}
 
 	// Send message(s) to relayer
-	for msg := range msgChan {
-		r.log.Debug("Writing RabbitMQ message to relay channel")
+	r.Looper.Loop(func() error {
+		select {
+		case msg:= <-msgChan:
+			r.log.Debug("Writing RabbitMQ message to relay channel")
 
-		r.RelayCh <- &types.RelayMessage{
-			Value: &msg,
-			Options: &types.RelayMessageOptions{},
+			r.RelayCh <- &types.RelayMessage{
+				Value: &msg,
+				Options: &types.RelayMessageOptions{},
+			}
+		case <-r.DefaultContext.Done():
+			r.log.Warning("received notice to quit loop")
+			r.Looper.Quit()
 		}
-
-	}
+		return nil
+	})
 
 	return nil
 }
