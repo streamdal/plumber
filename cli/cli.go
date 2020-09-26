@@ -71,7 +71,7 @@ func Handle() (string, *Options, error) {
 
 	HandleRelayFlags(relayCmd, opts)
 	HandleKafkaFlags(readCmd, writeCmd, opts)
-	HandleRabbitFlags(readCmd, writeCmd, opts)
+	HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
 	HandleGCPPubSubFlags(readCmd, writeCmd, opts)
 	HandleMQTTFlags(readCmd, writeCmd, opts)
 	HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)

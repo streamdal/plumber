@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"os"
+
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -31,7 +33,7 @@ type RabbitOptions struct {
 	WriteProtobufRootMessage string
 }
 
-func HandleRabbitFlags(readCmd, writeCmd *kingpin.CmdClause, opts *Options) {
+func HandleRabbitFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Options) {
 	// RabbitMQ read cmd
 	rc := readCmd.Command("rabbit", "RabbitMQ message system")
 
@@ -43,15 +45,38 @@ func HandleRabbitFlags(readCmd, writeCmd *kingpin.CmdClause, opts *Options) {
 
 	addSharedRabbitFlags(wc, opts)
 	addWriteRabbitFlags(wc, opts)
+
+	// If PLUMBER_RELAY_TYPE is set, use env vars, otherwise use CLI flags
+	relayType := os.Getenv("PLUMBER_RELAY_TYPE")
+
+	var rec *kingpin.CmdClause
+
+	if relayType != "" {
+		rec = relayCmd
+	} else {
+		rec = relayCmd.Command("rabbit", "RabbitMQ")
+	}
+
+	addSharedRabbitFlags(rec, opts)
+	addRelayRabbitFlags(rec, opts)
 }
 
 func addSharedRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("address", "Destination host address").Default("amqp://localhost").
+		Envar("PLUMBER_RELAY_RABBIT_ADDRESS").
 		StringVar(&opts.Rabbit.Address)
-	cmd.Flag("exchange", "Name of the exchange").StringVar(&opts.Rabbit.Exchange)
+	cmd.Flag("exchange", "Name of the exchange").
+		Envar("PLUMBER_RELAY_RABBIT_EXCHANGE").
+		StringVar(&opts.Rabbit.Exchange)
 
 	// TODO: This should really NOT be a shared key (for reads - binding key, for writes, routing key)
-	cmd.Flag("routing-key", "Routing key").StringVar(&opts.Rabbit.RoutingKey)
+	cmd.Flag("routing-key", "Routing key").
+		Envar("PLUMBER_RELAY_RABBIT_ROUTING_KEY").
+		StringVar(&opts.Rabbit.RoutingKey)
+}
+
+func addRelayRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
+	// TODO: figure out what options we need here
 }
 
 func addReadRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
