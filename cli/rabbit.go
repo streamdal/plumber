@@ -81,13 +81,20 @@ func addRelayRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 
 func addReadRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("queue", "Name of the queue where messages will be routed to").
+		Envar("PLUMBER_RELAY_RABBIT_QUEUE").
 		StringVar(&opts.Rabbit.ReadQueue)
 	cmd.Flag("queue-durable", "Whether the queue we declare should survive server restarts").
-		Default("false").BoolVar(&opts.Rabbit.ReadQueueDurable)
+		Default("false").
+		Envar("PLUMBER_RELAY_RABBIT_QUEUE_DURABLE").
+		BoolVar(&opts.Rabbit.ReadQueueDurable)
 	cmd.Flag("queue-auto-delete", "Whether to auto-delete the queue after plumber has disconnected").
-		Default("true").BoolVar(&opts.Rabbit.ReadQueueAutoDelete)
+		Default("true").
+		Envar("PLUMBER_RELAY_RABBIT_QUEUE_AUTO_DELETE").
+		BoolVar(&opts.Rabbit.ReadQueueAutoDelete)
 	cmd.Flag("queue-exclusive", "Whether plumber should be the only one using the newly defined queue").
-		Default("true").BoolVar(&opts.Rabbit.ReadQueueExclusive)
+		Default("true").
+		Envar("PLUMBER_RELAY_RABBIT_QUEUE_EXCLUSIVE").
+		BoolVar(&opts.Rabbit.ReadQueueExclusive)
 	cmd.Flag("line-numbers", "Display line numbers for each message").
 		Default("false").BoolVar(&opts.Rabbit.ReadLineNumbers)
 	cmd.Flag("follow", "Continuous read (ie. `tail -f`)").Short('f').
