@@ -73,13 +73,6 @@ func addSharedRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("routing-key", "Routing key").
 		Envar("PLUMBER_RELAY_RABBIT_ROUTING_KEY").
 		StringVar(&opts.Rabbit.RoutingKey)
-}
-
-func addRelayRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
-	// TODO: figure out what options we need here
-}
-
-func addReadRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("queue", "Name of the queue where messages will be routed to").
 		Envar("PLUMBER_RELAY_RABBIT_QUEUE").
 		StringVar(&opts.Rabbit.ReadQueue)
@@ -95,6 +88,13 @@ func addReadRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Default("true").
 		Envar("PLUMBER_RELAY_RABBIT_QUEUE_EXCLUSIVE").
 		BoolVar(&opts.Rabbit.ReadQueueExclusive)
+}
+
+func addRelayRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
+	// TODO: figure out what options we need here
+}
+
+func addReadRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("line-numbers", "Display line numbers for each message").
 		Default("false").BoolVar(&opts.Rabbit.ReadLineNumbers)
 	cmd.Flag("follow", "Continuous read (ie. `tail -f`)").Short('f').
