@@ -97,6 +97,7 @@ $ plumber read rabbit --address="amqp://localhost" --exchange events --routing-k
 **Get your leisure suit on**: Capture and relay data from messaging systems and
 send to the [Batch](https://batch.sh) platform:
 
+##### SQS
 ```bash
 # Run the relay in the foreground
 $ plumber relay aws-sqs --queue-name TestQueue --collect-token 36e0ab54-1296-4db5-8fb8-e5fe1b54d3aa
@@ -113,6 +114,19 @@ $ docker run -d --name plumber-sqs -p 8080:8080 \
     -e PLUMBER_RELAY_TOKEN=47b2b76e-0547-4dac-8b4b-74423fb02d53 \
     -e PLUMBER_RELAY_SQS_QUEUE_NAME=TestQueue
     batchcorp/plumber 
+```
+
+##### RabbitMQ
+```bash
+$ docker run --name plumber-rabbit -p 8080:8080 \
+    -e PLUMBER_RELAY_TYPE=rabbit \
+    -e PLUMBER_RELAY_TOKEN=d047af61-2bed-4d93-b51c-17239233175b \
+    -e PLUMBER_RELAY_RABBIT_EXCHANGE=my_exchange \
+    -e PLUMBER_RELAY_RABBIT_QUEUE=my_queue \
+    -e PLUMBER_RELAY_RABBIT_QUEUE_EXCLUSIVE=false \
+    -e PLUMBER_RELAY_RABBIT_QUEUE_DURABLE=true \
+    -e PLUMBER_RELAY_RABBIT_ROUTING_KEY=some.routing.key \
+    batchcorp/plumber
 ```
 
 **Getting Help**
