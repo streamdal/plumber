@@ -94,6 +94,11 @@ $ plumber read rabbit --address="amqp://localhost" --exchange events --routing-k
 ^C
 ```
 
+<sub>
+If your schemas are located in multiple places, you can specify `--protobuf-dir`
+multiple times. Treat it the same as you would `protoc -I`.
+</sub> 
+
 **Get your leisure suit on**: Capture and relay data from messaging systems and
 send to the [Batch](https://batch.sh) platform:
 

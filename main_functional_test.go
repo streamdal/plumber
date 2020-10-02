@@ -89,7 +89,7 @@ var _ = Describe("Functional", func() {
 				It("should work", func() {
 					randString := fmt.Sprintf("kafka-random-%d", rand.Int())
 
-					cmd := exec.Command(binary, "write", "message", "kafka", "--address", kafkaAddress,
+					cmd := exec.Command(binary, "write", "kafka", "--address", kafkaAddress,
 						"--topic", kafkaTopic, "--input-data", randString)
 
 					_, err := cmd.CombinedOutput()
@@ -108,7 +108,7 @@ var _ = Describe("Functional", func() {
 			Context("jsonpb input, protobuf output", func() {
 				It("should work", func() {
 					// We use "Outbound" here because it's simple
-					cmd := exec.Command(binary, "write", "message", "kafka", "--address", kafkaAddress,
+					cmd := exec.Command(binary, "write", "kafka", "--address", kafkaAddress,
 						"--topic", kafkaTopic, "--input-type", "jsonpb", "--output-type", "protobuf",
 						"--input-file", sampleOutboundJSONPB, "--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound")
