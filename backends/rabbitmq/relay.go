@@ -4,9 +4,9 @@ import (
 	"context"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
+	"github.com/relistan/go-director"
 	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
-	"github.com/relistan/go-director"
 
 	"github.com/batchcorp/plumber/api"
 	"github.com/batchcorp/plumber/backends/rabbitmq/types"
@@ -15,12 +15,12 @@ import (
 )
 
 type Relayer struct {
-	Options *cli.Options
-	Channel *amqp.Channel
-	MsgDesc *desc.MessageDescriptor
-	RelayCh  chan interface{}
-	log     *logrus.Entry
-	Looper  *director.FreeLooper
+	Options        *cli.Options
+	Channel        *amqp.Channel
+	MsgDesc        *desc.MessageDescriptor
+	RelayCh        chan interface{}
+	log            *logrus.Entry
+	Looper         *director.FreeLooper
 	DefaultContext context.Context
 }
 
@@ -66,11 +66,11 @@ func Relay(opts *cli.Options) error {
 	}
 
 	r := &Relayer{
-		Channel:  channel,
-		Options:  opts,
-		RelayCh:  relayCfg.RelayCh,
-		log:      logrus.WithField("pkg", "rabbitmq/relay"),
-		Looper:   director.NewFreeLooper(director.FOREVER, make(chan error)),
+		Channel:        channel,
+		Options:        opts,
+		RelayCh:        relayCfg.RelayCh,
+		log:            logrus.WithField("pkg", "rabbitmq/relay"),
+		Looper:         director.NewFreeLooper(director.FOREVER, make(chan error)),
 		DefaultContext: ctx,
 	}
 
@@ -78,6 +78,15 @@ func Relay(opts *cli.Options) error {
 }
 
 func validateRelayOptions(opts *cli.Options) error {
+	if opts.Rabbit.RoutingKey == "" {
+		return errors.New("You must specify a routing key")
+	}
+	if opts.Rabbit.ReadQueue == "" {
+		return errors.New("You must specify a queue to read from")
+	}
+	if opts.Rabbit.Exchange == "" {
+		return errors.New("You must specify an exchange")
+	}
 	return nil
 }
 
@@ -94,7 +103,8 @@ func (r *Relayer) Relay() error {
 		r.Options.Rabbit.ReadQueueExclusive,
 		false,
 		false,
-		nil)
+		nil,
+	)
 
 	if err != nil {
 		return errors.Wrap(err, "unable to create initial consume channel")
@@ -103,11 +113,11 @@ func (r *Relayer) Relay() error {
 	// Send message(s) to relayer
 	r.Looper.Loop(func() error {
 		select {
-		case msg:= <-msgChan:
+		case msg := <-msgChan:
 			r.log.Debug("Writing RabbitMQ message to relay channel")
 
 			r.RelayCh <- &types.RelayMessage{
-				Value: &msg,
+				Value:   &msg,
 				Options: &types.RelayMessageOptions{},
 			}
 		case <-r.DefaultContext.Done():

@@ -58,7 +58,6 @@ func HandleRabbitFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Opt
 	}
 
 	addSharedRabbitFlags(rec, opts)
-	addRelayRabbitFlags(rec, opts)
 }
 
 func addSharedRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
@@ -88,10 +87,6 @@ func addSharedRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Default("true").
 		Envar("PLUMBER_RELAY_RABBIT_QUEUE_EXCLUSIVE").
 		BoolVar(&opts.Rabbit.ReadQueueExclusive)
-}
-
-func addRelayRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
-	// TODO: figure out what options we need here
 }
 
 func addReadRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
