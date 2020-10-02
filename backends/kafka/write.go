@@ -33,7 +33,7 @@ func Write(opts *cli.Options) error {
 	var md *desc.MessageDescriptor
 
 	if opts.Kafka.WriteOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.Kafka.WriteProtobufDir, opts.Kafka.WriteProtobufRootMessage)
+		md, mdErr = pb.FindMessageDescriptor(opts.Kafka.WriteProtobufDirs, opts.Kafka.WriteProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")
 		}
@@ -134,23 +134,14 @@ func convertJSONPBToProtobuf(data []byte, m *dynamic.Message) ([]byte, error) {
 }
 
 func validateWriteOptions(opts *cli.Options) error {
-	// If output-type is protobuf, ensure that protobuf flags are set
 	// If type is protobuf, ensure both --protobuf-dir and --protobuf-root-message
 	// are set as well
 	if opts.Kafka.WriteOutputType == "protobuf" {
-		if opts.Kafka.WriteProtobufDir == "" {
-			return errors.New("'protobuf-dir' must be set when type " +
-				"is set to 'protobuf'")
-		}
-
-		if opts.Kafka.WriteProtobufRootMessage == "" {
-			return errors.New("'protobuf-root-message' must be when " +
-				"type is set to 'protobuf'")
-		}
-
-		// Does given dir exist?
-		if _, err := os.Stat(opts.Kafka.WriteProtobufDir); os.IsNotExist(err) {
-			return fmt.Errorf("protobuf-dir '%s' does not exist", opts.Kafka.WriteProtobufDir)
+		if err := cli.ValidateProtobufOptions(
+			opts.Kafka.WriteProtobufDirs,
+			opts.Kafka.WriteProtobufRootMessage,
+		); err != nil {
+			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
 		}
 	}
 

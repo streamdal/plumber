@@ -33,7 +33,7 @@ func Write(opts *cli.Options) error {
 	var md *desc.MessageDescriptor
 
 	if opts.GCPPubSub.WriteOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.GCPPubSub.WriteProtobufDir, opts.GCPPubSub.WriteProtobufRootMessage)
+		md, mdErr = pb.FindMessageDescriptor(opts.GCPPubSub.WriteProtobufDirs, opts.GCPPubSub.WriteProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")
 		}
@@ -79,23 +79,14 @@ func (g *GCPPubSub) Write(ctx context.Context, value []byte) error {
 }
 
 func validateWriteOptions(opts *cli.Options) error {
-	// If output-type is protobuf, ensure that protobuf flags are set
 	// If type is protobuf, ensure both --protobuf-dir and --protobuf-root-message
 	// are set as well
 	if opts.GCPPubSub.WriteOutputType == "protobuf" {
-		if opts.GCPPubSub.WriteProtobufDir == "" {
-			return errors.New("'--protobuf-dir' must be set when type " +
-				"is set to 'protobuf'")
-		}
-
-		if opts.GCPPubSub.WriteProtobufRootMessage == "" {
-			return errors.New("'--protobuf-root-message' must be when " +
-				"type is set to 'protobuf'")
-		}
-
-		// Does given dir exist?
-		if _, err := os.Stat(opts.GCPPubSub.WriteProtobufDir); os.IsNotExist(err) {
-			return fmt.Errorf("--protobuf-dir '%s' does not exist", opts.GCPPubSub.WriteProtobufDir)
+		if err := cli.ValidateProtobufOptions(
+			opts.GCPPubSub.WriteProtobufDirs,
+			opts.GCPPubSub.WriteProtobufRootMessage,
+		); err != nil {
+			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
 		}
 	}
 

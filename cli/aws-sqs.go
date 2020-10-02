@@ -15,7 +15,7 @@ type AWSSQSOptions struct {
 	ReadAutoDelete              bool
 	ReadReceiveRequestAttemptId string
 	ReadWaitTimeSeconds         int64
-	ReadProtobufDir             string
+	ReadProtobufDirs            []string
 	ReadProtobufRootMessage     string
 	ReadOutputType              string
 	ReadFollow                  bool
@@ -29,7 +29,7 @@ type AWSSQSOptions struct {
 	WriteInputFile           string
 	WriteInputType           string
 	WriteOutputType          string
-	WriteProtobufDir         string
+	WriteProtobufDirs         []string
 	WriteProtobufRootMessage string
 
 	// Relay
@@ -115,7 +115,7 @@ func addReadAWSSQSFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Int64Var(&opts.AWSSQS.ReadWaitTimeSeconds)
 
 	cmd.Flag("protobuf-dir", "Directory with .proto files").
-		ExistingDirVar(&opts.AWSSQS.ReadProtobufDir)
+		ExistingDirsVar(&opts.AWSSQS.ReadProtobufDirs)
 
 	cmd.Flag("protobuf-root-message", "Specifies the root message in a protobuf descriptor "+
 		"set (required if protobuf-dir set)").
@@ -160,7 +160,7 @@ func addWriteAWSSQSFlags(cmd *kingpin.CmdClause, opts *Options) {
 		EnumVar(&opts.AWSSQS.WriteOutputType, "plain", "protobuf")
 
 	cmd.Flag("protobuf-dir", "Directory with .proto files").
-		ExistingDirVar(&opts.AWSSQS.WriteProtobufDir)
+		ExistingDirsVar(&opts.AWSSQS.WriteProtobufDirs)
 
 	cmd.Flag("protobuf-root-message", "Root message in a protobuf descriptor set "+
 		"(required if protobuf-dir set)").

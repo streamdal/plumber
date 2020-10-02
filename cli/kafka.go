@@ -23,7 +23,7 @@ type KafkaOptions struct {
 	ReadGroupId             string
 	ReadFollow              bool
 	ReadOutputType          string
-	ReadProtobufDir         string
+	ReadProtobufDirs         []string
 	ReadProtobufRootMessage string
 	ReadConvert             string
 
@@ -33,7 +33,7 @@ type KafkaOptions struct {
 	WriteInputFile           string
 	WriteInputType           string
 	WriteOutputType          string
-	WriteProtobufDir         string
+	WriteProtobufDirs       []string
 	WriteProtobufRootMessage string
 }
 
@@ -67,7 +67,7 @@ func addReadKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("output-type", "The type of message(s) you will receive on the bus").
 		Default("plain").EnumVar(&opts.Kafka.ReadOutputType, "plain", "protobuf")
 	cmd.Flag("protobuf-dir", "Directory with .proto files").
-		ExistingDirVar(&opts.Kafka.ReadProtobufDir)
+		ExistingDirsVar(&opts.Kafka.ReadProtobufDirs)
 	cmd.Flag("protobuf-root-message", "Specifies the root message in a protobuf descriptor "+
 		"set (required if protobuf-dir set)").StringVar(&opts.Kafka.ReadProtobufRootMessage)
 	cmd.Flag("convert", "Convert received (output) message(s)").
@@ -84,7 +84,7 @@ func addWriteKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("output-type", "Convert input to this type when writing message").
 		Default("plain").EnumVar(&opts.Kafka.WriteOutputType, "plain", "protobuf")
 	cmd.Flag("protobuf-dir", "Directory with .proto files").
-		ExistingDirVar(&opts.Kafka.WriteProtobufDir)
+		ExistingDirsVar(&opts.Kafka.WriteProtobufDirs)
 	cmd.Flag("protobuf-root-message", "Root message in a protobuf descriptor set "+
 		"(required if protobuf-dir set)").StringVar(&opts.Kafka.WriteProtobufRootMessage)
 }

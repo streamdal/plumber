@@ -28,7 +28,7 @@ func Read(opts *cli.Options) error {
 	var md *desc.MessageDescriptor
 
 	if opts.GCPPubSub.ReadOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.GCPPubSub.ReadProtobufDir, opts.GCPPubSub.ReadProtobufRootMessage)
+		md, mdErr = pb.FindMessageDescriptor(opts.GCPPubSub.ReadProtobufDirs, opts.GCPPubSub.ReadProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")
 		}
@@ -139,19 +139,11 @@ func validateReadOptions(opts *cli.Options) error {
 	}
 
 	if opts.GCPPubSub.ReadOutputType == "protobuf" {
-		if opts.GCPPubSub.ReadProtobufDir == "" {
-			return errors.New("'--protobuf-dir' must be set when type " +
-				"is set to 'protobuf'")
-		}
-
-		if opts.GCPPubSub.ReadProtobufRootMessage == "" {
-			return errors.New("'--protobuf-root-message' must be when " +
-				"type is set to 'protobuf'")
-		}
-
-		// Does given dir exist?
-		if _, err := os.Stat(opts.GCPPubSub.ReadProtobufDir); os.IsNotExist(err) {
-			return fmt.Errorf("--protobuf-dir '%s' does not exist", opts.GCPPubSub.ReadProtobufDir)
+		if err := cli.ValidateProtobufOptions(
+			opts.GCPPubSub.ReadProtobufDirs,
+			opts.GCPPubSub.ReadProtobufRootMessage,
+		); err != nil {
+			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
 		}
 	}
 

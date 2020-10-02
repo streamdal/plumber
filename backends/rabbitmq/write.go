@@ -32,7 +32,7 @@ func Write(opts *cli.Options) error {
 	var md *desc.MessageDescriptor
 
 	if opts.Rabbit.WriteOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.Rabbit.WriteProtobufDir, opts.Rabbit.WriteProtobufRootMessage)
+		md, mdErr = pb.FindMessageDescriptor(opts.Rabbit.WriteProtobufDirs, opts.Rabbit.WriteProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")
 		}
@@ -67,23 +67,14 @@ func (r *RabbitMQ) Write(value []byte) error {
 }
 
 func validateWriteOptions(opts *cli.Options) error {
-	// If output-type is protobuf, ensure that protobuf flags are set
 	// If type is protobuf, ensure both --protobuf-dir and --protobuf-root-message
 	// are set as well
 	if opts.Rabbit.WriteOutputType == "protobuf" {
-		if opts.Rabbit.WriteProtobufDir == "" {
-			return errors.New("'--protobuf-dir' must be set when type " +
-				"is set to 'protobuf'")
-		}
-
-		if opts.Rabbit.WriteProtobufRootMessage == "" {
-			return errors.New("'--protobuf-root-message' must be when " +
-				"type is set to 'protobuf'")
-		}
-
-		// Does given dir exist?
-		if _, err := os.Stat(opts.Rabbit.WriteProtobufDir); os.IsNotExist(err) {
-			return fmt.Errorf("--protobuf-dir '%s' does not exist", opts.Rabbit.WriteProtobufDir)
+		if err := cli.ValidateProtobufOptions(
+			opts.Rabbit.WriteProtobufDirs,
+			opts.Rabbit.WriteProtobufRootMessage,
+		); err != nil {
+			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
 		}
 	}
 

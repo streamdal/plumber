@@ -3,7 +3,6 @@ package mqtt
 import (
 	"encoding/base64"
 	"fmt"
-	"os"
 	"strings"
 	"sync"
 
@@ -32,7 +31,7 @@ func Read(opts *cli.Options) error {
 	var md *desc.MessageDescriptor
 
 	if opts.MQTT.ReadOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.MQTT.ReadProtobufDir, opts.MQTT.ReadProtobufRootMessage)
+		md, mdErr = pb.FindMessageDescriptor(opts.MQTT.ReadProtobufDirs, opts.MQTT.ReadProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")
 		}
@@ -169,19 +168,11 @@ func validateReadOptions(opts *cli.Options) error {
 	}
 
 	if opts.MQTT.ReadOutputType == "protobuf" {
-		if opts.MQTT.ReadProtobufDir == "" {
-			return errors.New("'--protobuf-dir' must be set when type " +
-				"is set to 'protobuf'")
-		}
-
-		if opts.MQTT.ReadProtobufRootMessage == "" {
-			return errors.New("'--protobuf-root-message' must be when " +
-				"type is set to 'protobuf'")
-		}
-
-		// Does given dir exist?
-		if _, err := os.Stat(opts.MQTT.ReadProtobufDir); os.IsNotExist(err) {
-			return fmt.Errorf("--protobuf-dir '%s' does not exist", opts.MQTT.ReadProtobufDir)
+		if err := cli.ValidateProtobufOptions(
+			opts.MQTT.ReadProtobufDirs,
+			opts.MQTT.ReadProtobufRootMessage,
+		); err != nil {
+			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
 		}
 	}
 

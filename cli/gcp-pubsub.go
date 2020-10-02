@@ -8,7 +8,7 @@ type GCPPubSubOptions struct {
 
 	// Read
 	ReadSubscriptionId      string
-	ReadProtobufDir         string
+	ReadProtobufDirs        []string
 	ReadProtobufRootMessage string
 	ReadOutputType          string
 	ReadAck                 bool
@@ -22,7 +22,7 @@ type GCPPubSubOptions struct {
 	WriteInputFile           string
 	WriteInputType           string
 	WriteOutputType          string
-	WriteProtobufDir         string
+	WriteProtobufDirs        []string
 	WriteProtobufRootMessage string
 }
 
@@ -47,7 +47,7 @@ func addSharedGCPPubSubFlags(cmd *kingpin.CmdClause, opts *Options) {
 func addReadGCPPubSubFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("sub-id", "Subscription Id").Required().StringVar(&opts.GCPPubSub.ReadSubscriptionId)
 	cmd.Flag("protobuf-dir", "Directory with .proto files").
-		ExistingDirVar(&opts.GCPPubSub.ReadProtobufDir)
+		ExistingDirsVar(&opts.GCPPubSub.ReadProtobufDirs)
 	cmd.Flag("protobuf-root-message", "Specifies the root message in a protobuf descriptor "+
 		"set (required if protobuf-dir set)").StringVar(&opts.GCPPubSub.ReadProtobufRootMessage)
 	cmd.Flag("output-type", "The type of message(s) you will receive on the bus").
@@ -73,7 +73,7 @@ func addWriteGCPPubSubFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("output-type", "Convert input to this type when writing message").
 		Default("plain").EnumVar(&opts.GCPPubSub.WriteOutputType, "plain", "protobuf")
 	cmd.Flag("protobuf-dir", "Directory with .proto files").
-		ExistingDirVar(&opts.GCPPubSub.WriteProtobufDir)
+		ExistingDirsVar(&opts.GCPPubSub.WriteProtobufDirs)
 	cmd.Flag("protobuf-root-message", "Root message in a protobuf descriptor set "+
 		"(required if protobuf-dir set)").StringVar(&opts.GCPPubSub.WriteProtobufRootMessage)
 }

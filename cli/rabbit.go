@@ -17,7 +17,7 @@ type RabbitOptions struct {
 	ReadQueueExclusive      bool
 	ReadLineNumbers         bool
 	ReadFollow              bool
-	ReadProtobufDir         string
+	ReadProtobufDirs        []string
 	ReadProtobufRootMessage string
 	ReadOutputType          string
 	ReadConvert             string
@@ -27,7 +27,7 @@ type RabbitOptions struct {
 	WriteInputFile           string
 	WriteInputType           string
 	WriteOutputType          string
-	WriteProtobufDir         string
+	WriteProtobufDirs        []string
 	WriteProtobufRootMessage string
 }
 
@@ -68,7 +68,7 @@ func addReadRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("follow", "Continuous read (ie. `tail -f`)").Short('f').
 		BoolVar(&opts.Rabbit.ReadFollow)
 	cmd.Flag("protobuf-dir", "Directory with .proto files").
-		ExistingDirVar(&opts.Rabbit.ReadProtobufDir)
+		ExistingDirsVar(&opts.Rabbit.ReadProtobufDirs)
 	cmd.Flag("protobuf-root-message", "Specifies the root message in a protobuf descriptor "+
 		"set (required if protobuf-dir set)").StringVar(&opts.Rabbit.ReadProtobufRootMessage)
 	cmd.Flag("output-type", "The type of message(s) you will receive on the bus").
@@ -86,7 +86,7 @@ func addWriteRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("output-type", "Convert input to this type when writing message").
 		Default("plain").EnumVar(&opts.Rabbit.WriteOutputType, "plain", "protobuf")
 	cmd.Flag("protobuf-dir", "Directory with .proto files").
-		ExistingDirVar(&opts.Rabbit.WriteProtobufDir)
+		ExistingDirsVar(&opts.Rabbit.WriteProtobufDirs)
 	cmd.Flag("protobuf-root-message", "Root message in a protobuf descriptor set "+
 		"(required if protobuf-dir set)").StringVar(&opts.Rabbit.WriteProtobufRootMessage)
 }
