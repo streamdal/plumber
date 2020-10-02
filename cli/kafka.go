@@ -23,7 +23,7 @@ type KafkaOptions struct {
 	ReadGroupId             string
 	ReadFollow              bool
 	ReadOutputType          string
-	ReadProtobufDirs         []string
+	ReadProtobufDirs        []string
 	ReadProtobufRootMessage string
 	ReadConvert             string
 
@@ -33,7 +33,7 @@ type KafkaOptions struct {
 	WriteInputFile           string
 	WriteInputType           string
 	WriteOutputType          string
-	WriteProtobufDirs       []string
+	WriteProtobufDirs        []string
 	WriteProtobufRootMessage string
 }
 
