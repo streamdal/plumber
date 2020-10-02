@@ -137,12 +137,12 @@ func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
 
 func ValidateProtobufOptions(dirs []string, rootMessage string) error {
 	if len(dirs) == 0 {
-		return errors.New("at least one '--protobuf-dir' must be set when type " +
+		return errors.New("at least one '--protobuf-dir' required when type " +
 			"is set to 'protobuf'")
 	}
 
 	if rootMessage == "" {
-		return errors.New("'--protobuf-root-message' must be when " +
+		return errors.New("'--protobuf-root-message' required when " +
 			"type is set to 'protobuf'")
 	}
 
