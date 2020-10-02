@@ -35,7 +35,7 @@ func Write(opts *cli.Options) error {
 	var md *desc.MessageDescriptor
 
 	if opts.AWSSQS.WriteOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.AWSSQS.WriteProtobufDir, opts.AWSSQS.WriteProtobufRootMessage)
+		md, mdErr = pb.FindMessageDescriptor(opts.AWSSQS.WriteProtobufDirs, opts.AWSSQS.WriteProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")
 		}
@@ -71,19 +71,11 @@ func validateWriteOptions(opts *cli.Options) error {
 	// If type is protobuf, ensure both --protobuf-dir and --protobuf-root-message
 	// are set as well
 	if opts.AWSSQS.WriteOutputType == "protobuf" {
-		if opts.AWSSQS.WriteProtobufDir == "" {
-			return errors.New("'--protobuf-dir' must be set when type " +
-				"is set to 'protobuf'")
-		}
-
-		if opts.AWSSQS.WriteProtobufRootMessage == "" {
-			return errors.New("'--protobuf-root-message' must be when " +
-				"type is set to 'protobuf'")
-		}
-
-		// Does given dir exist?
-		if _, err := os.Stat(opts.AWSSQS.WriteProtobufDir); os.IsNotExist(err) {
-			return fmt.Errorf("--protobuf-dir '%s' does not exist", opts.AWSSQS.WriteProtobufDir)
+		if err := cli.ValidateProtobufOptions(
+			opts.AWSSQS.WriteProtobufDirs,
+			opts.AWSSQS.WriteProtobufRootMessage,
+		); err != nil {
+			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
 		}
 	}
 

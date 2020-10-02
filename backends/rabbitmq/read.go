@@ -3,7 +3,6 @@ package rabbitmq
 import (
 	"encoding/base64"
 	"fmt"
-	"os"
 
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
@@ -29,7 +28,7 @@ func Read(opts *cli.Options) error {
 	var md *desc.MessageDescriptor
 
 	if opts.Rabbit.ReadOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.Rabbit.ReadProtobufDir, opts.Rabbit.ReadProtobufRootMessage)
+		md, mdErr = pb.FindMessageDescriptor(opts.Rabbit.ReadProtobufDirs, opts.Rabbit.ReadProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")
 		}
@@ -132,19 +131,11 @@ func validateReadOptions(opts *cli.Options) error {
 	}
 
 	if opts.Rabbit.ReadOutputType == "protobuf" {
-		if opts.Rabbit.ReadProtobufDir == "" {
-			return errors.New("'--protobuf-dir' must be set when type " +
-				"is set to 'protobuf'")
-		}
-
-		if opts.Rabbit.ReadProtobufRootMessage == "" {
-			return errors.New("'--protobuf-root-message' must be when " +
-				"type is set to 'protobuf'")
-		}
-
-		// Does given dir exist?
-		if _, err := os.Stat(opts.Rabbit.ReadProtobufDir); os.IsNotExist(err) {
-			return fmt.Errorf("--protobuf-dir '%s' does not exist", opts.Rabbit.ReadProtobufDir)
+		if err := cli.ValidateProtobufOptions(
+			opts.Rabbit.ReadProtobufDirs,
+			opts.Rabbit.ReadProtobufRootMessage,
+		); err != nil {
+			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
 		}
 	}
 

@@ -3,7 +3,10 @@ package util
 import (
 	"bytes"
 	"compress/gzip"
+	"fmt"
 	"io"
+	"os"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -27,4 +30,20 @@ func Gunzip(data []byte) ([]byte, error) {
 	}
 
 	return resB.Bytes(), nil
+}
+
+func DirsExist(dirs []string) error {
+	var errs []string
+
+	for _, dir := range dirs {
+		if _, err := os.Stat(dir); os.IsNotExist(err) {
+			errs = append(errs, fmt.Sprintf("'%s' does not exist", dir))
+		}
+	}
+
+	if errs == nil {
+		return nil
+	}
+
+	return errors.New(strings.Join(errs, "; "))
 }

@@ -3,7 +3,6 @@ package awssqs
 import (
 	"encoding/base64"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -36,7 +35,7 @@ func Read(opts *cli.Options) error {
 	var md *desc.MessageDescriptor
 
 	if opts.AWSSQS.ReadOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.AWSSQS.ReadProtobufDir, opts.AWSSQS.ReadProtobufRootMessage)
+		md, mdErr = pb.FindMessageDescriptor(opts.AWSSQS.ReadProtobufDirs, opts.AWSSQS.ReadProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")
 		}
@@ -68,19 +67,11 @@ func validateReadOptions(opts *cli.Options) error {
 	}
 
 	if opts.AWSSQS.ReadOutputType == "protobuf" {
-		if opts.AWSSQS.ReadProtobufDir == "" {
-			return errors.New("'--protobuf-dir' must be set when type " +
-				"is set to 'protobuf'")
-		}
-
-		if opts.AWSSQS.ReadProtobufRootMessage == "" {
-			return errors.New("'--protobuf-root-message' must be when " +
-				"type is set to 'protobuf'")
-		}
-
-		// Does given dir exist?
-		if _, err := os.Stat(opts.AWSSQS.ReadProtobufDir); os.IsNotExist(err) {
-			return fmt.Errorf("--protobuf-dir '%s' does not exist", opts.AWSSQS.ReadProtobufDir)
+		if err := cli.ValidateProtobufOptions(
+			opts.AWSSQS.ReadProtobufDirs,
+			opts.AWSSQS.ReadProtobufRootMessage,
+		); err != nil {
+			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
 		}
 	}
 

@@ -1,12 +1,15 @@
 package cli
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/pkg/errors"
 	"gopkg.in/alecthomas/kingpin.v2"
+
+	"github.com/batchcorp/plumber/util"
 )
 
 const (
@@ -130,5 +133,23 @@ func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
 		Default(DefaultHTTPListenAddress).
 		Envar("PLUMBER_RELAY_HTTP_LISTEN_ADDRESS").
 		StringVar(&opts.RelayHTTPListenAddress)
+}
 
+func ValidateProtobufOptions(dirs []string, rootMessage string) error {
+	if len(dirs) == 0 {
+		return errors.New("at least one '--protobuf-dir' required when type " +
+			"is set to 'protobuf'")
+	}
+
+	if rootMessage == "" {
+		return errors.New("'--protobuf-root-message' required when " +
+			"type is set to 'protobuf'")
+	}
+
+	// Does given dir exist?
+	if err := util.DirsExist(dirs); err != nil {
+		return fmt.Errorf("--protobuf-dir validation error(s): %s", err)
+	}
+
+	return nil
 }
