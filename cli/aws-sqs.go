@@ -69,7 +69,6 @@ func HandleAWSSQSFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Opt
 
 func addSharedAWSSQSFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("queue-name", "Queue name").
-		Required().
 		Envar("PLUMBER_RELAY_SQS_QUEUE_NAME").
 		StringVar(&opts.AWSSQS.QueueName)
 }

@@ -16,6 +16,7 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	sqsTypes "github.com/batchcorp/plumber/backends/aws-sqs/types"
+	rabbitTypes "github.com/batchcorp/plumber/backends/rabbitmq/types"
 )
 
 const (
@@ -164,6 +165,8 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, ctx context.Context) {
 		switch v := msg.(type) {
 		case *sqsTypes.RelayMessage:
 			err = r.handleSQS(ctx, conn, v)
+		case *rabbitTypes.RelayMessage:
+			err = r.handleRabbit(ctx, conn, v)
 		default:
 			r.log.WithField("type", v).Error("received unknown message type - skipping")
 			continue
