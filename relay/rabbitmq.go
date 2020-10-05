@@ -2,6 +2,7 @@ package relay
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/batchcorp/schemas/build/go/events/records"
@@ -25,6 +26,7 @@ func (r *Relay) handleRabbit(ctx context.Context, conn *grpc.ClientConn, msg *ty
 	if _, err := client.AddAMQPRecord(ctx, &services.AMQPRecordRequest{
 		Records: []*records.AMQPSinkRecord{rabbitRecord},
 	}); err != nil {
+		fmt.Printf("%+v", rabbitRecord)
 		return errors.Wrap(err, "unable to complete AddAMQPRecord call")
 	}
 
