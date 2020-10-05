@@ -103,6 +103,9 @@ type Options struct {
 
 	// Whether to declare/create queue on connect; used only if QueueDeclare set to true
 	QueueDeclare bool
+
+	// Whether to automatically acknowledge consumed message(s)
+	AutoAck bool
 }
 
 // ConsumeError will be passed down the error channel if/when `f()` func runs
@@ -422,7 +425,7 @@ func (r *Rabbit) newConsumerChannel() error {
 
 	deliveryChannel, err := serverChannel.Consume(r.Options.QueueName,
 		"",
-		false,
+		r.Options.AutoAck,
 		r.Options.QueueExclusive,
 		false,
 		false,
