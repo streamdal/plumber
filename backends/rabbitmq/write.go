@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/batchcorp/rabbit"
 	"io/ioutil"
 	"os"
 
@@ -15,7 +14,6 @@ import (
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
 // Write is the entry point function for performing write operations in RabbitMQ.
@@ -38,22 +36,10 @@ func Write(opts *cli.Options) error {
 		}
 	}
 
-	rmq, err := rabbit.New(&rabbit.Options{
-		URL:          opts.Rabbit.Address,
-		QueueName:    opts.Rabbit.ReadQueue,
-		ExchangeName: opts.Rabbit.Exchange,
-		RoutingKey:   opts.Rabbit.RoutingKey,
-	})
+	r, err := New(opts, md)
 
 	if err != nil {
-		return errors.Wrap(err, "unable to initialize rabbitmq consumer")
-	}
-
-	r := &RabbitMQ{
-		Options:  opts,
-		Consumer: rmq,
-		MsgDesc:  md,
-		log:      logrus.WithField("pkg", "rabbitmq/write.go"),
+		return err
 	}
 
 	msg, err := generateWriteValue(md, opts)

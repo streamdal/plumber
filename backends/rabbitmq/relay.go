@@ -49,12 +49,6 @@ func Relay(opts *cli.Options) error {
 		return errors.Wrap(err, "unable to create new gRPC relayer")
 	}
 
-	// Create new service
-	channel, err := connect(opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to create new RabbitMQ service")
-	}
-
 	// Launch HTTP server
 	go func() {
 		if err := api.Start(opts.RelayHTTPListenAddress, opts.Version); err != nil {
@@ -68,7 +62,6 @@ func Relay(opts *cli.Options) error {
 	}
 
 	r := &Relayer{
-		Channel:        channel,
 		Options:        opts,
 		RelayCh:        relayCfg.RelayCh,
 		log:            logrus.WithField("pkg", "rabbitmq/relay"),

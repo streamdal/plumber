@@ -7,15 +7,13 @@ import (
 	"github.com/batchcorp/rabbit"
 	"github.com/streadway/amqp"
 
-	"github.com/jhump/protoreflect/desc"
-	"github.com/jhump/protoreflect/dynamic"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/util"
+	"github.com/jhump/protoreflect/desc"
+	"github.com/jhump/protoreflect/dynamic"
+	"github.com/pkg/errors"
 )
 
 // Read is the entry point function for performing read operations in RabbitMQ.
@@ -37,23 +35,10 @@ func Read(opts *cli.Options) error {
 		}
 	}
 
-	rmq, err := rabbit.New(&rabbit.Options{
-		URL:            opts.Rabbit.Address,
-		QueueName:      opts.Rabbit.ReadQueue,
-		ExchangeName:   opts.Rabbit.Exchange,
-		RoutingKey:     opts.Rabbit.RoutingKey,
-		QueueExclusive: opts.Rabbit.ReadQueueExclusive,
-	})
+	r, err := New(opts, md)
 
 	if err != nil {
-		return errors.Wrap(err, "unable to initialize rabbitmq consumer")
-	}
-
-	r := &RabbitMQ{
-		Options:  opts,
-		Consumer: rmq,
-		MsgDesc:  md,
-		log:      logrus.WithField("pkg", "rabbitmq/read.go"),
+		return err
 	}
 
 	return r.Read()
