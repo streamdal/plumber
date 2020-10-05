@@ -38,8 +38,6 @@ func Write(opts *cli.Options) error {
 		}
 	}
 
-	fmt.Print
-
 	rmq, err := rabbit.New(&rabbit.Options{
 		URL:          opts.Rabbit.Address,
 		QueueName:    opts.Rabbit.ReadQueue,
@@ -72,9 +70,6 @@ func Write(opts *cli.Options) error {
 // it in tests, add logging etc.
 func (r *RabbitMQ) Write(ctx context.Context, value []byte) error {
 	return r.Consumer.Publish(ctx, r.Options.Rabbit.RoutingKey, value)
-	//return r.Channel.Publish(r.Options.Rabbit.Exchange, r.Options.Rabbit.RoutingKey, false, false, amqp.Publishing{
-	//	Body: value,
-	//})
 }
 
 func validateWriteOptions(opts *cli.Options) error {
