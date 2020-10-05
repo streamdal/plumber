@@ -109,7 +109,7 @@ func (r *Relayer) Relay() error {
 	})
 
 	if err != nil {
-		errors.Wrap(err, "unable to start rabbitmq consumer")
+		return errors.Wrap(err, "unable to start rabbitmq consumer")
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
