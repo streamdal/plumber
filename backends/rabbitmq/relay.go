@@ -117,7 +117,7 @@ func (r *Relayer) Relay() error {
 	for {
 		select {
 		case errRabbit := <-errCh:
-			r.log.Errorf("error receiving message from rabbit %s", errRabbit)
+			r.log.Errorf("error receiving message from rabbit %+v", errRabbit.Error)
 		default:
 			rmq.Consume(ctx, errCh, func(msg amqp.Delivery) error {
 				r.log.Debug(fmt.Printf("Writing RabbitMQ message to relay channel: %+v", msg))
