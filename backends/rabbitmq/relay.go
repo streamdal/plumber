@@ -109,24 +109,24 @@ func (r *Relayer) Relay() error {
 	})
 
 	if err != nil {
-		return errors.Wrap(err, "unable to start rabbitmq consumer")
+		return errors.Wrap(err, "unable to initialize rabbitmq consumer")
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 
+	go rmq.Consume(ctx, errCh, func(msg amqp.Delivery) error {
+		r.log.Debug(fmt.Printf("Writing RabbitMQ message to relay channel: %+v", msg))
+		r.RelayCh <- &types.RelayMessage{
+			Value:   &msg,
+			Options: &types.RelayMessageOptions{},
+		}
+		return nil
+	})
+
 	for {
 		select {
 		case errRabbit := <-errCh:
-			r.log.Errorf("error receiving message from rabbit %+v", errRabbit.Error)
-		default:
-			rmq.Consume(ctx, errCh, func(msg amqp.Delivery) error {
-				r.log.Debug(fmt.Printf("Writing RabbitMQ message to relay channel: %+v", msg))
-				r.RelayCh <- &types.RelayMessage{
-					Value:   &msg,
-					Options: &types.RelayMessageOptions{},
-				}
-				return nil
-			})
+			r.log.Errorf("runFunc ran into an error: %s", errRabbit.Error.Error())
 		}
 	}
 
