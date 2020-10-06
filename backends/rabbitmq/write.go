@@ -2,20 +2,18 @@ package rabbitmq
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
 
+	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/pb"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-	"github.com/streadway/amqp"
-
-	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 )
 
 // Write is the entry point function for performing write operations in RabbitMQ.
@@ -38,16 +36,10 @@ func Write(opts *cli.Options) error {
 		}
 	}
 
-	ch, err := connect(opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to complete initial connect")
-	}
+	r, err := New(opts, md)
 
-	r := &RabbitMQ{
-		Options: opts,
-		Channel: ch,
-		MsgDesc: md,
-		log:     logrus.WithField("pkg", "rabbitmq/write.go"),
+	if err != nil {
+		return errors.Wrap(err, "unable to initialize rabbitmq consumer")
 	}
 
 	msg, err := generateWriteValue(md, opts)
@@ -55,15 +47,15 @@ func Write(opts *cli.Options) error {
 		return errors.Wrap(err, "unable to generate write value")
 	}
 
-	return r.Write(msg)
+	ctx := context.Background()
+
+	return r.Write(ctx, msg)
 }
 
 // Write is a wrapper for amqp Publish method. We wrap it so that we can mock
 // it in tests, add logging etc.
-func (r *RabbitMQ) Write(value []byte) error {
-	return r.Channel.Publish(r.Options.Rabbit.Exchange, r.Options.Rabbit.RoutingKey, false, false, amqp.Publishing{
-		Body: value,
-	})
+func (r *RabbitMQ) Write(ctx context.Context, value []byte) error {
+	return r.Consumer.Publish(ctx, r.Options.Rabbit.RoutingKey, value)
 }
 
 func validateWriteOptions(opts *cli.Options) error {

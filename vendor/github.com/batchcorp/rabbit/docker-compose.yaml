@@ -1,0 +1,10 @@
+version: "3"
+services:
+  rabbitmq:
+    image: rabbitmq:3.7.8-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    # volumes:
+    #  - ./backend-data:/var/lib/rabbitmq
+    container_name: rabbit_test

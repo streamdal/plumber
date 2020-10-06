@@ -2,6 +2,9 @@ package rabbitmq
 
 import (
 	"context"
+	"fmt"
+	"github.com/batchcorp/plumber/backends/rabbitmq/types"
+	"github.com/batchcorp/rabbit"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/relistan/go-director"
@@ -9,7 +12,6 @@ import (
 	"github.com/streadway/amqp"
 
 	"github.com/batchcorp/plumber/api"
-	"github.com/batchcorp/plumber/backends/rabbitmq/types"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
 )
@@ -47,12 +49,6 @@ func Relay(opts *cli.Options) error {
 		return errors.Wrap(err, "unable to create new gRPC relayer")
 	}
 
-	// Create new service
-	channel, err := connect(opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to create new RabbitMQ service")
-	}
-
 	// Launch HTTP server
 	go func() {
 		if err := api.Start(opts.RelayHTTPListenAddress, opts.Version); err != nil {
@@ -66,7 +62,6 @@ func Relay(opts *cli.Options) error {
 	}
 
 	r := &Relayer{
-		Channel:        channel,
 		Options:        opts,
 		RelayCh:        relayCfg.RelayCh,
 		log:            logrus.WithField("pkg", "rabbitmq/relay"),
@@ -91,41 +86,44 @@ func validateRelayOptions(opts *cli.Options) error {
 }
 
 func (r *Relayer) Relay() error {
+
+	errCh := make(chan *rabbit.ConsumeError)
+
 	r.log.Infof("Relaying RabbitMQ messages from '%s' exchange -> '%s'",
 		r.Options.Rabbit.Exchange, r.Options.RelayGRPCAddress)
 
 	r.log.Infof("HTTP server listening on '%s'", r.Options.RelayHTTPListenAddress)
 
-	msgChan, err := r.Channel.Consume(
-		r.Options.Rabbit.ReadQueue,
-		"",
-		true,
-		r.Options.Rabbit.ReadQueueExclusive,
-		false,
-		false,
-		nil,
-	)
+	rmq, err := rabbit.New(&rabbit.Options{
+		URL:          r.Options.Rabbit.Address,
+		QueueName:    r.Options.Rabbit.ReadQueue,
+		ExchangeName: r.Options.Rabbit.Exchange,
+		RoutingKey:   r.Options.Rabbit.RoutingKey,
+		AutoAck:      r.Options.Rabbit.ReadAutoAck,
+	})
 
 	if err != nil {
-		return errors.Wrap(err, "unable to create initial consume channel")
+		return errors.Wrap(err, "unable to initialize rabbitmq consumer")
 	}
 
-	// Send message(s) to relayer
-	r.Looper.Loop(func() error {
-		select {
-		case msg := <-msgChan:
-			r.log.Debug("Writing RabbitMQ message to relay channel")
+	ctx, cancel := context.WithCancel(context.Background())
 
-			r.RelayCh <- &types.RelayMessage{
-				Value:   &msg,
-				Options: &types.RelayMessageOptions{},
-			}
-		case <-r.DefaultContext.Done():
-			r.log.Warning("received notice to quit loop")
-			r.Looper.Quit()
+	go rmq.Consume(ctx, errCh, func(msg amqp.Delivery) error {
+		r.log.Debug(fmt.Printf("Writing RabbitMQ message to relay channel: %+v", msg))
+		r.RelayCh <- &types.RelayMessage{
+			Value:   &msg,
+			Options: &types.RelayMessageOptions{},
 		}
 		return nil
 	})
 
+	for {
+		select {
+		case errRabbit := <-errCh:
+			r.log.Errorf("runFunc ran into an error: %s", errRabbit.Error.Error())
+		}
+	}
+
+	cancel()
 	return nil
 }

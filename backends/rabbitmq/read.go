@@ -1,18 +1,19 @@
 package rabbitmq
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
-
-	"github.com/jhump/protoreflect/desc"
-	"github.com/jhump/protoreflect/dynamic"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
+	"github.com/batchcorp/rabbit"
+	"github.com/streadway/amqp"
 
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/util"
+	"github.com/jhump/protoreflect/desc"
+	"github.com/jhump/protoreflect/dynamic"
+	"github.com/pkg/errors"
 )
 
 // Read is the entry point function for performing read operations in RabbitMQ.
@@ -34,16 +35,10 @@ func Read(opts *cli.Options) error {
 		}
 	}
 
-	ch, err := connect(opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to complete initial connect")
-	}
+	r, err := New(opts, md)
 
-	r := &RabbitMQ{
-		Options: opts,
-		Channel: ch,
-		MsgDesc: md,
-		log:     logrus.WithField("pkg", "rabbitmq/read.go"),
+	if err != nil {
+		return errors.Wrap(err, "unable to initialize rabbitmq consumer")
 	}
 
 	return r.Read()
@@ -51,21 +46,15 @@ func Read(opts *cli.Options) error {
 
 // Read will attempt to consume one or more messages from the established rabbit
 // channel.
-//
-// NOTE: This method will not tolerate network hiccups. If you plan on running
-// this long-term - we should add reconnect support.
 func (r *RabbitMQ) Read() error {
 	r.log.Info("Listening for message(s) ...")
 
-	msgChan, err := r.Channel.Consume(r.Options.Rabbit.ReadQueue, "", true, r.Options.Rabbit.ReadQueueExclusive, false, false, nil)
-	if err != nil {
-		return errors.Wrap(err, "unable to create initial consume channel")
-	}
+	errCh := make(chan *rabbit.ConsumeError)
+	ctx, cancel := context.WithCancel(context.Background())
 
 	lineNumber := 1
 
-	for {
-		msg := <-msgChan
+	go r.Consumer.Consume(ctx, errCh, func(msg amqp.Delivery) error {
 
 		if r.Options.Rabbit.ReadOutputType == "protobuf" {
 			decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(r.MsgDesc), msg.Body)
@@ -75,7 +64,7 @@ func (r *RabbitMQ) Read() error {
 				}
 
 				printer.Error(fmt.Sprintf("unable to decode protobuf message: %s", err))
-				continue
+				return nil
 			}
 
 			msg.Body = decoded
@@ -99,7 +88,7 @@ func (r *RabbitMQ) Read() error {
 			}
 
 			printer.Error(fmt.Sprintf("unable to complete conversion for message: %s", convertErr))
-			continue
+			return errors.Wrap(convertErr, "unable to complete conversion for message")
 		}
 
 		str := string(data)
@@ -112,11 +101,21 @@ func (r *RabbitMQ) Read() error {
 		printer.Print(str)
 
 		if !r.Options.Rabbit.ReadFollow {
-			break
+			cancel()
+		}
+
+		return nil
+	})
+
+	for {
+		select {
+		case err := <-errCh:
+			return err.Error
+		case <-ctx.Done():
+			r.log.Debug("Reader exiting")
+			return nil
 		}
 	}
-
-	r.log.Debug("Reader exiting")
 
 	return nil
 }

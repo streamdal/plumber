@@ -1,8 +1,14 @@
 package rabbitmq
 
 import (
+	"bytes"
+	"context"
 	"fmt"
+	"github.com/batchcorp/rabbit"
+	"github.com/sirupsen/logrus"
+	"io"
 	"math/rand"
+	"os"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -23,8 +29,9 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-var _ = Describe("Shared", func() {
-	Context("connect", func() {
+var _ = Describe("RabbitMQ", func() {
+
+	Context("Read/Write", func() {
 		var (
 			rabbitCh      *amqp.Channel
 			testQueueName string
@@ -41,54 +48,10 @@ var _ = Describe("Shared", func() {
 			Expect(rabbitCh).ToNot(BeNil())
 		})
 
-		It("happy path: returns an amqp channel", func() {
-			testBody := []byte(fmt.Sprintf("test-body-contents-%d", rand.Int()))
+		It("happy path: writes to, and reads from a queue", func() {
+			outC := make(chan string)
+			wf, oldStdout := startCapture(outC)
 
-			opts := &cli.Options{
-				Action: "foo",
-				Rabbit: &cli.RabbitOptions{
-					Address:             amqpAddress,
-					Exchange:            testExchangeName,
-					ReadQueue:           "should-not-exist",
-					RoutingKey:          testRoutingKey,
-					ReadQueueDurable:    false,
-					ReadQueueAutoDelete: true,
-					ReadQueueExclusive:  true,
-				},
-			}
-
-			ch, err := connect(opts)
-
-			Expect(err).ToNot(HaveOccurred())
-			Expect(ch).ToNot(BeNil())
-
-			// Ensure we're able to use the channel for publishing
-			err = ch.Publish(testExchangeName, "messages", false, false,
-				amqp.Publishing{
-					Body: testBody,
-				})
-
-			Expect(err).ToNot(HaveOccurred())
-
-			// Wait a little for rabbit to copy the message to the queue
-			time.Sleep(50 * time.Millisecond)
-
-			// Expect to receive it
-			msg, ok, err := rabbitCh.Get(testQueueName, true)
-
-			Expect(ok).To(BeTrue())
-			Expect(err).ToNot(HaveOccurred())
-			Expect(msg.Body).To(Equal(testBody))
-
-			// Verify that we didn't create the queue
-			_, ok2, err := rabbitCh.Get("should-not-exist", true)
-
-			Expect(ok2).To(BeFalse())
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("NOT_FOUND - no queue"))
-		})
-
-		It("happy path: with 'read' action, declares queue and binds it to exchange w/ routing key", func() {
 			// This test doesn't need to use the separate rabbit channel
 			testBody := []byte(fmt.Sprintf("test-body-contents-%d", rand.Int()))
 
@@ -98,23 +61,33 @@ var _ = Describe("Shared", func() {
 					Address:             amqpAddress,
 					Exchange:            testExchangeName,
 					RoutingKey:          testRoutingKey,
-					ReadQueue:           "should-exist",
+					ReadQueue:           testQueueName,
 					ReadQueueDurable:    false,
 					ReadQueueAutoDelete: true,
 					ReadQueueExclusive:  true,
 				},
 			}
 
-			ch, err := connect(opts)
+			rmq, err := rabbit.New(&rabbit.Options{
+				URL:            amqpAddress,
+				QueueName:      testQueueName,
+				ExchangeName:   testExchangeName,
+				RoutingKey:     testRoutingKey,
+				QueueExclusive: opts.Rabbit.ReadQueueExclusive,
+			})
 
 			Expect(err).ToNot(HaveOccurred())
-			Expect(ch).ToNot(BeNil())
+			Expect(rmq).ToNot(BeNil())
+
+			r := &RabbitMQ{
+				Options:  opts,
+				Consumer: rmq,
+				MsgDesc:  nil,
+				log:      logrus.WithField("pkg", "rabbitmq_test.go"),
+			}
 
 			// Write something to the exchange
-			err = ch.Publish(testExchangeName, "messages", false, false,
-				amqp.Publishing{
-					Body: testBody,
-				})
+			err = r.Write(context.Background(), testBody)
 
 			Expect(err).ToNot(HaveOccurred())
 
@@ -122,22 +95,13 @@ var _ = Describe("Shared", func() {
 			time.Sleep(50 * time.Millisecond)
 
 			// Expect to receive it
-			msg, ok, err := ch.Get("should-exist", true)
+			err = r.Read()
 
-			Expect(ok).To(BeTrue())
+			// End capturing stdout and assert that it contains our expected message
+			out := endCapture(wf, oldStdout, outC)
+
 			Expect(err).ToNot(HaveOccurred())
-			Expect(msg.Body).To(Equal(testBody))
-		})
-
-		It("error: will error when unable to dial destination host", func() {
-			ch, err := connect(&cli.Options{
-				Rabbit: &cli.RabbitOptions{
-					Address: "bad-address",
-				},
-			})
-
-			Expect(err).To(HaveOccurred())
-			Expect(ch).To(BeNil())
+			Expect(out).To(ContainSubstring(string(testBody)))
 		})
 	})
 })
@@ -166,4 +130,28 @@ func setupRabbit(address, exchange, queue string) (*amqp.Channel, error) {
 	}
 
 	return ch, nil
+}
+
+func startCapture(outC chan string) (*os.File, *os.File) {
+	old := os.Stdout
+	rf, wf, err := os.Pipe()
+	Expect(err).ToNot(HaveOccurred())
+
+	os.Stdout = wf
+
+	// copy the output in a separate goroutine so printing can't block indefinitely
+	go func() {
+		var buf bytes.Buffer
+		io.Copy(&buf, rf)
+		outC <- buf.String()
+	}()
+
+	return wf, old
+}
+
+func endCapture(wf, oldStdout *os.File, outC chan string) string {
+	wf.Close()
+	os.Stdout = oldStdout
+	out := <-outC
+	return out
 }
