@@ -38,7 +38,7 @@ func Read(opts *cli.Options) error {
 	r, err := New(opts, md)
 
 	if err != nil {
-		return err
+		return errors.Wrap(err, "unable to initialize rabbitmq consumer")
 	}
 
 	return r.Read()
@@ -52,9 +52,9 @@ func (r *RabbitMQ) Read() error {
 	errCh := make(chan *rabbit.ConsumeError)
 	ctx, cancel := context.WithCancel(context.Background())
 
-	go r.Consumer.Consume(ctx, errCh, func(msg amqp.Delivery) error {
+	lineNumber := 1
 
-		lineNumber := 1
+	go r.Consumer.Consume(ctx, errCh, func(msg amqp.Delivery) error {
 
 		if r.Options.Rabbit.ReadOutputType == "protobuf" {
 			decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(r.MsgDesc), msg.Body)
