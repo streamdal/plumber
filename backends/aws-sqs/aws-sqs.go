@@ -27,11 +27,15 @@ func NewService(opts *cli.Options) (*sqs.SQS, string, error) {
 
 	svc := sqs.New(sess)
 
-	queueName := aws.String(opts.AWSSQS.QueueName)
+	input := &sqs.GetQueueUrlInput{
+		QueueName: aws.String(opts.AWSSQS.QueueName),
+	}
 
-	resultURL, err := svc.GetQueueUrl(&sqs.GetQueueUrlInput{
-		QueueName: queueName,
-	})
+	if opts.AWSSQS.RemoteAccountID != "" {
+		input.QueueOwnerAWSAccountId = aws.String(opts.AWSSQS.RemoteAccountID)
+	}
+
+	resultURL, err := svc.GetQueueUrl(input)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == sqs.ErrCodeQueueDoesNotExist {
 			return nil, "", errors.Wrap(aerr, "unable to find queue name")
@@ -39,6 +43,8 @@ func NewService(opts *cli.Options) (*sqs.SQS, string, error) {
 
 		return nil, "", errors.Wrap(err, "unable to get queue URL")
 	}
+
+	logrus.Debugf("AWS QueueURL: %s", *resultURL.QueueUrl)
 
 	return svc, *resultURL.QueueUrl, nil
 }
