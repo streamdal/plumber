@@ -99,6 +99,7 @@ func (r *Relayer) Relay() error {
 		QueueName:    r.Options.Rabbit.ReadQueue,
 		ExchangeName: r.Options.Rabbit.Exchange,
 		RoutingKey:   r.Options.Rabbit.RoutingKey,
+		AutoAck:      r.Options.Rabbit.ReadAutoAck,
 	})
 
 	if err != nil {

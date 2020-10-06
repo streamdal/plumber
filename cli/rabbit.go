@@ -19,6 +19,7 @@ type RabbitOptions struct {
 	ReadQueueExclusive      bool
 	ReadLineNumbers         bool
 	ReadFollow              bool
+	ReadAutoAck             bool
 	ReadProtobufDirs        []string
 	ReadProtobufRootMessage string
 	ReadOutputType          string
@@ -87,6 +88,10 @@ func addSharedRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Default("true").
 		Envar("PLUMBER_RELAY_RABBIT_QUEUE_EXCLUSIVE").
 		BoolVar(&opts.Rabbit.ReadQueueExclusive)
+	cmd.Flag("auto-ack", "Automatically acknowledge receipt of read/received messages").
+		Envar("PLUMBER_RELAY_RABBIT_AUTOACK").
+		Default("true").
+		BoolVar(&opts.Rabbit.ReadAutoAck)
 }
 
 func addReadRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {

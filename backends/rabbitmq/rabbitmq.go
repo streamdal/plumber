@@ -19,12 +19,19 @@ type RabbitMQ struct {
 }
 
 func New(opts *cli.Options, md *desc.MessageDescriptor) (*RabbitMQ, error) {
+	mode := rabbit.Consumer
+	if opts.Action == "write" {
+		mode = rabbit.Producer
+	}
+
 	rmq, err := rabbit.New(&rabbit.Options{
 		URL:            opts.Rabbit.Address,
 		QueueName:      opts.Rabbit.ReadQueue,
 		ExchangeName:   opts.Rabbit.Exchange,
 		RoutingKey:     opts.Rabbit.RoutingKey,
 		QueueExclusive: opts.Rabbit.ReadQueueExclusive,
+		AutoAck:        opts.Rabbit.ReadAutoAck,
+		Mode:           mode,
 	})
 
 	if err != nil {
