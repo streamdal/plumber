@@ -88,7 +88,7 @@ func (r *RabbitMQ) Read() error {
 			}
 
 			printer.Error(fmt.Sprintf("unable to complete conversion for message: %s", convertErr))
-			return convertErr
+			return errors.Wrap(convertErr, "unable to complete conversion for message")
 		}
 
 		str := string(data)

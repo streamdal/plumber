@@ -29,9 +29,9 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-var _ = Describe("Shared", func() {
+var _ = Describe("RabbitMQ", func() {
 
-	Context("connect", func() {
+	Context("Read/Write", func() {
 		var (
 			rabbitCh      *amqp.Channel
 			testQueueName string
@@ -48,7 +48,7 @@ var _ = Describe("Shared", func() {
 			Expect(rabbitCh).ToNot(BeNil())
 		})
 
-		It("happy path: write to, and read from a queue", func() {
+		It("happy path: writes to, and reads from a queue", func() {
 			outC := make(chan string)
 			wf, oldStdout := startCapture(outC)
 
