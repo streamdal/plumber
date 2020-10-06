@@ -8,7 +8,8 @@ import (
 
 type AWSSQSOptions struct {
 	// Shared
-	QueueName string
+	QueueName       string
+	RemoteAccountID string
 
 	// Read
 	ReadMaxNumMessages          int64
@@ -29,7 +30,7 @@ type AWSSQSOptions struct {
 	WriteInputFile           string
 	WriteInputType           string
 	WriteOutputType          string
-	WriteProtobufDirs         []string
+	WriteProtobufDirs        []string
 	WriteProtobufRootMessage string
 
 	// Relay
@@ -71,6 +72,10 @@ func addSharedAWSSQSFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("queue-name", "Queue name").
 		Envar("PLUMBER_RELAY_SQS_QUEUE_NAME").
 		StringVar(&opts.AWSSQS.QueueName)
+
+	cmd.Flag("remote-account-id", "Remote AWS Account ID").
+		Envar("PLUMBER_RELAY_SQS_REMOTE_ACCOUNT_ID").
+		StringVar(&opts.AWSSQS.RemoteAccountID)
 }
 
 func addRelayAWSSQSFlags(cmd *kingpin.CmdClause, opts *Options) {
