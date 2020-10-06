@@ -45,6 +45,8 @@ github.com/batchcorp/rabbit v0.1.1 h1:4G30aHnE+6/9Gc21o9H3ei5BSH7fZj++ccT5MfSjQM
 github.com/batchcorp/rabbit v0.1.1/go.mod h1:LaAQ6FCNkir0/SbJ9jX3JNNP1ULAU2M3QZN/IwFRwXw=
 github.com/batchcorp/rabbit v0.1.2 h1:IEt3mPqp3hid20iAzRtH2qr3RcMa1aFjLOB34d1Y64A=
 github.com/batchcorp/rabbit v0.1.2/go.mod h1:LaAQ6FCNkir0/SbJ9jX3JNNP1ULAU2M3QZN/IwFRwXw=
+github.com/batchcorp/rabbit v0.1.3 h1:Pn0D/RPOMer/Tiew7M4CIR2JfmAtUnyUPgde/U4Ptw4=
+github.com/batchcorp/rabbit v0.1.3/go.mod h1:LaAQ6FCNkir0/SbJ9jX3JNNP1ULAU2M3QZN/IwFRwXw=
 github.com/batchcorp/schemas v0.1.8/go.mod h1:OS0jIg50R8wrMJAVwOEirnvpyPKnJlVadifqH4LJlD4=
 github.com/batchcorp/schemas v0.2.26 h1:DLvefetbuQ4E3u0VB/pBUzEvZfJLmUkZyiQSOBSUNMI=
 github.com/batchcorp/schemas v0.2.26/go.mod h1:rV0bcszms4RkpGOr1khcYS27glm6QOChmxZ4dC4VOaI=

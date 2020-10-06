@@ -27,6 +27,10 @@ import (
 const (
 	// How long to wait before attempting to reconnect to a rabbit server
 	DefaultRetryReconnectSec = 60
+
+	Both     Mode = 0
+	Consumer Mode = 1
+	Producer Mode = 2
 )
 
 // IRabbit is the interface that the `rabbit` library implements. It's here as
@@ -55,6 +59,8 @@ type Rabbit struct {
 	log    *logrus.Entry
 }
 
+type Mode int
+
 // Options determines how the `rabbit` library will behave and should be passed
 // in to rabbit via `New()`. Many of the options are optional (and will fall
 // back to sane defaults).
@@ -62,11 +68,17 @@ type Options struct {
 	// Required; format "amqp://user:pass@host:port"
 	URL string
 
+	// In what mode does the library operate (Both, Consumer, Producer)
+	Mode Mode
+
 	// If left empty, server will auto generate queue name
 	QueueName string
 
 	// Required
 	ExchangeName string
+
+	// Used as either routing (publish) or binding key (consume)
+	RoutingKey string
 
 	// Whether to declare/create exchange on connect
 	ExchangeDeclare bool
@@ -79,9 +91,6 @@ type Options struct {
 
 	// Whether to delete exchange when its no longer used; used only if ExchangeDeclare set to true
 	ExchangeAutoDelete bool
-
-	// Used as either routing (publish) or binding key (consume)
-	RoutingKey string
 
 	// https://godoc.org/github.com/streadway/amqp#Channel.Qos
 	// Leave unset if no QoS preferences
@@ -141,8 +150,10 @@ func New(opts *Options) (*Rabbit, error) {
 		log:    logrus.WithField("pkg", "rabbit"),
 	}
 
-	if err := r.newConsumerChannel(); err != nil {
-		return nil, errors.Wrap(err, "unable to get initial delivery channel")
+	if opts.Mode != Producer {
+		if err := r.newConsumerChannel(); err != nil {
+			return nil, errors.Wrap(err, "unable to get initial delivery channel")
+		}
 	}
 
 	ac.NotifyClose(r.NotifyCloseChan)
@@ -199,6 +210,11 @@ func ValidateOptions(opts *Options) error {
 // Subsequent reconnect attempts will sleep/wait for `DefaultRetryReconnectSec`
 // between attempts.
 func (r *Rabbit) Consume(ctx context.Context, errChan chan *ConsumeError, f func(msg amqp.Delivery) error) {
+	if r.Options.Mode == Producer {
+		r.log.Error("unable to Consume() - library is configured in Producer mode")
+		return
+	}
+
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -252,6 +268,10 @@ func (r *Rabbit) Consume(ctx context.Context, errChan chan *ConsumeError, f func
 // Same as with `Consume()`, you can pass in a context to cancel `ConsumeOnce()`
 // or run `Stop()`.
 func (r *Rabbit) ConsumeOnce(ctx context.Context, runFunc func(msg amqp.Delivery) error) error {
+	if r.Options.Mode == Producer {
+		return errors.New("unable to ConsumeOnce - library is configured in Producer mode")
+	}
+
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -283,6 +303,10 @@ func (r *Rabbit) ConsumeOnce(ctx context.Context, runFunc func(msg amqp.Delivery
 //
 // TODO: Implement ctx usage
 func (r *Rabbit) Publish(ctx context.Context, routingKey string, body []byte) error {
+	if r.Options.Mode == Consumer {
+		return errors.New("unable to Publish - library is configured in Consumer mode")
+	}
+
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -391,27 +415,29 @@ func (r *Rabbit) newServerChannel() (*amqp.Channel, error) {
 		}
 	}
 
-	if r.Options.QueueDeclare {
-		if _, err := ch.QueueDeclare(
+	if r.Options.Mode == Both || r.Options.Mode == Consumer {
+		if r.Options.QueueDeclare {
+			if _, err := ch.QueueDeclare(
+				r.Options.QueueName,
+				r.Options.QueueDurable,
+				r.Options.QueueAutoDelete,
+				r.Options.QueueExclusive,
+				false,
+				nil,
+			); err != nil {
+				return nil, err
+			}
+		}
+
+		if err := ch.QueueBind(
 			r.Options.QueueName,
-			r.Options.QueueDurable,
-			r.Options.QueueAutoDelete,
-			r.Options.QueueExclusive,
+			r.Options.RoutingKey,
+			r.Options.ExchangeName,
 			false,
 			nil,
 		); err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "unable to bind queue")
 		}
-	}
-
-	if err := ch.QueueBind(
-		r.Options.QueueName,
-		r.Options.RoutingKey,
-		r.Options.ExchangeName,
-		false,
-		nil,
-	); err != nil {
-		return nil, errors.Wrap(err, "unable to bind queue")
 	}
 
 	return ch, nil
@@ -423,7 +449,8 @@ func (r *Rabbit) newConsumerChannel() error {
 		return errors.Wrap(err, "unable to create new server channel")
 	}
 
-	deliveryChannel, err := serverChannel.Consume(r.Options.QueueName,
+	deliveryChannel, err := serverChannel.Consume(
+		r.Options.QueueName,
 		"",
 		r.Options.AutoAck,
 		r.Options.QueueExclusive,
