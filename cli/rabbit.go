@@ -24,6 +24,7 @@ type RabbitOptions struct {
 	ReadProtobufRootMessage string
 	ReadOutputType          string
 	ReadConvert             string
+	ReadQueueDeclare        bool
 
 	// Write
 	WriteInputData           string
@@ -92,6 +93,10 @@ func addSharedRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Envar("PLUMBER_RELAY_RABBIT_AUTOACK").
 		Default("true").
 		BoolVar(&opts.Rabbit.ReadAutoAck)
+	cmd.Flag("queue-declare", "Wether to declare the specified queue to create it").
+		Envar("PLUMBER_RELAY_RABBIT_QUEUE_DECLARE").
+		Default("true").
+		BoolVar(&opts.Rabbit.ReadQueueDeclare)
 }
 
 func addReadRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {

@@ -100,6 +100,7 @@ func (r *Relayer) Relay() error {
 		ExchangeName: r.Options.Rabbit.Exchange,
 		RoutingKey:   r.Options.Rabbit.RoutingKey,
 		AutoAck:      r.Options.Rabbit.ReadAutoAck,
+		QueueDeclare: r.Options.Rabbit.ReadQueueDeclare,
 	})
 
 	if err != nil {

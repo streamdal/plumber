@@ -101,7 +101,7 @@ func Handle() (string, *Options, error) {
 
 func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
 	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs").
-		Envar("PLUMBER_RELAY_TYPE").
+		Envar("PLUMBER_RRELAYELAY_TYPE").
 		EnumVar(&opts.RelayType, "aws-sqs", "rabbit")
 
 	relayCmd.Flag("token", "Collection token to use when sending data to Batch").
