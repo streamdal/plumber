@@ -2,7 +2,6 @@ package rabbitmq
 
 import (
 	"context"
-	"fmt"
 	"github.com/batchcorp/plumber/backends/rabbitmq/types"
 	"github.com/batchcorp/rabbit"
 	"github.com/jhump/protoreflect/desc"
@@ -110,7 +109,7 @@ func (r *Relayer) Relay() error {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	go rmq.Consume(ctx, errCh, func(msg amqp.Delivery) error {
-		r.log.Debug(fmt.Printf("Writing RabbitMQ message to relay channel: %+v", msg))
+		r.log.Debugf("Writing RabbitMQ message to relay channel: %+v", msg)
 		r.RelayCh <- &types.RelayMessage{
 			Value:   &msg,
 			Options: &types.RelayMessageOptions{},
