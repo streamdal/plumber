@@ -164,8 +164,10 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, ctx context.Context) {
 
 		switch v := msg.(type) {
 		case *sqsTypes.RelayMessage:
+			r.log.Debugf("Run() received AWS SQS message %+v", v)
 			err = r.handleSQS(ctx, conn, v)
 		case *rabbitTypes.RelayMessage:
+			r.log.Debugf("Run() received rabbit message %+v", v)
 			err = r.handleRabbit(ctx, conn, v)
 		default:
 			r.log.WithField("type", v).Error("received unknown message type - skipping")

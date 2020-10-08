@@ -29,7 +29,7 @@ func (r *Relay) handleRabbit(ctx context.Context, conn *grpc.ClientConn, msg *ty
 		fmt.Printf("%+v", rabbitRecord)
 		return errors.Wrap(err, "unable to complete AddAMQPRecord call")
 	}
-
+	r.log.Debug("successfully handled rabbit message")
 	return nil
 }
 
