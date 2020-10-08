@@ -25,13 +25,15 @@ import (
 	"time"
 
 	"cloud.google.com/go/pubsub"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/batchcorp/schemas/build/go/events"
 	"github.com/golang/protobuf/proto"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	skafka "github.com/segmentio/kafka-go"
 	"github.com/streadway/amqp"
-
-	"github.com/batchcorp/plumber/test-assets/pbs"
 )
 
 func init() {
@@ -121,7 +123,7 @@ var _ = Describe("Functional", func() {
 					Expect(err).ToNot(HaveOccurred())
 
 					// Verify we wrote a valid protobuf message
-					outbound := &pbs.Outbound{}
+					outbound := &events.Outbound{}
 
 					err = proto.Unmarshal(msg.Value, outbound)
 
@@ -216,6 +218,105 @@ var _ = Describe("Functional", func() {
 			})
 		})
 	})
+
+	Describe("AWS SQS", func() {
+
+		Describe("read/write", func() {
+			var queueName string
+
+			BeforeEach(func() {
+				queueName = fmt.Sprintf("FunctionalTestQueue%d", rand.Int())
+				err := createSqsQueue(queueName)
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			AfterEach(func() {
+				err := deleteSqsQueue(queueName)
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			Context("plain input and output", func() {
+				It("should work", func() {
+					fmt.Printf("%s\n", queueName)
+					const testMessage string = "welovemessaging"
+
+					// First write the message to SQS
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"aws-sqs",
+						"--queue-name", queueName,
+						"--input-data", testMessage,
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					writeGot := string(writeOut[:])
+
+					writeWant := fmt.Sprintf("Successfully wrote message to AWS queue '%s'", queueName)
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					// Now try and read from the SQS queue
+					readCmd := exec.Command(
+						binary,
+						"read",
+						"aws-sqs",
+						"--queue-name", queueName,
+						"--auto-delete",
+					)
+
+					readOutput, err := readCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					readGot := string(readOutput[:])
+					Expect(readGot).To(ContainSubstring(testMessage))
+				})
+			})
+
+			Context("jsonpb input, protobuf output", func() {
+				It("should work", func() {
+					fmt.Printf("%s\n", queueName)
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"aws-sqs",
+						"--queue-name", queueName,
+						"--input-type", "jsonpb",
+						"--output-type", "protobuf",
+						"--input-file", sampleOutboundJSONPB,
+						"--protobuf-dir", protoSchemasDir,
+						"--protobuf-root-message", "Outbound",
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					writeGot := string(writeOut[:])
+					writeWant := fmt.Sprintf("Successfully wrote message to AWS queue '%s'", queueName)
+
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					readCmd := exec.Command(
+						binary,
+						"read",
+						"aws-sqs",
+						"--queue-name", queueName,
+						"--output-type", "protobuf",
+						"--protobuf-dir", protoSchemasDir,
+						"--protobuf-root-message", "Outbound",
+					)
+
+					readOut, err := readCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					readGot := string(readOut[:])
+					Expect(readGot).To(ContainSubstring("30ddb850-1aca-4ee5-870c-1bb7b339ee5d"))
+					Expect(readGot).To(ContainSubstring("eyJoZWxsbyI6ImRhbiJ9Cg=="))
+				})
+			})
+		})
+	})
 })
 
 type Kafka struct {
@@ -267,4 +368,43 @@ func newRabbitChannel(address string) (*amqp.Channel, error) {
 // TODO: Implement
 func newGCPPubSubClient(projectId string) (*pubsub.Client, error) {
 	return nil, nil
+}
+
+// createSqsQueue creates a new transient queue we will use for testing
+func createSqsQueue(name string) error {
+	sess := session.Must(session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+	}))
+
+	svc := sqs.New(sess)
+
+	_, err := svc.CreateQueue(&sqs.CreateQueueInput{
+		QueueName: aws.String(name),
+	})
+
+	return err
+}
+
+// deleteSqsQueue deletes a transient queue used for testing
+func deleteSqsQueue(name string) error {
+	sess := session.Must(session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+	}))
+
+	svc := sqs.New(sess)
+
+	// Delete requires the full queue URL
+	resultURL, err := svc.GetQueueUrl(&sqs.GetQueueUrlInput{
+		QueueName: aws.String(name),
+	})
+
+	if err != nil {
+		return err
+	}
+
+	_, err = svc.DeleteQueue(&sqs.DeleteQueueInput{
+		QueueUrl: resultURL.QueueUrl,
+	})
+
+	return err
 }
