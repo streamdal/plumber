@@ -149,7 +149,7 @@ func addWriteAWSSQSFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("attributes", "Add optional attributes to outgoing message (string=string only)").
 		StringMapVar(&opts.AWSSQS.WriteAttributes)
 
-	cmd.Flag("input-data", "Data to write to GCP PubSub").
+	cmd.Flag("input-data", "Data to write to SQS").
 		StringVar(&opts.AWSSQS.WriteInputData)
 
 	cmd.Flag("input-file", "File containing input data (overrides input-data; 1 file is 1 message)").
