@@ -221,28 +221,23 @@ var _ = Describe("Functional", func() {
 
 	Describe("AWS SQS", func() {
 
-		// Get secrets somehow
-		var queueName string
-
-		BeforeEach(func() {
-			queueName = fmt.Sprintf("FunctionalTestQueue%d", rand.Int())
-			err := createSqsQueue(queueName)
-			if err != nil {
-				Fail(fmt.Sprintf("Failed to create SQS Queue: %s", err.Error()))
-			}
-		})
-
-		AfterEach(func() {
-			err := deleteSqsQueue(queueName)
-			if err != nil {
-				Fail(fmt.Sprintf("Failed to delete SQS Queue: %s", err.Error()))
-			}
-		})
-
 		Describe("read/write", func() {
+			var queueName string
+
+			BeforeEach(func() {
+				queueName = fmt.Sprintf("FunctionalTestQueue%d", rand.Int())
+				err := createSqsQueue(queueName)
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			AfterEach(func() {
+				err := deleteSqsQueue(queueName)
+				Expect(err).ToNot(HaveOccurred())
+			})
+
 			Context("plain input and output", func() {
 				It("should work", func() {
-
+					fmt.Printf("%s\n", queueName)
 					const testMessage string = "welovemessaging"
 
 					// First write the message to SQS
@@ -258,6 +253,7 @@ var _ = Describe("Functional", func() {
 					Expect(err).ToNot(HaveOccurred())
 
 					writeGot := string(writeOut[:])
+
 					writeWant := fmt.Sprintf("Successfully wrote message to AWS queue '%s'", queueName)
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
@@ -280,6 +276,7 @@ var _ = Describe("Functional", func() {
 
 			Context("jsonpb input, protobuf output", func() {
 				It("should work", func() {
+					fmt.Printf("%s\n", queueName)
 					writeCmd := exec.Command(
 						binary,
 						"write",
