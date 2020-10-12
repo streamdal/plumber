@@ -97,7 +97,7 @@ func readFileDescriptors(files map[string][]string) ([]*desc.FileDescriptor, err
 			relative := strings.Split(f, dir)
 
 			if len(relative) != 2 {
-				return nil, fmt.Errorf("unexpected lenght of split path (%d)", len(relative))
+				return nil, fmt.Errorf("unexpected length of split path (%d)", len(relative))
 			}
 
 			contents[relative[1]] = string(data)

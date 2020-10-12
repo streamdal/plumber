@@ -28,7 +28,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	skafka "github.com/segmentio/kafka-go"
-	"github.com/streadway/amqp"
 )
 
 func init() {
@@ -163,26 +162,122 @@ var _ = Describe("Functional", func() {
 	//})
 
 	Describe("RabbitMQ", func() {
-		Describe("write", func() {
+		Describe("read/write", func() {
 			Context("plain input, plain output", func() {
+
+				randID := rand.Int()
+				var (
+					exchangeName string = fmt.Sprintf("testex-%d", randID)
+					queueName    string = fmt.Sprintf("testqueue-%d", randID)
+					routingKey   string = fmt.Sprintf("testqueue-%d", randID)
+				)
+
+				BeforeEach(func() {
+					err := createRabbit(exchangeName, queueName, routingKey)
+					Expect(err).ToNot(HaveOccurred())
+				})
+
+				AfterEach(func() {
+					err := deleteRabbit(exchangeName, queueName)
+					Expect(err).ToNot(HaveOccurred())
+				})
+
 				It("should work", func() {
+					const testMessage string = "welovemessaging"
+
+					// First write the message to SQS
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"rabbit",
+						"--exchange", exchangeName,
+						"--routing-key", routingKey,
+						"--input-data", testMessage,
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					writeGot := string(writeOut[:])
+					writeWant := fmt.Sprintf("Successfully wrote message to exchange '%s'", exchangeName)
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					// Now try and read from the SQS queue
+					readCmd := exec.Command(
+						binary,
+						"read",
+						"rabbit",
+						"--exchange", exchangeName,
+						"--routing-key", routingKey,
+						"--queue", queueName,
+					)
+
+					readOutput, err := readCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					readGot := string(readOutput[:])
+					Expect(readGot).To(ContainSubstring(testMessage))
 				})
 			})
 
 			Context("jsonpb input, protobuf output", func() {
-				It("should work", func() {
-				})
-			})
-		})
+				randID := rand.Int()
+				var (
+					exchangeName string = fmt.Sprintf("testex-%d", randID)
+					queueName    string = fmt.Sprintf("testqueue-%d", randID)
+					routingKey   string = fmt.Sprintf("testqueue-%d", randID)
+				)
 
-		Describe("read", func() {
-			Context("plain output", func() {
-				It("should work", func() {
+				BeforeEach(func() {
+					err := createRabbit(exchangeName, queueName, routingKey)
+					Expect(err).ToNot(HaveOccurred())
 				})
-			})
 
-			Context("protobuf output", func() {
+				AfterEach(func() {
+					err := deleteRabbit(exchangeName, queueName)
+					Expect(err).ToNot(HaveOccurred())
+				})
+
 				It("should work", func() {
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"rabbit",
+						"--exchange", exchangeName,
+						"--routing-key", routingKey,
+						"--input-type", "jsonpb",
+						"--output-type", "protobuf",
+						"--input-file", sampleOutboundJSONPB,
+						"--protobuf-dir", protoSchemasDir,
+						"--protobuf-root-message", "Outbound",
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					writeGot := string(writeOut[:])
+					writeWant := fmt.Sprintf("Successfully wrote message to exchange '%s'", exchangeName)
+
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					readCmd := exec.Command(
+						binary,
+						"read",
+						"rabbit",
+						"--exchange", exchangeName,
+						"--routing-key", routingKey,
+						"--queue", queueName,
+						"--output-type", "protobuf",
+						"--protobuf-dir", protoSchemasDir,
+						"--protobuf-root-message", "Outbound",
+					)
+
+					readOut, err := readCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					readGot := string(readOut[:])
+					Expect(readGot).To(ContainSubstring("30ddb850-1aca-4ee5-870c-1bb7b339ee5d"))
+					Expect(readGot).To(ContainSubstring("eyJoZWxsbyI6ImRhbiJ9Cg=="))
 				})
 			})
 		})
@@ -232,7 +327,6 @@ var _ = Describe("Functional", func() {
 
 			Context("plain input and output", func() {
 				It("should work", func() {
-					fmt.Printf("%s\n", queueName)
 					const testMessage string = "welovemessaging"
 
 					// First write the message to SQS
@@ -271,7 +365,6 @@ var _ = Describe("Functional", func() {
 
 			Context("jsonpb input, protobuf output", func() {
 				It("should work", func() {
-					fmt.Printf("%s\n", queueName)
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -356,11 +449,6 @@ func newKafka(address, topic string) (*Kafka, error) {
 }
 
 // TODO: Implement
-func newRabbitChannel(address string) (*amqp.Channel, error) {
-	return nil, nil
-}
-
-// TODO: Implement
 func newGCPPubSubClient(projectId string) (*pubsub.Client, error) {
 	return nil, nil
 }
@@ -402,4 +490,39 @@ func deleteSqsQueue(name string) error {
 	})
 
 	return err
+}
+
+func createRabbit(exchangeName, queueName, routingKey string) error {
+	var err error
+	cmd := exec.Command("docker", "exec", "rabbitmq", "rabbitmqadmin", "declare", "exchange", "name="+exchangeName, "type=topic")
+	_, err = cmd.CombinedOutput()
+	if err != nil {
+		return err
+	}
+	cmd = exec.Command("docker", "exec", "rabbitmq", "rabbitmqadmin", "declare", "queue", "name="+queueName)
+	_, err = cmd.CombinedOutput()
+	if err != nil {
+		return err
+	}
+	cmd = exec.Command("docker", "exec", "rabbitmq", "rabbitmqadmin", "declare", "binding", "source="+exchangeName, "destination="+queueName, "routing_key="+routingKey)
+	_, err = cmd.CombinedOutput()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func deleteRabbit(exchangeName, queueName string) error {
+	var err error
+	cmd := exec.Command("docker", "exec", "rabbitmq", "rabbitmqadmin", "delete", "exchange", "name="+exchangeName)
+	_, err = cmd.CombinedOutput()
+	if err != nil {
+		return err
+	}
+	cmd = exec.Command("docker", "exec", "rabbitmq", "rabbitmqadmin", "delete", "queue", "name="+queueName)
+	_, err = cmd.CombinedOutput()
+	if err != nil {
+		return err
+	}
+	return nil
 }

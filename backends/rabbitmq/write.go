@@ -55,7 +55,13 @@ func Write(opts *cli.Options) error {
 // Write is a wrapper for amqp Publish method. We wrap it so that we can mock
 // it in tests, add logging etc.
 func (r *RabbitMQ) Write(ctx context.Context, value []byte) error {
-	return r.Consumer.Publish(ctx, r.Options.Rabbit.RoutingKey, value)
+	err := r.Consumer.Publish(ctx, r.Options.Rabbit.RoutingKey, value)
+	if err != nil {
+		return errors.Wrap(err, "unable to write data to rabbit")
+	}
+
+	r.log.Infof("Successfully wrote message to exchange '%s'", r.Options.Rabbit.Exchange)
+	return nil
 }
 
 func validateWriteOptions(opts *cli.Options) error {

@@ -103,6 +103,7 @@ func addReadRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("line-numbers", "Display line numbers for each message").
 		Default("false").BoolVar(&opts.Rabbit.ReadLineNumbers)
 	cmd.Flag("follow", "Continuous read (ie. `tail -f`)").Short('f').
+		Default("false").
 		BoolVar(&opts.Rabbit.ReadFollow)
 	cmd.Flag("protobuf-dir", "Directory with .proto files").
 		ExistingDirsVar(&opts.Rabbit.ReadProtobufDirs)
