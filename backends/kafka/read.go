@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"io/ioutil"
 
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
@@ -13,6 +14,7 @@ import (
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/serializers"
 	"github.com/batchcorp/plumber/util"
 )
 
@@ -83,6 +85,21 @@ func (k *Kafka) Read() error {
 				continue
 			}
 
+			msg.Value = decoded
+		}
+
+		// Handle AVRO messages
+		if k.Options.Kafka.AvroSchemaFile != "" {
+			avroSchema, readErr := ioutil.ReadFile(k.Options.Kafka.AvroSchemaFile)
+			if readErr != nil {
+				return fmt.Errorf("unable to read AVRO schema file '%s': %s", k.Options.Kafka.AvroSchemaFile, readErr)
+			}
+
+			decoded, err := serializers.AvroDecode(avroSchema, msg.Value)
+			if err != nil {
+				printer.Error(fmt.Sprintf("unable to decode AVRO message: %s", err))
+				return err
+			}
 			msg.Value = decoded
 		}
 

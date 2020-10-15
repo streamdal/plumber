@@ -17,6 +17,7 @@ import (
 
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
+	"github.com/batchcorp/plumber/serializers"
 )
 
 // Write is the entry point function for performing write operations in Kafka.
@@ -67,6 +68,8 @@ func (k *Kafka) Write(key, value []byte) error {
 		return errors.Wrap(err, "unable to publish message(s)")
 	}
 
+	k.log.Infof("Successfully wrote message to topic '%s'", k.Options.Kafka.Topic)
+
 	return nil
 }
 
@@ -85,6 +88,21 @@ func generateWriteValue(md *desc.MessageDescriptor, opts *cli.Options) ([]byte, 
 		if readErr != nil {
 			return nil, fmt.Errorf("unable to read file '%s': %s", opts.Kafka.WriteInputFile, readErr)
 		}
+	}
+
+	// Handle AVRO
+	if opts.Kafka.AvroSchemaFile != "" {
+		avroSchema, readErr := ioutil.ReadFile(opts.Kafka.AvroSchemaFile)
+		if readErr != nil {
+			return nil, fmt.Errorf("unable to read AVRO schema file '%s': %s", opts.Kafka.AvroSchemaFile, readErr)
+		}
+
+		data, err := serializers.AvroEncode(avroSchema, data)
+		if err != nil {
+			return nil, err
+		}
+
+		return data, nil
 	}
 
 	// Ensure we do not try to operate on a nil md

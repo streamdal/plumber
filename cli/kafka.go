@@ -35,6 +35,8 @@ type KafkaOptions struct {
 	WriteOutputType          string
 	WriteProtobufDirs        []string
 	WriteProtobufRootMessage string
+
+	AvroSchemaFile string
 }
 
 func HandleKafkaFlags(readCmd, writeCmd *kingpin.CmdClause, opts *Options) {
@@ -57,6 +59,8 @@ func addSharedKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 		DurationVar(&opts.Kafka.Timeout)
 	cmd.Flag("insecure-tls", "Use insecure TLS").BoolVar(&opts.Kafka.InsecureTLS)
 	cmd.Flag("line-numbers", "Prepend number to each output message").BoolVar(&opts.Kafka.LineNumbers)
+	cmd.Flag("avro-schema", "Path to AVRO schema .avsc file").
+		StringVar(&opts.Kafka.AvroSchemaFile)
 }
 
 func addReadKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
@@ -72,6 +76,7 @@ func addReadKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 		"set (required if protobuf-dir set)").StringVar(&opts.Kafka.ReadProtobufRootMessage)
 	cmd.Flag("convert", "Convert received (output) message(s)").
 		EnumVar(&opts.Kafka.ReadConvert, "base64", "gzip")
+
 }
 
 func addWriteKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
