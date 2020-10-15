@@ -2,6 +2,7 @@ package serializers
 
 import (
 	"fmt"
+	"io/ioutil"
 
 	"github.com/linkedin/goavro/v2"
 	"github.com/pkg/errors"
@@ -11,7 +12,13 @@ import (
 
 // AvroEncode takes in a path to a AVRO schema file, and plain json data
 // and returns the binary encoded representation
-func AvroEncode(avroSchema []byte, data []byte) ([]byte, error) {
+func AvroEncode(avroSchemaPath string, data []byte) ([]byte, error) {
+
+	avroSchema, readErr := ioutil.ReadFile(avroSchemaPath)
+	if readErr != nil {
+		return nil, fmt.Errorf("unable to read AVRO schema file '%s': %s", avroSchemaPath, readErr)
+	}
+
 	codec, err := goavro.NewCodec(string(avroSchema))
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to read AVRO schema")
@@ -34,7 +41,12 @@ func AvroEncode(avroSchema []byte, data []byte) ([]byte, error) {
 
 // AvroEncode takes in a path to a AVRO schema file, and binary encoded data
 // and returns the plain JSON representation
-func AvroDecode(avroSchema []byte, data []byte) ([]byte, error) {
+func AvroDecode(avroSchemaPath string, data []byte) ([]byte, error) {
+	avroSchema, readErr := ioutil.ReadFile(avroSchemaPath)
+	if readErr != nil {
+		return nil, fmt.Errorf("unable to read AVRO schema file '%s': %s", avroSchemaPath, readErr)
+	}
+
 	codec, err := goavro.NewCodec(string(avroSchema))
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to read AVRO schema")

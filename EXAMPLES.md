@@ -131,6 +131,12 @@ $ plumber read rabbit --address="amqp://localhost" --exchange events --routing-k
 ^C
 ```
 
+##### Using Avro schemas when reading or writing
+```bash
+$ plumber write kafka --topic=orders --avro-schema=some_schema.avsc --input-file=your_data.json
+$ plumber read kafka --topic=orders --avro-schema=some_schema.avsc
+```
+
 <sub>
 If your schemas are located in multiple places, you can specify `--protobuf-dir`
 multiple times. Treat it the same as you would `protoc -I`.

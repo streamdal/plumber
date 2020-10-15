@@ -19,6 +19,7 @@ import (
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/serializers"
 )
 
 // Write is the entry point function for performing write operations in AWSSQS.
@@ -139,6 +140,19 @@ func generateWriteValue(md *desc.MessageDescriptor, opts *cli.Options) ([]byte, 
 	// Ensure we do not try to operate on a nil md
 	if opts.AWSSQS.WriteOutputType == "protobuf" && md == nil {
 		return nil, errors.New("message descriptor cannot be nil when --output-type is protobuf")
+	}
+
+	// Handle AVRO
+	if opts.AvroSchemaFile != "" {
+		data, err := serializers.AvroEncode(opts.AvroSchemaFile, data)
+		if err != nil {
+			return nil, err
+		}
+
+		// Since AWS SQS works with strings only, we must convert it to base64
+		encoded := base64.StdEncoding.EncodeToString(data)
+
+		return []byte(encoded), nil
 	}
 
 	// Input: Plain Output: Plain

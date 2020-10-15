@@ -9,6 +9,8 @@ import (
 
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
+	"github.com/batchcorp/plumber/serializers"
+
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 	"github.com/jhump/protoreflect/desc"
@@ -110,6 +112,16 @@ func generateWriteValue(md *desc.MessageDescriptor, opts *cli.Options) ([]byte, 
 	// Ensure we do not try to operate on a nil md
 	if opts.Rabbit.WriteOutputType == "protobuf" && md == nil {
 		return nil, errors.New("message descriptor cannot be nil when --output-type is protobuf")
+	}
+
+	// Handle AVRO
+	if opts.AvroSchemaFile != "" {
+		data, err := serializers.AvroEncode(opts.AvroSchemaFile, data)
+		if err != nil {
+			return nil, err
+		}
+
+		return data, nil
 	}
 
 	// Input: Plain Output: Plain

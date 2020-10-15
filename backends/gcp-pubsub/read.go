@@ -16,6 +16,7 @@ import (
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/serializers"
 	"github.com/batchcorp/plumber/util"
 )
 
@@ -84,6 +85,16 @@ func (g *GCPPubSub) Read() error {
 				return
 			}
 
+			msg.Data = decoded
+		}
+
+		// Handle AVRO
+		if g.Options.AvroSchemaFile != "" {
+			decoded, err := serializers.AvroDecode(g.Options.AvroSchemaFile, msg.Data)
+			if err != nil {
+				printer.Error(fmt.Sprintf("unable to decode AVRO message: %s", err))
+				return
+			}
 			msg.Data = decoded
 		}
 

@@ -17,6 +17,7 @@ import (
 
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
+	"github.com/batchcorp/plumber/serializers"
 )
 
 // Write is the entry point function for performing write operations in GCP PubSub.
@@ -122,6 +123,16 @@ func generateWriteValue(md *desc.MessageDescriptor, opts *cli.Options) ([]byte, 
 	// Ensure we do not try to operate on a nil md
 	if opts.GCPPubSub.WriteOutputType == "protobuf" && md == nil {
 		return nil, errors.New("message descriptor cannot be nil when --output-type is protobuf")
+	}
+
+	// Handle AVRO
+	if opts.AvroSchemaFile != "" {
+		data, err := serializers.AvroEncode(opts.AvroSchemaFile, data)
+		if err != nil {
+			return nil, err
+		}
+
+		return data, nil
 	}
 
 	// Input: Plain Output: Plain

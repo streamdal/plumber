@@ -91,13 +91,8 @@ func generateWriteValue(md *desc.MessageDescriptor, opts *cli.Options) ([]byte, 
 	}
 
 	// Handle AVRO
-	if opts.Kafka.AvroSchemaFile != "" {
-		avroSchema, readErr := ioutil.ReadFile(opts.Kafka.AvroSchemaFile)
-		if readErr != nil {
-			return nil, fmt.Errorf("unable to read AVRO schema file '%s': %s", opts.Kafka.AvroSchemaFile, readErr)
-		}
-
-		data, err := serializers.AvroEncode(avroSchema, data)
+	if opts.AvroSchemaFile != "" {
+		data, err := serializers.AvroEncode(opts.AvroSchemaFile, data)
 		if err != nil {
 			return nil, err
 		}
