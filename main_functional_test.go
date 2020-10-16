@@ -19,6 +19,7 @@ import (
 	"math/rand"
 	"os/exec"
 	"runtime"
+	"sync"
 	"time"
 
 	"cloud.google.com/go/pubsub"
@@ -499,6 +500,185 @@ var _ = Describe("Functional", func() {
 					Expect(err).ToNot(HaveOccurred())
 
 					readGot := string(readOutput[:])
+					Expect(readGot).To(ContainSubstring(testMessage))
+				})
+			})
+		})
+	})
+
+	Describe("Mosquitto", func() {
+
+		Describe("read/write", func() {
+			var topicName string
+
+			BeforeEach(func() {
+				topicName = fmt.Sprintf("FunctionalTestTopic%d", rand.Int())
+			})
+
+			Context("plain input and output", func() {
+				It("should work", func() {
+					const testMessage string = "welovemessaging"
+
+					capture := make(chan []byte, 1)
+					var wg sync.WaitGroup
+
+					// Start MQTT reader command
+					wg.Add(1)
+					go func() {
+						defer GinkgoRecover()
+
+						readCmd := exec.Command(
+							binary,
+							"read",
+							"mqtt",
+							"--topic", topicName,
+						)
+
+						readOutput, err := readCmd.CombinedOutput()
+						Expect(err).ToNot(HaveOccurred())
+						capture <- readOutput
+						wg.Done()
+					}()
+
+					// Wait for reader to start up
+					time.Sleep(time.Millisecond * 50)
+
+					// Reader is ready, write the message to MQTT
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"mqtt",
+						"--topic", topicName,
+						"--input-data", testMessage,
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					writeGot := string(writeOut[:])
+
+					writeWant := fmt.Sprintf("Sending message to broker on topic '%s'", topicName)
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					wg.Wait()
+					output := <-capture
+					close(capture)
+
+					readGot := string(output[:])
+					Expect(readGot).To(ContainSubstring(testMessage))
+				})
+			})
+
+			Context("jsonpb input, protobuf output", func() {
+				It("should work", func() {
+
+					capture := make(chan []byte, 1)
+					var wg sync.WaitGroup
+
+					// Start MQTT reader command
+					wg.Add(1)
+					go func() {
+						defer GinkgoRecover()
+
+						readCmd := exec.Command(
+							binary,
+							"read",
+							"mqtt",
+							"--topic", topicName,
+						)
+
+						readOutput, err := readCmd.CombinedOutput()
+						Expect(err).ToNot(HaveOccurred())
+						capture <- readOutput
+						wg.Done()
+					}()
+
+					// Wait for reader to start up
+					time.Sleep(time.Millisecond * 50)
+
+					// Reader is ready, write the message to MQTT
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"mqtt",
+						"--topic", topicName,
+						"--input-type", "jsonpb",
+						"--output-type", "protobuf",
+						"--input-file", sampleOutboundJSONPB,
+						"--protobuf-dir", protoSchemasDir,
+						"--protobuf-root-message", "Outbound",
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					writeGot := string(writeOut[:])
+					writeWant := fmt.Sprintf("Sending message to broker on topic '%s'", topicName)
+
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					wg.Wait()
+					output := <-capture
+					close(capture)
+
+					readGot := string(output[:])
+					Expect(readGot).To(ContainSubstring("30ddb850-1aca-4ee5-870c-1bb7b339ee5d"))
+					Expect(readGot).To(ContainSubstring("{\"hello\":\"dan\"}"))
+				})
+			})
+
+			Context("avro and json", func() {
+				It("should work", func() {
+					const testMessage string = "{\"company\":\"Batch Corp\"}"
+
+					capture := make(chan []byte, 1)
+					var wg sync.WaitGroup
+
+					// Start MQTT reader command
+					wg.Add(1)
+					go func() {
+						defer GinkgoRecover()
+
+						readCmd := exec.Command(
+							binary,
+							"read",
+							"mqtt",
+							"--topic", topicName,
+							"--avro-schema", "./test-assets/avro/test.avsc",
+						)
+
+						readOutput, err := readCmd.CombinedOutput()
+						Expect(err).ToNot(HaveOccurred())
+						capture <- readOutput
+						wg.Done()
+					}()
+
+					// Wait for reader to start up
+					time.Sleep(time.Millisecond * 50)
+
+					// First write the message to SQS
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"mqtt",
+						"--topic", topicName,
+						"--input-data", testMessage,
+						"--avro-schema", "./test-assets/avro/test.avsc",
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					writeGot := string(writeOut[:])
+
+					writeWant := fmt.Sprintf("Sending message to broker on topic '%s'", topicName)
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					wg.Wait()
+					output := <-capture
+					close(capture)
+
+					readGot := string(output[:])
 					Expect(readGot).To(ContainSubstring(testMessage))
 				})
 			})

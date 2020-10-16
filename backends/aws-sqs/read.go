@@ -23,7 +23,7 @@ const (
 	RetryDuration = time.Duration(10) * time.Second
 )
 
-// Read is the entry point function for performing read operations in RabbitMQ.
+// Read is the entry point function for performing read operations in AWS SQS.
 //
 // This is where we verify that the provided arguments and flag combination
 // makes sense/are valid; this is also where we will perform our initial conn.
