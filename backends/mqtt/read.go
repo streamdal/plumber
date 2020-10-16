@@ -19,7 +19,7 @@ import (
 	"github.com/batchcorp/plumber/util"
 )
 
-// Read is the entry point function for performing read operations in RabbitMQ.
+// Read is the entry point function for performing read operations in MQTT.
 //
 // This is where we verify that the provided arguments and flag combination
 // makes sense/are valid; this is also where we will perform our initial conn.
@@ -47,7 +47,7 @@ func Read(opts *cli.Options) error {
 		Options: opts,
 		Client:  client,
 		MsgDesc: md,
-		log:     logrus.WithField("pkg", "rabbitmq/read.go"),
+		log:     logrus.WithField("pkg", "mqtt/read.go"),
 	}
 
 	return r.Read()

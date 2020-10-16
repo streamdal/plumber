@@ -44,7 +44,7 @@ func Read(opts *cli.Options) error {
 		Options: opts,
 		MsgDesc: md,
 		Client:  client,
-		log:     logrus.WithField("pkg", "rabbitmq/read.go"),
+		log:     logrus.WithField("pkg", "gcp-pubsub/read.go"),
 	}
 
 	return r.Read()

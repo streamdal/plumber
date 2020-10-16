@@ -48,7 +48,7 @@ func Write(opts *cli.Options) error {
 		Options: opts,
 		Client:  client,
 		MsgDesc: md,
-		log:     logrus.WithField("pkg", "rabbitmq/write.go"),
+		log:     logrus.WithField("pkg", "mqtt/write.go"),
 	}
 
 	msg, err := generateWriteValue(md, opts)
