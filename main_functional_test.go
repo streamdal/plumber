@@ -19,7 +19,6 @@ import (
 	"math/rand"
 	"os/exec"
 	"runtime"
-	"sync"
 	"time"
 
 	"cloud.google.com/go/pubsub"
@@ -519,11 +518,9 @@ var _ = Describe("Functional", func() {
 				It("should work", func() {
 					const testMessage string = "welovemessaging"
 
-					capture := make(chan []byte, 1)
-					var wg sync.WaitGroup
+					capture := make(chan []byte)
 
 					// Start MQTT reader command
-					wg.Add(1)
 					go func() {
 						defer GinkgoRecover()
 
@@ -537,7 +534,6 @@ var _ = Describe("Functional", func() {
 						readOutput, err := readCmd.CombinedOutput()
 						Expect(err).ToNot(HaveOccurred())
 						capture <- readOutput
-						wg.Done()
 					}()
 
 					// Wait for reader to start up
@@ -560,7 +556,6 @@ var _ = Describe("Functional", func() {
 					writeWant := fmt.Sprintf("Sending message to broker on topic '%s'", topicName)
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					wg.Wait()
 					output := <-capture
 					close(capture)
 
@@ -572,11 +567,9 @@ var _ = Describe("Functional", func() {
 			Context("jsonpb input, protobuf output", func() {
 				It("should work", func() {
 
-					capture := make(chan []byte, 1)
-					var wg sync.WaitGroup
+					capture := make(chan []byte)
 
 					// Start MQTT reader command
-					wg.Add(1)
 					go func() {
 						defer GinkgoRecover()
 
@@ -590,7 +583,6 @@ var _ = Describe("Functional", func() {
 						readOutput, err := readCmd.CombinedOutput()
 						Expect(err).ToNot(HaveOccurred())
 						capture <- readOutput
-						wg.Done()
 					}()
 
 					// Wait for reader to start up
@@ -617,7 +609,6 @@ var _ = Describe("Functional", func() {
 
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					wg.Wait()
 					output := <-capture
 					close(capture)
 
@@ -631,11 +622,9 @@ var _ = Describe("Functional", func() {
 				It("should work", func() {
 					const testMessage string = "{\"company\":\"Batch Corp\"}"
 
-					capture := make(chan []byte, 1)
-					var wg sync.WaitGroup
+					capture := make(chan []byte)
 
 					// Start MQTT reader command
-					wg.Add(1)
 					go func() {
 						defer GinkgoRecover()
 
@@ -650,7 +639,6 @@ var _ = Describe("Functional", func() {
 						readOutput, err := readCmd.CombinedOutput()
 						Expect(err).ToNot(HaveOccurred())
 						capture <- readOutput
-						wg.Done()
 					}()
 
 					// Wait for reader to start up
@@ -674,7 +662,6 @@ var _ = Describe("Functional", func() {
 					writeWant := fmt.Sprintf("Sending message to broker on topic '%s'", topicName)
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					wg.Wait()
 					output := <-capture
 					close(capture)
 
