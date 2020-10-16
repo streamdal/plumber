@@ -12,6 +12,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/jhump/protoreflect v1.7.0
 	github.com/julienschmidt/httprouter v1.3.0
+	github.com/linkedin/goavro/v2 v2.9.8
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/onsi/ginkgo v1.14.1
 	github.com/onsi/gomega v1.10.2

@@ -10,6 +10,7 @@ import (
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/serializers"
 	"github.com/batchcorp/plumber/util"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
@@ -67,6 +68,16 @@ func (r *RabbitMQ) Read() error {
 				return nil
 			}
 
+			msg.Body = decoded
+		}
+
+		// Handle AVRO
+		if r.Options.AvroSchemaFile != "" {
+			decoded, err := serializers.AvroDecode(r.Options.AvroSchemaFile, msg.Body)
+			if err != nil {
+				printer.Error(fmt.Sprintf("unable to decode AVRO message: %s", err))
+				return err
+			}
 			msg.Body = decoded
 		}
 

@@ -281,6 +281,65 @@ var _ = Describe("Functional", func() {
 				})
 			})
 		})
+
+		Context("avro and json", func() {
+
+			randID := rand.Int()
+			var (
+				exchangeName string = fmt.Sprintf("testex-%d", randID)
+				queueName    string = fmt.Sprintf("testqueue-%d", randID)
+				routingKey   string = fmt.Sprintf("testqueue-%d", randID)
+			)
+
+			BeforeEach(func() {
+				err := createRabbit(exchangeName, queueName, routingKey)
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			AfterEach(func() {
+				err := deleteRabbit(exchangeName, queueName)
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			It("should work", func() {
+				const testMessage string = "{\"company\":\"Batch Corp\"}"
+
+				// First write the message to SQS
+				writeCmd := exec.Command(
+					binary,
+					"write",
+					"rabbit",
+					"--avro-schema", "./test-assets/avro/test.avsc",
+					"--exchange", exchangeName,
+					"--routing-key", routingKey,
+					"--input-data", testMessage,
+				)
+
+				writeOut, err := writeCmd.CombinedOutput()
+				Expect(err).ToNot(HaveOccurred())
+
+				writeGot := string(writeOut[:])
+				writeWant := fmt.Sprintf("Successfully wrote message to exchange '%s'", exchangeName)
+				Expect(writeGot).To(ContainSubstring(writeWant))
+
+				// Now try and read from the SQS queue
+				readCmd := exec.Command(
+					binary,
+					"read",
+					"rabbit",
+					"--avro-schema", "./test-assets/avro/test.avsc",
+					"--exchange", exchangeName,
+					"--routing-key", routingKey,
+					"--queue", queueName,
+				)
+
+				readOutput, err := readCmd.CombinedOutput()
+				Expect(err).ToNot(HaveOccurred())
+
+				readGot := string(readOutput[:])
+				Expect(readGot).To(ContainSubstring(testMessage))
+			})
+		})
 	})
 
 	Describe("GCP PubSub", func() {
@@ -401,6 +460,46 @@ var _ = Describe("Functional", func() {
 					readGot := string(readOut[:])
 					Expect(readGot).To(ContainSubstring("30ddb850-1aca-4ee5-870c-1bb7b339ee5d"))
 					Expect(readGot).To(ContainSubstring("eyJoZWxsbyI6ImRhbiJ9Cg=="))
+				})
+			})
+
+			Context("avro and json", func() {
+				It("should work", func() {
+					const testMessage string = "{\"company\":\"Batch Corp\"}"
+
+					// First write the message to SQS
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"aws-sqs",
+						"--queue-name", queueName,
+						"--input-data", testMessage,
+						"--avro-schema", "./test-assets/avro/test.avsc",
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					writeGot := string(writeOut[:])
+
+					writeWant := fmt.Sprintf("Successfully wrote message to AWS queue '%s'", queueName)
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					// Now try and read from the SQS queue
+					readCmd := exec.Command(
+						binary,
+						"read",
+						"aws-sqs",
+						"--queue-name", queueName,
+						"--auto-delete",
+						"--avro-schema", "./test-assets/avro/test.avsc",
+					)
+
+					readOutput, err := readCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					readGot := string(readOutput[:])
+					Expect(readGot).To(ContainSubstring(testMessage))
 				})
 			})
 		})

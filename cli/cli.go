@@ -30,6 +30,9 @@ type Options struct {
 	Action  string
 	Version string
 
+	// Serializers
+	AvroSchemaFile string
+
 	// Relay
 	RelayToken             string
 	RelayGRPCAddress       string
@@ -78,6 +81,8 @@ func Handle() (string, *Options, error) {
 	HandleGCPPubSubFlags(readCmd, writeCmd, opts)
 	HandleMQTTFlags(readCmd, writeCmd, opts)
 	HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
+	HandleGlobalFlags(readCmd, opts)
+	HandleGlobalFlags(writeCmd, opts)
 
 	app.Version(version)
 	app.HelpFlag.Short('h')
@@ -97,6 +102,11 @@ func Handle() (string, *Options, error) {
 	}
 
 	return cmd, opts, err
+}
+
+func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
+	cmd.Flag("avro-schema", "Path to AVRO schema .avsc file").
+		StringVar(&opts.AvroSchemaFile)
 }
 
 func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {

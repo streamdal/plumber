@@ -13,6 +13,7 @@ import (
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/serializers"
 	"github.com/batchcorp/plumber/util"
 )
 
@@ -83,6 +84,16 @@ func (k *Kafka) Read() error {
 				continue
 			}
 
+			msg.Value = decoded
+		}
+
+		// Handle AVRO
+		if k.Options.AvroSchemaFile != "" {
+			decoded, err := serializers.AvroDecode(k.Options.AvroSchemaFile, msg.Value)
+			if err != nil {
+				printer.Error(fmt.Sprintf("unable to decode AVRO message: %s", err))
+				return err
+			}
 			msg.Value = decoded
 		}
 

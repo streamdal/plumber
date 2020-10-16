@@ -72,6 +72,7 @@ func addReadKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 		"set (required if protobuf-dir set)").StringVar(&opts.Kafka.ReadProtobufRootMessage)
 	cmd.Flag("convert", "Convert received (output) message(s)").
 		EnumVar(&opts.Kafka.ReadConvert, "base64", "gzip")
+
 }
 
 func addWriteKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {

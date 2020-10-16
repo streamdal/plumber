@@ -15,6 +15,7 @@ import (
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/serializers"
 	"github.com/batchcorp/plumber/util"
 )
 
@@ -169,6 +170,17 @@ func (a *AWSSQS) convertMessage(msg []byte) ([]byte, error) {
 			return nil, fmt.Errorf("unable to decode protobuf message: %s", err)
 		}
 
+		msg = decoded
+	}
+
+	// Handle AVRO
+	if a.Options.AvroSchemaFile != "" {
+		plain, err := base64.StdEncoding.DecodeString(string(msg))
+		decoded, err := serializers.AvroDecode(a.Options.AvroSchemaFile, plain)
+		if err != nil {
+			printer.Error(fmt.Sprintf("unable to decode AVRO message: %s", err))
+			return nil, err
+		}
 		msg = decoded
 	}
 
