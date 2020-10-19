@@ -22,12 +22,12 @@ const (
 // Kafka holds all attributes required for performing a write to Kafka. This
 // struct should be instantiated via the kafka.Read(..) func.
 type Kafka struct {
-	Id          string
-	Reader      *skafka.Reader
-	Writer      *skafka.Writer
-	Options     *cli.Options
-	MessageDesc *desc.MessageDescriptor
-	log         *logrus.Entry
+	Id      string
+	Reader  *skafka.Reader
+	Writer  *skafka.Writer
+	Options *cli.Options
+	MsgDesc *desc.MessageDescriptor
+	log     *logrus.Entry
 }
 
 func NewReader(opts *cli.Options) (*skafka.Reader, error) {

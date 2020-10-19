@@ -537,7 +537,7 @@ var _ = Describe("Functional", func() {
 					}()
 
 					// Wait for reader to start up
-					time.Sleep(time.Millisecond * 50)
+					time.Sleep(time.Millisecond * 100)
 
 					// Reader is ready, write the message to MQTT
 					writeCmd := exec.Command(

@@ -2,22 +2,19 @@ package gcppubsub
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"os"
 	"sync"
 
 	"cloud.google.com/go/pubsub"
 	"github.com/jhump/protoreflect/desc"
-	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/serializers"
-	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/reader"
 )
 
 func Read(opts *cli.Options) error {
@@ -71,54 +68,8 @@ func (g *GCPPubSub) Read() error {
 			defer msg.Ack()
 		}
 
-		if g.Options.ReadOutputType == "protobuf" {
-			decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(g.MsgDesc), msg.Data)
-			if err != nil {
-				if !g.Options.ReadFollow {
-					printer.Error(fmt.Sprintf("unable to decode protobuf message: %s", err))
-					cancel()
-					return
-				}
-
-				// Continue running
-				printer.Error(fmt.Sprintf("unable to decode protobuf message: %s", err))
-				return
-			}
-
-			msg.Data = decoded
-		}
-
-		// Handle AVRO
-		if g.Options.AvroSchemaFile != "" {
-			decoded, err := serializers.AvroDecode(g.Options.AvroSchemaFile, msg.Data)
-			if err != nil {
-				printer.Error(fmt.Sprintf("unable to decode AVRO message: %s", err))
-				return
-			}
-			msg.Data = decoded
-		}
-
-		var data []byte
-		var convertErr error
-
-		switch g.Options.ReadConvert {
-		case "base64":
-			_, convertErr = base64.StdEncoding.Decode(data, msg.Data)
-		case "gzip":
-			data, convertErr = util.Gunzip(msg.Data)
-		default:
-			data = msg.Data
-		}
-
-		if convertErr != nil {
-			if !g.Options.ReadFollow {
-				printer.Error(fmt.Sprintf("unable to complete conversion for message: %s", convertErr))
-				cancel()
-				return
-			}
-
-			// Continue running
-			printer.Error(fmt.Sprintf("unable to complete conversion for message: %s", convertErr))
+		data, err := reader.Decode(g.Options, g.MsgDesc, msg.Data)
+		if err != nil {
 			return
 		}
 

@@ -1,22 +1,19 @@
 package mqtt
 
 import (
-	"encoding/base64"
 	"fmt"
 	"strings"
 	"sync"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/jhump/protoreflect/desc"
-	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/serializers"
-	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/reader"
 )
 
 // Read is the entry point function for performing read operations in MQTT.
@@ -81,54 +78,15 @@ func (m *MQTT) subscribe(wg *sync.WaitGroup, errChan chan error) {
 			defer m.Client.Disconnect(0)
 		}
 
-		msgData := msg.Payload()
+		data, err := reader.Decode(m.Options, m.MsgDesc, msg.Payload())
 
-		if m.Options.ReadOutputType == "protobuf" {
-			decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(m.MsgDesc), msg.Payload())
-			if err != nil {
-				if !m.Options.ReadFollow {
-					errChan <- fmt.Errorf("unable to decode protobuf message: %s", err)
-					wg.Done()
-					return
-				}
-
-				printer.Error(fmt.Sprintf("unable to decode protobuf message: %s", err))
-				return
-			}
-
-			msgData = decoded
-		}
-
-		// Handle AVRO
-		if m.Options.AvroSchemaFile != "" {
-			decoded, err := serializers.AvroDecode(m.Options.AvroSchemaFile, msgData)
-			if err != nil {
-				printer.Error(fmt.Sprintf("unable to decode AVRO message: %s", err))
-				return
-			}
-			msgData = decoded
-		}
-
-		var data []byte
-		var convertErr error
-
-		switch m.Options.ReadConvert {
-		case "base64":
-			_, convertErr = base64.StdEncoding.Decode(data, msgData)
-		case "gzip":
-			data, convertErr = util.Gunzip(msgData)
-		default:
-			data = msgData
-		}
-
-		if convertErr != nil {
+		if err != nil {
 			if !m.Options.ReadFollow {
-				errChan <- fmt.Errorf("unable to complete conversion: %s", convertErr)
+				errChan <- fmt.Errorf("unable to complete conversion: %s", err)
 				wg.Done()
 				return
 			}
 
-			printer.Error(fmt.Sprintf("unable to complete conversion for message: %s", convertErr))
 			return
 		}
 

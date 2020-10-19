@@ -29,6 +29,7 @@ type Options struct {
 	Quiet   bool
 	Action  string
 	Version string
+	Backend string
 
 	// Serializers
 	AvroSchemaFile string

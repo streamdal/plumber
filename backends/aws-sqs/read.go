@@ -1,22 +1,19 @@
 package awssqs
 
 import (
-	"encoding/base64"
 	"fmt"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/jhump/protoreflect/desc"
-	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/serializers"
-	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/reader"
 )
 
 const (
@@ -119,7 +116,7 @@ func (a *AWSSQS) Read() error {
 
 		// Handle decode + output conversion
 		for _, m := range msgResult.Messages {
-			data, err := a.convertMessage([]byte(*m.Body))
+			data, err := reader.Decode(a.Options, a.MsgDesc, []byte(*m.Body))
 			if err != nil {
 				printer.Error(fmt.Sprintf("unable to convert message: %s", err))
 				continue
@@ -154,51 +151,4 @@ func (a *AWSSQS) Read() error {
 	a.log.Debug("Reader exiting")
 
 	return nil
-}
-
-func (a *AWSSQS) convertMessage(msg []byte) ([]byte, error) {
-	// Protobuf bits
-	if a.Options.ReadOutputType == "protobuf" {
-		// Our implementation of 'protobuf-over-sqs' encodes protobuf in b64
-		plain, err := base64.StdEncoding.DecodeString(string(msg))
-		if err != nil {
-			return nil, fmt.Errorf("unable to decode base64 to protobuf")
-		}
-
-		decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(a.MsgDesc), plain)
-		if err != nil {
-			return nil, fmt.Errorf("unable to decode protobuf message: %s", err)
-		}
-
-		msg = decoded
-	}
-
-	// Handle AVRO
-	if a.Options.AvroSchemaFile != "" {
-		plain, err := base64.StdEncoding.DecodeString(string(msg))
-		decoded, err := serializers.AvroDecode(a.Options.AvroSchemaFile, plain)
-		if err != nil {
-			printer.Error(fmt.Sprintf("unable to decode AVRO message: %s", err))
-			return nil, err
-		}
-		msg = decoded
-	}
-
-	var data []byte
-	var convertErr error
-
-	switch a.Options.ReadConvert {
-	case "base64":
-		_, convertErr = base64.StdEncoding.Decode(data, msg)
-	case "gzip":
-		data, convertErr = util.Gunzip(msg)
-	default:
-		data = msg
-	}
-
-	if convertErr != nil {
-		return nil, errors.Wrap(convertErr, "unable to complete conversion")
-	}
-
-	return data, nil
 }

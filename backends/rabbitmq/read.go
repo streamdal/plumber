@@ -2,19 +2,18 @@ package rabbitmq
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
+
 	"github.com/batchcorp/rabbit"
 	"github.com/streadway/amqp"
+
+	"github.com/jhump/protoreflect/desc"
+	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/serializers"
-	"github.com/batchcorp/plumber/util"
-	"github.com/jhump/protoreflect/desc"
-	"github.com/jhump/protoreflect/dynamic"
-	"github.com/pkg/errors"
+	"github.com/batchcorp/plumber/reader"
 )
 
 // Read is the entry point function for performing read operations in RabbitMQ.
@@ -57,49 +56,9 @@ func (r *RabbitMQ) Read() error {
 
 	go r.Consumer.Consume(ctx, errCh, func(msg amqp.Delivery) error {
 
-		if r.Options.ReadOutputType == "protobuf" {
-			decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(r.MsgDesc), msg.Body)
-			if err != nil {
-				if !r.Options.ReadFollow {
-					return fmt.Errorf("unable to decode protobuf message: %s", err)
-				}
-
-				printer.Error(fmt.Sprintf("unable to decode protobuf message: %s", err))
-				return nil
-			}
-
-			msg.Body = decoded
-		}
-
-		// Handle AVRO
-		if r.Options.AvroSchemaFile != "" {
-			decoded, err := serializers.AvroDecode(r.Options.AvroSchemaFile, msg.Body)
-			if err != nil {
-				printer.Error(fmt.Sprintf("unable to decode AVRO message: %s", err))
-				return err
-			}
-			msg.Body = decoded
-		}
-
-		var data []byte
-		var convertErr error
-
-		switch r.Options.ReadConvert {
-		case "base64":
-			_, convertErr = base64.StdEncoding.Decode(data, msg.Body)
-		case "gzip":
-			data, convertErr = util.Gunzip(msg.Body)
-		default:
-			data = msg.Body
-		}
-
-		if convertErr != nil {
-			if !r.Options.ReadFollow {
-				return errors.Wrap(convertErr, "unable to complete conversion")
-			}
-
-			printer.Error(fmt.Sprintf("unable to complete conversion for message: %s", convertErr))
-			return errors.Wrap(convertErr, "unable to complete conversion for message")
+		data, err := reader.Decode(r.Options, r.MsgDesc, msg.Body)
+		if err != nil {
+			return err
 		}
 
 		str := string(data)
