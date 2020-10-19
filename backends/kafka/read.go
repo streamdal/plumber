@@ -2,19 +2,16 @@ package kafka
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 
 	"github.com/jhump/protoreflect/desc"
-	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/serializers"
-	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/reader"
 )
 
 // Read is the entry point function for performing read operations in Kafka.
@@ -29,8 +26,8 @@ func Read(opts *cli.Options) error {
 	var mdErr error
 	var md *desc.MessageDescriptor
 
-	if opts.Kafka.ReadOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.Kafka.ReadProtobufDirs, opts.Kafka.ReadProtobufRootMessage)
+	if opts.ReadOutputType == "protobuf" {
+		md, mdErr = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")
 		}
@@ -42,10 +39,10 @@ func Read(opts *cli.Options) error {
 	}
 
 	k := &Kafka{
-		Options:     opts,
-		MessageDesc: md,
-		Reader:      reader,
-		log:         logrus.WithField("pkg", "kafka/read.go"),
+		Options: opts,
+		MsgDesc: md,
+		Reader:  reader,
+		log:     logrus.WithField("pkg", "kafka/read.go"),
 	}
 
 	return k.Read()
@@ -65,7 +62,7 @@ func (k *Kafka) Read() error {
 		// groups are setup on initial connect.
 		msg, err := k.Reader.ReadMessage(context.Background())
 		if err != nil {
-			if !k.Options.Kafka.ReadFollow {
+			if !k.Options.ReadFollow {
 				return errors.Wrap(err, "unable to read message")
 			}
 
@@ -73,62 +70,21 @@ func (k *Kafka) Read() error {
 			continue
 		}
 
-		if k.Options.Kafka.ReadOutputType == "protobuf" {
-			decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(k.MessageDesc), msg.Value)
-			if err != nil {
-				if !k.Options.Kafka.ReadFollow {
-					return fmt.Errorf("unable to decode protobuf message: %s", err)
-				}
-
-				printer.Error(fmt.Sprintf("unable to decode protobuf message: %s", err))
-				continue
-			}
-
-			msg.Value = decoded
-		}
-
-		// Handle AVRO
-		if k.Options.AvroSchemaFile != "" {
-			decoded, err := serializers.AvroDecode(k.Options.AvroSchemaFile, msg.Value)
-			if err != nil {
-				printer.Error(fmt.Sprintf("unable to decode AVRO message: %s", err))
-				return err
-			}
-			msg.Value = decoded
-		}
-
-		data := make([]byte, 0)
-
-		var convertErr error
-
-		switch k.Options.Kafka.ReadConvert {
-		case "base64":
-			data, convertErr = base64.StdEncoding.DecodeString(string(msg.Value))
-		case "gzip":
-			data, convertErr = util.Gunzip(msg.Value)
-		default:
-			data = msg.Value
-		}
-
-		if convertErr != nil {
-			if !k.Options.Kafka.ReadFollow {
-				return errors.Wrap(convertErr, "unable to complete conversion")
-			}
-
-			printer.Error(fmt.Sprintf("unable to complete conversion for message: %s", convertErr))
+		data, err := reader.Decode(k.Options, k.MsgDesc, msg.Value)
+		if err != nil {
 			continue
 		}
 
 		str := string(data)
 
-		if k.Options.Kafka.LineNumbers {
+		if k.Options.ReadLineNumbers {
 			str = fmt.Sprintf("%d: ", lineNumber) + str
 			lineNumber++
 		}
 
 		printer.Print(str)
 
-		if !k.Options.Kafka.ReadFollow {
+		if !k.Options.ReadFollow {
 			break
 		}
 	}
@@ -141,10 +97,10 @@ func (k *Kafka) Read() error {
 func validateReadOptions(opts *cli.Options) error {
 	// If type is protobuf, ensure both --protobuf-dir and --protobuf-root-message
 	// are set as well
-	if opts.Kafka.ReadOutputType == "protobuf" {
+	if opts.ReadOutputType == "protobuf" {
 		if err := cli.ValidateProtobufOptions(
-			opts.Kafka.ReadProtobufDirs,
-			opts.Kafka.ReadProtobufRootMessage,
+			opts.ReadProtobufDirs,
+			opts.ReadProtobufRootMessage,
 		); err != nil {
 			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
 		}

@@ -16,12 +16,6 @@ type AWSSQSOptions struct {
 	ReadAutoDelete              bool
 	ReadReceiveRequestAttemptId string
 	ReadWaitTimeSeconds         int64
-	ReadProtobufDirs            []string
-	ReadProtobufRootMessage     string
-	ReadOutputType              string
-	ReadFollow                  bool
-	ReadLineNumbers             bool
-	ReadConvert                 string
 
 	// Write
 	WriteDelaySeconds        int64
@@ -117,28 +111,6 @@ func addReadAWSSQSFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Short('w').
 		Default("5").
 		Int64Var(&opts.AWSSQS.ReadWaitTimeSeconds)
-
-	cmd.Flag("protobuf-dir", "Directory with .proto files").
-		ExistingDirsVar(&opts.AWSSQS.ReadProtobufDirs)
-
-	cmd.Flag("protobuf-root-message", "Specifies the root message in a protobuf descriptor "+
-		"set (required if protobuf-dir set)").
-		StringVar(&opts.AWSSQS.ReadProtobufRootMessage)
-
-	cmd.Flag("output-type", "The type of message(s) you will receive on the bus").
-		Default("plain").
-		EnumVar(&opts.AWSSQS.ReadOutputType, "plain", "protobuf")
-
-	cmd.Flag("follow", "Continuous read (ie. `tail -f`)").
-		Short('f').
-		BoolVar(&opts.AWSSQS.ReadFollow)
-
-	cmd.Flag("line-numbers", "Display line numbers for each message").
-		Default("false").
-		BoolVar(&opts.AWSSQS.ReadLineNumbers)
-
-	cmd.Flag("convert", "Convert received (output) message(s)").
-		EnumVar(&opts.AWSSQS.ReadConvert, "base64", "gzip")
 }
 
 func addWriteAWSSQSFlags(cmd *kingpin.CmdClause, opts *Options) {

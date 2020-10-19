@@ -2,22 +2,19 @@ package gcppubsub
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"os"
 	"sync"
 
 	"cloud.google.com/go/pubsub"
 	"github.com/jhump/protoreflect/desc"
-	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/serializers"
-	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/reader"
 )
 
 func Read(opts *cli.Options) error {
@@ -28,8 +25,8 @@ func Read(opts *cli.Options) error {
 	var mdErr error
 	var md *desc.MessageDescriptor
 
-	if opts.GCPPubSub.ReadOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.GCPPubSub.ReadProtobufDirs, opts.GCPPubSub.ReadProtobufRootMessage)
+	if opts.ReadOutputType == "protobuf" {
+		md, mdErr = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")
 		}
@@ -71,67 +68,21 @@ func (g *GCPPubSub) Read() error {
 			defer msg.Ack()
 		}
 
-		if g.Options.GCPPubSub.ReadOutputType == "protobuf" {
-			decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(g.MsgDesc), msg.Data)
-			if err != nil {
-				if !g.Options.GCPPubSub.ReadFollow {
-					printer.Error(fmt.Sprintf("unable to decode protobuf message: %s", err))
-					cancel()
-					return
-				}
-
-				// Continue running
-				printer.Error(fmt.Sprintf("unable to decode protobuf message: %s", err))
-				return
-			}
-
-			msg.Data = decoded
-		}
-
-		// Handle AVRO
-		if g.Options.AvroSchemaFile != "" {
-			decoded, err := serializers.AvroDecode(g.Options.AvroSchemaFile, msg.Data)
-			if err != nil {
-				printer.Error(fmt.Sprintf("unable to decode AVRO message: %s", err))
-				return
-			}
-			msg.Data = decoded
-		}
-
-		var data []byte
-		var convertErr error
-
-		switch g.Options.GCPPubSub.ReadConvert {
-		case "base64":
-			_, convertErr = base64.StdEncoding.Decode(data, msg.Data)
-		case "gzip":
-			data, convertErr = util.Gunzip(msg.Data)
-		default:
-			data = msg.Data
-		}
-
-		if convertErr != nil {
-			if !g.Options.GCPPubSub.ReadFollow {
-				printer.Error(fmt.Sprintf("unable to complete conversion for message: %s", convertErr))
-				cancel()
-				return
-			}
-
-			// Continue running
-			printer.Error(fmt.Sprintf("unable to complete conversion for message: %s", convertErr))
+		data, err := reader.Decode(g.Options, g.MsgDesc, msg.Data)
+		if err != nil {
 			return
 		}
 
 		str := string(data)
 
-		if g.Options.GCPPubSub.ReadLineNumbers {
+		if g.Options.ReadLineNumbers {
 			str = fmt.Sprintf("%d: ", lineNumber) + str
 			lineNumber++
 		}
 
 		printer.Print(str)
 
-		if !g.Options.GCPPubSub.ReadFollow {
+		if !g.Options.ReadFollow {
 			cancel()
 			return
 		}
@@ -149,10 +100,10 @@ func validateReadOptions(opts *cli.Options) error {
 		return errors.New("GOOGLE_APPLICATION_CREDENTIALS must be set")
 	}
 
-	if opts.GCPPubSub.ReadOutputType == "protobuf" {
+	if opts.ReadOutputType == "protobuf" {
 		if err := cli.ValidateProtobufOptions(
-			opts.GCPPubSub.ReadProtobufDirs,
-			opts.GCPPubSub.ReadProtobufRootMessage,
+			opts.ReadProtobufDirs,
+			opts.ReadProtobufRootMessage,
 		); err != nil {
 			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
 		}

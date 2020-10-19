@@ -42,6 +42,9 @@ func AvroEncode(avroSchemaPath string, data []byte) ([]byte, error) {
 // AvroEncode takes in a path to a AVRO schema file, and binary encoded data
 // and returns the plain JSON representation
 func AvroDecode(avroSchemaPath string, data []byte) ([]byte, error) {
+	if avroSchemaPath == "" {
+		return data, nil
+	}
 	avroSchema, readErr := ioutil.ReadFile(avroSchemaPath)
 	if readErr != nil {
 		return nil, fmt.Errorf("unable to read AVRO schema file '%s': %s", avroSchemaPath, readErr)

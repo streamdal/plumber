@@ -29,6 +29,7 @@ type Options struct {
 	Quiet   bool
 	Action  string
 	Version string
+	Backend string
 
 	// Serializers
 	AvroSchemaFile string
@@ -41,6 +42,14 @@ type Options struct {
 	RelayNumWorkers        int
 	RelayGRPCTimeout       time.Duration
 	RelayGRPCDisableTLS    bool
+
+	// Shared read flags
+	ReadProtobufRootMessage string
+	ReadProtobufDirs        []string
+	ReadOutputType          string
+	ReadFollow              bool
+	ReadLineNumbers         bool
+	ReadConvert             string
 
 	Kafka     *KafkaOptions
 	Rabbit    *RabbitOptions
@@ -82,6 +91,7 @@ func Handle() (string, *Options, error) {
 	HandleMQTTFlags(readCmd, writeCmd, opts)
 	HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
 	HandleGlobalFlags(readCmd, opts)
+	HandleGlobalReadFlags(readCmd, opts)
 	HandleGlobalFlags(writeCmd, opts)
 
 	app.Version(version)
@@ -102,6 +112,29 @@ func Handle() (string, *Options, error) {
 	}
 
 	return cmd, opts, err
+}
+
+func HandleGlobalReadFlags(cmd *kingpin.CmdClause, opts *Options) {
+	cmd.Flag("protobuf-root-message", "Specifies the root message in a protobuf descriptor "+
+		"set (required if protobuf-dir set)").
+		StringVar(&opts.ReadProtobufRootMessage)
+
+	cmd.Flag("protobuf-dir", "Directory with .proto files").
+		ExistingDirsVar(&opts.ReadProtobufDirs)
+
+	cmd.Flag("output-type", "The type of message(s) you will receive on the bus").
+		Default("plain").
+		EnumVar(&opts.ReadOutputType, "plain", "protobuf")
+
+	cmd.Flag("follow", "Continuous read (ie. `tail -f`)").
+		Short('f').
+		BoolVar(&opts.ReadFollow)
+
+	cmd.Flag("line-numbers", "Display line numbers for each message").
+		Default("false").BoolVar(&opts.ReadLineNumbers)
+
+	cmd.Flag("convert", "Convert received (output) message(s)").
+		EnumVar(&opts.ReadConvert, "base64", "gzip")
 }
 
 func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {

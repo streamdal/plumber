@@ -15,12 +15,11 @@ const (
 
 type MQTTOptions struct {
 	// Shared
-	Address     string
-	Topic       string
-	Timeout     time.Duration
-	ClientId    string
-	LineNumbers bool
-	QoSLevel    int
+	Address  string
+	Topic    string
+	Timeout  time.Duration
+	ClientId string
+	QoSLevel int
 
 	// TLS-related pieces
 	TLSCAFile         string
@@ -29,12 +28,7 @@ type MQTTOptions struct {
 	InsecureTLS       bool
 
 	// Read
-	ReadFollow              bool
-	ReadOutputType          string
-	ReadProtobufDirs        []string
-	ReadProtobufRootMessage string
-	ReadConvert             string
-	ReadTimeout             time.Duration
+	ReadTimeout time.Duration
 
 	// Write
 	WriteTimeout             time.Duration
@@ -42,7 +36,7 @@ type MQTTOptions struct {
 	WriteInputFile           string
 	WriteInputType           string
 	WriteOutputType          string
-	WriteProtobufDirs         []string
+	WriteProtobufDirs        []string
 	WriteProtobufRootMessage string
 }
 
@@ -67,7 +61,6 @@ func addSharedMQTTFlags(cmd *kingpin.CmdClause, opts *Options) {
 		DurationVar(&opts.MQTT.Timeout)
 	cmd.Flag("client-id", "Client id presented to MQTT broker").
 		Default(clientId).StringVar(&opts.MQTT.ClientId)
-	cmd.Flag("line-numbers", "Prepend number to each output message").BoolVar(&opts.MQTT.LineNumbers)
 	cmd.Flag("qos", "QoS level to use for pub/sub (0, 1, 2)").Default("0").IntVar(&opts.MQTT.QoSLevel)
 	cmd.Flag("tls-ca-file", "CA file (only needed if addr is ssl://").ExistingFileVar(&opts.MQTT.TLSCAFile)
 	cmd.Flag("tls-client-cert-file", "Client cert file (only needed if addr is ssl://").
@@ -79,18 +72,8 @@ func addSharedMQTTFlags(cmd *kingpin.CmdClause, opts *Options) {
 }
 
 func addReadMQTTFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("follow", "Continuous read (ie. `tail -f`)").Short('f').
-		BoolVar(&opts.MQTT.ReadFollow)
 	cmd.Flag("read-timeout", "How long to wait for a message (default: forever)").
 		Default("0s").DurationVar(&opts.MQTT.ReadTimeout)
-	cmd.Flag("output-type", "The type of message(s) you will receive on the bus").
-		Default("plain").EnumVar(&opts.MQTT.ReadOutputType, "plain", "protobuf")
-	cmd.Flag("protobuf-dir", "Directory with .proto files").
-		ExistingDirsVar(&opts.MQTT.ReadProtobufDirs)
-	cmd.Flag("protobuf-root-message", "Specifies the root message in a protobuf descriptor "+
-		"set (required if protobuf-dir set)").StringVar(&opts.MQTT.ReadProtobufRootMessage)
-	cmd.Flag("convert", "Convert received (output) message(s)").
-		EnumVar(&opts.MQTT.ReadConvert, "base64", "gzip")
 }
 
 func addWriteMQTTFlags(cmd *kingpin.CmdClause, opts *Options) {

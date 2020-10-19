@@ -1,22 +1,19 @@
 package awssqs
 
 import (
-	"encoding/base64"
 	"fmt"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/jhump/protoreflect/desc"
-	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/serializers"
-	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/reader"
 )
 
 const (
@@ -35,8 +32,8 @@ func Read(opts *cli.Options) error {
 	var mdErr error
 	var md *desc.MessageDescriptor
 
-	if opts.AWSSQS.ReadOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.AWSSQS.ReadProtobufDirs, opts.AWSSQS.ReadProtobufRootMessage)
+	if opts.ReadOutputType == "protobuf" {
+		md, mdErr = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")
 		}
@@ -67,10 +64,10 @@ func validateReadOptions(opts *cli.Options) error {
 		return errors.New("--wait-time-seconds must be between 0 and 20")
 	}
 
-	if opts.AWSSQS.ReadOutputType == "protobuf" {
+	if opts.ReadOutputType == "protobuf" {
 		if err := cli.ValidateProtobufOptions(
-			opts.AWSSQS.ReadProtobufDirs,
-			opts.AWSSQS.ReadProtobufRootMessage,
+			opts.ReadProtobufDirs,
+			opts.ReadProtobufRootMessage,
 		); err != nil {
 			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
 		}
@@ -93,7 +90,7 @@ func (a *AWSSQS) Read() error {
 			MaxNumberOfMessages:     aws.Int64(a.Options.AWSSQS.ReadMaxNumMessages),
 		})
 		if err != nil {
-			if !a.Options.AWSSQS.ReadFollow {
+			if !a.Options.ReadFollow {
 				return fmt.Errorf("unable to receive any message(s) from SQS: %s", err)
 			}
 
@@ -106,7 +103,7 @@ func (a *AWSSQS) Read() error {
 		if len(msgResult.Messages) == 0 {
 			outputMessage := fmt.Sprintf("Received 0 messages after %d seconds", a.Options.AWSSQS.ReadWaitTimeSeconds)
 
-			if a.Options.AWSSQS.ReadFollow {
+			if a.Options.ReadFollow {
 				outputMessage = outputMessage + fmt.Sprintf("; retrying in %s", RetryDuration)
 				printer.Print(outputMessage)
 				time.Sleep(RetryDuration)
@@ -119,7 +116,7 @@ func (a *AWSSQS) Read() error {
 
 		// Handle decode + output conversion
 		for _, m := range msgResult.Messages {
-			data, err := a.convertMessage([]byte(*m.Body))
+			data, err := reader.Decode(a.Options, a.MsgDesc, []byte(*m.Body))
 			if err != nil {
 				printer.Error(fmt.Sprintf("unable to convert message: %s", err))
 				continue
@@ -127,7 +124,7 @@ func (a *AWSSQS) Read() error {
 
 			str := string(data)
 
-			if a.Options.AWSSQS.ReadLineNumbers {
+			if a.Options.ReadLineNumbers {
 				str = fmt.Sprintf("%d: ", lineNumber) + str
 				lineNumber++
 			}
@@ -146,7 +143,7 @@ func (a *AWSSQS) Read() error {
 			}
 		}
 
-		if !a.Options.AWSSQS.ReadFollow {
+		if !a.Options.ReadFollow {
 			break
 		}
 	}
@@ -154,51 +151,4 @@ func (a *AWSSQS) Read() error {
 	a.log.Debug("Reader exiting")
 
 	return nil
-}
-
-func (a *AWSSQS) convertMessage(msg []byte) ([]byte, error) {
-	// Protobuf bits
-	if a.Options.AWSSQS.ReadOutputType == "protobuf" {
-		// Our implementation of 'protobuf-over-sqs' encodes protobuf in b64
-		plain, err := base64.StdEncoding.DecodeString(string(msg))
-		if err != nil {
-			return nil, fmt.Errorf("unable to decode base64 to protobuf")
-		}
-
-		decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(a.MsgDesc), plain)
-		if err != nil {
-			return nil, fmt.Errorf("unable to decode protobuf message: %s", err)
-		}
-
-		msg = decoded
-	}
-
-	// Handle AVRO
-	if a.Options.AvroSchemaFile != "" {
-		plain, err := base64.StdEncoding.DecodeString(string(msg))
-		decoded, err := serializers.AvroDecode(a.Options.AvroSchemaFile, plain)
-		if err != nil {
-			printer.Error(fmt.Sprintf("unable to decode AVRO message: %s", err))
-			return nil, err
-		}
-		msg = decoded
-	}
-
-	var data []byte
-	var convertErr error
-
-	switch a.Options.AWSSQS.ReadConvert {
-	case "base64":
-		_, convertErr = base64.StdEncoding.Decode(data, msg)
-	case "gzip":
-		data, convertErr = util.Gunzip(msg)
-	default:
-		data = msg
-	}
-
-	if convertErr != nil {
-		return nil, errors.Wrap(convertErr, "unable to complete conversion")
-	}
-
-	return data, nil
 }
