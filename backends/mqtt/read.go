@@ -31,8 +31,8 @@ func Read(opts *cli.Options) error {
 	var mdErr error
 	var md *desc.MessageDescriptor
 
-	if opts.MQTT.ReadOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.MQTT.ReadProtobufDirs, opts.MQTT.ReadProtobufRootMessage)
+	if opts.ReadOutputType == "protobuf" {
+		md, mdErr = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")
 		}
@@ -77,16 +77,16 @@ func (m *MQTT) subscribe(wg *sync.WaitGroup, errChan chan error) {
 	lineNumber := 1
 
 	m.Client.Subscribe(m.Options.MQTT.Topic, 0, func(client mqtt.Client, msg mqtt.Message) {
-		if !m.Options.MQTT.ReadFollow {
+		if !m.Options.ReadFollow {
 			defer m.Client.Disconnect(0)
 		}
 
 		msgData := msg.Payload()
 
-		if m.Options.MQTT.ReadOutputType == "protobuf" {
+		if m.Options.ReadOutputType == "protobuf" {
 			decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(m.MsgDesc), msg.Payload())
 			if err != nil {
-				if !m.Options.MQTT.ReadFollow {
+				if !m.Options.ReadFollow {
 					errChan <- fmt.Errorf("unable to decode protobuf message: %s", err)
 					wg.Done()
 					return
@@ -112,7 +112,7 @@ func (m *MQTT) subscribe(wg *sync.WaitGroup, errChan chan error) {
 		var data []byte
 		var convertErr error
 
-		switch m.Options.MQTT.ReadConvert {
+		switch m.Options.ReadConvert {
 		case "base64":
 			_, convertErr = base64.StdEncoding.Decode(data, msgData)
 		case "gzip":
@@ -122,7 +122,7 @@ func (m *MQTT) subscribe(wg *sync.WaitGroup, errChan chan error) {
 		}
 
 		if convertErr != nil {
-			if !m.Options.MQTT.ReadFollow {
+			if !m.Options.ReadFollow {
 				errChan <- fmt.Errorf("unable to complete conversion: %s", convertErr)
 				wg.Done()
 				return
@@ -134,14 +134,14 @@ func (m *MQTT) subscribe(wg *sync.WaitGroup, errChan chan error) {
 
 		str := string(data)
 
-		if m.Options.MQTT.LineNumbers {
+		if m.Options.ReadLineNumbers {
 			str = fmt.Sprintf("%d: ", lineNumber) + str
 			lineNumber++
 		}
 
 		printer.Print(str)
 
-		if !m.Options.MQTT.ReadFollow {
+		if !m.Options.ReadFollow {
 			m.log.Debug("--follow NOT specified, stopping listen")
 
 			close(errChan)
@@ -178,10 +178,10 @@ func validateReadOptions(opts *cli.Options) error {
 		return errors.New("QoS level can only be 0, 1 or 2")
 	}
 
-	if opts.MQTT.ReadOutputType == "protobuf" {
+	if opts.ReadOutputType == "protobuf" {
 		if err := cli.ValidateProtobufOptions(
-			opts.MQTT.ReadProtobufDirs,
-			opts.MQTT.ReadProtobufRootMessage,
+			opts.ReadProtobufDirs,
+			opts.ReadProtobufRootMessage,
 		); err != nil {
 			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
 		}

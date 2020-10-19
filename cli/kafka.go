@@ -17,15 +17,9 @@ type KafkaOptions struct {
 	Topic       string
 	Timeout     time.Duration
 	InsecureTLS bool
-	LineNumbers bool
 
 	// Read
-	ReadGroupId             string
-	ReadFollow              bool
-	ReadOutputType          string
-	ReadProtobufDirs        []string
-	ReadProtobufRootMessage string
-	ReadConvert             string
+	ReadGroupId string
 
 	// Write
 	WriteKey                 string
@@ -56,23 +50,11 @@ func addSharedKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("timeout", "Connect timeout").Default(KafkaDefaultConnectTimeout).
 		DurationVar(&opts.Kafka.Timeout)
 	cmd.Flag("insecure-tls", "Use insecure TLS").BoolVar(&opts.Kafka.InsecureTLS)
-	cmd.Flag("line-numbers", "Prepend number to each output message").BoolVar(&opts.Kafka.LineNumbers)
 }
 
 func addReadKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("group-id", "Specify a specific group-id to use when reading from kafka").
 		Default(KafkaDefaultGroupId).StringVar(&opts.Kafka.ReadGroupId)
-	cmd.Flag("follow", "Continuous read (ie. `tail -f`)").Short('f').
-		BoolVar(&opts.Kafka.ReadFollow)
-	cmd.Flag("output-type", "The type of message(s) you will receive on the bus").
-		Default("plain").EnumVar(&opts.Kafka.ReadOutputType, "plain", "protobuf")
-	cmd.Flag("protobuf-dir", "Directory with .proto files").
-		ExistingDirsVar(&opts.Kafka.ReadProtobufDirs)
-	cmd.Flag("protobuf-root-message", "Specifies the root message in a protobuf descriptor "+
-		"set (required if protobuf-dir set)").StringVar(&opts.Kafka.ReadProtobufRootMessage)
-	cmd.Flag("convert", "Convert received (output) message(s)").
-		EnumVar(&opts.Kafka.ReadConvert, "base64", "gzip")
-
 }
 
 func addWriteKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {

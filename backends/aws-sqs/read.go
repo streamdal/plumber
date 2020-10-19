@@ -35,8 +35,8 @@ func Read(opts *cli.Options) error {
 	var mdErr error
 	var md *desc.MessageDescriptor
 
-	if opts.AWSSQS.ReadOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.AWSSQS.ReadProtobufDirs, opts.AWSSQS.ReadProtobufRootMessage)
+	if opts.ReadOutputType == "protobuf" {
+		md, mdErr = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")
 		}
@@ -67,10 +67,10 @@ func validateReadOptions(opts *cli.Options) error {
 		return errors.New("--wait-time-seconds must be between 0 and 20")
 	}
 
-	if opts.AWSSQS.ReadOutputType == "protobuf" {
+	if opts.ReadOutputType == "protobuf" {
 		if err := cli.ValidateProtobufOptions(
-			opts.AWSSQS.ReadProtobufDirs,
-			opts.AWSSQS.ReadProtobufRootMessage,
+			opts.ReadProtobufDirs,
+			opts.ReadProtobufRootMessage,
 		); err != nil {
 			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
 		}
@@ -93,7 +93,7 @@ func (a *AWSSQS) Read() error {
 			MaxNumberOfMessages:     aws.Int64(a.Options.AWSSQS.ReadMaxNumMessages),
 		})
 		if err != nil {
-			if !a.Options.AWSSQS.ReadFollow {
+			if !a.Options.ReadFollow {
 				return fmt.Errorf("unable to receive any message(s) from SQS: %s", err)
 			}
 
@@ -106,7 +106,7 @@ func (a *AWSSQS) Read() error {
 		if len(msgResult.Messages) == 0 {
 			outputMessage := fmt.Sprintf("Received 0 messages after %d seconds", a.Options.AWSSQS.ReadWaitTimeSeconds)
 
-			if a.Options.AWSSQS.ReadFollow {
+			if a.Options.ReadFollow {
 				outputMessage = outputMessage + fmt.Sprintf("; retrying in %s", RetryDuration)
 				printer.Print(outputMessage)
 				time.Sleep(RetryDuration)
@@ -127,7 +127,7 @@ func (a *AWSSQS) Read() error {
 
 			str := string(data)
 
-			if a.Options.AWSSQS.ReadLineNumbers {
+			if a.Options.ReadLineNumbers {
 				str = fmt.Sprintf("%d: ", lineNumber) + str
 				lineNumber++
 			}
@@ -146,7 +146,7 @@ func (a *AWSSQS) Read() error {
 			}
 		}
 
-		if !a.Options.AWSSQS.ReadFollow {
+		if !a.Options.ReadFollow {
 			break
 		}
 	}
@@ -158,7 +158,7 @@ func (a *AWSSQS) Read() error {
 
 func (a *AWSSQS) convertMessage(msg []byte) ([]byte, error) {
 	// Protobuf bits
-	if a.Options.AWSSQS.ReadOutputType == "protobuf" {
+	if a.Options.ReadOutputType == "protobuf" {
 		// Our implementation of 'protobuf-over-sqs' encodes protobuf in b64
 		plain, err := base64.StdEncoding.DecodeString(string(msg))
 		if err != nil {
@@ -187,7 +187,7 @@ func (a *AWSSQS) convertMessage(msg []byte) ([]byte, error) {
 	var data []byte
 	var convertErr error
 
-	switch a.Options.AWSSQS.ReadConvert {
+	switch a.Options.ReadConvert {
 	case "base64":
 		_, convertErr = base64.StdEncoding.Decode(data, msg)
 	case "gzip":

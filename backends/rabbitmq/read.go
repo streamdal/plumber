@@ -29,8 +29,8 @@ func Read(opts *cli.Options) error {
 	var mdErr error
 	var md *desc.MessageDescriptor
 
-	if opts.Rabbit.ReadOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.Rabbit.ReadProtobufDirs, opts.Rabbit.ReadProtobufRootMessage)
+	if opts.ReadOutputType == "protobuf" {
+		md, mdErr = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")
 		}
@@ -57,10 +57,10 @@ func (r *RabbitMQ) Read() error {
 
 	go r.Consumer.Consume(ctx, errCh, func(msg amqp.Delivery) error {
 
-		if r.Options.Rabbit.ReadOutputType == "protobuf" {
+		if r.Options.ReadOutputType == "protobuf" {
 			decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(r.MsgDesc), msg.Body)
 			if err != nil {
-				if !r.Options.Rabbit.ReadFollow {
+				if !r.Options.ReadFollow {
 					return fmt.Errorf("unable to decode protobuf message: %s", err)
 				}
 
@@ -84,7 +84,7 @@ func (r *RabbitMQ) Read() error {
 		var data []byte
 		var convertErr error
 
-		switch r.Options.Rabbit.ReadConvert {
+		switch r.Options.ReadConvert {
 		case "base64":
 			_, convertErr = base64.StdEncoding.Decode(data, msg.Body)
 		case "gzip":
@@ -94,7 +94,7 @@ func (r *RabbitMQ) Read() error {
 		}
 
 		if convertErr != nil {
-			if !r.Options.Rabbit.ReadFollow {
+			if !r.Options.ReadFollow {
 				return errors.Wrap(convertErr, "unable to complete conversion")
 			}
 
@@ -104,14 +104,14 @@ func (r *RabbitMQ) Read() error {
 
 		str := string(data)
 
-		if r.Options.Rabbit.ReadLineNumbers {
+		if r.Options.ReadLineNumbers {
 			str = fmt.Sprintf("%d: ", lineNumber) + str
 			lineNumber++
 		}
 
 		printer.Print(str)
 
-		if !r.Options.Rabbit.ReadFollow {
+		if !r.Options.ReadFollow {
 			cancel()
 		}
 
@@ -140,10 +140,10 @@ func validateReadOptions(opts *cli.Options) error {
 		return errors.New("--routing-key cannot be empty with write action")
 	}
 
-	if opts.Rabbit.ReadOutputType == "protobuf" {
+	if opts.ReadOutputType == "protobuf" {
 		if err := cli.ValidateProtobufOptions(
-			opts.Rabbit.ReadProtobufDirs,
-			opts.Rabbit.ReadProtobufRootMessage,
+			opts.ReadProtobufDirs,
+			opts.ReadProtobufRootMessage,
 		); err != nil {
 			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
 		}

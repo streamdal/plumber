@@ -29,8 +29,8 @@ func Read(opts *cli.Options) error {
 	var mdErr error
 	var md *desc.MessageDescriptor
 
-	if opts.Kafka.ReadOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.Kafka.ReadProtobufDirs, opts.Kafka.ReadProtobufRootMessage)
+	if opts.ReadOutputType == "protobuf" {
+		md, mdErr = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")
 		}
@@ -65,7 +65,7 @@ func (k *Kafka) Read() error {
 		// groups are setup on initial connect.
 		msg, err := k.Reader.ReadMessage(context.Background())
 		if err != nil {
-			if !k.Options.Kafka.ReadFollow {
+			if !k.Options.ReadFollow {
 				return errors.Wrap(err, "unable to read message")
 			}
 
@@ -73,10 +73,10 @@ func (k *Kafka) Read() error {
 			continue
 		}
 
-		if k.Options.Kafka.ReadOutputType == "protobuf" {
+		if k.Options.ReadOutputType == "protobuf" {
 			decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(k.MessageDesc), msg.Value)
 			if err != nil {
-				if !k.Options.Kafka.ReadFollow {
+				if !k.Options.ReadFollow {
 					return fmt.Errorf("unable to decode protobuf message: %s", err)
 				}
 
@@ -101,7 +101,7 @@ func (k *Kafka) Read() error {
 
 		var convertErr error
 
-		switch k.Options.Kafka.ReadConvert {
+		switch k.Options.ReadConvert {
 		case "base64":
 			data, convertErr = base64.StdEncoding.DecodeString(string(msg.Value))
 		case "gzip":
@@ -111,7 +111,7 @@ func (k *Kafka) Read() error {
 		}
 
 		if convertErr != nil {
-			if !k.Options.Kafka.ReadFollow {
+			if !k.Options.ReadFollow {
 				return errors.Wrap(convertErr, "unable to complete conversion")
 			}
 
@@ -121,14 +121,14 @@ func (k *Kafka) Read() error {
 
 		str := string(data)
 
-		if k.Options.Kafka.LineNumbers {
+		if k.Options.ReadLineNumbers {
 			str = fmt.Sprintf("%d: ", lineNumber) + str
 			lineNumber++
 		}
 
 		printer.Print(str)
 
-		if !k.Options.Kafka.ReadFollow {
+		if !k.Options.ReadFollow {
 			break
 		}
 	}
@@ -141,10 +141,10 @@ func (k *Kafka) Read() error {
 func validateReadOptions(opts *cli.Options) error {
 	// If type is protobuf, ensure both --protobuf-dir and --protobuf-root-message
 	// are set as well
-	if opts.Kafka.ReadOutputType == "protobuf" {
+	if opts.ReadOutputType == "protobuf" {
 		if err := cli.ValidateProtobufOptions(
-			opts.Kafka.ReadProtobufDirs,
-			opts.Kafka.ReadProtobufRootMessage,
+			opts.ReadProtobufDirs,
+			opts.ReadProtobufRootMessage,
 		); err != nil {
 			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
 		}

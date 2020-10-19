@@ -13,18 +13,12 @@ type RabbitOptions struct {
 	RoutingKey string
 
 	// Read
-	ReadQueue               string
-	ReadQueueDurable        bool
-	ReadQueueAutoDelete     bool
-	ReadQueueExclusive      bool
-	ReadLineNumbers         bool
-	ReadFollow              bool
-	ReadAutoAck             bool
-	ReadProtobufDirs        []string
-	ReadProtobufRootMessage string
-	ReadOutputType          string
-	ReadConvert             string
-	ReadQueueDeclare        bool
+	ReadQueue           string
+	ReadQueueDurable    bool
+	ReadQueueAutoDelete bool
+	ReadQueueExclusive  bool
+	ReadAutoAck         bool
+	ReadQueueDeclare    bool
 
 	// Write
 	WriteInputData           string
@@ -40,7 +34,6 @@ func HandleRabbitFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Opt
 	rc := readCmd.Command("rabbit", "RabbitMQ message system")
 
 	addSharedRabbitFlags(rc, opts)
-	addReadRabbitFlags(rc, opts)
 
 	// Rabbit write cmd
 	wc := writeCmd.Command("rabbit", "RabbitMQ message system")
@@ -97,22 +90,6 @@ func addSharedRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Envar("PLUMBER_RELAY_RABBIT_QUEUE_DECLARE").
 		Default("true").
 		BoolVar(&opts.Rabbit.ReadQueueDeclare)
-}
-
-func addReadRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("line-numbers", "Display line numbers for each message").
-		Default("false").BoolVar(&opts.Rabbit.ReadLineNumbers)
-	cmd.Flag("follow", "Continuous read (ie. `tail -f`)").Short('f').
-		Default("false").
-		BoolVar(&opts.Rabbit.ReadFollow)
-	cmd.Flag("protobuf-dir", "Directory with .proto files").
-		ExistingDirsVar(&opts.Rabbit.ReadProtobufDirs)
-	cmd.Flag("protobuf-root-message", "Specifies the root message in a protobuf descriptor "+
-		"set (required if protobuf-dir set)").StringVar(&opts.Rabbit.ReadProtobufRootMessage)
-	cmd.Flag("output-type", "The type of message(s) you will receive on the bus").
-		Default("plain").EnumVar(&opts.Rabbit.ReadOutputType, "plain", "protobuf")
-	cmd.Flag("convert", "Convert received (output) message(s)").
-		EnumVar(&opts.Rabbit.ReadConvert, "base64", "gzip")
 }
 
 func addWriteRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {

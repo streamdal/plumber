@@ -7,14 +7,8 @@ type GCPPubSubOptions struct {
 	ProjectId string
 
 	// Read
-	ReadSubscriptionId      string
-	ReadProtobufDirs        []string
-	ReadProtobufRootMessage string
-	ReadOutputType          string
-	ReadAck                 bool
-	ReadFollow              bool
-	ReadLineNumbers         bool
-	ReadConvert             string
+	ReadSubscriptionId string
+	ReadAck            bool
 
 	// Write
 	WriteTopicId             string
@@ -46,20 +40,8 @@ func addSharedGCPPubSubFlags(cmd *kingpin.CmdClause, opts *Options) {
 
 func addReadGCPPubSubFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("sub-id", "Subscription Id").Required().StringVar(&opts.GCPPubSub.ReadSubscriptionId)
-	cmd.Flag("protobuf-dir", "Directory with .proto files").
-		ExistingDirsVar(&opts.GCPPubSub.ReadProtobufDirs)
-	cmd.Flag("protobuf-root-message", "Specifies the root message in a protobuf descriptor "+
-		"set (required if protobuf-dir set)").StringVar(&opts.GCPPubSub.ReadProtobufRootMessage)
-	cmd.Flag("output-type", "The type of message(s) you will receive on the bus").
-		Default("plain").EnumVar(&opts.GCPPubSub.ReadOutputType, "plain", "protobuf")
 	cmd.Flag("ack", "Whether to acknowledge message receive").Default("true").
 		BoolVar(&opts.GCPPubSub.ReadAck)
-	cmd.Flag("follow", "Continuous read (ie. `tail -f`)").Short('f').
-		BoolVar(&opts.GCPPubSub.ReadFollow)
-	cmd.Flag("line-numbers", "Display line numbers for each message").
-		Default("false").BoolVar(&opts.GCPPubSub.ReadLineNumbers)
-	cmd.Flag("convert", "Convert received (output) message(s)").
-		EnumVar(&opts.GCPPubSub.ReadConvert, "base64", "gzip")
 }
 
 func addWriteGCPPubSubFlags(cmd *kingpin.CmdClause, opts *Options) {
