@@ -11,13 +11,7 @@ type GCPPubSubOptions struct {
 	ReadAck            bool
 
 	// Write
-	WriteTopicId             string
-	WriteInputData           string
-	WriteInputFile           string
-	WriteInputType           string
-	WriteOutputType          string
-	WriteProtobufDirs        []string
-	WriteProtobufRootMessage string
+	WriteTopicId string
 }
 
 func HandleGCPPubSubFlags(readCmd, writeCmd *kingpin.CmdClause, opts *Options) {
@@ -47,15 +41,4 @@ func addReadGCPPubSubFlags(cmd *kingpin.CmdClause, opts *Options) {
 func addWriteGCPPubSubFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("topic-id", "Topic Id to publish message(s) to").Required().
 		StringVar(&opts.GCPPubSub.WriteTopicId)
-	cmd.Flag("input-data", "Data to write to GCP PubSub").StringVar(&opts.GCPPubSub.WriteInputData)
-	cmd.Flag("input-file", "File containing input data (overrides input-data; 1 file is 1 message)").
-		ExistingFileVar(&opts.GCPPubSub.WriteInputFile)
-	cmd.Flag("input-type", "Treat input as this type").Default("plain").
-		EnumVar(&opts.GCPPubSub.WriteInputType, "plain", "base64", "jsonpb")
-	cmd.Flag("output-type", "Convert input to this type when writing message").
-		Default("plain").EnumVar(&opts.GCPPubSub.WriteOutputType, "plain", "protobuf")
-	cmd.Flag("protobuf-dir", "Directory with .proto files").
-		ExistingDirsVar(&opts.GCPPubSub.WriteProtobufDirs)
-	cmd.Flag("protobuf-root-message", "Root message in a protobuf descriptor set "+
-		"(required if protobuf-dir set)").StringVar(&opts.GCPPubSub.WriteProtobufRootMessage)
 }

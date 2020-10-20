@@ -31,13 +31,7 @@ type MQTTOptions struct {
 	ReadTimeout time.Duration
 
 	// Write
-	WriteTimeout             time.Duration
-	WriteInputData           string
-	WriteInputFile           string
-	WriteInputType           string
-	WriteOutputType          string
-	WriteProtobufDirs        []string
-	WriteProtobufRootMessage string
+	WriteTimeout time.Duration
 }
 
 func HandleMQTTFlags(readCmd, writeCmd *kingpin.CmdClause, opts *Options) {
@@ -79,15 +73,4 @@ func addReadMQTTFlags(cmd *kingpin.CmdClause, opts *Options) {
 func addWriteMQTTFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("write-timeout", "How long to attempt to publish a message").
 		Default("5s").DurationVar(&opts.MQTT.WriteTimeout)
-	cmd.Flag("input-data", "Data to write to kafka").StringVar(&opts.MQTT.WriteInputData)
-	cmd.Flag("input-file", "File containing input data (overrides input-data; 1 file is 1 message)").
-		ExistingFileVar(&opts.MQTT.WriteInputFile)
-	cmd.Flag("input-type", "Treat input as this type").Default("plain").
-		EnumVar(&opts.MQTT.WriteInputType, "plain", "base64", "jsonpb")
-	cmd.Flag("output-type", "Convert input to this type when writing message").
-		Default("plain").EnumVar(&opts.MQTT.WriteOutputType, "plain", "protobuf")
-	cmd.Flag("protobuf-dir", "Directory with .proto files").
-		ExistingDirsVar(&opts.MQTT.WriteProtobufDirs)
-	cmd.Flag("protobuf-root-message", "Root message in a protobuf descriptor set "+
-		"(required if protobuf-dir set)").StringVar(&opts.MQTT.WriteProtobufRootMessage)
 }

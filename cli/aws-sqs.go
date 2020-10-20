@@ -18,14 +18,8 @@ type AWSSQSOptions struct {
 	ReadWaitTimeSeconds         int64
 
 	// Write
-	WriteDelaySeconds        int64
-	WriteAttributes          map[string]string
-	WriteInputData           string
-	WriteInputFile           string
-	WriteInputType           string
-	WriteOutputType          string
-	WriteProtobufDirs        []string
-	WriteProtobufRootMessage string
+	WriteDelaySeconds int64
+	WriteAttributes   map[string]string
 
 	// Relay
 	RelayMaxNumMessages          int64
@@ -120,25 +114,4 @@ func addWriteAWSSQSFlags(cmd *kingpin.CmdClause, opts *Options) {
 
 	cmd.Flag("attributes", "Add optional attributes to outgoing message (string=string only)").
 		StringMapVar(&opts.AWSSQS.WriteAttributes)
-
-	cmd.Flag("input-data", "Data to write to SQS").
-		StringVar(&opts.AWSSQS.WriteInputData)
-
-	cmd.Flag("input-file", "File containing input data (overrides input-data; 1 file is 1 message)").
-		ExistingFileVar(&opts.AWSSQS.WriteInputFile)
-
-	cmd.Flag("input-type", "Treat input as this type").
-		Default("plain").
-		EnumVar(&opts.AWSSQS.WriteInputType, "plain", "base64", "jsonpb")
-
-	cmd.Flag("output-type", "Convert input to this type when writing message").
-		Default("plain").
-		EnumVar(&opts.AWSSQS.WriteOutputType, "plain", "protobuf")
-
-	cmd.Flag("protobuf-dir", "Directory with .proto files").
-		ExistingDirsVar(&opts.AWSSQS.WriteProtobufDirs)
-
-	cmd.Flag("protobuf-root-message", "Root message in a protobuf descriptor set "+
-		"(required if protobuf-dir set)").
-		StringVar(&opts.AWSSQS.WriteProtobufRootMessage)
 }

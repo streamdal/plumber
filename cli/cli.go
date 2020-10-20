@@ -51,6 +51,14 @@ type Options struct {
 	ReadLineNumbers         bool
 	ReadConvert             string
 
+	// Shared write flags
+	WriteInputData           string
+	WriteInputFile           string
+	WriteInputType           string
+	WriteOutputType          string
+	WriteProtobufDirs        []string
+	WriteProtobufRootMessage string
+
 	Kafka     *KafkaOptions
 	Rabbit    *RabbitOptions
 	GCPPubSub *GCPPubSubOptions
@@ -92,6 +100,7 @@ func Handle() (string, *Options, error) {
 	HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
 	HandleGlobalFlags(readCmd, opts)
 	HandleGlobalReadFlags(readCmd, opts)
+	HandleGlobalWriteFlags(writeCmd, opts)
 	HandleGlobalFlags(writeCmd, opts)
 
 	app.Version(version)
@@ -135,6 +144,20 @@ func HandleGlobalReadFlags(cmd *kingpin.CmdClause, opts *Options) {
 
 	cmd.Flag("convert", "Convert received (output) message(s)").
 		EnumVar(&opts.ReadConvert, "base64", "gzip")
+}
+
+func HandleGlobalWriteFlags(cmd *kingpin.CmdClause, opts *Options) {
+	cmd.Flag("input-data", "Data to write").StringVar(&opts.WriteInputData)
+	cmd.Flag("input-file", "File containing input data (overrides input-data; 1 file is 1 message)").
+		ExistingFileVar(&opts.WriteInputFile)
+	cmd.Flag("input-type", "Treat input as this type").Default("plain").
+		EnumVar(&opts.WriteInputType, "plain", "base64", "jsonpb")
+	cmd.Flag("output-type", "Convert input to this type when writing message").
+		Default("plain").EnumVar(&opts.WriteOutputType, "plain", "protobuf")
+	cmd.Flag("protobuf-dir", "Directory with .proto files").
+		ExistingDirsVar(&opts.WriteProtobufDirs)
+	cmd.Flag("protobuf-root-message", "Root message in a protobuf descriptor set "+
+		"(required if protobuf-dir set)").StringVar(&opts.WriteProtobufRootMessage)
 }
 
 func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
