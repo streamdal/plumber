@@ -19,14 +19,6 @@ type RabbitOptions struct {
 	ReadQueueExclusive  bool
 	ReadAutoAck         bool
 	ReadQueueDeclare    bool
-
-	// Write
-	WriteInputData           string
-	WriteInputFile           string
-	WriteInputType           string
-	WriteOutputType          string
-	WriteProtobufDirs        []string
-	WriteProtobufRootMessage string
 }
 
 func HandleRabbitFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Options) {
@@ -39,7 +31,6 @@ func HandleRabbitFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Opt
 	wc := writeCmd.Command("rabbit", "RabbitMQ message system")
 
 	addSharedRabbitFlags(wc, opts)
-	addWriteRabbitFlags(wc, opts)
 
 	// If PLUMBER_RELAY_TYPE is set, use env vars, otherwise use CLI flags
 	relayType := os.Getenv("PLUMBER_RELAY_TYPE")
@@ -90,18 +81,4 @@ func addSharedRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Envar("PLUMBER_RELAY_RABBIT_QUEUE_DECLARE").
 		Default("true").
 		BoolVar(&opts.Rabbit.ReadQueueDeclare)
-}
-
-func addWriteRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("input-data", "Data to write to RabbitMQ").StringVar(&opts.Rabbit.WriteInputData)
-	cmd.Flag("input-file", "File containing input data (overrides input-data; 1 file is 1 message)").
-		ExistingFileVar(&opts.Rabbit.WriteInputFile)
-	cmd.Flag("input-type", "Treat input as this type").Default("plain").
-		EnumVar(&opts.Rabbit.WriteInputType, "plain", "base64", "jsonpb")
-	cmd.Flag("output-type", "Convert input to this type when writing message").
-		Default("plain").EnumVar(&opts.Rabbit.WriteOutputType, "plain", "protobuf")
-	cmd.Flag("protobuf-dir", "Directory with .proto files").
-		ExistingDirsVar(&opts.Rabbit.WriteProtobufDirs)
-	cmd.Flag("protobuf-root-message", "Root message in a protobuf descriptor set "+
-		"(required if protobuf-dir set)").StringVar(&opts.Rabbit.WriteProtobufRootMessage)
 }
