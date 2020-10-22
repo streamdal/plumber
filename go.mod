@@ -5,7 +5,7 @@ go 1.14
 require (
 	cloud.google.com/go/pubsub v1.6.1
 	github.com/aws/aws-sdk-go v1.34.9
-	github.com/batchcorp/rabbit v0.1.3
+	github.com/batchcorp/rabbit v0.1.6
 	github.com/batchcorp/schemas v0.2.26
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/golang/protobuf v1.4.2

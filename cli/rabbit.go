@@ -19,6 +19,10 @@ type RabbitOptions struct {
 	ReadQueueExclusive  bool
 	ReadAutoAck         bool
 	ReadQueueDeclare    bool
+	ReadConsumerTag     string
+
+	// Write
+	WriteAppID string
 }
 
 func HandleRabbitFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Options) {
@@ -26,11 +30,13 @@ func HandleRabbitFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Opt
 	rc := readCmd.Command("rabbit", "RabbitMQ message system")
 
 	addSharedRabbitFlags(rc, opts)
+	addReadRabbitFlags(rc, opts)
 
 	// Rabbit write cmd
 	wc := writeCmd.Command("rabbit", "RabbitMQ message system")
 
 	addSharedRabbitFlags(wc, opts)
+	addWriteRabbitFlags(wc, opts)
 
 	// If PLUMBER_RELAY_TYPE is set, use env vars, otherwise use CLI flags
 	relayType := os.Getenv("PLUMBER_RELAY_TYPE")
@@ -43,6 +49,7 @@ func HandleRabbitFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Opt
 		rec = relayCmd.Command("rabbit", "RabbitMQ")
 	}
 
+	addReadRabbitFlags(rec, opts)
 	addSharedRabbitFlags(rec, opts)
 }
 
@@ -58,6 +65,9 @@ func addSharedRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("routing-key", "Routing key").
 		Envar("PLUMBER_RELAY_RABBIT_ROUTING_KEY").
 		StringVar(&opts.Rabbit.RoutingKey)
+}
+
+func addReadRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("queue", "Name of the queue where messages will be routed to").
 		Envar("PLUMBER_RELAY_RABBIT_QUEUE").
 		StringVar(&opts.Rabbit.ReadQueue)
@@ -81,4 +91,13 @@ func addSharedRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Envar("PLUMBER_RELAY_RABBIT_QUEUE_DECLARE").
 		Default("true").
 		BoolVar(&opts.Rabbit.ReadQueueDeclare)
+	cmd.Flag("consumer-tag", "How to identify the consumer to RabbitMQ").
+		Envar("PLUMBER_RELAY_CONSUMER_TAG").Default("plumber").
+		StringVar(&opts.Rabbit.ReadConsumerTag)
+}
+
+func addWriteRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
+	cmd.Flag("app-id", "Fills message properties 'app_id' with this value").
+		Default("plumber").StringVar(&opts.Rabbit.WriteAppID)
+
 }
