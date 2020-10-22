@@ -20,6 +20,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/relistan/go-director"
+	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 )
@@ -33,6 +34,14 @@ const (
 	Producer Mode = 2
 )
 
+var (
+	// Used for identifying consumer
+	DefaultConsumerTag = "c-rabbit-" + uuid.NewV4().String()[0:8]
+
+	// Used for identifying producer
+	DefaultAppID = "p-rabbit-" + uuid.NewV4().String()[0:8]
+)
+
 // IRabbit is the interface that the `rabbit` library implements. It's here as
 // convenience.
 type IRabbit interface {
@@ -40,6 +49,7 @@ type IRabbit interface {
 	ConsumeOnce(ctx context.Context, runFunc func(msg amqp.Delivery) error) error
 	Publish(ctx context.Context, routingKey string, payload []byte) error
 	Stop() error
+	Close() error
 }
 
 // Rabbit struct that is instantiated via `New()`. You should not instantiate
@@ -115,6 +125,12 @@ type Options struct {
 
 	// Whether to automatically acknowledge consumed message(s)
 	AutoAck bool
+
+	// Used for identifying consumer
+	ConsumerTag string
+
+	// Used as a property to identify producer
+	AppID string
 }
 
 // ConsumeError will be passed down the error channel if/when `f()` func runs
@@ -190,6 +206,28 @@ func ValidateOptions(opts *Options) error {
 
 	if opts.RetryReconnectSec == 0 {
 		opts.RetryReconnectSec = DefaultRetryReconnectSec
+	}
+
+	if opts.AppID == "" {
+		opts.AppID = DefaultAppID
+	}
+
+	if opts.ConsumerTag == "" {
+		opts.ConsumerTag = DefaultConsumerTag
+	}
+
+	validModes := []Mode{Both, Producer, Consumer}
+
+	var found bool
+
+	for _, validMode := range validModes {
+		if validMode == opts.Mode {
+			found = true
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("invalid mode '%d'", opts.Mode)
 	}
 
 	return nil
@@ -329,6 +367,7 @@ func (r *Rabbit) Publish(ctx context.Context, routingKey string, body []byte) er
 	if err := r.ProducerServerChannel.Publish(r.Options.ExchangeName, routingKey, false, false, amqp.Publishing{
 		DeliveryMode: amqp.Persistent,
 		Body:         body,
+		AppId:        r.Options.AppID,
 	}); err != nil {
 		return err
 	}
@@ -339,6 +378,19 @@ func (r *Rabbit) Publish(ctx context.Context, routingKey string, body []byte) er
 // Stop stops an in-progress `Consume()` or `ConsumeOnce()`.
 func (r *Rabbit) Stop() error {
 	r.cancel()
+	return nil
+}
+
+// Close stops any active Consume and closes the amqp connection (and channels using the conn)
+//
+// You should re-instantiate the rabbit lib once this is called.
+func (r *Rabbit) Close() error {
+	r.cancel()
+
+	if err := r.Conn.Close(); err != nil {
+		return fmt.Errorf("unable to close amqp connection: %s", err)
+	}
+
 	return nil
 }
 
@@ -451,7 +503,7 @@ func (r *Rabbit) newConsumerChannel() error {
 
 	deliveryChannel, err := serverChannel.Consume(
 		r.Options.QueueName,
-		"",
+		r.Options.ConsumerTag,
 		r.Options.AutoAck,
 		r.Options.QueueExclusive,
 		false,
