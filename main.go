@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/sirupsen/logrus"
 
@@ -14,7 +15,7 @@ import (
 )
 
 func main() {
-	cmd, opts, err := cli.Handle()
+	cmd, opts, err := cli.Handle(os.Args[1:])
 	if err != nil {
 		logrus.Fatalf("Unable to handle CLI input: %s", err)
 	}

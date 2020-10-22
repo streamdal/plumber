@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -66,7 +65,7 @@ type Options struct {
 	AWSSQS    *AWSSQSOptions
 }
 
-func Handle() (string, *Options, error) {
+func Handle(cliArgs []string) (string, *Options, error) {
 	opts := &Options{
 		Kafka:     &KafkaOptions{},
 		Rabbit:    &RabbitOptions{},
@@ -101,13 +100,15 @@ func Handle() (string, *Options, error) {
 	HandleGlobalFlags(readCmd, opts)
 	HandleGlobalReadFlags(readCmd, opts)
 	HandleGlobalWriteFlags(writeCmd, opts)
+	HandleGlobalReadFlags(relayCmd, opts)
 	HandleGlobalFlags(writeCmd, opts)
+	HandleGlobalFlags(relayCmd, opts)
 
 	app.Version(version)
 	app.HelpFlag.Short('h')
 	app.VersionFlag.Short('v')
 
-	cmd, err := app.Parse(os.Args[1:])
+	cmd, err := app.Parse(cliArgs)
 	if err != nil {
 		return "", nil, errors.Wrap(err, "unable to parse command")
 	}
