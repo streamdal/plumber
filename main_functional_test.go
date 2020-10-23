@@ -696,6 +696,130 @@ var _ = Describe("Functional", func() {
 			})
 		})
 	})
+
+	Describe("ActiveMQ", func() {
+		Describe("read/write", func() {
+			Context("plain input, plain output", func() {
+				It("should work", func() {
+					var queueName string = fmt.Sprintf("TestQueue%d", rand.Int())
+					const testMessage string = "welovemessaging"
+
+					// First write the message
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"activemq",
+						"--queue", queueName,
+						"--input-data", testMessage,
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					writeGot := string(writeOut[:])
+					writeWant := fmt.Sprintf("Successfully wrote message to '%s'", queueName)
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					// Now try and read from the queue
+					readCmd := exec.Command(
+						binary,
+						"read",
+						"activemq",
+						"--queue", queueName,
+					)
+
+					readOutput, err := readCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					readGot := string(readOutput[:])
+					Expect(readGot).To(ContainSubstring(testMessage))
+				})
+			})
+
+			Context("jsonpb input, protobuf output", func() {
+				It("should work", func() {
+					var queueName string = fmt.Sprintf("TestQueue%d", rand.Int())
+
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"activemq",
+						"--queue", queueName,
+						"--input-type", "jsonpb",
+						"--output-type", "protobuf",
+						"--input-file", sampleOutboundJSONPB,
+						"--protobuf-dir", protoSchemasDir,
+						"--protobuf-root-message", "Outbound",
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					writeGot := string(writeOut[:])
+					writeWant := fmt.Sprintf("Successfully wrote message to '%s'", queueName)
+
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					// Now try and read from the queue
+					readCmd := exec.Command(
+						binary,
+						"read",
+						"activemq",
+						"--queue", queueName,
+						"--output-type", "protobuf",
+						"--protobuf-dir", protoSchemasDir,
+						"--protobuf-root-message", "Outbound",
+					)
+
+					readOut, err := readCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					readGot := string(readOut[:])
+					Expect(readGot).To(ContainSubstring("30ddb850-1aca-4ee5-870c-1bb7b339ee5d"))
+					Expect(readGot).To(ContainSubstring("eyJoZWxsbyI6ImRhbiJ9Cg=="))
+				})
+			})
+		})
+
+		Context("avro and json", func() {
+			It("should work", func() {
+				var queueName string = fmt.Sprintf("TestQueue%d", rand.Int())
+				const testMessage string = "{\"company\":\"Batch Corp\"}"
+
+				// First write the message
+				writeCmd := exec.Command(
+					binary,
+					"write",
+					"activemq",
+					"--avro-schema", "./test-assets/avro/test.avsc",
+					"--queue", queueName,
+					"--input-data", testMessage,
+				)
+
+				writeOut, err := writeCmd.CombinedOutput()
+				Expect(err).ToNot(HaveOccurred())
+
+				writeGot := string(writeOut[:])
+				writeWant := fmt.Sprintf("Successfully wrote message to '%s'", queueName)
+				Expect(writeGot).To(ContainSubstring(writeWant))
+
+				// Now try and read from the queue
+				readCmd := exec.Command(
+					binary,
+					"read",
+					"activemq",
+					"--avro-schema", "./test-assets/avro/test.avsc",
+					"--queue", queueName,
+				)
+
+				readOutput, err := readCmd.CombinedOutput()
+				Expect(err).ToNot(HaveOccurred())
+
+				readGot := string(readOutput[:])
+				Expect(readGot).To(ContainSubstring(testMessage))
+			})
+		})
+	})
 })
 
 type Kafka struct {

@@ -6,6 +6,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/batchcorp/plumber/backends/activemq"
 	awssqs "github.com/batchcorp/plumber/backends/aws-sqs"
 	gcppubsub "github.com/batchcorp/plumber/backends/gcp-pubsub"
 	"github.com/batchcorp/plumber/backends/kafka"
@@ -36,6 +37,8 @@ func main() {
 		err = mqtt.Read(opts)
 	case "read aws-sqs":
 		err = awssqs.Read(opts)
+	case "read activemq":
+		err = activemq.Read(opts)
 
 	// Write
 	case "write rabbit":
@@ -48,6 +51,8 @@ func main() {
 		err = mqtt.Write(opts)
 	case "write aws-sqs":
 		err = awssqs.Write(opts)
+	case "write activemq":
+		err = activemq.Write(opts)
 
 	// Relay (via CLI flags)
 	case "relay rabbit":
