@@ -205,6 +205,8 @@ var _ = Describe("Functional", func() {
 					ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 					defer cancel()
 
+					time.Sleep(time.Second * 1)
+
 					// Now try and read from the RabbitMQ queue
 					readCmd := exec.CommandContext(
 						ctx,
