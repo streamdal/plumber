@@ -202,8 +202,12 @@ var _ = Describe("Functional", func() {
 					writeWant := fmt.Sprintf("Successfully wrote message to exchange '%s'", exchangeName)
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					// Now try and read from the SQS queue
-					readCmd := exec.Command(
+					ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+					defer cancel()
+
+					// Now try and read from the RabbitMQ queue
+					readCmd := exec.CommandContext(
+						ctx,
 						binary,
 						"read",
 						"rabbit",
@@ -214,6 +218,10 @@ var _ = Describe("Functional", func() {
 
 					readOutput, err := readCmd.CombinedOutput()
 					Expect(err).ToNot(HaveOccurred())
+
+					if ctx.Err() == context.DeadlineExceeded {
+						Fail("Rabbit plaintext read failed")
+					}
 
 					readGot := string(readOutput[:])
 					Expect(readGot).To(ContainSubstring(testMessage))
@@ -260,7 +268,12 @@ var _ = Describe("Functional", func() {
 
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					readCmd := exec.Command(
+					ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+					defer cancel()
+
+					// Now try and read from the RabbitMQ queue
+					readCmd := exec.CommandContext(
+						ctx,
 						binary,
 						"read",
 						"rabbit",
@@ -274,6 +287,10 @@ var _ = Describe("Functional", func() {
 
 					readOut, err := readCmd.CombinedOutput()
 					Expect(err).ToNot(HaveOccurred())
+
+					if ctx.Err() == context.DeadlineExceeded {
+						Fail("Rabbit protobuf read failed")
+					}
 
 					readGot := string(readOut[:])
 					Expect(readGot).To(ContainSubstring("30ddb850-1aca-4ee5-870c-1bb7b339ee5d"))
@@ -322,8 +339,12 @@ var _ = Describe("Functional", func() {
 				writeWant := fmt.Sprintf("Successfully wrote message to exchange '%s'", exchangeName)
 				Expect(writeGot).To(ContainSubstring(writeWant))
 
-				// Now try and read from the SQS queue
-				readCmd := exec.Command(
+				ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+				defer cancel()
+
+				// Now try and read from the RabbitMQ queue
+				readCmd := exec.CommandContext(
+					ctx,
 					binary,
 					"read",
 					"rabbit",
@@ -335,6 +356,10 @@ var _ = Describe("Functional", func() {
 
 				readOutput, err := readCmd.CombinedOutput()
 				Expect(err).ToNot(HaveOccurred())
+
+				if ctx.Err() == context.DeadlineExceeded {
+					Fail("Rabbit AVRO read failed")
+				}
 
 				readGot := string(readOutput[:])
 				Expect(readGot).To(ContainSubstring(testMessage))
