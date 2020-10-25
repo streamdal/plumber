@@ -129,8 +129,8 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 * Google Cloud Platform PubSub
 * MQTT
 * Amazon SQS
+* ActiveMQ
 * NATS (coming soon)
-* ActiveMQ (coming soon)
 * Redis (coming soon)
 
 NOTE: If your messaging tech is not supported - submit an issue and we'll do

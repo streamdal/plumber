@@ -22,7 +22,7 @@ func NewClient(opts *cli.Options) (*stomp.Conn, error) {
 		return nil
 	}
 
-	conn, err := stomp.Dial("tcp", "localhost:61613", o)
+	conn, err := stomp.Dial("tcp", opts.ActiveMq.Address, o)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create activemq client")
 	}
