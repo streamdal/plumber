@@ -8,6 +8,7 @@ require (
 	github.com/batchcorp/rabbit v0.1.6
 	github.com/batchcorp/schemas v0.2.26
 	github.com/eclipse/paho.mqtt.golang v1.2.0
+	github.com/go-stomp/stomp v2.0.6+incompatible
 	github.com/golang/protobuf v1.4.2
 	github.com/google/uuid v1.1.1
 	github.com/jhump/protoreflect v1.7.0

@@ -63,6 +63,7 @@ type Options struct {
 	GCPPubSub *GCPPubSubOptions
 	MQTT      *MQTTOptions
 	AWSSQS    *AWSSQSOptions
+	ActiveMq  *ActiveMqOptions
 }
 
 func Handle(cliArgs []string) (string, *Options, error) {
@@ -72,6 +73,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		GCPPubSub: &GCPPubSubOptions{},
 		MQTT:      &MQTTOptions{},
 		AWSSQS:    &AWSSQSOptions{WriteAttributes: make(map[string]string, 0)},
+		ActiveMq:  &ActiveMqOptions{},
 	}
 
 	app := kingpin.New("plumber", "`curl` for messaging systems. See: https://github.com/batchcorp/plumber")
@@ -97,6 +99,8 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	HandleGCPPubSubFlags(readCmd, writeCmd, opts)
 	HandleMQTTFlags(readCmd, writeCmd, opts)
 	HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
+	HandleActiveMqFlags(readCmd, writeCmd, opts)
+
 	HandleGlobalFlags(readCmd, opts)
 	HandleGlobalReadFlags(readCmd, opts)
 	HandleGlobalWriteFlags(writeCmd, opts)

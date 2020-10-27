@@ -53,3 +53,9 @@ services:
       - ./test-assets/mosquitto:/mosquitto/config/
     ports:
       - '1883:1883'
+  activemq:
+    container_name: activemq
+    image: rmohr/activemq:latest
+    ports:
+      - "61613:61613"
+      - "8161:8161" #Admin port, admin/admin to login
