@@ -6,12 +6,10 @@ import (
 	"sync"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 )
@@ -25,16 +23,6 @@ func Read(opts *cli.Options) error {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.ReadOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
-	}
-
 	client, err := connect(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to complete initial connect")
@@ -43,7 +31,6 @@ func Read(opts *cli.Options) error {
 	r := &MQTT{
 		Options: opts,
 		Client:  client,
-		MsgDesc: md,
 		log:     logrus.WithField("pkg", "mqtt/read.go"),
 	}
 
@@ -78,7 +65,7 @@ func (m *MQTT) subscribe(wg *sync.WaitGroup, errChan chan error) {
 			defer m.Client.Disconnect(0)
 		}
 
-		data, err := reader.Decode(m.Options, m.MsgDesc, msg.Payload())
+		data, err := reader.Decode(m.Options, msg.Payload())
 
 		if err != nil {
 			if !m.Options.ReadFollow {

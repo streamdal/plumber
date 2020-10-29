@@ -4,12 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 )
@@ -23,16 +21,6 @@ func Read(opts *cli.Options) error {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.ReadOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
-	}
-
 	reader, err := NewReader(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new reader")
@@ -40,7 +28,6 @@ func Read(opts *cli.Options) error {
 
 	k := &Kafka{
 		Options: opts,
-		MsgDesc: md,
 		Reader:  reader,
 		log:     logrus.WithField("pkg", "kafka/read.go"),
 	}
@@ -70,7 +57,7 @@ func (k *Kafka) Read() error {
 			continue
 		}
 
-		data, err := reader.Decode(k.Options, k.MsgDesc, msg.Value)
+		data, err := reader.Decode(k.Options, msg.Value)
 		if err != nil {
 			continue
 		}

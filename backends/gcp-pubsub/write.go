@@ -4,12 +4,10 @@ import (
 	"context"
 
 	"cloud.google.com/go/pubsub"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/writer"
 )
 
@@ -23,29 +21,18 @@ func Write(opts *cli.Options) error {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.WriteOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.WriteProtobufDirs, opts.WriteProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
-	}
-
 	client, err := NewClient(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to create client")
 	}
 
-	msg, err := writer.GenerateWriteValue(md, opts)
+	msg, err := writer.GenerateWriteValue(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}
 
 	g := &GCPPubSub{
 		Options: opts,
-		MsgDesc: md,
 		Client:  client,
 		log:     logrus.WithField("pkg", "gcppubsub/read.go"),
 	}

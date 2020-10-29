@@ -9,16 +9,16 @@ import (
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/serializers"
 )
 
 // GenerateWriteValue will transform input data into the required format for transmission
-func GenerateWriteValue(md *desc.MessageDescriptor, opts *cli.Options) ([]byte, error) {
+func GenerateWriteValue(opts *cli.Options) ([]byte, error) {
 	// Do we read value or file?
 	var data []byte
 
@@ -33,11 +33,6 @@ func GenerateWriteValue(md *desc.MessageDescriptor, opts *cli.Options) ([]byte, 
 		if readErr != nil {
 			return nil, fmt.Errorf("unable to read file '%s': %s", opts.WriteInputFile, readErr)
 		}
-	}
-
-	// Ensure we do not try to operate on a nil md
-	if opts.WriteOutputType == "protobuf" && md == nil {
-		return nil, errors.New("message descriptor cannot be nil when --output-type is protobuf")
 	}
 
 	// Handle AVRO
@@ -65,7 +60,15 @@ func GenerateWriteValue(md *desc.MessageDescriptor, opts *cli.Options) ([]byte, 
 	if opts.WriteInputType == "jsonpb" && opts.WriteOutputType == "protobuf" {
 		var convertErr error
 
-		data, convertErr = convertJSONPBToProtobuf(data, dynamic.NewMessage(md))
+		if opts.MsgDesc == nil {
+			md, mdErr := pb.FindMessageDescriptor(opts.WriteProtobufDirs, opts.WriteProtobufRootMessage, opts.ProtobufDirRemap)
+			if mdErr != nil {
+				return nil, errors.Wrap(mdErr, "unable to find root message descriptor")
+			}
+			opts.MsgDesc = md
+		}
+
+		data, convertErr = convertJSONPBToProtobuf(data, dynamic.NewMessage(opts.MsgDesc))
 		if convertErr != nil {
 			return nil, errors.Wrap(convertErr, "unable to convert JSONPB to protobuf")
 		}

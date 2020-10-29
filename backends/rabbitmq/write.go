@@ -4,10 +4,8 @@ import (
 	"context"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/writer"
 
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 )
 
@@ -21,23 +19,13 @@ func Write(opts *cli.Options) error {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.WriteOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.WriteProtobufDirs, opts.WriteProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
-	}
-
-	r, err := New(opts, md)
+	r, err := New(opts)
 
 	if err != nil {
 		return errors.Wrap(err, "unable to initialize rabbitmq consumer")
 	}
 
-	msg, err := writer.GenerateWriteValue(md, opts)
+	msg, err := writer.GenerateWriteValue(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}

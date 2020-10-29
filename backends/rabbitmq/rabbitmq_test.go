@@ -82,7 +82,6 @@ var _ = Describe("RabbitMQ", func() {
 			r := &RabbitMQ{
 				Options:  opts,
 				Consumer: rmq,
-				MsgDesc:  nil,
 				log:      logrus.WithField("pkg", "rabbitmq_test.go"),
 			}
 

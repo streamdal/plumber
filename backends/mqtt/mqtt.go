@@ -8,7 +8,6 @@ import (
 	"net/url"
 
 	pahomqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -18,7 +17,6 @@ import (
 type MQTT struct {
 	Options *cli.Options
 	Client  pahomqtt.Client
-	MsgDesc *desc.MessageDescriptor
 	log     *logrus.Entry
 }
 

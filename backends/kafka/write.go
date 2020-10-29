@@ -3,13 +3,11 @@ package kafka
 import (
 	"context"
 
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/writer"
 )
 
@@ -23,17 +21,7 @@ func Write(opts *cli.Options) error {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.WriteOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.WriteProtobufDirs, opts.WriteProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
-	}
-
-	value, err := writer.GenerateWriteValue(md, opts)
+	value, err := writer.GenerateWriteValue(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}

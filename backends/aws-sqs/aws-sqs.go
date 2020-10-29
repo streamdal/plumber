@@ -5,7 +5,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -16,7 +15,6 @@ type AWSSQS struct {
 	Options  *cli.Options
 	Service  *sqs.SQS
 	QueueURL string
-	MsgDesc  *desc.MessageDescriptor
 	log      *logrus.Entry
 }
 

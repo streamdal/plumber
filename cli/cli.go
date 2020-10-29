@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"gopkg.in/alecthomas/kingpin.v2"
 
@@ -31,7 +32,9 @@ type Options struct {
 	Backend string
 
 	// Serializers
-	AvroSchemaFile string
+	AvroSchemaFile   string
+	MsgDesc          *desc.MessageDescriptor
+	ProtobufDirRemap string
 
 	// Relay
 	RelayToken             string
@@ -168,6 +171,8 @@ func HandleGlobalWriteFlags(cmd *kingpin.CmdClause, opts *Options) {
 func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("avro-schema", "Path to AVRO schema .avsc file").
 		StringVar(&opts.AvroSchemaFile)
+	cmd.Flag("protobuf-dir-remap", "Rewrite path to protobuf files when .proto import path does not match vendor path. \"path/to/vendor import/path\"").
+		StringVar(&opts.ProtobufDirRemap)
 }
 
 func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {

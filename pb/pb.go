@@ -23,7 +23,7 @@ import (
 //
 // With the found MessageDescriptor, we are able to generate new dynamic
 // messages via dynamic.NewMessage(..).
-func FindMessageDescriptor(protobufDirs []string, protobufRootMessage string) (*desc.MessageDescriptor, error) {
+func FindMessageDescriptor(protobufDirs []string, protobufRootMessage string, protobufDirRewrite string) (*desc.MessageDescriptor, error) {
 	files, err := getProtoFiles(protobufDirs)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to get proto files")
@@ -33,7 +33,7 @@ func FindMessageDescriptor(protobufDirs []string, protobufRootMessage string) (*
 		return nil, fmt.Errorf("no .proto found in dir(s) '%v'", protobufDirs)
 	}
 
-	fds, err := readFileDescriptors(files)
+	fds, err := readFileDescriptors(files, protobufDirRewrite)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to read file descriptors")
 	}
@@ -75,9 +75,12 @@ func findMessageDescriptor(fds []*desc.FileDescriptor, rootMessage string) (*des
 	return nil, errors.New("message descriptor not found in file descriptor(s)")
 }
 
-func readFileDescriptors(files map[string][]string) ([]*desc.FileDescriptor, error) {
+func readFileDescriptors(files map[string][]string, protobufDirRewrite string) ([]*desc.FileDescriptor, error) {
 	contents := make(map[string]string, 0)
 	keys := make([]string, 0)
+
+	// "vendor/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis/google/api google/api"
+	rewrite := strings.Split(protobufDirRewrite, " ")
 
 	for dir, files := range files {
 		// cleanup dir
@@ -98,6 +101,11 @@ func readFileDescriptors(files map[string][]string) ([]*desc.FileDescriptor, err
 
 			if len(relative) != 2 {
 				return nil, fmt.Errorf("unexpected length of split path (%d)", len(relative))
+			}
+
+			// Issue #23 - Rewrite dirs to follow protobuf import path instead of vendored path
+			if protobufDirRewrite != "" {
+				relative[1] = strings.Replace(relative[1], rewrite[0], rewrite[1], 1)
 			}
 
 			contents[relative[1]] = string(data)

@@ -1,11 +1,11 @@
 package rabbitmq
 
 import (
-	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/rabbit"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber/cli"
 )
 
 // RabbitMQ holds all attributes required for performing a read/write operations
@@ -14,11 +14,10 @@ import (
 type RabbitMQ struct {
 	Options  *cli.Options
 	Consumer *rabbit.Rabbit
-	MsgDesc  *desc.MessageDescriptor
 	log      *logrus.Entry
 }
 
-func New(opts *cli.Options, md *desc.MessageDescriptor) (*RabbitMQ, error) {
+func New(opts *cli.Options) (*RabbitMQ, error) {
 	mode := rabbit.Consumer
 	if opts.Action == "write" {
 		mode = rabbit.Producer
@@ -43,7 +42,6 @@ func New(opts *cli.Options, md *desc.MessageDescriptor) (*RabbitMQ, error) {
 	r := &RabbitMQ{
 		Options:  opts,
 		Consumer: rmq,
-		MsgDesc:  md,
 		log:      logrus.WithField("pkg", "rabbitmq.go"),
 	}
 

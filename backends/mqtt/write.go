@@ -4,12 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/writer"
 )
 
@@ -23,16 +21,6 @@ func Write(opts *cli.Options) error {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.WriteOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.WriteProtobufDirs, opts.WriteProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
-	}
-
 	client, err := connect(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to complete initial connect")
@@ -41,11 +29,10 @@ func Write(opts *cli.Options) error {
 	r := &MQTT{
 		Options: opts,
 		Client:  client,
-		MsgDesc: md,
 		log:     logrus.WithField("pkg", "mqtt/write.go"),
 	}
 
-	msg, err := writer.GenerateWriteValue(md, opts)
+	msg, err := writer.GenerateWriteValue(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}

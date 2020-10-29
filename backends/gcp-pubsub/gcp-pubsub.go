@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"cloud.google.com/go/pubsub"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -13,7 +12,6 @@ import (
 
 type GCPPubSub struct {
 	Options *cli.Options
-	MsgDesc *desc.MessageDescriptor
 	Client  *pubsub.Client
 	log     *logrus.Entry
 }

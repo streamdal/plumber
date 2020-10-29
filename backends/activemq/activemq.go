@@ -2,7 +2,6 @@ package activemq
 
 import (
 	"github.com/go-stomp/stomp"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -12,7 +11,6 @@ import (
 type ActiveMq struct {
 	Options *cli.Options
 	Client  *stomp.Conn
-	MsgDesc *desc.MessageDescriptor
 	log     *logrus.Entry
 }
 

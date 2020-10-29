@@ -6,12 +6,10 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 )
@@ -29,16 +27,6 @@ func Read(opts *cli.Options) error {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.ReadOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
-	}
-
 	svc, queueURL, err := NewService(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new service")
@@ -48,7 +36,6 @@ func Read(opts *cli.Options) error {
 		Options:  opts,
 		Service:  svc,
 		QueueURL: queueURL,
-		MsgDesc:  md,
 		log:      logrus.WithField("pkg", "awssqs/read.go"),
 	}
 
@@ -116,7 +103,7 @@ func (a *AWSSQS) Read() error {
 
 		// Handle decode + output conversion
 		for _, m := range msgResult.Messages {
-			data, err := reader.Decode(a.Options, a.MsgDesc, []byte(*m.Body))
+			data, err := reader.Decode(a.Options, []byte(*m.Body))
 			if err != nil {
 				printer.Error(fmt.Sprintf("unable to convert message: %s", err))
 				continue

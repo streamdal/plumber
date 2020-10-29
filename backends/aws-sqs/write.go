@@ -5,12 +5,10 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/writer"
 )
@@ -25,16 +23,6 @@ func Write(opts *cli.Options) error {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.WriteOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.WriteProtobufDirs, opts.WriteProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
-	}
-
 	svc, queueURL, err := NewService(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new service")
@@ -44,11 +32,10 @@ func Write(opts *cli.Options) error {
 		Options:  opts,
 		Service:  svc,
 		QueueURL: queueURL,
-		MsgDesc:  md,
 		log:      logrus.WithField("pkg", "awssqs/read.go"),
 	}
 
-	msg, err := writer.GenerateWriteValue(md, opts)
+	msg, err := writer.GenerateWriteValue(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}

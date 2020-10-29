@@ -7,11 +7,9 @@ import (
 	"github.com/batchcorp/rabbit"
 	"github.com/streadway/amqp"
 
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 )
@@ -25,17 +23,7 @@ func Read(opts *cli.Options) error {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.ReadOutputType == "protobuf" {
-		md, mdErr = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
-	}
-
-	r, err := New(opts, md)
+	r, err := New(opts)
 
 	if err != nil {
 		return errors.Wrap(err, "unable to initialize rabbitmq consumer")
@@ -56,7 +44,7 @@ func (r *RabbitMQ) Read() error {
 
 	go r.Consumer.Consume(ctx, errCh, func(msg amqp.Delivery) error {
 
-		data, err := reader.Decode(r.Options, r.MsgDesc, msg.Body)
+		data, err := reader.Decode(r.Options, msg.Body)
 		if err != nil {
 			return err
 		}

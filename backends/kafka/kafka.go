@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jhump/protoreflect/desc"
 	skafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
 
@@ -26,7 +25,6 @@ type Kafka struct {
 	Reader  *skafka.Reader
 	Writer  *skafka.Writer
 	Options *cli.Options
-	MsgDesc *desc.MessageDescriptor
 	log     *logrus.Entry
 }
 

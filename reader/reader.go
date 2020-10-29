@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
 
@@ -15,7 +14,7 @@ import (
 	"github.com/batchcorp/plumber/util"
 )
 
-func Decode(opts *cli.Options, msgDesc *desc.MessageDescriptor, message []byte) ([]byte, error) {
+func Decode(opts *cli.Options, message []byte) ([]byte, error) {
 	if opts.ReadOutputType == "protobuf" {
 		// SQS doesn't like binary
 		if opts.AWSSQS.QueueName != "" {
@@ -27,7 +26,15 @@ func Decode(opts *cli.Options, msgDesc *desc.MessageDescriptor, message []byte) 
 			message = plain
 		}
 
-		decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(msgDesc), message)
+		if opts.MsgDesc == nil {
+			md, mdErr := pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage, opts.ProtobufDirRemap)
+			if mdErr != nil {
+				return nil, errors.Wrap(mdErr, "unable to find root message descriptor")
+			}
+			opts.MsgDesc = md
+		}
+
+		decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(opts.MsgDesc), message)
 		if err != nil {
 			if !opts.ReadFollow {
 				return nil, fmt.Errorf("unable to decode protobuf message: %s", err)
