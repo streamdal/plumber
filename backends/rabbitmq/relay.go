@@ -100,6 +100,7 @@ func (r *Relayer) Relay() error {
 		RoutingKey:   r.Options.Rabbit.RoutingKey,
 		AutoAck:      r.Options.Rabbit.ReadAutoAck,
 		QueueDeclare: r.Options.Rabbit.ReadQueueDeclare,
+		ConsumerTag:  r.Options.Rabbit.ReadConsumerTag,
 	})
 
 	if err != nil {
