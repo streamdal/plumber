@@ -100,6 +100,7 @@ func (r *Relayer) Relay() error {
 		RoutingKey:   r.Options.Rabbit.RoutingKey,
 		AutoAck:      r.Options.Rabbit.ReadAutoAck,
 		QueueDeclare: r.Options.Rabbit.ReadQueueDeclare,
+		QueueDurable: r.Options.Rabbit.ReadQueueDurable,
 	})
 
 	if err != nil {
@@ -109,6 +110,11 @@ func (r *Relayer) Relay() error {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	go rmq.Consume(ctx, errCh, func(msg amqp.Delivery) error {
+		if msg.Body == nil {
+			// Ignore empty messages
+			// this will also prevent log spam if a queue goes missing
+			return nil
+		}
 		r.log.Debugf("Writing RabbitMQ message to relay channel: %+v", msg)
 		r.RelayCh <- &types.RelayMessage{
 			Value:   &msg,
