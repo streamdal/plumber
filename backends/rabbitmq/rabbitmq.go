@@ -2,6 +2,7 @@ package rabbitmq
 
 import (
 	"github.com/batchcorp/plumber/cli"
+
 	"github.com/batchcorp/rabbit"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
@@ -30,6 +31,7 @@ func New(opts *cli.Options, md *desc.MessageDescriptor) (*RabbitMQ, error) {
 		ExchangeName:   opts.Rabbit.Exchange,
 		RoutingKey:     opts.Rabbit.RoutingKey,
 		QueueExclusive: opts.Rabbit.ReadQueueExclusive,
+		QueueDurable:   opts.Rabbit.ReadQueueDurable,
 		AutoAck:        opts.Rabbit.ReadAutoAck,
 		ConsumerTag:    opts.Rabbit.ReadConsumerTag,
 		AppID:          opts.Rabbit.WriteAppID,
