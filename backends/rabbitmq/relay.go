@@ -101,6 +101,7 @@ func (r *Relayer) Relay() error {
 		AutoAck:      r.Options.Rabbit.ReadAutoAck,
 		QueueDeclare: r.Options.Rabbit.ReadQueueDeclare,
 		QueueDurable: r.Options.Rabbit.ReadQueueDurable,
+		ConsumerTag:  r.Options.Rabbit.ReadConsumerTag,
 	})
 
 	if err != nil {
