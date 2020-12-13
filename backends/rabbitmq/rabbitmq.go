@@ -33,6 +33,8 @@ func New(opts *cli.Options, md *desc.MessageDescriptor) (*RabbitMQ, error) {
 		AutoAck:        opts.Rabbit.ReadAutoAck,
 		ConsumerTag:    opts.Rabbit.ReadConsumerTag,
 		AppID:          opts.Rabbit.WriteAppID,
+		UseTLS:         opts.Rabbit.UseTLS,
+		SkipVerifyTLS:  opts.Rabbit.SkipVerifyTLS,
 		Mode:           mode,
 	})
 

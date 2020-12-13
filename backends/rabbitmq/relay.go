@@ -85,7 +85,6 @@ func validateRelayOptions(opts *cli.Options) error {
 }
 
 func (r *Relayer) Relay() error {
-
 	errCh := make(chan *rabbit.ConsumeError)
 
 	r.log.Infof("Relaying RabbitMQ messages from '%s' exchange -> '%s'",
@@ -94,13 +93,15 @@ func (r *Relayer) Relay() error {
 	r.log.Infof("HTTP server listening on '%s'", r.Options.RelayHTTPListenAddress)
 
 	rmq, err := rabbit.New(&rabbit.Options{
-		URL:          r.Options.Rabbit.Address,
-		QueueName:    r.Options.Rabbit.ReadQueue,
-		ExchangeName: r.Options.Rabbit.Exchange,
-		RoutingKey:   r.Options.Rabbit.RoutingKey,
-		AutoAck:      r.Options.Rabbit.ReadAutoAck,
-		QueueDeclare: r.Options.Rabbit.ReadQueueDeclare,
-		ConsumerTag:  r.Options.Rabbit.ReadConsumerTag,
+		URL:           r.Options.Rabbit.Address,
+		QueueName:     r.Options.Rabbit.ReadQueue,
+		ExchangeName:  r.Options.Rabbit.Exchange,
+		RoutingKey:    r.Options.Rabbit.RoutingKey,
+		AutoAck:       r.Options.Rabbit.ReadAutoAck,
+		QueueDeclare:  r.Options.Rabbit.ReadQueueDeclare,
+		ConsumerTag:   r.Options.Rabbit.ReadConsumerTag,
+		UseTLS:        r.Options.Rabbit.UseTLS,
+		SkipVerifyTLS: r.Options.Rabbit.SkipVerifyTLS,
 	})
 
 	if err != nil {
