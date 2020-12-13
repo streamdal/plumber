@@ -85,6 +85,7 @@ func validateRelayOptions(opts *cli.Options) error {
 }
 
 func (r *Relayer) Relay() error {
+
 	errCh := make(chan *rabbit.ConsumeError)
 
 	r.log.Infof("Relaying RabbitMQ messages from '%s' exchange -> '%s'",
@@ -99,6 +100,7 @@ func (r *Relayer) Relay() error {
 		RoutingKey:    r.Options.Rabbit.RoutingKey,
 		AutoAck:       r.Options.Rabbit.ReadAutoAck,
 		QueueDeclare:  r.Options.Rabbit.ReadQueueDeclare,
+		QueueDurable:  r.Options.Rabbit.ReadQueueDurable,
 		ConsumerTag:   r.Options.Rabbit.ReadConsumerTag,
 		UseTLS:        r.Options.Rabbit.UseTLS,
 		SkipVerifyTLS: r.Options.Rabbit.SkipVerifyTLS,
@@ -111,6 +113,11 @@ func (r *Relayer) Relay() error {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	go rmq.Consume(ctx, errCh, func(msg amqp.Delivery) error {
+		if msg.Body == nil {
+			// Ignore empty messages
+			// this will also prevent log spam if a queue goes missing
+			return nil
+		}
 		r.log.Debugf("Writing RabbitMQ message to relay channel: %+v", msg)
 		r.RelayCh <- &types.RelayMessage{
 			Value:   &msg,
