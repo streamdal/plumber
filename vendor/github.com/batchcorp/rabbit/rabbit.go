@@ -14,6 +14,7 @@ package rabbit
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"sync"
 	"time"
@@ -35,6 +36,8 @@ const (
 )
 
 var (
+	ShutdownError = errors.New("connection has been shutdown")
+
 	// Used for identifying consumer
 	DefaultConsumerTag = "c-rabbit-" + uuid.NewV4().String()[0:8]
 
@@ -64,9 +67,10 @@ type Rabbit struct {
 	ConsumeLooper           director.Looper
 	Options                 *Options
 
-	ctx    context.Context
-	cancel func()
-	log    *logrus.Entry
+	shutdown bool
+	ctx      context.Context
+	cancel   func()
+	log      *logrus.Entry
 }
 
 type Mode int
@@ -131,6 +135,12 @@ type Options struct {
 
 	// Used as a property to identify producer
 	AppID string
+
+	// Use TLS
+	UseTLS bool
+
+	// Skip cert verification (only applies if UseTLS is true)
+	SkipVerifyTLS bool
 }
 
 // ConsumeError will be passed down the error channel if/when `f()` func runs
@@ -146,7 +156,21 @@ func New(opts *Options) (*Rabbit, error) {
 		return nil, errors.Wrap(err, "invalid options")
 	}
 
-	ac, err := amqp.Dial(opts.URL)
+	var ac *amqp.Connection
+	var err error
+
+	if opts.UseTLS {
+		tlsConfig := &tls.Config{}
+
+		if opts.SkipVerifyTLS {
+			tlsConfig.InsecureSkipVerify = true
+		}
+
+		ac, err = amqp.DialTLS(opts.URL, tlsConfig)
+	} else {
+		ac, err = amqp.Dial(opts.URL)
+	}
+
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to dial server")
 	}
@@ -248,6 +272,11 @@ func ValidateOptions(opts *Options) error {
 // Subsequent reconnect attempts will sleep/wait for `DefaultRetryReconnectSec`
 // between attempts.
 func (r *Rabbit) Consume(ctx context.Context, errChan chan *ConsumeError, f func(msg amqp.Delivery) error) {
+	if r.shutdown {
+		r.log.Error(ShutdownError)
+		return
+	}
+
 	if r.Options.Mode == Producer {
 		r.log.Error("unable to Consume() - library is configured in Producer mode")
 		return
@@ -306,6 +335,10 @@ func (r *Rabbit) Consume(ctx context.Context, errChan chan *ConsumeError, f func
 // Same as with `Consume()`, you can pass in a context to cancel `ConsumeOnce()`
 // or run `Stop()`.
 func (r *Rabbit) ConsumeOnce(ctx context.Context, runFunc func(msg amqp.Delivery) error) error {
+	if r.shutdown {
+		return ShutdownError
+	}
+
 	if r.Options.Mode == Producer {
 		return errors.New("unable to ConsumeOnce - library is configured in Producer mode")
 	}
@@ -341,6 +374,10 @@ func (r *Rabbit) ConsumeOnce(ctx context.Context, runFunc func(msg amqp.Delivery
 //
 // TODO: Implement ctx usage
 func (r *Rabbit) Publish(ctx context.Context, routingKey string, body []byte) error {
+	if r.shutdown {
+		return ShutdownError
+	}
+
 	if r.Options.Mode == Consumer {
 		return errors.New("unable to Publish - library is configured in Consumer mode")
 	}
@@ -391,6 +428,8 @@ func (r *Rabbit) Close() error {
 		return fmt.Errorf("unable to close amqp connection: %s", err)
 	}
 
+	r.shutdown = true
+
 	return nil
 }
 
@@ -401,9 +440,10 @@ func (r *Rabbit) watchNotifyClose() {
 
 		r.log.Debugf("received message on notify close channel: '%+v' (reconnecting)", closeErr)
 
-		// Acquire mutex to pause all consumers while we reconnect AND prevent
+		// Acquire mutex to pause all consumers/producers while we reconnect AND prevent
 		// access to the channel map
 		r.ConsumerRWMutex.Lock()
+		r.ProducerRWMutex.Lock()
 
 		var attempts int
 
@@ -420,20 +460,31 @@ func (r *Rabbit) watchNotifyClose() {
 			break
 		}
 
-		// Create and set a new notify close channel (since old one gets closed)
+		// Create and set a new notify close channel (since old one gets shutdown)
 		r.NotifyCloseChan = make(chan *amqp.Error, 0)
 		r.Conn.NotifyClose(r.NotifyCloseChan)
 
 		// Update channel
-		if err := r.newConsumerChannel(); err != nil {
-			logrus.Errorf("unable to set new channel: %s", err)
+		if r.Options.Mode == Producer {
+			serverChannel, err := r.newServerChannel()
+			if err != nil {
+				logrus.Errorf("unable to set new channel: %s", err)
+				panic(fmt.Sprintf("unable to set new channel: %s", err))
+			}
 
-			// TODO: This is super shitty. Should address this.
-			panic(fmt.Sprintf("unable to set new channel: %s", err))
+			r.ProducerServerChannel = serverChannel
+		} else {
+			if err := r.newConsumerChannel(); err != nil {
+				logrus.Errorf("unable to set new channel: %s", err)
+
+				// TODO: This is super shitty. Should address this.
+				panic(fmt.Sprintf("unable to set new channel: %s", err))
+			}
 		}
 
-		// Unlock so that consumers can begin reading messages from a new channel
+		// Unlock so that consumers/producers can begin reading messages from a new channel
 		r.ConsumerRWMutex.Unlock()
+		r.ProducerRWMutex.Unlock()
 
 		r.log.Debug("watchNotifyClose has completed successfully")
 	}
@@ -515,6 +566,7 @@ func (r *Rabbit) newConsumerChannel() error {
 		return errors.Wrap(err, "unable to create delivery channel")
 	}
 
+	r.ProducerServerChannel = serverChannel
 	r.ConsumerDeliveryChannel = deliveryChannel
 
 	return nil

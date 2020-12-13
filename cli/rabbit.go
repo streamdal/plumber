@@ -8,9 +8,11 @@ import (
 
 type RabbitOptions struct {
 	// Shared
-	Address    string
-	Exchange   string
-	RoutingKey string
+	Address       string
+	Exchange      string
+	RoutingKey    string
+	UseTLS        bool
+	SkipVerifyTLS bool
 
 	// Read
 	ReadQueue           string
@@ -60,6 +62,12 @@ func addSharedRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("exchange", "Name of the exchange").
 		Envar("PLUMBER_RELAY_RABBIT_EXCHANGE").
 		StringVar(&opts.Rabbit.Exchange)
+	cmd.Flag("use-tls", "Force TLS usage (regardless of DSN)").
+		Envar("PLUMBER_RELAY_RABBIT_USE_TLS").
+		BoolVar(&opts.Rabbit.UseTLS)
+	cmd.Flag("skip-verify-tls", "Skip server cert verification").
+		Envar("PLUMBER_RELAY_RABBIT_SKIP_VERIFY_TLS").
+		BoolVar(&opts.Rabbit.SkipVerifyTLS)
 
 	// TODO: This should really NOT be a shared key (for reads - binding key, for writes, routing key)
 	cmd.Flag("routing-key", "Routing key").
