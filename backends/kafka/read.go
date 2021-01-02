@@ -33,15 +33,18 @@ func Read(opts *cli.Options) error {
 		}
 	}
 
-	reader, err := NewReader(opts)
+	kafkaReader, err := NewReader(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new reader")
 	}
 
+	defer kafkaReader.Conn.Close()
+	defer kafkaReader.Reader.Close()
+
 	k := &Kafka{
 		Options: opts,
 		MsgDesc: md,
-		Reader:  reader,
+		Reader:  kafkaReader.Reader,
 		log:     logrus.WithField("pkg", "kafka/read.go"),
 	}
 
