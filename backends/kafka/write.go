@@ -38,16 +38,19 @@ func Write(opts *cli.Options) error {
 		return errors.Wrap(err, "unable to generate write value")
 	}
 
-	w, err := NewWriter(opts)
+	kafkaWriter, err := NewWriter(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new writer")
 	}
 
 	k := &Kafka{
 		Options: opts,
-		Writer:  w,
+		Writer:  kafkaWriter.Writer,
 		log:     logrus.WithField("pkg", "kafka/write.go"),
 	}
+
+	defer kafkaWriter.Conn.Close()
+	defer kafkaWriter.Writer.Close()
 
 	return k.Write([]byte(opts.Kafka.WriteKey), value)
 }

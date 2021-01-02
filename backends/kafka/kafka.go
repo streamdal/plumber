@@ -30,7 +30,17 @@ type Kafka struct {
 	log     *logrus.Entry
 }
 
-func NewReader(opts *cli.Options) (*skafka.Reader, error) {
+type KafkaReader struct {
+	Reader *skafka.Reader
+	Conn   *skafka.Conn
+}
+
+type KafkaWriter struct {
+	Writer *skafka.Writer
+	Conn   *skafka.Conn
+}
+
+func NewReader(opts *cli.Options) (*KafkaReader, error) {
 	dialer := &skafka.Dialer{
 		Timeout: opts.Kafka.Timeout,
 	}
@@ -47,12 +57,13 @@ func NewReader(opts *cli.Options) (*skafka.Reader, error) {
 	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(opts.Kafka.Timeout))
 
 	// Attempt to establish connection on startup
-	if _, err := dialer.DialLeader(ctxDeadline, "tcp", opts.Kafka.Address, opts.Kafka.Topic, 0); err != nil {
+	conn, err := dialer.DialLeader(ctxDeadline, "tcp", opts.Kafka.Address, opts.Kafka.Topic, 0)
+	if err != nil {
 		return nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
 			opts.Kafka.Address, err)
 	}
 
-	return skafka.NewReader(skafka.ReaderConfig{
+	r := skafka.NewReader(skafka.ReaderConfig{
 		Brokers:       []string{opts.Kafka.Address},
 		GroupID:       opts.Kafka.ReadGroupId,
 		Topic:         opts.Kafka.Topic,
@@ -60,10 +71,15 @@ func NewReader(opts *cli.Options) (*skafka.Reader, error) {
 		MaxWait:       DefaultMaxWait,
 		MaxBytes:      DefaultMaxBytes,
 		QueueCapacity: 1,
-	}), nil
+	})
+
+	return &KafkaReader{
+		Reader: r,
+		Conn:   conn,
+	}, nil
 }
 
-func NewWriter(opts *cli.Options) (*skafka.Writer, error) {
+func NewWriter(opts *cli.Options) (*KafkaWriter, error) {
 	dialer := &skafka.Dialer{
 		Timeout: opts.Kafka.Timeout,
 	}
@@ -80,15 +96,21 @@ func NewWriter(opts *cli.Options) (*skafka.Writer, error) {
 	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(opts.Kafka.Timeout))
 
 	// Attempt to establish connection on startup
-	if _, err := dialer.DialLeader(ctxDeadline, "tcp", opts.Kafka.Address, opts.Kafka.Topic, 0); err != nil {
+	conn, err := dialer.DialLeader(ctxDeadline, "tcp", opts.Kafka.Address, opts.Kafka.Topic, 0)
+	if err != nil {
 		return nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
 			opts.Kafka.Address, err)
 	}
 
-	return skafka.NewWriter(skafka.WriterConfig{
+	w := skafka.NewWriter(skafka.WriterConfig{
 		Brokers:   []string{opts.Kafka.Address},
 		Topic:     opts.Kafka.Topic,
 		Dialer:    dialer,
 		BatchSize: DefaultBatchSize,
-	}), nil
+	})
+
+	return &KafkaWriter{
+		Writer: w,
+		Conn:   conn,
+	}, nil
 }
