@@ -47,6 +47,8 @@ func Read(opts *cli.Options) error {
 // Read will attempt to consume one or more messages from the established rabbit
 // channel.
 func (r *RabbitMQ) Read() error {
+	defer r.Consumer.Close()
+
 	r.log.Info("Listening for message(s) ...")
 
 	errCh := make(chan *rabbit.ConsumeError)

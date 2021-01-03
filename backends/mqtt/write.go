@@ -45,6 +45,8 @@ func Write(opts *cli.Options) error {
 		log:     logrus.WithField("pkg", "mqtt/write.go"),
 	}
 
+	defer client.Disconnect(0)
+
 	msg, err := writer.GenerateWriteValue(md, opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")

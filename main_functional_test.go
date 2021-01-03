@@ -7,15 +7,14 @@
 //
 // NOTE 1: You should probably have local instances of rabbit, kafka, etc. running
 // or  else the test suite will fail.
-//
-// NOTE 2: Testing of the CLI is flakey - output is sometimes delayed due to
-// slow dependencies and OS specific quirks. Due to this, the functional test
-// suite is not ran on PR's and is left as something to be ran manually.
 package main
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"os/exec"
 	"runtime"
@@ -25,6 +24,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/batchcorp/schemas/build/go/events"
+	"github.com/golang/protobuf/proto"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	skafka "github.com/segmentio/kafka-go"
@@ -37,7 +38,7 @@ func init() {
 
 var _ = Describe("Functional", func() {
 	var (
-		//kafkaAddress         = "localhost:9092"
+		kafkaAddress         = "localhost:9092"
 		binary               = "./build/plumber-" + runtime.GOOS
 		sampleOutboundJSONPB = "./test-assets/messages/sample-outbound.json"
 		protoSchemasDir      = "./test-assets/protos"
@@ -66,100 +67,100 @@ var _ = Describe("Functional", func() {
 		Expect(binary).To(BeAnExistingFile())
 	})
 
-	//Describe("Kafka", func() {
-	//	var (
-	//		kafka      *Kafka
-	//		kafkaTopic = fmt.Sprintf("plumber-test-%d", rand.Int())
-	//	)
-	//
-	//	Describe("write", func() {
-	//		BeforeEach(func() {
-	//			var err error
-	//
-	//			kafka, err = newKafka(kafkaAddress, kafkaTopic)
-	//
-	//			Expect(err).ToNot(HaveOccurred())
-	//		})
-	//
-	//		Context("plain input, plain output", func() {
-	//			It("should work", func() {
-	//				randString := fmt.Sprintf("kafka-random-%d", rand.Int())
-	//
-	//				cmd := exec.Command(binary, "write", "kafka", "--address", kafkaAddress,
-	//					"--topic", kafkaTopic, "--input-data", randString)
-	//
-	//				_, err := cmd.CombinedOutput()
-	//
-	//				Expect(err).ToNot(HaveOccurred())
-	//
-	//				// Read message from kafka topic, verify it's set to randString
-	//				msg, err := kafka.Reader.ReadMessage(context.Background())
-	//				Expect(err).ToNot(HaveOccurred())
-	//
-	//				Expect(err).ToNot(HaveOccurred())
-	//				Expect(string(msg.Value)).To(Equal(randString))
-	//			})
-	//		})
-	//
-	//		Context("jsonpb input, protobuf output", func() {
-	//			It("should work", func() {
-	//				// We use "Outbound" here because it's simple
-	//				cmd := exec.Command(binary, "write", "kafka", "--address", kafkaAddress,
-	//					"--topic", kafkaTopic, "--input-type", "jsonpb", "--output-type", "protobuf",
-	//					"--input-file", sampleOutboundJSONPB, "--protobuf-dir", protoSchemasDir,
-	//					"--protobuf-root-message", "Outbound")
-	//
-	//				_, err := cmd.CombinedOutput()
-	//				Expect(err).ToNot(HaveOccurred())
-	//
-	//				// Read message from kafka topic; verify it matches what we wrote
-	//				msg, err := kafka.Reader.ReadMessage(context.Background())
-	//				Expect(err).ToNot(HaveOccurred())
-	//
-	//				// Verify we wrote a valid protobuf message
-	//				outbound := &events.Outbound{}
-	//
-	//				err = proto.Unmarshal(msg.Value, outbound)
-	//
-	//				Expect(err).ToNot(HaveOccurred())
-	//
-	//				// Verify that the values are the same
-	//				jsonData, err := ioutil.ReadFile(sampleOutboundJSONPB)
-	//				Expect(err).ToNot(HaveOccurred())
-	//
-	//				jsonMap := make(map[string]string, 0)
-	//
-	//				err = json.Unmarshal(jsonData, &jsonMap)
-	//				Expect(err).ToNot(HaveOccurred())
-	//
-	//				Expect(outbound.ReplayId).To(Equal(jsonMap["replay_id"]))
-	//
-	//				// []byte is encoded as base64, so we have to encode it to
-	//				// verify against source JSON
-	//				encodedBlob := base64.StdEncoding.EncodeToString(outbound.Blob)
-	//
-	//				Expect(encodedBlob).To(Equal(jsonMap["blob"]))
-	//			})
-	//		})
-	//	})
-	//
-	//	Describe("read", func() {
-	//		var ()
-	//
-	//		BeforeEach(func() {
-	//		})
-	//
-	//		Context("plain output", func() {
-	//			It("should work", func() {
-	//			})
-	//		})
-	//
-	//		Context("protobuf output", func() {
-	//			It("should work", func() {
-	//			})
-	//		})
-	//	})
-	//})
+	Describe("Kafka", func() {
+		var (
+			kafka      *Kafka
+			kafkaTopic = fmt.Sprintf("plumber-test-%d", rand.Int())
+		)
+
+		Describe("write", func() {
+			BeforeEach(func() {
+				var err error
+
+				kafka, err = newKafka(kafkaAddress, kafkaTopic)
+
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			Context("plain input, plain output", func() {
+				It("should work", func() {
+					randString := fmt.Sprintf("kafka-random-%d", rand.Int())
+
+					cmd := exec.Command(binary, "write", "kafka", "--address", kafkaAddress,
+						"--topic", kafkaTopic, "--input-data", randString)
+
+					_, err := cmd.CombinedOutput()
+
+					Expect(err).ToNot(HaveOccurred())
+
+					// Read message from kafka topic, verify it's set to randString
+					msg, err := kafka.Reader.ReadMessage(context.Background())
+					Expect(err).ToNot(HaveOccurred())
+
+					Expect(err).ToNot(HaveOccurred())
+					Expect(string(msg.Value)).To(Equal(randString))
+				})
+			})
+
+			Context("jsonpb input, protobuf output", func() {
+				It("should work", func() {
+					// We use "Outbound" here because it's simple
+					cmd := exec.Command(binary, "write", "kafka", "--address", kafkaAddress,
+						"--topic", kafkaTopic, "--input-type", "jsonpb", "--output-type", "protobuf",
+						"--input-file", sampleOutboundJSONPB, "--protobuf-dir", protoSchemasDir,
+						"--protobuf-root-message", "Outbound")
+
+					_, err := cmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					// Read message from kafka topic; verify it matches what we wrote
+					msg, err := kafka.Reader.ReadMessage(context.Background())
+					Expect(err).ToNot(HaveOccurred())
+
+					// Verify we wrote a valid protobuf message
+					outbound := &events.Outbound{}
+
+					err = proto.Unmarshal(msg.Value, outbound)
+
+					Expect(err).ToNot(HaveOccurred())
+
+					// Verify that the values are the same
+					jsonData, err := ioutil.ReadFile(sampleOutboundJSONPB)
+					Expect(err).ToNot(HaveOccurred())
+
+					jsonMap := make(map[string]string, 0)
+
+					err = json.Unmarshal(jsonData, &jsonMap)
+					Expect(err).ToNot(HaveOccurred())
+
+					Expect(outbound.ReplayId).To(Equal(jsonMap["replay_id"]))
+
+					// []byte is encoded as base64, so we have to encode it to
+					// verify against source JSON
+					encodedBlob := base64.StdEncoding.EncodeToString(outbound.Blob)
+
+					Expect(encodedBlob).To(Equal(jsonMap["blob"]))
+				})
+			})
+		})
+
+		Describe("read", func() {
+			var ()
+
+			BeforeEach(func() {
+			})
+
+			Context("plain output", func() {
+				It("should work", func() {
+				})
+			})
+
+			Context("protobuf output", func() {
+				It("should work", func() {
+				})
+			})
+		})
+	})
 
 	Describe("RabbitMQ", func() {
 		Describe("read/write", func() {

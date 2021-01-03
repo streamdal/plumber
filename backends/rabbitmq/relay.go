@@ -105,10 +105,11 @@ func (r *Relayer) Relay() error {
 		UseTLS:        r.Options.Rabbit.UseTLS,
 		SkipVerifyTLS: r.Options.Rabbit.SkipVerifyTLS,
 	})
-
 	if err != nil {
 		return errors.Wrap(err, "unable to initialize rabbitmq consumer")
 	}
+
+	defer rmq.Close()
 
 	ctx, cancel := context.WithCancel(context.Background())
 

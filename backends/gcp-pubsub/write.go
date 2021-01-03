@@ -38,6 +38,8 @@ func Write(opts *cli.Options) error {
 		return errors.Wrap(err, "unable to create client")
 	}
 
+	defer client.Close()
+
 	msg, err := writer.GenerateWriteValue(md, opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")

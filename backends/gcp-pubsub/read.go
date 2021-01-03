@@ -48,6 +48,8 @@ func Read(opts *cli.Options) error {
 }
 
 func (g *GCPPubSub) Read() error {
+	defer g.Client.Close()
+
 	g.log.Info("Listening for message(s) ...")
 
 	sub := g.Client.Subscription(g.Options.GCPPubSub.ReadSubscriptionId)

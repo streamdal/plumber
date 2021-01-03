@@ -51,6 +51,8 @@ func Read(opts *cli.Options) error {
 }
 
 func (m *MQTT) Read() error {
+	defer m.Client.Disconnect(0)
+
 	m.log.Infof("Listening for message(s) on topic '%s' as clientId '%s'",
 		m.Options.MQTT.Topic, m.Options.MQTT.ClientId)
 
@@ -74,10 +76,6 @@ func (m *MQTT) subscribe(wg *sync.WaitGroup, errChan chan error) {
 	lineNumber := 1
 
 	m.Client.Subscribe(m.Options.MQTT.Topic, 0, func(client mqtt.Client, msg mqtt.Message) {
-		if !m.Options.ReadFollow {
-			defer m.Client.Disconnect(0)
-		}
-
 		data, err := reader.Decode(m.Options, m.MsgDesc, msg.Payload())
 
 		if err != nil {
@@ -104,7 +102,6 @@ func (m *MQTT) subscribe(wg *sync.WaitGroup, errChan chan error) {
 
 			close(errChan)
 			wg.Done()
-			m.Client.Disconnect(0)
 		}
 	})
 }
