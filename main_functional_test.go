@@ -828,7 +828,6 @@ var _ = Describe("Functional", func() {
 type Kafka struct {
 	Dialer *skafka.Dialer
 	Conn   *skafka.Conn
-	Writer *skafka.Writer
 	Reader *skafka.Reader
 }
 
@@ -852,17 +851,15 @@ func newKafka(address, topic string) (*Kafka, error) {
 	return &Kafka{
 		Dialer: dialer,
 		Conn:   conn,
-		Writer: skafka.NewWriter(skafka.WriterConfig{
-			Brokers: []string{address},
-			Topic:   topic,
-			Dialer:  dialer,
-		}),
 		Reader: skafka.NewReader(skafka.ReaderConfig{
 			Brokers:          []string{address},
 			GroupID:          "plumber", // This MUST match the group id in the CLI (or else we'll receive unexpected messages)
 			Topic:            topic,
 			Dialer:           dialer,
 			RebalanceTimeout: 0,
+			MaxWait:          time.Millisecond * 50,
+			MaxBytes:         1048576,
+			QueueCapacity:    1,
 		}),
 	}, nil
 }
