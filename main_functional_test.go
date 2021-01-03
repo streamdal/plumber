@@ -858,10 +858,11 @@ func newKafka(address, topic string) (*Kafka, error) {
 			Dialer:  dialer,
 		}),
 		Reader: skafka.NewReader(skafka.ReaderConfig{
-			Brokers: []string{address},
-			GroupID: "plumber", // This MUST match the group id in the CLI (or else we'll receive unexpected messages)
-			Topic:   topic,
-			Dialer:  dialer,
+			Brokers:          []string{address},
+			GroupID:          "plumber", // This MUST match the group id in the CLI (or else we'll receive unexpected messages)
+			Topic:            topic,
+			Dialer:           dialer,
+			RebalanceTimeout: 0,
 		}),
 	}, nil
 }
