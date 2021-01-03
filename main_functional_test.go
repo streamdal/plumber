@@ -78,8 +78,11 @@ var _ = Describe("Functional", func() {
 				var err error
 
 				kafka, err = newKafka(kafkaAddress, kafkaTopic)
-
 				Expect(err).ToNot(HaveOccurred())
+			})
+
+			AfterEach(func() {
+				kafka.Reader.Close()
 			})
 
 			Context("plain input, plain output", func() {
@@ -93,10 +96,11 @@ var _ = Describe("Functional", func() {
 
 					Expect(err).ToNot(HaveOccurred())
 
-					// Read message from kafka topic, verify it's set to randString
-					msg, err := kafka.Reader.ReadMessage(context.Background())
-					Expect(err).ToNot(HaveOccurred())
+					ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+					defer cancel()
 
+					// Read message from kafka topic, verify it's set to randString
+					msg, err := kafka.Reader.ReadMessage(ctx)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(string(msg.Value)).To(Equal(randString))
 				})
@@ -113,8 +117,11 @@ var _ = Describe("Functional", func() {
 					_, err := cmd.CombinedOutput()
 					Expect(err).ToNot(HaveOccurred())
 
+					ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+					defer cancel()
+
 					// Read message from kafka topic; verify it matches what we wrote
-					msg, err := kafka.Reader.ReadMessage(context.Background())
+					msg, err := kafka.Reader.ReadMessage(ctx)
 					Expect(err).ToNot(HaveOccurred())
 
 					// Verify we wrote a valid protobuf message
