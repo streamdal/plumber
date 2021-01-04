@@ -169,7 +169,9 @@ func getAuthenticationMechanism(opts *cli.Options) (sasl.Mechanism, error) {
 func readPassword() (string, error) {
 	for {
 		fmt.Print("Enter Password: ")
-		password, err := terminal.ReadPassword(syscall.Stdin)
+
+		// int typecast is needed for windows
+		password, err := terminal.ReadPassword(int(syscall.Stdin))
 		if err != nil {
 			return "", errors.New("you must enter a password")
 		}
