@@ -19,7 +19,7 @@ require (
 	github.com/onsi/gomega v1.10.2
 	github.com/pkg/errors v0.9.1
 	github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d
-	github.com/segmentio/kafka-go v0.3.7
+	github.com/segmentio/kafka-go v0.4.8
 	github.com/sirupsen/logrus v1.7.0
 	github.com/streadway/amqp v1.0.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9

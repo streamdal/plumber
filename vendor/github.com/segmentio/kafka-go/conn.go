@@ -20,23 +20,6 @@ var (
 	errInvalidWritePartition = errors.New("writes must NOT set Partition on kafka.Message")
 )
 
-// Broker carries the metadata associated with a kafka broker.
-type Broker struct {
-	Host string
-	Port int
-	ID   int
-	Rack string
-}
-
-// Partition carries the metadata associated with a kafka partition.
-type Partition struct {
-	Topic    string
-	Leader   Broker
-	Replicas []Broker
-	Isr      []Broker
-	ID       int
-}
-
 // Conn represents a connection to a kafka broker.
 //
 // Instances of Conn are safe to use concurrently from multiple goroutines.
@@ -121,6 +104,14 @@ type ReadBatchConfig struct {
 	// ReadUncommitted makes all records visible. With ReadCommitted only
 	// non-transactional and committed records are visible.
 	IsolationLevel IsolationLevel
+
+	// MaxWait is the amount of time for the broker while waiting to hit the
+	// min/max byte targets.  This setting is independent of any network-level
+	// timeouts or deadlines.
+	//
+	// For backward compatibility, when this field is left zero, kafka-go will
+	// infer the max wait from the connection's read deadline.
+	MaxWait time.Duration
 }
 
 type IsolationLevel int8
@@ -790,7 +781,20 @@ func (c *Conn) ReadBatchWith(cfg ReadBatchConfig) *Batch {
 
 	id, err := c.doRequest(&c.rdeadline, func(deadline time.Time, id int32) error {
 		now := time.Now()
-		deadline = adjustDeadlineForRTT(deadline, now, defaultRTT)
+		var timeout time.Duration
+		if cfg.MaxWait > 0 {
+			// explicitly-configured case: no changes are made to the deadline,
+			// and the timeout is sent exactly as specified.
+			timeout = cfg.MaxWait
+		} else {
+			// default case: use the original logic to adjust the conn's
+			// deadline.T
+			deadline = adjustDeadlineForRTT(deadline, now, defaultRTT)
+			timeout = deadlineToTimeout(deadline, now)
+		}
+		// save this variable outside of the closure for later use in detecting
+		// truncated messages.
+		adjustedDeadline = deadline
 		switch fetchVersion {
 		case v10:
 			return c.wb.writeFetchRequestV10(
@@ -801,7 +805,7 @@ func (c *Conn) ReadBatchWith(cfg ReadBatchConfig) *Batch {
 				offset,
 				cfg.MinBytes,
 				cfg.MaxBytes+int(c.fetchMinSize),
-				deadlineToTimeout(deadline, now),
+				timeout,
 				int8(cfg.IsolationLevel),
 			)
 		case v5:
@@ -813,7 +817,7 @@ func (c *Conn) ReadBatchWith(cfg ReadBatchConfig) *Batch {
 				offset,
 				cfg.MinBytes,
 				cfg.MaxBytes+int(c.fetchMinSize),
-				deadlineToTimeout(deadline, now),
+				timeout,
 				int8(cfg.IsolationLevel),
 			)
 		default:
@@ -825,7 +829,7 @@ func (c *Conn) ReadBatchWith(cfg ReadBatchConfig) *Batch {
 				offset,
 				cfg.MinBytes,
 				cfg.MaxBytes+int(c.fetchMinSize),
-				deadlineToTimeout(deadline, now),
+				timeout,
 			)
 		}
 	})
@@ -869,7 +873,7 @@ func (c *Conn) ReadBatchWith(cfg ReadBatchConfig) *Batch {
 		conn:          c,
 		msgs:          msgs,
 		deadline:      adjustedDeadline,
-		throttle:      duration(throttle),
+		throttle:      makeDuration(throttle),
 		lock:          lock,
 		topic:         c.topic,          // topic is copied to Batch to prevent race with Batch.close
 		partition:     int(c.partition), // partition is copied to Batch to prevent race with Batch.close
@@ -1383,7 +1387,7 @@ func (c *Conn) ApiVersions() ([]ApiVersion, error) {
 
 	if deadline.deadline().IsZero() {
 		// ApiVersions is called automatically when API version negotiation
-		// needs to happen, so we are not garanteed that a read deadline has
+		// needs to happen, so we are not guaranteed that a read deadline has
 		// been set yet. Fallback to use the write deadline in case it was
 		// set, for example when version negotiation is initiated during a
 		// produce request.
