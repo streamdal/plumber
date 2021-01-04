@@ -12,5 +12,5 @@ func TestAPISuite(t *testing.T) {
 	logrus.SetLevel(logrus.FatalLevel)
 
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "RabbitMQ Test Suite")
+	RunSpecs(t, "Kafka Test Suite")
 }
