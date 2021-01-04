@@ -3,12 +3,19 @@ package kafka
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
+	"strings"
+	"syscall"
 	"time"
 
 	"github.com/jhump/protoreflect/desc"
 	skafka "github.com/segmentio/kafka-go"
+	"github.com/segmentio/kafka-go/sasl"
+	"github.com/segmentio/kafka-go/sasl/plain"
+	"github.com/segmentio/kafka-go/sasl/scram"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/batchcorp/plumber/cli"
 )
@@ -51,6 +58,14 @@ func NewReader(opts *cli.Options) (*KafkaReader, error) {
 		}
 	}
 
+	auth, err := getAuthenticationMechanism(opts)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
+			opts.Kafka.Address, err)
+	}
+
+	dialer.SASLMechanism = auth
+
 	// The dialer timeout does not get utilized under some conditions (such as
 	// when kafka is configured to NOT auto create topics) - we need a
 	// mechanism to bail out early.
@@ -90,6 +105,14 @@ func NewWriter(opts *cli.Options) (*KafkaWriter, error) {
 		}
 	}
 
+	auth, err := getAuthenticationMechanism(opts)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
+			opts.Kafka.Address, err)
+	}
+
+	dialer.SASLMechanism = auth
+
 	// The dialer timeout does not get utilized under some conditions (such as
 	// when kafka is configured to NOT auto create topics) - we need a
 	// mechanism to bail out early.
@@ -113,4 +136,49 @@ func NewWriter(opts *cli.Options) (*KafkaWriter, error) {
 		Writer: w,
 		Conn:   conn,
 	}, nil
+}
+
+// getAuthenticationMechanism returns the correct authentication config for use with kafka.Dialer if a username/password
+// is provided. If not, it will return nil
+func getAuthenticationMechanism(opts *cli.Options) (sasl.Mechanism, error) {
+	if opts.Kafka.Username == "" {
+		return nil, nil
+	}
+
+	// Username given, but no password. Prompt user for it
+	if opts.Kafka.Password == "" {
+		password, err := readPassword()
+		if err != nil {
+			return nil, err
+		}
+		opts.Kafka.Password = password
+	}
+
+	switch opts.Kafka.AuthenticationType {
+	case "scram":
+		return scram.Mechanism(scram.SHA512, opts.Kafka.Username, opts.Kafka.Password)
+	default:
+		return plain.Mechanism{
+			Username: opts.Kafka.Username,
+			Password: opts.Kafka.Password,
+		}, nil
+	}
+}
+
+// readPassword prompts the user for a password from stdin
+func readPassword() (string, error) {
+	for {
+		fmt.Print("Enter Password: ")
+		password, err := terminal.ReadPassword(syscall.Stdin)
+		if err != nil {
+			return "", errors.New("you must enter a password")
+		}
+
+		fmt.Println("")
+
+		sp := strings.TrimSpace(string(password))
+		if sp != "" {
+			return sp, nil
+		}
+	}
 }
