@@ -13,10 +13,13 @@ const (
 
 type KafkaOptions struct {
 	// Shared
-	Address     string
-	Topic       string
-	Timeout     time.Duration
-	InsecureTLS bool
+	Address            string
+	Topic              string
+	Timeout            time.Duration
+	InsecureTLS        bool
+	Username           string
+	Password           string
+	AuthenticationType string
 
 	// Read
 	ReadGroupId string
@@ -44,6 +47,10 @@ func addSharedKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("timeout", "Connect timeout").Default(KafkaDefaultConnectTimeout).
 		DurationVar(&opts.Kafka.Timeout)
 	cmd.Flag("insecure-tls", "Use insecure TLS").BoolVar(&opts.Kafka.InsecureTLS)
+	cmd.Flag("username", "SASL Username").StringVar(&opts.Kafka.Username)
+	cmd.Flag("password", "SASL Password. If omitted, you will be prompted for the password").StringVar(&opts.Kafka.Password)
+	cmd.Flag("auth-type", "SASL Authentication type (plain or scram)").Default("scram").StringVar(&opts.Kafka.AuthenticationType)
+
 }
 
 func addReadKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
