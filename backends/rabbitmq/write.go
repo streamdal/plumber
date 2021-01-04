@@ -32,10 +32,11 @@ func Write(opts *cli.Options) error {
 	}
 
 	r, err := New(opts, md)
-
 	if err != nil {
 		return errors.Wrap(err, "unable to initialize rabbitmq consumer")
 	}
+
+	defer r.Consumer.Close()
 
 	msg, err := writer.GenerateWriteValue(md, opts)
 	if err != nil {
