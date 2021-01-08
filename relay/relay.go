@@ -16,6 +16,7 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	sqsTypes "github.com/batchcorp/plumber/backends/aws-sqs/types"
+	kafkatypes "github.com/batchcorp/plumber/backends/kafka/types"
 	rabbitTypes "github.com/batchcorp/plumber/backends/rabbitmq/types"
 )
 
@@ -169,6 +170,9 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, ctx context.Context) {
 		case *rabbitTypes.RelayMessage:
 			r.log.Debugf("Run() received rabbit message %+v", v)
 			err = r.handleRabbit(ctx, conn, v)
+		case *kafkatypes.RelayMessage:
+			r.log.Debugf("Run() received kafka message %+v", v)
+			err = r.handleKafka(ctx, conn, v)
 		default:
 			r.log.WithField("type", v).Error("received unknown message type - skipping")
 			continue

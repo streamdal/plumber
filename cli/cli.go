@@ -94,7 +94,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	relayCmd := app.Command("relay", "Relay message(s) from messaging system to Batch")
 
 	HandleRelayFlags(relayCmd, opts)
-	HandleKafkaFlags(readCmd, writeCmd, opts)
+	HandleKafkaFlags(readCmd, writeCmd, relayCmd, opts)
 	HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
 	HandleGCPPubSubFlags(readCmd, writeCmd, opts)
 	HandleMQTTFlags(readCmd, writeCmd, opts)
@@ -173,7 +173,7 @@ func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
 func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
 	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs").
 		Envar("PLUMBER_RELAY_TYPE").
-		EnumVar(&opts.RelayType, "aws-sqs", "rabbit")
+		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka")
 
 	relayCmd.Flag("token", "Collection token to use when sending data to Batch").
 		Required().
