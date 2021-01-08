@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -93,13 +94,25 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	writeCmd := app.Command("write", "Write message(s) to messaging system")
 	relayCmd := app.Command("relay", "Relay message(s) from messaging system to Batch")
 
-	HandleRelayFlags(relayCmd, opts)
-	HandleKafkaFlags(readCmd, writeCmd, relayCmd, opts)
-	HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
-	HandleGCPPubSubFlags(readCmd, writeCmd, opts)
-	HandleMQTTFlags(readCmd, writeCmd, opts)
-	HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
-	HandleActiveMqFlags(readCmd, writeCmd, opts)
+	switch os.Getenv("PLUMBER_RELAY_TYPE") {
+	case "kafka":
+		HandleRelayFlags(relayCmd, opts)
+		HandleKafkaFlags(readCmd, writeCmd, relayCmd, opts)
+	case "rabbit":
+		HandleRelayFlags(relayCmd, opts)
+		HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
+	case "aws-sqs":
+		HandleRelayFlags(relayCmd, opts)
+		HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
+	default:
+		HandleRelayFlags(relayCmd, opts)
+		HandleKafkaFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleGCPPubSubFlags(readCmd, writeCmd, opts)
+		HandleMQTTFlags(readCmd, writeCmd, opts)
+		HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleActiveMqFlags(readCmd, writeCmd, opts)
+	}
 
 	HandleGlobalFlags(readCmd, opts)
 	HandleGlobalReadFlags(readCmd, opts)
