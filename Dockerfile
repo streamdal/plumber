@@ -23,5 +23,7 @@ RUN apk --update add bash curl ca-certificates && update-ca-certificates
 
 # Install binary
 COPY --from=builder /build/plumber-linux /plumber-linux
+COPY --from=builder /docker-entrypoint.sh /docker-entrypoint.sh
 
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["/plumber-linux", "relay"]
