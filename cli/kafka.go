@@ -54,7 +54,6 @@ func HandleKafkaFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Opti
 
 	addSharedKafkaFlags(rec, opts)
 	addReadKafkaFlags(rec, opts)
-	//addKafkaRelayFlags(rec, opts)
 }
 
 func addSharedKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
@@ -93,7 +92,3 @@ func addReadKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 func addWriteKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("key", "Key to write to kafka (not required)").StringVar(&opts.Kafka.WriteKey)
 }
-
-//func addKafkaRelayFlags(cmd *kingpin.CmdClause, opts *Options) {
-//
-//}

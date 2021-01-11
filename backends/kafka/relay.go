@@ -49,7 +49,7 @@ func Relay(opts *cli.Options) error {
 
 	grpcRelayer, err := relay.New(relayCfg)
 	if err != nil {
-		return errors.Wrap(err, "unable to create new gRPC replayer")
+		return errors.Wrap(err, "unable to create new gRPC relayer")
 	}
 
 	// Launch HTTP server
