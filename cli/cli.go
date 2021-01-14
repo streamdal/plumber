@@ -173,9 +173,12 @@ func HandleGlobalWriteFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("output-type", "Convert input to this type when writing message").
 		Default("plain").EnumVar(&opts.WriteOutputType, "plain", "protobuf")
 	cmd.Flag("protobuf-dir", "Directory with .proto files").
+		Envar("PLUMBER_RELAY_PROTOBUF_DIR").
 		ExistingDirsVar(&opts.WriteProtobufDirs)
 	cmd.Flag("protobuf-root-message", "Root message in a protobuf descriptor set "+
-		"(required if protobuf-dir set)").StringVar(&opts.WriteProtobufRootMessage)
+		"(required if protobuf-dir set)").
+		Envar("PLUMBER_RELAY_PROTOBUF_ROOT_MESSAGE").
+		StringVar(&opts.WriteProtobufRootMessage)
 }
 
 func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
