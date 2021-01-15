@@ -45,7 +45,7 @@ func Write(opts *cli.Options) error {
 		Service:  svc,
 		QueueURL: queueURL,
 		MsgDesc:  md,
-		log:      logrus.WithField("pkg", "awssqs/read.go"),
+		log:      logrus.WithField("pkg", "awssqs/write.go"),
 	}
 
 	msg, err := writer.GenerateWriteValue(md, opts)
