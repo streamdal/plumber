@@ -65,6 +65,7 @@ type Options struct {
 	MQTT      *MQTTOptions
 	AWSSQS    *AWSSQSOptions
 	ActiveMq  *ActiveMqOptions
+	Azure     *AzureServiceBusOptions
 }
 
 func Handle(cliArgs []string) (string, *Options, error) {
@@ -75,6 +76,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		MQTT:      &MQTTOptions{},
 		AWSSQS:    &AWSSQSOptions{WriteAttributes: make(map[string]string, 0)},
 		ActiveMq:  &ActiveMqOptions{},
+		Azure:     &AzureServiceBusOptions{},
 	}
 
 	app := kingpin.New("plumber", "`curl` for messaging systems. See: https://github.com/batchcorp/plumber")
@@ -112,6 +114,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleMQTTFlags(readCmd, writeCmd, opts)
 		HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleActiveMqFlags(readCmd, writeCmd, opts)
+		HandleAzureFlags(readCmd, writeCmd, relayCmd, opts)
 	}
 
 	HandleGlobalFlags(readCmd, opts)

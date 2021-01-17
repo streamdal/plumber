@@ -4,10 +4,12 @@
        * [AWS SQS](#aws-sqs)
        * [RabbitMQ](#rabbitmq)
        * [Kafka](#kafka)
+       * [Azure Service Bus](#azure-service-bus)
   * [Publishing](#publishing)
        * [AWS SQS](#aws-sqs-1)
        * [RabbitMQ](#rabbitmq-1)
        * [Kafka](#kafka-1)
+       * [Azure Service Bus](#azure-service-bus-1)
   * [Relay Mode](#relay-mode)
        * [Continuously relay messages from your RabbitMQ instance to a Batch.sh collection](#continuously-relay-messages-from-your-rabbitmq-instance-to-a-batchsh-collection)
        * [Continuously relay messages from an SQS queue to a Batch.sh collection](#continuously-relay-messages-from-an-sqs-queue-to-a-batchsh-collection)
@@ -66,6 +68,24 @@ Continuously read messages
 plumber read kafka --topic orders --address="some-machine.domain.com:9092" --follow
 ```
 
+##### Azure Service Bus
+
+Reading from a topic
+
+```bash
+export SERVICEBUS_CONNECTION_STRING="Endpoint=sb://plumbertopictest.servicebus.windows.net/;SharedAccessKeyName=...."
+
+plumber read azure --topic="new-orders" --subscription="copy-of-new-orders"
+```
+
+Reading from a queue
+
+```bash
+export SERVICEBUS_CONNECTION_STRING="Endpoint=sb://plumbertopictest.servicebus.windows.net/;SharedAccessKeyName=...."
+
+plumber read azure --queue "new-orders"
+```
+
 ## Publishing
 
 ##### AWS SQS
@@ -86,6 +106,23 @@ plumber write rabbit --address="aqmp://rabbit.yourdomain.net:5672" --exchange=Ne
 plumber write kafka --address="localhost:9092" --topic=neworders --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
+##### Azure Service Bus
+
+Publishing to a topic
+
+```bash
+export SERVICEBUS_CONNECTION_STRING="Endpoint=sb://plumbertopictest.servicebus.windows.net/;SharedAccessKeyName=...."
+
+plumber write azure --topic="new-orders" --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+```
+
+Publishing to a queue
+
+```bash
+exoirt SERVICEBUS_CONNECTION_STRING="Endpoint=sb://plumbertopictest.servicebus.windows.net/;SharedAccessKeyName=...."
+
+plumber write azure --queue="new-orders" --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+```
 
 ## Relay Mode
 
