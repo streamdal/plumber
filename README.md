@@ -129,6 +129,7 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 * Google Cloud Platform PubSub
 * MQTT
 * Amazon SQS
+* Amazon SNS (Publishing)
 * ActiveMQ
 * Azure Service Bus 
 * NATS (coming soon)

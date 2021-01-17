@@ -7,6 +7,7 @@
        * [Azure Service Bus](#azure-service-bus)
   * [Publishing](#publishing)
        * [AWS SQS](#aws-sqs-1)
+       * [AWS SNS](#aws-sns)
        * [RabbitMQ](#rabbitmq-1)
        * [Kafka](#kafka-1)
        * [Azure Service Bus](#azure-service-bus-1)
@@ -104,6 +105,12 @@ plumber write rabbit --address="aqmp://rabbit.yourdomain.net:5672" --exchange=Ne
 
 ```
 plumber write kafka --address="localhost:9092" --topic=neworders --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+```
+
+##### AWS SNS
+
+```bash
+plumber write aws-sns --topic="arn:aws:sns:us-east-2:123456789012:MyTopic" --input-data="A new is ready for processing!"
 ```
 
 ##### Azure Service Bus
