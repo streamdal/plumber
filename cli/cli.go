@@ -64,6 +64,7 @@ type Options struct {
 	GCPPubSub *GCPPubSubOptions
 	MQTT      *MQTTOptions
 	AWSSQS    *AWSSQSOptions
+	AWSSNS    *AWSSNSOptions
 	ActiveMq  *ActiveMqOptions
 	Azure     *AzureServiceBusOptions
 }
@@ -75,6 +76,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		GCPPubSub: &GCPPubSubOptions{},
 		MQTT:      &MQTTOptions{},
 		AWSSQS:    &AWSSQSOptions{WriteAttributes: make(map[string]string, 0)},
+		AWSSNS:    &AWSSNSOptions{},
 		ActiveMq:  &ActiveMqOptions{},
 		Azure:     &AzureServiceBusOptions{},
 	}
@@ -114,6 +116,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleMQTTFlags(readCmd, writeCmd, opts)
 		HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleActiveMqFlags(readCmd, writeCmd, opts)
+		HandleAWSSNSFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleAzureFlags(readCmd, writeCmd, relayCmd, opts)
 	}
 

@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/backends/activemq"
+	awssns "github.com/batchcorp/plumber/backends/aws-sns"
 	awssqs "github.com/batchcorp/plumber/backends/aws-sqs"
 	"github.com/batchcorp/plumber/backends/azure"
 	gcppubsub "github.com/batchcorp/plumber/backends/gcp-pubsub"
@@ -56,6 +57,8 @@ func main() {
 		err = awssqs.Write(opts)
 	case "write activemq":
 		err = activemq.Write(opts)
+	case "write aws-sns":
+		err = awssns.Write(opts)
 	case "write azure":
 		err = azure.Write(opts)
 
