@@ -130,6 +130,7 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 * MQTT
 * Amazon SQS
 * ActiveMQ
+* Azure Service Bus 
 * NATS (coming soon)
 * Redis (coming soon)
 

@@ -9,6 +9,7 @@ import (
 	"github.com/batchcorp/plumber/backends/activemq"
 	awssns "github.com/batchcorp/plumber/backends/aws-sns"
 	awssqs "github.com/batchcorp/plumber/backends/aws-sqs"
+	"github.com/batchcorp/plumber/backends/azure"
 	gcppubsub "github.com/batchcorp/plumber/backends/gcp-pubsub"
 	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/backends/mqtt"
@@ -40,6 +41,8 @@ func main() {
 		err = awssqs.Read(opts)
 	case "read activemq":
 		err = activemq.Read(opts)
+	case "read azure":
+		err = azure.Read(opts)
 
 	// Write
 	case "write rabbit":
@@ -56,6 +59,8 @@ func main() {
 		err = activemq.Write(opts)
 	case "write aws-sns":
 		err = awssns.Write(opts)
+	case "write azure":
+		err = azure.Write(opts)
 
 	// Relay (via CLI flags)
 	case "relay rabbit":

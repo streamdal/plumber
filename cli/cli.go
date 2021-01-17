@@ -66,6 +66,7 @@ type Options struct {
 	AWSSQS    *AWSSQSOptions
 	AWSSNS    *AWSSNSOptions
 	ActiveMq  *ActiveMqOptions
+	Azure     *AzureServiceBusOptions
 }
 
 func Handle(cliArgs []string) (string, *Options, error) {
@@ -77,6 +78,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		AWSSQS:    &AWSSQSOptions{WriteAttributes: make(map[string]string, 0)},
 		AWSSNS:    &AWSSNSOptions{},
 		ActiveMq:  &ActiveMqOptions{},
+		Azure:     &AzureServiceBusOptions{},
 	}
 
 	app := kingpin.New("plumber", "`curl` for messaging systems. See: https://github.com/batchcorp/plumber")
@@ -115,6 +117,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleActiveMqFlags(readCmd, writeCmd, opts)
 		HandleAWSSNSFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleAzureFlags(readCmd, writeCmd, relayCmd, opts)
 	}
 
 	HandleGlobalFlags(readCmd, opts)
@@ -176,9 +179,12 @@ func HandleGlobalWriteFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("output-type", "Convert input to this type when writing message").
 		Default("plain").EnumVar(&opts.WriteOutputType, "plain", "protobuf")
 	cmd.Flag("protobuf-dir", "Directory with .proto files").
+		Envar("PLUMBER_RELAY_PROTOBUF_DIR").
 		ExistingDirsVar(&opts.WriteProtobufDirs)
 	cmd.Flag("protobuf-root-message", "Root message in a protobuf descriptor set "+
-		"(required if protobuf-dir set)").StringVar(&opts.WriteProtobufRootMessage)
+		"(required if protobuf-dir set)").
+		Envar("PLUMBER_RELAY_PROTOBUF_ROOT_MESSAGE").
+		StringVar(&opts.WriteProtobufRootMessage)
 }
 
 func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {

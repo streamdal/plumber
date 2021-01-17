@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	cloud.google.com/go/pubsub v1.6.1
+	github.com/Azure/azure-service-bus-go v0.10.8
 	github.com/aws/aws-sdk-go v1.34.9
 	github.com/batchcorp/rabbit v0.1.9
 	github.com/batchcorp/schemas v0.2.26
@@ -22,7 +23,7 @@ require (
 	github.com/segmentio/kafka-go v0.4.8
 	github.com/sirupsen/logrus v1.7.0
 	github.com/streadway/amqp v1.0.0
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
 	google.golang.org/grpc v1.30.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )
