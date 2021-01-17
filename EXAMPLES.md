@@ -119,7 +119,7 @@ plumber write azure --topic="new-orders" --input-data="{\"order_id\": \"A-3458-6
 Publishing to a queue
 
 ```bash
-exoirt SERVICEBUS_CONNECTION_STRING="Endpoint=sb://plumbertopictest.servicebus.windows.net/;SharedAccessKeyName=...."
+export SERVICEBUS_CONNECTION_STRING="Endpoint=sb://plumbertopictest.servicebus.windows.net/;SharedAccessKeyName=...."
 
 plumber write azure --queue="new-orders" --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
