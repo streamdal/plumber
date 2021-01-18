@@ -132,7 +132,7 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 * Amazon SNS (Publishing)
 * ActiveMQ
 * Azure Service Bus 
-* NATS (coming soon)
+* NATS
 * Redis (coming soon)
 
 NOTE: If your messaging tech is not supported - submit an issue and we'll do

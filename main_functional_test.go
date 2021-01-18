@@ -193,7 +193,7 @@ var _ = Describe("Functional", func() {
 				It("should work", func() {
 					const testMessage string = "welovemessaging"
 
-					// First write the message to SQS
+					// First write the message to Rabbit
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -331,7 +331,7 @@ var _ = Describe("Functional", func() {
 			It("should work", func() {
 				const testMessage string = "{\"company\":\"Batch Corp\"}"
 
-				// First write the message to SQS
+				// First write the message to Rabbit
 				writeCmd := exec.Command(
 					binary,
 					"write",
@@ -679,7 +679,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 50)
 
-					// First write the message to SQS
+					// First write the message to MQTT
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -830,6 +830,174 @@ var _ = Describe("Functional", func() {
 			})
 		})
 	})
+
+	Describe("NATS", func() {
+
+		Describe("read/write", func() {
+			var topicName string
+
+			BeforeEach(func() {
+				topicName = fmt.Sprintf("FunctionalTestTopic%d", rand.Int())
+			})
+
+			Context("plain input and output", func() {
+				It("should work", func() {
+					const testMessage string = "welovemessaging"
+
+					capture := make(chan []byte)
+
+					// Start NATS reader command
+					go func() {
+						defer GinkgoRecover()
+
+						readCmd := exec.Command(
+							binary,
+							"read",
+							"nats",
+							"--subject", topicName,
+						)
+
+						readOutput, err := readCmd.CombinedOutput()
+						Expect(err).ToNot(HaveOccurred())
+						capture <- readOutput
+					}()
+
+					// Wait for reader to start up
+					time.Sleep(time.Millisecond * 100)
+
+					// Reader is ready, write the message to NATS
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"nats",
+						"--subject", topicName,
+						"--input-data", testMessage,
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					writeGot := string(writeOut[:])
+
+					writeWant := fmt.Sprintf("Successfully wrote message to '%s'", topicName)
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					output := <-capture
+					close(capture)
+
+					readGot := string(output[:])
+					Expect(readGot).To(ContainSubstring(testMessage))
+				})
+			})
+
+			Context("jsonpb input, protobuf output", func() {
+				It("should work", func() {
+
+					capture := make(chan []byte)
+
+					// Start NATS reader command
+					go func() {
+						defer GinkgoRecover()
+
+						readCmd := exec.Command(
+							binary,
+							"read",
+							"nats",
+							"--subject", topicName,
+						)
+
+						readOutput, err := readCmd.CombinedOutput()
+						Expect(err).ToNot(HaveOccurred())
+						capture <- readOutput
+					}()
+
+					// Wait for reader to start up
+					time.Sleep(time.Millisecond * 50)
+
+					// Reader is ready, write the message to NATS
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"nats",
+						"--subject", topicName,
+						"--input-type", "jsonpb",
+						"--output-type", "protobuf",
+						"--input-file", sampleOutboundJSONPB,
+						"--protobuf-dir", protoSchemasDir,
+						"--protobuf-root-message", "Outbound",
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					writeGot := string(writeOut[:])
+					writeWant := fmt.Sprintf("Successfully wrote message to '%s'", topicName)
+
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					output := <-capture
+					close(capture)
+
+					readGot := string(output[:])
+					Expect(readGot).To(ContainSubstring("30ddb850-1aca-4ee5-870c-1bb7b339ee5d"))
+					Expect(readGot).To(ContainSubstring("{\"hello\":\"dan\"}"))
+				})
+			})
+
+			Context("avro and json", func() {
+				It("should work", func() {
+					const testMessage string = "{\"company\":\"Batch Corp\"}"
+
+					capture := make(chan []byte)
+
+					// Start NATS reader command
+					go func() {
+						defer GinkgoRecover()
+
+						readCmd := exec.Command(
+							binary,
+							"read",
+							"nats",
+							"--subject", topicName,
+							"--avro-schema", "./test-assets/avro/test.avsc",
+						)
+
+						readOutput, err := readCmd.CombinedOutput()
+						Expect(err).ToNot(HaveOccurred())
+						capture <- readOutput
+					}()
+
+					// Wait for reader to start up
+					time.Sleep(time.Millisecond * 50)
+
+					// First write the message to NATS
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"nats",
+						"--subject", topicName,
+						"--input-data", testMessage,
+						"--avro-schema", "./test-assets/avro/test.avsc",
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					writeGot := string(writeOut[:])
+
+					writeWant := fmt.Sprintf("Successfully wrote message to '%s'", topicName)
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					output := <-capture
+					close(capture)
+
+					readGot := string(output[:])
+					Expect(readGot).To(ContainSubstring(testMessage))
+				})
+			})
+		})
+	})
+
 })
 
 type Kafka struct {
