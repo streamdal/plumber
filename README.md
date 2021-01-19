@@ -1,3 +1,5 @@
+<img src="https://github.com/batchcorp/plumber/blob/master/assets/gopher.png?raw=true" align="right" />
+
 plumber
 =======
 
