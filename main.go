@@ -13,6 +13,7 @@ import (
 	gcppubsub "github.com/batchcorp/plumber/backends/gcp-pubsub"
 	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/backends/mqtt"
+	"github.com/batchcorp/plumber/backends/nats"
 	"github.com/batchcorp/plumber/backends/rabbitmq"
 	"github.com/batchcorp/plumber/cli"
 )
@@ -43,6 +44,8 @@ func main() {
 		err = activemq.Read(opts)
 	case "read azure":
 		err = azure.Read(opts)
+	case "read nats":
+		err = nats.Read(opts)
 
 	// Write
 	case "write rabbit":
@@ -61,6 +64,8 @@ func main() {
 		err = awssns.Write(opts)
 	case "write azure":
 		err = azure.Write(opts)
+	case "write nats":
+		err = nats.Write(opts)
 
 	// Relay (via CLI flags)
 	case "relay rabbit":

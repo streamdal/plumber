@@ -67,6 +67,7 @@ type Options struct {
 	AWSSNS    *AWSSNSOptions
 	ActiveMq  *ActiveMqOptions
 	Azure     *AzureServiceBusOptions
+	Nats      *NatsOptions
 }
 
 func Handle(cliArgs []string) (string, *Options, error) {
@@ -79,6 +80,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		AWSSNS:    &AWSSNSOptions{},
 		ActiveMq:  &ActiveMqOptions{},
 		Azure:     &AzureServiceBusOptions{},
+		Nats:      &NatsOptions{},
 	}
 
 	app := kingpin.New("plumber", "`curl` for messaging systems. See: https://github.com/batchcorp/plumber")
@@ -118,6 +120,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleActiveMqFlags(readCmd, writeCmd, opts)
 		HandleAWSSNSFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleAzureFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleNatsFlags(readCmd, writeCmd, relayCmd, opts)
 	}
 
 	HandleGlobalFlags(readCmd, opts)

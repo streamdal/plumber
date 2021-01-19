@@ -5,12 +5,14 @@
        * [RabbitMQ](#rabbitmq)
        * [Kafka](#kafka)
        * [Azure Service Bus](#azure-service-bus)
+       * [NATS](#nats)
   * [Publishing](#publishing)
        * [AWS SQS](#aws-sqs-1)
        * [AWS SNS](#aws-sns)
        * [RabbitMQ](#rabbitmq-1)
        * [Kafka](#kafka-1)
        * [Azure Service Bus](#azure-service-bus-1)
+       * [NATS](#nats-1)
   * [Relay Mode](#relay-mode)
        * [Continuously relay messages from your RabbitMQ instance to a Batch.sh collection](#continuously-relay-messages-from-your-rabbitmq-instance-to-a-batchsh-collection)
        * [Continuously relay messages from an SQS queue to a Batch.sh collection](#continuously-relay-messages-from-an-sqs-queue-to-a-batchsh-collection)
@@ -87,6 +89,12 @@ export SERVICEBUS_CONNECTION_STRING="Endpoint=sb://plumbertopictest.servicebus.w
 plumber read azure --queue "new-orders"
 ```
 
+##### NATS
+
+```bash
+plumber read nats --address="nats://user:pass@nats.test.io:4222" --subject "test-subject"
+```
+
 ## Publishing
 
 ##### AWS SQS
@@ -129,6 +137,12 @@ Publishing to a queue
 export SERVICEBUS_CONNECTION_STRING="Endpoint=sb://plumbertopictest.servicebus.windows.net/;SharedAccessKeyName=...."
 
 plumber write azure --queue="new-orders" --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+```
+
+##### NATS
+
+```bash
+plumber write nats --address="nats://user:pass@nats.test.io:4222" --subject "test-subject" --input-data "Hello World"
 ```
 
 ## Relay Mode
