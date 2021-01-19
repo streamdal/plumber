@@ -133,7 +133,7 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 * ActiveMQ
 * Azure Service Bus 
 * NATS
-* Redis (coming soon)
+* Redis
 
 NOTE: If your messaging tech is not supported - submit an issue and we'll do
 our best to make it happen!

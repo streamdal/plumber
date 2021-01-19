@@ -6,6 +6,7 @@
        * [Kafka](#kafka)
        * [Azure Service Bus](#azure-service-bus)
        * [NATS](#nats)
+       * [Redis PubSub](#redis-pubsub)
   * [Publishing](#publishing)
        * [AWS SQS](#aws-sqs-1)
        * [AWS SNS](#aws-sns)
@@ -13,6 +14,7 @@
        * [Kafka](#kafka-1)
        * [Azure Service Bus](#azure-service-bus-1)
        * [NATS](#nats-1)
+       * [Redis PubSub](#redis-pubsub-1)
   * [Relay Mode](#relay-mode)
        * [Continuously relay messages from your RabbitMQ instance to a Batch.sh collection](#continuously-relay-messages-from-your-rabbitmq-instance-to-a-batchsh-collection)
        * [Continuously relay messages from an SQS queue to a Batch.sh collection](#continuously-relay-messages-from-an-sqs-queue-to-a-batchsh-collection)
@@ -95,6 +97,12 @@ plumber read azure --queue "new-orders"
 plumber read nats --address="nats://user:pass@nats.test.io:4222" --subject "test-subject"
 ```
 
+##### Redis PubSub
+
+```bash
+plumber read redis --address="localhost:6379" --channel="new-orders"
+```
+
 ## Publishing
 
 ##### AWS SQS
@@ -143,6 +151,12 @@ plumber write azure --queue="new-orders" --input-data="{\"order_id\": \"A-3458-6
 
 ```bash
 plumber write nats --address="nats://user:pass@nats.test.io:4222" --subject "test-subject" --input-data "Hello World"
+```
+
+##### Redis PubSub
+
+```bash
+plumber write redis --address="localhost:6379" --channel="new-orders" --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ## Relay Mode

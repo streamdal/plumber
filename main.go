@@ -15,6 +15,7 @@ import (
 	"github.com/batchcorp/plumber/backends/mqtt"
 	"github.com/batchcorp/plumber/backends/nats"
 	"github.com/batchcorp/plumber/backends/rabbitmq"
+	"github.com/batchcorp/plumber/backends/redis"
 	"github.com/batchcorp/plumber/cli"
 )
 
@@ -46,6 +47,8 @@ func main() {
 		err = azure.Read(opts)
 	case "read nats":
 		err = nats.Read(opts)
+	case "read redis":
+		err = redis.Read(opts)
 
 	// Write
 	case "write rabbit":
@@ -66,6 +69,8 @@ func main() {
 		err = azure.Write(opts)
 	case "write nats":
 		err = nats.Write(opts)
+	case "write redis":
+		err = redis.Write(opts)
 
 	// Relay (via CLI flags)
 	case "relay rabbit":

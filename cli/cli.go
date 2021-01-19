@@ -66,6 +66,7 @@ type Options struct {
 	AWSSQS    *AWSSQSOptions
 	AWSSNS    *AWSSNSOptions
 	ActiveMq  *ActiveMqOptions
+	Redis     *RedisOptions
 	Azure     *AzureServiceBusOptions
 	Nats      *NatsOptions
 }
@@ -79,6 +80,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		AWSSQS:    &AWSSQSOptions{WriteAttributes: make(map[string]string, 0)},
 		AWSSNS:    &AWSSNSOptions{},
 		ActiveMq:  &ActiveMqOptions{},
+		Redis:     &RedisOptions{},
 		Azure:     &AzureServiceBusOptions{},
 		Nats:      &NatsOptions{},
 	}
@@ -121,6 +123,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleAWSSNSFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleAzureFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleNatsFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleRedisFlags(readCmd, writeCmd, relayCmd, opts)
 	}
 
 	HandleGlobalFlags(readCmd, opts)
