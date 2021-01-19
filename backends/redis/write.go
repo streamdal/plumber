@@ -12,7 +12,7 @@ import (
 	"github.com/batchcorp/plumber/writer"
 )
 
-// Write is the entry point function for performing write operations in MQTT.
+// Write is the entry point function for performing write operations in Redis.
 //
 // This is where we verify that the passed args and flags combo makes sense,
 // attempt to establish a connection, parse protobuf before finally attempting
