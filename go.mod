@@ -9,6 +9,7 @@ require (
 	github.com/batchcorp/rabbit v0.1.9
 	github.com/batchcorp/schemas v0.2.26
 	github.com/eclipse/paho.mqtt.golang v1.2.0
+	github.com/go-redis/redis/v8 v8.4.8
 	github.com/go-stomp/stomp v2.0.6+incompatible
 	github.com/golang/protobuf v1.4.2
 	github.com/google/uuid v1.1.1
@@ -17,8 +18,8 @@ require (
 	github.com/linkedin/goavro/v2 v2.9.8
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/nats-io/nats.go v1.10.0
-	github.com/onsi/ginkgo v1.14.1
-	github.com/onsi/gomega v1.10.2
+	github.com/onsi/ginkgo v1.14.2
+	github.com/onsi/gomega v1.10.4
 	github.com/pkg/errors v0.9.1
 	github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d
 	github.com/segmentio/kafka-go v0.4.8

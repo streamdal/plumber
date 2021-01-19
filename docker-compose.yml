@@ -66,3 +66,9 @@ services:
     ports:
       - "4222:4222" # Client
       - "8222:8222" # Admin panel
+
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
