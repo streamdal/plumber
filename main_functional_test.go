@@ -1013,7 +1013,7 @@ var _ = Describe("Functional", func() {
 
 					capture := make(chan []byte)
 
-					// Start NATS reader command
+					// Start Redis reader command
 					go func() {
 						defer GinkgoRecover()
 
@@ -1032,7 +1032,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 100)
 
-					// Reader is ready, write the message to NATS
+					// Reader is ready, write the message to Redis
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -1062,7 +1062,7 @@ var _ = Describe("Functional", func() {
 
 					capture := make(chan []byte)
 
-					// Start NATS reader command
+					// Start Redis reader command
 					go func() {
 						defer GinkgoRecover()
 
@@ -1081,7 +1081,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 50)
 
-					// Reader is ready, write the message to NATS
+					// Reader is ready, write the message to Redis
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -1117,7 +1117,7 @@ var _ = Describe("Functional", func() {
 
 					capture := make(chan []byte)
 
-					// Start NATS reader command
+					// Start Redis reader command
 					go func() {
 						defer GinkgoRecover()
 
@@ -1137,7 +1137,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 50)
 
-					// First write the message to NATS
+					// First write the message to Redis
 					writeCmd := exec.Command(
 						binary,
 						"write",
