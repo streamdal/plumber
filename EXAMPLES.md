@@ -18,6 +18,8 @@
   * [Relay Mode](#relay-mode)
        * [Continuously relay messages from your RabbitMQ instance to a Batch.sh collection](#continuously-relay-messages-from-your-rabbitmq-instance-to-a-batchsh-collection)
        * [Continuously relay messages from an SQS queue to a Batch.sh collection](#continuously-relay-messages-from-an-sqs-queue-to-a-batchsh-collection)
+       * [Continuously relay messages from an Azure queue to a Batch.sh collection](#continuously-relay-messages-from-an-azure-queue-to-a-batchsh-collection)
+       * [Continuously relay messages from an Azure topic to a Batch.sh collection](#continuously-relay-messages-from-an-azure-topic-to-a-batchsh-collection)
   * [Advanced Usage](#advanced-usage)
        * [Decoding protobuf encoded messages and viewing them live](#decoding-protobuf-encoded-messages-and-viewing-them-live)
 
@@ -177,8 +179,8 @@ $ docker run --name plumber-rabbit -p 8080:8080 \
 
 ##### Continuously relay messages from an SQS queue to a Batch.sh collection
 
-```
-$ docker run -d --name plumber-sqs -p 8080:8080 \
+```bash
+docker run -d --name plumber-sqs -p 8080:8080 \
     -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
     -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
     -e PLUMBER_RELAY_SQS_QUEUE_NAME=TestQueue \
@@ -186,6 +188,30 @@ $ docker run -d --name plumber-sqs -p 8080:8080 \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
     batchcorp/plumber 
 ```
+
+##### Continuously relay messages from an Azure queue to a Batch.sh collection
+
+```bash
+docker run -d --name plumber-azure -p 8080:8080 \
+    -e SERVICEBUS_CONNECTION_STRING="Endpoint=sb://mybus.servicebus.windows.net/;SharedAccessKeyName..."
+    -e PLUMBER_RELAY_AZURE_QUEUE_NAME=neworders \
+    -e PLUMBER_RELAY_TYPE=azure \
+    -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
+    batchcorp/plumber 
+```
+
+##### Continuously relay messages from an Azure topic to a Batch.sh collection
+
+```bash
+docker run -d --name plumber-azure -p 8080:8080 \
+    -e SERVICEBUS_CONNECTION_STRING="Endpoint=sb://mybus.servicebus.windows.net/;SharedAccessKeyName..."
+    -e PLUMBER_RELAY_AZURE_TOPIC_NAME=neworders \
+    -e PLUMBER_RELAY_AZURE_SUBSCRIPTION=some-sub \
+    -e PLUMBER_RELAY_TYPE=azure \
+    -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
+    batchcorp/plumber 
+```
+
 
 ## Advanced Usage
 
