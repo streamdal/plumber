@@ -91,11 +91,13 @@ github.com/aws/aws-sdk-go/service/sts/stsiface
 # github.com/batchcorp/rabbit v0.1.9
 ## explicit
 github.com/batchcorp/rabbit
-# github.com/batchcorp/schemas v0.2.26
+# github.com/batchcorp/schemas v0.2.100
 ## explicit
 github.com/batchcorp/schemas/build/go/events
 github.com/batchcorp/schemas/build/go/events/destinations
+github.com/batchcorp/schemas/build/go/events/metrics
 github.com/batchcorp/schemas/build/go/events/records
+github.com/batchcorp/schemas/build/go/events/tasks
 github.com/batchcorp/schemas/build/go/services
 # github.com/cespare/xxhash/v2 v2.1.1
 github.com/cespare/xxhash/v2

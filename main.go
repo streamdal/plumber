@@ -83,6 +83,8 @@ func main() {
 		err = mqtt.Relay(opts)
 	case "relay aws-sqs":
 		err = awssqs.Relay(opts)
+	case "relay azure":
+		err = azure.Relay(opts)
 
 	// Relay (via env vars)
 	case "relay":
@@ -111,6 +113,8 @@ func ProcessRelayFlags(opts *cli.Options) error {
 		err = awssqs.Relay(opts)
 	case "rabbit":
 		err = rabbitmq.Relay(opts)
+	case "azure":
+		err = azure.Relay(opts)
 	default:
 		err = fmt.Errorf("unsupported messaging system '%s'", opts.RelayType)
 	}

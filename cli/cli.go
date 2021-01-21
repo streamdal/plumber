@@ -112,6 +112,9 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	case "aws-sqs":
 		HandleRelayFlags(relayCmd, opts)
 		HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
+	case "azure":
+		HandleRelayFlags(relayCmd, opts)
+		HandleAzureFlags(readCmd, writeCmd, relayCmd, opts)
 	default:
 		HandleRelayFlags(relayCmd, opts)
 		HandleKafkaFlags(readCmd, writeCmd, relayCmd, opts)
@@ -199,9 +202,9 @@ func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
 }
 
 func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
-	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs").
+	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs, azure").
 		Envar("PLUMBER_RELAY_TYPE").
-		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka")
+		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka", "azure")
 
 	relayCmd.Flag("token", "Collection token to use when sending data to Batch").
 		Required().
