@@ -19,8 +19,8 @@ type Relayer struct {
 	MsgDesc        *desc.MessageDescriptor
 	RelayCh        chan interface{}
 	log            *logrus.Entry
-	Service        *servicebus.Queue
-	QueueName      string
+	Queue          *servicebus.Queue
+	Topic          *servicebus.Topic
 	DefaultContext context.Context
 }
 
@@ -47,11 +47,6 @@ func Relay(opts *cli.Options) error {
 		return errors.Wrap(err, "unable to create new azure service")
 	}
 
-	queue, err := client.NewQueue(opts.Azure.Queue)
-	if err != nil {
-		return err
-	}
-
 	// Launch HTTP server
 	go func() {
 		if err := api.Start(opts.RelayHTTPListenAddress, opts.Version); err != nil {
@@ -65,26 +60,87 @@ func Relay(opts *cli.Options) error {
 	}
 
 	r := &Relayer{
-		Service:   queue,
-		QueueName: opts.Azure.Queue,
-		Options:   opts,
-		RelayCh:   relayCfg.RelayCh,
-		log:       logrus.WithField("pkg", "azure/relay.go"),
+		Options: opts,
+		RelayCh: relayCfg.RelayCh,
+		log:     logrus.WithField("pkg", "azure/relay.go"),
+	}
+
+	if opts.Azure.Queue != "" {
+		queue, err := client.NewQueue(opts.Azure.Queue)
+		if err != nil {
+			return errors.Wrap(err, "unable to create new azure service bus queue client")
+		}
+
+		r.Queue = queue
+	} else {
+		topic, err := client.NewTopic(opts.Azure.Topic)
+		if err != nil {
+			return errors.Wrap(err, "unable to create new azure service bus topic client")
+		}
+
+		r.Topic = topic
 	}
 
 	return r.Relay()
 }
 
+// readQueue reads messages from an ASB queue
+func (r *Relayer) readQueue(ctx context.Context, handler servicebus.HandlerFunc) error {
+	defer r.Queue.Close(ctx)
+	for {
+		if err := r.Queue.ReceiveOne(ctx, handler); err != nil {
+			return err
+		}
+	}
+}
+
+// readTopic reads messages from an ASB topic using the given subscription name
+func (r *Relayer) readTopic(ctx context.Context, handler servicebus.HandlerFunc) error {
+	sub, err := r.Topic.NewSubscription(r.Options.Azure.Subscription)
+	if err != nil {
+		return errors.Wrap(err, "unable to create topic subscription")
+	}
+
+	defer sub.Close(ctx)
+
+	for {
+		if err := sub.ReceiveOne(ctx, handler); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (r *Relayer) Relay() error {
 	ctx := context.Background()
-	defer r.Service.Close(ctx)
-	r.log.Infof("Relaying azure service bus messages from '%s' queue -> '%s'",
-		r.Options.Azure.Queue, r.Options.RelayGRPCAddress)
+
+	if r.Queue != nil {
+		r.log.Infof("Relaying azure service bus messages from '%s' queue -> '%s'",
+			r.Options.Azure.Queue, r.Options.RelayGRPCAddress)
+	} else {
+		r.log.Infof("Relaying azure service bus messages from '%s' topic -> '%s'",
+			r.Options.Azure.Topic, r.Options.RelayGRPCAddress)
+	}
 
 	r.log.Infof("HTTP server listening on '%s'", r.Options.RelayHTTPListenAddress)
 
 	var handler servicebus.HandlerFunc = func(ctx context.Context, msg *servicebus.Message) error {
 		r.log.Debug("Writing message to relay channel")
+
+		// This might be nil if no user properties were sent with the original message
+		if msg.UserProperties == nil {
+			msg.UserProperties = make(map[string]interface{}, 0)
+		}
+
+		// Azure's Message struct does not include this information for some reason
+		// Seems like it would be good to have. Prefixed with plumber to avoid collisions with user data
+		if r.Queue != nil {
+			msg.UserProperties["plumber_queue"] = r.Options.Azure.Queue
+		} else {
+			msg.UserProperties["plumber_topic"] = r.Options.Azure.Topic
+			msg.UserProperties["plumber_subscription"] = r.Options.Azure.Subscription
+		}
 
 		r.RelayCh <- &types.RelayMessage{
 			Value: msg,
@@ -94,11 +150,11 @@ func (r *Relayer) Relay() error {
 		return nil
 	}
 
-	for {
-		if err := r.Service.ReceiveOne(ctx, handler); err != nil {
-			return err
-		}
+	if r.Queue != nil {
+		return r.readQueue(ctx, handler)
 	}
+
+	return r.readTopic(ctx, handler)
 
 	return nil
 }
