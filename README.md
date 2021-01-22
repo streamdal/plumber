@@ -84,7 +84,7 @@ quotes or use `input-file`.
 
 
 #### See [EXAMPLES.md](https://github.com/batchcorp/plumber/blob/master/EXAMPLES.md) for more usage examples
-
+#### See [ENV.md](https://github.com/batchcorp/plumber/blob/master/ENV.md) for list of supported environment variables
 
 ## Getting Help
 

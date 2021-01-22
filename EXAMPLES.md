@@ -18,6 +18,7 @@
   * [Relay Mode](#relay-mode)
        * [Continuously relay messages from your RabbitMQ instance to a Batch.sh collection](#continuously-relay-messages-from-your-rabbitmq-instance-to-a-batchsh-collection)
        * [Continuously relay messages from an SQS queue to a Batch.sh collection](#continuously-relay-messages-from-an-sqs-queue-to-a-batchsh-collection)
+       * [Continuously relay messages from a Kafka topic (on Confluent) to a Batch.sh collection (via CLI)](#continuously-relay-messages-from-a-kafka-topic-on-confluent-to-a-batchsh-collection-via-cli)
   * [Advanced Usage](#advanced-usage)
        * [Decoding protobuf encoded messages and viewing them live](#decoding-protobuf-encoded-messages-and-viewing-them-live)
 
@@ -185,6 +186,21 @@ $ docker run -d --name plumber-sqs -p 8080:8080 \
     -e PLUMBER_RELAY_TYPE=aws-sqs \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
     batchcorp/plumber 
+```
+
+#### Continuously relay messages from a Kafka topic (on Confluent) to a Batch.sh collection (via CLI)
+
+```
+export PLUMBER_RELAY_TYPE="kafka"
+export PLUMBER_RELAY_TOKEN="$YOUR-BATCHSH-TOKEN-HERE"
+export PLUMBER_RELAY_KAFKA_ADDRESS="pkc-4kgmg.us-west-2.aws.confluent.cloud:9092"
+export PLUMBER_RELAY_KAFKA_TOPIC="$YOUR_TOPIC"
+export PLUMBER_RELAY_KAFKA_INSECURE_TLS="true"
+export PLUMBER_RELAY_KAFKA_USERNAME="$YOUR_CONFLUENT_API_KEY"
+export PLUMBER_RELAY_KAFKA_PASSWORD="$YOUR_CONFLUENT_API_SECRET"
+export PLUMBER_RELAY_KAFKA_SASL_TYPE="plain"
+
+$ plumber relay
 ```
 
 ## Advanced Usage

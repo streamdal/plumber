@@ -95,7 +95,7 @@ func addReadRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Envar("PLUMBER_RELAY_RABBIT_AUTOACK").
 		Default("true").
 		BoolVar(&opts.Rabbit.ReadAutoAck)
-	cmd.Flag("queue-declare", "Wether to declare the specified queue to create it").
+	cmd.Flag("queue-declare", "Whether to declare the specified queue to create it").
 		Envar("PLUMBER_RELAY_RABBIT_QUEUE_DECLARE").
 		Default("true").
 		BoolVar(&opts.Rabbit.ReadQueueDeclare)
