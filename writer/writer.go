@@ -106,6 +106,10 @@ func ValidateWriteOptions(opts *cli.Options, busSpecific func(options *cli.Optio
 		}
 	}
 
+	if opts.WriteInputData == "" && opts.WriteInputFile == "" {
+		return errors.New("either --input-data or --input-file must be specified")
+	}
+
 	// InputData and file cannot be set at the same time
 	if opts.WriteInputData != "" && opts.WriteInputFile != "" {
 		return fmt.Errorf("--value and --file cannot both be set")
