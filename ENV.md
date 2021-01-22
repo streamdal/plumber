@@ -68,3 +68,12 @@ Environment Variables
 * `PLUMBER_RELAY_KAFKA_SASL_TYPE` to `plain`
 * Use API key for `PLUMBER_RELAY_KAFKA_USERNAME`
 * Use API secret for `PLUMBER_RELAY_KAFKA_PASSWORD`
+
+## Azure Message Bus
+
+| Environment Variable  | Description | Default |
+| --------------------- | ------------| ------- |
+| `SERVICEBUS_CONNECTION_STRING`      | Full connection string used to access azure message bus queue or topic | **REQUIRED** |
+| `PLUMBER_RELAY_AZURE_QUEUE_NAME`    | Queue name to read from. (*Must specify this or topic name*)|  |
+| `PLUMBER_RELAY_AZURE_TOPIC_NAME`    | Topic name to read from. (*Must specify this or queue name*) |  |
+| `PLUMBER_RELAY_AZURE_SUBSCRIPTION`  | Topic's Subscription name to read from | **REQUIRED if topic is specified** |
