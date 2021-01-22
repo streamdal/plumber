@@ -87,6 +87,12 @@ github.com/batchcorp/schemas v0.2.99 h1:X+wGmpj5CtjVh+XyfRbHY0WRkUEVzUHjFncMTEbp
 github.com/batchcorp/schemas v0.2.99/go.mod h1:R6rjH3b0egODh995q5qwGAfQ5fssAPeDf82gTGZS6d4=
 github.com/batchcorp/schemas v0.2.100 h1:aCt/k2/lyU/1Gyl09GqHsLwaYEjR3PdFBCKwDwFGIe8=
 github.com/batchcorp/schemas v0.2.100/go.mod h1:R6rjH3b0egODh995q5qwGAfQ5fssAPeDf82gTGZS6d4=
+github.com/batchcorp/schemas v0.2.102 h1:kwSz/yToV2mjGUJFbGjTmJ5AG+VKaBBj9Dse4gxHUiA=
+github.com/batchcorp/schemas v0.2.102/go.mod h1:R6rjH3b0egODh995q5qwGAfQ5fssAPeDf82gTGZS6d4=
+github.com/batchcorp/schemas v0.2.103 h1:AHMXTNKvjOXbKNUnZJ4n3zYbMXzWv9+F0AFi059J8BM=
+github.com/batchcorp/schemas v0.2.103/go.mod h1:R6rjH3b0egODh995q5qwGAfQ5fssAPeDf82gTGZS6d4=
+github.com/batchcorp/schemas v0.2.104 h1:/PXdSSlEJKMeMAgbEKRrTyFmUpb/U0OA3iT4eMjkbQU=
+github.com/batchcorp/schemas v0.2.104/go.mod h1:R6rjH3b0egODh995q5qwGAfQ5fssAPeDf82gTGZS6d4=
 github.com/batchcorp/schemas/util/publish v0.0.0-20200622021112-903044310a85/go.mod h1:zD8BqPOqqGw2wWhGrJx8CguDKKuOPGo1TXOuz5b4OR4=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/cespare/xxhash/v2 v2.1.1 h1:6MnRN8NT7+YBpUIWxHtefFZOKTAPgGjpQSxqLNn0+qY=

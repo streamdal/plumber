@@ -63,7 +63,7 @@ func Relay(opts *cli.Options) error {
 		QueueURL: queueURL,
 		Options:  opts,
 		RelayCh:  relayCfg.RelayCh,
-		log:      logrus.WithField("pkg", "awsqs/relay"),
+		log:      logrus.WithField("pkg", "aws-sqs/relay"),
 	}
 
 	return r.Relay()

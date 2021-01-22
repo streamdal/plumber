@@ -17,6 +17,7 @@ import (
 
 	sqsTypes "github.com/batchcorp/plumber/backends/aws-sqs/types"
 	azureTypes "github.com/batchcorp/plumber/backends/azure/types"
+	gcpTypes "github.com/batchcorp/plumber/backends/gcp-pubsub/types"
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
 	rabbitTypes "github.com/batchcorp/plumber/backends/rabbitmq/types"
 )
@@ -177,6 +178,9 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, ctx context.Context) {
 		case *azureTypes.RelayMessage:
 			r.log.Debugf("Run() received azure message %+v", v)
 			err = r.handleAzure(ctx, conn, v)
+		case *gcpTypes.RelayMessage:
+			r.log.Debugf("Run() received GCP pubsub message %+v", v)
+			err = r.handleGCP(ctx, conn, v)
 		default:
 			r.log.WithField("type", v).Error("received unknown message type - skipping")
 			continue

@@ -15,7 +15,7 @@ import (
 
 func (r *Relay) handleAzure(ctx context.Context, conn *grpc.ClientConn, msg *types.RelayMessage) error {
 	if err := r.validateAzureRelayMessage(msg); err != nil {
-		return errors.Wrap(err, "unable to validate RabbitMQ relay message")
+		return errors.Wrap(err, "unable to validate Azure relay message")
 	}
 
 	azureRecord := convertAzureMessageToProtobufRecord(msg.Value)
