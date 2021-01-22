@@ -3,13 +3,13 @@ package kafka
 import (
 	"context"
 	"crypto/tls"
-	"errors"
 	"fmt"
 	"strings"
 	"syscall"
 	"time"
 
 	"github.com/jhump/protoreflect/desc"
+	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/sasl"
 	"github.com/segmentio/kafka-go/sasl/plain"
@@ -49,7 +49,8 @@ type KafkaWriter struct {
 
 func NewReader(opts *cli.Options) (*KafkaReader, error) {
 	dialer := &skafka.Dialer{
-		Timeout: opts.Kafka.Timeout,
+		DualStack: true,
+		Timeout:   opts.Kafka.Timeout,
 	}
 
 	if opts.Kafka.InsecureTLS {
@@ -60,8 +61,7 @@ func NewReader(opts *cli.Options) (*KafkaReader, error) {
 
 	auth, err := getAuthenticationMechanism(opts)
 	if err != nil {
-		return nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
-			opts.Kafka.Address, err)
+		return nil, errors.Wrap(err, "unable to get authentication mechanism")
 	}
 
 	dialer.SASLMechanism = auth
@@ -72,20 +72,22 @@ func NewReader(opts *cli.Options) (*KafkaReader, error) {
 	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(opts.Kafka.Timeout))
 
 	// Attempt to establish connection on startup
-	conn, err := dialer.DialLeader(ctxDeadline, "tcp", opts.Kafka.Address, opts.Kafka.Topic, 0)
+	conn, err := dialer.DialContext(ctxDeadline, "tcp", opts.Kafka.Address)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
 			opts.Kafka.Address, err)
 	}
 
 	r := skafka.NewReader(skafka.ReaderConfig{
-		Brokers:       []string{opts.Kafka.Address},
-		GroupID:       opts.Kafka.ReadGroupId,
-		Topic:         opts.Kafka.Topic,
-		Dialer:        dialer,
-		MaxWait:       DefaultMaxWait,
-		MaxBytes:      DefaultMaxBytes,
-		QueueCapacity: 1,
+		Brokers:          []string{opts.Kafka.Address},
+		GroupID:          opts.Kafka.ReadGroupId,
+		Topic:            opts.Kafka.Topic,
+		Dialer:           dialer,
+		MaxWait:          opts.Kafka.MaxWait,
+		MinBytes:         opts.Kafka.MinBytes,
+		MaxBytes:         opts.Kafka.MaxBytes,
+		QueueCapacity:    opts.Kafka.QueueCapacity,
+		RebalanceTimeout: opts.Kafka.RebalanceTimeout,
 	})
 
 	return &KafkaReader{

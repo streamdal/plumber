@@ -8,8 +8,13 @@ import (
 )
 
 const (
-	KafkaDefaultConnectTimeout = "10s"
-	KafkaDefaultGroupId        = "plumber"
+	KafkaDefaultConnectTimeout   = "10s"
+	KafkaDefaultGroupId          = "plumber"
+	KafkaDefaultMaxWait          = "1s"
+	KafkaDefaultMinBytes         = "1"
+	KafkaDefaultMaxBytes         = "1"
+	KafkaDefaultQueueCapacity    = "1"
+	KafkaDefaultRebalanceTimeout = "0"
 )
 
 type KafkaOptions struct {
@@ -23,7 +28,12 @@ type KafkaOptions struct {
 	AuthenticationType string
 
 	// Read
-	ReadGroupId string
+	ReadGroupId      string
+	MaxWait          time.Duration
+	MinBytes         int
+	MaxBytes         int
+	QueueCapacity    int
+	RebalanceTimeout time.Duration
 
 	// Write
 	WriteKey string
@@ -81,12 +91,27 @@ func addSharedKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Default("scram").
 		Envar("PLUMBER_RELAY_KAFKA_SASL_TYPE").
 		StringVar(&opts.Kafka.AuthenticationType)
-
 }
 
 func addReadKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("group-id", "Specify a specific group-id to use when reading from kafka").
+		Envar("PLUMBER_RELAY_GROUP_ID").
 		Default(KafkaDefaultGroupId).StringVar(&opts.Kafka.ReadGroupId)
+	cmd.Flag("max-wait", "How long to wait for new data when reading batches of messages").
+		Envar("PLUMBER_RELAY_MAX_WAIT").
+		Default(KafkaDefaultMaxWait).DurationVar(&opts.Kafka.MaxWait)
+	cmd.Flag("min-bytes", "Minimum number of bytes to fetch in a single kafka request (throughput optimization)").
+		Envar("PLUMBER_RELAY_MIN_BYTES").
+		Default(KafkaDefaultMinBytes).IntVar(&opts.Kafka.MinBytes)
+	cmd.Flag("max-bytes", "Maximum number of bytes to fetch in a single kafka request (throughput optimization)").
+		Envar("PLUMBER_RELAY_MAX_BYTES").
+		Default(KafkaDefaultMaxBytes).IntVar(&opts.Kafka.MaxBytes)
+	cmd.Flag("queue-capacity", "Internal queue capacity").
+		Envar("PLUMBER_RELAY_QUEUE_CAPACITY").
+		Default(KafkaDefaultQueueCapacity).IntVar(&opts.Kafka.QueueCapacity)
+	cmd.Flag("rebalance-timeout", "How long a coordinator will wait for member joins as part of a rebalance").
+		Envar("PLUMBER_RELAY_REBALANCE_TIMEOUT").
+		Default(KafkaDefaultRebalanceTimeout).DurationVar(&opts.Kafka.RebalanceTimeout)
 }
 
 func addWriteKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
