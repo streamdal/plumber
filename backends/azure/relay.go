@@ -155,6 +155,4 @@ func (r *Relayer) Relay() error {
 	}
 
 	return r.readTopic(ctx, handler)
-
-	return nil
 }

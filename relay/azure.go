@@ -2,7 +2,6 @@ package relay
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	servicebus "github.com/Azure/azure-service-bus-go"
@@ -26,7 +25,7 @@ func (r *Relay) handleAzure(ctx context.Context, conn *grpc.ClientConn, msg *typ
 	if _, err := client.AddAzureRecord(ctx, &services.AzureRecordRequest{
 		Records: []*records.AzureSinkRecord{azureRecord},
 	}); err != nil {
-		fmt.Printf("%+v", azureRecord)
+		r.log.Debugf("%+v", azureRecord)
 		return errors.Wrap(err, "unable to complete AddAzureRecord call")
 	}
 	r.log.Debug("successfully handled azure queue message")
