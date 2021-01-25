@@ -1,6 +1,10 @@
 package cli
 
-import "gopkg.in/alecthomas/kingpin.v2"
+import (
+	"os"
+
+	"gopkg.in/alecthomas/kingpin.v2"
+)
 
 type GCPPubSubOptions struct {
 	// Shared
@@ -14,7 +18,7 @@ type GCPPubSubOptions struct {
 	WriteTopicId string
 }
 
-func HandleGCPPubSubFlags(readCmd, writeCmd *kingpin.CmdClause, opts *Options) {
+func HandleGCPPubSubFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Options) {
 	// GCP PubSub read cmd
 	rc := readCmd.Command("gcp-pubsub", "GCP PubSub message system")
 
@@ -26,15 +30,37 @@ func HandleGCPPubSubFlags(readCmd, writeCmd *kingpin.CmdClause, opts *Options) {
 
 	addSharedGCPPubSubFlags(wc, opts)
 	addWriteGCPPubSubFlags(wc, opts)
+
+	// If PLUMBER_RELAY_TYPE is set, use env vars, otherwise use CLI flags
+	relayType := os.Getenv("PLUMBER_RELAY_TYPE")
+
+	var rec *kingpin.CmdClause
+
+	if relayType != "" {
+		rec = relayCmd
+	} else {
+		rec = relayCmd.Command("gcp-pubsub", "GCP PubSub message system")
+	}
+
+	addSharedGCPPubSubFlags(rec, opts)
+	addReadGCPPubSubFlags(rec, opts)
 }
 
 func addSharedGCPPubSubFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("project-id", "Project Id").Required().StringVar(&opts.GCPPubSub.ProjectId)
+	cmd.Flag("project-id", "Project Id").
+		Required().
+		Envar("PLUMBER_RELAY_GCP_PROJECT_ID").
+		StringVar(&opts.GCPPubSub.ProjectId)
 }
 
 func addReadGCPPubSubFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("sub-id", "Subscription Id").Required().StringVar(&opts.GCPPubSub.ReadSubscriptionId)
-	cmd.Flag("ack", "Whether to acknowledge message receive").Default("true").
+	cmd.Flag("sub-id", "Subscription Id").
+		Required().
+		Envar("PLUMBER_RELAY_GCP_SUBSCRIPTION_ID").
+		StringVar(&opts.GCPPubSub.ReadSubscriptionId)
+	cmd.Flag("ack", "Whether to acknowledge message receive").
+		Default("true").
+		Envar("PLUMBER_RELAY_GCP_ACK_MESSAGE").
 		BoolVar(&opts.GCPPubSub.ReadAck)
 }
 

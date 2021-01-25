@@ -115,11 +115,14 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	case "azure":
 		HandleRelayFlags(relayCmd, opts)
 		HandleAzureFlags(readCmd, writeCmd, relayCmd, opts)
+	case "gcp-pubsup":
+		HandleRelayFlags(relayCmd, opts)
+		HandleGCPPubSubFlags(readCmd, writeCmd, relayCmd, opts)
 	default:
 		HandleRelayFlags(relayCmd, opts)
 		HandleKafkaFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleGCPPubSubFlags(readCmd, writeCmd, opts)
+		HandleGCPPubSubFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleMQTTFlags(readCmd, writeCmd, opts)
 		HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleActiveMqFlags(readCmd, writeCmd, opts)
@@ -202,9 +205,9 @@ func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
 }
 
 func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
-	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs, azure").
+	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs, azure, gcp-pubsub").
 		Envar("PLUMBER_RELAY_TYPE").
-		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka", "azure")
+		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka", "azure", "gcp-pubsub")
 
 	relayCmd.Flag("token", "Collection token to use when sending data to Batch").
 		Required().
