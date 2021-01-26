@@ -29,6 +29,10 @@ func main() {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 
+	if opts.Quiet {
+		logrus.SetLevel(logrus.ErrorLevel)
+	}
+
 	switch cmd {
 	// Read
 	case "read rabbit":
