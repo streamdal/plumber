@@ -16,7 +16,7 @@ const (
 	DefaultGRPCAddress         = "grpc-collector.batch.sh:9000"
 	DefaultHTTPListenAddress   = ":8080"
 	DefaultGRPCTimeout         = "10s"
-	DefaultNumWorkers          = "10"
+	DefaultNumWorkers          = "20"
 	DefaultStatsReportInterval = "5s"
 )
 

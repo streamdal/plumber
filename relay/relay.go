@@ -25,6 +25,9 @@ import (
 
 const (
 	DefaultNumWorkers = 10
+
+	QueueFlushInterval = 10 * time.Second
+	MaxQueueSize       = 100 // number of messages to batch
 )
 
 type Relay struct {
@@ -159,11 +162,45 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, ctx context.Context) {
 
 	llog.Debug("Relayer started")
 
-	// TODO: Add batching support (this can wait until v2+)
+	queue := make([]interface{}, 0)
+
+	// This functions as an escape-vale -- if we are pumping messages *REALLY*
+	// fast - we will hit max queue size; if we are pumping messages slowly,
+	// the ticker will be hit and the queue will be flushed, regardless of size.
+	flushTicker := time.NewTicker(QueueFlushInterval)
 
 	for {
-		msg := <-r.Config.RelayCh
+		select {
+		case msg := <-r.Config.RelayCh:
+			queue = append(queue, msg)
 
+			// Max queue size reached
+			if len(queue) > MaxQueueSize {
+				r.log.Debugf("%d: max queue size reached - flushing!", id)
+
+				go r.flush(ctx, conn, queue...)
+
+				// Reset queue; since we passed by variadic, the underlying slice can be updated
+				queue = make([]interface{}, 0)
+
+				// Reset ticker (so time-based flush doesn't occur)
+				flushTicker.Reset(QueueFlushInterval)
+			}
+		case <-flushTicker.C:
+			if len(queue) != 0 {
+				r.log.Debugf("%d: flush ticker hit and queue not empty - flushing!", id)
+
+				go r.flush(ctx, conn, queue...)
+
+				// Reset queue; same as above - safe to delete queue contents
+				queue = make([]interface{}, 0)
+			}
+		}
+	}
+}
+
+func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...interface{}) {
+	for _, msg := range messages {
 		var err error
 
 		switch v := msg.(type) {
