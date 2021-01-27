@@ -13,10 +13,11 @@ import (
 )
 
 const (
-	DefaultGRPCAddress       = "grpc-collector.batch.sh:9000"
-	DefaultHTTPListenAddress = ":8080"
-	DefaultGRPCTimeout       = "10s"
-	DefaultNumWorkers        = "10"
+	DefaultGRPCAddress         = "grpc-collector.batch.sh:9000"
+	DefaultHTTPListenAddress   = ":8080"
+	DefaultGRPCTimeout         = "10s"
+	DefaultNumWorkers          = "10"
+	DefaultStatsReportInterval = "10s"
 )
 
 var (
@@ -25,11 +26,13 @@ var (
 
 type Options struct {
 	// Global
-	Debug   bool
-	Quiet   bool
-	Action  string
-	Version string
-	Backend string
+	Debug               bool
+	Quiet               bool
+	Stats               bool
+	StatsReportInterval time.Duration
+	Action              string
+	Version             string
+	Backend             string
 
 	// Serializers
 	AvroSchemaFile string
@@ -96,6 +99,15 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	app.Flag("quiet", "Suppress non-essential output").
 		Short('q').
 		BoolVar(&opts.Quiet)
+
+	app.Flag("stats", "Display periodic read/write/relay stats").
+		Envar("PLUMBER_STATS").
+		BoolVar(&opts.Stats)
+
+	app.Flag("stats-report-interval", "Display periodic read/write/relay stats").
+		Envar("PLUMBER_STATS_REPORT_INTERVAL").
+		Default(DefaultStatsReportInterval).
+		DurationVar(&opts.StatsReportInterval)
 
 	// Specific actions
 	readCmd := app.Command("read", "Read message(s) from messaging system")

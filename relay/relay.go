@@ -20,6 +20,7 @@ import (
 	gcpTypes "github.com/batchcorp/plumber/backends/gcp-pubsub/types"
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
 	rabbitTypes "github.com/batchcorp/plumber/backends/rabbitmq/types"
+	"github.com/batchcorp/plumber/stats"
 )
 
 const (
@@ -190,5 +191,7 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, ctx context.Context) {
 			r.log.WithField("err", err).Error("unable to handle message")
 			continue
 		}
+
+		stats.Incr("kafka-relay-producer", 1)
 	}
 }

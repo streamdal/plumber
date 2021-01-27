@@ -12,6 +12,7 @@ import (
 	"github.com/batchcorp/plumber/backends/kafka/types"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
+	"github.com/batchcorp/plumber/stats"
 )
 
 type Relayer struct {
@@ -102,7 +103,11 @@ func (r *Relayer) Relay() error {
 			r.log.Errorf("Unable to read message: %s", err)
 			continue
 		}
-		r.log.Infof("Writing Kafka message to relay channel: %s", msg.Value)
+
+		stats.Incr("kafka-relay-consumer", 1)
+
+		r.log.Debugf("Writing Kafka message to relay channel: %s", msg.Value)
+
 		r.RelayCh <- &types.RelayMessage{
 			Value:   &msg,
 			Options: &types.RelayMessageOptions{},

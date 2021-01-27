@@ -17,6 +17,7 @@ import (
 	"github.com/batchcorp/plumber/backends/rabbitmq"
 	"github.com/batchcorp/plumber/backends/redis"
 	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/stats"
 )
 
 func main() {
@@ -31,6 +32,10 @@ func main() {
 
 	if opts.Quiet {
 		logrus.SetLevel(logrus.ErrorLevel)
+	}
+
+	if opts.Stats {
+		stats.Start(opts.StatsReportInterval)
 	}
 
 	switch cmd {

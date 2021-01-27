@@ -2,3 +2,4 @@
 /build
 .DS*
 test-assets/backend-data/*
+start-replay.sh
