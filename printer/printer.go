@@ -15,3 +15,11 @@ func Error(str string) {
 func Print(str string) {
 	fmt.Printf("%s\n", str)
 }
+
+func PrintLogo() {
+	logo := `
+█▀█ █   █ █ █▀▄▀█ █▄▄ █▀▀ █▀█
+█▀▀ █▄▄ █▄█ █ ▀ █ █▄█ ██▄ █▀▄`
+
+	fmt.Println(logo)
+}

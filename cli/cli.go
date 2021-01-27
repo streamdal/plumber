@@ -17,7 +17,7 @@ const (
 	DefaultHTTPListenAddress   = ":8080"
 	DefaultGRPCTimeout         = "10s"
 	DefaultNumWorkers          = "10"
-	DefaultStatsReportInterval = "10s"
+	DefaultStatsReportInterval = "5s"
 )
 
 var (
