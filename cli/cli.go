@@ -16,8 +16,9 @@ const (
 	DefaultGRPCAddress         = "grpc-collector.batch.sh:9000"
 	DefaultHTTPListenAddress   = ":8080"
 	DefaultGRPCTimeout         = "10s"
-	DefaultNumWorkers          = "20"
+	DefaultNumWorkers          = "10"
 	DefaultStatsReportInterval = "5s"
+	DefaultBatchSize           = "10"
 )
 
 var (
@@ -45,6 +46,7 @@ type Options struct {
 	RelayNumWorkers        int
 	RelayGRPCTimeout       time.Duration
 	RelayGRPCDisableTLS    bool
+	RelayBatchSize         int
 
 	// Shared read flags
 	ReadProtobufRootMessage string
@@ -250,6 +252,11 @@ func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
 		Default(DefaultHTTPListenAddress).
 		Envar("PLUMBER_RELAY_HTTP_LISTEN_ADDRESS").
 		StringVar(&opts.RelayHTTPListenAddress)
+
+	relayCmd.Flag("batch-size", "How many messages to batch before sending them to grpc-collector").
+		Default(DefaultBatchSize).
+		Envar("PLUMBER_RELAY_BATCH_SIZE").
+		IntVar(&opts.RelayBatchSize)
 }
 
 func ValidateProtobufOptions(dirs []string, rootMessage string) error {

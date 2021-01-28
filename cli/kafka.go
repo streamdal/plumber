@@ -19,11 +19,12 @@ const (
 	DefaultKafkaRebalanceTimeout = "0"
 
 	// Optimize for throughput + reliability
-	DefaultKafkaRelayMaxWait          = "1s"
-	DefaultKafkaRelayMinBytes         = "1"
-	DefaultKafkaRelayMaxBytes         = "1"
-	DefaultKafkaRelayQueueCapacity    = "1"
-	DefaultKafkaRelayRebalanceTimeout = "0"
+	DefaultKafkaRelayMaxWait          = "5s"
+	DefaultKafkaRelayMinBytes         = "1048576" // 1MB
+	DefaultKafkaRelayMaxBytes         = "1048576" // 1MB
+	DefaultKafkaRelayQueueCapacity    = "1000"
+	DefaultKafkaRelayRebalanceTimeout = "5s"
+	DefaultKafkaRelayCommitInterval   = "5s"
 )
 
 type KafkaOptions struct {
@@ -43,6 +44,7 @@ type KafkaOptions struct {
 	MaxBytes         int
 	QueueCapacity    int
 	RebalanceTimeout time.Duration
+	CommitInterval   time.Duration
 
 	// Write
 	WriteKey string
@@ -141,6 +143,10 @@ func addReadKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Envar("PLUMBER_RELAY_REBALANCE_TIMEOUT").
 		Default(defaultRebalanceTimeout).
 		DurationVar(&opts.Kafka.RebalanceTimeout)
+	cmd.Flag("commit-interval", "How often to commit offsets to broker (0 = synchronous)").
+		Envar("PLUMBER_RELAY_COMMIT_INTERVAL").
+		Default(DefaultKafkaRelayCommitInterval).
+		DurationVar(&opts.Kafka.CommitInterval)
 }
 
 func addWriteKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {

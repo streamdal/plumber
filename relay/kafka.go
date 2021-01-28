@@ -2,12 +2,12 @@ package relay
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/batchcorp/schemas/build/go/events/records"
 	"github.com/batchcorp/schemas/build/go/services"
 	"github.com/pkg/errors"
-	"github.com/segmentio/kafka-go"
 	"google.golang.org/grpc"
 
 	"github.com/batchcorp/plumber/backends/kafka/types"
@@ -19,22 +19,23 @@ var (
 )
 
 // handleKafka sends a Kafka relay message to the GRPC server
-func (r *Relay) handleKafka(ctx context.Context, conn *grpc.ClientConn, msg *types.RelayMessage) error {
-	if err := r.validateKafkaRelayMessage(msg); err != nil {
-		return errors.Wrap(err, "unable to validate kafka relay message")
+func (r *Relay) handleKafka(ctx context.Context, conn *grpc.ClientConn, messages []interface{}) error {
+	sinkRecords, err := r.convertMessagesToKafkaSinkRecords(messages)
+	if err != nil {
+		return fmt.Errorf("unable to convert messages to kafka sink records: %s", err)
 	}
-
-	kafkaRecord := convertKafkaMessageToProtobufRecord(msg.Value)
 
 	client := services.NewGRPCCollectorClient(conn)
 
 	if _, err := client.AddKafkaRecord(ctx, &services.KafkaSinkRecordRequest{
-		Records: []*records.KafkaSinkRecord{kafkaRecord},
+		Records: sinkRecords,
 	}); err != nil {
-		r.log.Errorf("%+v", kafkaRecord)
-		return errors.Wrap(err, "unable to complete AddKafkaRecord call")
+		return fmt.Errorf("unable to push '%d' kafka sink records to grpc-collector: %s",
+			len(messages), err)
 	}
-	r.log.Debug("successfully handled kafka message")
+
+	r.log.Debugf("successfully handled '%d' kafka message", len(messages))
+
 	return nil
 }
 
@@ -53,13 +54,28 @@ func (r *Relay) validateKafkaRelayMessage(msg *types.RelayMessage) error {
 
 // convertKafkaMessageToProtobufRecord creates a records.KafkaSinkRecord from a kafka.Message which can then
 // be sent to the GRPC server
-func convertKafkaMessageToProtobufRecord(msg *kafka.Message) *records.KafkaSinkRecord {
-	return &records.KafkaSinkRecord{
-		Topic:     msg.Topic,
-		Key:       msg.Key,
-		Value:     msg.Value,
-		Timestamp: time.Now().UTC().UnixNano(),
-		Offset:    msg.Offset,
-		Partition: int32(msg.Partition),
+func (r *Relay) convertMessagesToKafkaSinkRecords(messages []interface{}) ([]*records.KafkaSinkRecord, error) {
+	sinkRecords := make([]*records.KafkaSinkRecord, 0)
+
+	for i, v := range messages {
+		kafkaRelayMessage, ok := v.(*types.RelayMessage)
+		if !ok {
+			return nil, fmt.Errorf("unable to type assert incoming message as RelayMessage (index: %d)", i)
+		}
+
+		if err := r.validateKafkaRelayMessage(kafkaRelayMessage); err != nil {
+			return nil, fmt.Errorf("unable to validate kafka relay message (index: %d): %s", i, err)
+		}
+
+		sinkRecords = append(sinkRecords, &records.KafkaSinkRecord{
+			Topic:     kafkaRelayMessage.Value.Topic,
+			Key:       kafkaRelayMessage.Value.Key,
+			Value:     kafkaRelayMessage.Value.Value,
+			Timestamp: time.Now().UTC().UnixNano(),
+			Offset:    kafkaRelayMessage.Value.Offset,
+			Partition: int32(kafkaRelayMessage.Value.Partition),
+		})
 	}
+
+	return sinkRecords, nil
 }

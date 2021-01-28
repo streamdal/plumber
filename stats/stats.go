@@ -12,16 +12,15 @@ import (
 var (
 	ReportInterval = 10 * time.Second
 
-	looper   director.Looper
-	mutex    *sync.Mutex
-	counters map[string]int
+	mutex    = &sync.Mutex{}
+	counters = make(map[string]int, 0)
+
+	looper director.Looper
 )
 
 func Start(reportInterval time.Duration) {
 	ReportInterval = reportInterval
 	looper = director.NewTimedLooper(director.FOREVER, ReportInterval, make(chan error, 1))
-	mutex = &sync.Mutex{}
-	counters = make(map[string]int, 0)
 
 	logrus.Debug("Launching stats reporter")
 

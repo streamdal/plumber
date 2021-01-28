@@ -27,7 +27,7 @@ const (
 	DefaultNumWorkers = 10
 
 	QueueFlushInterval = 10 * time.Second
-	MaxQueueSize       = 100 // number of messages to batch
+	DefaultBatchSize   = 100 // number of messages to batch
 )
 
 type Relay struct {
@@ -39,6 +39,7 @@ type Config struct {
 	Token       string
 	GRPCAddress string
 	NumWorkers  int
+	BatchSize   int
 	RelayCh     chan interface{}
 	DisableTLS  bool
 	Timeout     time.Duration // general grpc timeout (used for all grpc calls)
@@ -85,6 +86,10 @@ func validateConfig(cfg *Config) error {
 	if cfg.NumWorkers <= 0 {
 		logrus.Warningf("NumWorkers cannot be <= 0 - setting to default '%d'", DefaultNumWorkers)
 		cfg.NumWorkers = DefaultNumWorkers
+	}
+
+	if cfg.BatchSize == 0 {
+		cfg.BatchSize = DefaultBatchSize
 	}
 
 	return nil
@@ -175,10 +180,10 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, ctx context.Context) {
 			queue = append(queue, msg)
 
 			// Max queue size reached
-			if len(queue) > MaxQueueSize {
+			if len(queue) >= r.Config.BatchSize {
 				r.log.Debugf("%d: max queue size reached - flushing!", id)
 
-				go r.flush(ctx, conn, queue...)
+				r.flush(ctx, conn, queue...)
 
 				// Reset queue; since we passed by variadic, the underlying slice can be updated
 				queue = make([]interface{}, 0)
@@ -190,7 +195,7 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, ctx context.Context) {
 			if len(queue) != 0 {
 				r.log.Debugf("%d: flush ticker hit and queue not empty - flushing!", id)
 
-				go r.flush(ctx, conn, queue...)
+				r.flush(ctx, conn, queue...)
 
 				// Reset queue; same as above - safe to delete queue contents
 				queue = make([]interface{}, 0)
@@ -200,35 +205,41 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, ctx context.Context) {
 }
 
 func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...interface{}) {
-	for _, msg := range messages {
-		var err error
-
-		switch v := msg.(type) {
-		case *sqsTypes.RelayMessage:
-			r.log.Debugf("Run() received AWS SQS message %+v", v)
-			err = r.handleSQS(ctx, conn, v)
-		case *rabbitTypes.RelayMessage:
-			r.log.Debugf("Run() received rabbit message %+v", v)
-			err = r.handleRabbit(ctx, conn, v)
-		case *kafkaTypes.RelayMessage:
-			r.log.Debugf("Run() received kafka message %+v", v)
-			err = r.handleKafka(ctx, conn, v)
-		case *azureTypes.RelayMessage:
-			r.log.Debugf("Run() received azure message %+v", v)
-			err = r.handleAzure(ctx, conn, v)
-		case *gcpTypes.RelayMessage:
-			r.log.Debugf("Run() received GCP pubsub message %+v", v)
-			err = r.handleGCP(ctx, conn, v)
-		default:
-			r.log.WithField("type", v).Error("received unknown message type - skipping")
-			continue
-		}
-
-		if err != nil {
-			r.log.WithField("err", err).Error("unable to handle message")
-			continue
-		}
-
-		stats.Incr("kafka-relay-producer", 1)
+	if len(messages) < 1 {
+		r.log.Error("asked to flush empty message queue - bug?")
+		return
 	}
+
+	// We only care about the first message since plumber can only be using
+	// one message bus type at a time
+
+	var err error
+
+	switch v := messages[0].(type) {
+	case *sqsTypes.RelayMessage:
+		r.log.Debugf("Run() received AWS SQS message %+v", v)
+		err = r.handleSQS(ctx, conn, v)
+	case *rabbitTypes.RelayMessage:
+		r.log.Debugf("Run() received rabbit message %+v", v)
+		err = r.handleRabbit(ctx, conn, v)
+	case *kafkaTypes.RelayMessage:
+		r.log.Debugf("Run() received kafka message %+v", v)
+		err = r.handleKafka(ctx, conn, messages)
+	case *azureTypes.RelayMessage:
+		r.log.Debugf("Run() received azure message %+v", v)
+		err = r.handleAzure(ctx, conn, v)
+	case *gcpTypes.RelayMessage:
+		r.log.Debugf("Run() received GCP pubsub message %+v", v)
+		err = r.handleGCP(ctx, conn, v)
+	default:
+		r.log.WithField("type", v).Error("received unknown message type - skipping")
+		return
+	}
+
+	if err != nil {
+		r.log.WithField("err", err).Error("unable to handle message")
+		return
+	}
+
+	stats.Incr("kafka-relay-producer", len(messages))
 }
