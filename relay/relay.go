@@ -214,22 +214,28 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	// one message bus type at a time
 
 	var err error
+	var relayType string
 
 	switch v := messages[0].(type) {
 	case *sqsTypes.RelayMessage:
 		r.log.Debugf("Run() received AWS SQS message %+v", v)
+		relayType = "sqs"
 		err = r.handleSQS(ctx, conn, v)
 	case *rabbitTypes.RelayMessage:
 		r.log.Debugf("Run() received rabbit message %+v", v)
-		err = r.handleRabbit(ctx, conn, v)
+		relayType = "rabbit"
+		err = r.handleRabbit(ctx, conn, messages)
 	case *kafkaTypes.RelayMessage:
 		r.log.Debugf("Run() received kafka message %+v", v)
+		relayType = "kafka"
 		err = r.handleKafka(ctx, conn, messages)
 	case *azureTypes.RelayMessage:
 		r.log.Debugf("Run() received azure message %+v", v)
+		relayType = "azure"
 		err = r.handleAzure(ctx, conn, v)
 	case *gcpTypes.RelayMessage:
 		r.log.Debugf("Run() received GCP pubsub message %+v", v)
+		relayType = "gcp"
 		err = r.handleGCP(ctx, conn, v)
 	default:
 		r.log.WithField("type", v).Error("received unknown message type - skipping")
@@ -241,5 +247,5 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 		return
 	}
 
-	stats.Incr("kafka-relay-producer", len(messages))
+	stats.Incr(relayType+"-relay-producer", len(messages))
 }

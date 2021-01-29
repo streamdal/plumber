@@ -2,9 +2,9 @@ package relay
 
 import (
 	"context"
+	"fmt"
 	"time"
 
-	servicebus "github.com/Azure/azure-service-bus-go"
 	"github.com/batchcorp/schemas/build/go/events/records"
 	"github.com/batchcorp/schemas/build/go/services"
 	"github.com/pkg/errors"
@@ -13,22 +13,22 @@ import (
 	"github.com/batchcorp/plumber/backends/azure/types"
 )
 
-func (r *Relay) handleAzure(ctx context.Context, conn *grpc.ClientConn, msg *types.RelayMessage) error {
-	if err := r.validateAzureRelayMessage(msg); err != nil {
-		return errors.Wrap(err, "unable to validate Azure relay message")
+func (r *Relay) handleAzure(ctx context.Context, conn *grpc.ClientConn, messages []interface{}) error {
+	sinkRecords, err := r.convertMessagesToAzureSinkRecords(messages)
+	if err != nil {
+		return fmt.Errorf("unable to convert messages to kafka sink records: %s", err)
 	}
-
-	azureRecord := convertAzureMessageToProtobufRecord(msg.Value)
 
 	client := services.NewGRPCCollectorClient(conn)
 
 	if _, err := client.AddAzureRecord(ctx, &services.AzureRecordRequest{
-		Records: []*records.AzureSinkRecord{azureRecord},
+		Records: sinkRecords,
 	}); err != nil {
-		r.log.Debugf("%+v", azureRecord)
 		return errors.Wrap(err, "unable to complete AddAzureRecord call")
 	}
+
 	r.log.Debug("successfully handled azure queue message")
+
 	return nil
 }
 
@@ -90,39 +90,54 @@ func derefInt64(i *int64) int64 {
 	return 0
 }
 
-func convertAzureMessageToProtobufRecord(msg *servicebus.Message) *records.AzureSinkRecord {
-	r := &records.AzureSinkRecord{
-		ContentType:    msg.ContentType,
-		CorrelationId:  msg.CorrelationID,
-		Data:           msg.Data,
-		DeliveryCount:  msg.DeliveryCount,
-		SessionId:      *msg.SessionID,
-		GroupSequence:  *msg.GroupSequence,
-		Id:             msg.ID,
-		Label:          msg.Label,
-		ReplyTo:        msg.ReplyTo,
-		ReplyToGroupId: msg.ReplyToGroupID,
-		To:             msg.To,
-		Ttl:            msg.TTL.Nanoseconds(),
-		LockToken:      msg.LockToken.String(),
-		UserProperties: convertMapStringInterface(msg.UserProperties),
-		Format:         0,
-	}
+func (r *Relay) convertMessagesToAzureSinkRecords(messages []interface{}) ([]*records.AzureSinkRecord, error) {
+	sinkRecords := make([]*records.AzureSinkRecord, 0)
 
-	if msg.SystemProperties != nil {
-		r.SystemProperties = &records.AzureSystemProperties{
-			LockedUntil:            derefTime(msg.SystemProperties.LockedUntil),
-			SequenceNumber:         derefInt64(msg.SystemProperties.SequenceNumber),
-			PartitionId:            int32(derefInt16(msg.SystemProperties.PartitionID)),
-			PartitionKey:           derefString(msg.SystemProperties.PartitionKey),
-			EnqueuedTime:           derefTime(msg.SystemProperties.EnqueuedTime),
-			DeadLetterSource:       derefString(msg.SystemProperties.DeadLetterSource),
-			ScheduledEnqueueTime:   derefTime(msg.SystemProperties.ScheduledEnqueueTime),
-			EnqueuedSequenceNumber: derefInt64(msg.SystemProperties.EnqueuedSequenceNumber),
-			ViaPartitionKey:        derefString(msg.SystemProperties.ViaPartitionKey),
-			Annotations:            convertMapStringInterface(msg.SystemProperties.Annotations),
+	for i, v := range messages {
+		relayMessage, ok := v.(*types.RelayMessage)
+		if !ok {
+			return nil, fmt.Errorf("unable to type assert incoming message as RelayMessage (index: %d)", i)
 		}
+
+		if err := r.validateAzureRelayMessage(relayMessage); err != nil {
+			return nil, fmt.Errorf("unable to validate azure relay message (index: %d): %s", i, err)
+		}
+
+		r := &records.AzureSinkRecord{
+			ContentType:    relayMessage.Value.ContentType,
+			CorrelationId:  relayMessage.Value.CorrelationID,
+			Data:           relayMessage.Value.Data,
+			DeliveryCount:  relayMessage.Value.DeliveryCount,
+			SessionId:      *relayMessage.Value.SessionID,
+			GroupSequence:  *relayMessage.Value.GroupSequence,
+			Id:             relayMessage.Value.ID,
+			Label:          relayMessage.Value.Label,
+			ReplyTo:        relayMessage.Value.ReplyTo,
+			ReplyToGroupId: relayMessage.Value.ReplyToGroupID,
+			To:             relayMessage.Value.To,
+			Ttl:            relayMessage.Value.TTL.Nanoseconds(),
+			LockToken:      relayMessage.Value.LockToken.String(),
+			UserProperties: convertMapStringInterface(relayMessage.Value.UserProperties),
+			Format:         0,
+		}
+
+		if relayMessage.Value.SystemProperties != nil {
+			r.SystemProperties = &records.AzureSystemProperties{
+				LockedUntil:            derefTime(relayMessage.Value.SystemProperties.LockedUntil),
+				SequenceNumber:         derefInt64(relayMessage.Value.SystemProperties.SequenceNumber),
+				PartitionId:            int32(derefInt16(relayMessage.Value.SystemProperties.PartitionID)),
+				PartitionKey:           derefString(relayMessage.Value.SystemProperties.PartitionKey),
+				EnqueuedTime:           derefTime(relayMessage.Value.SystemProperties.EnqueuedTime),
+				DeadLetterSource:       derefString(relayMessage.Value.SystemProperties.DeadLetterSource),
+				ScheduledEnqueueTime:   derefTime(relayMessage.Value.SystemProperties.ScheduledEnqueueTime),
+				EnqueuedSequenceNumber: derefInt64(relayMessage.Value.SystemProperties.EnqueuedSequenceNumber),
+				ViaPartitionKey:        derefString(relayMessage.Value.SystemProperties.ViaPartitionKey),
+				Annotations:            convertMapStringInterface(relayMessage.Value.SystemProperties.Annotations),
+			}
+		}
+
+		sinkRecords = append(sinkRecords, r)
 	}
 
-	return r
+	return sinkRecords, nil
 }

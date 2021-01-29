@@ -2,8 +2,8 @@ package relay
 
 import (
 	"context"
+	"fmt"
 
-	"cloud.google.com/go/pubsub"
 	"github.com/batchcorp/schemas/build/go/events/records"
 	"github.com/batchcorp/schemas/build/go/services"
 	"github.com/pkg/errors"
@@ -12,19 +12,17 @@ import (
 	"github.com/batchcorp/plumber/backends/gcp-pubsub/types"
 )
 
-func (r *Relay) handleGCP(ctx context.Context, conn *grpc.ClientConn, msg *types.RelayMessage) error {
-	if err := r.validateGCPRelayMessage(msg); err != nil {
-		return errors.Wrap(err, "unable to validate GCP pubsub relay message")
+func (r *Relay) handleGCP(ctx context.Context, conn *grpc.ClientConn, messages []interface{}) error {
+	sinkRecords, err := r.convertMessagesToGCPSinkRecords(messages)
+	if err != nil {
+		return errors.Wrap(err, "unable to convert messages to GCP pubsub sink records")
 	}
-
-	gcpRecord := convertGCPMessageToProtobufRecord(msg.Value)
 
 	client := services.NewGRPCCollectorClient(conn)
 
 	if _, err := client.AddGCPRecord(ctx, &services.GCPRecordRequest{
-		Records: []*records.GCPRecord{gcpRecord},
+		Records: sinkRecords,
 	}); err != nil {
-		r.log.Debugf("%+v", gcpRecord)
 		return errors.Wrap(err, "unable to complete AddGCPRecord call")
 	}
 	r.log.Debug("successfully handled GCP pubsub message")
@@ -53,13 +51,28 @@ func derefIntToInt32(i *int) int32 {
 	return 0
 }
 
-func convertGCPMessageToProtobufRecord(msg *pubsub.Message) *records.GCPRecord {
-	return &records.GCPRecord{
-		Id:              msg.ID,
-		Data:            msg.Data,
-		Attributes:      msg.Attributes,
-		PublishTime:     msg.PublishTime.UnixNano(),
-		DeliveryAttempt: derefIntToInt32(msg.DeliveryAttempt),
-		OrderingKey:     msg.OrderingKey,
+func (r *Relay) convertMessagesToGCPSinkRecords(messages []interface{}) ([]*records.GCPRecord, error) {
+	sinkRecords := make([]*records.GCPRecord, 0)
+
+	for i, v := range messages {
+		relayMessage, ok := v.(*types.RelayMessage)
+		if !ok {
+			return nil, fmt.Errorf("unable to type assert incoming message as RelayMessage (index: %d)", i)
+		}
+
+		if err := r.validateGCPRelayMessage(relayMessage); err != nil {
+			return nil, fmt.Errorf("unable to validate gcp relay message (index: %d): %s", i, err)
+		}
+
+		sinkRecords = append(sinkRecords, &records.GCPRecord{
+			Id:              relayMessage.Value.ID,
+			Data:            relayMessage.Value.Data,
+			Attributes:      relayMessage.Value.Attributes,
+			PublishTime:     relayMessage.Value.PublishTime.UnixNano(),
+			DeliveryAttempt: derefIntToInt32(relayMessage.Value.DeliveryAttempt),
+			OrderingKey:     relayMessage.Value.OrderingKey,
+		})
 	}
+
+	return sinkRecords, nil
 }

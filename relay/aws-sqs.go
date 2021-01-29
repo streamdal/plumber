@@ -2,6 +2,7 @@ package relay
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -14,17 +15,16 @@ import (
 	"github.com/batchcorp/plumber/backends/aws-sqs/types"
 )
 
-func (r *Relay) handleSQS(ctx context.Context, conn *grpc.ClientConn, msg *types.RelayMessage) error {
-	if err := r.validateSQSRelayMessage(msg); err != nil {
-		return errors.Wrap(err, "unable to validate SQS relay message")
+func (r *Relay) handleSQS(ctx context.Context, conn *grpc.ClientConn, messages []interface{}) error {
+	sinkRecords, err := r.convertMessagesToSQSSinkRecords(messages)
+	if err != nil {
+		return fmt.Errorf("unable to convert messages to sqs sink records: %s", err)
 	}
-
-	sqsRecord := convertSQSMessageToProtobufRecord(msg.Value)
 
 	client := services.NewGRPCCollectorClient(conn)
 
 	if _, err := client.AddSQSRecord(ctx, &services.SQSRecordRequest{
-		Records: []*records.SQSRecord{sqsRecord},
+		Records: sinkRecords,
 	}); err != nil {
 		return errors.Wrap(err, "unable to complete AddSQSRecord call")
 	}
@@ -66,27 +66,42 @@ func (r *Relay) validateSQSRelayMessage(msg *types.RelayMessage) error {
 	return nil
 }
 
-func convertSQSMessageToProtobufRecord(msg *sqs.Message) *records.SQSRecord {
-	sqsRecord := &records.SQSRecord{
-		Attributes:        make(map[string]string, 0),
-		Messageattributes: make(map[string]*records.SQSRecordMessageAttribute, 0),
-		Messageid:         *msg.MessageId,
-		Receipt:           *msg.ReceiptHandle,
-		Body:              []byte(*msg.Body),
-		Timestamp:         time.Now().UTC().UnixNano(),
-	}
+func (r *Relay) convertMessagesToSQSSinkRecords(messages []interface{}) ([]*records.SQSRecord, error) {
+	sinkRecords := make([]*records.SQSRecord, 0)
 
-	for k, v := range msg.Attributes {
-		sqsRecord.Attributes[k] = *v
-	}
-
-	for k, v := range msg.MessageAttributes {
-		sqsRecord.Messageattributes[k] = &records.SQSRecordMessageAttribute{
-			Datatype:    *v.DataType,
-			Stringvalue: *v.StringValue,
-			Binaryvalue: v.BinaryValue,
+	for i, v := range messages {
+		relayMessage, ok := v.(*types.RelayMessage)
+		if !ok {
+			return nil, fmt.Errorf("unable to type assert incoming message as RelayMessage (index: %d)", i)
 		}
+
+		if err := r.validateSQSRelayMessage(relayMessage); err != nil {
+			return nil, fmt.Errorf("unable to validate sqs relay message (index: %d): %s", i, err)
+		}
+
+		sqsRecord := &records.SQSRecord{
+			Attributes:        make(map[string]string, 0),
+			Messageattributes: make(map[string]*records.SQSRecordMessageAttribute, 0),
+			Messageid:         *relayMessage.Value.MessageId,
+			Receipt:           *relayMessage.Value.ReceiptHandle,
+			Body:              []byte(*relayMessage.Value.Body),
+			Timestamp:         time.Now().UTC().UnixNano(),
+		}
+
+		for k, v := range relayMessage.Value.Attributes {
+			sqsRecord.Attributes[k] = *v
+		}
+
+		for k, v := range relayMessage.Value.MessageAttributes {
+			sqsRecord.Messageattributes[k] = &records.SQSRecordMessageAttribute{
+				Datatype:    *v.DataType,
+				Stringvalue: *v.StringValue,
+				Binaryvalue: v.BinaryValue,
+			}
+		}
+
+		sinkRecords = append(sinkRecords, sqsRecord)
 	}
 
-	return sqsRecord
+	return sinkRecords, nil
 }

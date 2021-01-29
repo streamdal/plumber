@@ -58,22 +58,22 @@ func (r *Relay) convertMessagesToKafkaSinkRecords(messages []interface{}) ([]*re
 	sinkRecords := make([]*records.KafkaSinkRecord, 0)
 
 	for i, v := range messages {
-		kafkaRelayMessage, ok := v.(*types.RelayMessage)
+		relayMessage, ok := v.(*types.RelayMessage)
 		if !ok {
 			return nil, fmt.Errorf("unable to type assert incoming message as RelayMessage (index: %d)", i)
 		}
 
-		if err := r.validateKafkaRelayMessage(kafkaRelayMessage); err != nil {
+		if err := r.validateKafkaRelayMessage(relayMessage); err != nil {
 			return nil, fmt.Errorf("unable to validate kafka relay message (index: %d): %s", i, err)
 		}
 
 		sinkRecords = append(sinkRecords, &records.KafkaSinkRecord{
-			Topic:     kafkaRelayMessage.Value.Topic,
-			Key:       kafkaRelayMessage.Value.Key,
-			Value:     kafkaRelayMessage.Value.Value,
+			Topic:     relayMessage.Value.Topic,
+			Key:       relayMessage.Value.Key,
+			Value:     relayMessage.Value.Value,
 			Timestamp: time.Now().UTC().UnixNano(),
-			Offset:    kafkaRelayMessage.Value.Offset,
-			Partition: int32(kafkaRelayMessage.Value.Partition),
+			Offset:    relayMessage.Value.Offset,
+			Partition: int32(relayMessage.Value.Partition),
 		})
 	}
 
