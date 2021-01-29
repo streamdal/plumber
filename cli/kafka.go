@@ -120,31 +120,31 @@ func addReadKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 	}
 
 	cmd.Flag("group-id", "Specify a specific group-id to use when reading from kafka").
-		Envar("PLUMBER_RELAY_GROUP_ID").
+		Envar("PLUMBER_RELAY_KAFKA_GROUP_ID").
 		Default(DefaultKafkaGroupId).
 		StringVar(&opts.Kafka.ReadGroupId)
 	cmd.Flag("max-wait", "How long to wait for new data when reading batches of messages").
-		Envar("PLUMBER_RELAY_MAX_WAIT").
+		Envar("PLUMBER_RELAY_KAFKA_MAX_WAIT").
 		Default(defaultMaxWait).
 		DurationVar(&opts.Kafka.MaxWait)
 	cmd.Flag("min-bytes", "Minimum number of bytes to fetch in a single kafka request (throughput optimization)").
-		Envar("PLUMBER_RELAY_MIN_BYTES").
+		Envar("PLUMBER_RELAY_KAFKA_MIN_BYTES").
 		Default(defaultMinBytes).
 		IntVar(&opts.Kafka.MinBytes)
 	cmd.Flag("max-bytes", "Maximum number of bytes to fetch in a single kafka request (throughput optimization)").
-		Envar("PLUMBER_RELAY_MAX_BYTES").
+		Envar("PLUMBER_RELAY_KAFKA_MAX_BYTES").
 		Default(defaultMaxBytes).
 		IntVar(&opts.Kafka.MaxBytes)
 	cmd.Flag("queue-capacity", "Internal queue capacity").
-		Envar("PLUMBER_RELAY_QUEUE_CAPACITY").
+		Envar("PLUMBER_RELAY_KAFKA_QUEUE_CAPACITY").
 		Default(defaultQueueCapacity).
 		IntVar(&opts.Kafka.QueueCapacity)
 	cmd.Flag("rebalance-timeout", "How long a coordinator will wait for member joins as part of a rebalance").
-		Envar("PLUMBER_RELAY_REBALANCE_TIMEOUT").
+		Envar("PLUMBER_RELAY_KAFKA_REBALANCE_TIMEOUT").
 		Default(defaultRebalanceTimeout).
 		DurationVar(&opts.Kafka.RebalanceTimeout)
 	cmd.Flag("commit-interval", "How often to commit offsets to broker (0 = synchronous)").
-		Envar("PLUMBER_RELAY_COMMIT_INTERVAL").
+		Envar("PLUMBER_RELAY_KAFKA_COMMIT_INTERVAL").
 		Default(DefaultKafkaRelayCommitInterval).
 		DurationVar(&opts.Kafka.CommitInterval)
 }

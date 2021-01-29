@@ -106,7 +106,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		Envar("PLUMBER_STATS").
 		BoolVar(&opts.Stats)
 
-	app.Flag("stats-report-interval", "Display periodic read/write/relay stats").
+	app.Flag("stats-report-interval", "Interval at which periodic stats are displayed").
 		Envar("PLUMBER_STATS_REPORT_INTERVAL").
 		Default(DefaultStatsReportInterval).
 		DurationVar(&opts.StatsReportInterval)
