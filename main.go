@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -17,6 +18,8 @@ import (
 	"github.com/batchcorp/plumber/backends/rabbitmq"
 	"github.com/batchcorp/plumber/backends/redis"
 	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/stats"
 )
 
 func main() {
@@ -31,6 +34,16 @@ func main() {
 
 	if opts.Quiet {
 		logrus.SetLevel(logrus.ErrorLevel)
+	}
+
+	if opts.Stats {
+		stats.Start(opts.StatsReportInterval)
+	}
+
+	printer.PrintLogo()
+
+	if strings.HasPrefix(cmd, "relay") {
+		printer.PrintRelayOptions(cmd, opts)
 	}
 
 	switch cmd {

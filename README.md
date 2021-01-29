@@ -100,10 +100,11 @@ $ plumber relay --help
 
 ## Features
 
-* Dynamic protobuf encode & decode
-* Gzip decompress
+* Dynamic protobuf & avro encode & decode
+* Gzip compress & decompress
 * `--follow` support (ie. `tail -f`)
-* Relay and archive all messaging system data
+* Observe, relay and archive messaging data
+* Support for **most** messaging systems
 * Single-binary, zero-config, easy-install
 
 ## Hmm, what is this Batch thing?

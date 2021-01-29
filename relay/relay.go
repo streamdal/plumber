@@ -20,10 +20,14 @@ import (
 	gcpTypes "github.com/batchcorp/plumber/backends/gcp-pubsub/types"
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
 	rabbitTypes "github.com/batchcorp/plumber/backends/rabbitmq/types"
+	"github.com/batchcorp/plumber/stats"
 )
 
 const (
 	DefaultNumWorkers = 10
+
+	QueueFlushInterval = 10 * time.Second
+	DefaultBatchSize   = 100 // number of messages to batch
 )
 
 type Relay struct {
@@ -35,6 +39,7 @@ type Config struct {
 	Token       string
 	GRPCAddress string
 	NumWorkers  int
+	BatchSize   int
 	RelayCh     chan interface{}
 	DisableTLS  bool
 	Timeout     time.Duration // general grpc timeout (used for all grpc calls)
@@ -81,6 +86,10 @@ func validateConfig(cfg *Config) error {
 	if cfg.NumWorkers <= 0 {
 		logrus.Warningf("NumWorkers cannot be <= 0 - setting to default '%d'", DefaultNumWorkers)
 		cfg.NumWorkers = DefaultNumWorkers
+	}
+
+	if cfg.BatchSize == 0 {
+		cfg.BatchSize = DefaultBatchSize
 	}
 
 	return nil
@@ -158,37 +167,85 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, ctx context.Context) {
 
 	llog.Debug("Relayer started")
 
-	// TODO: Add batching support (this can wait until v2+)
+	queue := make([]interface{}, 0)
+
+	// This functions as an escape-vale -- if we are pumping messages *REALLY*
+	// fast - we will hit max queue size; if we are pumping messages slowly,
+	// the ticker will be hit and the queue will be flushed, regardless of size.
+	flushTicker := time.NewTicker(QueueFlushInterval)
 
 	for {
-		msg := <-r.Config.RelayCh
+		select {
+		case msg := <-r.Config.RelayCh:
+			queue = append(queue, msg)
 
-		var err error
+			// Max queue size reached
+			if len(queue) >= r.Config.BatchSize {
+				r.log.Debugf("%d: max queue size reached - flushing!", id)
 
-		switch v := msg.(type) {
-		case *sqsTypes.RelayMessage:
-			r.log.Debugf("Run() received AWS SQS message %+v", v)
-			err = r.handleSQS(ctx, conn, v)
-		case *rabbitTypes.RelayMessage:
-			r.log.Debugf("Run() received rabbit message %+v", v)
-			err = r.handleRabbit(ctx, conn, v)
-		case *kafkaTypes.RelayMessage:
-			r.log.Debugf("Run() received kafka message %+v", v)
-			err = r.handleKafka(ctx, conn, v)
-		case *azureTypes.RelayMessage:
-			r.log.Debugf("Run() received azure message %+v", v)
-			err = r.handleAzure(ctx, conn, v)
-		case *gcpTypes.RelayMessage:
-			r.log.Debugf("Run() received GCP pubsub message %+v", v)
-			err = r.handleGCP(ctx, conn, v)
-		default:
-			r.log.WithField("type", v).Error("received unknown message type - skipping")
-			continue
-		}
+				r.flush(ctx, conn, queue...)
 
-		if err != nil {
-			r.log.WithField("err", err).Error("unable to handle message")
-			continue
+				// Reset queue; since we passed by variadic, the underlying slice can be updated
+				queue = make([]interface{}, 0)
+
+				// Reset ticker (so time-based flush doesn't occur)
+				flushTicker.Reset(QueueFlushInterval)
+			}
+		case <-flushTicker.C:
+			if len(queue) != 0 {
+				r.log.Debugf("%d: flush ticker hit and queue not empty - flushing!", id)
+
+				r.flush(ctx, conn, queue...)
+
+				// Reset queue; same as above - safe to delete queue contents
+				queue = make([]interface{}, 0)
+			}
 		}
 	}
+}
+
+func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...interface{}) {
+	if len(messages) < 1 {
+		r.log.Error("asked to flush empty message queue - bug?")
+		return
+	}
+
+	// We only care about the first message since plumber can only be using
+	// one message bus type at a time
+
+	var err error
+	var relayType string
+
+	switch v := messages[0].(type) {
+	case *sqsTypes.RelayMessage:
+		r.log.Debugf("Run() received %d sqs message(s)", len(messages))
+		relayType = "sqs"
+		err = r.handleSQS(ctx, conn, messages)
+	case *rabbitTypes.RelayMessage:
+		r.log.Debugf("Run() received %d rabbit message(s)", len(messages))
+		relayType = "rabbit"
+		err = r.handleRabbit(ctx, conn, messages)
+	case *kafkaTypes.RelayMessage:
+		r.log.Debugf("Run() received %d kafka message(s)", len(messages))
+		relayType = "kafka"
+		err = r.handleKafka(ctx, conn, messages)
+	case *azureTypes.RelayMessage:
+		r.log.Debugf("Run() received %d azure message(s)", len(messages))
+		relayType = "azure"
+		err = r.handleAzure(ctx, conn, messages)
+	case *gcpTypes.RelayMessage:
+		r.log.Debugf("Run() received %d gcp message(s)", len(messages))
+		relayType = "gcp"
+		err = r.handleGCP(ctx, conn, messages)
+	default:
+		r.log.WithField("type", v).Error("received unknown message type - skipping")
+		return
+	}
+
+	if err != nil {
+		r.log.WithField("err", err).Error("unable to handle message")
+		return
+	}
+
+	stats.Incr(relayType+"-relay-producer", len(messages))
 }

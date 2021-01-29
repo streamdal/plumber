@@ -3,6 +3,8 @@ package rabbitmq
 import (
 	"context"
 	"github.com/batchcorp/plumber/backends/rabbitmq/types"
+	"github.com/batchcorp/plumber/stats"
+
 	"github.com/batchcorp/rabbit"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
@@ -119,7 +121,11 @@ func (r *Relayer) Relay() error {
 			// this will also prevent log spam if a queue goes missing
 			return nil
 		}
+
+		stats.Incr("rabbit-relay-consumer", 1)
+
 		r.log.Debugf("Writing RabbitMQ message to relay channel: %+v", msg)
+
 		r.RelayCh <- &types.RelayMessage{
 			Value:   &msg,
 			Options: &types.RelayMessageOptions{},

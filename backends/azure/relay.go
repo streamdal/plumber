@@ -12,6 +12,7 @@ import (
 	"github.com/batchcorp/plumber/backends/azure/types"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
+	"github.com/batchcorp/plumber/stats"
 )
 
 type Relayer struct {
@@ -141,6 +142,8 @@ func (r *Relayer) Relay() error {
 			msg.UserProperties["plumber_topic"] = r.Options.Azure.Topic
 			msg.UserProperties["plumber_subscription"] = r.Options.Azure.Subscription
 		}
+
+		stats.Incr("azure-relay-consumer", 1)
 
 		r.RelayCh <- &types.RelayMessage{
 			Value: msg,

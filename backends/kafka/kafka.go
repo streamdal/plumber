@@ -21,8 +21,6 @@ import (
 )
 
 const (
-	DefaultMaxBytes  = 1048576 // 1MB
-	DefaultMaxWait   = 50 * time.Millisecond
 	DefaultBatchSize = 1
 )
 
@@ -81,6 +79,7 @@ func NewReader(opts *cli.Options) (*KafkaReader, error) {
 	r := skafka.NewReader(skafka.ReaderConfig{
 		Brokers:          []string{opts.Kafka.Address},
 		GroupID:          opts.Kafka.ReadGroupId,
+		CommitInterval:   opts.Kafka.CommitInterval,
 		Topic:            opts.Kafka.Topic,
 		Dialer:           dialer,
 		MaxWait:          opts.Kafka.MaxWait,

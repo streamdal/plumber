@@ -10,6 +10,7 @@ import (
 	"github.com/batchcorp/plumber/backends/aws-sqs/types"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
+	"github.com/batchcorp/plumber/stats"
 )
 
 type Relayer struct {
@@ -33,6 +34,7 @@ func Relay(opts *cli.Options) error {
 		Timeout:     opts.RelayGRPCTimeout,
 		RelayCh:     make(chan interface{}, 1),
 		DisableTLS:  opts.RelayGRPCDisableTLS,
+		BatchSize:   opts.RelayBatchSize,
 	}
 
 	grpcRelayer, err := relay.New(relayCfg)
@@ -104,6 +106,8 @@ func (r *Relayer) Relay() error {
 
 		// Send message(s) to relayer
 		for _, v := range msgResult.Messages {
+			stats.Incr("sqs-relay-consumer", 1)
+
 			r.log.Debug("Writing message to relay channel")
 
 			r.RelayCh <- &types.RelayMessage{

@@ -8,32 +8,31 @@ import (
 	"github.com/batchcorp/schemas/build/go/events/records"
 	"github.com/batchcorp/schemas/build/go/services"
 	"github.com/pkg/errors"
-	"github.com/streadway/amqp"
 	"google.golang.org/grpc"
 
 	"github.com/batchcorp/plumber/backends/rabbitmq/types"
 )
 
-func (r *Relay) handleRabbit(ctx context.Context, conn *grpc.ClientConn, msg *types.RelayMessage) error {
-	if err := r.validateRabbitRelayMessage(msg); err != nil {
-		return errors.Wrap(err, "unable to validate RabbitMQ relay message")
+func (r *Relay) handleRabbit(ctx context.Context, conn *grpc.ClientConn, messages []interface{}) error {
+	sinkRecords, err := r.convertMessagesToAMQPSinkRecords(messages)
+	if err != nil {
+		return errors.Wrap(err, "unable to convert messages to rabbit sink records")
 	}
-
-	rabbitRecord := convertRabbitMessageToProtobufRecord(msg.Value)
 
 	client := services.NewGRPCCollectorClient(conn)
 
 	if _, err := client.AddAMQPRecord(ctx, &services.AMQPRecordRequest{
-		Records: []*records.AMQPSinkRecord{rabbitRecord},
+		Records: sinkRecords,
 	}); err != nil {
-		fmt.Printf("%+v", rabbitRecord)
 		return errors.Wrap(err, "unable to complete AddAMQPRecord call")
 	}
+
 	r.log.Debug("successfully handled rabbit message")
+
 	return nil
 }
 
-func (r *Relay) validateRabbitRelayMessage(msg *types.RelayMessage) error {
+func (r *Relay) validateAMQPRelayMessage(msg *types.RelayMessage) error {
 	if msg == nil {
 		return errors.New("msg cannot be nil")
 	}
@@ -45,21 +44,36 @@ func (r *Relay) validateRabbitRelayMessage(msg *types.RelayMessage) error {
 	return nil
 }
 
-func convertRabbitMessageToProtobufRecord(msg *amqp.Delivery) *records.AMQPSinkRecord {
-	return &records.AMQPSinkRecord{
-		Body:            msg.Body,
-		Timestamp:       time.Now().UTC().UnixNano(),
-		Type:            msg.Type,
-		Exchange:        msg.Exchange,
-		RoutingKey:      msg.RoutingKey,
-		ContentType:     msg.ContentType,
-		ContentEncoding: msg.ContentEncoding,
-		Priority:        int32(msg.Priority),
-		Expiration:      msg.Expiration,
-		MessageId:       msg.MessageId,
-		UserId:          msg.UserId,
-		AppId:           msg.AppId,
-		ReplyTo:         msg.ReplyTo,
-		CorrelationId:   msg.CorrelationId,
+func (r *Relay) convertMessagesToAMQPSinkRecords(messages []interface{}) ([]*records.AMQPSinkRecord, error) {
+	sinkRecords := make([]*records.AMQPSinkRecord, 0)
+
+	for i, v := range messages {
+		relayMessage, ok := v.(*types.RelayMessage)
+		if !ok {
+			return nil, fmt.Errorf("unable to type assert incoming message as RelayMessage (index: %d)", i)
+		}
+
+		if err := r.validateAMQPRelayMessage(relayMessage); err != nil {
+			return nil, fmt.Errorf("unable to validate kafka relay message (index: %d): %s", i, err)
+		}
+
+		sinkRecords = append(sinkRecords, &records.AMQPSinkRecord{
+			Body:            relayMessage.Value.Body,
+			Timestamp:       time.Now().UTC().UnixNano(),
+			Type:            relayMessage.Value.Type,
+			Exchange:        relayMessage.Value.Exchange,
+			RoutingKey:      relayMessage.Value.RoutingKey,
+			ContentType:     relayMessage.Value.ContentType,
+			ContentEncoding: relayMessage.Value.ContentEncoding,
+			Priority:        int32(relayMessage.Value.Priority),
+			Expiration:      relayMessage.Value.Expiration,
+			MessageId:       relayMessage.Value.MessageId,
+			UserId:          relayMessage.Value.UserId,
+			AppId:           relayMessage.Value.AppId,
+			ReplyTo:         relayMessage.Value.ReplyTo,
+			CorrelationId:   relayMessage.Value.CorrelationId,
+		})
 	}
+
+	return sinkRecords, nil
 }
