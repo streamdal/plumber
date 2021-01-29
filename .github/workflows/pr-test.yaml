@@ -6,6 +6,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.15.4' # The Go version to download (if necessary) and use.
       - name: Start up dependencies
         run: docker-compose up -d
       - name: Wait for dependencies to start up
@@ -20,6 +23,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.15.4' # The Go version to download (if necessary) and use.
       - name: Start up dependencies
         run: docker-compose up -d
       - name: Wait for dependencies to start up
