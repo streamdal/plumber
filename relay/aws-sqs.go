@@ -16,7 +16,7 @@ import (
 )
 
 func (r *Relay) handleSQS(ctx context.Context, conn *grpc.ClientConn, messages []interface{}) error {
-	sinkRecords, err := r.convertMessagesToSQSSinkRecords(messages)
+	sinkRecords, relayMessages, err := r.convertMessagesToSQSSinkRecords(messages)
 	if err != nil {
 		return fmt.Errorf("unable to convert messages to sqs sink records: %s", err)
 	}
@@ -30,10 +30,15 @@ func (r *Relay) handleSQS(ctx context.Context, conn *grpc.ClientConn, messages [
 	}
 
 	// Optionally delete message from AWS SQS
-	if msg.Options.AutoDelete {
-		if _, err := msg.Options.Service.DeleteMessage(&sqs.DeleteMessageInput{
-			QueueUrl:      aws.String(msg.Options.QueueURL),
-			ReceiptHandle: msg.Value.ReceiptHandle,
+	for _, rm := range relayMessages {
+		if !rm.Options.AutoDelete {
+			continue
+		}
+
+		// Auto-delete is turned on
+		if _, err := rm.Options.Service.DeleteMessage(&sqs.DeleteMessageInput{
+			QueueUrl:      aws.String(rm.Options.QueueURL),
+			ReceiptHandle: rm.Value.ReceiptHandle,
 		}); err != nil {
 			return errors.Wrap(err, "unable to delete message upon completion")
 		}
@@ -66,17 +71,20 @@ func (r *Relay) validateSQSRelayMessage(msg *types.RelayMessage) error {
 	return nil
 }
 
-func (r *Relay) convertMessagesToSQSSinkRecords(messages []interface{}) ([]*records.SQSRecord, error) {
+func (r *Relay) convertMessagesToSQSSinkRecords(messages []interface{}) ([]*records.SQSRecord, []*types.RelayMessage, error) {
 	sinkRecords := make([]*records.SQSRecord, 0)
+	relayMessages := make([]*types.RelayMessage, 0)
 
 	for i, v := range messages {
 		relayMessage, ok := v.(*types.RelayMessage)
 		if !ok {
-			return nil, fmt.Errorf("unable to type assert incoming message as RelayMessage (index: %d)", i)
+			return nil, nil, fmt.Errorf("unable to type assert incoming message as RelayMessage (index: %d)", i)
 		}
 
+		relayMessages = append(relayMessages, relayMessage)
+
 		if err := r.validateSQSRelayMessage(relayMessage); err != nil {
-			return nil, fmt.Errorf("unable to validate sqs relay message (index: %d): %s", i, err)
+			return nil, nil, fmt.Errorf("unable to validate sqs relay message (index: %d): %s", i, err)
 		}
 
 		sqsRecord := &records.SQSRecord{
@@ -103,5 +111,5 @@ func (r *Relay) convertMessagesToSQSSinkRecords(messages []interface{}) ([]*reco
 		sinkRecords = append(sinkRecords, sqsRecord)
 	}
 
-	return sinkRecords, nil
+	return sinkRecords, relayMessages, nil
 }

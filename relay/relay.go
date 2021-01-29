@@ -218,25 +218,25 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 
 	switch v := messages[0].(type) {
 	case *sqsTypes.RelayMessage:
-		r.log.Debugf("Run() received AWS SQS message %+v", v)
+		r.log.Debugf("Run() received %d sqs message(s)", len(messages))
 		relayType = "sqs"
-		err = r.handleSQS(ctx, conn, v)
+		err = r.handleSQS(ctx, conn, messages)
 	case *rabbitTypes.RelayMessage:
-		r.log.Debugf("Run() received rabbit message %+v", v)
+		r.log.Debugf("Run() received %d rabbit message(s)", len(messages))
 		relayType = "rabbit"
 		err = r.handleRabbit(ctx, conn, messages)
 	case *kafkaTypes.RelayMessage:
-		r.log.Debugf("Run() received kafka message %+v", v)
+		r.log.Debugf("Run() received %d kafka message(s)", len(messages))
 		relayType = "kafka"
 		err = r.handleKafka(ctx, conn, messages)
 	case *azureTypes.RelayMessage:
-		r.log.Debugf("Run() received azure message %+v", v)
+		r.log.Debugf("Run() received %d azure message(s)", len(messages))
 		relayType = "azure"
-		err = r.handleAzure(ctx, conn, v)
+		err = r.handleAzure(ctx, conn, messages)
 	case *gcpTypes.RelayMessage:
-		r.log.Debugf("Run() received GCP pubsub message %+v", v)
+		r.log.Debugf("Run() received %d gcp message(s)", len(messages))
 		relayType = "gcp"
-		err = r.handleGCP(ctx, conn, v)
+		err = r.handleGCP(ctx, conn, messages)
 	default:
 		r.log.WithField("type", v).Error("received unknown message type - skipping")
 		return
