@@ -26,7 +26,7 @@ func PrintLogo() {
 █▀▀ █▄▄ █▄█ █ ▀ █ █▄█ ██▄ █▀▄
 `
 
-	fmt.Println(logo)
+	logrus.Info(logo)
 }
 
 func PrintRelayOptions(cmd string, opts *cli.Options) {
@@ -64,6 +64,14 @@ func PrintRelayOptions(cmd string, opts *cli.Options) {
 	switch relayType {
 	case "kafka":
 		printKafkaOptions(opts)
+	case "rabbit":
+		printRabbitOptions(opts)
+	case "sqs":
+		printSQSOptions(opts)
+	case "azure":
+		printAzureOptions(opts)
+	case "gcp":
+		printGCPOptions(opts)
 	}
 }
 
@@ -78,5 +86,62 @@ func printKafkaOptions(opts *cli.Options) {
 	logrus.Infof("- %-24s%-6v", "MaxWait", opts.Kafka.MaxWait)
 	logrus.Infof("- %-24s%-6v", "MinBytes", opts.Kafka.MinBytes)
 	logrus.Infof("- %-24s%-6v", "MaxBytes", opts.Kafka.MaxBytes)
+	logrus.Info("")
+}
+
+func printRabbitOptions(opts *cli.Options) {
+	logrus.Info("----------------------------------------------------------------")
+	logrus.Info("> Rabbit Settings")
+	logrus.Info("----------------------------------------------------------------")
+	logrus.Info("")
+	logrus.Infof("- %-24s%-6v", "Address", opts.Rabbit.Address)
+	logrus.Infof("- %-24s%-6v", "Exchange", opts.Rabbit.Exchange)
+	logrus.Infof("- %-24s%-6v", "RoutingKey", opts.Rabbit.RoutingKey)
+	logrus.Infof("- %-24s%-6v", "RoutingKey", opts.Rabbit.ReadQueue)
+	logrus.Infof("- %-24s%-6v", "ReadQueueDurable", opts.Rabbit.ReadQueueDurable)
+	logrus.Infof("- %-24s%-6v", "ReadQueueAutoDelete", opts.Rabbit.ReadQueueAutoDelete)
+	logrus.Infof("- %-24s%-6v", "ReadQueueDeclare", opts.Rabbit.ReadQueueDeclare)
+	logrus.Infof("- %-24s%-6v", "ReadQueueExclusive", opts.Rabbit.ReadQueueExclusive)
+	logrus.Infof("- %-24s%-6v", "ReadAutoAck", opts.Rabbit.ReadAutoAck)
+	logrus.Infof("- %-24s%-6v", "ReadConsumerTag", opts.Rabbit.ReadConsumerTag)
+	logrus.Infof("- %-24s%-6v", "UseTLS", opts.Rabbit.UseTLS)
+	logrus.Infof("- %-24s%-6v", "SkipVerifyTLS", opts.Rabbit.SkipVerifyTLS)
+	logrus.Info("")
+}
+
+func printAzureOptions(opts *cli.Options) {
+	logrus.Info("----------------------------------------------------------------")
+	logrus.Info("> Azure Settings")
+	logrus.Info("----------------------------------------------------------------")
+	logrus.Info("")
+	logrus.Infof("- %-24s%-6v", "Subscription", opts.Azure.Subscription)
+	logrus.Infof("- %-24s%-6v", "Queue", opts.Azure.Queue)
+	logrus.Infof("- %-24s%-6v", "Topic", opts.Azure.Topic)
+	logrus.Infof("- %-24s%-6v", "ConnectionString", opts.Azure.ConnectionString)
+	logrus.Info("")
+}
+
+func printSQSOptions(opts *cli.Options) {
+	logrus.Info("----------------------------------------------------------------")
+	logrus.Info("> SQS Settings")
+	logrus.Info("----------------------------------------------------------------")
+	logrus.Info("")
+	logrus.Infof("- %-24s%-6v", "QueueName", opts.AWSSQS.QueueName)
+	logrus.Infof("- %-24s%-6v", "RemoteAccountID", opts.AWSSQS.RemoteAccountID)
+	logrus.Infof("- %-24s%-6v", "RelayMaxNumMessages", opts.AWSSQS.RelayMaxNumMessages)
+	logrus.Infof("- %-24s%-6v", "ReceiveRequestAttemptID", opts.AWSSQS.RelayReceiveRequestAttemptId)
+	logrus.Infof("- %-24s%-6v", "AutoDelete", opts.AWSSQS.RelayAutoDelete)
+	logrus.Infof("- %-24s%-6v", "WaitTimeSeconds", opts.AWSSQS.RelayWaitTimeSeconds)
+	logrus.Info("")
+}
+
+func printGCPOptions(opts *cli.Options) {
+	logrus.Info("----------------------------------------------------------------")
+	logrus.Info("> GCP Settings")
+	logrus.Info("----------------------------------------------------------------")
+	logrus.Info("")
+	logrus.Infof("- %-24s%-6v", "ProjectID", opts.GCPPubSub.ProjectId)
+	logrus.Infof("- %-24s%-6v", "SubscriptionID", opts.GCPPubSub.ReadSubscriptionId)
+	logrus.Infof("- %-24s%-6v", "ReadAck", opts.GCPPubSub.ReadAck)
 	logrus.Info("")
 }
