@@ -109,9 +109,12 @@ var _ = Describe("Functional", func() {
 			Context("jsonpb input, protobuf output", func() {
 				It("should work", func() {
 					// We use "Outbound" here because it's simple
-					cmd := exec.Command(binary, "write", "kafka", "--address", kafkaAddress,
-						"--topic", kafkaTopic, "--input-type", "jsonpb", "--output-type", "protobuf",
-						"--input-file", sampleOutboundJSONPB, "--protobuf-dir", protoSchemasDir,
+					cmd := exec.Command(binary, "write", "kafka",
+						"--address", kafkaAddress,
+						"--topic", kafkaTopic,
+						"--input-type", "jsonpb",
+						"--input-file", sampleOutboundJSONPB,
+						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound")
 
 					_, err := cmd.CombinedOutput()
@@ -264,7 +267,6 @@ var _ = Describe("Functional", func() {
 						"--exchange", exchangeName,
 						"--routing-key", routingKey,
 						"--input-type", "jsonpb",
-						"--output-type", "protobuf",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound",
@@ -290,7 +292,6 @@ var _ = Describe("Functional", func() {
 						"--exchange", exchangeName,
 						"--routing-key", routingKey,
 						"--queue", queueName,
-						"--output-type", "protobuf",
 						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound",
 					)
@@ -465,7 +466,6 @@ var _ = Describe("Functional", func() {
 						"aws-sqs",
 						"--queue-name", queueName,
 						"--input-type", "jsonpb",
-						"--output-type", "protobuf",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound",
@@ -484,7 +484,6 @@ var _ = Describe("Functional", func() {
 						"read",
 						"aws-sqs",
 						"--queue-name", queueName,
-						"--output-type", "protobuf",
 						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound",
 					)
@@ -630,7 +629,6 @@ var _ = Describe("Functional", func() {
 						"mqtt",
 						"--topic", topicName,
 						"--input-type", "jsonpb",
-						"--output-type", "protobuf",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound",
@@ -756,7 +754,6 @@ var _ = Describe("Functional", func() {
 						"activemq",
 						"--queue", queueName,
 						"--input-type", "jsonpb",
-						"--output-type", "protobuf",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound",
@@ -776,7 +773,6 @@ var _ = Describe("Functional", func() {
 						"read",
 						"activemq",
 						"--queue", queueName,
-						"--output-type", "protobuf",
 						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound",
 					)
@@ -921,7 +917,6 @@ var _ = Describe("Functional", func() {
 						"nats",
 						"--subject", topicName,
 						"--input-type", "jsonpb",
-						"--output-type", "protobuf",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound",
@@ -1088,7 +1083,6 @@ var _ = Describe("Functional", func() {
 						"redis",
 						"--channel", topicName,
 						"--input-type", "jsonpb",
-						"--output-type", "protobuf",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound",
