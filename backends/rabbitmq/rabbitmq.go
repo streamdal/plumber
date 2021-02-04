@@ -32,6 +32,7 @@ func New(opts *cli.Options, md *desc.MessageDescriptor) (*RabbitMQ, error) {
 		RoutingKey:     opts.Rabbit.RoutingKey,
 		QueueExclusive: opts.Rabbit.ReadQueueExclusive,
 		QueueDurable:   opts.Rabbit.ReadQueueDurable,
+		QueueDeclare:   opts.Rabbit.ReadQueueDeclare,
 		AutoAck:        opts.Rabbit.ReadAutoAck,
 		ConsumerTag:    opts.Rabbit.ReadConsumerTag,
 		AppID:          opts.Rabbit.WriteAppID,
