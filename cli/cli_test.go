@@ -110,7 +110,6 @@ func TestHandleRabbitFlags_write(t *testing.T) {
 		"--input-data", "welovemessaging",
 		"--input-file", "cli.go",
 		"--input-type", "jsonpb",
-		"--output-type", "protobuf",
 		"--protobuf-dir", "../test-assets/protos",
 		"--protobuf-root-message", "Message",
 		"--avro-schema", "../test-assets/avro/test.avsc",
@@ -127,7 +126,6 @@ func TestHandleRabbitFlags_write(t *testing.T) {
 	g.Expect(opts.WriteInputData).To(Equal("welovemessaging"))
 	g.Expect(opts.WriteInputFile).To(Equal("cli.go"))
 	g.Expect(opts.WriteInputType).To(Equal("jsonpb"))
-	g.Expect(opts.WriteOutputType).To(Equal("protobuf"))
 	g.Expect(opts.WriteProtobufDirs).To(Equal([]string{"../test-assets/protos"}))
 	g.Expect(opts.WriteProtobufRootMessage).To(Equal("Message"))
 	g.Expect(opts.AvroSchemaFile).To(Equal("../test-assets/avro/test.avsc"))
@@ -188,7 +186,6 @@ func TestHandleMQTTFlags_write(t *testing.T) {
 		"--input-data", "welovemessaging",
 		"--input-file", "cli.go",
 		"--input-type", "jsonpb",
-		"--output-type", "protobuf",
 		"--protobuf-dir", "../test-assets/protos",
 		"--protobuf-root-message", "Message",
 		"--avro-schema", "../test-assets/avro/test.avsc",
@@ -209,7 +206,6 @@ func TestHandleMQTTFlags_write(t *testing.T) {
 	g.Expect(opts.WriteInputData).To(Equal("welovemessaging"))
 	g.Expect(opts.WriteInputFile).To(Equal("cli.go"))
 	g.Expect(opts.WriteInputType).To(Equal("jsonpb"))
-	g.Expect(opts.WriteOutputType).To(Equal("protobuf"))
 	g.Expect(opts.WriteProtobufDirs).To(Equal([]string{"../test-assets/protos"}))
 	g.Expect(opts.WriteProtobufRootMessage).To(Equal("Message"))
 	g.Expect(opts.AvroSchemaFile).To(Equal("../test-assets/avro/test.avsc"))
@@ -258,7 +254,6 @@ func TestHandleKafkaFlags_write(t *testing.T) {
 		"--input-data", "welovemessaging",
 		"--input-file", "cli.go",
 		"--input-type", "jsonpb",
-		"--output-type", "protobuf",
 		"--protobuf-dir", "../test-assets/protos",
 		"--protobuf-root-message", "Message",
 		"--avro-schema", "../test-assets/avro/test.avsc",
@@ -272,11 +267,9 @@ func TestHandleKafkaFlags_write(t *testing.T) {
 	g.Expect(opts.Kafka.Topic).To(Equal("plumber_test"))
 	g.Expect(opts.Kafka.WriteKey).To(Equal("plumber_test_key"))
 	g.Expect(opts.Kafka.Timeout).To(Equal(time.Second * 3))
-	g.Expect(opts.WriteOutputType).To(Equal("protobuf"))
 	g.Expect(opts.WriteInputData).To(Equal("welovemessaging"))
 	g.Expect(opts.WriteInputFile).To(Equal("cli.go"))
 	g.Expect(opts.WriteInputType).To(Equal("jsonpb"))
-	g.Expect(opts.WriteOutputType).To(Equal("protobuf"))
 	g.Expect(opts.AvroSchemaFile).To(Equal("../test-assets/avro/test.avsc"))
 }
 
@@ -323,7 +316,6 @@ func TestHandleAWSSQSFlags_write(t *testing.T) {
 		"--input-data", "welovemessaging",
 		"--input-file", "cli.go",
 		"--input-type", "jsonpb",
-		"--output-type", "protobuf",
 		"--protobuf-dir", "../test-assets/protos",
 		"--protobuf-root-message", "Message",
 		"--avro-schema", "../test-assets/avro/test.avsc",
@@ -337,11 +329,9 @@ func TestHandleAWSSQSFlags_write(t *testing.T) {
 	g.Expect(opts.AWSSQS.RemoteAccountID).To(Equal("1234"))
 	g.Expect(opts.AWSSQS.WriteDelaySeconds).To(Equal(int64(6)))
 	g.Expect(opts.AWSSQS.WriteAttributes).To(Equal(map[string]string{"tag": "value"}))
-	g.Expect(opts.WriteOutputType).To(Equal("protobuf"))
 	g.Expect(opts.WriteInputData).To(Equal("welovemessaging"))
 	g.Expect(opts.WriteInputFile).To(Equal("cli.go"))
 	g.Expect(opts.WriteInputType).To(Equal("jsonpb"))
-	g.Expect(opts.WriteOutputType).To(Equal("protobuf"))
 	g.Expect(opts.AvroSchemaFile).To(Equal("../test-assets/avro/test.avsc"))
 }
 
@@ -385,7 +375,6 @@ func TestHandleGCPPubSubFlags_write(t *testing.T) {
 		"--input-data", "welovemessaging",
 		"--input-file", "cli.go",
 		"--input-type", "jsonpb",
-		"--output-type", "protobuf",
 		"--protobuf-dir", "../test-assets/protos",
 		"--protobuf-root-message", "Message",
 		"--avro-schema", "../test-assets/avro/test.avsc",
@@ -397,10 +386,8 @@ func TestHandleGCPPubSubFlags_write(t *testing.T) {
 	g.Expect(cmd).To(Equal("write gcp-pubsub"))
 	g.Expect(opts.GCPPubSub.WriteTopicId).To(Equal("plumber_topic"))
 	g.Expect(opts.GCPPubSub.ProjectId).To(Equal("plumber_project"))
-	g.Expect(opts.WriteOutputType).To(Equal("protobuf"))
 	g.Expect(opts.WriteInputData).To(Equal("welovemessaging"))
 	g.Expect(opts.WriteInputFile).To(Equal("cli.go"))
 	g.Expect(opts.WriteInputType).To(Equal("jsonpb"))
-	g.Expect(opts.WriteOutputType).To(Equal("protobuf"))
 	g.Expect(opts.AvroSchemaFile).To(Equal("../test-assets/avro/test.avsc"))
 }
