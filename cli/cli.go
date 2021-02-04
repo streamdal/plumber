@@ -51,7 +51,6 @@ type Options struct {
 	// Shared read flags
 	ReadProtobufRootMessage string
 	ReadProtobufDirs        []string
-	ReadOutputType          string
 	ReadFollow              bool
 	ReadLineNumbers         bool
 	ReadConvert             string
@@ -180,10 +179,6 @@ func HandleGlobalReadFlags(cmd *kingpin.CmdClause, opts *Options) {
 
 	cmd.Flag("protobuf-dir", "Directory with .proto files").
 		ExistingDirsVar(&opts.ReadProtobufDirs)
-
-	cmd.Flag("output-type", "The type of message(s) you will receive on the bus").
-		Default("plain").
-		EnumVar(&opts.ReadOutputType, "plain", "protobuf")
 
 	cmd.Flag("follow", "Continuous read (ie. `tail -f`)").
 		Short('f').
