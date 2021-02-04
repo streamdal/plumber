@@ -195,7 +195,8 @@ func HandleGlobalWriteFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("input-data", "Data to write").StringVar(&opts.WriteInputData)
 	cmd.Flag("input-file", "File containing input data (overrides input-data; 1 file is 1 message)").
 		ExistingFileVar(&opts.WriteInputFile)
-	cmd.Flag("input-type", "Treat input as this type").Default("plain").
+	cmd.Flag("input-type", "Treat input as this type [plain, base64, jsonpb]").
+		Default("plain").
 		EnumVar(&opts.WriteInputType, "plain", "base64", "jsonpb")
 	cmd.Flag("output-type", "Convert input to this type when writing message").
 		Default("plain").EnumVar(&opts.WriteOutputType, "plain", "protobuf")
