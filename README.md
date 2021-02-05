@@ -141,6 +141,21 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 NOTE: If your messaging tech is not supported - submit an issue and we'll do
 our best to make it happen!
 
+## High Availability
+When running `plumber` in relay mode in production, you will want to run at
+least 2 instances of `plumber` - that way updates, maintenances or unexpected
+problems will not interfere with data collection.
+
+You can achieve H/A by launching 2+ instances of plumber with identical 
+configurations.
+
+### Kafka
+You need to ensure that you are using the same consumer group on all plumber
+instances.
+
+### RabbitMQ
+Make sure that all instances of `plumber` are pointed to the same queue.
+
 ### Note on boolean flags
 In order to flip a boolean flag to `false`, prepend `--no` to the flag.
 
