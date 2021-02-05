@@ -141,6 +141,11 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 NOTE: If your messaging tech is not supported - submit an issue and we'll do
 our best to make it happen!
 
+### Note on boolean flags
+In order to flip a boolean flag to `false`, prepend `--no` to the flag.
+
+ie. `--queue-declare` is `true` by default. To make it false, use `--no-queue-declare`.
+
 ## Acknowledgments
 
 **Huge** shoutout to [jhump](https://github.com/jhump) and for his excellent

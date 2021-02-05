@@ -207,7 +207,9 @@ var _ = Describe("Functional", func() {
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
-					Expect(err).ToNot(HaveOccurred())
+					if err != nil {
+						Fail("write failed: " + string(writeOut))
+					}
 
 					writeGot := string(writeOut[:])
 					writeWant := fmt.Sprintf("Successfully wrote message to exchange '%s'", exchangeName)
@@ -227,11 +229,12 @@ var _ = Describe("Functional", func() {
 						"--exchange", exchangeName,
 						"--routing-key", routingKey,
 						"--queue", queueName,
-						"--no-queue-exclusive",
 					)
 
 					readOutput, err := readCmd.CombinedOutput()
-					Expect(err).ToNot(HaveOccurred())
+					if err != nil {
+						Fail("read failed: " + string(readOutput))
+					}
 
 					if ctx.Err() == context.DeadlineExceeded {
 						Fail("Rabbit plaintext read failed")
@@ -274,7 +277,9 @@ var _ = Describe("Functional", func() {
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
-					Expect(err).ToNot(HaveOccurred())
+					if err != nil {
+						Fail("write failed: " + string(writeOut))
+					}
 
 					writeGot := string(writeOut[:])
 					writeWant := fmt.Sprintf("Successfully wrote message to exchange '%s'", exchangeName)
@@ -295,11 +300,12 @@ var _ = Describe("Functional", func() {
 						"--queue", queueName,
 						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound",
-						"--no-queue-exclusive",
 					)
 
 					readOut, err := readCmd.CombinedOutput()
-					Expect(err).ToNot(HaveOccurred())
+					if err != nil {
+						Fail("read failed: " + string(readOut))
+					}
 
 					if ctx.Err() == context.DeadlineExceeded {
 						Fail("Rabbit protobuf read failed")
@@ -346,7 +352,9 @@ var _ = Describe("Functional", func() {
 				)
 
 				writeOut, err := writeCmd.CombinedOutput()
-				Expect(err).ToNot(HaveOccurred())
+				if err != nil {
+					Fail("write failed: " + string(writeOut))
+				}
 
 				writeGot := string(writeOut[:])
 				writeWant := fmt.Sprintf("Successfully wrote message to exchange '%s'", exchangeName)
@@ -365,11 +373,12 @@ var _ = Describe("Functional", func() {
 					"--exchange", exchangeName,
 					"--routing-key", routingKey,
 					"--queue", queueName,
-					"--no-queue-exclusive",
 				)
 
 				readOutput, err := readCmd.CombinedOutput()
-				Expect(err).ToNot(HaveOccurred())
+				if err != nil {
+					Fail("read failed: " + string(readOutput))
+				}
 
 				if ctx.Err() == context.DeadlineExceeded {
 					Fail("Rabbit AVRO read failed")
@@ -1040,7 +1049,9 @@ var _ = Describe("Functional", func() {
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
-					Expect(err).ToNot(HaveOccurred())
+					if err != nil {
+						Fail("write failed: " + string(writeOut))
+					}
 
 					writeGot := string(writeOut[:])
 
@@ -1092,7 +1103,9 @@ var _ = Describe("Functional", func() {
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
-					Expect(err).ToNot(HaveOccurred())
+					if err != nil {
+						Fail("write failed: " + string(writeOut))
+					}
 
 					writeGot := string(writeOut[:])
 					writeWant := fmt.Sprintf("Successfully wrote message to '%s'", topicName)
@@ -1145,7 +1158,9 @@ var _ = Describe("Functional", func() {
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
-					Expect(err).ToNot(HaveOccurred())
+					if err != nil {
+						Fail("write failed: " + string(writeOut))
+					}
 
 					writeGot := string(writeOut[:])
 
