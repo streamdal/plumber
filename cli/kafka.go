@@ -25,6 +25,7 @@ const (
 	DefaultKafkaRelayQueueCapacity    = "1000"
 	DefaultKafkaRelayRebalanceTimeout = "5s"
 	DefaultKafkaRelayCommitInterval   = "5s"
+	DefaultKafkaReadOffset            = "0"
 )
 
 type KafkaOptions struct {
@@ -38,7 +39,9 @@ type KafkaOptions struct {
 	AuthenticationType string
 
 	// Read
-	ReadGroupId      string
+	UseConsumerGroup bool
+	GroupID          string
+	ReadOffset       int64 // If UseConsumerGroup is true, ReadOffset will NOT be used
 	MaxWait          time.Duration
 	MinBytes         int
 	MaxBytes         int
@@ -119,10 +122,18 @@ func addReadKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 		defaultRebalanceTimeout = DefaultKafkaRelayRebalanceTimeout
 	}
 
+	cmd.Flag("use-consumer-group", "Whether plumber should use a consumer group").
+		Envar("PLUMBER_RELAY_KAFKA_USE_CONSUMER_GROUP").
+		Default("true").
+		BoolVar(&opts.Kafka.UseConsumerGroup)
 	cmd.Flag("group-id", "Specify a specific group-id to use when reading from kafka").
 		Envar("PLUMBER_RELAY_KAFKA_GROUP_ID").
 		Default(DefaultKafkaGroupId).
-		StringVar(&opts.Kafka.ReadGroupId)
+		StringVar(&opts.Kafka.GroupID)
+	cmd.Flag("read-offset", "Specify what offset the consumer should read from (only works if '--use-consumer-group' is false)").
+		Envar("PLUMBER_RELAY_KAFKA_READ_OFFSET").
+		Default(DefaultKafkaReadOffset).
+		Int64Var(&opts.Kafka.ReadOffset)
 	cmd.Flag("max-wait", "How long to wait for new data when reading batches of messages").
 		Envar("PLUMBER_RELAY_KAFKA_MAX_WAIT").
 		Default(defaultMaxWait).

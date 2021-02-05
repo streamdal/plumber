@@ -108,5 +108,9 @@ func validateReadOptions(opts *cli.Options) error {
 		}
 	}
 
+	if opts.Kafka.ReadOffset < 0 {
+		return errors.New("read offset must be >= 0")
+	}
+
 	return nil
 }

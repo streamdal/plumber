@@ -76,9 +76,8 @@ func NewReader(opts *cli.Options) (*KafkaReader, error) {
 			opts.Kafka.Address, err)
 	}
 
-	r := skafka.NewReader(skafka.ReaderConfig{
+	rc := skafka.ReaderConfig{
 		Brokers:          []string{opts.Kafka.Address},
-		GroupID:          opts.Kafka.ReadGroupId,
 		CommitInterval:   opts.Kafka.CommitInterval,
 		Topic:            opts.Kafka.Topic,
 		Dialer:           dialer,
@@ -87,7 +86,19 @@ func NewReader(opts *cli.Options) (*KafkaReader, error) {
 		MaxBytes:         opts.Kafka.MaxBytes,
 		QueueCapacity:    opts.Kafka.QueueCapacity,
 		RebalanceTimeout: opts.Kafka.RebalanceTimeout,
-	})
+	}
+
+	if opts.Kafka.UseConsumerGroup {
+		rc.GroupID = opts.Kafka.GroupID
+	}
+
+	r := skafka.NewReader(rc)
+
+	if !opts.Kafka.UseConsumerGroup {
+		if err := r.SetOffset(opts.Kafka.ReadOffset); err != nil {
+			return nil, errors.Wrap(err, "unable to set read offset")
+		}
+	}
 
 	return &KafkaReader{
 		Reader: r,

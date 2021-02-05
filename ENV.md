@@ -49,20 +49,22 @@ Environment Variables
 
 | Environment Variable  | Description | Default |
 | --------------------- | ------------| ------- |
-| `PLUMBER_RELAY_KAFKA_ADDRESS`           | Destination host address | `localhost:9092` |
-| `PLUMBER_RELAY_KAFKA_TOPIC`             | Topic to read message(s) from | **REQUIRED** |
-| `PLUMBER_RELAY_KAFKA_TIMEOUT`           | Connect timeout | `10s` |
-| `PLUMBER_RELAY_KAFKA_INSECURE_TLS`      | Use insecure TLS (ie. do not verify cert) | `false` |
-| `PLUMBER_RELAY_KAFKA_USERNAME`          | SASL Username | |
-| `PLUMBER_RELAY_KAFKA_PASSWORD`          | SASL Password. If omitted, you will be prompted for the password | |
-| `PLUMBER_RELAY_KAFKA_SASL_TYPE`         | SASL Authentication type (plain or scram) | `scram` |
-| `PLUMBER_RELAY_KAFKA_GROUP_ID`          | Specify a specific group-id to use when reading from kafka | `plumber` | 
-| `PLUMBER_RELAY_KAFKA_MAX_WAIT`          | How long to wait for new data when reading batches of messages | `1s` |
-| `PLUMBER_RELAY_KAFKA_MIN_BYTES`         | Minimum number of bytes to fetch in a single kafka request (throughput optimization) | `1` |
-| `PLUMBER_RELAY_KAFKA_MAX_BYTES`         | Maximum number of bytes to fetch in a single kafka request (throughput optimization) | `1` |
-| `PLUMBER_RELAY_KAFKA_QUEUE_CAPACITY`    | Internal queue capacity (throughput optimization) | `1` |
-| `PLUMBER_RELAY_KAFKA_REBALANCE_TIMEOUT` | How long a coordinator will wait for member joins as part of a rebalance | `0` |
-| `PLUMBER_RELAY_KAFKA_COMMIT_INTERVAL`   | How often to commit offsets to broker (0 = synchronous) | `5s` | 
+| `PLUMBER_RELAY_KAFKA_ADDRESS`            | Destination host address | `localhost:9092` |
+| `PLUMBER_RELAY_KAFKA_TOPIC`              | Topic to read message(s) from | **REQUIRED** |
+| `PLUMBER_RELAY_KAFKA_TIMEOUT`            | Connect timeout | `10s` |
+| `PLUMBER_RELAY_KAFKA_INSECURE_TLS`       | Use insecure TLS (ie. do not verify cert) | `false` |
+| `PLUMBER_RELAY_KAFKA_USERNAME`           | SASL Username | |
+| `PLUMBER_RELAY_KAFKA_PASSWORD`           | SASL Password. If omitted, you will be prompted for the password | |
+| `PLUMBER_RELAY_KAFKA_SASL_TYPE`          | SASL Authentication type (plain or scram) | `scram` |
+| `PLUMBER_RELAY_KAFKA_USE_CONSUMER_GROUP` | Use consumer  | `true` |
+| `PLUMBER_RELAY_KAFKA_GROUP_ID`           | Specify a specific group-id to use when reading from kafka | `plumber` | 
+| `PLUMBER_RELAY_KAFKA_READ_OFFSET`        | At what offset should consumer start reading (NOTE: offset is ignored if plumber is using consumer group) | `0` |
+| `PLUMBER_RELAY_KAFKA_MAX_WAIT`           | How long to wait for new data when reading batches of messages | `1s` |
+| `PLUMBER_RELAY_KAFKA_MIN_BYTES`          | Minimum number of bytes to fetch in a single kafka request (throughput optimization) | `1` |
+| `PLUMBER_RELAY_KAFKA_MAX_BYTES`          | Maximum number of bytes to fetch in a single kafka request (throughput optimization) | `1` |
+| `PLUMBER_RELAY_KAFKA_QUEUE_CAPACITY`     | Internal queue capacity (throughput optimization) | `1` |
+| `PLUMBER_RELAY_KAFKA_REBALANCE_TIMEOUT`  | How long a coordinator will wait for member joins as part of a rebalance | `0` |
+| `PLUMBER_RELAY_KAFKA_COMMIT_INTERVAL`    | How often to commit offsets to broker (0 = synchronous) | `5s` | 
 
 **NOTE**: For _Confluent-hosted_ Kafka, you MUST set:
 
