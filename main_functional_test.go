@@ -227,6 +227,7 @@ var _ = Describe("Functional", func() {
 						"--exchange", exchangeName,
 						"--routing-key", routingKey,
 						"--queue", queueName,
+						"--no-queue-exclusive",
 					)
 
 					readOutput, err := readCmd.CombinedOutput()
@@ -294,6 +295,7 @@ var _ = Describe("Functional", func() {
 						"--queue", queueName,
 						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound",
+						"--no-queue-exclusive",
 					)
 
 					readOut, err := readCmd.CombinedOutput()
@@ -363,6 +365,7 @@ var _ = Describe("Functional", func() {
 					"--exchange", exchangeName,
 					"--routing-key", routingKey,
 					"--queue", queueName,
+					"--no-queue-exclusive",
 				)
 
 				readOutput, err := readCmd.CombinedOutput()
@@ -1250,7 +1253,8 @@ func createRabbit(exchangeName, queueName, routingKey string) error {
 	if err != nil {
 		return err
 	}
-	cmd = exec.Command("docker", "exec", "rabbitmq", "rabbitmqadmin", "declare", "queue", "name="+queueName)
+
+	cmd = exec.Command("docker", "exec", "rabbitmq", "rabbitmqadmin", "declare", "queue", "name="+queueName, "durable=false")
 	_, err = cmd.CombinedOutput()
 	if err != nil {
 		return err
