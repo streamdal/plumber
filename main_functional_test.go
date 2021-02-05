@@ -1,5 +1,3 @@
-// +build functional
-
 // This package will perform _functional_ testing of the plumber CLI tool.
 //
 // It is going to perform a single, OS-specific compile via `make` and then
@@ -7,6 +5,9 @@
 //
 // NOTE 1: You should probably have local instances of rabbit, kafka, etc. running
 // or  else the test suite will fail.
+
+// +build functional
+
 package main
 
 import (
@@ -28,6 +29,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 )
 
@@ -68,16 +70,16 @@ var _ = Describe("Functional", func() {
 	})
 
 	Describe("Kafka", func() {
-		var (
-			kafka      *Kafka
-			kafkaTopic = fmt.Sprintf("plumber-test-%d", rand.Int())
-		)
-
 		Describe("write", func() {
+			var (
+				kafka      *Kafka
+				kafkaTopic = fmt.Sprintf("plumber-test-%d", rand.Int())
+			)
+
 			BeforeEach(func() {
 				var err error
 
-				kafka, err = newKafka(kafkaAddress, kafkaTopic)
+				kafka, err = newKafkaReader(kafkaAddress, kafkaTopic)
 				Expect(err).ToNot(HaveOccurred())
 			})
 
@@ -155,18 +157,78 @@ var _ = Describe("Functional", func() {
 		})
 
 		Describe("read", func() {
-			var ()
+			var (
+				kafka      *Kafka
+				kafkaTopic string
+			)
 
 			BeforeEach(func() {
+				var err error
+				r := rand.New(rand.NewSource(time.Now().UnixNano()))
+				kafkaTopic = fmt.Sprintf("plumber-test-%d", r.Int())
+
+				kafka, err = newKafkaWriter(kafkaAddress, kafkaTopic)
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			AfterEach(func() {
+				kafka.Writer.Close()
 			})
 
 			Context("plain output", func() {
 				It("should work", func() {
+					// Write data
+					writtenRecords, err := writeKafkaRecords(kafka, kafkaTopic, "json", 10)
+
+					Expect(err).ToNot(HaveOccurred())
+					Expect(len(writtenRecords)).To(Equal(10))
+
+					// UseConsumerGroup is true by default, so subsequent reads
+					// should automatically increase the offset
+					for _, v := range writtenRecords {
+						cmd := exec.Command(binary, "read", "kafka",
+							"--address", kafkaAddress,
+							"--topic", kafkaTopic,
+						)
+
+						readOut, err := cmd.CombinedOutput()
+						Expect(err).ToNot(HaveOccurred())
+
+						Expect(string(readOut)).To(ContainSubstring(string(v.Value)))
+					}
 				})
 			})
 
-			Context("protobuf output", func() {
+			Context("read offset", func() {
 				It("should work", func() {
+					// Write a few records
+					writtenRecords, err := writeKafkaRecords(kafka, kafkaTopic, "json", 5)
+
+					Expect(err).ToNot(HaveOccurred())
+					Expect(len(writtenRecords)).To(Equal(5))
+
+					for i, v := range writtenRecords {
+						fmt.Printf("%d: %s\n", i, string(v.Value))
+					}
+
+					// Read at random offsets
+					for i := 0; i < 10; i++ {
+						randOffset := rand.Intn(5)
+
+						cmd := exec.Command(binary, "read", "kafka",
+							"--address", kafkaAddress,
+							"--topic", kafkaTopic,
+							"--no-use-consumer-group",
+							"--read-offset", fmt.Sprintf("%d", randOffset),
+						)
+
+						readOut, err := cmd.CombinedOutput()
+						if err != nil {
+							Fail("failed to read: " + string(readOut))
+						}
+
+						Expect(string(readOut)).To(ContainSubstring(string(writtenRecords[randOffset].Value)))
+					}
 				})
 			})
 		})
@@ -1006,7 +1068,6 @@ var _ = Describe("Functional", func() {
 	})
 
 	Describe("Redis PubSub", func() {
-
 		Describe("read/write", func() {
 			var topicName string
 
@@ -1182,9 +1243,10 @@ type Kafka struct {
 	Dialer *skafka.Dialer
 	Conn   *skafka.Conn
 	Reader *skafka.Reader
+	Writer *skafka.Writer
 }
 
-func newKafka(address, topic string) (*Kafka, error) {
+func newKafkaReader(address, topic string) (*Kafka, error) {
 	dialer := &skafka.Dialer{
 		Timeout: 5 * time.Second,
 	}
@@ -1215,6 +1277,81 @@ func newKafka(address, topic string) (*Kafka, error) {
 			QueueCapacity:    1,
 		}),
 	}, nil
+}
+
+func newKafkaWriter(address, topic string) (*Kafka, error) {
+	dialer := &skafka.Dialer{
+		Timeout: 5 * time.Second,
+	}
+
+	fmt.Println("Creating a new writer for topic: ", topic)
+
+	// The dialer timeout does not get utilized under some conditions (such as
+	// when kafka is configured to NOT auto create topics) - we need a
+	// mechanism to bail out early.
+	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(5*time.Second))
+
+	// Attempt to establish connection on startup
+	conn, err := dialer.DialLeader(ctxDeadline, "tcp", address, topic, 0)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
+			address, err)
+	}
+
+	// Broker should auto create topics - let's do this just in case
+	if err := conn.CreateTopics(skafka.TopicConfig{
+		Topic:             topic,
+		NumPartitions:     1,
+		ReplicationFactor: 1,
+	}); err != nil {
+		return nil, errors.Wrap(err, "unable to create topic")
+	}
+
+	// Give the broker some time to become aware of the topic
+	time.Sleep(5 * time.Second)
+
+	return &Kafka{
+		Dialer: dialer,
+		Conn:   conn,
+		Writer: &skafka.Writer{
+			Addr:  skafka.TCP(address),
+			Topic: topic,
+		},
+	}, nil
+}
+
+func writeKafkaRecords(client *Kafka, topic, dataType string, num int) ([]skafka.Message, error) {
+	if client == nil {
+		return nil, errors.New("received a nil kafka client")
+	}
+
+	var messages []skafka.Message
+
+	for i := 0; i < num; i++ {
+		var entry []byte
+
+		switch dataType {
+		case "json":
+			entry = []byte(fmt.Sprintf(`{"foo":"bar-%d"}`, rand.Intn(10000)))
+		case "protobuf":
+			return nil, errors.New("not implemented")
+		case "plain":
+			entry = []byte(fmt.Sprintf("foo-%d", rand.Intn(10000)))
+		default:
+			return nil, fmt.Errorf("unknown data type '%s'", dataType)
+		}
+
+		messages = append(messages, skafka.Message{
+			Topic: topic,
+			Value: entry,
+		})
+	}
+
+	if err := client.Writer.WriteMessages(context.Background(), messages...); err != nil {
+		return nil, fmt.Errorf("unable to write message: %s", err)
+	}
+
+	return messages, nil
 }
 
 // TODO: Implement
