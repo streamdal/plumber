@@ -18,7 +18,7 @@ func Read(opts *cli.Options) error {
 	var mdErr error
 	var md *desc.MessageDescriptor
 
-	if opts.ReadOutputType == "protobuf" {
+	if opts.ReadProtobufRootMessage != "" {
 		md, mdErr = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")

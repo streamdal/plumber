@@ -40,7 +40,7 @@ Environment Variables
 | `PLUMBER_RELAY_RABBIT_QUEUE`             | Name of the queue where messages will be routed to | **REQUIRED** |
 | `PLUMBER_RELAY_RABBIT_QUEUE_DURABLE`     | Whether the queue we declare should survive server restarts | `false` |
 | `PLUMBER_RELAY_RABBIT_QUEUE_AUTO_DELETE` | Whether to auto-delete the queue after plumber has disconnected | `true` |
-| `PLUMBER_RELAY_RABBIT_QUEUE_EXCLUSIVE`   | Whether plumber should be the only one using the newly defined queue | `true` |
+| `PLUMBER_RELAY_RABBIT_QUEUE_EXCLUSIVE`   | Whether plumber should be the only one using the queue | `false` |
 | `PLUMBER_RELAY_RABBIT_AUTOACK`           | Automatically acknowledge receipt of read/received messages | `true` |
 | `PLUMBER_RELAY_RABBIT_QUEUE_DECLARE`     | Whether to declare the specified queue to create it | `true` |
 | `PLUMBER_RELAY_CONSUMER_TAG`             | How to identify the consumer to RabbitMQ | `plumber` |

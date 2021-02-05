@@ -16,7 +16,7 @@ import (
 )
 
 func Decode(opts *cli.Options, msgDesc *desc.MessageDescriptor, message []byte) ([]byte, error) {
-	if opts.ReadOutputType == "protobuf" {
+	if opts.ReadProtobufRootMessage != "" {
 		// SQS doesn't like binary
 		if opts.AWSSQS.QueueName != "" {
 			// Our implementation of 'protobuf-over-sqs' encodes protobuf in b64
@@ -59,7 +59,7 @@ func Decode(opts *cli.Options, msgDesc *desc.MessageDescriptor, message []byte) 
 		message = decoded
 	}
 
-	data := make([]byte, 0)
+	var data []byte
 
 	var convertErr error
 

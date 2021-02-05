@@ -109,9 +109,12 @@ var _ = Describe("Functional", func() {
 			Context("jsonpb input, protobuf output", func() {
 				It("should work", func() {
 					// We use "Outbound" here because it's simple
-					cmd := exec.Command(binary, "write", "kafka", "--address", kafkaAddress,
-						"--topic", kafkaTopic, "--input-type", "jsonpb", "--output-type", "protobuf",
-						"--input-file", sampleOutboundJSONPB, "--protobuf-dir", protoSchemasDir,
+					cmd := exec.Command(binary, "write", "kafka",
+						"--address", kafkaAddress,
+						"--topic", kafkaTopic,
+						"--input-type", "jsonpb",
+						"--input-file", sampleOutboundJSONPB,
+						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound")
 
 					_, err := cmd.CombinedOutput()
@@ -204,7 +207,9 @@ var _ = Describe("Functional", func() {
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
-					Expect(err).ToNot(HaveOccurred())
+					if err != nil {
+						Fail("write failed: " + string(writeOut))
+					}
 
 					writeGot := string(writeOut[:])
 					writeWant := fmt.Sprintf("Successfully wrote message to exchange '%s'", exchangeName)
@@ -227,7 +232,9 @@ var _ = Describe("Functional", func() {
 					)
 
 					readOutput, err := readCmd.CombinedOutput()
-					Expect(err).ToNot(HaveOccurred())
+					if err != nil {
+						Fail("read failed: " + string(readOutput))
+					}
 
 					if ctx.Err() == context.DeadlineExceeded {
 						Fail("Rabbit plaintext read failed")
@@ -264,14 +271,15 @@ var _ = Describe("Functional", func() {
 						"--exchange", exchangeName,
 						"--routing-key", routingKey,
 						"--input-type", "jsonpb",
-						"--output-type", "protobuf",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound",
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
-					Expect(err).ToNot(HaveOccurred())
+					if err != nil {
+						Fail("write failed: " + string(writeOut))
+					}
 
 					writeGot := string(writeOut[:])
 					writeWant := fmt.Sprintf("Successfully wrote message to exchange '%s'", exchangeName)
@@ -290,13 +298,14 @@ var _ = Describe("Functional", func() {
 						"--exchange", exchangeName,
 						"--routing-key", routingKey,
 						"--queue", queueName,
-						"--output-type", "protobuf",
 						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound",
 					)
 
 					readOut, err := readCmd.CombinedOutput()
-					Expect(err).ToNot(HaveOccurred())
+					if err != nil {
+						Fail("read failed: " + string(readOut))
+					}
 
 					if ctx.Err() == context.DeadlineExceeded {
 						Fail("Rabbit protobuf read failed")
@@ -343,7 +352,9 @@ var _ = Describe("Functional", func() {
 				)
 
 				writeOut, err := writeCmd.CombinedOutput()
-				Expect(err).ToNot(HaveOccurred())
+				if err != nil {
+					Fail("write failed: " + string(writeOut))
+				}
 
 				writeGot := string(writeOut[:])
 				writeWant := fmt.Sprintf("Successfully wrote message to exchange '%s'", exchangeName)
@@ -365,7 +376,9 @@ var _ = Describe("Functional", func() {
 				)
 
 				readOutput, err := readCmd.CombinedOutput()
-				Expect(err).ToNot(HaveOccurred())
+				if err != nil {
+					Fail("read failed: " + string(readOutput))
+				}
 
 				if ctx.Err() == context.DeadlineExceeded {
 					Fail("Rabbit AVRO read failed")
@@ -465,7 +478,6 @@ var _ = Describe("Functional", func() {
 						"aws-sqs",
 						"--queue-name", queueName,
 						"--input-type", "jsonpb",
-						"--output-type", "protobuf",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound",
@@ -484,7 +496,6 @@ var _ = Describe("Functional", func() {
 						"read",
 						"aws-sqs",
 						"--queue-name", queueName,
-						"--output-type", "protobuf",
 						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound",
 					)
@@ -630,7 +641,6 @@ var _ = Describe("Functional", func() {
 						"mqtt",
 						"--topic", topicName,
 						"--input-type", "jsonpb",
-						"--output-type", "protobuf",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound",
@@ -756,7 +766,6 @@ var _ = Describe("Functional", func() {
 						"activemq",
 						"--queue", queueName,
 						"--input-type", "jsonpb",
-						"--output-type", "protobuf",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound",
@@ -776,7 +785,6 @@ var _ = Describe("Functional", func() {
 						"read",
 						"activemq",
 						"--queue", queueName,
-						"--output-type", "protobuf",
 						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound",
 					)
@@ -921,7 +929,6 @@ var _ = Describe("Functional", func() {
 						"nats",
 						"--subject", topicName,
 						"--input-type", "jsonpb",
-						"--output-type", "protobuf",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound",
@@ -1042,7 +1049,9 @@ var _ = Describe("Functional", func() {
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
-					Expect(err).ToNot(HaveOccurred())
+					if err != nil {
+						Fail("write failed: " + string(writeOut))
+					}
 
 					writeGot := string(writeOut[:])
 
@@ -1088,14 +1097,15 @@ var _ = Describe("Functional", func() {
 						"redis",
 						"--channel", topicName,
 						"--input-type", "jsonpb",
-						"--output-type", "protobuf",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
 						"--protobuf-root-message", "Outbound",
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
-					Expect(err).ToNot(HaveOccurred())
+					if err != nil {
+						Fail("write failed: " + string(writeOut))
+					}
 
 					writeGot := string(writeOut[:])
 					writeWant := fmt.Sprintf("Successfully wrote message to '%s'", topicName)
@@ -1148,7 +1158,9 @@ var _ = Describe("Functional", func() {
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
-					Expect(err).ToNot(HaveOccurred())
+					if err != nil {
+						Fail("write failed: " + string(writeOut))
+					}
 
 					writeGot := string(writeOut[:])
 
@@ -1256,7 +1268,8 @@ func createRabbit(exchangeName, queueName, routingKey string) error {
 	if err != nil {
 		return err
 	}
-	cmd = exec.Command("docker", "exec", "rabbitmq", "rabbitmqadmin", "declare", "queue", "name="+queueName)
+
+	cmd = exec.Command("docker", "exec", "rabbitmq", "rabbitmqadmin", "declare", "queue", "name="+queueName, "durable=false")
 	_, err = cmd.CombinedOutput()
 	if err != nil {
 		return err

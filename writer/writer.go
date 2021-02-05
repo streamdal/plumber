@@ -36,8 +36,8 @@ func GenerateWriteValue(md *desc.MessageDescriptor, opts *cli.Options) ([]byte, 
 	}
 
 	// Ensure we do not try to operate on a nil md
-	if opts.WriteOutputType == "protobuf" && md == nil {
-		return nil, errors.New("message descriptor cannot be nil when --output-type is protobuf")
+	if opts.WriteInputFile == "jsonpb" && md == nil {
+		return nil, errors.New("message descriptor cannot be nil when --input-type is jsonpb")
 	}
 
 	// Handle AVRO
@@ -57,12 +57,12 @@ func GenerateWriteValue(md *desc.MessageDescriptor, opts *cli.Options) ([]byte, 
 	}
 
 	// Input: Plain Output: Plain
-	if opts.WriteInputType == "plain" && opts.WriteOutputType == "plain" {
+	if opts.WriteInputType == "plain" {
 		return data, nil
 	}
 
 	// Input: JSONPB Output: Protobuf
-	if opts.WriteInputType == "jsonpb" && opts.WriteOutputType == "protobuf" {
+	if opts.WriteInputType == "jsonpb" {
 		var convertErr error
 
 		data, convertErr = convertJSONPBToProtobuf(data, dynamic.NewMessage(md))
@@ -78,11 +78,7 @@ func GenerateWriteValue(md *desc.MessageDescriptor, opts *cli.Options) ([]byte, 
 		return data, nil
 	}
 
-	// TODO: Input: Base64 Output: Plain
-	// TODO: Input: Base64 Output: Protobuf
-	// TODO: And a few more combinations ...
-
-	return nil, errors.New("unsupported input/output combination")
+	return nil, errors.New("unsupported --input-type")
 }
 
 // ValidateWriteOptions ensures that the correct flags and their values have been provided.
@@ -97,7 +93,7 @@ func ValidateWriteOptions(opts *cli.Options, busSpecific func(options *cli.Optio
 
 	// If type is protobuf, ensure both --protobuf-dir and --protobuf-root-message
 	// are set as well
-	if opts.WriteOutputType == "protobuf" {
+	if opts.WriteInputType == "jsonpb" {
 		if err := cli.ValidateProtobufOptions(
 			opts.WriteProtobufDirs,
 			opts.WriteProtobufRootMessage,
@@ -112,7 +108,7 @@ func ValidateWriteOptions(opts *cli.Options, busSpecific func(options *cli.Optio
 
 	// InputData and file cannot be set at the same time
 	if opts.WriteInputData != "" && opts.WriteInputFile != "" {
-		return fmt.Errorf("--value and --file cannot both be set")
+		return fmt.Errorf("--input-data and --input-file cannot both be set")
 	}
 
 	if opts.WriteInputFile != "" {

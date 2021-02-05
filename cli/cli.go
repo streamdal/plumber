@@ -51,7 +51,6 @@ type Options struct {
 	// Shared read flags
 	ReadProtobufRootMessage string
 	ReadProtobufDirs        []string
-	ReadOutputType          string
 	ReadFollow              bool
 	ReadLineNumbers         bool
 	ReadConvert             string
@@ -60,7 +59,6 @@ type Options struct {
 	WriteInputData           string
 	WriteInputFile           string
 	WriteInputType           string
-	WriteOutputType          string
 	WriteProtobufDirs        []string
 	WriteProtobufRootMessage string
 
@@ -181,10 +179,6 @@ func HandleGlobalReadFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("protobuf-dir", "Directory with .proto files").
 		ExistingDirsVar(&opts.ReadProtobufDirs)
 
-	cmd.Flag("output-type", "The type of message(s) you will receive on the bus").
-		Default("plain").
-		EnumVar(&opts.ReadOutputType, "plain", "protobuf")
-
 	cmd.Flag("follow", "Continuous read (ie. `tail -f`)").
 		Short('f').
 		BoolVar(&opts.ReadFollow)
@@ -200,10 +194,9 @@ func HandleGlobalWriteFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("input-data", "Data to write").StringVar(&opts.WriteInputData)
 	cmd.Flag("input-file", "File containing input data (overrides input-data; 1 file is 1 message)").
 		ExistingFileVar(&opts.WriteInputFile)
-	cmd.Flag("input-type", "Treat input as this type").Default("plain").
+	cmd.Flag("input-type", "Treat input-file as this type [plain, base64, jsonpb]").
+		Default("plain").
 		EnumVar(&opts.WriteInputType, "plain", "base64", "jsonpb")
-	cmd.Flag("output-type", "Convert input to this type when writing message").
-		Default("plain").EnumVar(&opts.WriteOutputType, "plain", "protobuf")
 	cmd.Flag("protobuf-dir", "Directory with .proto files").
 		Envar("PLUMBER_RELAY_PROTOBUF_DIR").
 		ExistingDirsVar(&opts.WriteProtobufDirs)

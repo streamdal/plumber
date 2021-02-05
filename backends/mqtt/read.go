@@ -28,7 +28,7 @@ func Read(opts *cli.Options) error {
 	var mdErr error
 	var md *desc.MessageDescriptor
 
-	if opts.ReadOutputType == "protobuf" {
+	if opts.ReadProtobufRootMessage != "" {
 		md, mdErr = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
 		if mdErr != nil {
 			return errors.Wrap(mdErr, "unable to find root message descriptor")
@@ -133,7 +133,8 @@ func validateReadOptions(opts *cli.Options) error {
 		return errors.New("QoS level can only be 0, 1 or 2")
 	}
 
-	if opts.ReadOutputType == "protobuf" {
+	// If anything protobuf-related is specified, it's being used
+	if opts.ReadProtobufRootMessage != "" || len(opts.ReadProtobufDirs) != 0 {
 		if err := cli.ValidateProtobufOptions(
 			opts.ReadProtobufDirs,
 			opts.ReadProtobufRootMessage,

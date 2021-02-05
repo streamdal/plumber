@@ -234,14 +234,26 @@ $ plumber relay
 
 ```bash
 $ plumber read rabbit --address="amqp://localhost" --exchange events --routing-key \# \
-  --line-numbers --output-type protobuf --protobuf-dir ~/schemas \
-  --protobuf-root-message Message --follow
+  --line-numbers --protobuf-dir ~/schemas --protobuf-root-message Message --follow
 1: {"some-attribute": 123, "numbers" : [1, 2, 3]}
 2: {"some-attribute": 424, "numbers" : [325]}
 3: {"some-attribute": 49, "numbers" : [958, 288, 289, 290]}
 4: ERROR: Cannot decode message as protobuf "Message"
 5: {"some-attribute": 394, "numbers" : [4, 5, 6, 7, 8]}
 ^C
+```
+
+#### Writing protobuf messages with source jsonpb
+
+NOTE: "jsonpb" is just a JSON representation of your protobuf event. When you
+use it as the `--input-type`, `plumber` will read the JSON blob and attempt
+to decode it _into_ your specified root message, followed by writing the []byte
+slice to the message bus.
+
+```bash
+$ plumber write rabbit --exchange events --routing-key foo.bar  \
+  --line-numbers --protobuf-dir ~/schemas --protobuf-root-message Message \
+  --input-file ~/fakes/some-jsonpb-file.json --input-type jsonpb
 ```
 
 ##### Using Avro schemas when reading or writing
