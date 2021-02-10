@@ -21,13 +21,12 @@ func (r *Relay) handleAzure(ctx context.Context, conn *grpc.ClientConn, messages
 
 	client := services.NewGRPCCollectorClient(conn)
 
-	if _, err := client.AddAzureRecord(ctx, &services.AzureRecordRequest{
-		Records: sinkRecords,
-	}); err != nil {
-		return errors.Wrap(err, "unable to complete AddAzureRecord call")
-	}
-
-	r.log.Debug("successfully handled azure queue message")
+	return r.CallWithRetry(ctx, "AddAzureRecord", func(ctx context.Context) error {
+		_, err := client.AddAzureRecord(ctx, &services.AzureRecordRequest{
+			Records: sinkRecords,
+		})
+		return err
+	})
 
 	return nil
 }

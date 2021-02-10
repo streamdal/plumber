@@ -20,13 +20,12 @@ func (r *Relay) handleGCP(ctx context.Context, conn *grpc.ClientConn, messages [
 
 	client := services.NewGRPCCollectorClient(conn)
 
-	if _, err := client.AddGCPRecord(ctx, &services.GCPRecordRequest{
-		Records: sinkRecords,
-	}); err != nil {
-		return errors.Wrap(err, "unable to complete AddGCPRecord call")
-	}
-	r.log.Debug("successfully handled GCP pubsub message")
-	return nil
+	return r.CallWithRetry(ctx, "AddGCPRecord", func(ctx context.Context) error {
+		_, err := client.AddGCPRecord(ctx, &services.GCPRecordRequest{
+			Records: sinkRecords,
+		})
+		return err
+	})
 }
 
 func (r *Relay) validateGCPRelayMessage(msg *types.RelayMessage) error {
