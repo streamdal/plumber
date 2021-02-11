@@ -33,8 +33,6 @@ func (r *Relay) handleKafka(ctx context.Context, conn *grpc.ClientConn, messages
 		})
 		return err
 	})
-
-	return nil
 }
 
 // validateKafkaRelayMessage ensures all necessary values are present for a Kafka relay message

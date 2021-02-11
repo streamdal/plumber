@@ -27,8 +27,6 @@ func (r *Relay) handleAzure(ctx context.Context, conn *grpc.ClientConn, messages
 		})
 		return err
 	})
-
-	return nil
 }
 
 func (r *Relay) validateAzureRelayMessage(msg *types.RelayMessage) error {
