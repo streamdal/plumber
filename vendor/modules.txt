@@ -107,6 +107,9 @@ github.com/devigned/tab
 github.com/dgrijalva/jwt-go
 # github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f
 github.com/dgryski/go-rendezvous
+# github.com/dustin/go-humanize v1.0.0
+## explicit
+github.com/dustin/go-humanize
 # github.com/eclipse/paho.mqtt.golang v1.2.0
 ## explicit
 github.com/eclipse/paho.mqtt.golang
@@ -174,6 +177,9 @@ github.com/jstemmer/go-junit-report/parser
 # github.com/julienschmidt/httprouter v1.3.0
 ## explicit
 github.com/julienschmidt/httprouter
+# github.com/kataras/tablewriter v0.0.0-20180708051242-e063d29b7c23
+## explicit
+github.com/kataras/tablewriter
 # github.com/klauspost/compress v1.10.3
 github.com/klauspost/compress/flate
 github.com/klauspost/compress/fse
@@ -181,12 +187,18 @@ github.com/klauspost/compress/huff0
 github.com/klauspost/compress/snappy
 github.com/klauspost/compress/zstd
 github.com/klauspost/compress/zstd/internal/xxhash
+# github.com/lensesio/tableprinter v0.0.0-20201125135848-89e81fc956e7
+## explicit
+github.com/lensesio/tableprinter
 # github.com/linkedin/goavro/v2 v2.9.8
 ## explicit
 github.com/linkedin/goavro/v2
 # github.com/logrusorgru/aurora v2.0.3+incompatible
 ## explicit
 github.com/logrusorgru/aurora
+# github.com/mattn/go-runewidth v0.0.10
+## explicit
+github.com/mattn/go-runewidth
 # github.com/mitchellh/mapstructure v1.3.3
 github.com/mitchellh/mapstructure
 # github.com/nats-io/jwt v1.1.0
@@ -252,6 +264,9 @@ github.com/pkg/errors
 # github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d
 ## explicit
 github.com/relistan/go-director
+# github.com/rivo/uniseg v0.2.0
+## explicit
+github.com/rivo/uniseg
 # github.com/satori/go.uuid v1.2.0
 github.com/satori/go.uuid
 # github.com/segmentio/kafka-go v0.4.8

@@ -11,6 +11,7 @@ import (
 	awssns "github.com/batchcorp/plumber/backends/aws-sns"
 	awssqs "github.com/batchcorp/plumber/backends/aws-sqs"
 	"github.com/batchcorp/plumber/backends/azure"
+	"github.com/batchcorp/plumber/backends/batch"
 	gcppubsub "github.com/batchcorp/plumber/backends/gcp-pubsub"
 	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/backends/mqtt"
@@ -40,13 +41,33 @@ func main() {
 		stats.Start(opts.StatsReportInterval)
 	}
 
-	printer.PrintLogo()
+	//printer.PrintLogo()
 
 	if strings.HasPrefix(cmd, "relay") {
 		printer.PrintRelayOptions(cmd, opts)
 	}
 
+	parseCmd(cmd, opts)
+}
+
+func parseCmd(cmd string, opts *cli.Options) {
+	var err error
+
 	switch cmd {
+	// Batch API
+	case "batch login":
+		_, err = batch.Login(opts)
+	case "batch collections":
+		err = batch.ListCollections(opts)
+	case "batch destinations":
+		err = batch.ListDestinations(opts)
+	case "batch schemas":
+		err = batch.ListSchemas(opts)
+	case "batch replays":
+		err = batch.ListReplays(opts)
+	case "batch search":
+		err = batch.SearchCollection(opts)
+
 	// Read
 	case "read rabbit":
 		err = rabbitmq.Read(opts)

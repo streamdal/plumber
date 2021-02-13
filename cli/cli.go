@@ -72,6 +72,7 @@ type Options struct {
 	Redis     *RedisOptions
 	Azure     *AzureServiceBusOptions
 	Nats      *NatsOptions
+	Batch     *BatchOptions
 }
 
 func Handle(cliArgs []string) (string, *Options, error) {
@@ -86,6 +87,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		Redis:     &RedisOptions{},
 		Azure:     &AzureServiceBusOptions{},
 		Nats:      &NatsOptions{},
+		Batch:     &BatchOptions{},
 	}
 
 	app := kingpin.New("plumber", "`curl` for messaging systems. See: https://github.com/batchcorp/plumber")
@@ -113,6 +115,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	readCmd := app.Command("read", "Read message(s) from messaging system")
 	writeCmd := app.Command("write", "Write message(s) to messaging system")
 	relayCmd := app.Command("relay", "Relay message(s) from messaging system to Batch")
+	batchCmd := app.Command("batch", "Access your Batch.sh account information")
 
 	switch os.Getenv("PLUMBER_RELAY_TYPE") {
 	case "kafka":
@@ -150,6 +153,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	HandleGlobalReadFlags(relayCmd, opts)
 	HandleGlobalFlags(writeCmd, opts)
 	HandleGlobalFlags(relayCmd, opts)
+	HandleBatchFlags(batchCmd, opts)
 
 	app.Version(version)
 	app.HelpFlag.Short('h')
