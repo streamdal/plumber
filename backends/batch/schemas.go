@@ -3,9 +3,7 @@ package batch
 import (
 	"encoding/json"
 	"errors"
-	"log"
-
-	"github.com/batchcorp/plumber/cli"
+	"os"
 )
 
 // SchemaOutput is used for displaying schemas as a table
@@ -17,31 +15,40 @@ type SchemaOutput struct {
 	Archived bool   `header:"Is Archived" json:"archived"`
 }
 
+var (
+	errSchemaFailed = errors.New("unable to get list of schemas")
+	errNoSchemas    = errors.New("you have no schemas")
+)
+
 // ListSchemas lists all of an account's schemas
-func ListSchemas(opts *cli.Options) error {
-	b, err := Try(opts)
+func (b *Batch) ListSchemas() error {
+	output, err := b.listSchemas()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	printTable(output, os.Stdout)
+
+	return nil
+}
+
+func (b *Batch) listSchemas() ([]SchemaOutput, error) {
 
 	res, _, err := b.Get("/v1/schema", nil)
 	if err != nil {
-		return errors.New("unable to get list of schemas")
+		return nil, errSchemaFailed
 	}
 
 	output := make([]SchemaOutput, 0)
 
 	err = json.Unmarshal(res, &output)
 	if err != nil {
-		return errors.New("unable to get list of schemas")
+		return nil, errSchemaFailed
 	}
 
 	if len(output) == 0 {
-		b.log.Info("You have no schemas")
-		return nil
+		return nil, errNoSchemas
 	}
 
-	PrintTable(output)
-
-	return nil
+	return output, nil
 }

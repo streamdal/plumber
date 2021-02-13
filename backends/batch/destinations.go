@@ -3,9 +3,7 @@ package batch
 import (
 	"encoding/json"
 	"errors"
-	"log"
-
-	"github.com/batchcorp/plumber/cli"
+	"os"
 )
 
 // DestinationOutput is used for displaying destinations as a table
@@ -16,31 +14,40 @@ type DestinationOutput struct {
 	Archived bool   `json:"archived" header:"Is Archived"`
 }
 
+var (
+	errDestinationsFailed = errors.New("unable to get list of destinations")
+	errNoDestinations     = errors.New("you have no destinations")
+)
+
 // ListDestinations lists all of an account's replay destinations
-func ListDestinations(opts *cli.Options) error {
-	b, err := Try(opts)
+func (b *Batch) ListDestinations() error {
+	output, err := b.listDestinations()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
+	printTable(output, os.Stdout)
+
+	return nil
+}
+
+func (b *Batch) listDestinations() ([]DestinationOutput, error) {
 	res, _, err := b.Get("/v1/destination", nil)
 	if err != nil {
-		return errors.New("unable to get list of destinations")
+		return nil, errDestinationsFailed
 	}
 
 	output := make([]DestinationOutput, 0)
 
 	err = json.Unmarshal(res, &output)
 	if err != nil {
-		return errors.New("unable to get list of destinations")
+		return nil, errDestinationsFailed
 	}
 
 	if len(output) == 0 {
-		b.log.Info("You have no destinations")
-		return nil
+		b.Log.Info()
+		return nil, errNoDestinations
 	}
 
-	PrintTable(output)
-
-	return nil
+	return output, nil
 }

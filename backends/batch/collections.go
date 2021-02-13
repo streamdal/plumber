@@ -4,12 +4,9 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/pkg/errors"
-
-	"github.com/batchcorp/plumber/cli"
 )
 
 // CollectionSchema is used to unmarshal the JSON results of a list collections API call
@@ -49,28 +46,37 @@ const (
 	PageSize = 25
 )
 
+var (
+	errNoCollections     = errors.New("you have no collections")
+	errCollectionsFailed = errors.New("unable to get list of collections")
+)
+
 // ListCollections lists all of an account's collections
-func ListCollections(opts *cli.Options) error {
-	b, err := Try(opts)
+func (b *Batch) ListCollections() error {
+	output, err := b.listCollections()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
+	printTable(output, os.Stdout)
+	return nil
+}
+
+func (b *Batch) listCollections() ([]CollectionOutput, error) {
 	res, _, err := b.Get("/v1/collection", nil)
 	if err != nil {
-		return errors.New("unable to get list of collections")
+		return nil, err
 	}
 
 	collections := make([]Collection, 0)
 
 	err = json.Unmarshal(res, &collections)
 	if err != nil {
-		return errors.New("unable to get list of collections")
+		return nil, errCollectionsFailed
 	}
 
 	if len(collections) == 0 {
-		b.log.Info("You have no collections")
-		return nil
+		return nil, errNoCollections
 	}
 
 	output := make([]CollectionOutput, 0)
@@ -85,19 +91,12 @@ func ListCollections(opts *cli.Options) error {
 		})
 	}
 
-	PrintTable(output)
-
-	return nil
+	return output, nil
 }
 
 // SearchCollection queries a collection
-func SearchCollection(opts *cli.Options) error {
-	b, err := Try(opts)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return b.search(PageSize*opts.Batch.Page, PageSize)
+func (b *Batch) SearchCollection() error {
+	return b.search(PageSize*b.Opts.Batch.Page, PageSize)
 }
 
 // search recursively displays pages of (PageSize) results until no more are available
@@ -112,13 +111,13 @@ func (b *Batch) search(from, size int) error {
 
 	results := &SearchResult{}
 	if err := json.Unmarshal(res, results); err != nil {
-		b.log.Fatalf("Failed to search collection: %s", err)
+		b.Log.Fatalf("Failed to search collection: %s", err)
 	}
 
 	// Our JSON output should be human readable
 	m, err := json.MarshalIndent(results.Data, "", "  ")
 	if err != nil {
-		b.log.Fatalf("Could not display search results: %s", err)
+		b.Log.Fatalf("Could not display search results: %s", err)
 	}
 
 	// Display JSON results

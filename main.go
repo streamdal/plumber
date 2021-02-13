@@ -47,6 +47,11 @@ func main() {
 		printer.PrintRelayOptions(cmd, opts)
 	}
 
+	if strings.HasPrefix(cmd, "batch") {
+		parseBatchCmd(cmd, opts)
+		return
+	}
+
 	parseCmd(cmd, opts)
 }
 
@@ -54,20 +59,6 @@ func parseCmd(cmd string, opts *cli.Options) {
 	var err error
 
 	switch cmd {
-	// Batch API
-	case "batch login":
-		_, err = batch.Login(opts)
-	case "batch collections":
-		err = batch.ListCollections(opts)
-	case "batch destinations":
-		err = batch.ListDestinations(opts)
-	case "batch schemas":
-		err = batch.ListSchemas(opts)
-	case "batch replays":
-		err = batch.ListReplays(opts)
-	case "batch search":
-		err = batch.SearchCollection(opts)
-
 	// Read
 	case "read rabbit":
 		err = rabbitmq.Read(opts)
@@ -158,4 +149,34 @@ func ProcessRelayFlags(opts *cli.Options) error {
 	}
 
 	return err
+}
+
+// parseBatchCmd handles all commands related to Batch.sh API
+func parseBatchCmd(cmd string, opts *cli.Options) {
+	var err error
+
+	b := batch.New(opts)
+
+	switch cmd {
+	case "batch login":
+		err = b.Login()
+	case "batch logout":
+		err = b.Logout()
+	case "batch collections":
+		err = b.ListCollections()
+	case "batch destinations":
+		err = b.ListDestinations()
+	case "batch schemas":
+		err = b.ListSchemas()
+	case "batch replays":
+		err = b.ListReplays()
+	case "batch search":
+		err = b.SearchCollection()
+	default:
+		logrus.Fatalf("Unrecognized command: %s", cmd)
+	}
+
+	if err != nil {
+		logrus.Fatalf("Unable to complete command: %s", err)
+	}
 }

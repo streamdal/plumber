@@ -10,6 +10,7 @@ type BatchOptions struct {
 
 func HandleBatchFlags(batchCmd *kingpin.CmdClause, opts *Options) {
 	batchCmd.Command("login", "Login to your Batch.sh account")
+	batchCmd.Command("logout", "Logout and clear saved credentials")
 	batchCmd.Command("destinations", "List replay destinations")
 	batchCmd.Command("schemas", "List collection schemas")
 	batchCmd.Command("replays", "List replays")

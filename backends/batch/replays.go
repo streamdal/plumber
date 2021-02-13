@@ -3,9 +3,7 @@ package batch
 import (
 	"encoding/json"
 	"errors"
-	"log"
-
-	"github.com/batchcorp/plumber/cli"
+	"os"
 )
 
 // ReplayCollection is used to unmarshal the JSON results of a list replays API call
@@ -40,28 +38,38 @@ type ReplayOutput struct {
 	Paused      bool   `header:"Is Paused" json:"paused"`
 }
 
+var (
+	errReplaysFailed = errors.New("unable to get list of replays")
+	errNoReplays     = errors.New("you have no replays")
+)
+
 // ListReplays lists all of an account's replays
-func ListReplays(opts *cli.Options) error {
-	b, err := Try(opts)
+func (b *Batch) ListReplays() error {
+	output, err := b.listReplays()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
+	printTable(output, os.Stdout)
+
+	return nil
+}
+
+func (b *Batch) listReplays() ([]ReplayOutput, error) {
 	res, _, err := b.Get("/v1/replay", nil)
 	if err != nil {
-		return errors.New("unable to get list of replays")
+		return nil, errReplaysFailed
 	}
 
 	replays := make([]Replay, 0)
 
 	err = json.Unmarshal(res, &replays)
 	if err != nil {
-		return errors.New("unable to get list of replays")
+		return nil, errReplaysFailed
 	}
 
 	if len(replays) == 0 {
-		b.log.Info("You have no replays")
-		return nil
+		return nil, errNoReplays
 	}
 
 	output := make([]ReplayOutput, 0)
@@ -77,7 +85,5 @@ func ListReplays(opts *cli.Options) error {
 		})
 	}
 
-	PrintTable(output)
-
-	return nil
+	return output, nil
 }
