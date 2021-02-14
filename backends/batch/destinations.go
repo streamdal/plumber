@@ -3,7 +3,6 @@ package batch
 import (
 	"encoding/json"
 	"errors"
-	"os"
 )
 
 // DestinationOutput is used for displaying destinations as a table
@@ -26,7 +25,7 @@ func (b *Batch) ListDestinations() error {
 		return err
 	}
 
-	printTable(output, os.Stdout)
+	b.Printer(output)
 
 	return nil
 }

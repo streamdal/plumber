@@ -9,6 +9,8 @@ import (
 
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber/cli"
 )
 
 var logger = &logrus.Logger{Out: ioutil.Discard}
@@ -57,4 +59,19 @@ func TestGetCookieJar(t *testing.T) {
 	g.Expect(len(cookies)).To(Equal(1))
 	g.Expect(cookies[0].Name).To(Equal("auth_token"))
 	g.Expect(cookies[0].Value).To(Equal(Token))
+}
+
+func TestNew(t *testing.T) {
+	g := NewGomegaWithT(t)
+	b := New(&cli.Options{})
+	g.Expect(b).To(BeAssignableToTypeOf(&Batch{}))
+}
+
+func TestPost_unauthorized(t *testing.T) {
+	g := NewGomegaWithT(t)
+	b := BatchWithMockResponse(http.StatusUnauthorized, "")
+
+	_, _, err := b.Post("/", nil)
+	g.Expect(err).To(HaveOccurred())
+	g.Expect(err).To(Equal(errNotAuthenticated))
 }

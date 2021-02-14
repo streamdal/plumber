@@ -3,7 +3,6 @@ package batch
 import (
 	"encoding/json"
 	"errors"
-	"os"
 )
 
 // ReplayCollection is used to unmarshal the JSON results of a list replays API call
@@ -50,7 +49,7 @@ func (b *Batch) ListReplays() error {
 		return err
 	}
 
-	printTable(output, os.Stdout)
+	b.Printer(output)
 
 	return nil
 }

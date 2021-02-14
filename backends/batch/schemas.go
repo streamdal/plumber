@@ -3,7 +3,6 @@ package batch
 import (
 	"encoding/json"
 	"errors"
-	"os"
 )
 
 // SchemaOutput is used for displaying schemas as a table
@@ -27,7 +26,7 @@ func (b *Batch) ListSchemas() error {
 		return err
 	}
 
-	printTable(output, os.Stdout)
+	b.Printer(output)
 
 	return nil
 }

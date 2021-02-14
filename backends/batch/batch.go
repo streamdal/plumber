@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/kataras/tablewriter"
@@ -20,8 +20,7 @@ import (
 )
 
 const (
-	ApiUrl        = "https://api.dev.batch.sh"
-	MaxLoginTries = 5
+	ApiUrl = "https://api.dev.batch.sh"
 )
 
 type IBatch interface {
@@ -37,22 +36,27 @@ type IBatch interface {
 }
 
 type Batch struct {
-	Token  string
-	TeamID string
-	UserID string
-	Log    *logrus.Entry
-	Opts   *cli.Options
-	Client *http.Client
+	Token   string
+	TeamID  string
+	UserID  string
+	Log     *logrus.Entry
+	Opts    *cli.Options
+	Client  *http.Client
+	Printer PrinterFunc
 }
+
+// PrinterFunc is a function that will be used to display output to the user's console
+type PrinterFunc func(v interface{})
 
 var errNotAuthenticated = errors.New("you are not authenticated. run `plumber batch login`")
 
 // New creates a new instance of a Batch struct with defaults
 func New(opts *cli.Options) *Batch {
 	b := &Batch{
-		Log:    logrus.WithField("pkg", "batch"),
-		Opts:   opts,
-		Client: &http.Client{},
+		Log:     logrus.WithField("pkg", "batch"),
+		Opts:    opts,
+		Client:  &http.Client{},
+		Printer: printTable,
 	}
 
 	b.LoadConfig()
@@ -161,8 +165,8 @@ func (b *Batch) Post(path string, params map[string]interface{}) ([]byte, int, e
 }
 
 // printTable displays a slice of structs in an ASCII table
-func printTable(v interface{}, w io.Writer) {
-	printer := tableprinter.New(w)
+func printTable(v interface{}) {
+	printer := tableprinter.New(os.Stdout)
 
 	printer.HeaderAlignment = tableprinter.AlignCenter
 	printer.BorderTop, printer.BorderBottom, printer.BorderLeft, printer.BorderRight = true, true, true, true

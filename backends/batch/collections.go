@@ -58,7 +58,7 @@ func (b *Batch) ListCollections() error {
 		return err
 	}
 
-	printTable(output, os.Stdout)
+	b.Printer(output)
 	return nil
 }
 
