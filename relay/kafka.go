@@ -27,16 +27,12 @@ func (r *Relay) handleKafka(ctx context.Context, conn *grpc.ClientConn, messages
 
 	client := services.NewGRPCCollectorClient(conn)
 
-	if _, err := client.AddKafkaRecord(ctx, &services.KafkaSinkRecordRequest{
-		Records: sinkRecords,
-	}); err != nil {
-		return fmt.Errorf("unable to push '%d' kafka sink records to grpc-collector: %s",
-			len(messages), err)
-	}
-
-	r.log.Debugf("successfully handled '%d' kafka message", len(messages))
-
-	return nil
+	return r.CallWithRetry(ctx, "AddKafkaRecord", func(ctx context.Context) error {
+		_, err := client.AddKafkaRecord(ctx, &services.KafkaSinkRecordRequest{
+			Records: sinkRecords,
+		})
+		return err
+	})
 }
 
 // validateKafkaRelayMessage ensures all necessary values are present for a Kafka relay message
