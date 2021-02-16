@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"testing"
 
+	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
 
@@ -42,36 +42,38 @@ func BatchWithMockResponse(httpCode int, responseBody string) *Batch {
 	}
 }
 
-func TestGetCookieJar(t *testing.T) {
-	g := NewGomegaWithT(t)
+var _ = Describe("Batch", func() {
+	Context("New", func() {
+		It("returns a new instance of Batch struct", func() {
+			b := New(&cli.Options{})
+			Expect(b).To(BeAssignableToTypeOf(&Batch{}))
+		})
+	})
+	Context("getCookieJar", func() {
+		It("returns cookie jar with auth_token", func() {
+			const Token = "testin123"
 
-	const Token = "testin123"
+			b := &Batch{
+				Token: Token,
+			}
 
-	b := &Batch{
-		Token: Token,
-	}
+			jar := b.getCookieJar("/v1/collection")
 
-	jar := b.getCookieJar("/v1/collection")
+			u, _ := url.Parse(ApiUrl + "/v1/collection")
+			cookies := jar.Cookies(u)
 
-	u, _ := url.Parse(ApiUrl + "/v1/collection")
-	cookies := jar.Cookies(u)
+			Expect(len(cookies)).To(Equal(1))
+			Expect(cookies[0].Name).To(Equal("auth_token"))
+			Expect(cookies[0].Value).To(Equal(Token))
+		})
+	})
+	Context("Post", func() {
+		It("returns unauthenticated error", func() {
+			b := BatchWithMockResponse(http.StatusUnauthorized, "")
 
-	g.Expect(len(cookies)).To(Equal(1))
-	g.Expect(cookies[0].Name).To(Equal("auth_token"))
-	g.Expect(cookies[0].Value).To(Equal(Token))
-}
-
-func TestNew(t *testing.T) {
-	g := NewGomegaWithT(t)
-	b := New(&cli.Options{})
-	g.Expect(b).To(BeAssignableToTypeOf(&Batch{}))
-}
-
-func TestPost_unauthorized(t *testing.T) {
-	g := NewGomegaWithT(t)
-	b := BatchWithMockResponse(http.StatusUnauthorized, "")
-
-	_, _, err := b.Post("/", nil)
-	g.Expect(err).To(HaveOccurred())
-	g.Expect(err).To(Equal(errNotAuthenticated))
-}
+			_, _, err := b.Post("/", nil)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(Equal(errNotAuthenticated))
+		})
+	})
+})

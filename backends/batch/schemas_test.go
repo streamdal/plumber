@@ -1,50 +1,47 @@
 package batch
 
 import (
-	"testing"
-
+	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-func TestListSchemas_empty(t *testing.T) {
-	g := NewGomegaWithT(t)
+var _ = Describe("Batch", func() {
+	Context("ListSchemas", func() {
+		It("returns error when no schemas exist", func() {
+			b := BatchWithMockResponse(200, `[]`)
 
-	b := BatchWithMockResponse(200, `[]`)
+			output, err := b.listSchemas()
+			Expect(err).To(Equal(errNoSchemas))
+			Expect(len(output)).To(Equal(0))
+		})
 
-	output, err := b.listSchemas()
-	g.Expect(err).To(Equal(errNoSchemas))
-	g.Expect(len(output)).To(Equal(0))
-}
+		It("returns error on a bad response", func() {
+			b := BatchWithMockResponse(200, `{}`)
 
-func TestListSchemas_bad_response(t *testing.T) {
-	g := NewGomegaWithT(t)
+			output, err := b.listSchemas()
+			Expect(err).To(Equal(errSchemaFailed))
+			Expect(len(output)).To(Equal(0))
+		})
 
-	b := BatchWithMockResponse(200, `{}`)
+		It("returns list of schemas", func() {
+			apiResponse := `[{
+			  "id": "44da12e6-6dfd-4f11-a952-6863958acf05",
+			  "name": "Test Schema",
+			  "type": "json",
+			  "root_type": "",
+			  "archived": false
+			}]`
 
-	output, err := b.listSchemas()
-	g.Expect(err).To(Equal(errSchemaFailed))
-	g.Expect(len(output)).To(Equal(0))
-}
+			b := BatchWithMockResponse(200, apiResponse)
 
-func TestListSchemas(t *testing.T) {
-	g := NewGomegaWithT(t)
-
-	apiResponse := `[{
-	  "id": "44da12e6-6dfd-4f11-a952-6863958acf05",
-	  "name": "Test Schema",
-	  "type": "json",
-	  "root_type": "",
-	  "archived": false
-	}]`
-
-	b := BatchWithMockResponse(200, apiResponse)
-
-	output, err := b.listSchemas()
-	g.Expect(err).ToNot(HaveOccurred())
-	g.Expect(len(output)).To(Equal(1))
-	g.Expect(output[0].ID).To(Equal("44da12e6-6dfd-4f11-a952-6863958acf05"))
-	g.Expect(output[0].Name).To(Equal("Test Schema"))
-	g.Expect(output[0].Type).To(Equal("json"))
-	g.Expect(output[0].RootType).To(Equal(""))
-	g.Expect(output[0].Archived).To(BeFalse())
-}
+			output, err := b.listSchemas()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(len(output)).To(Equal(1))
+			Expect(output[0].ID).To(Equal("44da12e6-6dfd-4f11-a952-6863958acf05"))
+			Expect(output[0].Name).To(Equal("Test Schema"))
+			Expect(output[0].Type).To(Equal("json"))
+			Expect(output[0].RootType).To(Equal(""))
+			Expect(output[0].Archived).To(BeFalse())
+		})
+	})
+})
