@@ -162,13 +162,15 @@ func parseBatchCmd(cmd string, opts *cli.Options) {
 		err = b.Login()
 	case "batch logout":
 		err = b.Logout()
-	case "batch collections":
+	case "batch collections list":
 		err = b.ListCollections()
-	case "batch destinations":
+	case "batch collections new":
+		err = b.CreateCollection()
+	case "batch destinations list":
 		err = b.ListDestinations()
-	case "batch schemas":
+	case "batch schemas list":
 		err = b.ListSchemas()
-	case "batch replays":
+	case "batch replays list":
 		err = b.ListReplays()
 	case "batch search":
 		err = b.SearchCollection()

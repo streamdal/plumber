@@ -60,7 +60,7 @@ func (b *Batch) listReplays() ([]ReplayOutput, error) {
 		return nil, errReplaysFailed
 	}
 
-	replays := make([]Replay, 0)
+	replays := make([]*Replay, 0)
 
 	err = json.Unmarshal(res, &replays)
 	if err != nil {
@@ -85,4 +85,33 @@ func (b *Batch) listReplays() ([]ReplayOutput, error) {
 	}
 
 	return output, nil
+}
+
+func (b *Batch) pauseReplay() error {
+	// TODO
+
+	return nil
+}
+
+func (b *Batch) resumeReplay() error {
+	// TODO
+
+	return nil
+}
+
+func (b *Batch) createReplay() error {
+	//p := map[string]interface{}{
+	//	"name":           "",
+	//	"type":           "continuous",
+	//	"query":          b.Opts.Batch.Query,
+	//	"collection_id":  b.Opts.Batch.CollectionID,
+	//	"destination_id": "",
+	//}
+
+	// API call to create replay
+	//res, _, err := b.Post("/v1/replay", p)
+
+	// Watch replay using generated ID
+
+	return nil
 }

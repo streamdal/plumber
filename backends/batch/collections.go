@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/pkg/errors"
@@ -41,6 +42,14 @@ type SearchResult struct {
 	Data  []json.RawMessage `json:"data"`
 }
 
+type DataLake struct {
+	ID string `json:"id"`
+}
+
+type BasicErrorResponse struct {
+	Message string `json:"error"`
+}
+
 const (
 	EnterKey = byte(10)
 	PageSize = 25
@@ -49,6 +58,8 @@ const (
 var (
 	errNoCollections     = errors.New("you have no collections")
 	errCollectionsFailed = errors.New("unable to get list of collections")
+	errCreateFailed      = errors.New("failed to create collection")
+	errNoDataLake        = errors.New("you have no datalake; please contact batch.sh support")
 )
 
 // ListCollections lists all of an account's collections
@@ -134,6 +145,79 @@ func (b *Batch) search(from, size int) error {
 			return b.search(from+PageSize, PageSize)
 		}
 	}
+
+	return nil
+}
+
+func (b *Batch) getDataLakeID() (string, error) {
+	res, _, err := b.Get("/v1/datalake", nil)
+	if err != nil {
+		return "", err
+	}
+
+	lakes := make([]*DataLake, 0)
+	if err := json.Unmarshal(res, &lakes); err != nil {
+		return "", errCreateFailed
+	}
+
+	if len(lakes) == 0 {
+		return "", errNoDataLake
+	}
+
+	return lakes[0].ID, nil
+}
+
+func (b *Batch) CreateCollection() error {
+	// Get datalake ID
+	datalakeID, err := b.getDataLakeID()
+	if err != nil {
+		return err
+	}
+
+	// Create collection
+	p := map[string]interface{}{
+		"schema_id":   b.Opts.Batch.SchemaID,
+		"name":        b.Opts.Batch.CollectionName,
+		"notes":       b.Opts.Batch.Notes,
+		"datalake_id": datalakeID,
+	}
+
+	res, code, err := b.Post("/v1/collection", p)
+	if err != nil {
+		return errCreateFailed
+	}
+
+	// Plan error
+	if code == http.StatusPreconditionFailed {
+		errResponse := &BasicErrorResponse{}
+		if err := json.Unmarshal(res, errResponse); err != nil {
+			return errCreateFailed
+		}
+
+		b.Log.Errorf("%s: %s", errCreateFailed, errResponse.Message)
+		return nil
+	}
+
+	// Bad input error
+	if code == http.StatusUnprocessableEntity {
+		errResponse := &BlunderErrorResponse{}
+		if err := json.Unmarshal(res, errResponse); err != nil {
+			return errCreateFailed
+		}
+
+		for _, e := range errResponse.Errors {
+			b.Log.Errorf("%s: %s", errCreateFailed, e.Message)
+		}
+
+		return nil
+	}
+
+	createdCollection := &Collection{}
+	if err := json.Unmarshal(res, createdCollection); err != nil {
+		return errCreateFailed
+	}
+
+	b.Log.Infof("Created collection %s!\n", createdCollection.ID)
 
 	return nil
 }

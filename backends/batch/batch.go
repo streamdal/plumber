@@ -45,6 +45,19 @@ type Batch struct {
 	Printer PrinterFunc
 }
 
+type BlunderError struct {
+	Code     int    `json:"code"`
+	Domain   string `json:"domain"`
+	Field    string `json:"field"`
+	Status   string `json:"status"`
+	RawError string `json:"raw_error"`
+	Message  string `json:"message"`
+}
+
+type BlunderErrorResponse struct {
+	Errors []*BlunderError `json:"errors"`
+}
+
 // PrinterFunc is a function that will be used to display output to the user's console
 type PrinterFunc func(v interface{})
 
