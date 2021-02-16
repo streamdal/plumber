@@ -46,10 +46,6 @@ type DataLake struct {
 	ID string `json:"id"`
 }
 
-type BasicErrorResponse struct {
-	Message string `json:"error"`
-}
-
 const (
 	EnterKey = byte(10)
 	PageSize = 25
@@ -187,19 +183,7 @@ func (b *Batch) CreateCollection() error {
 		return errCreateFailed
 	}
 
-	// Plan error
-	if code == http.StatusPreconditionFailed {
-		errResponse := &BasicErrorResponse{}
-		if err := json.Unmarshal(res, errResponse); err != nil {
-			return errCreateFailed
-		}
-
-		b.Log.Errorf("%s: %s", errCreateFailed, errResponse.Message)
-		return nil
-	}
-
-	// Bad input error
-	if code == http.StatusUnprocessableEntity {
+	if code != http.StatusOK {
 		errResponse := &BlunderErrorResponse{}
 		if err := json.Unmarshal(res, errResponse); err != nil {
 			return errCreateFailed
