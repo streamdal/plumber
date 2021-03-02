@@ -98,8 +98,10 @@ func (g *GCPPubSub) Read() error {
 }
 
 func validateReadOptions(opts *cli.Options) error {
-	if os.Getenv("GOOGLE_APPLICATION_CREDENTIALS") == "" {
-		return errors.New("GOOGLE_APPLICATION_CREDENTIALS must be set")
+	emulator := os.Getenv("PUBSUB_EMULATOR_HOST")
+	appCreds := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
+	if emulator == "" && appCreds == "" {
+		return errors.New("GOOGLE_APPLICATION_CREDENTIALS or PUBSUB_EMULATOR_HOST must be set")
 	}
 
 	// If anything protobuf-related is specified, it's being used
