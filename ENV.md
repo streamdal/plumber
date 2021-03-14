@@ -81,3 +81,10 @@ Environment Variables
 | `PLUMBER_RELAY_AZURE_QUEUE_NAME`    | Queue name to read from. (*Must specify this or topic name*)|  |
 | `PLUMBER_RELAY_AZURE_TOPIC_NAME`    | Topic name to read from. (*Must specify this or queue name*) |  |
 | `PLUMBER_RELAY_AZURE_SUBSCRIPTION`  | Topic's Subscription name to read from | **REQUIRED if topic is specified** |
+
+## GCP Pub/Sub
+
+| Environment Variable  | Description | Default |
+| --------------------- | ------------| ------- |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Credentials file for service account | **REQUIRED** |
+
