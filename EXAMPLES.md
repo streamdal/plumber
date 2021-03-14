@@ -7,6 +7,7 @@
        * [Azure Service Bus](#azure-service-bus)
        * [NATS](#nats)
        * [Redis PubSub](#redis-pubsub)
+       * [GCP Pub/Sub](#gcp-pubsub)
   * [Publishing](#publishing)
        * [AWS SQS](#aws-sqs-1)
        * [AWS SNS](#aws-sns)
@@ -15,6 +16,7 @@
        * [Azure Service Bus](#azure-service-bus-1)
        * [NATS](#nats-1)
        * [Redis PubSub](#redis-pubsub-1)
+       * [GCP Pub/Sub](#gcp-pubsub-1)
   * [Relay Mode](#relay-mode)
        * [Continuously relay messages from your RabbitMQ instance to a Batch.sh collection](#continuously-relay-messages-from-your-rabbitmq-instance-to-a-batchsh-collection)
        * [Continuously relay messages from an SQS queue to a Batch.sh collection](#continuously-relay-messages-from-an-sqs-queue-to-a-batchsh-collection)
@@ -106,6 +108,12 @@ plumber read nats --address="nats://user:pass@nats.test.io:4222" --subject "test
 plumber read redis --address="localhost:6379" --channel="new-orders"
 ```
 
+#### GCP Pub/Sub
+
+```bash
+plumber read gcp-pubsub --project-id=PROJECT_ID --sub-id=SUBSCRIPTION
+```
+
 ## Publishing
 
 ##### AWS SQS
@@ -160,6 +168,12 @@ plumber write nats --address="nats://user:pass@nats.test.io:4222" --subject "tes
 
 ```bash
 plumber write redis --address="localhost:6379" --channel="new-orders" --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+```
+
+#### GCP Pub/Sub
+
+```bash
+plumber write gcp-pubsub --topic-id=TOPIC --project-id=PROJECT_ID --input-data='{"Sensor":"Room J","Temp":19}' 
 ```
 
 ## Relay Mode
