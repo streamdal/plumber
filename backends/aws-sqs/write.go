@@ -84,6 +84,10 @@ func (a *AWSSQS) Write(value []byte) error {
 		}
 	}
 
+	if len(input.MessageAttributes) == 0 {
+		input.MessageAttributes = nil
+	}
+
 	if _, err := a.Service.SendMessage(input); err != nil {
 		return errors.Wrap(err, ErrUnableToSend)
 	}
