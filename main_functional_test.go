@@ -526,7 +526,7 @@ var _ = Describe("Functional", func() {
 						"--auto-delete",
 					)
 
-					readOutput, _ readCmd.CombinedOutput()
+					readOutput, _ := readCmd.CombinedOutput()
 					//Expect(err).ToNot(HaveOccurred())
 
 					readGot := string(readOutput[:])
