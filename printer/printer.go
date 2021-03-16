@@ -10,11 +10,39 @@ import (
 	"github.com/batchcorp/plumber/cli"
 )
 
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . IPrinter
+type IPrinter interface {
+	Error(str string)
+	Print(str string)
+}
+
+type Printer struct {
+	PrintFunc func(format string, a ...interface{}) (n int, err error)
+}
+
+func New() *Printer {
+	return &Printer{
+		PrintFunc: fmt.Printf,
+	}
+}
+
+// Error is a convenience function for printing errors.
+func (p *Printer) Error(str string) {
+	p.PrintFunc("%s: %s\n", aurora.Red(">> ERROR"), str)
+}
+
+// Print is a convenience function for printing regular output.
+func (p *Printer) Print(str string) {
+	p.PrintFunc("%s\n", str)
+}
+
+// TODO: convert backends to use IPrinter methods
 // Error is a convenience function for printing errors.
 func Error(str string) {
 	fmt.Printf("%s: %s\n", aurora.Red(">> ERROR"), str)
 }
 
+// TODO: convert backends to use IPrinter methods
 // Print is a convenience function for printing regular output.
 func Print(str string) {
 	fmt.Printf("%s\n", str)

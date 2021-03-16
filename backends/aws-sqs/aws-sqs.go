@@ -9,15 +9,18 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"github.com/batchcorp/plumber/backends/aws-sqs/types"
 	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/printer"
 )
 
 type AWSSQS struct {
 	Options  *cli.Options
-	Service  *sqs.SQS
+	Service  types.ISQSAPI
 	QueueURL string
 	MsgDesc  *desc.MessageDescriptor
-	log      *logrus.Entry
+	Log      *logrus.Entry
+	Printer  printer.IPrinter
 }
 
 func NewService(opts *cli.Options) (*sqs.SQS, string, error) {
