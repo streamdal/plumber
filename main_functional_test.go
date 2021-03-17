@@ -85,6 +85,8 @@ var _ = Describe("Functional", func() {
 
 			AfterEach(func() {
 				kafka.Reader.Close()
+				kafka.Conn.DeleteTopics(kafkaTopic)
+				kafka.Conn.Close()
 			})
 
 			Context("plain input, plain output", func() {

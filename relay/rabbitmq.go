@@ -14,6 +14,8 @@ import (
 )
 
 func (r *Relay) handleRabbit(ctx context.Context, conn *grpc.ClientConn, messages []interface{}) error {
+	var err error
+
 	sinkRecords, err := r.convertMessagesToAMQPSinkRecords(messages)
 	if err != nil {
 		return errors.Wrap(err, "unable to convert messages to rabbit sink records")
@@ -21,15 +23,12 @@ func (r *Relay) handleRabbit(ctx context.Context, conn *grpc.ClientConn, message
 
 	client := services.NewGRPCCollectorClient(conn)
 
-	if _, err := client.AddAMQPRecord(ctx, &services.AMQPRecordRequest{
-		Records: sinkRecords,
-	}); err != nil {
-		return errors.Wrap(err, "unable to complete AddAMQPRecord call")
-	}
-
-	r.log.Debug("successfully handled rabbit message")
-
-	return nil
+	return r.CallWithRetry(ctx, "AddAMQPRecord", func(ctx context.Context) error {
+		_, err := client.AddAMQPRecord(ctx, &services.AMQPRecordRequest{
+			Records: sinkRecords,
+		})
+		return err
+	})
 }
 
 func (r *Relay) validateAMQPRelayMessage(msg *types.RelayMessage) error {

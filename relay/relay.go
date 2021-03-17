@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/batchcorp/schemas/build/go/services"
@@ -28,6 +29,9 @@ const (
 
 	QueueFlushInterval = 10 * time.Second
 	DefaultBatchSize   = 100 // number of messages to batch
+
+	MaxGRPCRetries = 5
+	GRPCRetrySleep = time.Second * 5
 )
 
 type Relay struct {
@@ -248,4 +252,21 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	}
 
 	stats.Incr(relayType+"-relay-producer", len(messages))
+}
+
+// CallWithRetry will retry a GRPC call until it succeeds or reaches a maximum number of retries defined by MaxGRPCRetries
+func (r *Relay) CallWithRetry(ctx context.Context, method string, publish func(ctx context.Context) error) error {
+	var err error
+
+	for i := 1; i <= MaxGRPCRetries; i++ {
+		if err := publish(ctx); err != nil {
+			r.log.Debugf("unable to complete %s call [retry %d/%d]", method, i, 5)
+			time.Sleep(GRPCRetrySleep)
+			continue
+		}
+		r.log.Debugf("successfully handled %s message", strings.Replace(method, "Add", "", 1))
+		return nil
+	}
+
+	return fmt.Errorf("unable to complete %s call [reached max retries (%d)]: %s", method, MaxGRPCRetries, err)
 }
