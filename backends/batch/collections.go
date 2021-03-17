@@ -103,11 +103,11 @@ func (b *Batch) listCollections() ([]CollectionOutput, error) {
 
 // SearchCollection queries a collection
 func (b *Batch) SearchCollection() error {
-	return b.search(PageSize*b.Opts.Batch.Page, PageSize)
+	return b.search(PageSize*b.Opts.Batch.Page, PageSize, b.Opts.Batch.Page)
 }
 
 // search recursively displays pages of (PageSize) results until no more are available
-func (b *Batch) search(from, size int) error {
+func (b *Batch) search(from, size, page int) error {
 	p := map[string]interface{}{
 		"query": b.Opts.Batch.Query,
 		"from":  from,
@@ -132,13 +132,19 @@ func (b *Batch) search(from, size int) error {
 
 	// Total is the total number of results for the entire query, not the page
 	if results.Total > (from + PageSize) {
-		nextPageSize := results.Total - (size + PageSize)
+		page++
 
-		fmt.Printf("--- Press [Enter] for more %d results ---\n", nextPageSize)
+		nextPageSize := PageSize
+		remaining := results.Total - (page * PageSize)
+		if remaining < PageSize {
+			nextPageSize = remaining
+		}
+
+		fmt.Printf("--- Press [Enter] for more %d results, %d results total remaining ---\n", nextPageSize, remaining)
 
 		input, _ := bufio.NewReader(os.Stdin).ReadByte()
 		if input == EnterKey {
-			return b.search(from+PageSize, PageSize)
+			return b.search(from+PageSize, PageSize, page)
 		}
 	}
 
