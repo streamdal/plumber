@@ -23,7 +23,7 @@ func HandleBatchFlags(batchCmd *kingpin.CmdClause, opts *Options) {
 
 	// Schemas
 	schemasCmd := batchCmd.Command("schemas", "Collection schemas")
-	schemasCmd.Command("list", "List replays").Default()
+	schemasCmd.Command("list", "List schemas").Default()
 
 	// Replays
 	replayCmd := batchCmd.Command("replays", "Replays")
