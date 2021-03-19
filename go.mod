@@ -17,6 +17,7 @@ require (
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/linkedin/goavro/v2 v2.9.8
 	github.com/logrusorgru/aurora v2.0.3+incompatible
+	github.com/maxbrunsfeld/counterfeiter/v6 v6.3.0
 	github.com/nats-io/nats-server/v2 v2.1.9 // indirect
 	github.com/nats-io/nats.go v1.10.0
 	github.com/onsi/ginkgo v1.14.2

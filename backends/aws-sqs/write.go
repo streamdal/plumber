@@ -15,6 +15,11 @@ import (
 	"github.com/batchcorp/plumber/writer"
 )
 
+const (
+	ErrInvalidWriteDelaySeconds = "--delay-seconds must be between 0 and 900"
+	ErrUnableToSend             = "unable to complete message send"
+)
+
 // Write is the entry point function for performing write operations in AWSSQS.
 //
 // This is where we verify that the passed args and flags combo makes sense,
@@ -45,7 +50,8 @@ func Write(opts *cli.Options) error {
 		Service:  svc,
 		QueueURL: queueURL,
 		MsgDesc:  md,
-		log:      logrus.WithField("pkg", "awssqs/write.go"),
+		Log:      logrus.WithField("pkg", "awssqs/write.go"),
+		Printer:  printer.New(),
 	}
 
 	msg, err := writer.GenerateWriteValue(md, opts)
@@ -58,7 +64,7 @@ func Write(opts *cli.Options) error {
 
 func validateWriteOptions(opts *cli.Options) error {
 	if opts.AWSSQS.WriteDelaySeconds < 0 || opts.AWSSQS.WriteDelaySeconds > 900 {
-		return errors.New("--delay-seconds must be between 0 and 900")
+		return errors.New(ErrInvalidWriteDelaySeconds)
 	}
 
 	return nil
@@ -66,9 +72,10 @@ func validateWriteOptions(opts *cli.Options) error {
 
 func (a *AWSSQS) Write(value []byte) error {
 	input := &sqs.SendMessageInput{
-		DelaySeconds: aws.Int64(a.Options.AWSSQS.WriteDelaySeconds),
-		MessageBody:  aws.String(string(value)),
-		QueueUrl:     aws.String(a.QueueURL),
+		DelaySeconds:      aws.Int64(a.Options.AWSSQS.WriteDelaySeconds),
+		MessageBody:       aws.String(string(value)),
+		QueueUrl:          aws.String(a.QueueURL),
+		MessageAttributes: make(map[string]*sqs.MessageAttributeValue, 0),
 	}
 
 	for k, v := range a.Options.AWSSQS.WriteAttributes {
@@ -77,11 +84,15 @@ func (a *AWSSQS) Write(value []byte) error {
 		}
 	}
 
-	if _, err := a.Service.SendMessage(input); err != nil {
-		return errors.Wrap(err, "unable to complete message send")
+	if len(input.MessageAttributes) == 0 {
+		input.MessageAttributes = nil
 	}
 
-	printer.Print(fmt.Sprintf("Successfully wrote message to AWS queue '%s'", a.Options.AWSSQS.QueueName))
+	if _, err := a.Service.SendMessage(input); err != nil {
+		return errors.Wrap(err, ErrUnableToSend)
+	}
+
+	a.Printer.Print(fmt.Sprintf("Successfully wrote message to AWS queue '%s'", a.Options.AWSSQS.QueueName))
 
 	return nil
 }

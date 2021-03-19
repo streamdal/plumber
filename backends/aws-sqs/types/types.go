@@ -1,6 +1,9 @@
 package types
 
-import "github.com/aws/aws-sdk-go/service/sqs"
+import (
+	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
+)
 
 type RelayMessage struct {
 	Value   *sqs.Message
@@ -11,4 +14,9 @@ type RelayMessageOptions struct {
 	Service    *sqs.SQS
 	QueueURL   string
 	AutoDelete bool
+}
+
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . ISQSAPI
+type ISQSAPI interface {
+	sqsiface.SQSAPI
 }
