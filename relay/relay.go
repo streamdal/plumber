@@ -30,8 +30,9 @@ const (
 	QueueFlushInterval = 10 * time.Second
 	DefaultBatchSize   = 100 // number of messages to batch
 
-	MaxGRPCRetries = 5
-	GRPCRetrySleep = time.Second * 5
+	MaxGRPCRetries     = 5
+	MaxGRPCMessageSize = 1024 * 1024 * 100
+	GRPCRetrySleep     = time.Second * 5
 )
 
 type Relay struct {
