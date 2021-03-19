@@ -30,8 +30,10 @@ const (
 	QueueFlushInterval = 10 * time.Second
 	DefaultBatchSize   = 100 // number of messages to batch
 
-	MaxGRPCRetries     = 5
-	MaxGRPCMessageSize = 1024 * 1024 * 100
+	MaxGRPCRetries = 5
+
+	// Maximum message size for GRPC client in bytes
+	MaxGRPCMessageSize = 1024 * 1024 * 100 // 100MB
 	GRPCRetrySleep     = time.Second * 5
 )
 
