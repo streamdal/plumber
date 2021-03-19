@@ -260,7 +260,8 @@ func (r *Relay) CallWithRetry(ctx context.Context, method string, publish func(c
 	var err error
 
 	for i := 1; i <= MaxGRPCRetries; i++ {
-		if err := publish(ctx); err != nil {
+		err = publish(ctx)
+		if err != nil {
 			r.log.Debugf("unable to complete %s call [retry %d/%d]", method, i, 5)
 			time.Sleep(GRPCRetrySleep)
 			continue
