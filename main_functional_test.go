@@ -1091,7 +1091,7 @@ var _ = Describe("Functional", func() {
 							binary,
 							"read",
 							"redis",
-							"--channel", topicName,
+							"--channels", topicName,
 						)
 
 						readOutput, err := readCmd.CombinedOutput()
@@ -1107,7 +1107,7 @@ var _ = Describe("Functional", func() {
 						binary,
 						"write",
 						"redis",
-						"--channel", topicName,
+						"--channels", topicName,
 						"--input-data", testMessage,
 					)
 
@@ -1142,7 +1142,7 @@ var _ = Describe("Functional", func() {
 							binary,
 							"read",
 							"redis",
-							"--channel", topicName,
+							"--channels", topicName,
 						)
 
 						readOutput, err := readCmd.CombinedOutput()
@@ -1158,7 +1158,7 @@ var _ = Describe("Functional", func() {
 						binary,
 						"write",
 						"redis",
-						"--channel", topicName,
+						"--channels", topicName,
 						"--input-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
@@ -1198,7 +1198,7 @@ var _ = Describe("Functional", func() {
 							binary,
 							"read",
 							"redis",
-							"--channel", topicName,
+							"--channels", topicName,
 							"--avro-schema", "./test-assets/avro/test.avsc",
 						)
 
@@ -1215,7 +1215,7 @@ var _ = Describe("Functional", func() {
 						binary,
 						"write",
 						"redis",
-						"--channel", topicName,
+						"--channels", topicName,
 						"--input-data", testMessage,
 						"--avro-schema", "./test-assets/avro/test.avsc",
 					)
