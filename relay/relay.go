@@ -21,6 +21,7 @@ import (
 	gcpTypes "github.com/batchcorp/plumber/backends/gcp-pubsub/types"
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
 	rabbitTypes "github.com/batchcorp/plumber/backends/rabbitmq/types"
+	redisTypes "github.com/batchcorp/plumber/backends/redis/types"
 	"github.com/batchcorp/plumber/stats"
 )
 
@@ -244,6 +245,10 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 		r.log.Debugf("Run() received %d gcp message(s)", len(messages))
 		relayType = "gcp"
 		err = r.handleGCP(ctx, conn, messages)
+	case *redisTypes.RelayMessage:
+		r.log.Debugf("Run() received %d redis message(s)", len(messages))
+		relayType = "redis"
+		err = r.handleRedis(ctx, conn, messages)
 	default:
 		r.log.WithField("type", v).Error("received unknown message type - skipping")
 		return
