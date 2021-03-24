@@ -45,7 +45,7 @@ func (r *Redis) Read() error {
 
 	ctx := context.Background()
 
-	ps := r.Client.Subscribe(ctx, r.Options.Redis.Channel)
+	ps := r.Client.Subscribe(ctx, r.Options.Redis.Channels...)
 	defer ps.Unsubscribe(ctx)
 
 	r.log.Info("Listening for message(s) ...")

@@ -130,6 +130,9 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	case "gcp-pubsup":
 		HandleRelayFlags(relayCmd, opts)
 		HandleGCPPubSubFlags(readCmd, writeCmd, relayCmd, opts)
+	case "redis":
+		HandleRelayFlags(relayCmd, opts)
+		HandleRedisFlags(readCmd, writeCmd, relayCmd, opts)
 	default:
 		HandleRelayFlags(relayCmd, opts)
 		HandleKafkaFlags(readCmd, writeCmd, relayCmd, opts)
@@ -158,6 +161,12 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	cmd, err := app.Parse(cliArgs)
 	if err != nil {
 		return "", nil, errors.Wrap(err, "unable to parse command")
+	}
+
+	// Hack: kingpin requires multiple values to be separated by newline which
+	// is not great for env vars so we use a comma instead
+	if len(opts.Redis.Channels) != 0 {
+		opts.Redis.Channels = strings.Split(opts.Redis.Channels[0], ",")
 	}
 
 	opts.Action = "unknown"
@@ -212,9 +221,9 @@ func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
 }
 
 func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
-	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs, azure, gcp-pubsub").
+	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs, azure, gcp-pubsub, redis").
 		Envar("PLUMBER_RELAY_TYPE").
-		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka", "azure", "gcp-pubsub")
+		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka", "azure", "gcp-pubsub", "redis")
 
 	relayCmd.Flag("token", "Collection token to use when sending data to Batch").
 		Required().

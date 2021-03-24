@@ -88,3 +88,12 @@ Environment Variables
 | --------------------- | ------------| ------- |
 | `GOOGLE_APPLICATION_CREDENTIALS` | Credentials file for service account | **REQUIRED** |
 
+## Redis
+
+| Environment Variable  | Description | Default |
+| --------------------- | ------------| ------- |
+| `PLUMBER_RELAY_REDIS_ADDRESS` | Redis server address | `localhost:6379` |
+| `PLUMBER_RELAY_REDIS_CHANNELS` | Channels that plumber should subscribe to | **REQUIRED** |
+| `PLUMBER_RELAY_REDIS_USERNAME` | Username (redis >= v6.0.0) | |
+| `PLUMBER_RELAY_REDIS_PASSWORD` | Password (redis >= v1.0.0) | |
+| `PLUMBER_RELAY_REDIS_DATABASE` | Database (0-15) | `0` |

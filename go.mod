@@ -7,7 +7,7 @@ require (
 	github.com/Azure/azure-service-bus-go v0.10.8
 	github.com/aws/aws-sdk-go v1.34.9
 	github.com/batchcorp/rabbit v0.1.9
-	github.com/batchcorp/schemas v0.2.115
+	github.com/batchcorp/schemas v0.2.125
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/go-redis/redis/v8 v8.4.8
 	github.com/go-stomp/stomp v2.0.6+incompatible

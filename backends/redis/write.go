@@ -54,16 +54,15 @@ func Write(opts *cli.Options) error {
 	return r.Write(msg)
 }
 
-// Write is a wrapper for amqp Publish method. We wrap it so that we can mock
-// it in tests, add logging etc.
+// Write will write only to the first provided channel
 func (r *Redis) Write(value []byte) error {
-	err := r.Client.Publish(context.Background(), r.Options.Redis.Channel, value).Err()
+	err := r.Client.Publish(context.Background(), r.Options.Redis.Channels[0], value).Err()
 	if err != nil {
 		r.log.Errorf("Failed to publish message: %s", err)
 		return err
 	}
 
-	r.log.Infof("Successfully wrote message to '%s'", r.Options.Redis.Channel)
+	r.log.Infof("Successfully wrote message to '%s'", r.Options.Redis.Channels[0])
 	return nil
 }
 

@@ -227,6 +227,17 @@ docker run -d --name plumber-azure -p 8080:8080 \
     batchcorp/plumber 
 ```
 
+##### Continuously relay messages for multiple Redis channels to a Batch.sh collection
+
+```bash
+docker run -d --name plumber-redis -p 8080:8080 \
+    -e PLUMBER_RELAY_REDIS_ADDRESS=localhost:6379 \
+    -e PLUMBER_RELAY_REDIS_CHANNELS=channel1,channel2 \
+    -e PLUMBER_RELAY_TYPE=redis \
+    -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
+    batchcorp/plumber 
+```
+
 #### Continuously relay messages from a Kafka topic (on Confluent) to a Batch.sh collection (via CLI)
 
 ```
