@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/jhump/protoreflect/desc"
@@ -14,6 +15,10 @@ import (
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/stats"
+)
+
+const (
+	RetryReadInterval = 5 * time.Second
 )
 
 type Relayer struct {
@@ -112,7 +117,14 @@ func (r *Relayer) Relay() error {
 	for {
 		msg, err := sub.ReceiveMessage(r.DefaultContext)
 		if err != nil {
-			r.log.Errorf("Unable to read message: %s", err)
+			// Temporarily mute stats
+			stats.Mute("redis-relay-consumer")
+			stats.Mute("redis-relay-producer")
+
+			r.log.Errorf("Unable to read message: %s (retrying in %s)", err, RetryReadInterval)
+
+			time.Sleep(RetryReadInterval)
+
 			continue
 		}
 

@@ -50,3 +50,11 @@ func Incr(name string, value int) {
 
 	counters[name] += value
 }
+
+// Stop reporting given stats
+func Mute(name string) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	delete(counters, name)
+}
