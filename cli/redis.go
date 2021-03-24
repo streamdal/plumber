@@ -58,5 +58,4 @@ func addSharedRedisFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("database", "Database (0-16)").
 		Envar("PLUMBER_RELAY_REDIS_DATABASE").
 		IntVar(&opts.Redis.Database)
-
 }
