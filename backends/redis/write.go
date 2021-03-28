@@ -54,15 +54,17 @@ func Write(opts *cli.Options) error {
 	return r.Write(msg)
 }
 
-// Write will write only to the first provided channel
 func (r *Redis) Write(value []byte) error {
-	err := r.Client.Publish(context.Background(), r.Options.Redis.Channels[0], value).Err()
-	if err != nil {
-		r.log.Errorf("Failed to publish message: %s", err)
-		return err
+	for _, ch := range r.Options.Redis.Channels {
+		err := r.Client.Publish(context.Background(), ch, value).Err()
+		if err != nil {
+			r.log.Errorf("Failed to publish message to channel '%s': %s", ch, err)
+			continue
+		}
+
+		r.log.Infof("successfully published message to channel '%s'", ch)
 	}
 
-	r.log.Infof("Successfully wrote message to '%s'", r.Options.Redis.Channels[0])
 	return nil
 }
 

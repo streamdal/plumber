@@ -56,7 +56,6 @@ func Write(opts *cli.Options) error {
 	return r.Write(msg)
 }
 
-// Write will write only to the first provided channel
 func (r *RedisStreams) Write(value []byte) error {
 	for _, streamName := range r.Options.RedisStreams.Streams {
 		_, err := r.Client.XAdd(r.Context, &redis.XAddArgs{
