@@ -72,7 +72,7 @@ func Relay(opts *cli.Options) error {
 		return errors.Wrap(err, "unable to start gRPC relay workers")
 	}
 
-	client, err := NewClient(opts)
+	client, err := NewStreamsClient(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to create client")
 	}

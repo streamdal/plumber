@@ -28,6 +28,15 @@ func NewClient(opts *cli.Options) (*redis.Client, error) {
 	}), nil
 }
 
+func NewStreamsClient(opts *cli.Options) (*redis.Client, error) {
+	return redis.NewClient(&redis.Options{
+		Addr:     opts.RedisStreams.Address,
+		Username: opts.RedisStreams.Username,
+		Password: opts.RedisStreams.Password,
+		DB:       opts.RedisStreams.Database,
+	}), nil
+}
+
 func CreateConsumerGroups(ctx context.Context, client *redis.Client, opts *cli.RedisStreamsOptions) error {
 	for _, stream := range opts.Streams {
 		if opts.RecreateConsumerGroup {

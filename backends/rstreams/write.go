@@ -33,7 +33,7 @@ func Write(opts *cli.Options) error {
 		}
 	}
 
-	client, err := NewClient(opts)
+	client, err := NewStreamsClient(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to create client")
 	}
