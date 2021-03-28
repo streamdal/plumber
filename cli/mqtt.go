@@ -18,7 +18,7 @@ type MQTTOptions struct {
 	Address  string
 	Topic    string
 	Timeout  time.Duration
-	ClientId string
+	ClientID string
 	QoSLevel int
 
 	// TLS-related pieces
@@ -54,7 +54,7 @@ func addSharedMQTTFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("timeout", "Connect timeout").Default(MQTTDefaultConnectTimeout).
 		DurationVar(&opts.MQTT.Timeout)
 	cmd.Flag("client-id", "Client id presented to MQTT broker").
-		Default(clientId).StringVar(&opts.MQTT.ClientId)
+		Default(clientId).StringVar(&opts.MQTT.ClientID)
 	cmd.Flag("qos", "QoS level to use for pub/sub (0, 1, 2)").Default("0").IntVar(&opts.MQTT.QoSLevel)
 	cmd.Flag("tls-ca-file", "CA file (only needed if addr is ssl://").ExistingFileVar(&opts.MQTT.TLSCAFile)
 	cmd.Flag("tls-client-cert-file", "Client cert file (only needed if addr is ssl://").
