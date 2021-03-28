@@ -6,12 +6,13 @@ import (
 	"github.com/jhump/protoreflect/desc"
 	"github.com/sirupsen/logrus"
 
+	"github.com/batchcorp/plumber/backends/aws-sns/types"
 	"github.com/batchcorp/plumber/cli"
 )
 
 type AWSSNS struct {
 	Options  *cli.Options
-	Service  *sns.SNS
+	Service  types.ISNSAPI
 	QueueURL string
 	MsgDesc  *desc.MessageDescriptor
 	log      *logrus.Entry

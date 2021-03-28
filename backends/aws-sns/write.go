@@ -15,6 +15,10 @@ import (
 	"github.com/batchcorp/plumber/writer"
 )
 
+var (
+	errMissingTopicARN = errors.New("--topic cannot be empty")
+)
+
 func Write(opts *cli.Options) error {
 	if err := writer.ValidateWriteOptions(opts, validateWriteOptions); err != nil {
 		return errors.Wrap(err, "unable to validate write options")
@@ -52,7 +56,7 @@ func Write(opts *cli.Options) error {
 
 func validateWriteOptions(opts *cli.Options) error {
 	if opts.AWSSNS.TopicArn == "" {
-		return errors.New("--topic cannot be empty")
+		return errMissingTopicARN
 	}
 
 	if arn.IsARN(opts.AWSSNS.TopicArn) == false {
