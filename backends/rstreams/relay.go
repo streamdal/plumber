@@ -86,6 +86,11 @@ func Relay(opts *cli.Options) error {
 		Context: context.Background(),
 	}
 
+	// Create consumer group (and stream) for each stream
+	if err := CreateConsumerGroups(r.Context, client, r.Options.RedisStreams); err != nil {
+		return fmt.Errorf("unable to create consumer group(s): %s", err)
+	}
+
 	return r.Relay()
 }
 
@@ -105,7 +110,7 @@ func validateRelayOptions(opts *cli.Options) error {
 
 // Relay reads messages from RedisStreams and sends them to RelayCh which is then read by relay.Run()
 func (r *Relayer) Relay() error {
-	r.log.Infof("Relaying RedisStreams messages from %d stream(s) (%s) topic -> '%s'",
+	r.log.Infof("Relaying RedisStreams messages from %d stream(s) (%s) -> '%s'",
 		len(r.Options.RedisStreams.Streams), r.Options.RedisStreams.Streams, r.Options.RelayGRPCAddress)
 
 	r.log.Infof("HTTP server listening on '%s'", r.Options.RelayHTTPListenAddress)
@@ -163,31 +168,5 @@ func (r *Relayer) Relay() error {
 				}
 			}
 		}
-
 	}
-
-	//for {
-	//	msg, err := sub.ReceiveMessage(r.Context)
-	//	if err != nil {
-	//		// Temporarily mute stats
-	//		stats.Mute("redis-relay-consumer")
-	//		stats.Mute("redis-relay-producer")
-	//
-	//		r.log.Errorf("Unable to read message: %s (retrying in %s)", err, RetryReadInterval)
-	//
-	//		time.Sleep(RetryReadInterval)
-	//
-	//		continue
-	//	}
-	//
-	//	stats.Incr("redis-relay-consumer", 1)
-	//
-	//	r.log.Debugf("Relaying message received on channel '%s' to Batch (contents: %s)",
-	//		msg.Channel, msg.Payload)
-	//
-	//	r.RelayCh <- &types.RelayMessage{
-	//		Value:   msg,
-	//		Options: &types.RelayMessageOptions{},
-	//	}
-	//}
 }

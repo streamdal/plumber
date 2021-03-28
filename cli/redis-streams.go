@@ -20,6 +20,7 @@ type RedisStreamsOptions struct {
 	Count                 int64
 	StartID               string
 	RecreateConsumerGroup bool
+	CreateStreams         bool
 
 	// Write
 	WriteID  string
@@ -76,6 +77,11 @@ func addReadRedisStreamsFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Envar("PLUMBER_RELAY_REDIS_STREAMS_RECREATE_CONSUMER_GROUP").
 		Default("false").
 		BoolVar(&opts.RedisStreams.RecreateConsumerGroup)
+
+	cmd.Flag("create-streams", "Create streams when declaring consumer group").
+		Envar("PLUMBER_RELAY_REDIS_STREAMS_CREATE_STREAMS").
+		Default("false").
+		BoolVar(&opts.RedisStreams.CreateStreams)
 }
 
 func addWriteRedisStreamsFlags(cmd *kingpin.CmdClause, opts *Options) {

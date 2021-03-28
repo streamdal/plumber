@@ -21,15 +21,15 @@ var (
 
 // handleRedis sends a Redis relay message to the GRPC server
 func (r *Relay) handleRedisStreams(ctx context.Context, conn *grpc.ClientConn, messages []interface{}) error {
-	sinkRecords, err := r.convertMessagesToRedisSinkRecords(messages)
+	sinkRecords, err := r.convertMessagesToRedisStreamsSinkRecords(messages)
 	if err != nil {
-		return fmt.Errorf("unable to convert messages to redis sink records: %s", err)
+		return fmt.Errorf("unable to convert messages to redis-stream sink records: %s", err)
 	}
 
 	client := services.NewGRPCCollectorClient(conn)
 
-	return r.CallWithRetry(ctx, "AddRedisRecord", func(ctx context.Context) error {
-		_, err := client.AddRedisRecord(ctx, &services.RedisRecordRequest{
+	return r.CallWithRetry(ctx, "AddRedisStreamsRecord", func(ctx context.Context) error {
+		_, err := client.AddRedisStreamsRecord(ctx, &services.RedisStreamsRecordRequest{
 			Records: sinkRecords,
 		}, grpc.MaxCallRecvMsgSize(MaxGRPCMessageSize))
 		return err

@@ -39,28 +39,9 @@ func Read(opts *cli.Options) error {
 		log:     logrus.WithField("pkg", "rstreams/read.go"),
 	}
 
-	streamsOpts := r.Options.RedisStreams
-
-	// Create consumer group for each stream
-	for _, stream := range r.Options.RedisStreams.Streams {
-		if r.Options.RedisStreams.RecreateConsumerGroup {
-			r.log.Debugf("deleting consumer group '%s'", streamsOpts.ConsumerGroup)
-
-			_, err := client.XGroupDestroy(r.Context, stream, streamsOpts.ConsumerGroup).Result()
-			if err != nil {
-				return fmt.Errorf("unable to reset consumer group: %s", err)
-			}
-		}
-
-		r.log.Debugf("Creating stream with start id '%s'", streamsOpts.StartID)
-
-		_, err := client.XGroupCreate(r.Context, stream, streamsOpts.ConsumerGroup, streamsOpts.StartID).Result()
-		if err != nil {
-			// No problem if consumer group already exists
-			if err.Error() != "BUSYGROUP Consumer Group name already exists" {
-				return fmt.Errorf("error creating consumer group for stream '%s': %s", stream, err)
-			}
-		}
+	// Create consumer group (and stream) for each stream
+	if err := CreateConsumerGroups(r.Context, client, r.Options.RedisStreams); err != nil {
+		return fmt.Errorf("unable to create consumer group(s): %s", err)
 	}
 
 	return r.Read()

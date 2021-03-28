@@ -104,7 +104,7 @@ func validateRelayOptions(opts *cli.Options) error {
 
 // Relay reads messages from Redis and sends them to RelayCh which is then read by relay.Run()
 func (r *Relayer) Relay() error {
-	r.log.Infof("Relaying Redis messages from %d channel(s) (%s) topic -> '%s'",
+	r.log.Infof("Relaying Redis messages from %d channel(s) (%s) -> '%s'",
 		len(r.Options.Redis.Channels), r.Options.Redis.Channels, r.Options.RelayGRPCAddress)
 
 	r.log.Infof("HTTP server listening on '%s'", r.Options.RelayHTTPListenAddress)
