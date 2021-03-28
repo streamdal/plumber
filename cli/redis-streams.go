@@ -7,16 +7,23 @@ import (
 )
 
 type RedisStreamsOptions struct {
-	Address               string
-	Username              string
-	Password              string
-	Database              int
+	// Shared
+	Address  string
+	Username string
+	Password string
+	Database int
+
+	// Read/Relay
 	Streams               []string
 	ConsumerGroup         string
 	ConsumerName          string
 	Count                 int64
 	StartID               string
 	RecreateConsumerGroup bool
+
+	// Write
+	WriteID  string
+	WriteKey string
 }
 
 func HandleRedisStreamsFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Options) {
@@ -72,6 +79,13 @@ func addReadRedisStreamsFlags(cmd *kingpin.CmdClause, opts *Options) {
 }
 
 func addWriteRedisStreamsFlags(cmd *kingpin.CmdClause, opts *Options) {
+	cmd.Flag("id", "What redis ID to use for input data (\"*\" = auto-generate)").
+		Default("*").
+		StringVar(&opts.RedisStreams.WriteID)
+
+	cmd.Flag("key", "Key name to write input data to").
+		Required().
+		StringVar(&opts.RedisStreams.WriteKey)
 }
 
 func addSharedRedisStreamsFlags(cmd *kingpin.CmdClause, opts *Options) {

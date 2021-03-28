@@ -3,6 +3,7 @@ package rstreams
 import (
 	"context"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -34,14 +35,15 @@ func Write(opts *cli.Options) error {
 
 	client, err := NewClient(opts)
 	if err != nil {
-		return errors.Wrap(err, "unable to complete initial connect")
+		return errors.Wrap(err, "unable to create client")
 	}
 
 	r := &RedisStreams{
 		Options: opts,
 		Client:  client,
 		MsgDesc: md,
-		log:     logrus.WithField("pkg", "redis/write.go"),
+		Context: context.Background(),
+		log:     logrus.WithField("pkg", "rstreams/write.go"),
 	}
 
 	defer client.Close()
@@ -56,13 +58,24 @@ func Write(opts *cli.Options) error {
 
 // Write will write only to the first provided channel
 func (r *RedisStreams) Write(value []byte) error {
-	err := r.Client.Publish(context.Background(), r.Options.Redis.Channels[0], value).Err()
-	if err != nil {
-		r.log.Errorf("Failed to publish message: %s", err)
-		return err
+	for _, streamName := range r.Options.RedisStreams.Streams {
+		_, err := r.Client.XAdd(r.Context, &redis.XAddArgs{
+			Stream: streamName,
+			ID:     r.Options.RedisStreams.WriteID,
+			Values: map[string]interface{}{
+				r.Options.RedisStreams.WriteKey: value,
+			},
+		}).Result()
+
+		if err != nil {
+			r.log.Errorf("unable to write message to stream '%s': %s", streamName, err)
+			continue
+		}
+
+		r.log.Infof("successfully wrote message to stream '%s' with key '%s'",
+			streamName, r.Options.RedisStreams.WriteKey)
 	}
 
-	r.log.Infof("Successfully wrote message to '%s'", r.Options.Redis.Channels[0])
 	return nil
 }
 
