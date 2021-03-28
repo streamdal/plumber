@@ -12,6 +12,7 @@ import (
 
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
+	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 )
 
@@ -43,6 +44,7 @@ func Read(opts *cli.Options) error {
 		Options: opts,
 		Client:  client,
 		MsgDesc: md,
+		printer: printer.New(),
 		log:     logrus.WithField("pkg", "mqtt/read.go"),
 	}
 
@@ -94,7 +96,7 @@ func (m *MQTT) subscribe(wg *sync.WaitGroup, errChan chan error) {
 			lineNumber++
 		}
 
-		m.Printer.Print(str)
+		m.printer.Print(str)
 
 		if !m.Options.ReadFollow {
 			m.log.Debug("--follow NOT specified, stopping listen")

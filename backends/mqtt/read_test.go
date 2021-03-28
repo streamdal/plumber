@@ -127,7 +127,7 @@ var _ = Describe("MQTT Read", func() {
 				ReadLineNumbers: true,
 				MQTT:            &cli.MQTTOptions{},
 			},
-			Printer: fakePrinter,
+			printer: fakePrinter,
 		}
 
 		err := m.Read()

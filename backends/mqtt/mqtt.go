@@ -24,7 +24,7 @@ type MQTT struct {
 	Options *cli.Options
 	Client  pahomqtt.Client
 	MsgDesc *desc.MessageDescriptor
-	Printer printer.IPrinter
+	printer printer.IPrinter
 	log     *logrus.Entry
 }
 
