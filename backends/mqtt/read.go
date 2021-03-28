@@ -44,6 +44,7 @@ func Read(opts *cli.Options) error {
 		Options: opts,
 		Client:  client,
 		MsgDesc: md,
+		printer: printer.New(),
 		log:     logrus.WithField("pkg", "mqtt/read.go"),
 	}
 
@@ -54,7 +55,7 @@ func (m *MQTT) Read() error {
 	defer m.Client.Disconnect(0)
 
 	m.log.Infof("Listening for message(s) on topic '%s' as clientId '%s'",
-		m.Options.MQTT.Topic, m.Options.MQTT.ClientId)
+		m.Options.MQTT.Topic, m.Options.MQTT.ClientID)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
@@ -95,7 +96,7 @@ func (m *MQTT) subscribe(wg *sync.WaitGroup, errChan chan error) {
 			lineNumber++
 		}
 
-		printer.Print(str)
+		m.printer.Print(str)
 
 		if !m.Options.ReadFollow {
 			m.log.Debug("--follow NOT specified, stopping listen")
@@ -106,31 +107,40 @@ func (m *MQTT) subscribe(wg *sync.WaitGroup, errChan chan error) {
 	})
 }
 
+var (
+	errMissingAddress  = errors.New("--address cannot be empty")
+	errMissingTopic    = errors.New("--topic cannot be empty")
+	errMissingTLSKey   = errors.New("--tls-client-key-file cannot be blank if using ssl")
+	errMissingTlsCert  = errors.New("--tls-client-cert-file cannot be blank if using ssl")
+	errMissingTLSCA    = errors.New("--tls-ca-file cannot be blank if using ssl")
+	errInvalidQOSLevel = errors.New("QoS level can only be 0, 1 or 2")
+)
+
 func validateReadOptions(opts *cli.Options) error {
 	if opts.MQTT.Address == "" {
-		return errors.New("--address cannot be empty")
+		return errMissingAddress
 	}
 
 	if opts.MQTT.Topic == "" {
-		return errors.New("--topic cannot be empty")
+		return errMissingTopic
 	}
 
 	if strings.HasPrefix(opts.MQTT.Address, "ssl") {
 		if opts.MQTT.TLSClientKeyFile == "" {
-			return errors.New("--tls-client-key-file cannot be blank if using ssl")
+			return errMissingTLSKey
 		}
 
 		if opts.MQTT.TLSClientCertFile == "" {
-			return errors.New("--tls-client-cert-file cannot be blank if using ssl")
+			return errMissingTlsCert
 		}
 
 		if opts.MQTT.TLSCAFile == "" {
-			return errors.New("--tls-ca-file cannot be blank if using ssl")
+			return errMissingTLSCA
 		}
 	}
 
 	if opts.MQTT.QoSLevel > 2 || opts.MQTT.QoSLevel < 0 {
-		return errors.New("QoS level can only be 0, 1 or 2")
+		return errInvalidQOSLevel
 	}
 
 	// If anything protobuf-related is specified, it's being used
