@@ -62,7 +62,7 @@ func (r *Redis) Write(value []byte) error {
 			continue
 		}
 
-		r.log.Infof("successfully published message to channel '%s'", ch)
+		r.log.Infof("Successfully published message to channel '%s'", ch)
 	}
 
 	return nil

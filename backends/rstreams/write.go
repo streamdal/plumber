@@ -71,7 +71,7 @@ func (r *RedisStreams) Write(value []byte) error {
 			continue
 		}
 
-		r.log.Infof("successfully wrote message to stream '%s' with key '%s'",
+		r.log.Infof("Successfully wrote message to stream '%s' with key '%s'",
 			streamName, r.Options.RedisStreams.WriteKey)
 	}
 
