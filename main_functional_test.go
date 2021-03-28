@@ -1069,7 +1069,7 @@ var _ = Describe("Functional", func() {
 		})
 	})
 
-	FDescribe("RedisPubSub PubSub", func() {
+	Describe("RedisPubSub PubSub", func() {
 		Describe("read/write", func() {
 			var topicName string
 
