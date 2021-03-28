@@ -21,10 +21,10 @@ type RedisStreams struct {
 
 func NewClient(opts *cli.Options) (*redis.Client, error) {
 	return redis.NewClient(&redis.Options{
-		Addr:     opts.Redis.Address,
-		Username: opts.Redis.Username,
-		Password: opts.Redis.Password,
-		DB:       opts.Redis.Database,
+		Addr:     opts.RedisPubSub.Address,
+		Username: opts.RedisPubSub.Username,
+		Password: opts.RedisPubSub.Password,
+		DB:       opts.RedisPubSub.Database,
 	}), nil
 }
 

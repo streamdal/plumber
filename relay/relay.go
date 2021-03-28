@@ -21,7 +21,7 @@ import (
 	gcpTypes "github.com/batchcorp/plumber/backends/gcp-pubsub/types"
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
 	rabbitTypes "github.com/batchcorp/plumber/backends/rabbitmq/types"
-	redisTypes "github.com/batchcorp/plumber/backends/redis/types"
+	redisTypes "github.com/batchcorp/plumber/backends/rpubsub/types"
 	rstreamsTypes "github.com/batchcorp/plumber/backends/rstreams/types"
 	"github.com/batchcorp/plumber/stats"
 )
@@ -249,7 +249,7 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	case *redisTypes.RelayMessage:
 		r.log.Debugf("flushing %d redis-pubsub message(s)", len(messages))
 		relayType = "redis"
-		err = r.handleRedis(ctx, conn, messages)
+		err = r.handleRedisPubSub(ctx, conn, messages)
 	case *rstreamsTypes.RelayMessage:
 		r.log.Debugf("flushing %d redis-streams message(s)", len(messages))
 		relayType = "redis-streams"

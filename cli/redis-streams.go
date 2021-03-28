@@ -28,11 +28,11 @@ type RedisStreamsOptions struct {
 }
 
 func HandleRedisStreamsFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Options) {
-	rc := readCmd.Command("redis-streams", "Redis Streams")
+	rc := readCmd.Command("redis-streams", "RedisPubSub Streams")
 	addSharedRedisStreamsFlags(rc, opts)
 	addReadRedisStreamsFlags(rc, opts)
 
-	wc := writeCmd.Command("redis-streams", "Redis Streams")
+	wc := writeCmd.Command("redis-streams", "RedisPubSub Streams")
 	addSharedRedisStreamsFlags(wc, opts)
 	addWriteRedisStreamsFlags(wc, opts)
 
@@ -44,7 +44,7 @@ func HandleRedisStreamsFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opt
 	if relayType != "" {
 		rec = relayCmd
 	} else {
-		rec = relayCmd.Command("redis-streams", "Redis Streams")
+		rec = relayCmd.Command("redis-streams", "RedisPubSub Streams")
 	}
 
 	addSharedRedisStreamsFlags(rec, opts)
@@ -95,7 +95,7 @@ func addWriteRedisStreamsFlags(cmd *kingpin.CmdClause, opts *Options) {
 }
 
 func addSharedRedisStreamsFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("address", "Address of Redis Server").
+	cmd.Flag("address", "Address of RedisPubSub Server").
 		Default("localhost:6379").
 		Envar("PLUMBER_RELAY_REDIS_STREAMS_ADDRESS").
 		StringVar(&opts.RedisStreams.Address)

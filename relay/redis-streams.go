@@ -19,7 +19,7 @@ var (
 	errMissingStreamName = errors.New("missing Stream in relay message")
 )
 
-// handleRedis sends a Redis relay message to the GRPC server
+// handleRedisPubSub sends a RedisPubSub relay message to the GRPC server
 func (r *Relay) handleRedisStreams(ctx context.Context, conn *grpc.ClientConn, messages []interface{}) error {
 	sinkRecords, err := r.convertMessagesToRedisStreamsSinkRecords(messages)
 	if err != nil {
@@ -36,7 +36,7 @@ func (r *Relay) handleRedisStreams(ctx context.Context, conn *grpc.ClientConn, m
 	})
 }
 
-// validateRedisRelayMessage ensures all necessary values are present for a Redis relay message
+// validateRedisRelayMessage ensures all necessary values are present for a RedisPubSub relay message
 func (r *Relay) validateRedisStreamsRelayMessage(msg *types.RelayMessage) error {
 	if msg == nil {
 		return errMissingMessage

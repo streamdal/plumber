@@ -101,7 +101,7 @@ func validateRelayOptions(opts *cli.Options) error {
 	}
 
 	// RedisStreams either supports a password (v1+) OR a username+password (v6+)
-	if opts.Redis.Username != "" && opts.Redis.Password == "" {
+	if opts.RedisPubSub.Username != "" && opts.RedisPubSub.Password == "" {
 		return errors.New("missing password (either use only password or fill out both)")
 	}
 

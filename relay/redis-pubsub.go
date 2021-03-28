@@ -9,12 +9,12 @@ import (
 	"github.com/batchcorp/schemas/build/go/services"
 	"google.golang.org/grpc"
 
-	"github.com/batchcorp/plumber/backends/redis/types"
+	"github.com/batchcorp/plumber/backends/rpubsub/types"
 )
 
-// handleRedis sends a Redis relay message to the GRPC server
-func (r *Relay) handleRedis(ctx context.Context, conn *grpc.ClientConn, messages []interface{}) error {
-	sinkRecords, err := r.convertMessagesToRedisSinkRecords(messages)
+// handleRedisPubSub sends a RedisPubSub relay message to the GRPC server
+func (r *Relay) handleRedisPubSub(ctx context.Context, conn *grpc.ClientConn, messages []interface{}) error {
+	sinkRecords, err := r.convertMessagesToRedisPubSubSinkRecords(messages)
 	if err != nil {
 		return fmt.Errorf("unable to convert messages to redis sink records: %s", err)
 	}
@@ -29,7 +29,7 @@ func (r *Relay) handleRedis(ctx context.Context, conn *grpc.ClientConn, messages
 	})
 }
 
-// validateRedisRelayMessage ensures all necessary values are present for a Redis relay message
+// validateRedisRelayMessage ensures all necessary values are present for a RedisPubSub relay message
 func (r *Relay) validateRedisRelayMessage(msg *types.RelayMessage) error {
 	if msg == nil {
 		return errMissingMessage
@@ -44,7 +44,7 @@ func (r *Relay) validateRedisRelayMessage(msg *types.RelayMessage) error {
 
 // convertRedisMessageToProtobufRecord creates a records.RedisSinkRecord from a redis.Message which can then
 // be sent to the GRPC server
-func (r *Relay) convertMessagesToRedisSinkRecords(messages []interface{}) ([]*records.RedisRecord, error) {
+func (r *Relay) convertMessagesToRedisPubSubSinkRecords(messages []interface{}) ([]*records.RedisRecord, error) {
 	sinkRecords := make([]*records.RedisRecord, 0)
 
 	for i, v := range messages {

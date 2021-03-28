@@ -1,4 +1,4 @@
-package redis
+package rpubsub
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"github.com/batchcorp/plumber/writer"
 )
 
-// Write is the entry point function for performing write operations in Redis.
+// Write is the entry point function for performing write operations in RedisPubSub.
 //
 // This is where we verify that the passed args and flags combo makes sense,
 // attempt to establish a connection, parse protobuf before finally attempting
@@ -55,14 +55,14 @@ func Write(opts *cli.Options) error {
 }
 
 func (r *Redis) Write(value []byte) error {
-	for _, ch := range r.Options.Redis.Channels {
+	for _, ch := range r.Options.RedisPubSub.Channels {
 		err := r.Client.Publish(context.Background(), ch, value).Err()
 		if err != nil {
 			r.log.Errorf("Failed to publish message to channel '%s': %s", ch, err)
 			continue
 		}
 
-		r.log.Infof("Successfully published message to channel '%s'", ch)
+		r.log.Infof("Successfully wrote message to '%s'", ch)
 	}
 
 	return nil

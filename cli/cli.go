@@ -69,7 +69,7 @@ type Options struct {
 	AWSSQS       *AWSSQSOptions
 	AWSSNS       *AWSSNSOptions
 	ActiveMq     *ActiveMqOptions
-	Redis        *RedisOptions
+	RedisPubSub  *RedisPubSubOptions
 	RedisStreams *RedisStreamsOptions
 	Azure        *AzureServiceBusOptions
 	Nats         *NatsOptions
@@ -84,7 +84,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		AWSSQS:       &AWSSQSOptions{WriteAttributes: make(map[string]string, 0)},
 		AWSSNS:       &AWSSNSOptions{},
 		ActiveMq:     &ActiveMqOptions{},
-		Redis:        &RedisOptions{},
+		RedisPubSub:  &RedisPubSubOptions{},
 		RedisStreams: &RedisStreamsOptions{},
 		Azure:        &AzureServiceBusOptions{},
 		Nats:         &NatsOptions{},
@@ -132,9 +132,9 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	case "gcp-pubsup":
 		HandleRelayFlags(relayCmd, opts)
 		HandleGCPPubSubFlags(readCmd, writeCmd, relayCmd, opts)
-	case "redis":
+	case "redis-pubsub":
 		HandleRelayFlags(relayCmd, opts)
-		HandleRedisFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleRedisPubSubFlags(readCmd, writeCmd, relayCmd, opts)
 	case "redis-streams":
 		HandleRelayFlags(relayCmd, opts)
 		HandleRedisStreamsFlags(readCmd, writeCmd, relayCmd, opts)
@@ -149,7 +149,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleAWSSNSFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleAzureFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleNatsFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleRedisFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleRedisPubSubFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleRedisStreamsFlags(readCmd, writeCmd, relayCmd, opts)
 	}
 
@@ -185,8 +185,8 @@ func Handle(cliArgs []string) (string, *Options, error) {
 }
 
 func convertSliceArgs(opts *Options) {
-	if len(opts.Redis.Channels) != 0 {
-		opts.Redis.Channels = strings.Split(opts.Redis.Channels[0], ",")
+	if len(opts.RedisPubSub.Channels) != 0 {
+		opts.RedisPubSub.Channels = strings.Split(opts.RedisPubSub.Channels[0], ",")
 	}
 
 	if len(opts.RedisStreams.Streams) != 0 {
@@ -235,9 +235,9 @@ func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
 }
 
 func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
-	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs, azure, gcp-pubsub, redis, redis-streams").
+	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs, azure, gcp-pubsub, redis-pubsub, redis-streams").
 		Envar("PLUMBER_RELAY_TYPE").
-		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka", "azure", "gcp-pubsub", "redis", "redis-streams")
+		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka", "azure", "gcp-pubsub", "redis-pubsub", "redis-streams")
 
 	relayCmd.Flag("token", "Collection token to use when sending data to Batch").
 		Required().

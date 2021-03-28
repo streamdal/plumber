@@ -1069,7 +1069,7 @@ var _ = Describe("Functional", func() {
 		})
 	})
 
-	Describe("Redis PubSub", func() {
+	FDescribe("RedisPubSub PubSub", func() {
 		Describe("read/write", func() {
 			var topicName string
 
@@ -1083,14 +1083,14 @@ var _ = Describe("Functional", func() {
 
 					capture := make(chan []byte)
 
-					// Start Redis reader command
+					// Start RedisPubSub reader command
 					go func() {
 						defer GinkgoRecover()
 
 						readCmd := exec.Command(
 							binary,
 							"read",
-							"redis",
+							"redis-pubsub",
 							"--channels", topicName,
 						)
 
@@ -1102,11 +1102,11 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 100)
 
-					// Reader is ready, write the message to Redis
+					// Reader is ready, write the message to RedisPubSub
 					writeCmd := exec.Command(
 						binary,
 						"write",
-						"redis",
+						"redis-pubsub",
 						"--channels", topicName,
 						"--input-data", testMessage,
 					)
@@ -1134,14 +1134,14 @@ var _ = Describe("Functional", func() {
 
 					capture := make(chan []byte)
 
-					// Start Redis reader command
+					// Start RedisPubSub reader command
 					go func() {
 						defer GinkgoRecover()
 
 						readCmd := exec.Command(
 							binary,
 							"read",
-							"redis",
+							"redis-pubsub",
 							"--channels", topicName,
 						)
 
@@ -1153,11 +1153,11 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 50)
 
-					// Reader is ready, write the message to Redis
+					// Reader is ready, write the message to RedisPubSub
 					writeCmd := exec.Command(
 						binary,
 						"write",
-						"redis",
+						"redis-pubsub",
 						"--channels", topicName,
 						"--input-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
@@ -1190,14 +1190,14 @@ var _ = Describe("Functional", func() {
 
 					capture := make(chan []byte)
 
-					// Start Redis reader command
+					// Start RedisPubSub reader command
 					go func() {
 						defer GinkgoRecover()
 
 						readCmd := exec.Command(
 							binary,
 							"read",
-							"redis",
+							"redis-pubsub",
 							"--channels", topicName,
 							"--avro-schema", "./test-assets/avro/test.avsc",
 						)
@@ -1210,11 +1210,11 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 50)
 
-					// First write the message to Redis
+					// First write the message to RedisPubSub
 					writeCmd := exec.Command(
 						binary,
 						"write",
-						"redis",
+						"redis-pubsub",
 						"--channels", topicName,
 						"--input-data", testMessage,
 						"--avro-schema", "./test-assets/avro/test.avsc",
@@ -1240,7 +1240,7 @@ var _ = Describe("Functional", func() {
 		})
 	})
 
-	Describe("Redis Streams", func() {
+	Describe("RedisPubSub Streams", func() {
 		Describe("read/write", func() {
 			var topicName string
 			var keyName string
@@ -1256,7 +1256,7 @@ var _ = Describe("Functional", func() {
 
 					capture := make(chan []byte)
 
-					// Start Redis reader command
+					// Start RedisPubSub reader command
 					go func() {
 						defer GinkgoRecover()
 
@@ -1276,7 +1276,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 100)
 
-					// Reader is ready, write the message to Redis
+					// Reader is ready, write the message to RedisPubSub
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -1309,7 +1309,7 @@ var _ = Describe("Functional", func() {
 
 					capture := make(chan []byte)
 
-					// Start Redis reader command
+					// Start RedisPubSub reader command
 					go func() {
 						defer GinkgoRecover()
 
@@ -1329,7 +1329,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 50)
 
-					// Reader is ready, write the message to Redis
+					// Reader is ready, write the message to RedisPubSub
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -1367,7 +1367,7 @@ var _ = Describe("Functional", func() {
 
 					capture := make(chan []byte)
 
-					// Start Redis reader command
+					// Start RedisPubSub reader command
 					go func() {
 						defer GinkgoRecover()
 
@@ -1388,7 +1388,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 50)
 
-					// First write the message to Redis
+					// First write the message to RedisPubSub
 					writeCmd := exec.Command(
 						binary,
 						"write",

@@ -1,4 +1,4 @@
-package redis
+package rpubsub
 
 import (
 	"context"
@@ -45,7 +45,7 @@ func (r *Redis) Read() error {
 
 	ctx := context.Background()
 
-	ps := r.Client.Subscribe(ctx, r.Options.Redis.Channels...)
+	ps := r.Client.Subscribe(ctx, r.Options.RedisPubSub.Channels...)
 	defer ps.Unsubscribe(ctx)
 
 	r.log.Info("Listening for message(s) ...")
