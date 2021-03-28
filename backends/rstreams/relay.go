@@ -2,6 +2,7 @@ package rstreams
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -11,10 +12,10 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/api"
-	"github.com/batchcorp/plumber/backends/redis/types"
+	"github.com/batchcorp/plumber/backends/rstreams/types"
 	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/reader"
 	"github.com/batchcorp/plumber/relay"
-	"github.com/batchcorp/plumber/stats"
 )
 
 const (
@@ -22,13 +23,13 @@ const (
 )
 
 type Relayer struct {
-	Client         *redis.Client
-	Options        *cli.Options
-	MsgDesc        *desc.MessageDescriptor
-	RelayCh        chan interface{}
-	log            *logrus.Entry
-	Looper         *director.FreeLooper
-	DefaultContext context.Context
+	Client  *redis.Client
+	Options *cli.Options
+	MsgDesc *desc.MessageDescriptor
+	RelayCh chan interface{}
+	log     *logrus.Entry
+	Looper  *director.FreeLooper
+	Context context.Context
 }
 
 type IRedisStreamsRelayer interface {
@@ -36,7 +37,7 @@ type IRedisStreamsRelayer interface {
 }
 
 var (
-	errMissingChannel = errors.New("You must specify at least one channel")
+	errMissingStream = errors.New("You must specify at least one stream")
 )
 
 // Relay sets up a new RedisStreams relayer, starts GRPC workers and the API server
@@ -77,12 +78,12 @@ func Relay(opts *cli.Options) error {
 	}
 
 	r := &Relayer{
-		Client:         client,
-		Options:        opts,
-		RelayCh:        relayCfg.RelayCh,
-		log:            logrus.WithField("pkg", "redis/relay"),
-		Looper:         director.NewFreeLooper(director.FOREVER, make(chan error)),
-		DefaultContext: context.Background(),
+		Client:  client,
+		Options: opts,
+		RelayCh: relayCfg.RelayCh,
+		log:     logrus.WithField("pkg", "rstreams/relay"),
+		Looper:  director.NewFreeLooper(director.FOREVER, make(chan error)),
+		Context: context.Background(),
 	}
 
 	return r.Relay()
@@ -90,8 +91,8 @@ func Relay(opts *cli.Options) error {
 
 // validateRelayOptions ensures all required CLI options are present before initializing relay mode
 func validateRelayOptions(opts *cli.Options) error {
-	if len(opts.Redis.Channels) == 0 {
-		return errMissingChannel
+	if len(opts.RedisStreams.Streams) == 0 {
+		return errMissingStream
 	}
 
 	// RedisStreams either supports a password (v1+) OR a username+password (v6+)
@@ -104,38 +105,89 @@ func validateRelayOptions(opts *cli.Options) error {
 
 // Relay reads messages from RedisStreams and sends them to RelayCh which is then read by relay.Run()
 func (r *Relayer) Relay() error {
-	r.log.Infof("Relaying RedisStreams messages from %d channel(s) (%s) topic -> '%s'",
-		len(r.Options.Redis.Channels), r.Options.Redis.Channels, r.Options.RelayGRPCAddress)
+	r.log.Infof("Relaying RedisStreams messages from %d stream(s) (%s) topic -> '%s'",
+		len(r.Options.RedisStreams.Streams), r.Options.RedisStreams.Streams, r.Options.RelayGRPCAddress)
 
 	r.log.Infof("HTTP server listening on '%s'", r.Options.RelayHTTPListenAddress)
 
 	defer r.Client.Close()
 
-	sub := r.Client.Subscribe(r.DefaultContext, r.Options.Redis.Channels...)
-	defer sub.Unsubscribe(r.DefaultContext, r.Options.Redis.Channels...)
+	streams := generateStreams(r.Options.RedisStreams.Streams)
 
 	for {
-		msg, err := sub.ReceiveMessage(r.DefaultContext)
+		streamsResult, err := r.Client.XReadGroup(r.Context, &redis.XReadGroupArgs{
+			Group:    r.Options.RedisStreams.ConsumerGroup,
+			Consumer: r.Options.RedisStreams.ConsumerName,
+			Streams:  streams,
+			Count:    r.Options.RedisStreams.Count,
+			Block:    0,
+			NoAck:    false,
+		}).Result()
+
 		if err != nil {
-			// Temporarily mute stats
-			stats.Mute("redis-relay-consumer")
-			stats.Mute("redis-relay-producer")
-
-			r.log.Errorf("Unable to read message: %s (retrying in %s)", err, RetryReadInterval)
-
-			time.Sleep(RetryReadInterval)
-
-			continue
+			return fmt.Errorf("unable to read from streamsResult: %s", err)
 		}
 
-		stats.Incr("redis-relay-consumer", 1)
+		// We may be reading from multiple streamsResult - read each stream resp
+		for _, stream := range streamsResult {
+			streamName := stream.Stream
 
-		r.log.Debugf("Relaying message received on channel '%s' to Batch (contents: %s)",
-			msg.Channel, msg.Payload)
+			// Each stream result may contain multiple messages
+			for _, message := range stream.Messages {
+				// A single message may contain multiple kv's
+				for k, v := range message.Values {
+					stringData, ok := v.(string)
+					if !ok {
+						r.log.Errorf("[ID: %s Stream: %s Key: %s] unable to type assert value as string: %s; skipping",
+							message.ID, streamName, k, err)
 
-		r.RelayCh <- &types.RelayMessage{
-			Value:   msg,
-			Options: &types.RelayMessageOptions{},
+						continue
+					}
+
+					decodedData, err := reader.Decode(r.Options, r.MsgDesc, []byte(stringData))
+					if err != nil {
+						r.log.Errorf("[ID: %s Stream: %s Key: %s] unable to decode message: %s; skipping",
+							message.ID, streamName, k, err)
+						continue
+					}
+
+					// Generate relay message
+					r.RelayCh <- &types.RelayMessage{
+						ID:     message.ID,
+						Key:    k,
+						Stream: streamName,
+						Value:  decodedData,
+					}
+
+					r.log.Debugf("[ID: %s Stream: %s Key: %s] successfully relayed message", message.ID, streamName, k)
+				}
+			}
 		}
+
 	}
+
+	//for {
+	//	msg, err := sub.ReceiveMessage(r.Context)
+	//	if err != nil {
+	//		// Temporarily mute stats
+	//		stats.Mute("redis-relay-consumer")
+	//		stats.Mute("redis-relay-producer")
+	//
+	//		r.log.Errorf("Unable to read message: %s (retrying in %s)", err, RetryReadInterval)
+	//
+	//		time.Sleep(RetryReadInterval)
+	//
+	//		continue
+	//	}
+	//
+	//	stats.Incr("redis-relay-consumer", 1)
+	//
+	//	r.log.Debugf("Relaying message received on channel '%s' to Batch (contents: %s)",
+	//		msg.Channel, msg.Payload)
+	//
+	//	r.RelayCh <- &types.RelayMessage{
+	//		Value:   msg,
+	//		Options: &types.RelayMessageOptions{},
+	//	}
+	//}
 }

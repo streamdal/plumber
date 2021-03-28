@@ -1,12 +1,8 @@
 package types
 
-import (
-	"github.com/go-redis/redis/v8"
-)
-
 type RelayMessage struct {
-	Value   *redis.Message
-	Options *RelayMessageOptions
+	ID     string
+	Stream string
+	Key    string
+	Value  []byte
 }
-
-type RelayMessageOptions struct{}

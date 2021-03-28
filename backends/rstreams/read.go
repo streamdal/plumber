@@ -107,7 +107,7 @@ func (r *RedisStreams) Read() error {
 			for _, message := range stream.Messages {
 				// A single message may contain multiple kv's
 				for k, v := range message.Values {
-					bytesData, ok := v.(string)
+					stringData, ok := v.(string)
 					if !ok {
 						r.log.Errorf("[ID: %s Stream: %s Key: %s] unable to type assert value as string: %s; skipping",
 							message.ID, streamName, k, err)
@@ -115,7 +115,7 @@ func (r *RedisStreams) Read() error {
 						continue
 					}
 
-					decodedData, err := reader.Decode(r.Options, r.MsgDesc, []byte(bytesData))
+					decodedData, err := reader.Decode(r.Options, r.MsgDesc, []byte(stringData))
 					if err != nil {
 						r.log.Errorf("[ID: %s Stream: %s Key: %s] unable to decode message: %s; skipping",
 							message.ID, streamName, k, err)

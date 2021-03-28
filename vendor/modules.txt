@@ -92,7 +92,7 @@ github.com/aws/aws-sdk-go/service/sts/stsiface
 # github.com/batchcorp/rabbit v0.1.9
 ## explicit
 github.com/batchcorp/rabbit
-# github.com/batchcorp/schemas v0.2.125
+# github.com/batchcorp/schemas v0.2.128
 ## explicit
 github.com/batchcorp/schemas/build/go/events
 github.com/batchcorp/schemas/build/go/events/destinations
