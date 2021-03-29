@@ -1,6 +1,8 @@
 name: Release
 
 on: push
+  tags:
+    - 'v*.*.*'
 
 jobs:
   build:
@@ -18,10 +20,6 @@ jobs:
       - name: Build
         run: |
           VERSION="$GITHUB_TAG ($GITHUB_SHORT_SHA)" make build
-      - name: Show contents
-        run: |
-          ls -laR
-          pwd
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
