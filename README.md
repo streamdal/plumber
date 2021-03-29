@@ -168,6 +168,16 @@ ie. `--queue-declare` is `true` by default. To make it false, use `--no-queue-de
 [protoreflect](https://github.com/jhump/protoreflect) library, without which
 `plumber` would not be anywhere *near* as easy to implement. _Thank you!_
 
+## Release
+
+To push a new plumber release:
+
+1. `git tag v0.18.0 master`
+1. `git push origin v0.18.0`
+1. Watch the github action
+1. New release should be automatically created under https://github.com/batchcorp/plumber/releases/
+1. Update release to include any relevant info
+
 ## Contribute
 
 We love contributions! Prior to sending us a PR, open an issue to discuss what
