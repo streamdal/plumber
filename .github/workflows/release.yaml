@@ -29,5 +29,9 @@ jobs:
             build/plumber-darwin
             build/plumber-linux
             build/plumber-windows.exe
+      - name: Build docker image
+        run: make docker/build
+      - name: Push docker image
+        run: make docker/push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
