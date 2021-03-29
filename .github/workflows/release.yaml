@@ -17,19 +17,18 @@ jobs:
         run: echo "GITHUB_SHORT_SHA=`git rev-parse --short HEAD`" >> $GITHUB_ENV
       - name: Build
         run: |
-          echo "our short sha: $GITHUB_SHORT_SHA"
-          echo "our tag: $GITHUB_TAG"
           VERSION="$GITHUB_TAG ($GITHUB_SHORT_SHA)" make build
-      - name: Test
+      - name: Show contents
         run: |
           ls -laR
           pwd
-#      - name: Release
-#        uses: softprops/action-gh-release@v1
-#        if: startsWith(github.ref, 'refs/tags/')
-#        with:
-#          files: |
-#            Release.txt
-#            LICENSE
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            build/plumber-darwin
+            build/plumber-linux
+            build/plumber-windows.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
