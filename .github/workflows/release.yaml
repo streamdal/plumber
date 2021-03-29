@@ -1,0 +1,35 @@
+name: Release
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.15.4' # The Go version to download (if necessary) and use.
+      - name: Set tag
+        run: echo "GITHUB_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Set short sha
+        run: echo "GITHUB_SHORT_SHA=`git rev-parse --short HEAD`" >> $GITHUB_ENV
+      - name: Build
+        run: |
+          echo "our short sha: $GITHUB_SHORT_SHA"
+          echo "our tag: $GITHUB_TAG"
+          VERSION="$GITHUB_TAG ($GITHUB_SHORT_SHA)" make build
+      - name: Test
+        run: |
+          ls -laR
+          pwd
+#      - name: Release
+#        uses: softprops/action-gh-release@v1
+#        if: startsWith(github.ref, 'refs/tags/')
+#        with:
+#          files: |
+#            Release.txt
+#            LICENSE
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
