@@ -16,7 +16,8 @@ import (
 	"github.com/batchcorp/plumber/backends/mqtt"
 	"github.com/batchcorp/plumber/backends/nats"
 	"github.com/batchcorp/plumber/backends/rabbitmq"
-	"github.com/batchcorp/plumber/backends/redis"
+	"github.com/batchcorp/plumber/backends/rpubsub"
+	"github.com/batchcorp/plumber/backends/rstreams"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/stats"
@@ -64,8 +65,10 @@ func main() {
 		err = azure.Read(opts)
 	case "read nats":
 		err = nats.Read(opts)
-	case "read redis":
-		err = redis.Read(opts)
+	case "read redis-pubsub":
+		err = rpubsub.Read(opts)
+	case "read redis-streams":
+		err = rstreams.Read(opts)
 
 	// Write
 	case "write rabbit":
@@ -86,8 +89,10 @@ func main() {
 		err = azure.Write(opts)
 	case "write nats":
 		err = nats.Write(opts)
-	case "write redis":
-		err = redis.Write(opts)
+	case "write redis-pubsub":
+		err = rpubsub.Write(opts)
+	case "write redis-streams":
+		err = rstreams.Write(opts)
 
 	// Relay (via CLI flags)
 	case "relay rabbit":
@@ -102,8 +107,10 @@ func main() {
 		err = awssqs.Relay(opts)
 	case "relay azure":
 		err = azure.Relay(opts)
-	case "relay redis":
-		err = redis.Relay(opts)
+	case "relay redis-pubsub":
+		err = rpubsub.Relay(opts)
+	case "relay redis-streams":
+		err = rstreams.Relay(opts)
 
 	// Relay (via env vars)
 	case "relay":
@@ -134,8 +141,10 @@ func ProcessRelayFlags(opts *cli.Options) error {
 		err = rabbitmq.Relay(opts)
 	case "azure":
 		err = azure.Relay(opts)
-	case "redis":
-		err = redis.Relay(opts)
+	case "redis-pubsub":
+		err = rpubsub.Relay(opts)
+	case "redis-streams":
+		err = rstreams.Relay(opts)
 	default:
 		err = fmt.Errorf("unsupported messaging system '%s'", opts.RelayType)
 	}

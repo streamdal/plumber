@@ -1,8 +1,9 @@
-package redis
+package rstreams
 
 import (
 	"context"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -12,7 +13,7 @@ import (
 	"github.com/batchcorp/plumber/writer"
 )
 
-// Write is the entry point function for performing write operations in Redis.
+// Write is the entry point function for performing write operations in RedisStreams.
 //
 // This is where we verify that the passed args and flags combo makes sense,
 // attempt to establish a connection, parse protobuf before finally attempting
@@ -32,16 +33,17 @@ func Write(opts *cli.Options) error {
 		}
 	}
 
-	client, err := NewClient(opts)
+	client, err := NewStreamsClient(opts)
 	if err != nil {
-		return errors.Wrap(err, "unable to complete initial connect")
+		return errors.Wrap(err, "unable to create client")
 	}
 
-	r := &Redis{
+	r := &RedisStreams{
 		Options: opts,
 		Client:  client,
 		MsgDesc: md,
-		log:     logrus.WithField("pkg", "redis/write.go"),
+		Context: context.Background(),
+		log:     logrus.WithField("pkg", "rstreams/write.go"),
 	}
 
 	defer client.Close()
@@ -54,15 +56,25 @@ func Write(opts *cli.Options) error {
 	return r.Write(msg)
 }
 
-// Write will write only to the first provided channel
-func (r *Redis) Write(value []byte) error {
-	err := r.Client.Publish(context.Background(), r.Options.Redis.Channels[0], value).Err()
-	if err != nil {
-		r.log.Errorf("Failed to publish message: %s", err)
-		return err
+func (r *RedisStreams) Write(value []byte) error {
+	for _, streamName := range r.Options.RedisStreams.Streams {
+		_, err := r.Client.XAdd(r.Context, &redis.XAddArgs{
+			Stream: streamName,
+			ID:     r.Options.RedisStreams.WriteID,
+			Values: map[string]interface{}{
+				r.Options.RedisStreams.WriteKey: value,
+			},
+		}).Result()
+
+		if err != nil {
+			r.log.Errorf("unable to write message to stream '%s': %s", streamName, err)
+			continue
+		}
+
+		r.log.Infof("Successfully wrote message to stream '%s' with key '%s'",
+			streamName, r.Options.RedisStreams.WriteKey)
 	}
 
-	r.log.Infof("Successfully wrote message to '%s'", r.Options.Redis.Channels[0])
 	return nil
 }
 
