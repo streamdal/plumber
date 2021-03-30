@@ -7,8 +7,8 @@ require (
 	github.com/Azure/azure-service-bus-go v0.10.8
 	github.com/aws/aws-sdk-go v1.34.9
 	github.com/batchcorp/rabbit v0.1.9
-	github.com/batchcorp/schemas v0.2.104
 	github.com/dustin/go-humanize v1.0.0 // indirect
+	github.com/batchcorp/schemas v0.2.128
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/go-redis/redis/v8 v8.4.8
 	github.com/go-stomp/stomp v2.0.6+incompatible
@@ -21,6 +21,7 @@ require (
 	github.com/linkedin/goavro/v2 v2.9.8
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/mattn/go-runewidth v0.0.10 // indirect
+	github.com/maxbrunsfeld/counterfeiter/v6 v6.3.0
 	github.com/nats-io/nats-server/v2 v2.1.9 // indirect
 	github.com/nats-io/nats.go v1.10.0
 	github.com/onsi/ginkgo v1.14.2

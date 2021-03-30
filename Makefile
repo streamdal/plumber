@@ -1,9 +1,11 @@
 VERSION ?= $(shell git rev-parse --short HEAD)
+SHORT_SHA ?= $(shell git rev-parse --short HEAD)
+GIT_TAG ?= $(shell git describe --tags --abbrev=0)
 BINARY   = plumber
 
 GO = CGO_ENABLED=$(CGO_ENABLED) GONOPROXY=github.com/batchcorp GOFLAGS=-mod=vendor go
 CGO_ENABLED ?= 0
-GO_BUILD_FLAGS = -ldflags "-X github.com/batchcorp/plumber/cli.version=${VERSION}"
+GO_BUILD_FLAGS = -ldflags '-X "github.com/batchcorp/plumber/cli.version=${VERSION}"'
 
 # Pattern #1 example: "example : description = Description for example target"
 # Pattern #2 example: "### Example separator text
@@ -70,7 +72,9 @@ clean:
 
 docker/build: description = Build docker image
 docker/build:
-	docker build -t batchcorp/$(BINARY):$(VERSION) \
+	docker build \
+	-t batchcorp/$(BINARY):$(SHORT_SHA) \
+	-t batchcorp/$(BINARY):$(GIT_TAG) \
 	-t batchcorp/$(BINARY):latest \
 	-t batchcorp/$(BINARY):local \
 	-f ./Dockerfile .
@@ -78,7 +82,8 @@ docker/build:
 .PHONY: docker/push
 docker/push: description = Push local docker image
 docker/push:
-	docker push batchcorp/$(BINARY):$(VERSION) && \
+	docker push batchcorp/$(BINARY):$(SHORT_SHA) && \
+	docker push batchcorp/$(BINARY):$(GIT_TAG) && \
 	docker push batchcorp/$(BINARY):latest
 
 .PHONY: docker/run

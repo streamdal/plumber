@@ -18,7 +18,7 @@ const (
 	DefaultGRPCTimeout         = "10s"
 	DefaultNumWorkers          = "10"
 	DefaultStatsReportInterval = "5s"
-	DefaultBatchSize           = "10"
+	DefaultCount               = "10"
 )
 
 var (
@@ -62,32 +62,34 @@ type Options struct {
 	WriteProtobufDirs        []string
 	WriteProtobufRootMessage string
 
-	Kafka     *KafkaOptions
-	Rabbit    *RabbitOptions
-	GCPPubSub *GCPPubSubOptions
-	MQTT      *MQTTOptions
-	AWSSQS    *AWSSQSOptions
-	AWSSNS    *AWSSNSOptions
-	ActiveMq  *ActiveMqOptions
-	Redis     *RedisOptions
-	Azure     *AzureServiceBusOptions
-	Nats      *NatsOptions
-	Batch     *BatchOptions
+	Kafka        *KafkaOptions
+	Rabbit       *RabbitOptions
+	GCPPubSub    *GCPPubSubOptions
+	MQTT         *MQTTOptions
+	AWSSQS       *AWSSQSOptions
+	AWSSNS       *AWSSNSOptions
+	ActiveMq     *ActiveMqOptions
+	RedisPubSub  *RedisPubSubOptions
+	RedisStreams *RedisStreamsOptions
+	Azure        *AzureServiceBusOptions
+	Nats         *NatsOptions
+	Batch        *BatchOptions
 }
 
 func Handle(cliArgs []string) (string, *Options, error) {
 	opts := &Options{
-		Kafka:     &KafkaOptions{},
-		Rabbit:    &RabbitOptions{},
-		GCPPubSub: &GCPPubSubOptions{},
-		MQTT:      &MQTTOptions{},
-		AWSSQS:    &AWSSQSOptions{WriteAttributes: make(map[string]string, 0)},
-		AWSSNS:    &AWSSNSOptions{},
-		ActiveMq:  &ActiveMqOptions{},
-		Redis:     &RedisOptions{},
-		Azure:     &AzureServiceBusOptions{},
-		Nats:      &NatsOptions{},
-		Batch:     &BatchOptions{},
+		Kafka:        &KafkaOptions{},
+		Rabbit:       &RabbitOptions{},
+		GCPPubSub:    &GCPPubSubOptions{},
+		MQTT:         &MQTTOptions{},
+		AWSSQS:       &AWSSQSOptions{WriteAttributes: make(map[string]string, 0)},
+		AWSSNS:       &AWSSNSOptions{},
+		ActiveMq:     &ActiveMqOptions{},
+		RedisPubSub:  &RedisPubSubOptions{},
+		RedisStreams: &RedisStreamsOptions{},
+		Azure:        &AzureServiceBusOptions{},
+		Nats:         &NatsOptions{},
+		Batch:        &BatchOptions{},
 	}
 
 	app := kingpin.New("plumber", "`curl` for messaging systems. See: https://github.com/batchcorp/plumber")
@@ -133,6 +135,12 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	case "gcp-pubsup":
 		HandleRelayFlags(relayCmd, opts)
 		HandleGCPPubSubFlags(readCmd, writeCmd, relayCmd, opts)
+	case "redis-pubsub":
+		HandleRelayFlags(relayCmd, opts)
+		HandleRedisPubSubFlags(readCmd, writeCmd, relayCmd, opts)
+	case "redis-streams":
+		HandleRelayFlags(relayCmd, opts)
+		HandleRedisStreamsFlags(readCmd, writeCmd, relayCmd, opts)
 	default:
 		HandleRelayFlags(relayCmd, opts)
 		HandleKafkaFlags(readCmd, writeCmd, relayCmd, opts)
@@ -144,7 +152,8 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleAWSSNSFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleAzureFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleNatsFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleRedisFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleRedisPubSubFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleRedisStreamsFlags(readCmd, writeCmd, relayCmd, opts)
 	}
 
 	HandleGlobalFlags(readCmd, opts)
@@ -164,6 +173,10 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		return "", nil, errors.Wrap(err, "unable to parse command")
 	}
 
+	// Hack: kingpin requires multiple values to be separated by newline which
+	// is not great for env vars so we use a comma instead
+	convertSliceArgs(opts)
+
 	opts.Action = "unknown"
 	opts.Version = version
 
@@ -173,6 +186,16 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	}
 
 	return cmd, opts, err
+}
+
+func convertSliceArgs(opts *Options) {
+	if len(opts.RedisPubSub.Channels) != 0 {
+		opts.RedisPubSub.Channels = strings.Split(opts.RedisPubSub.Channels[0], ",")
+	}
+
+	if len(opts.RedisStreams.Streams) != 0 {
+		opts.RedisStreams.Streams = strings.Split(opts.RedisStreams.Streams[0], ",")
+	}
 }
 
 func HandleGlobalReadFlags(cmd *kingpin.CmdClause, opts *Options) {
@@ -216,9 +239,9 @@ func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
 }
 
 func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
-	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs, azure, gcp-pubsub").
+	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs, azure, gcp-pubsub, redis-pubsub, redis-streams").
 		Envar("PLUMBER_RELAY_TYPE").
-		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka", "azure", "gcp-pubsub")
+		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka", "azure", "gcp-pubsub", "redis-pubsub", "redis-streams")
 
 	relayCmd.Flag("token", "Collection token to use when sending data to Batch").
 		Required().
@@ -251,7 +274,7 @@ func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
 		StringVar(&opts.RelayHTTPListenAddress)
 
 	relayCmd.Flag("batch-size", "How many messages to batch before sending them to grpc-collector").
-		Default(DefaultBatchSize).
+		Default(DefaultCount).
 		Envar("PLUMBER_RELAY_BATCH_SIZE").
 		IntVar(&opts.RelayBatchSize)
 }

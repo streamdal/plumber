@@ -84,7 +84,6 @@ func GenerateWriteValue(md *desc.MessageDescriptor, opts *cli.Options) ([]byte, 
 // ValidateWriteOptions ensures that the correct flags and their values have been provided.
 // Backends which require additional bus specific validation can pass them in via a closure
 func ValidateWriteOptions(opts *cli.Options, busSpecific func(options *cli.Options) error) error {
-
 	if busSpecific != nil {
 		if err := busSpecific(opts); err != nil {
 			return err

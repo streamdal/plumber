@@ -23,7 +23,7 @@ func (r *Relay) handleGCP(ctx context.Context, conn *grpc.ClientConn, messages [
 	return r.CallWithRetry(ctx, "AddGCPRecord", func(ctx context.Context) error {
 		_, err := client.AddGCPRecord(ctx, &services.GCPRecordRequest{
 			Records: sinkRecords,
-		})
+		}, grpc.MaxCallRecvMsgSize(MaxGRPCMessageSize))
 		return err
 	})
 }

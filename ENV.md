@@ -88,3 +88,28 @@ Environment Variables
 | --------------------- | ------------| ------- |
 | `GOOGLE_APPLICATION_CREDENTIALS` | Credentials file for service account | **REQUIRED** |
 
+## Redis-PubSub
+
+| Environment Variable  | Description | Default |
+| --------------------- | ------------| ------- |
+| `PLUMBER_RELAY_REDIS_PUBSUB_ADDRESS` | Redis server address | `localhost:6379` |
+| `PLUMBER_RELAY_REDIS_PUBSUB_CHANNELS` | Channels that plumber should subscribe to | **REQUIRED** |
+| `PLUMBER_RELAY_REDIS_PUBSUB_USERNAME` | Username (redis >= v6.0.0) | |
+| `PLUMBER_RELAY_REDIS_PUBSUB_PASSWORD` | Password (redis >= v1.0.0) | |
+| `PLUMBER_RELAY_REDIS_PUBSUB_DATABASE` | Database (0-15) | `0` |
+
+## Redis-Streams
+| Environment Variable  | Description | Default |
+| --------------------- | ------------| ------- |
+| `PLUMBER_RELAY_REDIS_STREAMS_ADDRESS` | Redis server address | `localhost:6379` |
+| `PLUMBER_RELAY_REDIS_STREAMS_CHANNELS` | Channels that plumber should subscribe to | **REQUIRED** |
+| `PLUMBER_RELAY_REDIS_STREAMS_USERNAME` | Username (redis >= v6.0.0) | |
+| `PLUMBER_RELAY_REDIS_STREAMS_PASSWORD` | Password (redis >= v1.0.0) | |
+| `PLUMBER_RELAY_REDIS_STREAMS_DATABASE` | Database (0-15) | `0` |
+| `PLUMBER_RELAY_REDIS_STREAMS_STREAMS` | Comma-separated list of streams | **REQUIRED** |
+| `PLUMBER_RELAY_REDIS_STREAMS_CONSUMER_GROUP` | Consumer group name to use | `plumber`
+| `PLUMBER_RELAY_REDIS_STREAMS_CONSUMER_NAME` | Name of this consumer | `plumber-consumer-1` |
+| `PLUMBER_RELAY_REDIS_STREAMS_COUNT` | How many messages to read per batch | `10` |
+| `PLUMBER_RELAY_REDIS_STREAMS_START_ID` | What ID should consumer start reading at (only applies to a NEW consumer group) | `0` |
+| `PLUMBER_RELAY_REDIS_STREAMS_RECREATE_CONSUMER_GROUP` | Recreate consumer group (will purge old consumer offsets) | `false` |
+| `PLUMBER_RELAY_REDIS_STREAMS_CREATE_STREAMS` | Create streams when declaring consumer group | `false` |

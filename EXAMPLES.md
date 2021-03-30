@@ -7,6 +7,7 @@
        * [Azure Service Bus](#azure-service-bus)
        * [NATS](#nats)
        * [Redis PubSub](#redis-pubsub)
+       * [Redis Streams](#redis-streams)
        * [GCP Pub/Sub](#gcp-pubsub)
   * [Publishing](#publishing)
        * [AWS SQS](#aws-sqs-1)
@@ -16,12 +17,15 @@
        * [Azure Service Bus](#azure-service-bus-1)
        * [NATS](#nats-1)
        * [Redis PubSub](#redis-pubsub-1)
+       * [Redis Streams](#redis-streams-1)
        * [GCP Pub/Sub](#gcp-pubsub-1)
   * [Relay Mode](#relay-mode)
        * [Continuously relay messages from your RabbitMQ instance to a Batch.sh collection](#continuously-relay-messages-from-your-rabbitmq-instance-to-a-batchsh-collection)
        * [Continuously relay messages from an SQS queue to a Batch.sh collection](#continuously-relay-messages-from-an-sqs-queue-to-a-batchsh-collection)
        * [Continuously relay messages from an Azure queue to a Batch.sh collection](#continuously-relay-messages-from-an-azure-queue-to-a-batchsh-collection)
        * [Continuously relay messages from an Azure topic to a Batch.sh collection](#continuously-relay-messages-from-an-azure-topic-to-a-batchsh-collection)
+       * [Continuously relay messages for multiple Redis channels to a Batch.sh collection](#continuously-relay-messages-from-multiple-redis-channels-to-a-batchsh-collection)
+       * [Continuously relay messages for multiple Redis streams to a Batch.sh collection](#continuously-relay-messages-from-multiple-redis-streams-to-a-batchsh-collection)
        * [Continuously relay messages from a Kafka topic (on Confluent) to a Batch.sh collection (via CLI)](#continuously-relay-messages-from-a-kafka-topic-on-confluent-to-a-batchsh-collection-via-cli)
   * [Advanced Usage](#advanced-usage)
        * [Decoding protobuf encoded messages and viewing them live](#decoding-protobuf-encoded-messages-and-viewing-them-live)
@@ -105,7 +109,13 @@ plumber read nats --address="nats://user:pass@nats.test.io:4222" --subject "test
 ##### Redis PubSub
 
 ```bash
-plumber read redis --address="localhost:6379" --channel="new-orders"
+plumber read redis-pubsub --address="localhost:6379" --channels="new-orders"
+```
+
+##### Redis Streams
+
+```bash
+plumber read redis-streams --address="localhost:6379" --streams="new-orders"
 ```
 
 #### GCP Pub/Sub
@@ -167,7 +177,13 @@ plumber write nats --address="nats://user:pass@nats.test.io:4222" --subject "tes
 ##### Redis PubSub
 
 ```bash
-plumber write redis --address="localhost:6379" --channel="new-orders" --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+plumber write redis-pubsub --address="localhost:6379" --channels="new-orders" --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+```
+
+##### Redis Streams
+
+```bash
+plumber write redis-streams --address="localhost:6379" --streams="new-orders" --key foo --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 #### GCP Pub/Sub
@@ -227,7 +243,29 @@ docker run -d --name plumber-azure -p 8080:8080 \
     batchcorp/plumber 
 ```
 
-#### Continuously relay messages from a Kafka topic (on Confluent) to a Batch.sh collection (via CLI)
+##### Continuously relay messages from multiple Redis channels to a Batch.sh collection
+
+```bash
+docker run -d --name plumber-redis-pubsub -p 8080:8080 \
+    -e PLUMBER_RELAY_REDIS_PUBSUB_ADDRESS=localhost:6379 \
+    -e PLUMBER_RELAY_REDIS_PUBSUB_CHANNELS=channel1,channel2 \
+    -e PLUMBER_RELAY_TYPE=redis-pubsub \
+    -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
+    batchcorp/plumber 
+```
+
+##### Continuously relay messages from multiple Redis streams to a Batch.sh collection
+
+```bash
+docker run -d --name plumber-redis-streams -p 8080:8080 \
+    -e PLUMBER_RELAY_REDIS_STREAMS_ADDRESS=localhost:6379 \
+    -e PLUMBER_RELAY_REDIS_STREAMS_STREAMS=stream1,stream2 \
+    -e PLUMBER_RELAY_TYPE=redis-streams \
+    -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
+    batchcorp/plumber 
+```
+
+##### Continuously relay messages from a Kafka topic (on Confluent) to a Batch.sh collection (via CLI)
 
 ```
 export PLUMBER_RELAY_TYPE="kafka"

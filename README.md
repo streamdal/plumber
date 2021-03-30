@@ -92,9 +92,9 @@ A full list of available flags can be displayed by using the `--help` flag after
 different parts of the command:
 
 ```bash
-$ plumber read message rabbit --help
-$ plumber read message mqtt --help
-$ plumber write message kafka --help
+$ plumber read rabbit --help
+$ plumber read mqtt --help
+$ plumber write kafka --help
 $ plumber relay --help
 ```
 
@@ -136,7 +136,8 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 * ActiveMQ
 * Azure Service Bus 
 * NATS
-* Redis
+* Redis-PubSub
+* Redis-Streams
 
 NOTE: If your messaging tech is not supported - submit an issue and we'll do
 our best to make it happen!
@@ -166,6 +167,16 @@ ie. `--queue-declare` is `true` by default. To make it false, use `--no-queue-de
 **Huge** shoutout to [jhump](https://github.com/jhump) and for his excellent
 [protoreflect](https://github.com/jhump/protoreflect) library, without which
 `plumber` would not be anywhere *near* as easy to implement. _Thank you!_
+
+## Release
+
+To push a new plumber release:
+
+1. `git tag v0.18.0 master`
+1. `git push origin v0.18.0`
+1. Watch the github action
+1. New release should be automatically created under https://github.com/batchcorp/plumber/releases/
+1. Update release to include any relevant info
 
 ## Contribute
 

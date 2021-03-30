@@ -13,12 +13,18 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/printer"
+)
+
+var (
+	errInvalidAddress = errors.New("URI scheme must be ssl:// or tcp://")
 )
 
 type MQTT struct {
 	Options *cli.Options
 	Client  pahomqtt.Client
 	MsgDesc *desc.MessageDescriptor
+	printer printer.IPrinter
 	log     *logrus.Entry
 }
 
@@ -51,8 +57,8 @@ func connect(opts *cli.Options) (pahomqtt.Client, error) {
 func createClientOptions(cliOpts *cli.Options, uri *url.URL) (*pahomqtt.ClientOptions, error) {
 	opts := pahomqtt.NewClientOptions()
 
-	if uri.Scheme == "" {
-		return nil, errors.New("URI scheme in address cannot be empty (ie. must begin with ssl:// or tcp://)")
+	if uri.Scheme != "ssl" && uri.Scheme != "tcp" {
+		return nil, errInvalidAddress
 	}
 
 	if uri.Scheme == "ssl" {
@@ -74,7 +80,7 @@ func createClientOptions(cliOpts *cli.Options, uri *url.URL) (*pahomqtt.ClientOp
 		opts.SetPassword(password)
 	}
 
-	opts.SetClientID(cliOpts.MQTT.ClientId)
+	opts.SetClientID(cliOpts.MQTT.ClientID)
 
 	return opts, nil
 }

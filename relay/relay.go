@@ -21,6 +21,8 @@ import (
 	gcpTypes "github.com/batchcorp/plumber/backends/gcp-pubsub/types"
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
 	rabbitTypes "github.com/batchcorp/plumber/backends/rabbitmq/types"
+	redisTypes "github.com/batchcorp/plumber/backends/rpubsub/types"
+	rstreamsTypes "github.com/batchcorp/plumber/backends/rstreams/types"
 	"github.com/batchcorp/plumber/stats"
 )
 
@@ -31,7 +33,10 @@ const (
 	DefaultBatchSize   = 100 // number of messages to batch
 
 	MaxGRPCRetries = 5
-	GRPCRetrySleep = time.Second * 5
+
+	// Maximum message size for GRPC client in bytes
+	MaxGRPCMessageSize = 1024 * 1024 * 100 // 100MB
+	GRPCRetrySleep     = time.Second * 5
 )
 
 type Relay struct {
@@ -222,25 +227,34 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 
 	switch v := messages[0].(type) {
 	case *sqsTypes.RelayMessage:
-		r.log.Debugf("Run() received %d sqs message(s)", len(messages))
+		r.log.Debugf("flushing %d sqs message(s)", len(messages))
 		relayType = "sqs"
 		err = r.handleSQS(ctx, conn, messages)
 	case *rabbitTypes.RelayMessage:
-		r.log.Debugf("Run() received %d rabbit message(s)", len(messages))
+		r.log.Debugf("flushing %d rabbit message(s)", len(messages))
 		relayType = "rabbit"
 		err = r.handleRabbit(ctx, conn, messages)
 	case *kafkaTypes.RelayMessage:
-		r.log.Debugf("Run() received %d kafka message(s)", len(messages))
+		r.log.Debugf("flushing %d kafka message(s)", len(messages))
 		relayType = "kafka"
 		err = r.handleKafka(ctx, conn, messages)
 	case *azureTypes.RelayMessage:
-		r.log.Debugf("Run() received %d azure message(s)", len(messages))
+		r.log.Debugf("flushing %d azure message(s)", len(messages))
 		relayType = "azure"
 		err = r.handleAzure(ctx, conn, messages)
 	case *gcpTypes.RelayMessage:
-		r.log.Debugf("Run() received %d gcp message(s)", len(messages))
+		r.log.Debugf("flushing %d gcp message(s)", len(messages))
 		relayType = "gcp"
 		err = r.handleGCP(ctx, conn, messages)
+	case *redisTypes.RelayMessage:
+		r.log.Debugf("flushing %d redis-pubsub message(s)", len(messages))
+		relayType = "redis"
+		err = r.handleRedisPubSub(ctx, conn, messages)
+	case *rstreamsTypes.RelayMessage:
+		r.log.Debugf("flushing %d redis-streams message(s)", len(messages))
+		relayType = "redis-streams"
+		err = r.handleRedisStreams(ctx, conn, messages)
+
 	default:
 		r.log.WithField("type", v).Error("received unknown message type - skipping")
 		return
@@ -259,7 +273,8 @@ func (r *Relay) CallWithRetry(ctx context.Context, method string, publish func(c
 	var err error
 
 	for i := 1; i <= MaxGRPCRetries; i++ {
-		if err := publish(ctx); err != nil {
+		err = publish(ctx)
+		if err != nil {
 			r.log.Debugf("unable to complete %s call [retry %d/%d]", method, i, 5)
 			time.Sleep(GRPCRetrySleep)
 			continue

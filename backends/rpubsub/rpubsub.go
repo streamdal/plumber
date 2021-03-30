@@ -1,4 +1,4 @@
-package redis
+package rpubsub
 
 import (
 	"github.com/go-redis/redis/v8"
@@ -17,8 +17,9 @@ type Redis struct {
 
 func NewClient(opts *cli.Options) (*redis.Client, error) {
 	return redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Addr:     opts.RedisPubSub.Address,
+		Username: opts.RedisPubSub.Username,
+		Password: opts.RedisPubSub.Password,
+		DB:       opts.RedisPubSub.Database,
 	}), nil
 }

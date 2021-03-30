@@ -49,7 +49,8 @@ func Read(opts *cli.Options) error {
 		Service:  svc,
 		QueueURL: queueURL,
 		MsgDesc:  md,
-		log:      logrus.WithField("pkg", "awssqs/read.go"),
+		Log:      logrus.WithField("pkg", "awssqs/read.go"),
+		Printer:  printer.New(),
 	}
 
 	return a.Read()
@@ -78,7 +79,7 @@ func validateReadOptions(opts *cli.Options) error {
 }
 
 func (a *AWSSQS) Read() error {
-	a.log.Info("Listening for message(s) ...")
+	a.Log.Info("Listening for message(s) ...")
 
 	lineNumber := 1
 
@@ -95,7 +96,7 @@ func (a *AWSSQS) Read() error {
 				return fmt.Errorf("unable to receive any message(s) from SQS: %s", err)
 			}
 
-			printer.Error(fmt.Sprintf("unable to receive any message(s) from SQS: %s (retrying in %s)", err, RetryDuration))
+			a.Printer.Error(fmt.Sprintf("unable to receive any message(s) from SQS: %s (retrying in %s)", err, RetryDuration))
 			time.Sleep(RetryDuration)
 			continue
 		}
@@ -106,11 +107,11 @@ func (a *AWSSQS) Read() error {
 
 			if a.Options.ReadFollow {
 				outputMessage = outputMessage + fmt.Sprintf("; retrying in %s", RetryDuration)
-				printer.Print(outputMessage)
+				a.Printer.Print(outputMessage)
 				time.Sleep(RetryDuration)
 				continue
 			} else {
-				printer.Print(outputMessage)
+				a.Printer.Print(outputMessage)
 				break
 			}
 		}
@@ -119,7 +120,7 @@ func (a *AWSSQS) Read() error {
 		for _, m := range msgResult.Messages {
 			data, err := reader.Decode(a.Options, a.MsgDesc, []byte(*m.Body))
 			if err != nil {
-				printer.Error(fmt.Sprintf("unable to convert message: %s", err))
+				a.Printer.Error(fmt.Sprintf("unable to convert message: %s", err))
 				continue
 			}
 
@@ -130,7 +131,7 @@ func (a *AWSSQS) Read() error {
 				lineNumber++
 			}
 
-			printer.Print(str)
+			a.Printer.Print(str)
 
 			// Cleanup
 			if a.Options.AWSSQS.ReadAutoDelete {
@@ -138,7 +139,7 @@ func (a *AWSSQS) Read() error {
 					QueueUrl:      aws.String(a.QueueURL),
 					ReceiptHandle: m.ReceiptHandle,
 				}); err != nil {
-					printer.Error(fmt.Sprintf("unable to auto-delete message '%s': %s", *m.MessageId, err))
+					a.Printer.Error(fmt.Sprintf("unable to auto-delete message '%s': %s", *m.MessageId, err))
 					continue
 				}
 			}
@@ -149,7 +150,7 @@ func (a *AWSSQS) Read() error {
 		}
 	}
 
-	a.log.Debug("Reader exiting")
+	a.Log.Debug("Reader exiting")
 
 	return nil
 }
