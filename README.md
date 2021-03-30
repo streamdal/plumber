@@ -92,9 +92,9 @@ A full list of available flags can be displayed by using the `--help` flag after
 different parts of the command:
 
 ```bash
-$ plumber read message rabbit --help
-$ plumber read message mqtt --help
-$ plumber write message kafka --help
+$ plumber read rabbit --help
+$ plumber read mqtt --help
+$ plumber write kafka --help
 $ plumber relay --help
 ```
 
