@@ -170,22 +170,26 @@ func parseBatchCmd(cmd string, opts *cli.Options) {
 
 	b := batch.New(opts)
 
-	switch cmd {
-	case "batch login":
+	commands := strings.Split(cmd, " ")
+
+	switch {
+	case cmd == "batch login":
 		err = b.Login()
-	case "batch logout":
+	case cmd == "batch logout":
 		err = b.Logout()
-	case "batch collections list":
+	case cmd == "batch list collection":
 		err = b.ListCollections()
-	case "batch collections new":
+	case cmd == "batch create collection":
 		err = b.CreateCollection()
-	case "batch destinations list":
+	case cmd == "batch list destination":
 		err = b.ListDestinations()
-	case "batch schemas list":
+	case strings.HasPrefix(cmd, "batch create destination"):
+		err = b.CreateDestination(commands[3])
+	case cmd == "batch list schema":
 		err = b.ListSchemas()
-	case "batch replays list":
+	case cmd == "batch list replay":
 		err = b.ListReplays()
-	case "batch search":
+	case cmd == "batch search":
 		err = b.SearchCollection()
 	default:
 		logrus.Fatalf("Unrecognized command: %s", cmd)

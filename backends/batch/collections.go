@@ -52,10 +52,10 @@ const (
 )
 
 var (
-	errNoCollections     = errors.New("you have no collections")
-	errCollectionsFailed = errors.New("unable to get list of collections")
-	errCreateFailed      = errors.New("failed to create collection")
-	errNoDataLake        = errors.New("you have no datalake; please contact batch.sh support")
+	errNoCollections          = errors.New("you have no collections")
+	errCollectionsFailed      = errors.New("unable to get list of collections")
+	errCreateCollectionFailed = errors.New("failed to create collection")
+	errNoDataLake             = errors.New("you have no datalake; please contact batch.sh support")
 )
 
 // ListCollections lists all of an account's collections
@@ -159,7 +159,7 @@ func (b *Batch) getDataLakeID() (string, error) {
 
 	lakes := make([]*DataLake, 0)
 	if err := json.Unmarshal(res, &lakes); err != nil {
-		return "", errCreateFailed
+		return "", errCreateCollectionFailed
 	}
 
 	if len(lakes) == 0 {
@@ -186,17 +186,17 @@ func (b *Batch) CreateCollection() error {
 
 	res, code, err := b.Post("/v1/collection", p)
 	if err != nil {
-		return errCreateFailed
+		return errCreateCollectionFailed
 	}
 
 	if code != http.StatusOK {
 		errResponse := &BlunderErrorResponse{}
 		if err := json.Unmarshal(res, errResponse); err != nil {
-			return errCreateFailed
+			return errCreateCollectionFailed
 		}
 
 		for _, e := range errResponse.Errors {
-			b.Log.Errorf("%s: %s", errCreateFailed, e.Message)
+			b.Log.Errorf("%s: %s", errCreateCollectionFailed, e.Message)
 		}
 
 		return nil
@@ -204,7 +204,7 @@ func (b *Batch) CreateCollection() error {
 
 	createdCollection := &Collection{}
 	if err := json.Unmarshal(res, createdCollection); err != nil {
-		return errCreateFailed
+		return errCreateCollectionFailed
 	}
 
 	b.Log.Infof("Created collection %s!\n", createdCollection.ID)

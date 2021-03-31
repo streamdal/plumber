@@ -78,18 +78,24 @@ type Options struct {
 
 func Handle(cliArgs []string) (string, *Options, error) {
 	opts := &Options{
-		Kafka:        &KafkaOptions{},
-		Rabbit:       &RabbitOptions{},
-		GCPPubSub:    &GCPPubSubOptions{},
-		MQTT:         &MQTTOptions{},
-		AWSSQS:       &AWSSQSOptions{WriteAttributes: make(map[string]string, 0)},
+		Kafka:     &KafkaOptions{},
+		Rabbit:    &RabbitOptions{},
+		GCPPubSub: &GCPPubSubOptions{},
+		MQTT:      &MQTTOptions{},
+		AWSSQS: &AWSSQSOptions{
+			WriteAttributes: make(map[string]string, 0),
+		},
 		AWSSNS:       &AWSSNSOptions{},
 		ActiveMq:     &ActiveMqOptions{},
 		RedisPubSub:  &RedisPubSubOptions{},
 		RedisStreams: &RedisStreamsOptions{},
 		Azure:        &AzureServiceBusOptions{},
 		Nats:         &NatsOptions{},
-		Batch:        &BatchOptions{},
+		Batch: &BatchOptions{
+			Metadata: &DestinationMetadata{
+				HTTPHeaders: make(map[string]string, 0),
+			},
+		},
 	}
 
 	app := kingpin.New("plumber", "`curl` for messaging systems. See: https://github.com/batchcorp/plumber")
