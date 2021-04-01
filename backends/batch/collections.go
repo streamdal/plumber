@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"os"
 
 	"github.com/pkg/errors"
@@ -189,7 +188,7 @@ func (b *Batch) CreateCollection() error {
 		return errCreateCollectionFailed
 	}
 
-	if code != http.StatusOK {
+	if code < 200 || code > 299 {
 		errResponse := &BlunderErrorResponse{}
 		if err := json.Unmarshal(res, errResponse); err != nil {
 			return errCreateCollectionFailed
@@ -199,10 +198,11 @@ func (b *Batch) CreateCollection() error {
 			b.Log.Errorf("%s: %s", errCreateCollectionFailed, e.Message)
 		}
 
-		return nil
+		return fmt.Errorf("received a non-200 response code from API (%d)", code)
 	}
 
 	createdCollection := &Collection{}
+
 	if err := json.Unmarshal(res, createdCollection); err != nil {
 		return errCreateCollectionFailed
 	}
