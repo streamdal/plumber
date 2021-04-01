@@ -3,6 +3,7 @@ package gcppubsub
 import (
 	"context"
 	"sync"
+	"time"
 
 	"cloud.google.com/go/pubsub"
 	"github.com/pkg/errors"
@@ -13,6 +14,10 @@ import (
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/stats"
+)
+
+const (
+	RetryReadInterval = 5 * time.Second
 )
 
 type Relayer struct {
@@ -97,7 +102,12 @@ func (r *Relayer) Relay() error {
 
 	for {
 		if err := sub.Receive(context.Background(), readFunc); err != nil {
+			stats.Mute("gcp-relay-consumer")
+			stats.Mute("gcp-relay-producer")
+
 			r.log.WithField("err", err).Error("unable to read message(s) from GCP pubsub")
+			time.Sleep(RetryReadInterval)
+			continue
 		}
 	}
 

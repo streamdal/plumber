@@ -16,6 +16,7 @@ import (
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/reader"
 	"github.com/batchcorp/plumber/relay"
+	"github.com/batchcorp/plumber/stats"
 )
 
 const (
@@ -130,7 +131,15 @@ func (r *Relayer) Relay() error {
 		}).Result()
 
 		if err != nil {
-			return fmt.Errorf("unable to read from streamsResult: %s", err)
+			// Temporarily mute stats
+			stats.Mute("redis-streams-relay-consumer")
+			stats.Mute("redis-streams-relay-producer")
+
+			r.log.Errorf("Unable to read message(s): %s (retrying in %s)", err, RetryReadInterval)
+
+			time.Sleep(RetryReadInterval)
+
+			continue
 		}
 
 		// We may be reading from multiple streamsResult - read each stream resp
@@ -155,6 +164,8 @@ func (r *Relayer) Relay() error {
 							message.ID, streamName, k, err)
 						continue
 					}
+
+					stats.Incr("redis-streams-relay-consumer", 1)
 
 					// Generate relay message
 					r.RelayCh <- &types.RelayMessage{
