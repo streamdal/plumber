@@ -11,6 +11,7 @@ import (
 	awssns "github.com/batchcorp/plumber/backends/aws-sns"
 	awssqs "github.com/batchcorp/plumber/backends/aws-sqs"
 	"github.com/batchcorp/plumber/backends/azure"
+	"github.com/batchcorp/plumber/backends/batch"
 	gcppubsub "github.com/batchcorp/plumber/backends/gcp-pubsub"
 	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/backends/mqtt"
@@ -46,6 +47,17 @@ func main() {
 	if strings.HasPrefix(cmd, "relay") {
 		printer.PrintRelayOptions(cmd, opts)
 	}
+
+	if strings.HasPrefix(cmd, "batch") {
+		parseBatchCmd(cmd, opts)
+		return
+	}
+
+	parseCmd(cmd, opts)
+}
+
+func parseCmd(cmd string, opts *cli.Options) {
+	var err error
 
 	switch cmd {
 	// Read
@@ -150,4 +162,42 @@ func ProcessRelayFlags(opts *cli.Options) error {
 	}
 
 	return err
+}
+
+// parseBatchCmd handles all commands related to Batch.sh API
+func parseBatchCmd(cmd string, opts *cli.Options) {
+	var err error
+
+	b := batch.New(opts)
+
+	commands := strings.Split(cmd, " ")
+
+	switch {
+	case cmd == "batch login":
+		err = b.Login()
+	case cmd == "batch logout":
+		err = b.Logout()
+	case cmd == "batch list collection":
+		err = b.ListCollections()
+	case cmd == "batch create collection":
+		err = b.CreateCollection()
+	case cmd == "batch list destination":
+		err = b.ListDestinations()
+	case strings.HasPrefix(cmd, "batch create destination"):
+		err = b.CreateDestination(commands[3])
+	case cmd == "batch list schema":
+		err = b.ListSchemas()
+	case cmd == "batch list replay":
+		err = b.ListReplays()
+	case cmd == "batch create replay":
+		err = b.CreateReplay()
+	case cmd == "batch search":
+		err = b.SearchCollection()
+	default:
+		logrus.Fatalf("Unrecognized command: %s", cmd)
+	}
+
+	if err != nil {
+		logrus.Fatalf("Unable to complete command: %s", err)
+	}
 }

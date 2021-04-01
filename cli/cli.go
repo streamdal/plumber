@@ -73,48 +73,38 @@ type Options struct {
 	RedisStreams *RedisStreamsOptions
 	Azure        *AzureServiceBusOptions
 	Nats         *NatsOptions
+	Batch        *BatchOptions
 }
 
 func Handle(cliArgs []string) (string, *Options, error) {
 	opts := &Options{
-		Kafka:        &KafkaOptions{},
-		Rabbit:       &RabbitOptions{},
-		GCPPubSub:    &GCPPubSubOptions{},
-		MQTT:         &MQTTOptions{},
-		AWSSQS:       &AWSSQSOptions{WriteAttributes: make(map[string]string, 0)},
+		Kafka:     &KafkaOptions{},
+		Rabbit:    &RabbitOptions{},
+		GCPPubSub: &GCPPubSubOptions{},
+		MQTT:      &MQTTOptions{},
+		AWSSQS: &AWSSQSOptions{
+			WriteAttributes: make(map[string]string, 0),
+		},
 		AWSSNS:       &AWSSNSOptions{},
 		ActiveMq:     &ActiveMqOptions{},
 		RedisPubSub:  &RedisPubSubOptions{},
 		RedisStreams: &RedisStreamsOptions{},
 		Azure:        &AzureServiceBusOptions{},
 		Nats:         &NatsOptions{},
+		Batch: &BatchOptions{
+			DestinationMetadata: &DestinationMetadata{
+				HTTPHeaders: make(map[string]string, 0),
+			},
+		},
 	}
 
 	app := kingpin.New("plumber", "`curl` for messaging systems. See: https://github.com/batchcorp/plumber")
-
-	// Global (apply to all actions)
-	app.Flag("debug", "Enable debug output").
-		Short('d').
-		Envar("PLUMBER_DEBUG").
-		BoolVar(&opts.Debug)
-
-	app.Flag("quiet", "Suppress non-essential output").
-		Short('q').
-		BoolVar(&opts.Quiet)
-
-	app.Flag("stats", "Display periodic read/write/relay stats").
-		Envar("PLUMBER_STATS").
-		BoolVar(&opts.Stats)
-
-	app.Flag("stats-report-interval", "Interval at which periodic stats are displayed").
-		Envar("PLUMBER_STATS_REPORT_INTERVAL").
-		Default(DefaultStatsReportInterval).
-		DurationVar(&opts.StatsReportInterval)
 
 	// Specific actions
 	readCmd := app.Command("read", "Read message(s) from messaging system")
 	writeCmd := app.Command("write", "Write message(s) to messaging system")
 	relayCmd := app.Command("relay", "Relay message(s) from messaging system to Batch")
+	batchCmd := app.Command("batch", "Access your Batch.sh account information")
 
 	switch os.Getenv("PLUMBER_RELAY_TYPE") {
 	case "kafka":
@@ -159,6 +149,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	HandleGlobalReadFlags(relayCmd, opts)
 	HandleGlobalFlags(writeCmd, opts)
 	HandleGlobalFlags(relayCmd, opts)
+	HandleBatchFlags(batchCmd, opts)
 
 	app.Version(version)
 	app.HelpFlag.Short('h')
@@ -230,6 +221,24 @@ func HandleGlobalWriteFlags(cmd *kingpin.CmdClause, opts *Options) {
 }
 
 func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
+	cmd.Flag("debug", "Enable debug output").
+		Short('d').
+		Envar("PLUMBER_DEBUG").
+		BoolVar(&opts.Debug)
+
+	cmd.Flag("quiet", "Suppress non-essential output").
+		Short('q').
+		BoolVar(&opts.Quiet)
+
+	cmd.Flag("stats", "Display periodic read/write/relay stats").
+		Envar("PLUMBER_STATS").
+		BoolVar(&opts.Stats)
+
+	cmd.Flag("stats-report-interval", "Interval at which periodic stats are displayed").
+		Envar("PLUMBER_STATS_REPORT_INTERVAL").
+		Default(DefaultStatsReportInterval).
+		DurationVar(&opts.StatsReportInterval)
+
 	cmd.Flag("avro-schema", "Path to AVRO schema .avsc file").
 		StringVar(&opts.AvroSchemaFile)
 }
