@@ -117,7 +117,7 @@ func handleCreateReplayFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Required().
 		StringVar(&opts.Batch.ReplayFrom)
 
-	cmd.Flag("to-timestamp", "RFC3339 timestamp for where to send event search query").
+	cmd.Flag("to-timestamp", "RFC3339 timestamp for where to end event search query").
 		Required().
 		StringVar(&opts.Batch.ReplayTo)
 }

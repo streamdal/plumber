@@ -159,7 +159,7 @@ func (b *Batch) getDataLakeID() (string, error) {
 
 	lakes := make([]*DataLake, 0)
 	if err := json.Unmarshal(res, &lakes); err != nil {
-		return "", errCreateCollectionFailed
+		return "", errors.New("unable to unmarshal response from API")
 	}
 
 	if len(lakes) == 0 {

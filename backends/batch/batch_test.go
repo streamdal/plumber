@@ -57,12 +57,13 @@ var _ = Describe("Batch", func() {
 			const Token = "testin123"
 
 			b := &Batch{
-				Token: Token,
+				Token:  Token,
+				ApiUrl: "https://api.batch.sh",
 			}
 
 			jar := b.getCookieJar("/v1/collection")
 
-			u, _ := url.Parse(ApiUrl + "/v1/collection")
+			u, _ := url.Parse(b.ApiUrl + "/v1/collection")
 			cookies := jar.Cookies(u)
 
 			Expect(len(cookies)).To(Equal(1))

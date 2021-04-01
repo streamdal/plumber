@@ -160,7 +160,7 @@ func (b *Batch) generateReplayQuery() (string, error) {
 		return "", fmt.Errorf("--from-timestamp '%s' is not a valid RFC3339 date", b.Opts.Batch.ReplayFrom)
 	}
 
-	to, err := time.Parse("2006-01-02T15:04:05Z", b.Opts.Batch.ReplayFrom)
+	to, err := time.Parse("2006-01-02T15:04:05Z", b.Opts.Batch.ReplayTo)
 	if err != nil {
 		return "", fmt.Errorf("--to-timestamp '%s' is not a valid RFC3339 date", b.Opts.Batch.ReplayTo)
 	}

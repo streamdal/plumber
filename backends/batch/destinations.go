@@ -46,7 +46,6 @@ func (b *Batch) listDestinations() ([]DestinationOutput, error) {
 	}
 
 	if len(output) == 0 {
-		b.Log.Info()
 		return nil, errNoDestinations
 	}
 
@@ -77,7 +76,7 @@ func (b *Batch) createDestination(dstType string) (*DestinationOutput, error) {
 			b.Log.Error(err)
 		}
 
-		return nil, err
+		return nil, fmt.Errorf("received a non-200 response (%d) from API: %s", code, err)
 	}
 
 	createdDestination := &DestinationOutput{}

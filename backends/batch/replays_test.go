@@ -116,7 +116,7 @@ var _ = Describe("Replays", func() {
 
 			query, err := b.generateReplayQuery()
 			Expect(err).ToNot(HaveOccurred())
-			Expect(query).To(Equal("batch.info.date_human: [2021-04-01T12:13:14Z TO 2021-04-01T12:13:14Z]"))
+			Expect(query).To(Equal("batch.info.date_human: [2021-04-01T12:13:14Z TO 2021-04-02T12:13:14Z]"))
 		})
 
 		It("handles query with a field", func() {
@@ -132,7 +132,7 @@ var _ = Describe("Replays", func() {
 
 			query, err := b.generateReplayQuery()
 			Expect(err).ToNot(HaveOccurred())
-			Expect(query).To(Equal("batch.team.id: 'foo' AND batch.info.date_human: [2021-04-01T12:13:14Z TO 2021-04-01T12:13:14Z]"))
+			Expect(query).To(Equal("batch.team.id: 'foo' AND batch.info.date_human: [2021-04-01T12:13:14Z TO 2021-04-02T12:13:14Z]"))
 		})
 	})
 })
