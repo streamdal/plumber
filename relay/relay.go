@@ -248,7 +248,7 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 		err = r.handleGCP(ctx, conn, messages)
 	case *redisTypes.RelayMessage:
 		r.log.Debugf("flushing %d redis-pubsub message(s)", len(messages))
-		relayType = "redis"
+		relayType = "redis-pubsub"
 		err = r.handleRedisPubSub(ctx, conn, messages)
 	case *rstreamsTypes.RelayMessage:
 		r.log.Debugf("flushing %d redis-streams message(s)", len(messages))

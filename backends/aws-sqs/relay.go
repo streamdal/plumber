@@ -1,6 +1,8 @@
 package awssqs
 
 import (
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/pkg/errors"
@@ -11,6 +13,10 @@ import (
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/stats"
+)
+
+const (
+	RetryReadInterval = 5 * time.Second
 )
 
 type Relayer struct {
@@ -100,7 +106,12 @@ func (r *Relayer) Relay() error {
 			WaitTimeSeconds:         aws.Int64(r.Options.AWSSQS.RelayWaitTimeSeconds),
 		})
 		if err != nil {
+			stats.Mute("sqs-relay-consumer")
+			stats.Mute("sqs-relay-producer")
+
 			r.log.WithField("err", err).Error("unable to read message(s) from SQS")
+			time.Sleep(RetryReadInterval)
+
 			continue
 		}
 

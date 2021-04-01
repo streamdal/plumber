@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"time"
 
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
@@ -13,6 +14,10 @@ import (
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/stats"
+)
+
+const (
+	RetryReadInterval = 5 * time.Second
 )
 
 type Relayer struct {
@@ -100,7 +105,11 @@ func (r *Relayer) Relay() error {
 	for {
 		msg, err := reader.Reader.ReadMessage(r.DefaultContext)
 		if err != nil {
-			r.log.Errorf("Unable to read message: %s", err)
+			stats.Mute("kafka-relay-consumer")
+			stats.Mute("kafka-relay-producer")
+
+			r.log.Errorf("Unable to read kafka message: %s; retrying in %s", RetryReadInterval)
+
 			continue
 		}
 

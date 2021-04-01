@@ -118,8 +118,8 @@ func (r *Relayer) Relay() error {
 		msg, err := sub.ReceiveMessage(r.DefaultContext)
 		if err != nil {
 			// Temporarily mute stats
-			stats.Mute("redis-relay-consumer")
-			stats.Mute("redis-relay-producer")
+			stats.Mute("redis-pubsub-relay-consumer")
+			stats.Mute("redis-pubsub-relay-producer")
 
 			r.log.Errorf("Unable to read message: %s (retrying in %s)", err, RetryReadInterval)
 
@@ -128,7 +128,7 @@ func (r *Relayer) Relay() error {
 			continue
 		}
 
-		stats.Incr("redis-relay-consumer", 1)
+		stats.Incr("redis-pubsub-relay-consumer", 1)
 
 		r.log.Debugf("Relaying message received on channel '%s' to Batch (contents: %s)",
 			msg.Channel, msg.Payload)
