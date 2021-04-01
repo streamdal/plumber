@@ -2,8 +2,9 @@ package batch
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+
+	"github.com/pkg/errors"
 )
 
 // DestinationOutput is used for displaying destinations as a table
@@ -76,7 +77,7 @@ func (b *Batch) createDestination(dstType string) (*DestinationOutput, error) {
 			b.Log.Error(err)
 		}
 
-		return nil, fmt.Errorf("received a non-200 response (%d) from API: %s", code, err)
+		return nil, fmt.Errorf("received a non-200 response (%d) from API", code)
 	}
 
 	createdDestination := &DestinationOutput{}
@@ -88,6 +89,13 @@ func (b *Batch) createDestination(dstType string) (*DestinationOutput, error) {
 }
 
 func (b *Batch) CreateDestination(dstType string) error {
+	apiDestinationType, err := convertDestinationType(dstType)
+	if err != nil {
+		return errors.Wrap(err, "unable to convert destination type")
+	}
+
+	b.Opts.Batch.DestinationType = apiDestinationType
+
 	destination, err := b.createDestination(dstType)
 	if err != nil {
 		return err
@@ -96,6 +104,21 @@ func (b *Batch) CreateDestination(dstType string) error {
 	b.Log.Infof("Created %s destination %s!\n", b.Opts.Batch.DestinationType, destination.ID)
 
 	return nil
+}
+
+func convertDestinationType(dstType string) (string, error) {
+	switch dstType {
+	case "kafka":
+		return "kafka", nil
+	case "http":
+		return "http", nil
+	case "aws-sqs":
+		return "sqs", nil
+	case "rabbit":
+		return "rmq", nil
+	default:
+		return "", fmt.Errorf("unrecognized destination type '%s'", dstType)
+	}
 }
 
 func (b *Batch) getDestinationMetadata(destType string) map[string]interface{} {

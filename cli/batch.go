@@ -60,11 +60,14 @@ func HandleBatchFlags(batchCmd *kingpin.CmdClause, opts *Options) {
 	batchCmd.Command("login", "Login to your Batch.sh account")
 	batchCmd.Command("logout", "Logout and clear saved credentials")
 
+	// List
 	listCmd := batchCmd.Command("list", "List batch resources")
+
 	listCmd.Command("destination", "Replay destinations")
 	listCmd.Command("schema", "Schemas")
 	listCmd.Command("collection", "Collections")
 
+	// Create
 	createCmd := batchCmd.Command("create", "Create a batch resource")
 
 	createCollectionCmd := createCmd.Command("collection", "Create a new collection")
@@ -76,7 +79,7 @@ func HandleBatchFlags(batchCmd *kingpin.CmdClause, opts *Options) {
 	createReplayCmd := createCmd.Command("replay", "Create and start a new replay")
 	handleCreateReplayFlags(createReplayCmd, opts)
 
-	// Search Collections
+	// Search
 	searchCmd := batchCmd.Command("search", "Search A Collection")
 	searchCmd.Flag("query", "Search a specified collection").
 		Default("*").
