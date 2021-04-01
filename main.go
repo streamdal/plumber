@@ -189,6 +189,8 @@ func parseBatchCmd(cmd string, opts *cli.Options) {
 		err = b.ListSchemas()
 	case cmd == "batch list replay":
 		err = b.ListReplays()
+	case cmd == "batch create replay":
+		err = b.CreateReplay()
 	case cmd == "batch search":
 		err = b.SearchCollection()
 	default:

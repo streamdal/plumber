@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	ApiUrl = "https://api.dev.batch.sh"
+	ApiUrl = "https://api.batch.sh"
 )
 
 type IBatch interface {

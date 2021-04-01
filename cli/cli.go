@@ -92,7 +92,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		Azure:        &AzureServiceBusOptions{},
 		Nats:         &NatsOptions{},
 		Batch: &BatchOptions{
-			Metadata: &DestinationMetadata{
+			DestinationMetadata: &DestinationMetadata{
 				HTTPHeaders: make(map[string]string, 0),
 			},
 		},

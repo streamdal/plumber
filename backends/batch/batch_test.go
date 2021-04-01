@@ -39,6 +39,9 @@ func BatchWithMockResponse(httpCode int, responseBody string) *Batch {
 	return &Batch{
 		Log:    logrus.NewEntry(logger),
 		Client: client,
+		Opts: &cli.Options{
+			Batch: &cli.BatchOptions{},
+		},
 	}
 }
 
