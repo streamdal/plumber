@@ -106,8 +106,7 @@ var _ = Describe("Batch", func() {
 						DestinationMetadata: &cli.DestinationMetadata{
 							HTTPURL: "http://localhost",
 							HTTPHeaders: map[string]string{
-								"content-type":    "application/json",
-								"x-custom-header": "custom-value",
+								"content-type": "application/json",
 							},
 						},
 					},
