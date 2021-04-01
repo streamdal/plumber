@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
-	"os/user"
 	"path"
 
 	"github.com/pkg/errors"
@@ -106,12 +105,12 @@ func writeConfig(cfg *Config) error {
 // getConfigDir returns a directory where the batch configuration will be stored
 func getConfigDir() (string, error) {
 	// Get user's home directory
-	usr, err := user.Current()
+	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return "", errors.Wrap(err, "unable to locate user's home directory")
 	}
 
-	return path.Join(usr.HomeDir, ".batchsh"), nil
+	return path.Join(homeDir, ".batchsh"), nil
 }
 
 // createConfigDir will create a json file located at ~/.batchsh/config.json to store plumber authentication credentials
