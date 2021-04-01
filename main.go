@@ -42,7 +42,7 @@ func main() {
 		stats.Start(opts.StatsReportInterval)
 	}
 
-	//printer.PrintLogo()
+	printer.PrintLogo()
 
 	if strings.HasPrefix(cmd, "relay") {
 		printer.PrintRelayOptions(cmd, opts)
