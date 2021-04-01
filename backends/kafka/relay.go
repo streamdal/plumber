@@ -108,7 +108,7 @@ func (r *Relayer) Relay() error {
 			stats.Mute("kafka-relay-consumer")
 			stats.Mute("kafka-relay-producer")
 
-			r.log.Errorf("Unable to read kafka message: %s; retrying in %s", RetryReadInterval)
+			r.log.Errorf("Unable to read kafka message: %s; retrying in %s", err, RetryReadInterval)
 
 			continue
 		}
