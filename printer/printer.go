@@ -94,12 +94,16 @@ func PrintRelayOptions(cmd string, opts *cli.Options) {
 		printKafkaOptions(opts)
 	case "rabbit":
 		printRabbitOptions(opts)
-	case "sqs":
+	case "aws-sqs":
 		printSQSOptions(opts)
 	case "azure":
 		printAzureOptions(opts)
-	case "gcp":
+	case "gcp-pubsub":
 		printGCPOptions(opts)
+	case "redis-pubsub":
+		printRedisPubSubOptions(opts)
+	case "redis-streams":
+		printRedisStreamsOptions(opts)
 	}
 }
 
@@ -110,6 +114,7 @@ func printKafkaOptions(opts *cli.Options) {
 	logrus.Info("")
 	logrus.Infof("- %-24s%-6v", "Address", opts.Kafka.Address)
 	logrus.Infof("- %-24s%-6v", "Topic", opts.Kafka.Topic)
+	logrus.Infof("- %-24s%-6v", "Consumer Group", opts.Kafka.GroupID)
 	logrus.Infof("- %-24s%-6v", "CommitInterval", opts.Kafka.CommitInterval)
 	logrus.Infof("- %-24s%-6v", "MaxWait", opts.Kafka.MaxWait)
 	logrus.Infof("- %-24s%-6v", "MinBytes", opts.Kafka.MinBytes)
@@ -171,5 +176,33 @@ func printGCPOptions(opts *cli.Options) {
 	logrus.Infof("- %-24s%-6v", "ProjectID", opts.GCPPubSub.ProjectId)
 	logrus.Infof("- %-24s%-6v", "SubscriptionID", opts.GCPPubSub.ReadSubscriptionId)
 	logrus.Infof("- %-24s%-6v", "ReadAck", opts.GCPPubSub.ReadAck)
+	logrus.Info("")
+}
+
+func printRedisPubSubOptions(opts *cli.Options) {
+	logrus.Info("----------------------------------------------------------------")
+	logrus.Info("> Redis PubSub Settings")
+	logrus.Info("----------------------------------------------------------------")
+	logrus.Info("")
+	logrus.Infof("- %-24s%-6v", "Address", opts.RedisPubSub.Address)
+	logrus.Infof("- %-24s%-6v", "Channels", opts.RedisPubSub.Channels)
+	logrus.Infof("- %-24s%-6v", "Username", opts.RedisPubSub.Username)
+	logrus.Infof("- %-24s%-6v", "Database", opts.RedisPubSub.Database)
+	logrus.Info("")
+}
+
+func printRedisStreamsOptions(opts *cli.Options) {
+	logrus.Info("----------------------------------------------------------------")
+	logrus.Info("> Redis Streams Settings")
+	logrus.Info("----------------------------------------------------------------")
+	logrus.Info("")
+	logrus.Infof("- %-28s%-6v", "Address", opts.RedisStreams.Address)
+	logrus.Infof("- %-28s%-6v", "Streams", opts.RedisStreams.Streams)
+	logrus.Infof("- %-28s%-6v", "Username", opts.RedisStreams.Username)
+	logrus.Infof("- %-28s%-6v", "Database", opts.RedisStreams.Database)
+	logrus.Infof("- %-28s%-6v", "Create Streams", opts.RedisStreams.CreateStreams)
+	logrus.Infof("- %-28s%-6v", "Consumer Name", opts.RedisStreams.ConsumerName)
+	logrus.Infof("- %-28s%-6v", "Consumer Group", opts.RedisStreams.ConsumerGroup)
+	logrus.Infof("- %-28s%-6v", "Recreate Consumer Group", opts.RedisStreams.RecreateConsumerGroup)
 	logrus.Info("")
 }

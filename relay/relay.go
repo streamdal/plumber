@@ -52,6 +52,7 @@ type Config struct {
 	RelayCh     chan interface{}
 	DisableTLS  bool
 	Timeout     time.Duration // general grpc timeout (used for all grpc calls)
+	Type        string
 }
 
 func New(relayCfg *Config) (*Relay, error) {
@@ -183,6 +184,8 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, ctx context.Context) {
 	// the ticker will be hit and the queue will be flushed, regardless of size.
 	flushTicker := time.NewTicker(QueueFlushInterval)
 
+	stats.Incr(r.Config.Type+"-relay-producer", 0)
+
 	for {
 		select {
 		case msg := <-r.Config.RelayCh:
@@ -223,36 +226,28 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	// one message bus type at a time
 
 	var err error
-	var relayType string
 
 	switch v := messages[0].(type) {
 	case *sqsTypes.RelayMessage:
 		r.log.Debugf("flushing %d sqs message(s)", len(messages))
-		relayType = "sqs"
 		err = r.handleSQS(ctx, conn, messages)
 	case *rabbitTypes.RelayMessage:
 		r.log.Debugf("flushing %d rabbit message(s)", len(messages))
-		relayType = "rabbit"
 		err = r.handleRabbit(ctx, conn, messages)
 	case *kafkaTypes.RelayMessage:
 		r.log.Debugf("flushing %d kafka message(s)", len(messages))
-		relayType = "kafka"
 		err = r.handleKafka(ctx, conn, messages)
 	case *azureTypes.RelayMessage:
 		r.log.Debugf("flushing %d azure message(s)", len(messages))
-		relayType = "azure"
 		err = r.handleAzure(ctx, conn, messages)
 	case *gcpTypes.RelayMessage:
 		r.log.Debugf("flushing %d gcp message(s)", len(messages))
-		relayType = "gcp"
 		err = r.handleGCP(ctx, conn, messages)
 	case *redisTypes.RelayMessage:
 		r.log.Debugf("flushing %d redis-pubsub message(s)", len(messages))
-		relayType = "redis-pubsub"
 		err = r.handleRedisPubSub(ctx, conn, messages)
 	case *rstreamsTypes.RelayMessage:
 		r.log.Debugf("flushing %d redis-streams message(s)", len(messages))
-		relayType = "redis-streams"
 		err = r.handleRedisStreams(ctx, conn, messages)
 
 	default:
@@ -265,7 +260,7 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 		return
 	}
 
-	stats.Incr(relayType+"-relay-producer", len(messages))
+	stats.Incr(r.Config.Type+"-relay-producer", len(messages))
 }
 
 // CallWithRetry will retry a GRPC call until it succeeds or reaches a maximum number of retries defined by MaxGRPCRetries

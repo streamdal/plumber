@@ -35,6 +35,7 @@ func Relay(opts *cli.Options) error {
 		Timeout:     opts.RelayGRPCTimeout,
 		RelayCh:     make(chan interface{}, 1),
 		DisableTLS:  opts.RelayGRPCDisableTLS,
+		Type:        opts.RelayType,
 	}
 
 	grpcRelayer, err := relay.New(relayCfg)
@@ -91,7 +92,7 @@ func (r *Relayer) Relay() error {
 			defer msg.Ack()
 		}
 
-		stats.Incr("gcp-relay-consumer", 1)
+		stats.Incr("gcp-pubsub-relay-consumer", 1)
 
 		r.log.Debug("Writing message to relay channel")
 

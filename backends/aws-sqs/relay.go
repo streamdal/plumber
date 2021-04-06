@@ -41,6 +41,7 @@ func Relay(opts *cli.Options) error {
 		RelayCh:     make(chan interface{}, 1),
 		DisableTLS:  opts.RelayGRPCDisableTLS,
 		BatchSize:   opts.RelayBatchSize,
+		Type:        opts.RelayType,
 	}
 
 	grpcRelayer, err := relay.New(relayCfg)
@@ -117,7 +118,7 @@ func (r *Relayer) Relay() error {
 
 		// Send message(s) to relayer
 		for _, v := range msgResult.Messages {
-			stats.Incr("sqs-relay-consumer", 1)
+			stats.Incr("aws-sqs-relay-consumer", 1)
 
 			r.log.Debug("Writing message to relay channel")
 
