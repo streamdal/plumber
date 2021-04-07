@@ -51,6 +51,7 @@ func Relay(opts *cli.Options) error {
 		Timeout:     opts.RelayGRPCTimeout,
 		RelayCh:     make(chan interface{}, 1),
 		DisableTLS:  opts.RelayGRPCDisableTLS,
+		Type:        opts.RelayType,
 	}
 
 	grpcRelayer, err := relay.New(relayCfg)
