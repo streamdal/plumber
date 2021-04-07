@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	nats_streaming "github.com/batchcorp/plumber/backends/nats-streaming"
 	"os"
 	"strings"
 
@@ -77,6 +78,8 @@ func parseCmd(cmd string, opts *cli.Options) {
 		err = azure.Read(opts)
 	case "read nats":
 		err = nats.Read(opts)
+	case "read nats-streaming":
+		err = nats_streaming.Read(opts)
 	case "read redis-pubsub":
 		err = rpubsub.Read(opts)
 	case "read redis-streams":
@@ -101,6 +104,8 @@ func parseCmd(cmd string, opts *cli.Options) {
 		err = azure.Write(opts)
 	case "write nats":
 		err = nats.Write(opts)
+	case "write nats-streaming":
+		err = nats_streaming.Write(opts)
 	case "write redis-pubsub":
 		err = rpubsub.Write(opts)
 	case "write redis-streams":
