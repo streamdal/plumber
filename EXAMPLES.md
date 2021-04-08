@@ -5,6 +5,7 @@
        * [RabbitMQ](#rabbitmq)
        * [Kafka](#kafka)
        * [Azure Service Bus](#azure-service-bus)
+       * [Azure Event Hub](#azure-event-hub)
        * [NATS](#nats)
        * [NATS Streaming](#nats-streaming)
        * [Redis PubSub](#redis-pubsub)
@@ -16,6 +17,7 @@
        * [RabbitMQ](#rabbitmq-1)
        * [Kafka](#kafka-1)
        * [Azure Service Bus](#azure-service-bus-1)
+       * [Azure Event Hub](#azure-event-hub-1)
        * [NATS](#nats-1)
        * [NATS Streaming](#nats-streaming-1)
        * [Redis PubSub](#redis-pubsub-1)
@@ -100,6 +102,16 @@ Reading from a queue
 export SERVICEBUS_CONNECTION_STRING="Endpoint=sb://plumbertopictest.servicebus.windows.net/;SharedAccessKeyName=...."
 
 plumber read azure --queue "new-orders"
+```
+
+##### Azure Event Hub
+
+Read first available message from any partition
+
+```bash
+export EVENTHUB_CONNECTION_STRING="Endpoint=sb://plumbertest.servicebus.windows.net/;SharedAccessKeyName=...;SharedAccessKey=....=;EntityPath=...""
+
+plumber read azure-eventhub
 ```
 
 ##### NATS
@@ -192,14 +204,6 @@ Publish to specific partition key
 export EVENTHUB_CONNECTION_STRING="Endpoint=sb://plumbertest.servicebus.windows.net/;SharedAccessKeyName=...;SharedAccessKey=....=;EntityPath=...""
 
 plumber write azure-eventhub --input-data "{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}" --message-id "neworder123" --partition-key "neworders"
-```
-
-Read first available message from any partition
-
-```bash
-export EVENTHUB_CONNECTION_STRING="Endpoint=sb://plumbertest.servicebus.windows.net/;SharedAccessKeyName=...;SharedAccessKey=....=;EntityPath=...""
-
-plumber read azure-eventhub
 ```
 
 ##### NATS
