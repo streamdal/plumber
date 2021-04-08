@@ -17,7 +17,7 @@ type AzureServiceBusOptions struct {
 }
 
 func HandleAzureFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Options) {
-	rc := readCmd.Command("azure", "Azure Service Buz")
+	rc := readCmd.Command("azure", "Azure Service Bus")
 	addSharedAzureFlags(rc, opts)
 	addReadAzureFlags(rc, opts)
 

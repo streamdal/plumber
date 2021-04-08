@@ -176,6 +176,32 @@ export SERVICEBUS_CONNECTION_STRING="Endpoint=sb://plumbertopictest.servicebus.w
 plumber write azure --queue="new-orders" --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
+##### Azure Event Hub
+
+Publish to random partition
+
+```bash
+export EVENTHUB_CONNECTION_STRING="Endpoint=sb://plumbertest.servicebus.windows.net/;SharedAccessKeyName=...;SharedAccessKey=....=;EntityPath=...""
+
+plumber write azure-eventhub --input-data "{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}" --message-id "neworder123"
+```
+
+Publish to specific partition key
+
+```bash
+export EVENTHUB_CONNECTION_STRING="Endpoint=sb://plumbertest.servicebus.windows.net/;SharedAccessKeyName=...;SharedAccessKey=....=;EntityPath=...""
+
+plumber write azure-eventhub --input-data "{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}" --message-id "neworder123" --partition-key "neworders"
+```
+
+Read first available message from any partition
+
+```bash
+export EVENTHUB_CONNECTION_STRING="Endpoint=sb://plumbertest.servicebus.windows.net/;SharedAccessKeyName=...;SharedAccessKey=....=;EntityPath=...""
+
+plumber read azure-eventhub
+```
+
 ##### NATS
 
 ```bash

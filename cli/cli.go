@@ -73,6 +73,7 @@ type Options struct {
 	RedisPubSub   *RedisPubSubOptions
 	RedisStreams  *RedisStreamsOptions
 	Azure         *AzureServiceBusOptions
+	AzureEventHub *AzureEventHubOptions
 	Nats          *NatsOptions
 	NatsStreaming *NatsStreamingOptions
 	Batch         *BatchOptions
@@ -92,6 +93,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		RedisPubSub:   &RedisPubSubOptions{},
 		RedisStreams:  &RedisStreamsOptions{},
 		Azure:         &AzureServiceBusOptions{},
+		AzureEventHub: &AzureEventHubOptions{},
 		Nats:          &NatsOptions{},
 		NatsStreaming: &NatsStreamingOptions{},
 		Batch: &BatchOptions{
@@ -141,6 +143,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleActiveMqFlags(readCmd, writeCmd, opts)
 		HandleAWSSNSFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleAzureFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleAzureEventHubFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleNatsFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleNatsStreamingFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleRedisPubSubFlags(readCmd, writeCmd, relayCmd, opts)
