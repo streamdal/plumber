@@ -18,8 +18,10 @@ type AWSSQSOptions struct {
 	ReadWaitTimeSeconds         int64
 
 	// Write
-	WriteDelaySeconds int64
-	WriteAttributes   map[string]string
+	WriteDelaySeconds           int64
+	WriteAttributes             map[string]string
+	WriteMessageGroupID         string
+	WriteMessageDeduplicationID string
 
 	// Relay
 	RelayMaxNumMessages          int64
@@ -114,4 +116,11 @@ func addWriteAWSSQSFlags(cmd *kingpin.CmdClause, opts *Options) {
 
 	cmd.Flag("attributes", "Add optional attributes to outgoing message (string=string only)").
 		StringMapVar(&opts.AWSSQS.WriteAttributes)
+
+	cmd.Flag("message-group-id", "Message Group ID. For FIFO queues only").
+		StringVar(&opts.AWSSQS.WriteMessageGroupID)
+
+	cmd.Flag("message-deduplication-id", "Required when publishing to a FIFO queue that does not have "+
+		"content based deduplication enabled").
+		StringVar(&opts.AWSSQS.WriteMessageDeduplicationID)
 }

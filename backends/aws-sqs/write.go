@@ -2,22 +2,22 @@ package awssqs
 
 import (
 	"fmt"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/jhump/protoreflect/desc"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/writer"
+	"github.com/jhump/protoreflect/desc"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	"strings"
 )
 
 const (
 	ErrInvalidWriteDelaySeconds = "--delay-seconds must be between 0 and 900"
 	ErrUnableToSend             = "unable to complete message send"
+	ErrMissingMessageGroupID    = "--message-group-id must be specified when writing to a FIFO queue"
 )
 
 // Write is the entry point function for performing write operations in AWSSQS.
@@ -67,6 +67,10 @@ func validateWriteOptions(opts *cli.Options) error {
 		return errors.New(ErrInvalidWriteDelaySeconds)
 	}
 
+	if strings.HasSuffix(opts.AWSSQS.QueueName, ".fifo") && opts.AWSSQS.WriteMessageGroupID == "" {
+		return errors.New(ErrMissingMessageGroupID)
+	}
+
 	return nil
 }
 
@@ -76,6 +80,16 @@ func (a *AWSSQS) Write(value []byte) error {
 		MessageBody:       aws.String(string(value)),
 		QueueUrl:          aws.String(a.QueueURL),
 		MessageAttributes: make(map[string]*sqs.MessageAttributeValue, 0),
+	}
+
+	// This attribute is required for FIFO queues but cannot be present on requests to non-FIFO queues
+	if strings.HasSuffix(a.Options.AWSSQS.QueueName, ".fifo") {
+		input.MessageGroupId = aws.String(a.Options.AWSSQS.WriteMessageGroupID)
+
+		// Optional for FIFO queues. Must be specified if queue doesn't have dedup enabled on it
+		if a.Options.AWSSQS.WriteMessageDeduplicationID != "" {
+			input.MessageDeduplicationId = aws.String(a.Options.AWSSQS.WriteMessageDeduplicationID)
+		}
 	}
 
 	for k, v := range a.Options.AWSSQS.WriteAttributes {
