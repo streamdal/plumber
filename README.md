@@ -136,6 +136,7 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 * ActiveMQ
 * Azure Service Bus 
 * NATS
+* NATS Streaming (Jetstream) 
 * Redis-PubSub
 * Redis-Streams
 

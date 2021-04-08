@@ -6,6 +6,7 @@
        * [Kafka](#kafka)
        * [Azure Service Bus](#azure-service-bus)
        * [NATS](#nats)
+       * [NATS Streaming](#nats-streaming)
        * [Redis PubSub](#redis-pubsub)
        * [Redis Streams](#redis-streams)
        * [GCP Pub/Sub](#gcp-pubsub)
@@ -16,6 +17,7 @@
        * [Kafka](#kafka-1)
        * [Azure Service Bus](#azure-service-bus-1)
        * [NATS](#nats-1)
+       * [NATS Streaming](#nats-sttreaming-2)
        * [Redis PubSub](#redis-pubsub-1)
        * [Redis Streams](#redis-streams-1)
        * [GCP Pub/Sub](#gcp-pubsub-1)
@@ -106,6 +108,12 @@ plumber read azure --queue "new-orders"
 plumber read nats --address="nats://user:pass@nats.test.io:4222" --subject "test-subject"
 ```
 
+##### NATS Streaming
+
+```bash
+plumber read nats-streaming --address="nats://user:pass@nats.test.io:4222" --channel "orders" --cluster-id "test-cluster" --client-id "plumber"
+```
+
 ##### Redis PubSub
 
 ```bash
@@ -172,6 +180,12 @@ plumber write azure --queue="new-orders" --input-data="{\"order_id\": \"A-3458-6
 
 ```bash
 plumber write nats --address="nats://user:pass@nats.test.io:4222" --subject "test-subject" --input-data "Hello World"
+```
+
+##### NATS Streaming
+
+```bash
+plumber writer nats-streaming --address="nats://user:pass@nats.test.io:4222" --channel "orders" --cluster-id "test-cluster" --client-id "plumber-producer" --input-data "{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ##### Redis PubSub

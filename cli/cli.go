@@ -54,6 +54,7 @@ type Options struct {
 	ReadFollow              bool
 	ReadLineNumbers         bool
 	ReadConvert             string
+	Verbose                 bool
 
 	// Shared write flags
 	WriteInputData           string
@@ -62,18 +63,19 @@ type Options struct {
 	WriteProtobufDirs        []string
 	WriteProtobufRootMessage string
 
-	Kafka        *KafkaOptions
-	Rabbit       *RabbitOptions
-	GCPPubSub    *GCPPubSubOptions
-	MQTT         *MQTTOptions
-	AWSSQS       *AWSSQSOptions
-	AWSSNS       *AWSSNSOptions
-	ActiveMq     *ActiveMqOptions
-	RedisPubSub  *RedisPubSubOptions
-	RedisStreams *RedisStreamsOptions
-	Azure        *AzureServiceBusOptions
-	Nats         *NatsOptions
-	Batch        *BatchOptions
+	Kafka         *KafkaOptions
+	Rabbit        *RabbitOptions
+	GCPPubSub     *GCPPubSubOptions
+	MQTT          *MQTTOptions
+	AWSSQS        *AWSSQSOptions
+	AWSSNS        *AWSSNSOptions
+	ActiveMq      *ActiveMqOptions
+	RedisPubSub   *RedisPubSubOptions
+	RedisStreams  *RedisStreamsOptions
+	Azure         *AzureServiceBusOptions
+	Nats          *NatsOptions
+	NatsStreaming *NatsStreamingOptions
+	Batch         *BatchOptions
 }
 
 func Handle(cliArgs []string) (string, *Options, error) {
@@ -85,12 +87,13 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		AWSSQS: &AWSSQSOptions{
 			WriteAttributes: make(map[string]string, 0),
 		},
-		AWSSNS:       &AWSSNSOptions{},
-		ActiveMq:     &ActiveMqOptions{},
-		RedisPubSub:  &RedisPubSubOptions{},
-		RedisStreams: &RedisStreamsOptions{},
-		Azure:        &AzureServiceBusOptions{},
-		Nats:         &NatsOptions{},
+		AWSSNS:        &AWSSNSOptions{},
+		ActiveMq:      &ActiveMqOptions{},
+		RedisPubSub:   &RedisPubSubOptions{},
+		RedisStreams:  &RedisStreamsOptions{},
+		Azure:         &AzureServiceBusOptions{},
+		Nats:          &NatsOptions{},
+		NatsStreaming: &NatsStreamingOptions{},
 		Batch: &BatchOptions{
 			DestinationMetadata: &DestinationMetadata{
 				HTTPHeaders: make(map[string]string, 0),
@@ -139,6 +142,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleAWSSNSFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleAzureFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleNatsFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleNatsStreamingFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleRedisPubSubFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleRedisStreamsFlags(readCmd, writeCmd, relayCmd, opts)
 	}
@@ -202,6 +206,9 @@ func HandleGlobalReadFlags(cmd *kingpin.CmdClause, opts *Options) {
 
 	cmd.Flag("convert", "Convert received (output) message(s)").
 		EnumVar(&opts.ReadConvert, "base64", "gzip")
+
+	cmd.Flag("verbose", "Display message metadata if available").
+		BoolVar(&opts.Verbose)
 }
 
 func HandleGlobalWriteFlags(cmd *kingpin.CmdClause, opts *Options) {

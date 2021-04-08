@@ -62,7 +62,7 @@ services:
 
   nats:
     container_name: nats
-    image: nats:alpine
+    image: nats-streaming
     ports:
       - "4222:4222" # Client
       - "8222:8222" # Admin panel
