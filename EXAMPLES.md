@@ -17,7 +17,7 @@
        * [Kafka](#kafka-1)
        * [Azure Service Bus](#azure-service-bus-1)
        * [NATS](#nats-1)
-       * [NATS Streaming](#nats-sttreaming-2)
+       * [NATS Streaming](#nats-streaming-1)
        * [Redis PubSub](#redis-pubsub-1)
        * [Redis Streams](#redis-streams-1)
        * [GCP Pub/Sub](#gcp-pubsub-1)
@@ -211,7 +211,7 @@ plumber write nats --address="nats://user:pass@nats.test.io:4222" --subject "tes
 ##### NATS Streaming
 
 ```bash
-plumber writer nats-streaming --address="nats://user:pass@nats.test.io:4222" --channel "orders" --cluster-id "test-cluster" --client-id "plumber-producer" --input-data "{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+plumber write nats-streaming --address="nats://user:pass@nats.test.io:4222" --channel "orders" --cluster-id "test-cluster" --client-id "plumber-producer" --input-data "{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ##### Redis PubSub
