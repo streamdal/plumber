@@ -30,10 +30,11 @@ func addSharedNatsFlags(cmd *kingpin.CmdClause, opts *Options) {
 		StringVar(&opts.Nats.Address)
 	cmd.Flag("subject", "NATS Subject. Ex: \"foo.bar.*\"").
 		StringVar(&opts.Nats.Subject)
-	cmd.Flag("tls-ca-file", "CA file (only needed if addr is tls://").ExistingFileVar(&opts.Nats.TLSCAFile)
-	cmd.Flag("tls-client-cert-file", "Client cert file (only needed if addr is tls://").
+	cmd.Flag("tls-ca-file", "CA file (only needed if addr is tls://)").
+		ExistingFileVar(&opts.Nats.TLSCAFile)
+	cmd.Flag("tls-client-cert-file", "Client cert file (only needed if addr is tls://)").
 		ExistingFileVar(&opts.Nats.TLSClientCertFile)
-	cmd.Flag("tls-client-key-file", "Client key file (only needed if addr is tls://").
+	cmd.Flag("tls-client-key-file", "Client key file (only needed if addr is tls://)").
 		ExistingFileVar(&opts.Nats.TLSClientKeyFile)
 	cmd.Flag("insecure-tls", "Whether to verify server certificate").Default("false").
 		BoolVar(&opts.Nats.InsecureTLS)
