@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	cloud.google.com/go/pubsub v1.6.1
+	github.com/Azure/azure-event-hubs-go/v3 v3.3.7
 	github.com/Azure/azure-service-bus-go v0.10.8
 	github.com/aws/aws-sdk-go v1.34.9
 	github.com/batchcorp/rabbit v0.1.9

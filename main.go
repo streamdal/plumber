@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	azure_eventhub "github.com/batchcorp/plumber/backends/azure-eventhub"
 	nats_streaming "github.com/batchcorp/plumber/backends/nats-streaming"
 	"os"
 	"strings"
@@ -76,6 +77,8 @@ func parseCmd(cmd string, opts *cli.Options) {
 		err = activemq.Read(opts)
 	case "read azure":
 		err = azure.Read(opts)
+	case "read azure-eventhub":
+		err = azure_eventhub.Read(opts)
 	case "read nats":
 		err = nats.Read(opts)
 	case "read nats-streaming":
@@ -102,6 +105,8 @@ func parseCmd(cmd string, opts *cli.Options) {
 		err = awssns.Write(opts)
 	case "write azure":
 		err = azure.Write(opts)
+	case "write azure-eventhub":
+		err = azure_eventhub.Write(opts)
 	case "write nats":
 		err = nats.Write(opts)
 	case "write nats-streaming":

@@ -134,7 +134,8 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 * Amazon SQS
 * Amazon SNS (Publishing)
 * ActiveMQ
-* Azure Service Bus 
+* Azure Service Bus
+* Azure Event Hub
 * NATS
 * NATS Streaming (Jetstream) 
 * Redis-PubSub
