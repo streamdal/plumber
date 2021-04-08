@@ -5,13 +5,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/jhump/protoreflect/desc"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
 	"github.com/batchcorp/plumber/backends/aws-sqs/types"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/printer"
+	"github.com/jhump/protoreflect/desc"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 type AWSSQS struct {
