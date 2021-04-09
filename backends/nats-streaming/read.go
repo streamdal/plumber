@@ -2,6 +2,7 @@ package nats_streaming
 
 import (
 	"fmt"
+	pb2 "github.com/nats-io/stan.go/pb"
 	"time"
 
 	"github.com/jhump/protoreflect/desc"
@@ -17,7 +18,7 @@ import (
 
 var (
 	errMissingChannel    = errors.New("--channel name cannot be empty")
-	errInvalidReadOption = errors.New("You may only specify either --from-sequence or --all-available, not both")
+	errInvalidReadOption = errors.New("You may only specify one read option of --last, --all, --seq, --since")
 )
 
 func Read(opts *cli.Options) error {
@@ -94,7 +95,8 @@ func (n *NatsStreaming) Read() error {
 
 		n.printer.Print(str)
 
-		if !n.Options.ReadFollow {
+		// All read options except --last-received will default to follow mode, otherwise we will cause a panic here
+		if !n.Options.ReadFollow && n.Options.NatsStreaming.ReadLastReceived {
 			doneCh <- true
 		}
 	}
@@ -111,20 +113,37 @@ func (n *NatsStreaming) Read() error {
 	return nil
 }
 
+// getReadOptions returns slice of options to pass to Stan.io. Only one read option of --last, --since, --seq, --new--only
+// is allowed, so return early once we have a read option
 func (n *NatsStreaming) getReadOptions() []stan.SubscriptionOption {
 	opts := make([]stan.SubscriptionOption, 0)
-
-	if n.Options.NatsStreaming.AllAvailable {
-		opts = append(opts, stan.DeliverAllAvailable())
-	}
-
-	if n.Options.NatsStreaming.StartReadingFrom > 0 {
-		opts = append(opts, stan.StartAtSequence(n.Options.NatsStreaming.StartReadingFrom))
-	}
 
 	if n.Options.NatsStreaming.DurableSubscription != "" {
 		opts = append(opts, stan.DurableName(n.Options.NatsStreaming.DurableSubscription))
 	}
+
+	if n.Options.NatsStreaming.AllAvailable {
+		opts = append(opts, stan.DeliverAllAvailable())
+		return opts
+	}
+
+	if n.Options.NatsStreaming.ReadLastReceived {
+		opts = append(opts, stan.StartWithLastReceived())
+		return opts
+	}
+
+	if n.Options.NatsStreaming.ReadSince > 0 {
+		opts = append(opts, stan.StartAtTimeDelta(n.Options.NatsStreaming.ReadSince))
+		return opts
+	}
+
+	if n.Options.NatsStreaming.ReadFromSequence > 0 {
+		opts = append(opts, stan.StartAtSequence(n.Options.NatsStreaming.ReadFromSequence))
+		return opts
+	}
+
+	// Default option is new-only
+	opts = append(opts, stan.StartAt(pb2.StartPosition_NewOnly))
 
 	return opts
 }
@@ -135,8 +154,61 @@ func validateReadOptions(opts *cli.Options) error {
 		return errMissingChannel
 	}
 
-	if opts.NatsStreaming.StartReadingFrom > 0 && opts.NatsStreaming.AllAvailable {
-		return errInvalidReadOption
+	if opts.NatsStreaming.ReadFromSequence > 0 {
+		if opts.NatsStreaming.AllAvailable {
+			return errInvalidReadOption
+		}
+
+		if opts.NatsStreaming.ReadSince > 0 {
+			return errInvalidReadOption
+		}
+
+		if opts.NatsStreaming.ReadLastReceived {
+			return errInvalidReadOption
+		}
 	}
+
+	if opts.NatsStreaming.AllAvailable {
+		if opts.NatsStreaming.ReadFromSequence > 0 {
+			return errInvalidReadOption
+		}
+
+		if opts.NatsStreaming.ReadSince > 0 {
+			return errInvalidReadOption
+		}
+
+		if opts.NatsStreaming.ReadLastReceived {
+			return errInvalidReadOption
+		}
+	}
+
+	if opts.NatsStreaming.ReadSince > 0 {
+		if opts.NatsStreaming.ReadFromSequence > 0 {
+			return errInvalidReadOption
+		}
+
+		if opts.NatsStreaming.AllAvailable {
+			return errInvalidReadOption
+		}
+
+		if opts.NatsStreaming.ReadLastReceived {
+			return errInvalidReadOption
+		}
+	}
+
+	if opts.NatsStreaming.ReadLastReceived {
+		if opts.NatsStreaming.ReadFromSequence > 0 {
+			return errInvalidReadOption
+		}
+
+		if opts.NatsStreaming.AllAvailable {
+			return errInvalidReadOption
+		}
+
+		if opts.NatsStreaming.ReadSince > 0 {
+			return errInvalidReadOption
+		}
+	}
+
 	return nil
 }

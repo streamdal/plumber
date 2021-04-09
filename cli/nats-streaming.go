@@ -1,6 +1,9 @@
 package cli
 
-import "gopkg.in/alecthomas/kingpin.v2"
+import (
+	"gopkg.in/alecthomas/kingpin.v2"
+	"time"
+)
 
 type NatsStreamingOptions struct {
 	// Shared
@@ -19,9 +22,11 @@ type NatsStreamingOptions struct {
 	CredsFile string
 
 	// Read
-	StartReadingFrom    uint64
-	AllAvailable        bool
 	DurableSubscription string
+	ReadLastReceived    bool
+	ReadSince           time.Duration
+	ReadFromSequence    uint64
+	AllAvailable        bool
 }
 
 func HandleNatsStreamingFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Options) {
@@ -34,11 +39,17 @@ func HandleNatsStreamingFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, op
 }
 
 func addReadNatsStreamingFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("--all-available", "Returns all available").
+	cmd.Flag("all", "Deliver all available messages").
 		BoolVar(&opts.NatsStreaming.AllAvailable)
 
-	cmd.Flag("from-sequence", "Start reading from this sequence number").
-		Uint64Var(&opts.NatsStreaming.StartReadingFrom)
+	cmd.Flag("seq", "Deliver messages starting at sequence number").
+		Uint64Var(&opts.NatsStreaming.ReadFromSequence)
+
+	cmd.Flag("since", "Deliver messages in last interval (e.g. 1s, 1h)").
+		DurationVar(&opts.NatsStreaming.ReadSince)
+
+	cmd.Flag("last", "Deliver starting with last published message").
+		BoolVar(&opts.NatsStreaming.ReadLastReceived)
 
 	cmd.Flag("durable-name", "Create a durable subscription with this name for the given channel").
 		StringVar(&opts.NatsStreaming.DurableSubscription)
