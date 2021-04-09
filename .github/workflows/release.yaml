@@ -59,10 +59,10 @@ jobs:
       - name: Update plumber.rb
         run: |
           cd ./homebrew
-          sed -i .old '/    sha256/ s/"[^"][^"]*"/"${{ steps.shasumdarwin.outputs.sha }}"/' plumber.rb
-          sed -i .old '/      sha256/ s/"[^"][^"]*"/"${{ steps.shasumlinux.outputs.sha }}"/' plumber.rb
-          sed -i .old '/    url/ s/"[^"][^"]*"/"https:\/\/github.com\/batchcorp\/plumber\/releases\/download\/{{ $GITHUB_TAG }}\/plumber-darwin"/' plumber.rb
-          sed -i .old '/      url/ s/"[^"][^"]*"/"https:\/\/github.com\/batchcorp\/plumber\/releases\/download\/{{ $GITHUB_TAG }}\/plumber-linux"/' plumber.rb
+          sed -i '/    sha256/ s/"[^"][^"]*"/"${{ steps.shasumdarwin.outputs.sha }}"/' plumber.rb
+          sed -i '/      sha256/ s/"[^"][^"]*"/"${{ steps.shasumlinux.outputs.sha }}"/' plumber.rb
+          sed -i '/    url/ s/"[^"][^"]*"/"https:\/\/github.com\/batchcorp\/plumber\/releases\/download\/{{ $GITHUB_TAG }}\/plumber-darwin"/' plumber.rb
+          sed -i '/      url/ s/"[^"][^"]*"/"https:\/\/github.com\/batchcorp\/plumber\/releases\/download\/{{ $GITHUB_TAG }}\/plumber-linux"/' plumber.rb
           cat plumber.rb
 #          git add .
 #          git config user.name github-actions
