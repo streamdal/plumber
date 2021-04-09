@@ -40,3 +40,35 @@ jobs:
             build/plumber-windows.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout homebrew-public
+        uses: actions/checkout@master
+        with:
+          repository: batchcorp/homebrew-public
+          token: ${{ secrets.ACTIONS_TOKEN }}
+          path: ./homebrew
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: SHA linux
+        id: shasumlinux
+        run: |
+          echo ::set-output name=sha::"$(shasum -a 256 ./build/plumber-linux | awk '{printf $1}')"
+      - name: SHA darwin
+        id: shasumdarwin
+        run: |
+          echo ::set-output name=sha::"$(shasum -a 256 ./build/plumber-darwin | awk '{printf $1}')"
+      - name: Update plumber.rb
+        run: |
+          cd ./homebrew
+          sed -i .old '/    sha256/ s/"[^"][^"]*"/"${{ steps.shasumdarwin.outputs.sha }}"/' plumber.rb
+          sed -i .old '/      sha256/ s/"[^"][^"]*"/"${{ steps.shasumlinux.outputs.sha }}"/' plumber.rb
+          sed -i .old '/    url/ s/"[^"][^"]*"/"https:\/\/github.com\/batchcorp\/plumber\/releases\/download\/{{ $GITHUB_TAG }}\/plumber-darwin"/' plumber.rb
+          sed -i .old '/      url/ s/"[^"][^"]*"/"https:\/\/github.com\/batchcorp\/plumber\/releases\/download\/{{ $GITHUB_TAG }}\/plumber-linux"/' plumber.rb
+          cat plumber.rb
+#          git add .
+#          git config user.name github-actions
+#          git config user.email github-actions@github.com
+#          git commit -am "Bumping release"
+#          git push
+
+
+
