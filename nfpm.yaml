@@ -15,6 +15,6 @@ description: |
 vendor: "Batch.sh"
 homepage: "https://batch.sh"
 license: "MIT"
-bindir: "/usr/local/bin"
-files:
-  "./build/plumber-linux": "/usr/local/bin/plumber"
+contents:
+- src: ./build/plumber-linux
+  dst: /usr/local/bin/plumber

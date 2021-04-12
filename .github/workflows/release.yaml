@@ -25,19 +25,19 @@ jobs:
         run: |
           sed -i '/version/ s/"[^"][^"]*"/"${{ env.GITHUB_TAG }}"/' nfpm.yaml
       - name: Create DEB package
-        uses: skynet-core/nfpm@v1.5
-        id: deb-package
-        env:
-          GITHUB_TAG: "v0.21.1"
+        uses: blinktag/nfpm@v2.3.1
         with:
-          config: "nfpm.yaml"
+          config: "./nfpm.yaml"
           packager: "deb"
           target: "./build"
       - name: Create RPM package
-        uses: skynet-core/nfpm@v1.5
-        id: rpm-package
-        env:
-          GITHUB_TAG: "v0.21.1"
+        uses: blinktag/nfpm@v2.3.1
+        with:
+          config: "./nfpm.yaml"
+          packager: "rpm"
+          target: "./build"
+      - name: Create APK package
+        uses: blinktag/nfpm@v2.3.1
         with:
           config: "./nfpm.yaml"
           packager: "rpm"
