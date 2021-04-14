@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	azure_eventhub "github.com/batchcorp/plumber/backends/azure-eventhub"
+	cdc_postgres "github.com/batchcorp/plumber/backends/cdc-postgres"
 	nats_streaming "github.com/batchcorp/plumber/backends/nats-streaming"
 	"os"
 	"strings"
@@ -87,6 +88,8 @@ func parseCmd(cmd string, opts *cli.Options) {
 		err = rpubsub.Read(opts)
 	case "read redis-streams":
 		err = rstreams.Read(opts)
+	case "read cdc-postgres":
+		err = cdc_postgres.Read(opts)
 
 	// Write
 	case "write rabbit":
@@ -167,6 +170,8 @@ func ProcessRelayFlags(opts *cli.Options) error {
 		err = rpubsub.Relay(opts)
 	case "redis-streams":
 		err = rstreams.Relay(opts)
+	case "cdc-postgres":
+		err = cdc_postgres.Relay(opts)
 	default:
 		err = fmt.Errorf("unsupported messaging system '%s'", opts.RelayType)
 	}

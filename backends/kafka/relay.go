@@ -74,7 +74,7 @@ func Relay(opts *cli.Options) error {
 		Options:        opts,
 		RelayCh:        relayCfg.RelayCh,
 		log:            logrus.WithField("pkg", "kafka/relay"),
-		Looper:         director.NewFreeLooper(director.FOREVER, make(chan error)),
+		Looper:         director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
 		DefaultContext: context.Background(),
 	}
 
