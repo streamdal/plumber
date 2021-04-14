@@ -45,7 +45,6 @@ func NewSubscription(conn *pgx.ReplicationConn, slotName, publication string, wa
 		walRetain:     walRetain,
 		failOnHandler: failOnHandler,
 	}
-
 }
 
 func pluginArgs(version, publication string) string {
@@ -130,8 +129,6 @@ func (s *Subscription) Start(ctx context.Context, startLSN uint64, h Handler) (e
 			// If we have less than walRetain bytes - just report zero
 			walFlush = 0
 		}
-
-		fmt.Println("flushed")
 
 		return s.sendStatus(walWrite, walFlush)
 	}

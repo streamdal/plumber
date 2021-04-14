@@ -40,6 +40,7 @@ func addSharedCDCPostgresFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("use-tls", "Force TLS usage (regardless of DSN) (default: false)").
 		Envar("PLUMBER_RELAY_RABBIT_USE_TLS").
 		BoolVar(&opts.CDCPostgres.UseTLS)
+
 	cmd.Flag("skip-verify-tls", "Skip server cert verification (default: false)").
 		Envar("PLUMBER_RELAY_RABBIT_SKIP_VERIFY_TLS").
 		BoolVar(&opts.CDCPostgres.SkipVerifyTLS)

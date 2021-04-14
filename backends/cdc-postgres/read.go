@@ -5,24 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/batchcorp/pgoutput"
+	"github.com/batchcorp/plumber/backends/cdc-postgres/types"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/printer"
+	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/pgtype"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
-
-type ChangeRecord struct {
-	LSN       uint64 `json:"lsn"`
-	Timestamp int64  `json:"timestamp"`
-	Changes   []*Change
-}
-
-type Change struct {
-	Table     string                 `json:"table"`
-	Operation string                 `json:"operation"`
-	Fields    map[string]interface{} `json:"fields"`
-}
 
 func Read(opts *cli.Options) error {
 	if err := validateReadOptions(opts); err != nil {
@@ -45,11 +35,12 @@ func Read(opts *cli.Options) error {
 }
 
 func (p *CDCPostgres) Read() error {
+	defer p.Service.Close()
 	set := pgoutput.NewRelationSet(nil)
 
-	var changeRecord *ChangeRecord
-	changeRecord = &ChangeRecord{}
-	changeRecord.Changes = make([]*Change, 0)
+	var changeRecord *types.ChangeRecord
+	changeRecord = &types.ChangeRecord{}
+	changeRecord.Changes = make([]*types.Change, 0)
 
 	sub := pgoutput.NewSubscription(p.Service, p.Options.CDCPostgres.SlotName, p.Options.CDCPostgres.PublisherName, 0, false)
 
@@ -57,24 +48,21 @@ func (p *CDCPostgres) Read() error {
 
 		switch v := m.(type) {
 		case pgoutput.Begin:
-			//fmt.Printf("\nBEGIN: %+v\n", v)
 			changeRecord.Timestamp = v.Timestamp.UTC().UnixNano()
 		case pgoutput.Commit:
-			//fmt.Printf("\nCOMMIT: %+v\n", v)
-			changeRecord.LSN = v.LSN
+			changeRecord.LSN = pgx.FormatLSN(v.LSN)
 
 			// Advance LSN so we do not read the same messages on re-connect
 			sub.AdvanceLSN(v.LSN + 1)
 
 			output, _ := json.MarshalIndent(changeRecord, "", "  ")
-			fmt.Println(string(output))
+			p.Printer.Print(string(output))
 
-			changeRecord = &ChangeRecord{}
-			changeRecord.Changes = make([]*Change, 0)
+			changeRecord = &types.ChangeRecord{}
+			changeRecord.Changes = make([]*types.Change, 0)
 		case pgoutput.Relation:
 			set.Add(v)
 		case pgoutput.Insert:
-			//fmt.Printf("\nINSERT: %+v\n", v)
 			changeSet, ok := set.Get(v.RelationID)
 			if !ok {
 				return errors.New("relation not found")
@@ -84,7 +72,7 @@ func (p *CDCPostgres) Read() error {
 				return fmt.Errorf("error parsing values: %s", err)
 			}
 
-			change := &Change{
+			change := &types.Change{
 				Operation: "insert",
 				Table:     changeSet.Name,
 				Fields:    make(map[string]interface{}, 0),
@@ -94,7 +82,6 @@ func (p *CDCPostgres) Read() error {
 			}
 			changeRecord.Changes = append(changeRecord.Changes, change)
 		case pgoutput.Update:
-			//fmt.Printf("\nUPDATE: %+v\n", v)
 			changeSet, ok := set.Get(v.RelationID)
 			if !ok {
 				return errors.New("relation not found")
@@ -104,7 +91,7 @@ func (p *CDCPostgres) Read() error {
 				return fmt.Errorf("error parsing values: %s", err)
 			}
 
-			change := &Change{
+			change := &types.Change{
 				Operation: "update",
 				Table:     changeSet.Name,
 				Fields:    make(map[string]interface{}, 0),
@@ -114,7 +101,6 @@ func (p *CDCPostgres) Read() error {
 			}
 			changeRecord.Changes = append(changeRecord.Changes, change)
 		case pgoutput.Delete:
-			//fmt.Printf("\nDELETE: %+v\n", v)
 			changeSet, ok := set.Get(v.RelationID)
 			if !ok {
 				err := fmt.Errorf("relation not found for '%s'", changeSet.Name)
@@ -127,7 +113,7 @@ func (p *CDCPostgres) Read() error {
 				p.Log.Debugf("Error parsing value: %s", err)
 			}
 
-			change := &Change{
+			change := &types.Change{
 				Operation: "delete",
 				Table:     changeSet.Name,
 				Fields:    make(map[string]interface{}, 0),

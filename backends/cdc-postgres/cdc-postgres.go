@@ -5,9 +5,29 @@ import (
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/jackc/pgx"
-
 	"github.com/sirupsen/logrus"
 )
+
+/*
+Example output
+
+{
+  "lsn": 23604224,
+  "timestamp": 1618433619997678000,
+  "Changes": [
+    {
+      "table": "employees",
+      "operation": "update",
+      "fields": {
+        "age": 41,
+        "id": 7,
+        "name": "tom"
+      }
+    }
+  ]
+}
+
+*/
 
 type CDCPostgres struct {
 	Options *cli.Options
