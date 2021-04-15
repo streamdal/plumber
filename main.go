@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	azure_eventhub "github.com/batchcorp/plumber/backends/azure-eventhub"
+	cdc_mongo "github.com/batchcorp/plumber/backends/cdc-mongo"
 	nats_streaming "github.com/batchcorp/plumber/backends/nats-streaming"
 	"os"
 	"strings"
@@ -87,6 +88,8 @@ func parseCmd(cmd string, opts *cli.Options) {
 		err = rpubsub.Read(opts)
 	case "read redis-streams":
 		err = rstreams.Read(opts)
+	case "read cdc-mongo":
+		err = cdc_mongo.Read(opts)
 
 	// Write
 	case "write rabbit":
@@ -129,6 +132,8 @@ func parseCmd(cmd string, opts *cli.Options) {
 		err = awssqs.Relay(opts)
 	case "relay azure":
 		err = azure.Relay(opts)
+	case "relay cdc-mongo":
+		err = cdc_mongo.Relay(opts)
 	case "relay redis-pubsub":
 		err = rpubsub.Relay(opts)
 	case "relay redis-streams":
@@ -163,6 +168,8 @@ func ProcessRelayFlags(opts *cli.Options) error {
 		err = rabbitmq.Relay(opts)
 	case "azure":
 		err = azure.Relay(opts)
+	case "cdc-mongo":
+		err = cdc_mongo.Relay(opts)
 	case "redis-pubsub":
 		err = rpubsub.Relay(opts)
 	case "redis-streams":
