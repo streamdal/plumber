@@ -12,7 +12,8 @@ import (
 Example output
 
 {
-  "lsn": 23604224,
+  "lsn": "0/1684C98",
+  "xid": 636,
   "timestamp": 1618433619997678000,
   "Changes": [
     {

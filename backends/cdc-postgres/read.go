@@ -49,6 +49,7 @@ func (p *CDCPostgres) Read() error {
 		switch v := m.(type) {
 		case pgoutput.Begin:
 			changeRecord.Timestamp = v.Timestamp.UTC().UnixNano()
+			changeRecord.XID = v.XID
 		case pgoutput.Commit:
 			changeRecord.LSN = pgx.FormatLSN(v.LSN)
 

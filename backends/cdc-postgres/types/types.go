@@ -8,6 +8,7 @@ type RelayMessage struct {
 
 type ChangeRecord struct {
 	LSN       string    `json:"lsn"`
+	XID       int32     `json:"xid"`
 	Timestamp int64     `json:"timestamp"`
 	Changes   []*Change `json:"changes"`
 }
