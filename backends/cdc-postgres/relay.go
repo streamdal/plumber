@@ -62,7 +62,7 @@ func Relay(opts *cli.Options) error {
 		Options: opts,
 		RelayCh: relayCfg.RelayCh,
 		Service: client,
-		log:     logrus.WithField("pkg", "azure/relay.go"),
+		log:     logrus.WithField("pkg", "cdc-postgres/relay.go"),
 	}
 
 	return r.Relay()

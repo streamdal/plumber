@@ -8,12 +8,13 @@ import (
 	"github.com/batchcorp/schemas/build/go/events/records"
 	"github.com/batchcorp/schemas/build/go/services"
 	"google.golang.org/grpc"
+	"os"
 	"time"
 )
 
 // handleKafka sends a Kafka relay message to the GRPC server
 func (r *Relay) handleCdcPostgres(ctx context.Context, conn *grpc.ClientConn, messages []interface{}) error {
-	sinkRecords, err := r.convertMessagesToGenericRecords(messages)
+	sinkRecords, err := r.convertMessagesToPostgresRecords(messages)
 	if err != nil {
 		return fmt.Errorf("unable to convert messages to kafka sink records: %s", err)
 	}
@@ -29,7 +30,7 @@ func (r *Relay) handleCdcPostgres(ctx context.Context, conn *grpc.ClientConn, me
 }
 
 // validateKafkaRelayMessage ensures all necessary values are present for a Kafka relay message
-func (r *Relay) validateCdcPostgresRelayMessage(msg *types.RelayMessage) error {
+func (r *Relay) validateCDCPostgresRelayMessage(msg *types.RelayMessage) error {
 	if msg == nil {
 		return errMissingMessage
 	}
@@ -41,10 +42,15 @@ func (r *Relay) validateCdcPostgresRelayMessage(msg *types.RelayMessage) error {
 	return nil
 }
 
-// convertMessagesToGenericRecords creates a records.GenericRecord from a postgres changeset which can then
+// convertMessagesToPostgresRecords creates a records.GenericRecord from a postgres changeset which can then
 // be sent to the GRPC server
-func (r *Relay) convertMessagesToGenericRecords(messages []interface{}) ([]*records.GenericRecord, error) {
+func (r *Relay) convertMessagesToPostgresRecords(messages []interface{}) ([]*records.GenericRecord, error) {
 	sinkRecords := make([]*records.GenericRecord, 0)
+
+	hostname, err := os.Hostname()
+	if err != nil {
+		hostname = "unknown"
+	}
 
 	for i, v := range messages {
 		relayMessage, ok := v.(*types.RelayMessage)
@@ -52,7 +58,7 @@ func (r *Relay) convertMessagesToGenericRecords(messages []interface{}) ([]*reco
 			return nil, fmt.Errorf("unable to type assert incoming message as RelayMessage (index: %d)", i)
 		}
 
-		if err := r.validateCdcPostgresRelayMessage(relayMessage); err != nil {
+		if err := r.validateCDCPostgresRelayMessage(relayMessage); err != nil {
 			return nil, fmt.Errorf("unable to validate cdc-postgres relay message (index: %d): %s", i, err)
 		}
 
@@ -63,7 +69,7 @@ func (r *Relay) convertMessagesToGenericRecords(messages []interface{}) ([]*reco
 
 		sinkRecords = append(sinkRecords, &records.GenericRecord{
 			Body:      body,
-			Source:    "postgres",
+			Source:    hostname,
 			Timestamp: time.Now().UTC().UnixNano(),
 		})
 	}
