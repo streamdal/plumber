@@ -137,6 +137,8 @@ func parseCmd(cmd string, opts *cli.Options) {
 		err = azure.Relay(opts)
 	case "relay cdc-mongo":
 		err = cdc_mongo.Relay(opts)
+	case "relay cdc-mongo":
+		err = cdc_mongo.Relay(opts)
 	case "relay redis-pubsub":
 		err = rpubsub.Relay(opts)
 	case "relay redis-streams":
