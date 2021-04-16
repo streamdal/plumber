@@ -68,7 +68,7 @@ func (m *CDCMongo) Read() error {
 		// Comes unformatted from mongo, let's make it nice for the end user
 		tmp := make(map[string]interface{}, 0)
 		if err := json.Unmarshal([]byte(next), &tmp); err != nil {
-			return err
+			return errors.Wrap(err, "unable to unmarshal JSON replication entry")
 		}
 
 		pretty, _ := json.MarshalIndent(tmp, "", "  ")
