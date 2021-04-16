@@ -2,9 +2,6 @@ package main
 
 import (
 	"fmt"
-	azure_eventhub "github.com/batchcorp/plumber/backends/azure-eventhub"
-	cdc_postgres "github.com/batchcorp/plumber/backends/cdc-postgres"
-	nats_streaming "github.com/batchcorp/plumber/backends/nats-streaming"
 	"os"
 	"strings"
 
@@ -14,11 +11,15 @@ import (
 	awssns "github.com/batchcorp/plumber/backends/aws-sns"
 	awssqs "github.com/batchcorp/plumber/backends/aws-sqs"
 	"github.com/batchcorp/plumber/backends/azure"
+	azure_eventhub "github.com/batchcorp/plumber/backends/azure-eventhub"
 	"github.com/batchcorp/plumber/backends/batch"
+	cdc_mongo "github.com/batchcorp/plumber/backends/cdc-mongo"
+	cdc_postgres "github.com/batchcorp/plumber/backends/cdc-postgres"
 	gcppubsub "github.com/batchcorp/plumber/backends/gcp-pubsub"
 	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/backends/mqtt"
 	"github.com/batchcorp/plumber/backends/nats"
+	nats_streaming "github.com/batchcorp/plumber/backends/nats-streaming"
 	"github.com/batchcorp/plumber/backends/rabbitmq"
 	"github.com/batchcorp/plumber/backends/rpubsub"
 	"github.com/batchcorp/plumber/backends/rstreams"
@@ -88,6 +89,8 @@ func parseCmd(cmd string, opts *cli.Options) {
 		err = rpubsub.Read(opts)
 	case "read redis-streams":
 		err = rstreams.Read(opts)
+	case "read cdc-mongo":
+		err = cdc_mongo.Read(opts)
 	case "read cdc-postgres":
 		err = cdc_postgres.Read(opts)
 
@@ -132,6 +135,10 @@ func parseCmd(cmd string, opts *cli.Options) {
 		err = awssqs.Relay(opts)
 	case "relay azure":
 		err = azure.Relay(opts)
+	case "relay cdc-postgres":
+		err = cdc_postgres.Relay(opts)
+	case "relay cdc-mongo":
+		err = cdc_mongo.Relay(opts)
 	case "relay redis-pubsub":
 		err = rpubsub.Relay(opts)
 	case "relay redis-streams":
@@ -166,6 +173,8 @@ func ProcessRelayFlags(opts *cli.Options) error {
 		err = rabbitmq.Relay(opts)
 	case "azure":
 		err = azure.Relay(opts)
+	case "cdc-mongo":
+		err = cdc_mongo.Relay(opts)
 	case "redis-pubsub":
 		err = rpubsub.Relay(opts)
 	case "redis-streams":

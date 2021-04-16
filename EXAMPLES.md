@@ -32,7 +32,9 @@
        * [Continuously relay messages for multiple Redis channels to a Batch.sh collection](#continuously-relay-messages-from-multiple-redis-channels-to-a-batchsh-collection)
        * [Continuously relay messages for multiple Redis streams to a Batch.sh collection](#continuously-relay-messages-from-multiple-redis-streams-to-a-batchsh-collection)
        * [Continuously relay messages from a Kafka topic (on Confluent) to a Batch.sh collection (via CLI)](#continuously-relay-messages-from-a-kafka-topic-on-confluent-to-a-batchsh-collection-via-cli)
+  * [Change Data Capture](#change-data-capture)
        * [Continuously relay Postgres change events to a Batch.sh collection](#continuously-relay-postgres-change-events-to-a-batchsh-collection)
+       * [Continuously relay MongoDB change stream events to a Batch.sh collection](#continuously-relay-mongodb-change-stream-events-to-a-batchsh-collection)
   * [Advanced Usage](#advanced-usage)
        * [Decoding protobuf encoded messages and viewing them live](#decoding-protobuf-encoded-messages-and-viewing-them-live)
 
@@ -332,6 +334,21 @@ $ plumber relay
 
 See documentation at https://docs.batch.sh/event-ingestion/change-data-capture/postgresql for instructions on setting
 up PostgreSQL CDC
+
+##### Continuously relay Monbodb change stream events to a Batch.sh collection
+
+```bash
+docker run -d --name plumber-cdc-mongo -p 8080:8080 \
+    -e PLUMBER_RELAY_CDCMONGO_DSN=mongodb://mongo.mysite.com:27017 \
+    -e PLUMBER_RELAY_TYPE=cdc-mongo \
+    -e PLUMBER_RELAY_CDCMONGO_DATABASE=mydb \
+    -e PLUMBER_RELAY_CDCMONGO_COLLECTION=customers \
+    -e PLUMBER_RELAY_TOKEN=YOUR_BATCHSH_TOKEN_HERE \
+    batchcorp/plumber 
+
+```
+
+For more advanced mongo usage, see documentation at https://docs.batch.sh/event-ingestion/change-data-capture/mongodb
 
 ## Advanced Usage
 

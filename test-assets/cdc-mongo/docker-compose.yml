@@ -1,0 +1,15 @@
+version: "3.4"
+services:
+  mongo1:
+    hostname: mongodb
+    container_name: mongodb
+    image: mongo:4.0
+    environment:
+      MONGO_INITDB_DATABASE: plumbertest
+      MONGO_REPLICA_SET_NAME: rs0
+    expose:
+      - 27017
+    ports:
+      - 27017:27017
+    restart: always
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]

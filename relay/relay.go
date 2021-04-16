@@ -18,6 +18,7 @@ import (
 
 	sqsTypes "github.com/batchcorp/plumber/backends/aws-sqs/types"
 	azureTypes "github.com/batchcorp/plumber/backends/azure/types"
+	mongoTypes "github.com/batchcorp/plumber/backends/cdc-mongo/types"
 	postgresTypes "github.com/batchcorp/plumber/backends/cdc-postgres/types"
 	gcpTypes "github.com/batchcorp/plumber/backends/gcp-pubsub/types"
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
@@ -244,6 +245,9 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	case *gcpTypes.RelayMessage:
 		r.log.Debugf("flushing %d gcp message(s)", len(messages))
 		err = r.handleGCP(ctx, conn, messages)
+	case *mongoTypes.RelayMessage:
+		r.log.Debugf("flushing %d mongo message(s)", len(messages))
+		err = r.handleCDCMongo(ctx, conn, messages)
 	case *redisTypes.RelayMessage:
 		r.log.Debugf("flushing %d redis-pubsub message(s)", len(messages))
 		err = r.handleRedisPubSub(ctx, conn, messages)
