@@ -19,6 +19,7 @@ import (
 	sqsTypes "github.com/batchcorp/plumber/backends/aws-sqs/types"
 	azureTypes "github.com/batchcorp/plumber/backends/azure/types"
 	mongoTypes "github.com/batchcorp/plumber/backends/cdc-mongo/types"
+	postgresTypes "github.com/batchcorp/plumber/backends/cdc-postgres/types"
 	gcpTypes "github.com/batchcorp/plumber/backends/gcp-pubsub/types"
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
 	rabbitTypes "github.com/batchcorp/plumber/backends/rabbitmq/types"
@@ -253,7 +254,9 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	case *rstreamsTypes.RelayMessage:
 		r.log.Debugf("flushing %d redis-streams message(s)", len(messages))
 		err = r.handleRedisStreams(ctx, conn, messages)
-
+	case *postgresTypes.RelayMessage:
+		r.log.Debugf("flushing %d cdc-postgres message(s)", len(messages))
+		err = r.handleCdcPostgres(ctx, conn, messages)
 	default:
 		r.log.WithField("type", v).Error("received unknown message type - skipping")
 		return

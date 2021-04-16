@@ -2,9 +2,6 @@ package main
 
 import (
 	"fmt"
-	azure_eventhub "github.com/batchcorp/plumber/backends/azure-eventhub"
-	cdc_mongo "github.com/batchcorp/plumber/backends/cdc-mongo"
-	nats_streaming "github.com/batchcorp/plumber/backends/nats-streaming"
 	"os"
 	"strings"
 
@@ -14,11 +11,15 @@ import (
 	awssns "github.com/batchcorp/plumber/backends/aws-sns"
 	awssqs "github.com/batchcorp/plumber/backends/aws-sqs"
 	"github.com/batchcorp/plumber/backends/azure"
+	azure_eventhub "github.com/batchcorp/plumber/backends/azure-eventhub"
 	"github.com/batchcorp/plumber/backends/batch"
+	cdc_mongo "github.com/batchcorp/plumber/backends/cdc-mongo"
+	cdc_postgres "github.com/batchcorp/plumber/backends/cdc-postgres"
 	gcppubsub "github.com/batchcorp/plumber/backends/gcp-pubsub"
 	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/backends/mqtt"
 	"github.com/batchcorp/plumber/backends/nats"
+	nats_streaming "github.com/batchcorp/plumber/backends/nats-streaming"
 	"github.com/batchcorp/plumber/backends/rabbitmq"
 	"github.com/batchcorp/plumber/backends/rpubsub"
 	"github.com/batchcorp/plumber/backends/rstreams"
@@ -90,6 +91,8 @@ func parseCmd(cmd string, opts *cli.Options) {
 		err = rstreams.Read(opts)
 	case "read cdc-mongo":
 		err = cdc_mongo.Read(opts)
+	case "read cdc-postgres":
+		err = cdc_postgres.Read(opts)
 
 	// Write
 	case "write rabbit":
@@ -174,6 +177,8 @@ func ProcessRelayFlags(opts *cli.Options) error {
 		err = rpubsub.Relay(opts)
 	case "redis-streams":
 		err = rstreams.Relay(opts)
+	case "cdc-postgres":
+		err = cdc_postgres.Relay(opts)
 	default:
 		err = fmt.Errorf("unsupported messaging system '%s'", opts.RelayType)
 	}

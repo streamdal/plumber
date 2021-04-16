@@ -78,6 +78,7 @@ type Options struct {
 	NatsStreaming *NatsStreamingOptions
 	CDCMongo      *CDCMongoOptions
 	Batch         *BatchOptions
+	CDCPostgres   *CDCPostgresOptions
 }
 
 func Handle(cliArgs []string) (string, *Options, error) {
@@ -103,6 +104,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 				HTTPHeaders: make(map[string]string, 0),
 			},
 		},
+		CDCPostgres: &CDCPostgresOptions{},
 	}
 
 	app := kingpin.New("plumber", "`curl` for messaging systems. See: https://github.com/batchcorp/plumber")
@@ -126,12 +128,14 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleAzureFlags(readCmd, writeCmd, relayCmd, opts)
 	case "gcp-pubsup":
 		HandleGCPPubSubFlags(readCmd, writeCmd, relayCmd, opts)
-	case "cdc-mongo":
-		HandleCDCMongoFlags(readCmd, writeCmd, relayCmd, opts)
 	case "redis-pubsub":
 		HandleRedisPubSubFlags(readCmd, writeCmd, relayCmd, opts)
 	case "redis-streams":
 		HandleRedisStreamsFlags(readCmd, writeCmd, relayCmd, opts)
+	case "cdc-postgres":
+		HandleCDCPostgresFlags(readCmd, writeCmd, relayCmd, opts)
+	case "cdc-mongo":
+		HandleCDCMongoFlags(readCmd, writeCmd, relayCmd, opts)
 	default:
 		HandleKafkaFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
@@ -147,6 +151,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleRedisPubSubFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleRedisStreamsFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleCDCMongoFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleCDCPostgresFlags(readCmd, writeCmd, relayCmd, opts)
 	}
 
 	HandleGlobalFlags(readCmd, opts)
@@ -255,7 +260,7 @@ func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
 func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
 	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs, azure, gcp-pubsub, redis-pubsub, redis-streams").
 		Envar("PLUMBER_RELAY_TYPE").
-		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka", "azure", "gcp-pubsub", "cdc-mongo", "redis-pubsub", "redis-streams")
+		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka", "azure", "gcp-pubsub", "redis-pubsub", "redis-streams", "cdc-postgres", "cdc-mongo")
 
 	relayCmd.Flag("token", "Collection token to use when sending data to Batch").
 		Required().

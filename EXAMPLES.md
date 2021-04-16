@@ -11,6 +11,7 @@
        * [Redis PubSub](#redis-pubsub)
        * [Redis Streams](#redis-streams)
        * [GCP Pub/Sub](#gcp-pubsub)
+       * [Postgres CDC](#cdc-postgres)
   * [Publishing](#publishing)
        * [AWS SQS](#aws-sqs-1)
        * [AWS SNS](#aws-sns)
@@ -31,6 +32,7 @@
        * [Continuously relay messages for multiple Redis channels to a Batch.sh collection](#continuously-relay-messages-from-multiple-redis-channels-to-a-batchsh-collection)
        * [Continuously relay messages for multiple Redis streams to a Batch.sh collection](#continuously-relay-messages-from-multiple-redis-streams-to-a-batchsh-collection)
        * [Continuously relay messages from a Kafka topic (on Confluent) to a Batch.sh collection (via CLI)](#continuously-relay-messages-from-a-kafka-topic-on-confluent-to-a-batchsh-collection-via-cli)
+       * [Continuously relay Postgres change events to a Batch.sh collection](#continuously-relay-postgres-change-events-to-a-batchsh-collection)
   * [Advanced Usage](#advanced-usage)
        * [Decoding protobuf encoded messages and viewing them live](#decoding-protobuf-encoded-messages-and-viewing-them-live)
 
@@ -323,6 +325,13 @@ export PLUMBER_RELAY_KAFKA_SASL_TYPE="plain"
 
 $ plumber relay
 ```
+
+## Change Data Capture
+
+##### Continuously relay Postgres change events to a Batch.sh collection
+
+See documentation at https://docs.batch.sh/event-ingestion/change-data-capture/postgresql for instructions on setting
+up PostgreSQL CDC
 
 ## Advanced Usage
 
