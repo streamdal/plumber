@@ -135,8 +135,8 @@ func parseCmd(cmd string, opts *cli.Options) {
 		err = awssqs.Relay(opts)
 	case "relay azure":
 		err = azure.Relay(opts)
-	case "relay cdc-mongo":
-		err = cdc_mongo.Relay(opts)
+	case "relay cdc-postgres":
+		err = cdc_postgres.Relay(opts)
 	case "relay cdc-mongo":
 		err = cdc_mongo.Relay(opts)
 	case "relay redis-pubsub":
