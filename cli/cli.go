@@ -77,6 +77,7 @@ type Options struct {
 	Nats          *NatsOptions
 	NatsStreaming *NatsStreamingOptions
 	Batch         *BatchOptions
+	CDCPostgres   *CDCPostgresOptions
 }
 
 func Handle(cliArgs []string) (string, *Options, error) {
@@ -101,6 +102,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 				HTTPHeaders: make(map[string]string, 0),
 			},
 		},
+		CDCPostgres: &CDCPostgresOptions{},
 	}
 
 	app := kingpin.New("plumber", "`curl` for messaging systems. See: https://github.com/batchcorp/plumber")
@@ -133,6 +135,9 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	case "redis-streams":
 		HandleRelayFlags(relayCmd, opts)
 		HandleRedisStreamsFlags(readCmd, writeCmd, relayCmd, opts)
+	case "cdc-postgres":
+		HandleRelayFlags(relayCmd, opts)
+		HandleCDCPostgresFlags(readCmd, writeCmd, relayCmd, opts)
 	default:
 		HandleRelayFlags(relayCmd, opts)
 		HandleKafkaFlags(readCmd, writeCmd, relayCmd, opts)
@@ -148,6 +153,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleNatsStreamingFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleRedisPubSubFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleRedisStreamsFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleCDCPostgresFlags(readCmd, writeCmd, relayCmd, opts)
 	}
 
 	HandleGlobalFlags(readCmd, opts)
@@ -256,7 +262,7 @@ func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
 func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
 	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs, azure, gcp-pubsub, redis-pubsub, redis-streams").
 		Envar("PLUMBER_RELAY_TYPE").
-		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka", "azure", "gcp-pubsub", "redis-pubsub", "redis-streams")
+		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka", "azure", "gcp-pubsub", "redis-pubsub", "redis-streams", "cdc-postgres")
 
 	relayCmd.Flag("token", "Collection token to use when sending data to Batch").
 		Required().

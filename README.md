@@ -15,6 +15,7 @@ The tool enables you to:
 * Pipe data from one place to another
 * Decode protobuf data in real-time
 * Capture and relay data to [Batch platform](https://batch.sh)
+* Ship change data capture events to [Batch platform](https://batch.sh)
 
 <sub>\[1] It's like `curl` for messaging systems.</sub>
 
@@ -140,6 +141,8 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 * NATS Streaming (Jetstream) 
 * Redis-PubSub
 * Redis-Streams
+* Postgres CDC (Change Data Capture)
+* MongoDB CDC (Change Data Capture)
 
 NOTE: If your messaging tech is not supported - submit an issue and we'll do
 our best to make it happen!
