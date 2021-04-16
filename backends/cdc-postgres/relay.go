@@ -90,8 +90,10 @@ func (r *Relayer) Relay() error {
 			// Advance LSN so we do not read the same messages on re-connect
 			sub.AdvanceLSN(v.LSN + 1)
 
-			r.RelayCh <- &types.RelayMessage{
-				Value: changeRecord,
+			if len(changeRecord.Changes) > 0 {
+				r.RelayCh <- &types.RelayMessage{
+					Value: changeRecord,
+				}
 			}
 
 			changeRecord = &types.ChangeRecord{}
@@ -131,10 +133,19 @@ func (r *Relayer) Relay() error {
 				Operation: "update",
 				Table:     changeSet.Name,
 				Fields:    make(map[string]interface{}, 0),
+				OldFields: make(map[string]interface{}, 0),
 			}
 			for name, value := range values {
 				change.Fields[name] = value.Get()
 			}
+
+			oldValues, err := set.Values(v.RelationID, v.OldRow)
+			if err == nil {
+				for name, value := range oldValues {
+					change.OldFields[name] = value
+				}
+			}
+
 			changeRecord.Changes = append(changeRecord.Changes, change)
 		case pgoutput.Delete:
 			changeSet, ok := set.Get(v.RelationID)

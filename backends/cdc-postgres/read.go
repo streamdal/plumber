@@ -45,7 +45,6 @@ func (p *CDCPostgres) Read() error {
 	sub := pgoutput.NewSubscription(p.Service, p.Options.CDCPostgres.SlotName, p.Options.CDCPostgres.PublisherName, 0, false)
 
 	handler := func(m pgoutput.Message, _ uint64) error {
-
 		switch v := m.(type) {
 		case pgoutput.Begin:
 			changeRecord.Timestamp = v.Timestamp.UTC().UnixNano()
@@ -96,10 +95,19 @@ func (p *CDCPostgres) Read() error {
 				Operation: "update",
 				Table:     changeSet.Name,
 				Fields:    make(map[string]interface{}, 0),
+				OldFields: make(map[string]interface{}, 0),
 			}
 			for name, value := range values {
 				change.Fields[name] = value.Get()
 			}
+
+			oldValues, err := set.Values(v.RelationID, v.OldRow)
+			if err == nil {
+				for name, value := range oldValues {
+					change.OldFields[name] = value
+				}
+			}
+
 			changeRecord.Changes = append(changeRecord.Changes, change)
 		case pgoutput.Delete:
 			changeSet, ok := set.Get(v.RelationID)

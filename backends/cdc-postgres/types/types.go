@@ -17,6 +17,7 @@ type Change struct {
 	Table     string                 `json:"table"`
 	Operation string                 `json:"operation"`
 	Fields    map[string]interface{} `json:"fields"`
+	OldFields map[string]interface{} `json:"old_fields,omitempty"`
 }
 
 // RelayMessageOptions contains any additional options necessary for processing of Kafka messages by the relayer
