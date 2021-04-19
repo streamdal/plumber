@@ -1,8 +1,9 @@
 package cli
 
 import (
-	"gopkg.in/alecthomas/kingpin.v2"
 	"os"
+
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 type CDCPostgresOptions struct {
@@ -47,6 +48,7 @@ func addSharedCDCPostgresFlags(cmd *kingpin.CmdClause, opts *Options) {
 
 	cmd.Flag("host", "Postgres Server Hostname").
 		Envar("PLUMBER_RELAY_CDCPOSTGRES_HOSTNAME").
+		Required().
 		StringVar(&opts.CDCPostgres.Host)
 
 	cmd.Flag("port", "Postgres Server Port").
@@ -56,6 +58,7 @@ func addSharedCDCPostgresFlags(cmd *kingpin.CmdClause, opts *Options) {
 
 	cmd.Flag("username", "Postgres Server Username").
 		Envar("PLUMBER_RELAY_CDCPOSTGRES_USERNAME").
+		Required().
 		StringVar(&opts.CDCPostgres.Username)
 
 	cmd.Flag("password", "Postgres Server Password").
@@ -64,6 +67,7 @@ func addSharedCDCPostgresFlags(cmd *kingpin.CmdClause, opts *Options) {
 
 	cmd.Flag("database", "Postgres Server Database name").
 		Envar("PLUMBER_RELAY_CDCPOSTGRES_DATABASE").
+		Required().
 		StringVar(&opts.CDCPostgres.DatabaseName)
 
 	cmd.Flag("slot", "CDC Slot name").
