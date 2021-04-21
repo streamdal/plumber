@@ -2,10 +2,12 @@ package cdc_mongo
 
 import (
 	"context"
+
 	"github.com/batchcorp/plumber/api"
 	"github.com/batchcorp/plumber/backends/cdc-mongo/types"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
+	"github.com/batchcorp/plumber/stats"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -91,6 +93,7 @@ func (r *Relayer) Relay() error {
 			r.log.Errorf("unable to read message from mongo: %s", cs.Err())
 		}
 
+		stats.Incr("cdc-mongo-relay-consumer", 1)
 		r.RelayCh <- &types.RelayMessage{
 			Value: cs.Current,
 		}
