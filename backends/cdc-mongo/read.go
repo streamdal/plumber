@@ -3,12 +3,13 @@ package cdc_mongo
 import (
 	"context"
 	"encoding/json"
+	"time"
+
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
-	"time"
 )
 
 func Read(opts *cli.Options) error {
@@ -42,13 +43,19 @@ func (m *CDCMongo) Read() error {
 	var err error
 	var cs *mongo.ChangeStream
 
-	database := m.Service.Database(m.Options.CDCMongo.Database)
-
-	if m.Options.CDCMongo.Collection == "" {
-		cs, err = database.Watch(m.Context, mongo.Pipeline{})
+	if m.Options.CDCMongo.Database != "" {
+		database := m.Service.Database(m.Options.CDCMongo.Database)
+		if m.Options.CDCMongo.Collection == "" {
+			// Watch specific database and all collections under it
+			cs, err = database.Watch(m.Context, mongo.Pipeline{})
+		} else {
+			// Watch specific database and collection deployment
+			coll := database.Collection(m.Options.CDCMongo.Collection)
+			cs, err = coll.Watch(m.Context, mongo.Pipeline{})
+		}
 	} else {
-		coll := database.Collection(m.Options.CDCMongo.Collection)
-		cs, err = coll.Watch(m.Context, mongo.Pipeline{})
+		// Watch entire deployment
+		cs, err = m.Service.Watch(m.Context, mongo.Pipeline{})
 	}
 
 	if err != nil {
@@ -83,5 +90,8 @@ func (m *CDCMongo) Read() error {
 }
 
 func validateReadOptions(opts *cli.Options) error {
+	if opts.CDCMongo.Collection != "" && opts.CDCMongo.Database == "" {
+		return errMissingDatabase
+	}
 	return nil
 }

@@ -2,13 +2,18 @@ package cdc_mongo
 
 import (
 	"context"
+	"time"
+
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
+)
+
+var (
+	errMissingDatabase = errors.New("you must specify the --database flag")
 )
 
 type CDCMongo struct {

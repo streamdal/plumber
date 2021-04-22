@@ -22,6 +22,9 @@ type Relayer struct {
 }
 
 func Relay(opts *cli.Options) error {
+	if err := validateRelayOptions(opts); err != nil {
+		return errors.Wrap(err, "unable to verify options")
+	}
 
 	// Create new relayer instance (+ validate token & gRPC address)
 	relayCfg := &relay.Config{
@@ -73,13 +76,19 @@ func (r *Relayer) Relay() error {
 	var err error
 	var cs *mongo.ChangeStream
 
-	database := r.Service.Database(r.Options.CDCMongo.Database)
-
-	if r.Options.CDCMongo.Collection == "" {
-		cs, err = database.Watch(ctx, mongo.Pipeline{})
+	if r.Options.CDCMongo.Database != "" {
+		database := r.Service.Database(r.Options.CDCMongo.Database)
+		if r.Options.CDCMongo.Collection == "" {
+			// Watch specific database and all collections under it
+			cs, err = database.Watch(ctx, mongo.Pipeline{})
+		} else {
+			// Watch specific database and collection
+			coll := database.Collection(r.Options.CDCMongo.Collection)
+			cs, err = coll.Watch(ctx, mongo.Pipeline{})
+		}
 	} else {
-		coll := database.Collection(r.Options.CDCMongo.Collection)
-		cs, err = coll.Watch(ctx, mongo.Pipeline{})
+		// Watch entire deployment
+		cs, err = r.Service.Watch(ctx, mongo.Pipeline{})
 	}
 
 	if err != nil {
@@ -99,5 +108,12 @@ func (r *Relayer) Relay() error {
 		}
 	}
 
+	return nil
+}
+
+func validateRelayOptions(opts *cli.Options) error {
+	if opts.CDCMongo.Collection != "" && opts.CDCMongo.Database == "" {
+		return errMissingDatabase
+	}
 	return nil
 }
