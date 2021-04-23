@@ -1,8 +1,9 @@
 package cli
 
 import (
-	"gopkg.in/alecthomas/kingpin.v2"
 	"os"
+
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 type CDCMongoOptions struct {
@@ -39,7 +40,6 @@ func addSharedMongoFlags(cmd *kingpin.CmdClause, opts *Options) {
 		StringVar(&opts.CDCMongo.DSN)
 
 	cmd.Flag("database", "Database Name").
-		Required().
 		Envar("PLUMBER_RELAY_CDCMONGO_DATABASE").
 		StringVar(&opts.CDCMongo.Database)
 

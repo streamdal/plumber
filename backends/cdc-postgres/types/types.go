@@ -7,10 +7,13 @@ type RelayMessage struct {
 }
 
 type ChangeRecord struct {
-	LSN       string    `json:"lsn"`
-	XID       int32     `json:"xid"`
-	Timestamp int64     `json:"timestamp"`
-	Changes   []*Change `json:"changes"`
+	LSN       string                 `json:"lsn"`
+	XID       int32                  `json:"xid"`
+	Timestamp int64                  `json:"timestamp"`
+	Table     string                 `json:"table"`
+	Operation string                 `json:"operation"`
+	Fields    map[string]interface{} `json:"fields"`
+	OldFields map[string]interface{} `json:"old_fields,omitempty"`
 }
 
 type Change struct {
