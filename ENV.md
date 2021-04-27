@@ -113,3 +113,23 @@ Environment Variables
 | `PLUMBER_RELAY_REDIS_STREAMS_START_ID` | What ID should consumer start reading at (only applies to a NEW consumer group) | `0` |
 | `PLUMBER_RELAY_REDIS_STREAMS_RECREATE_CONSUMER_GROUP` | Recreate consumer group (will purge old consumer offsets) | `false` |
 | `PLUMBER_RELAY_REDIS_STREAMS_CREATE_STREAMS` | Create streams when declaring consumer group | `false` |
+
+## Postgres CDC
+| Environment Variable  | Description | Default |
+| --------------------- | ------------| ------- |
+| `PLUMBER_RELAY_CDCPOSTGRES_USE_TLS` | Force TLS usage  | `false` |
+| `PLUMBER_RELAY_CDCPOSTGRES_SKIP_VERIFY_TLS` | Skip server cert verification if using TLS | `false` |
+| `PLUMBER_RELAY_CDCPOSTGRES_HOSTNAME` | Postgres server hostname | **REQUIRED** |
+| `PLUMBER_RELAY_CDCPOSTGRES_PORT` | Port Postgres is running on | `5432` |
+| `PLUMBER_RELAY_CDCPOSTGRES_USERNAME` | DB Username | **REQUIRED** |
+| `PLUMBER_RELAY_CDCPOSTGRES_PASSWORD` | DB Passsword |  |
+| `PLUMBER_RELAY_CDCPOSTGRES_DATABASE` | Database | **REQUIRED** |
+| `PLUMBER_RELAY_CDCPOSTGRES_SLOT` | Replication slot name | **REQUIRED**  |
+| `PLUMBER_RELAY_CDCPOSTGRES_PUBLISHER`| Publication Name | **REQUIRED** |
+
+## Mongo CDC
+| Environment Variable  | Description | Default |
+| --------------------- | ------------| ------- |
+| `PLUMBER_RELAY_CDCMONGO_DSN` | Data Source Name string to connect to mongo | |
+| `PLUMBER_RELAY_CDCMONGO_DATABASE` | Database name | *Optional* |
+| `PLUMBER_RELAY_CDCMONGO_COLLECTION` | Collection Name | *Optional* |
