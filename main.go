@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 
+	"golang.org/x/crypto/ssh/terminal"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/backends/activemq"
@@ -46,7 +48,12 @@ func main() {
 		stats.Start(opts.StatsReportInterval)
 	}
 
-	printer.PrintLogo()
+	// In container mode, force JSON and don't print logo
+	if !terminal.IsTerminal(int(os.Stderr.Fd())) {
+		logrus.SetFormatter(&logrus.JSONFormatter{})
+	} else {
+		printer.PrintLogo()
+	}
 
 	if strings.HasPrefix(cmd, "relay") {
 		printer.PrintRelayOptions(cmd, opts)

@@ -4,14 +4,12 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/batchcorp/schemas/build/go/services"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/crypto/ssh/terminal"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
@@ -65,11 +63,6 @@ func New(relayCfg *Config) (*Relay, error) {
 	// Verify grpc connection & token
 	if err := TestConnection(relayCfg); err != nil {
 		return nil, errors.Wrap(err, "unable to complete connection test")
-	}
-
-	// JSON formatter for log output if not running in a TTY - colors are fun!
-	if !terminal.IsTerminal(int(os.Stderr.Fd())) {
-		logrus.SetFormatter(&logrus.JSONFormatter{})
 	}
 
 	return &Relay{
