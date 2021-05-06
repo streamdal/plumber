@@ -52,6 +52,7 @@ Environment Variables
 | `PLUMBER_RELAY_KAFKA_ADDRESS`            | Destination host address | `localhost:9092` |
 | `PLUMBER_RELAY_KAFKA_TOPIC`              | Topic to read message(s) from | **REQUIRED** |
 | `PLUMBER_RELAY_KAFKA_TIMEOUT`            | Connect timeout | `10s` |
+| `PLUMBER_RELAY_KAFKA_USE_TLS`            | Use TLS or not | `false` |
 | `PLUMBER_RELAY_KAFKA_INSECURE_TLS`       | Use insecure TLS (ie. do not verify cert) | `false` |
 | `PLUMBER_RELAY_KAFKA_USERNAME`           | SASL Username | |
 | `PLUMBER_RELAY_KAFKA_PASSWORD`           | SASL Password. If omitted, you will be prompted for the password | |
@@ -87,6 +88,9 @@ Environment Variables
 | Environment Variable  | Description | Default |
 | --------------------- | ------------| ------- |
 | `GOOGLE_APPLICATION_CREDENTIALS` | Credentials file for service account | **REQUIRED** |
+| `PLUMBER_RELAY_GCP_PROJECT_ID` | Project ID | **REQUIRED** |
+| `PLUMBER_RELAY_GCP_SUBSCRIPTION_ID` | Subscription ID | **REQUIRED** |
+| `PLUMBER_RELAY_GCP_ACK_MESSAGE` | Whether to acknowledge message receive | `true` |
 
 ## Redis-PubSub
 
