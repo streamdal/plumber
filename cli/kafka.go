@@ -33,11 +33,7 @@ type KafkaOptions struct {
 	Address            string
 	Topic              string
 	Timeout            time.Duration
-	UseTLS             bool
 	InsecureTLS        bool
-	TLSCAFile          string
-	TLSClientCertFile  string
-	TLSClientKeyFile   string
 	Username           string
 	Password           string
 	AuthenticationType string
@@ -99,14 +95,6 @@ func addSharedKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("insecure-tls", "Use insecure TLS").
 		Envar("PLUMBER_RELAY_KAFKA_INSECURE_TLS").
 		BoolVar(&opts.Kafka.InsecureTLS)
-	cmd.Flag("use-tls", "Use TLS").
-		Envar("PLUMBER_RELAY_KAFKA_USE_TLS").
-		BoolVar(&opts.Kafka.UseTLS)
-	cmd.Flag("tls-ca-file", "CA file (only needed if addr is ssl://").ExistingFileVar(&opts.Kafka.TLSCAFile)
-	cmd.Flag("tls-client-cert-file", "Client cert file (only needed if addr is ssl://").
-		ExistingFileVar(&opts.Kafka.TLSClientCertFile)
-	cmd.Flag("tls-client-key-file", "Client key file (only needed if addr is ssl://").
-		ExistingFileVar(&opts.Kafka.TLSClientKeyFile)
 	cmd.Flag("username", "SASL Username").
 		Envar("PLUMBER_RELAY_KAFKA_USERNAME").
 		StringVar(&opts.Kafka.Username)

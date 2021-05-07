@@ -3,9 +3,7 @@ package kafka
 import (
 	"context"
 	"crypto/tls"
-	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"strings"
 	"syscall"
 	"time"
@@ -53,11 +51,9 @@ func NewReader(opts *cli.Options) (*KafkaReader, error) {
 		Timeout:   opts.Kafka.Timeout,
 	}
 
-	if opts.Kafka.UseTLS {
-		dialer.TLS = &tls.Config{}
-
-		if opts.Kafka.InsecureTLS {
-			dialer.TLS.InsecureSkipVerify = true
+	if opts.Kafka.InsecureTLS {
+		dialer.TLS = &tls.Config{
+			InsecureSkipVerify: true,
 		}
 	}
 
@@ -199,34 +195,4 @@ func readPassword() (string, error) {
 			return sp, nil
 		}
 	}
-}
-
-func generateTLSConfig(opts *cli.Options) (*tls.Config, error) {
-	certpool := x509.NewCertPool()
-
-	pemCerts, err := ioutil.ReadFile(opts.Kafka.TLSCAFile)
-	if err == nil {
-		certpool.AppendCertsFromPEM(pemCerts)
-	}
-
-	// Import client certificate/key pair
-	cert, err := tls.LoadX509KeyPair(opts.MQTT.TLSClientCertFile, opts.MQTT.TLSClientKeyFile)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to load ssl keypair")
-	}
-
-	// Just to print out the client certificate..
-	cert.Leaf, err = x509.ParseCertificate(cert.Certificate[0])
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to parse certificate")
-	}
-
-	// Create tls.Config with desired tls properties
-	return &tls.Config{
-		RootCAs:            certpool,
-		ClientAuth:         tls.NoClientCert,
-		ClientCAs:          nil,
-		InsecureSkipVerify: opts.MQTT.InsecureTLS,
-		Certificates:       []tls.Certificate{cert},
-	}, nil
 }
