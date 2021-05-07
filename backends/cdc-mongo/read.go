@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func Read(opts *cli.Options) error {
@@ -42,20 +43,25 @@ func (m *CDCMongo) Read() error {
 
 	var err error
 	var cs *mongo.ChangeStream
+	streamOpts := make([]*options.ChangeStreamOptions, 0)
+
+	if m.Options.CDCMongo.IncludeFullDocument {
+		streamOpts = append(streamOpts, options.ChangeStream().SetFullDocument(options.UpdateLookup))
+	}
 
 	if m.Options.CDCMongo.Database != "" {
 		database := m.Service.Database(m.Options.CDCMongo.Database)
 		if m.Options.CDCMongo.Collection == "" {
 			// Watch specific database and all collections under it
-			cs, err = database.Watch(m.Context, mongo.Pipeline{})
+			cs, err = database.Watch(m.Context, mongo.Pipeline{}, streamOpts...)
 		} else {
 			// Watch specific database and collection deployment
 			coll := database.Collection(m.Options.CDCMongo.Collection)
-			cs, err = coll.Watch(m.Context, mongo.Pipeline{})
+			cs, err = coll.Watch(m.Context, mongo.Pipeline{}, streamOpts...)
 		}
 	} else {
 		// Watch entire deployment
-		cs, err = m.Service.Watch(m.Context, mongo.Pipeline{})
+		cs, err = m.Service.Watch(m.Context, mongo.Pipeline{}, streamOpts...)
 	}
 
 	if err != nil {

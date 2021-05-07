@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Relayer struct {
@@ -75,20 +76,25 @@ func (r *Relayer) Relay() error {
 
 	var err error
 	var cs *mongo.ChangeStream
+	streamOpts := make([]*options.ChangeStreamOptions, 0)
+
+	if r.Options.CDCMongo.IncludeFullDocument {
+		streamOpts = append(streamOpts, options.ChangeStream().SetFullDocument(options.UpdateLookup))
+	}
 
 	if r.Options.CDCMongo.Database != "" {
 		database := r.Service.Database(r.Options.CDCMongo.Database)
 		if r.Options.CDCMongo.Collection == "" {
 			// Watch specific database and all collections under it
-			cs, err = database.Watch(ctx, mongo.Pipeline{})
+			cs, err = database.Watch(ctx, mongo.Pipeline{}, streamOpts...)
 		} else {
-			// Watch specific database and collection
+			// Watch specific database and collection deployment
 			coll := database.Collection(r.Options.CDCMongo.Collection)
-			cs, err = coll.Watch(ctx, mongo.Pipeline{})
+			cs, err = coll.Watch(ctx, mongo.Pipeline{}, streamOpts...)
 		}
 	} else {
 		// Watch entire deployment
-		cs, err = r.Service.Watch(ctx, mongo.Pipeline{})
+		cs, err = r.Service.Watch(ctx, mongo.Pipeline{}, streamOpts...)
 	}
 
 	if err != nil {
