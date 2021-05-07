@@ -137,3 +137,4 @@ Environment Variables
 | `PLUMBER_RELAY_CDCMONGO_DSN` | Data Source Name string to connect to mongo | |
 | `PLUMBER_RELAY_CDCMONGO_DATABASE` | Database name | *Optional* |
 | `PLUMBER_RELAY_CDCMONGO_COLLECTION` | Collection Name | *Optional* |
+| `PLUMBER_RELAY_CDCMONGO_INCLUDE_FULL_DOC` | Include fullDocument in return payload | `false` |

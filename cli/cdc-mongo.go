@@ -7,9 +7,10 @@ import (
 )
 
 type CDCMongoOptions struct {
-	DSN        string
-	Database   string
-	Collection string
+	DSN                 string
+	Database            string
+	Collection          string
+	IncludeFullDocument bool
 }
 
 func HandleCDCMongoFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Options) {
@@ -46,4 +47,9 @@ func addSharedMongoFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("collection", "Collection Name").
 		Envar("PLUMBER_RELAY_CDCMONGO_COLLECTION").
 		StringVar(&opts.CDCMongo.Collection)
+
+	cmd.Flag("include-full-document", "Include full document in update in update changes. Default is to "+
+		"return deltas only").
+		Envar("PLUMBER_RELAY_CDCMONGO_INCLUDE_FULL_DOC").
+		BoolVar(&opts.CDCMongo.IncludeFullDocument)
 }
