@@ -106,7 +106,7 @@ github.com/batchcorp/pgoutput
 # github.com/batchcorp/rabbit v0.1.9
 ## explicit
 github.com/batchcorp/rabbit
-# github.com/batchcorp/schemas v0.2.128
+# github.com/batchcorp/schemas v0.2.153
 ## explicit
 github.com/batchcorp/schemas/build/go/events
 github.com/batchcorp/schemas/build/go/events/destinations
@@ -180,6 +180,8 @@ github.com/google/go-cmp/cmp/internal/value
 github.com/google/uuid
 # github.com/googleapis/gax-go/v2 v2.0.5
 github.com/googleapis/gax-go/v2
+# github.com/hashicorp/yamux v0.0.0-20210316155119-a95892c5f864
+## explicit
 # github.com/jackc/pgx v3.6.2+incompatible
 ## explicit
 github.com/jackc/pgx

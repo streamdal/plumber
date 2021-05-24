@@ -21,7 +21,7 @@ import (
 	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/backends/mqtt"
 	"github.com/batchcorp/plumber/backends/nats"
-	nats_streaming "github.com/batchcorp/plumber/backends/nats-streaming"
+	natsStreaming "github.com/batchcorp/plumber/backends/nats-streaming"
 	"github.com/batchcorp/plumber/backends/rabbitmq"
 	"github.com/batchcorp/plumber/backends/rpubsub"
 	"github.com/batchcorp/plumber/backends/rstreams"
@@ -70,98 +70,142 @@ func main() {
 func parseCmd(cmd string, opts *cli.Options) {
 	var err error
 
-	switch cmd {
-	// Read
-	case "read rabbit":
-		err = rabbitmq.Read(opts)
-	case "read kafka":
-		err = kafka.Read(opts)
-	case "read gcp-pubsub":
-		err = gcppubsub.Read(opts)
-	case "read mqtt":
-		err = mqtt.Read(opts)
-	case "read aws-sqs":
-		err = awssqs.Read(opts)
-	case "read activemq":
-		err = activemq.Read(opts)
-	case "read azure":
-		err = azure.Read(opts)
-	case "read azure-eventhub":
-		err = azure_eventhub.Read(opts)
-	case "read nats":
-		err = nats.Read(opts)
-	case "read nats-streaming":
-		err = nats_streaming.Read(opts)
-	case "read redis-pubsub":
-		err = rpubsub.Read(opts)
-	case "read redis-streams":
-		err = rstreams.Read(opts)
-	case "read cdc-mongo":
-		err = cdc_mongo.Read(opts)
-	case "read cdc-postgres":
-		err = cdc_postgres.Read(opts)
-
-	// Write
-	case "write rabbit":
-		err = rabbitmq.Write(opts)
-	case "write kafka":
-		err = kafka.Write(opts)
-	case "write gcp-pubsub":
-		err = gcppubsub.Write(opts)
-	case "write mqtt":
-		err = mqtt.Write(opts)
-	case "write aws-sqs":
-		err = awssqs.Write(opts)
-	case "write activemq":
-		err = activemq.Write(opts)
-	case "write aws-sns":
-		err = awssns.Write(opts)
-	case "write azure":
-		err = azure.Write(opts)
-	case "write azure-eventhub":
-		err = azure_eventhub.Write(opts)
-	case "write nats":
-		err = nats.Write(opts)
-	case "write nats-streaming":
-		err = nats_streaming.Write(opts)
-	case "write redis-pubsub":
-		err = rpubsub.Write(opts)
-	case "write redis-streams":
-		err = rstreams.Write(opts)
-
-	// Relay (via CLI flags)
-	case "relay rabbit":
-		err = rabbitmq.Relay(opts)
-	case "relay kafka":
-		err = kafka.Relay(opts)
-	case "relay gcp-pubsub":
-		err = gcppubsub.Relay(opts)
-	case "relay mqtt":
-		err = mqtt.Relay(opts)
-	case "relay aws-sqs":
-		err = awssqs.Relay(opts)
-	case "relay azure":
-		err = azure.Relay(opts)
-	case "relay cdc-postgres":
-		err = cdc_postgres.Relay(opts)
-	case "relay cdc-mongo":
-		err = cdc_mongo.Relay(opts)
-	case "relay redis-pubsub":
-		err = rpubsub.Relay(opts)
-	case "relay redis-streams":
-		err = rstreams.Relay(opts)
-
-	// Relay (via env vars)
-	case "relay":
-		err = ProcessRelayFlags(opts)
-
+	switch {
+	case strings.HasPrefix(cmd, "read"):
+		err = parseCmdRead(cmd, opts)
+	case strings.HasPrefix(cmd, "write"):
+		err = parseCmdWrite(cmd, opts)
+	case strings.HasPrefix(cmd, "relay"):
+		err = parseCmdRelay(cmd, opts)
+	case strings.HasPrefix(cmd, "dynamic"):
+		err = parseCmdDynamic(cmd, opts)
 	default:
-		logrus.Fatalf("Unrecognized command: %s", cmd)
+		logrus.Fatalf("unrecognized command: %s", cmd)
 	}
 
 	if err != nil {
 		logrus.Fatalf("Unable to complete command: %s", err)
 	}
+}
+
+func parseCmdRead(cmd string, opts *cli.Options) error {
+	switch cmd {
+	case "read rabbit":
+		return rabbitmq.Read(opts)
+	case "read kafka":
+		return kafka.Read(opts)
+	case "read gcp-pubsub":
+		return gcppubsub.Read(opts)
+	case "read mqtt":
+		return mqtt.Read(opts)
+	case "read aws-sqs":
+		return awssqs.Read(opts)
+	case "read activemq":
+		return activemq.Read(opts)
+	case "read azure":
+		return azure.Read(opts)
+	case "read azure-eventhub":
+		return azure_eventhub.Read(opts)
+	case "read nats":
+		return nats.Read(opts)
+	case "read nats-streaming":
+		return natsStreaming.Read(opts)
+	case "read redis-pubsub":
+		return rpubsub.Read(opts)
+	case "read redis-streams":
+		return rstreams.Read(opts)
+	case "read cdc-mongo":
+		return cdc_mongo.Read(opts)
+	case "read cdc-postgres":
+		return cdc_postgres.Read(opts)
+	}
+
+	return fmt.Errorf("unrecognized command: %s", cmd)
+}
+
+func parseCmdWrite(cmd string, opts *cli.Options) error {
+	switch cmd {
+	case "write rabbit":
+		return rabbitmq.Write(opts)
+	case "write kafka":
+		return kafka.Write(opts)
+	case "write gcp-pubsub":
+		return gcppubsub.Write(opts)
+	case "write mqtt":
+		return mqtt.Write(opts)
+	case "write aws-sqs":
+		return awssqs.Write(opts)
+	case "write activemq":
+		return activemq.Write(opts)
+	case "write aws-sns":
+		return awssns.Write(opts)
+	case "write azure":
+		return azure.Write(opts)
+	case "write azure-eventhub":
+		return azure_eventhub.Write(opts)
+	case "write nats":
+		return nats.Write(opts)
+	case "write nats-streaming":
+		return natsStreaming.Write(opts)
+	case "write redis-pubsub":
+		return rpubsub.Write(opts)
+	case "write redis-streams":
+		return rstreams.Write(opts)
+	}
+
+	return fmt.Errorf("unrecognized command: %s", cmd)
+}
+
+func parseCmdRelay(cmd string, opts *cli.Options) error {
+	switch cmd {
+	case "relay rabbit":
+		return rabbitmq.Relay(opts)
+	case "relay kafka":
+		return kafka.Relay(opts)
+	case "relay gcp-pubsub":
+		return gcppubsub.Relay(opts)
+	case "relay mqtt":
+		return mqtt.Relay(opts)
+	case "relay aws-sqs":
+		return awssqs.Relay(opts)
+	case "relay azure":
+		return azure.Relay(opts)
+	case "relay cdc-postgres":
+		return cdc_postgres.Relay(opts)
+	case "relay cdc-mongo":
+		return cdc_mongo.Relay(opts)
+	case "relay redis-pubsub":
+		return rpubsub.Relay(opts)
+	case "relay redis-streams":
+		return rstreams.Relay(opts)
+		// Relay (via env vars)
+	case "relay":
+		return ProcessRelayFlags(opts)
+	}
+
+	return fmt.Errorf("unrecognized command: %s", cmd)
+}
+
+func parseCmdDynamic(cmd string, opts *cli.Options) error {
+	parsedCmd := strings.Split(cmd, " ")
+	switch parsedCmd[1] {
+	case "kafka":
+		return kafka.Dynamic(opts)
+	case "rabbit":
+		return rabbitmq.Dynamic(opts)
+	case "mqtt":
+		return mqtt.Dynamic(opts)
+	case "redis-pubsub":
+		return rpubsub.Dynamic(opts)
+	case "redis-streams":
+		return rstreams.Dynamic(opts)
+	case "nats":
+		return nats.Dynamic(opts)
+	case "nats-streaming":
+		return natsStreaming.Dynamic(opts)
+	}
+
+	return fmt.Errorf("unrecognized command: %s", cmd)
 }
 
 func ProcessRelayFlags(opts *cli.Options) error {
@@ -225,7 +269,7 @@ func parseBatchCmd(cmd string, opts *cli.Options) {
 	case cmd == "batch search":
 		err = b.SearchCollection()
 	default:
-		logrus.Fatalf("Unrecognized command: %s", cmd)
+		logrus.Fatalf("unrecognized command: %s", cmd)
 	}
 
 	if err != nil {
