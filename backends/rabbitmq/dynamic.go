@@ -9,6 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
+// which are then written to the message bus.
 func Dynamic(opts *cli.Options) error {
 	ctx := context.Background()
 	log := logrus.WithField("pkg", "rabbitmq/dynamic")

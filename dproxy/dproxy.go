@@ -34,9 +34,11 @@ type DProxyClient struct {
 
 // New validates CLI options and returns a new DProxyClient struct
 func New(opts *cli.Options, bus string) (*DProxyClient, error) {
-	conn, err := grpc.Dial(opts.DProxyServer, []grpc.DialOption{grpc.WithInsecure(), grpc.WithBlock()}...)
+	ctx, _ := context.WithTimeout(context.Background(), opts.DproxyGRPCTimeout)
+
+	conn, err := grpc.DialContext(ctx, opts.DProxyAddress, []grpc.DialOption{grpc.WithInsecure(), grpc.WithBlock()}...)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to open connection to %s", opts.DProxyServer)
+		return nil, errors.Wrapf(err, "unable to open connection to %s", opts.DProxyAddress)
 	}
 
 	dClient := &DProxyClient{
@@ -53,9 +55,9 @@ func New(opts *cli.Options, bus string) (*DProxyClient, error) {
 }
 
 func (d *DProxyClient) reconnect() error {
-	conn, err := grpc.Dial(d.Options.DProxyServer, []grpc.DialOption{grpc.WithInsecure(), grpc.WithBlock()}...)
+	conn, err := grpc.Dial(d.Options.DProxyAddress, []grpc.DialOption{grpc.WithInsecure(), grpc.WithBlock()}...)
 	if err != nil {
-		return errors.Wrapf(err, "unable to open connection to %s", d.Options.DProxyServer)
+		return errors.Wrapf(err, "unable to open connection to %s", d.Options.DProxyAddress)
 	}
 
 	d.Client = services.NewDProxyClient(conn)

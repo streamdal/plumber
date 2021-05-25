@@ -19,6 +19,7 @@ const (
 	DefaultNumWorkers          = "10"
 	DefaultStatsReportInterval = "5s"
 	DefaultCount               = "10"
+	DefaultDproxyAddress       = "dproxy.batch.sh:7373"
 )
 
 var (
@@ -39,8 +40,9 @@ type Options struct {
 	AvroSchemaFile string
 
 	// Dynamic Destination
-	DProxyAPIToken string
-	DProxyServer   string
+	DProxyAPIToken    string
+	DProxyAddress     string
+	DproxyGRPCTimeout time.Duration
 
 	// Relay
 	RelayToken             string
@@ -230,9 +232,13 @@ func HandleGlobalDynamicFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("api-token", "Batch.SH API Token").
 		StringVar(&opts.DProxyAPIToken)
 
-	cmd.Flag("dproxy-server", "Address of Batch.sh's Dynamic Destination server").
-		Default("dproxy.batch.sh:7373").
-		StringVar(&opts.DProxyServer)
+	cmd.Flag("dproxy-address", "Address of Batch.sh's Dynamic Destination server").
+		Default(DefaultDproxyAddress).
+		StringVar(&opts.DProxyAddress)
+
+	cmd.Flag("grpc-timeout", "dProxy gRPC server timeout").
+		Default(DefaultGRPCTimeout).
+		DurationVar(&opts.DproxyGRPCTimeout)
 }
 
 func HandleGlobalWriteFlags(cmd *kingpin.CmdClause, opts *Options) {
