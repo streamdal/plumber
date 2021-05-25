@@ -1,6 +1,9 @@
-package mqtt
+package awssns
 
 import (
+	"github.com/aws/aws-sdk-go/service/sns"
+
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/dproxy"
 	"github.com/batchcorp/plumber/writer"
@@ -15,18 +18,16 @@ func Dynamic(opts *cli.Options) error {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	llog := logrus.WithField("pkg", "mqtt/dynamic")
+	llog := logrus.WithField("pkg", "gcppubsub/dynamic")
 
 	// Start up writer
-	client, err := connect(opts)
+	svc, err := NewService(opts)
 	if err != nil {
-		return errors.Wrap(err, "unable to connect to MQTT")
+		return errors.Wrap(err, "unable to create SNS service")
 	}
 
-	defer client.Disconnect(0)
-
 	// Start up dynamic connection
-	grpc, err := dproxy.New(opts, "MQTT")
+	grpc, err := dproxy.New(opts, "AWS SNS")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
@@ -37,19 +38,16 @@ func Dynamic(opts *cli.Options) error {
 	for {
 		select {
 		case outbound := <-grpc.OutboundMessageCh:
-			token := client.Publish(opts.MQTT.Topic, byte(opts.MQTT.QoSLevel), false, outbound.Blob)
-
-			if !token.WaitTimeout(opts.MQTT.WriteTimeout) {
-				llog.Errorf("timed out attempting to publish message after %s", opts.MQTT.WriteTimeout)
+			_, err := svc.Publish(&sns.PublishInput{
+				Message:  aws.String(string(outbound.Blob)),
+				TopicArn: aws.String(opts.AWSSNS.TopicArn),
+			})
+			if err != nil {
+				llog.Errorf("Unable to replay message: %s", err)
 				break
 			}
 
-			if token.Error() != nil {
-				llog.Errorf("unable to replay message: %s", token.Error())
-				break
-			}
-
-			llog.Debugf("Replayed message to MQTT topic '%s' for replay '%s'", opts.MQTT.Topic, outbound.ReplayId)
+			llog.Debugf("Replayed message to AWSSNS topic '%s' for replay '%s'", opts.AWSSNS.TopicArn, outbound.ReplayId)
 		}
 	}
 }

@@ -16,7 +16,7 @@ import (
 // which are then written to the message bus.
 func Dynamic(opts *cli.Options) error {
 	ctx := context.Background()
-	log := logrus.WithField("pkg", "kafka/dynamic")
+	llog := logrus.WithField("pkg", "kafka/dynamic")
 
 	// Start up writer
 	writer, err := NewWriter(opts)
@@ -28,7 +28,7 @@ func Dynamic(opts *cli.Options) error {
 	defer writer.Writer.Close()
 
 	// Start up dynamic connection
-	grpc, err := dproxy.New(opts, "kafka")
+	grpc, err := dproxy.New(opts, "Kafka")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
@@ -43,11 +43,11 @@ func Dynamic(opts *cli.Options) error {
 				Key:   []byte(opts.Kafka.WriteKey),
 				Value: outbound.Blob,
 			}); err != nil {
-				log.Errorf("unable to replay message to Kafka: %s", err)
+				llog.Errorf("Unable to replay message: %s", err)
 				break
 			}
 
-			log.Debugf("Replayed message to Kafka topic '%s' for replay '%s'", opts.Kafka.Topic, outbound.ReplayId)
+			llog.Debugf("Replayed message to Kafka topic '%s' for replay '%s'", opts.Kafka.Topic, outbound.ReplayId)
 		}
 	}
 }

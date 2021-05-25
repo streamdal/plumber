@@ -1,4 +1,4 @@
-package nats
+package activemq
 
 import (
 	"github.com/batchcorp/plumber/cli"
@@ -10,34 +10,43 @@ import (
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
 // which are then written to the message bus.
 func Dynamic(opts *cli.Options) error {
-	llog := logrus.WithField("pkg", "nats/dynamic")
+	llog := logrus.WithField("pkg", "activemq/dynamic")
 
-	// Start up client
+	// Start up writer
 	client, err := NewClient(opts)
 	if err != nil {
-		return errors.Wrap(err, "unable to initialize rabbitmq publisher")
+		return errors.Wrap(err, "unable to connect to ActiveMQ")
 	}
 
-	defer client.Close()
+	defer client.Disconnect()
 
 	// Start up dynamic connection
-	grpc, err := dproxy.New(opts, "Nats")
+	grpc, err := dproxy.New(opts, "ActiveMQ")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
 
 	go grpc.Start()
 
+	destination := getDestination(opts)
+
 	// Continually loop looking for messages on the channel.
 	for {
 		select {
 		case outbound := <-grpc.OutboundMessageCh:
-			if err := client.Publish(opts.Nats.Subject, outbound.Blob); err != nil {
+			if err := client.Send(destination, "", outbound.Blob, nil); err != nil {
 				llog.Errorf("Unable to replay message: %s", err)
 				break
 			}
 
-			llog.Debugf("Replayed message to Nats topic '%s' for replay '%s'", opts.Nats.Subject, outbound.ReplayId)
+			llog.Debugf("Replayed message to ActiveMQ '%s' for replay '%s'", destination, outbound.ReplayId)
 		}
 	}
+}
+
+func getDestination(opts *cli.Options) string {
+	if opts.ActiveMq.Topic != "" {
+		return "/topic/" + opts.ActiveMq.Topic
+	}
+	return opts.ActiveMq.Queue
 }

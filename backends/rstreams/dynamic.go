@@ -14,7 +14,7 @@ import (
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
 // which are then written to the message bus.
 func Dynamic(opts *cli.Options) error {
-	log := logrus.WithField("pkg", "rstreams/dynamic")
+	llog := logrus.WithField("pkg", "rstreams/dynamic")
 
 	// Start up writer
 	writer, err := NewStreamsClient(opts)
@@ -25,7 +25,7 @@ func Dynamic(opts *cli.Options) error {
 	defer writer.Close()
 
 	// Start up dynamic connection
-	grpc, err := dproxy.New(opts, "redis-streams")
+	grpc, err := dproxy.New(opts, "Redis Streams")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
@@ -45,11 +45,11 @@ func Dynamic(opts *cli.Options) error {
 					},
 				}).Result()
 				if err != nil {
-					log.Errorf("Failed to publish message to stream '%s': %s", streamName, err)
-					continue
+					llog.Errorf("Unable to replay message: %s", err)
+					break
 				}
 
-				log.Debugf("Replayed message to Redis stream '%s' for replay '%s'", streamName, outbound.ReplayId)
+				llog.Debugf("Replayed message to Redis stream '%s' for replay '%s'", streamName, outbound.ReplayId)
 			}
 		}
 	}

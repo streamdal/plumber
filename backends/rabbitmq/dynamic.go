@@ -13,7 +13,7 @@ import (
 // which are then written to the message bus.
 func Dynamic(opts *cli.Options) error {
 	ctx := context.Background()
-	log := logrus.WithField("pkg", "rabbitmq/dynamic")
+	llog := logrus.WithField("pkg", "rabbitmq/dynamic")
 
 	// Start up writer
 	writer, err := New(opts, nil)
@@ -24,7 +24,7 @@ func Dynamic(opts *cli.Options) error {
 	defer writer.Consumer.Close()
 
 	// Start up dynamic connection
-	grpc, err := dproxy.New(opts, "rabbitmq")
+	grpc, err := dproxy.New(opts, "RabbitMQ")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
@@ -36,10 +36,11 @@ func Dynamic(opts *cli.Options) error {
 		select {
 		case outbound := <-grpc.OutboundMessageCh:
 			if err := writer.Consumer.Publish(ctx, opts.Rabbit.RoutingKey, outbound.Blob); err != nil {
-				return errors.Wrap(err, "unable to replay message to rabbitmq")
+				llog.Errorf("Unable to replay message: %s", err)
+				break
 			}
 
-			log.Debugf("Replayed message to rabbitmq routing key '%s' for replay '%s'", opts.Rabbit.RoutingKey, outbound.ReplayId)
+			llog.Debugf("Replayed message to rabbitmq routing key '%s' for replay '%s'", opts.Rabbit.RoutingKey, outbound.ReplayId)
 		}
 	}
 }

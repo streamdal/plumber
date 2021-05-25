@@ -11,7 +11,7 @@ import (
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
 // which are then written to the message bus.
 func Dynamic(opts *cli.Options) error {
-	log := logrus.WithField("pkg", "nats-streaming/dynamic")
+	llog := logrus.WithField("pkg", "nats-streaming/dynamic")
 
 	// Start up writer
 	writer, err := NewClient(opts)
@@ -22,7 +22,7 @@ func Dynamic(opts *cli.Options) error {
 	defer writer.Close()
 
 	// Start up dynamic connection
-	grpc, err := dproxy.New(opts, "nats-streaming")
+	grpc, err := dproxy.New(opts, "Nats Streaming")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
@@ -41,10 +41,11 @@ func Dynamic(opts *cli.Options) error {
 		select {
 		case outbound := <-grpc.OutboundMessageCh:
 			if err := sub.Publish(opts.NatsStreaming.Channel, outbound.Blob); err != nil {
-				log.Errorf("unable to replay message to NATS streaming: %s", err)
+				llog.Errorf("Unable to replay message: %s", err)
+				break
 			}
 
-			log.Debugf("Replayed message to NATS streaming channel '%s' for replay '%s'", opts.NatsStreaming.Channel, outbound.ReplayId)
+			llog.Debugf("Replayed message to NATS streaming channel '%s' for replay '%s'", opts.NatsStreaming.Channel, outbound.ReplayId)
 		}
 	}
 }

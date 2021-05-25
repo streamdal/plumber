@@ -13,10 +13,10 @@ import (
 	awssns "github.com/batchcorp/plumber/backends/aws-sns"
 	awssqs "github.com/batchcorp/plumber/backends/aws-sqs"
 	"github.com/batchcorp/plumber/backends/azure"
-	azure_eventhub "github.com/batchcorp/plumber/backends/azure-eventhub"
+	azureEventhub "github.com/batchcorp/plumber/backends/azure-eventhub"
 	"github.com/batchcorp/plumber/backends/batch"
-	cdc_mongo "github.com/batchcorp/plumber/backends/cdc-mongo"
-	cdc_postgres "github.com/batchcorp/plumber/backends/cdc-postgres"
+	cdcMongo "github.com/batchcorp/plumber/backends/cdc-mongo"
+	cdcPostgres "github.com/batchcorp/plumber/backends/cdc-postgres"
 	gcppubsub "github.com/batchcorp/plumber/backends/gcp-pubsub"
 	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/backends/mqtt"
@@ -105,7 +105,7 @@ func parseCmdRead(cmd string, opts *cli.Options) error {
 	case "read azure":
 		return azure.Read(opts)
 	case "read azure-eventhub":
-		return azure_eventhub.Read(opts)
+		return azureEventhub.Read(opts)
 	case "read nats":
 		return nats.Read(opts)
 	case "read nats-streaming":
@@ -115,9 +115,9 @@ func parseCmdRead(cmd string, opts *cli.Options) error {
 	case "read redis-streams":
 		return rstreams.Read(opts)
 	case "read cdc-mongo":
-		return cdc_mongo.Read(opts)
+		return cdcMongo.Read(opts)
 	case "read cdc-postgres":
-		return cdc_postgres.Read(opts)
+		return cdcPostgres.Read(opts)
 	}
 
 	return fmt.Errorf("unrecognized command: %s", cmd)
@@ -142,7 +142,7 @@ func parseCmdWrite(cmd string, opts *cli.Options) error {
 	case "write azure":
 		return azure.Write(opts)
 	case "write azure-eventhub":
-		return azure_eventhub.Write(opts)
+		return azureEventhub.Write(opts)
 	case "write nats":
 		return nats.Write(opts)
 	case "write nats-streaming":
@@ -171,9 +171,9 @@ func parseCmdRelay(cmd string, opts *cli.Options) error {
 	case "relay azure":
 		return azure.Relay(opts)
 	case "relay cdc-postgres":
-		return cdc_postgres.Relay(opts)
+		return cdcPostgres.Relay(opts)
 	case "relay cdc-mongo":
-		return cdc_mongo.Relay(opts)
+		return cdcMongo.Relay(opts)
 	case "relay redis-pubsub":
 		return rpubsub.Relay(opts)
 	case "relay redis-streams":
@@ -203,6 +203,18 @@ func parseCmdDynamic(cmd string, opts *cli.Options) error {
 		return nats.Dynamic(opts)
 	case "nats-streaming":
 		return natsStreaming.Dynamic(opts)
+	case "activemq":
+		return activemq.Dynamic(opts)
+	case "gcp-pubsub":
+		return gcppubsub.Dynamic(opts)
+	case "aws-sqs":
+		return awssqs.Dynamic(opts)
+	case "aws-sns":
+		return awssns.Dynamic(opts)
+	case "azure":
+		return azure.Dynamic(opts)
+	case "azure-eventhub":
+		return azureEventhub.Dynamic(opts)
 	}
 
 	return fmt.Errorf("unrecognized command: %s", cmd)
@@ -225,13 +237,13 @@ func ProcessRelayFlags(opts *cli.Options) error {
 	case "azure":
 		err = azure.Relay(opts)
 	case "cdc-mongo":
-		err = cdc_mongo.Relay(opts)
+		err = cdcMongo.Relay(opts)
 	case "redis-pubsub":
 		err = rpubsub.Relay(opts)
 	case "redis-streams":
 		err = rstreams.Relay(opts)
 	case "cdc-postgres":
-		err = cdc_postgres.Relay(opts)
+		err = cdcPostgres.Relay(opts)
 	default:
 		err = fmt.Errorf("unsupported messaging system '%s'", opts.RelayType)
 	}
