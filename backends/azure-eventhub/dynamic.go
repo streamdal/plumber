@@ -48,7 +48,7 @@ func Dynamic(opts *cli.Options) error {
 				break
 			}
 
-			llog.Debugf("Replayed message to Azure Servuce Bus for replay '%s'", outbound.ReplayId)
+			llog.Debugf("Replayed message to Azure Event Hub for replay '%s'", outbound.ReplayId)
 		}
 	}
 }
