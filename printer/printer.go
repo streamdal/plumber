@@ -112,7 +112,7 @@ func printKafkaOptions(opts *cli.Options) {
 	logrus.Info("> Kafka Settings")
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("")
-	logrus.Infof("- %-24s%-6v", "Address", opts.Kafka.Address)
+	logrus.Infof("- %-24s%-6v", "Brokers", strings.Join(opts.Kafka.Brokers, ","))
 	logrus.Infof("- %-24s%-6v", "Topic", opts.Kafka.Topic)
 	logrus.Infof("- %-24s%-6v", "Consumer Group", opts.Kafka.GroupID)
 	logrus.Infof("- %-24s%-6v", "CommitInterval", opts.Kafka.CommitInterval)

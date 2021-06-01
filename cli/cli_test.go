@@ -231,7 +231,7 @@ func TestHandleKafkaFlags_read(t *testing.T) {
 
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(cmd).To(Equal("read kafka"))
-	g.Expect(opts.Kafka.Address).To(Equal("testing.tld:9092"))
+	g.Expect(opts.Kafka.Brokers[0]).To(Equal("testing.tld:9092"))
 	g.Expect(opts.Kafka.Topic).To(Equal("plumber_test"))
 	g.Expect(opts.Kafka.GroupID).To(Equal("plumber_test_group"))
 	g.Expect(opts.Kafka.Timeout).To(Equal(time.Second * 3))
@@ -263,7 +263,7 @@ func TestHandleKafkaFlags_write(t *testing.T) {
 
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(cmd).To(Equal("write kafka"))
-	g.Expect(opts.Kafka.Address).To(Equal("testing.tld:9092"))
+	g.Expect(opts.Kafka.Brokers[0]).To(Equal("testing.tld:9092"))
 	g.Expect(opts.Kafka.Topic).To(Equal("plumber_test"))
 	g.Expect(opts.Kafka.WriteKey).To(Equal("plumber_test_key"))
 	g.Expect(opts.Kafka.Timeout).To(Equal(time.Second * 3))
