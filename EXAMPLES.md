@@ -12,6 +12,7 @@
        * [Redis Streams](#redis-streams)
        * [GCP Pub/Sub](#gcp-pubsub)
        * [Postgres CDC](#cdc-postgres)
+       * [MQTT](#mqtt)
   * [Publishing](#publishing)
        * [AWS SQS](#aws-sqs-1)
        * [AWS SNS](#aws-sns)
@@ -24,6 +25,7 @@
        * [Redis PubSub](#redis-pubsub-1)
        * [Redis Streams](#redis-streams-1)
        * [GCP Pub/Sub](#gcp-pubsub-1)
+       * [MQTT](#mqtt-1)
   * [Relay Mode](#relay-mode)
        * [Continuously relay messages from your RabbitMQ instance to a Batch.sh collection](#continuously-relay-messages-from-your-rabbitmq-instance-to-a-batchsh-collection)
        * [Continuously relay messages from an SQS queue to a Batch.sh collection](#continuously-relay-messages-from-an-sqs-queue-to-a-batchsh-collection)
@@ -32,6 +34,7 @@
        * [Continuously relay messages for multiple Redis channels to a Batch.sh collection](#continuously-relay-messages-from-multiple-redis-channels-to-a-batchsh-collection)
        * [Continuously relay messages for multiple Redis streams to a Batch.sh collection](#continuously-relay-messages-from-multiple-redis-streams-to-a-batchsh-collection)
        * [Continuously relay messages from a Kafka topic (on Confluent) to a Batch.sh collection (via CLI)](#continuously-relay-messages-from-a-kafka-topic-on-confluent-to-a-batchsh-collection-via-cli)
+       * [Continuously relay messages from a MQTT topic to a Batch.sh collection](#continuously-relay-messages-from-a-mqtt-topic-to-a-batchsh-collection)
   * [Change Data Capture](#change-data-capture)
        * [Continuously relay Postgres change events to a Batch.sh collection](#continuously-relay-postgres-change-events-to-a-batchsh-collection)
        * [Continuously relay MongoDB change stream events to a Batch.sh collection](#continuously-relay-mongodb-change-stream-events-to-a-batchsh-collection)
@@ -152,10 +155,16 @@ plumber read redis-pubsub --address="localhost:6379" --channels="new-orders"
 plumber read redis-streams --address="localhost:6379" --streams="new-orders"
 ```
 
-#### GCP Pub/Sub
+##### GCP Pub/Sub
 
 ```bash
 plumber read gcp-pubsub --project-id=PROJECT_ID --sub-id=SUBSCRIPTION
+```
+
+##### MQTT
+
+```bash
+plumber read mqtt --address tcp://localhost:1883 --topic iotdata -qos 1
 ```
 
 ## Publishing
@@ -260,6 +269,12 @@ plumber write redis-streams --address="localhost:6379" --streams="new-orders" --
 plumber write gcp-pubsub --topic-id=TOPIC --project-id=PROJECT_ID --input-data='{"Sensor":"Room J","Temp":19}' 
 ```
 
+##### MQTT
+
+```bash
+plumber write mqtt --address tcp://localhost:1883 --topic iotdata -qos 1 --input-data "{\"id\": 123, \"temperature\": 15}"
+```
+
 ## Relay Mode
 
 ##### Continuously relay messages from your RabbitMQ instance to a Batch.sh collection
@@ -347,6 +362,19 @@ export PLUMBER_RELAY_KAFKA_SASL_TYPE="plain"
 
 $ plumber relay
 ```
+
+##### Continuously relay messages from a MQTT topic to a Batch.sh collection
+
+```bash
+docker run -d --name plumber-mqtt -p 8080:8080 \
+    -e PLUMBER_RELAY_MQTT_ADDRESS=tcp://localhost:1883 \
+    -e PLUMBER_RELAY_MQTT_TOPIC=iotdata \
+    -e PLUMBER_RELAY_MQTT_QOS=1 \
+    -e PLUMBER_RELAY_TYPE=mqtt \
+    -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
+    batchcorp/plumber 
+```
+
 
 ## Change Data Capture
 

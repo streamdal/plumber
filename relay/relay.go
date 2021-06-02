@@ -252,7 +252,7 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 		r.log.Debugf("flushing %d cdc-postgres message(s)", len(messages))
 		err = r.handleCdcPostgres(ctx, conn, messages)
 	case *mqttTypes.RelayMessage:
-		r.log.Debugf("flushing %d cdc-postgres message(s)", len(messages))
+		r.log.Debugf("flushing %d mqtt message(s)", len(messages))
 		err = r.handleMQTT(ctx, conn, messages)
 	default:
 		r.log.WithField("type", v).Error("received unknown message type - skipping")
