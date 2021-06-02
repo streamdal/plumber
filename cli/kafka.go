@@ -30,7 +30,7 @@ const (
 
 type KafkaOptions struct {
 	// Shared
-	Address            string
+	Brokers            []string
 	Topic              string
 	Timeout            time.Duration
 	InsecureTLS        bool
@@ -81,26 +81,33 @@ func HandleKafkaFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Opti
 }
 
 func addSharedKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("address", "Destination host address").
+	cmd.Flag("address", "Kafka broker address. You may specify this flag multiple times").
 		Default("localhost:9092").
 		Envar("PLUMBER_RELAY_KAFKA_ADDRESS").
-		StringVar(&opts.Kafka.Address)
+		StringsVar(&opts.Kafka.Brokers)
+
 	cmd.Flag("topic", "Topic to read message(s) from").
 		Required().
 		Envar("PLUMBER_RELAY_KAFKA_TOPIC").
 		StringVar(&opts.Kafka.Topic)
-	cmd.Flag("timeout", "Connect timeout").Default(DefaultKafkaConnectTimeout).
+
+	cmd.Flag("timeout", "Connect timeout").
+		Default(DefaultKafkaConnectTimeout).
 		Envar("PLUMBER_RELAY_KAFKA_TIMEOUT").
 		DurationVar(&opts.Kafka.Timeout)
+
 	cmd.Flag("insecure-tls", "Use insecure TLS").
 		Envar("PLUMBER_RELAY_KAFKA_INSECURE_TLS").
 		BoolVar(&opts.Kafka.InsecureTLS)
+
 	cmd.Flag("username", "SASL Username").
 		Envar("PLUMBER_RELAY_KAFKA_USERNAME").
 		StringVar(&opts.Kafka.Username)
+
 	cmd.Flag("password", "SASL Password. If omitted, you will be prompted for the password").
 		Envar("PLUMBER_RELAY_KAFKA_PASSWORD").
 		StringVar(&opts.Kafka.Password)
+
 	cmd.Flag("auth-type", "SASL Authentication type (plain or scram)").
 		Default("scram").
 		Envar("PLUMBER_RELAY_KAFKA_SASL_TYPE").

@@ -81,13 +81,23 @@ plumber read rabbit
 Read a single message
 
 ```
-plumber read kafka --topic orders --address="some-machine.domain.com:9092" --line-numbers --follow
+plumber read kafka --topic orders --address="broker1.domain.com:9092" --line-numbers
+```
+
+You may specify multiple brokers by specifying the `--address` flag multiple times
+
+```
+plumber read kafka --topic orders \
+    --address="broker1.domain.com:9092" \
+    --address="broker2.domain.com:9092" \
+    --address="broker3.domain.com:9092" \
+    --line-numbers --follow
 ```
 
 Continuously read messages
 
 ```
-plumber read kafka --topic orders --address="some-machine.domain.com:9092" --follow
+plumber read kafka --topic orders --address="broker1.domain.com:9092" --follow
 ```
 
 ##### Azure Service Bus
@@ -166,6 +176,16 @@ plumber write rabbit --address="aqmp://rabbit.yourdomain.net:5672" --exchange=Ne
 
 ```
 plumber write kafka --address="localhost:9092" --topic=neworders --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+```
+
+You may specify multiple brokers by specifying the `--address` flag multiple times
+
+```
+plumber write kafka --topic neworders \
+    --address "broker1.domain.com:9092" \
+    --address "broker2.domain.com:9092" \
+    --address "broker3.domain.com:9092" \
+    --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ##### AWS SNS
@@ -318,7 +338,7 @@ docker run -d --name plumber-redis-streams -p 8080:8080 \
 ```
 export PLUMBER_RELAY_TYPE="kafka"
 export PLUMBER_RELAY_TOKEN="$YOUR-BATCHSH-TOKEN-HERE"
-export PLUMBER_RELAY_KAFKA_ADDRESS="pkc-4kgmg.us-west-2.aws.confluent.cloud:9092"
+export PLUMBER_RELAY_KAFKA_ADDRESS="pkc-4kgmg.us-west-2.aws.confluent.cloud:9092,pkc-5kgmg.us-west-2.aws.confluent.cloud:9092"
 export PLUMBER_RELAY_KAFKA_TOPIC="$YOUR_TOPIC"
 export PLUMBER_RELAY_KAFKA_INSECURE_TLS="true"
 export PLUMBER_RELAY_KAFKA_USERNAME="$YOUR_CONFLUENT_API_KEY"
