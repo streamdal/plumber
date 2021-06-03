@@ -11,13 +11,20 @@ type PulsarOptions struct {
 	Queue    string
 	ClientId string
 
-	// Read
+	// Subscription
 	ReadFollow       bool
 	SubscriptionName string
 	SubscriptionType string
+
+	// Read
+	RolePrefix string
 }
 
-func HandlePulsarFlags(readCmd, writeCmd *kingpin.CmdClause, opts *Options) {
+func HandlePulsarFlags(readCmd, writeCmd, subscribeCmd *kingpin.CmdClause, opts *Options) {
+	sc := subscribeCmd.Command("pulsar", "Pulsar")
+	addSharedPulsarFlags(sc, opts)
+	addSubscribePulsarFlags(sc, opts)
+
 	rc := readCmd.Command("pulsar", "Pulsar")
 	addSharedPulsarFlags(rc, opts)
 	addReadPulsarFlags(rc, opts)
@@ -36,10 +43,21 @@ func addSharedPulsarFlags(cmd *kingpin.CmdClause, opts *Options) {
 }
 
 func addReadPulsarFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("subscription-name", "Subscription Name").
+	cmd.Flag("start-message-id", "Start reading at this message ID").
 		StringVar(&opts.Pulsar.SubscriptionName)
 
-	cmd.Flag("subscription-type", "Subscription Type").
+	cmd.Flag("prefix", "Reader role prefix").
+		Default("reader").
+		StringVar(&opts.Pulsar.RolePrefix)
+}
+
+func addSubscribePulsarFlags(cmd *kingpin.CmdClause, opts *Options) {
+	cmd.Flag("name", "Subscription Name").
+		Required().
+		StringVar(&opts.Pulsar.SubscriptionName)
+
+	cmd.Flag("type", "Subscription Type").
 		Default("shared").
 		EnumVar(&opts.Pulsar.SubscriptionType, "shared", "keyshared", "failover", "exclusive")
+
 }

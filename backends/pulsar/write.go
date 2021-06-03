@@ -62,11 +62,11 @@ func (p *Pulsar) Write(value []byte) error {
 	defer producer.Close()
 
 	if err != nil {
-		p.log.Infof("Unable to write message to '%s': %s", p.Options.Pulsar.Topic, err)
+		p.log.Infof("Unable to write message to topic '%s': %s", p.Options.Pulsar.Topic, err)
 		return errors.Wrap(err, "unable to write message")
 	}
 
-	p.log.Infof("Successfully wrote message to '%s'", p.Options.Pulsar.Topic)
+	p.log.Infof("Successfully wrote message to topic '%s'", p.Options.Pulsar.Topic)
 
 	return nil
 }

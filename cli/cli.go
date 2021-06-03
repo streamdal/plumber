@@ -116,6 +116,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	writeCmd := app.Command("write", "Write message(s) to messaging system")
 	relayCmd := app.Command("relay", "Relay message(s) from messaging system to Batch")
 	batchCmd := app.Command("batch", "Access your Batch.sh account information")
+	subscribeCmd := app.Command("subscribe", "Subscribe to a messaging system")
 
 	HandleRelayFlags(relayCmd, opts)
 
@@ -154,7 +155,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleRedisStreamsFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleCDCMongoFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleCDCPostgresFlags(readCmd, writeCmd, relayCmd, opts)
-		HandlePulsarFlags(readCmd, writeCmd, opts)
+		HandlePulsarFlags(readCmd, writeCmd, subscribeCmd, opts)
 	}
 
 	HandleGlobalFlags(readCmd, opts)

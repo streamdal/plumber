@@ -3,6 +3,8 @@ package pulsar
 import (
 	"time"
 
+	"github.com/batchcorp/plumber/printer"
+
 	"github.com/apache/pulsar-client-go/pulsar"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
@@ -16,6 +18,7 @@ type Pulsar struct {
 	Client  pulsar.Client
 	MsgDesc *desc.MessageDescriptor
 	log     *logrus.Entry
+	printer printer.IPrinter
 }
 
 func NewClient(opts *cli.Options) (pulsar.Client, error) {

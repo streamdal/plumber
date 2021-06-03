@@ -39,6 +39,7 @@ func Read(opts *cli.Options) error {
 		MsgDesc: md,
 		Client:  client,
 		log:     logrus.WithField("pkg", "pulsar/read.go"),
+		printer: printer.New(),
 	}
 
 	return r.Read()
@@ -47,61 +48,36 @@ func Read(opts *cli.Options) error {
 func (p *Pulsar) Read() error {
 	p.log.Info("Listening for message(s) ...")
 
-	consumer, err := p.Client.Subscribe(pulsar.ConsumerOptions{
-		Topic:            p.Options.Pulsar.Topic,
-		SubscriptionName: p.Options.Pulsar.SubscriptionName,
-		Type:             pulsar.Shared,
+	reader, err := p.Client.CreateReader(pulsar.ReaderOptions{
+		Topic:                  p.Options.Pulsar.Topic,
+		StartMessageID:         pulsar.EarliestMessageID(),
+		SubscriptionRolePrefix: p.Options.Pulsar.RolePrefix,
 	})
 	if err != nil {
 		return err
 	}
-	defer consumer.Close()
+	defer reader.Close()
 
-	for i := 0; i < 10; i++ {
-		msg, err := consumer.Receive(context.Background())
+	lineNumber := 0
+	for reader.HasNext() {
+		msg, err := reader.Next(context.Background())
 		if err != nil {
 			return err
 		}
 
-		printer.Print(string(msg.Payload()))
+		str := string(msg.Payload())
 
-		consumer.Ack(msg)
-	}
+		if p.Options.ReadLineNumbers {
+			str = fmt.Sprintf("%d: ", lineNumber) + str
+			lineNumber++
+		}
 
-	if err := consumer.Unsubscribe(); err != nil {
-		return err
-	}
+		p.printer.Print(str)
 
-	return nil
-}
-
-func validateReadOptions(opts *cli.Options) error {
-	// If anything protobuf-related is specified, it's being used
-	if opts.ReadProtobufRootMessage != "" || len(opts.ReadProtobufDirs) != 0 {
-		if err := cli.ValidateProtobufOptions(
-			opts.ReadProtobufDirs,
-			opts.ReadProtobufRootMessage,
-		); err != nil {
-			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
+		if p.Options.ReadFollow {
+			return nil
 		}
 	}
 
-	if opts.Kafka.ReadOffset < 0 {
-		return errors.New("read offset must be >= 0")
-	}
-
 	return nil
-}
-
-func (p *Pulsar) getSubscriptionType() pulsar.SubscriptionType {
-	switch p.Options.Pulsar.SubscriptionType {
-	case "exclusive":
-		return pulsar.Exclusive
-	case "failover":
-		return pulsar.Failover
-	case "keyshared":
-		return pulsar.KeyShared
-	default:
-		return pulsar.Shared
-	}
 }

@@ -104,6 +104,9 @@ func parseCmd(cmd string, opts *cli.Options) {
 	case "read pulsar":
 		err = pulsar.Read(opts)
 
+	case "subscribe pulsar":
+		err = pulsar.Subscribe(opts)
+
 	// Write
 	case "write rabbit":
 		err = rabbitmq.Write(opts)
