@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/batchcorp/plumber/reader"
+
 	"github.com/apache/pulsar-client-go/pulsar"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
@@ -38,8 +40,8 @@ func Read(opts *cli.Options) error {
 		Options: opts,
 		MsgDesc: md,
 		Client:  client,
-		log:     logrus.WithField("pkg", "pulsar/read.go"),
 		printer: printer.New(),
+		log:     logrus.WithField("pkg", "pulsar/read.go"),
 	}
 
 	return r.Read()
@@ -48,36 +50,66 @@ func Read(opts *cli.Options) error {
 func (p *Pulsar) Read() error {
 	p.log.Info("Listening for message(s) ...")
 
-	reader, err := p.Client.CreateReader(pulsar.ReaderOptions{
-		Topic:                  p.Options.Pulsar.Topic,
-		StartMessageID:         pulsar.EarliestMessageID(),
-		SubscriptionRolePrefix: p.Options.Pulsar.RolePrefix,
+	consumer, err := p.Client.Subscribe(pulsar.ConsumerOptions{
+		Topic:            p.Options.Pulsar.Topic,
+		SubscriptionName: p.Options.Pulsar.SubscriptionName,
+		Type:             p.getSubscriptionType(),
 	})
 	if err != nil {
 		return err
 	}
-	defer reader.Close()
 
-	lineNumber := 0
-	for reader.HasNext() {
-		msg, err := reader.Next(context.Background())
+	defer consumer.Close()
+	defer consumer.Unsubscribe()
+
+	for {
+		msg, err := consumer.Receive(context.Background())
 		if err != nil {
 			return err
 		}
 
-		str := string(msg.Payload())
-
-		if p.Options.ReadLineNumbers {
-			str = fmt.Sprintf("%d: ", lineNumber) + str
-			lineNumber++
+		data, err := reader.Decode(p.Options, p.MsgDesc, msg.Payload())
+		if err != nil {
+			return err
 		}
 
-		p.printer.Print(str)
+		p.printer.Print(string(data))
 
-		if p.Options.ReadFollow {
+		consumer.Ack(msg)
+
+		if !p.Options.ReadFollow {
 			return nil
 		}
 	}
 
 	return nil
+}
+
+// validateReadOptions ensures all specified read flags are correct
+func validateReadOptions(opts *cli.Options) error {
+	// If anything protobuf-related is specified, it's being used
+	if opts.ReadProtobufRootMessage != "" || len(opts.ReadProtobufDirs) != 0 {
+		if err := cli.ValidateProtobufOptions(
+			opts.ReadProtobufDirs,
+			opts.ReadProtobufRootMessage,
+		); err != nil {
+			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
+		}
+	}
+
+	return nil
+}
+
+// getSubscriptionType converts string input of the subscription type to pulsar library's equivalent
+func (p *Pulsar) getSubscriptionType() pulsar.SubscriptionType {
+	switch p.Options.Pulsar.SubscriptionType {
+	case "exclusive":
+		return pulsar.Exclusive
+	case "failover":
+		return pulsar.Failover
+	case "keyshared":
+		return pulsar.KeyShared
+	default:
+		return pulsar.Shared
+	}
 }

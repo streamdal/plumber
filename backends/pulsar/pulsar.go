@@ -21,12 +21,20 @@ type Pulsar struct {
 	printer printer.IPrinter
 }
 
+// NewClient creates a new pulsar client connection
 func NewClient(opts *cli.Options) (pulsar.Client, error) {
-	client, err := pulsar.NewClient(pulsar.ClientOptions{
-		URL:               opts.Pulsar.Address,
-		OperationTimeout:  30 * time.Second,
-		ConnectionTimeout: 30 * time.Second,
-	})
+	clientOpts := pulsar.ClientOptions{
+		URL:                        opts.Pulsar.Address,
+		OperationTimeout:           30 * time.Second,
+		ConnectionTimeout:          opts.Pulsar.ConnectTimeout,
+		TLSAllowInsecureConnection: opts.Pulsar.InsecureTLS,
+	}
+
+	if opts.Pulsar.AuthCertificateFile != "" && opts.Pulsar.AuthKeyFile != "" {
+		clientOpts.Authentication = pulsar.NewAuthenticationTLS(opts.Pulsar.AuthCertificateFile, opts.Pulsar.AuthKeyFile)
+	}
+
+	client, err := pulsar.NewClient(clientOpts)
 	if err != nil {
 		return nil, errors.Wrap(err, "Could not instantiate Pulsar client")
 	}

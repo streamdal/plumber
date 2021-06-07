@@ -1428,7 +1428,7 @@ var _ = Describe("Functional", func() {
 			})
 
 			Context("plain input and output", func() {
-				FIt("reads using a subscription", func() {
+				It("reads using a subscription", func() {
 					const testMessage string = "welovemessaging"
 
 					capture := make(chan []byte)
@@ -1439,7 +1439,7 @@ var _ = Describe("Functional", func() {
 
 						readCmd := exec.Command(
 							binary,
-							"subscribe",
+							"read",
 							"pulsar",
 							"--topic", topicName,
 							"--name", "plumber",
@@ -1493,6 +1493,7 @@ var _ = Describe("Functional", func() {
 							"read",
 							"pulsar",
 							"--topic", topicName,
+							"--name", "plumber",
 						)
 
 						readOutput, err := readCmd.CombinedOutput()
@@ -1544,6 +1545,7 @@ var _ = Describe("Functional", func() {
 							"read",
 							"pulsar",
 							"--topic", topicName,
+							"--name", "plumber",
 						)
 
 						readOutput, err := readCmd.CombinedOutput()
@@ -1572,7 +1574,7 @@ var _ = Describe("Functional", func() {
 					}
 
 					writeGot := string(writeOut[:])
-					writeWant := fmt.Sprintf("Successfully wrote message to stream '%s' with key", topicName)
+					writeWant := fmt.Sprintf("Successfully wrote message to topic '%s'", topicName)
 
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
@@ -1600,6 +1602,7 @@ var _ = Describe("Functional", func() {
 							"read",
 							"pulsar",
 							"--topic", topicName,
+							"--name", "plumber",
 							"--avro-schema", "./test-assets/avro/test.avsc",
 						)
 
@@ -1628,7 +1631,7 @@ var _ = Describe("Functional", func() {
 
 					writeGot := string(writeOut[:])
 
-					writeWant := fmt.Sprintf("Successfully wrote message to stream '%s' with key", topicName)
+					writeWant := fmt.Sprintf("Successfully wrote message to topic '%s'", topicName)
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
 					output := <-capture
