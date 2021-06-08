@@ -12,6 +12,7 @@
        * [Redis Streams](#redis-streams)
        * [GCP Pub/Sub](#gcp-pubsub)
        * [Postgres CDC](#cdc-postgres)
+       * [Apache Pulsar](#apache-pulsar)
   * [Publishing](#publishing)
        * [AWS SQS](#aws-sqs-1)
        * [AWS SNS](#aws-sns)
@@ -24,6 +25,7 @@
        * [Redis PubSub](#redis-pubsub-1)
        * [Redis Streams](#redis-streams-1)
        * [GCP Pub/Sub](#gcp-pubsub-1)
+       * [Apache Pulsar](#apache-pulsar-1)
   * [Relay Mode](#relay-mode)
        * [Continuously relay messages from your RabbitMQ instance to a Batch.sh collection](#continuously-relay-messages-from-your-rabbitmq-instance-to-a-batchsh-collection)
        * [Continuously relay messages from an SQS queue to a Batch.sh collection](#continuously-relay-messages-from-an-sqs-queue-to-a-batchsh-collection)
@@ -158,6 +160,12 @@ plumber read redis-streams --address="localhost:6379" --streams="new-orders"
 plumber read gcp-pubsub --project-id=PROJECT_ID --sub-id=SUBSCRIPTION
 ```
 
+#### Apache Pulsar
+
+```bash
+plumber read pulsar --topic NEWORDERS --name plumber
+```
+
 ## Publishing
 
 ##### AWS SQS
@@ -258,6 +266,12 @@ plumber write redis-streams --address="localhost:6379" --streams="new-orders" --
 
 ```bash
 plumber write gcp-pubsub --topic-id=TOPIC --project-id=PROJECT_ID --input-data='{"Sensor":"Room J","Temp":19}' 
+```
+
+#### Apache Pulsar
+
+```bash
+plumber write pulsar --topic NEWORDERS --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ## Relay Mode

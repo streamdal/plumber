@@ -143,6 +143,7 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 * Redis-Streams
 * Postgres CDC (Change Data Capture)
 * MongoDB CDC (Change Data Capture)
+* Apache Pulsar
 
 NOTE: If your messaging tech is not supported - submit an issue and we'll do
 our best to make it happen!

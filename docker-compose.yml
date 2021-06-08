@@ -72,3 +72,14 @@ services:
     image: redis:latest
     ports:
       - "6379:6379"
+
+  standalone:
+    image: apachepulsar/pulsar:latest
+    ports:
+      - "6650:6650"
+    environment:
+      - BOOKIE_MEM=" -Xms512m -Xmx512m -XX:MaxDirectMemorySize=1g"
+    command: >
+      /bin/bash -c
+      "bin/apply-config-from-env.py conf/standalone.conf
+      && bin/pulsar standalone"
