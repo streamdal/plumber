@@ -138,11 +138,13 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleCDCPostgresFlags(readCmd, writeCmd, relayCmd, opts)
 	case "cdc-mongo":
 		HandleCDCMongoFlags(readCmd, writeCmd, relayCmd, opts)
+	case "mqtt":
+		HandleMQTTFlags(readCmd, writeCmd, relayCmd, opts)
 	default:
 		HandleKafkaFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleGCPPubSubFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleMQTTFlags(readCmd, writeCmd, opts)
+		HandleMQTTFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleActiveMqFlags(readCmd, writeCmd, opts)
 		HandleAWSSNSFlags(readCmd, writeCmd, relayCmd, opts)
@@ -263,7 +265,8 @@ func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
 func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
 	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs, azure, gcp-pubsub, redis-pubsub, redis-streams").
 		Envar("PLUMBER_RELAY_TYPE").
-		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka", "azure", "gcp-pubsub", "redis-pubsub", "redis-streams", "cdc-postgres", "cdc-mongo")
+		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka", "azure", "gcp-pubsub", "redis-pubsub",
+			"redis-streams", "cdc-postgres", "cdc-mongo", "mqtt")
 
 	relayCmd.Flag("token", "Collection token to use when sending data to Batch").
 		Required().

@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go v1.34.28
 	github.com/batchcorp/pgoutput v0.3.2
 	github.com/batchcorp/rabbit v0.1.9
-	github.com/batchcorp/schemas v0.2.128
+	github.com/batchcorp/schemas v0.2.154
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/go-redis/redis/v8 v8.4.8
