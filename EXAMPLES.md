@@ -13,6 +13,7 @@
        * [GCP Pub/Sub](#gcp-pubsub)
        * [Postgres CDC](#cdc-postgres)
        * [MQTT](#mqtt)
+       * [Apache Pulsar](#apache-pulsar)
   * [Publishing](#publishing)
        * [AWS SQS](#aws-sqs-1)
        * [AWS SNS](#aws-sns)
@@ -26,6 +27,7 @@
        * [Redis Streams](#redis-streams-1)
        * [GCP Pub/Sub](#gcp-pubsub-1)
        * [MQTT](#mqtt-1)
+       * [Apache Pulsar](#apache-pulsar-1)
   * [Relay Mode](#relay-mode)
        * [Continuously relay messages from your RabbitMQ instance to a Batch.sh collection](#continuously-relay-messages-from-your-rabbitmq-instance-to-a-batchsh-collection)
        * [Continuously relay messages from an SQS queue to a Batch.sh collection](#continuously-relay-messages-from-an-sqs-queue-to-a-batchsh-collection)
@@ -167,6 +169,12 @@ plumber read gcp-pubsub --project-id=PROJECT_ID --sub-id=SUBSCRIPTION
 plumber read mqtt --address tcp://localhost:1883 --topic iotdata -qos 1
 ```
 
+#### Apache Pulsar
+
+```bash
+plumber read pulsar --topic NEWORDERS --name plumber
+```
+
 ## Publishing
 
 ##### AWS SQS
@@ -273,6 +281,11 @@ plumber write gcp-pubsub --topic-id=TOPIC --project-id=PROJECT_ID --input-data='
 
 ```bash
 plumber write mqtt --address tcp://localhost:1883 --topic iotdata -qos 1 --input-data "{\"id\": 123, \"temperature\": 15}"
+```
+#### Apache Pulsar
+
+```bash
+plumber write pulsar --topic NEWORDERS --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ## Relay Mode

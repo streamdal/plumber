@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go/pubsub v1.6.1
 	github.com/Azure/azure-event-hubs-go/v3 v3.3.7
 	github.com/Azure/azure-service-bus-go v0.10.8
+	github.com/apache/pulsar-client-go v0.5.0
 	github.com/aws/aws-sdk-go v1.34.28
 	github.com/batchcorp/pgoutput v0.3.2
 	github.com/batchcorp/rabbit v0.1.9
@@ -15,7 +16,7 @@ require (
 	github.com/go-redis/redis/v8 v8.4.8
 	github.com/go-stomp/stomp v2.0.6+incompatible
 	github.com/golang/protobuf v1.4.2
-	github.com/google/uuid v1.1.1
+	github.com/google/uuid v1.1.2
 	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/jhump/protoreflect v1.7.0
 	github.com/julienschmidt/httprouter v1.3.0
