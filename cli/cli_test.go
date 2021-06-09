@@ -218,7 +218,7 @@ func TestHandleKafkaFlags_read(t *testing.T) {
 	args := []string{
 		"read", "kafka",
 		"--address", "testing.tld:9092",
-		"--topic", "plumber_test",
+		"--topics", "plumber_test",
 		"--group-id", "plumber_test_group",
 		"--timeout", "3s",
 		"--insecure-tls", // default is false
@@ -232,7 +232,7 @@ func TestHandleKafkaFlags_read(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(cmd).To(Equal("read kafka"))
 	g.Expect(opts.Kafka.Brokers[0]).To(Equal("testing.tld:9092"))
-	g.Expect(opts.Kafka.Topic).To(Equal("plumber_test"))
+	g.Expect(opts.Kafka.Topics).To(Equal([]string{"plumber_test"}))
 	g.Expect(opts.Kafka.GroupID).To(Equal("plumber_test_group"))
 	g.Expect(opts.Kafka.Timeout).To(Equal(time.Second * 3))
 	g.Expect(opts.ReadProtobufDirs).To(Equal([]string{"../test-assets/protos"}))
@@ -247,7 +247,8 @@ func TestHandleKafkaFlags_write(t *testing.T) {
 	args := []string{
 		"write", "kafka",
 		"--address", "testing.tld:9092",
-		"--topic", "plumber_test",
+		"--topics", "plumber_test",
+		"--topics", "plumber_test_2",
 		"--key", "plumber_test_key",
 		"--timeout", "3s",
 		"--insecure-tls", // default is false
@@ -264,7 +265,7 @@ func TestHandleKafkaFlags_write(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(cmd).To(Equal("write kafka"))
 	g.Expect(opts.Kafka.Brokers[0]).To(Equal("testing.tld:9092"))
-	g.Expect(opts.Kafka.Topic).To(Equal("plumber_test"))
+	g.Expect(opts.Kafka.Topics).To(Equal([]string{"plumber_test", "plumber_test_2"}))
 	g.Expect(opts.Kafka.WriteKey).To(Equal("plumber_test_key"))
 	g.Expect(opts.Kafka.Timeout).To(Equal(time.Second * 3))
 	g.Expect(opts.WriteInputData).To(Equal("welovemessaging"))
