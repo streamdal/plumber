@@ -86,13 +86,13 @@ plumber read rabbit
 Read a single message
 
 ```
-plumber read kafka --topics orders --address="broker1.domain.com:9092" --line-numbers
+plumber read kafka --topic orders --address="broker1.domain.com:9092" --line-numbers
 ```
 
 You may specify multiple brokers by specifying the `--address` flag multiple times
 
 ```
-plumber read kafka --topics orders \
+plumber read kafka --topic orders \
     --address="broker1.domain.com:9092" \
     --address="broker2.domain.com:9092" \
     --address="broker3.domain.com:9092" \
@@ -102,7 +102,7 @@ plumber read kafka --topics orders \
 Continuously read messages
 
 ```
-plumber read kafka --topics orders --address="broker1.domain.com:9092" --follow
+plumber read kafka --topic orders --address="broker1.domain.com:9092" --follow
 ```
 
 ##### Azure Service Bus
@@ -192,13 +192,15 @@ plumber write rabbit --address="aqmp://rabbit.yourdomain.net:5672" --exchange=Ne
 ##### Kafka
 
 ```
-plumber write kafka --address="localhost:9092" --topics=neworders --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+plumber write kafka --address="localhost:9092" --topic=neworders --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
-You may specify multiple brokers by specifying the `--address` flag multiple times
+You may specify multiple brokers by specifying the `--address` flag multiple times.
+
+To read from more than one topic, you may specify multiple `--topic` flags.
 
 ```
-plumber write kafka --topics neworders \
+plumber write kafka --topic neworders \
     --address "broker1.domain.com:9092" \
     --address "broker2.domain.com:9092" \
     --address "broker3.domain.com:9092" \
@@ -441,8 +443,8 @@ $ plumber write rabbit --exchange events --routing-key foo.bar  \
 
 ##### Using Avro schemas when reading or writing
 ```bash
-$ plumber write kafka --topics=orders --avro-schema=some_schema.avsc --input-file=your_data.json
-$ plumber read kafka --topics=orders --avro-schema=some_schema.avsc
+$ plumber write kafka --topic=orders --avro-schema=some_schema.avsc --input-file=your_data.json
+$ plumber read kafka --topic=orders --avro-schema=some_schema.avsc
 ```
 
 <sub>

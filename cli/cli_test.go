@@ -218,7 +218,7 @@ func TestHandleKafkaFlags_read(t *testing.T) {
 	args := []string{
 		"read", "kafka",
 		"--address", "testing.tld:9092",
-		"--topics", "plumber_test",
+		"--topic", "plumber_test",
 		"--group-id", "plumber_test_group",
 		"--timeout", "3s",
 		"--insecure-tls", // default is false
@@ -247,8 +247,8 @@ func TestHandleKafkaFlags_write(t *testing.T) {
 	args := []string{
 		"write", "kafka",
 		"--address", "testing.tld:9092",
-		"--topics", "plumber_test",
-		"--topics", "plumber_test_2",
+		"--topic", "plumber_test",
+		"--topic", "plumber_test_2",
 		"--key", "plumber_test_key",
 		"--timeout", "3s",
 		"--insecure-tls", // default is false
