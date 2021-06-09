@@ -50,7 +50,7 @@ Environment Variables
 | Environment Variable  | Description | Default |
 | --------------------- | ------------| ------- |
 | `PLUMBER_RELAY_KAFKA_ADDRESS`            | Destination host address. Separate multiple address with a comma | `broker1.domain.com:9092,broker2.domain.com` |
-| `PLUMBER_RELAY_KAFKA_TOPIC`              | Topic to read message(s) from | **REQUIRED** |
+| `PLUMBER_RELAY_KAFKA_TOPICS`              | Topic(s) to read message(s) from. Separate multiple topics with a comma | **REQUIRED** |
 | `PLUMBER_RELAY_KAFKA_TIMEOUT`            | Connect timeout | `10s` |
 | `PLUMBER_RELAY_KAFKA_USE_TLS`            | Use TLS or not | `false` |
 | `PLUMBER_RELAY_KAFKA_INSECURE_TLS`       | Use insecure TLS (ie. do not verify cert) | `false` |

@@ -86,13 +86,13 @@ plumber read rabbit
 Read a single message
 
 ```
-plumber read kafka --topic orders --address="broker1.domain.com:9092" --line-numbers
+plumber read kafka --topics orders --address="broker1.domain.com:9092" --line-numbers
 ```
 
 You may specify multiple brokers by specifying the `--address` flag multiple times
 
 ```
-plumber read kafka --topic orders \
+plumber read kafka --topics orders \
     --address="broker1.domain.com:9092" \
     --address="broker2.domain.com:9092" \
     --address="broker3.domain.com:9092" \
@@ -102,7 +102,7 @@ plumber read kafka --topic orders \
 Continuously read messages
 
 ```
-plumber read kafka --topic orders --address="broker1.domain.com:9092" --follow
+plumber read kafka --topics orders --address="broker1.domain.com:9092" --follow
 ```
 
 ##### Azure Service Bus
@@ -192,13 +192,13 @@ plumber write rabbit --address="aqmp://rabbit.yourdomain.net:5672" --exchange=Ne
 ##### Kafka
 
 ```
-plumber write kafka --address="localhost:9092" --topic=neworders --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+plumber write kafka --address="localhost:9092" --topics=neworders --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 You may specify multiple brokers by specifying the `--address` flag multiple times
 
 ```
-plumber write kafka --topic neworders \
+plumber write kafka --topics neworders \
     --address "broker1.domain.com:9092" \
     --address "broker2.domain.com:9092" \
     --address "broker3.domain.com:9092" \
@@ -367,7 +367,7 @@ docker run -d --name plumber-redis-streams -p 8080:8080 \
 export PLUMBER_RELAY_TYPE="kafka"
 export PLUMBER_RELAY_TOKEN="$YOUR-BATCHSH-TOKEN-HERE"
 export PLUMBER_RELAY_KAFKA_ADDRESS="pkc-4kgmg.us-west-2.aws.confluent.cloud:9092,pkc-5kgmg.us-west-2.aws.confluent.cloud:9092"
-export PLUMBER_RELAY_KAFKA_TOPIC="$YOUR_TOPIC"
+export PLUMBER_RELAY_KAFKA_TOPICS="$YOUR_TOPIC"
 export PLUMBER_RELAY_KAFKA_INSECURE_TLS="true"
 export PLUMBER_RELAY_KAFKA_USERNAME="$YOUR_CONFLUENT_API_KEY"
 export PLUMBER_RELAY_KAFKA_PASSWORD="$YOUR_CONFLUENT_API_SECRET"
@@ -441,8 +441,8 @@ $ plumber write rabbit --exchange events --routing-key foo.bar  \
 
 ##### Using Avro schemas when reading or writing
 ```bash
-$ plumber write kafka --topic=orders --avro-schema=some_schema.avsc --input-file=your_data.json
-$ plumber read kafka --topic=orders --avro-schema=some_schema.avsc
+$ plumber write kafka --topics=orders --avro-schema=some_schema.avsc --input-file=your_data.json
+$ plumber read kafka --topics=orders --avro-schema=some_schema.avsc
 ```
 
 <sub>
