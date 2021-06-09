@@ -64,7 +64,7 @@ func (k *Kafka) Write(key, value []byte) error {
 		return errors.Wrap(err, "unable to publish message(s)")
 	}
 
-	k.log.Infof("Successfully wrote message to topic '%s'", k.Options.Kafka.Topic)
+	k.log.Infof("Successfully wrote message to topic '%s'", k.Options.Kafka.Topics[0])
 
 	return nil
 }
