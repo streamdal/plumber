@@ -35,7 +35,7 @@ setup/darwin:
 .PHONY: run
 run: description = Run $(BINARY)
 run:
-	$(GO) run `ls -1 *.go | grep -v _test.go` -h
+	$(GO) run `ls -1 *.go | grep -v _test.go`
 
 .PHONY: start/deps
 start/deps: description = Start dependencies
