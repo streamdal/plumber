@@ -2,9 +2,10 @@ package batch
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 // ReplayCollection is used to unmarshal the JSON results of a list replays API call
@@ -40,9 +41,10 @@ type ReplayOutput struct {
 }
 
 var (
-	errReplayListFailed   = errors.New("unable to get list of replays")
-	errNoReplays          = errors.New("you have no replays")
-	errCreateReplayFailed = errors.New("failed to create new replay")
+	errReplayListFailed    = errors.New("unable to get list of replays")
+	errNoReplays           = errors.New("you have no replays")
+	errCreateReplayFailed  = errors.New("failed to create new replay")
+	errReplayArchiveFailed = errors.New("failed to delete replay")
 )
 
 // ListReplays lists all of an account's replays
@@ -88,6 +90,40 @@ func (b *Batch) listReplays() ([]ReplayOutput, error) {
 	}
 
 	return output, nil
+}
+
+// ArchiveReplay archives a replay
+func (b *Batch) ArchiveReplay() error {
+	if err := b.archiveReplay(); err != nil {
+		return err
+	}
+
+	b.Printer("Successfully archived replay")
+
+	return nil
+}
+
+func (b *Batch) archiveReplay() error {
+	res, code, err := b.Delete("/v1/replay/" + b.Opts.Batch.ReplayID)
+	if err != nil {
+		return errors.Wrap(err, errReplayArchiveFailed.Error())
+	}
+
+	if code > 299 {
+		errResponse := &BlunderErrorResponse{}
+		if err := json.Unmarshal(res, errResponse); err != nil {
+			return errReplayArchiveFailed
+		}
+
+		for _, e := range errResponse.Errors {
+			err := fmt.Errorf("%s: %s", errReplayArchiveFailed, e.Message)
+			b.Log.Error(err)
+		}
+
+		return err
+	}
+
+	return nil
 }
 
 func (b *Batch) pauseReplay() error {
