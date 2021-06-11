@@ -109,7 +109,7 @@ func (b *Batch) archiveReplay() error {
 		return errors.Wrap(err, errReplayArchiveFailed.Error())
 	}
 
-	if code > 299 {
+	if code > 299 || code < 200 {
 		errResponse := &BlunderErrorResponse{}
 		if err := json.Unmarshal(res, errResponse); err != nil {
 			return errReplayArchiveFailed
@@ -120,7 +120,7 @@ func (b *Batch) archiveReplay() error {
 			b.Log.Error(err)
 		}
 
-		return err
+		return errReplayArchiveFailed
 	}
 
 	return nil
