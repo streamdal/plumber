@@ -1720,8 +1720,7 @@ func newKafkaWriter(address, topic string) (*Kafka, error) {
 		Dialer: dialer,
 		Conn:   conn,
 		Writer: &skafka.Writer{
-			Addr:  skafka.TCP(address),
-			Topic: topic,
+			Addr: skafka.TCP(address),
 		},
 	}, nil
 }
