@@ -10,15 +10,19 @@ import (
 
 // Message is a data structure representing kafka messages.
 type Message struct {
-	// Topic is reads only and MUST NOT be set when writing messages
+	// Topic indicates which topic this message was consumed from via Reader.
+	//
+	// When being used with Writer, this can be used to configured the topic if
+	// not already specified on the writer itself.
 	Topic string
 
-	// Partition is reads only and MUST NOT be set when writing messages
-	Partition int
-	Offset    int64
-	Key       []byte
-	Value     []byte
-	Headers   []Header
+	// Partition is read-only and MUST NOT be set when writing messages
+	Partition     int
+	Offset        int64
+	HighWaterMark int64
+	Key           []byte
+	Value         []byte
+	Headers       []Header
 
 	// If not set at the creation, Time will be automatically set when
 	// writing the message.

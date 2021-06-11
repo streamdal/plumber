@@ -36,7 +36,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d
 	github.com/rivo/uniseg v0.2.0 // indirect
-	github.com/segmentio/kafka-go v0.4.8
+	github.com/segmentio/kafka-go v0.4.16
 	github.com/sirupsen/logrus v1.7.0
 	github.com/streadway/amqp v1.0.0
 	go.mongodb.org/mongo-driver v1.5.1

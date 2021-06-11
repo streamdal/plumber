@@ -34,7 +34,7 @@ type IKafkaRelayer interface {
 }
 
 var (
-	errMissingTopic = errors.New("You must specify a topic")
+	errMissingTopic = errors.New("You must specify at least one topic")
 )
 
 // Relay sets up a new Kafka relayer, starts GRPC workers and the API server
@@ -83,7 +83,7 @@ func Relay(opts *cli.Options) error {
 
 // validateRelayOptions ensures all required CLI options are present before initializing relay mode
 func validateRelayOptions(opts *cli.Options) error {
-	if opts.Kafka.Topic == "" {
+	if len(opts.Kafka.Topics) == 0 {
 		return errMissingTopic
 	}
 	return nil
@@ -91,8 +91,8 @@ func validateRelayOptions(opts *cli.Options) error {
 
 // Relay reads messages from Kafka and sends them to RelayCh which is then read by relay.Run()
 func (r *Relayer) Relay() error {
-	r.log.Infof("Relaying Kafka messages from '%s' topic -> '%s'",
-		r.Options.Kafka.Topic, r.Options.RelayGRPCAddress)
+	r.log.Infof("Relaying Kafka messages from '%s' topic(s) -> '%s'",
+		r.Options.Kafka.Topics, r.Options.RelayGRPCAddress)
 
 	r.log.Infof("HTTP server listening on '%s'", r.Options.RelayHTTPListenAddress)
 
@@ -110,6 +110,7 @@ func (r *Relayer) Relay() error {
 			stats.Mute("kafka-relay-producer")
 
 			r.log.Errorf("Unable to read kafka message: %s; retrying in %s", err, RetryReadInterval)
+			time.Sleep(RetryReadInterval)
 
 			continue
 		}

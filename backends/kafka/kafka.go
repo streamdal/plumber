@@ -53,6 +53,11 @@ func NewReader(opts *cli.Options) (*KafkaReader, error) {
 		opts.Kafka.Brokers = strings.Split(opts.Kafka.Brokers[0], ",")
 	}
 
+	// Same applies for specifying multiple topics
+	if len(opts.Kafka.Topics) == 1 && strings.Contains(opts.Kafka.Topics[0], ",") {
+		opts.Kafka.Topics = strings.Split(opts.Kafka.Topics[0], ",")
+	}
+
 	dialer := &skafka.Dialer{
 		DualStack: true,
 		Timeout:   opts.Kafka.Timeout,
@@ -80,7 +85,6 @@ func NewReader(opts *cli.Options) (*KafkaReader, error) {
 	rc := skafka.ReaderConfig{
 		Brokers:          opts.Kafka.Brokers,
 		CommitInterval:   opts.Kafka.CommitInterval,
-		Topic:            opts.Kafka.Topic,
 		Dialer:           dialer,
 		MaxWait:          opts.Kafka.MaxWait,
 		MinBytes:         opts.Kafka.MinBytes,
@@ -90,7 +94,10 @@ func NewReader(opts *cli.Options) (*KafkaReader, error) {
 	}
 
 	if opts.Kafka.UseConsumerGroup {
+		rc.GroupTopics = opts.Kafka.Topics
 		rc.GroupID = opts.Kafka.GroupID
+	} else {
+		rc.Topic = opts.Kafka.Topics[0]
 	}
 
 	r := skafka.NewReader(rc)
@@ -133,7 +140,7 @@ func NewWriter(opts *cli.Options) (*KafkaWriter, error) {
 
 	w := skafka.NewWriter(skafka.WriterConfig{
 		Brokers:   opts.Kafka.Brokers,
-		Topic:     opts.Kafka.Topic,
+		Topic:     opts.Kafka.Topics[0],
 		Dialer:    dialer,
 		BatchSize: DefaultBatchSize,
 	})
@@ -182,7 +189,7 @@ func dialLeader(dialer *skafka.Dialer, opts *cli.Options) (*skafka.Conn, error) 
 		// mechanism to bail out early.
 		ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(opts.Kafka.Timeout))
 
-		conn, err = dialer.DialLeader(ctxDeadline, "tcp", address, opts.Kafka.Topic, 0)
+		conn, err = dialer.DialLeader(ctxDeadline, "tcp", address, opts.Kafka.Topics[0], 0)
 		if err != nil {
 			logrus.Errorf("unable to create initial connection to broker '%s', trying next broker", address)
 			continue

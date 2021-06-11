@@ -31,7 +31,7 @@ const (
 type KafkaOptions struct {
 	// Shared
 	Brokers            []string
-	Topic              string
+	Topics             []string
 	Timeout            time.Duration
 	InsecureTLS        bool
 	Username           string
@@ -81,15 +81,17 @@ func HandleKafkaFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Opti
 }
 
 func addSharedKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("address", "Kafka broker address. You may specify this flag multiple times").
+	cmd.Flag("address", "Kafka broker address "+
+		"(NOTE: You may specify this flag multiple times)").
 		Default("localhost:9092").
 		Envar("PLUMBER_RELAY_KAFKA_ADDRESS").
 		StringsVar(&opts.Kafka.Brokers)
 
-	cmd.Flag("topic", "Topic to read message(s) from").
+	cmd.Flag("topic", "Topic(s) to read message(s) from "+
+		"(NOTE: You may specify this flag multiple times if more than one topic)").
 		Required().
 		Envar("PLUMBER_RELAY_KAFKA_TOPIC").
-		StringVar(&opts.Kafka.Topic)
+		StringsVar(&opts.Kafka.Topics)
 
 	cmd.Flag("timeout", "Connect timeout").
 		Default(DefaultKafkaConnectTimeout).

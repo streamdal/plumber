@@ -136,24 +136,34 @@ func parseCmd(cmd string, opts *cli.Options) {
 
 	// Relay (via CLI flags)
 	case "relay rabbit":
+		opts.RelayType = "rabbit"
 		err = rabbitmq.Relay(opts)
 	case "relay kafka":
+		opts.RelayType = "kafka"
 		err = kafka.Relay(opts)
 	case "relay gcp-pubsub":
+		opts.RelayType = "gcp-pubsub"
 		err = gcppubsub.Relay(opts)
 	case "relay mqtt":
+		opts.RelayType = "mqtt"
 		err = mqtt.Relay(opts)
 	case "relay aws-sqs":
+		opts.RelayType = "aws-sqs"
 		err = awssqs.Relay(opts)
 	case "relay azure":
+		opts.RelayType = "azure"
 		err = azure.Relay(opts)
 	case "relay cdc-postgres":
+		opts.RelayType = "cdc-postgres"
 		err = cdc_postgres.Relay(opts)
 	case "relay cdc-mongo":
+		opts.RelayType = "cdc-mongo"
 		err = cdc_mongo.Relay(opts)
 	case "relay redis-pubsub":
+		opts.RelayType = "redis-pubsub"
 		err = rpubsub.Relay(opts)
 	case "relay redis-streams":
+		opts.RelayType = "redis-streams"
 		err = rstreams.Relay(opts)
 
 	// Relay (via env vars)

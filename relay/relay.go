@@ -180,6 +180,8 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, ctx context.Context) {
 	// the ticker will be hit and the queue will be flushed, regardless of size.
 	flushTicker := time.NewTicker(QueueFlushInterval)
 
+	// These are only here to provide immediate feedback that stats are enabled
+	stats.Incr(r.Config.Type+"-relay-consumer", 0)
 	stats.Incr(r.Config.Type+"-relay-producer", 0)
 
 	for {

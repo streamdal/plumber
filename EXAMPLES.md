@@ -195,7 +195,9 @@ plumber write rabbit --address="aqmp://rabbit.yourdomain.net:5672" --exchange=Ne
 plumber write kafka --address="localhost:9092" --topic=neworders --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
-You may specify multiple brokers by specifying the `--address` flag multiple times
+You may specify multiple brokers by specifying the `--address` flag multiple times.
+
+To read from more than one topic, you may specify multiple `--topic` flags.
 
 ```
 plumber write kafka --topic neworders \
