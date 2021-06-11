@@ -79,6 +79,10 @@ func HandleBatchFlags(batchCmd *kingpin.CmdClause, opts *Options) {
 	createReplayCmd := createCmd.Command("replay", "Create and start a new replay")
 	handleCreateReplayFlags(createReplayCmd, opts)
 
+	archiveCmd := batchCmd.Command("archive", "Archive a batch resource")
+	archiveCmd.Command("replay", "Archive a Replay")
+	handleArchiveReplayFlags(archiveCmd, opts)
+
 	// Search
 	searchCmd := batchCmd.Command("search", "Search A Collection")
 	searchCmd.Flag("query", "Search a specified collection").
@@ -90,6 +94,12 @@ func HandleBatchFlags(batchCmd *kingpin.CmdClause, opts *Options) {
 
 	searchCmd.Flag("page", "Page of search results to display. A page is 25 results").
 		IntVar(&opts.Batch.Page)
+}
+
+func handleArchiveReplayFlags(cmd *kingpin.CmdClause, opts *Options) {
+	cmd.Flag("replay-id", "Replay ID").
+		Required().
+		StringVar(&opts.Batch.ReplayID)
 }
 
 func handleCreateReplayFlags(cmd *kingpin.CmdClause, opts *Options) {
