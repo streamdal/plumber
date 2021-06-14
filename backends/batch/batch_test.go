@@ -48,7 +48,7 @@ func BatchWithMockResponse(httpCode int, responseBody string) *Batch {
 var _ = Describe("Batch", func() {
 	Context("New", func() {
 		It("returns a new instance of Batch struct", func() {
-			b := New(&cli.Options{})
+			b := New(&cli.Options{Batch: &cli.BatchOptions{}})
 			Expect(b).To(BeAssignableToTypeOf(&Batch{}))
 		})
 	})
