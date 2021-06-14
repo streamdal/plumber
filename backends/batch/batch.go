@@ -63,11 +63,16 @@ var errNotAuthenticated = errors.New("you are not authenticated. run `plumber ba
 
 // New creates a new instance of a Batch struct with defaults
 func New(opts *cli.Options) *Batch {
+	printer := printTable
+	if opts.Batch.OutputType == "json" {
+		printer = printJSON
+	}
+
 	b := &Batch{
 		Log:     logrus.WithField("pkg", "batch"),
 		Opts:    opts,
 		Client:  &http.Client{},
-		Printer: printTable,
+		Printer: printer,
 		ApiUrl:  "https://api.batch.sh",
 	}
 
@@ -228,4 +233,14 @@ func printTable(v interface{}) {
 	printer.HeaderFgColor = tablewriter.FgCyanColor
 
 	printer.Print(v)
+}
+
+// printJSON displays output from batch commands as JSON. Needed for automation purposes
+func printJSON(v interface{}) {
+	output, err := json.Marshal(v)
+	if err != nil {
+		fmt.Sprintf(`{"error": "%s"}`, err.Error())
+	}
+
+	fmt.Println(string(output))
 }
