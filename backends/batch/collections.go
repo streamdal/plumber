@@ -22,17 +22,19 @@ type Collection struct {
 	Name              string `json:"name" header:"Name"`
 	Token             string `json:"token"`
 	Paused            bool   `json:"paused" header:"Is Paused?"`
+	Archived          bool   `json:"archived" header:"Archived"`
 	*CollectionSchema `json:"schema"`
 }
 
 // CollectionOutput is used for displaying collections as a table
 type CollectionOutput struct {
-	Name       string `header:"Name"`
-	ID         string `header:"ID"`
-	Token      string `header:"Token"`
-	Paused     bool   `header:"Is Paused"`
-	SchemaName string `header:"Schema Name"`
-	SchemaType string `header:"Schema Type"`
+	Name       string `header:"Name" json:"name"`
+	ID         string `header:"ID" json:"id"`
+	Token      string `header:"Token" json:"token"`
+	Paused     bool   `header:"Is Paused" json:"paused"`
+	Archived   bool   `header:"Archived" json:"archived"`
+	SchemaName string `header:"Schema Name" json:"schema_name"`
+	SchemaType string `header:"Schema Type" json:"schema_type"`
 }
 
 // SearchResult is used to unmarshal the JSON results of a search API call
@@ -87,6 +89,9 @@ func (b *Batch) listCollections() ([]CollectionOutput, error) {
 
 	output := make([]CollectionOutput, 0)
 	for _, c := range collections {
+		if c.Archived {
+			continue
+		}
 		output = append(output, CollectionOutput{
 			ID:         c.ID,
 			Name:       c.Name,

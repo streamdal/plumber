@@ -25,6 +25,8 @@ type Replay struct {
 	Type               string `header:"Type" json:"type"`
 	Query              string `header:"Query" json:"query"`
 	Paused             bool   `header:"Is Paused" json:"paused"`
+	Archived           bool   `header:"Archived" json:"archived"`
+	Status             string `header:"Status" json:"status"`
 	*ReplayDestination `json:"destination"`
 	*ReplayCollection  `json:"collection"`
 }
@@ -38,6 +40,7 @@ type ReplayOutput struct {
 	Collection  string `header:"Collection Name"`
 	Destination string `header:"Destination Name"`
 	Paused      bool   `header:"Is Paused" json:"paused"`
+	Status      string `header:"Status" json:"status"`
 }
 
 var (
@@ -78,6 +81,10 @@ func (b *Batch) listReplays() ([]ReplayOutput, error) {
 
 	output := make([]ReplayOutput, 0)
 	for _, r := range replays {
+		if r.Archived {
+			continue
+		}
+
 		output = append(output, ReplayOutput{
 			ID:          r.ID,
 			Name:        r.Name,
@@ -86,6 +93,7 @@ func (b *Batch) listReplays() ([]ReplayOutput, error) {
 			Collection:  r.ReplayCollection.Name,
 			Destination: r.ReplayDestination.Name,
 			Paused:      r.Paused,
+			Status:      r.Status,
 		})
 	}
 

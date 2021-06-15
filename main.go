@@ -50,7 +50,7 @@ func main() {
 	}
 
 	// In container mode, force JSON and don't print logo
-	if !terminal.IsTerminal(int(os.Stderr.Fd())) {
+	if !terminal.IsTerminal(int(os.Stderr.Fd())) || opts.Batch.OutputType == "json" {
 		logrus.SetFormatter(&logrus.JSONFormatter{})
 	} else {
 		printer.PrintLogo()
