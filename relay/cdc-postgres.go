@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"time"
+
 	"github.com/batchcorp/plumber/backends/cdc-postgres/types"
 	"github.com/batchcorp/schemas/build/go/events/records"
 	"github.com/batchcorp/schemas/build/go/services"
 	"google.golang.org/grpc"
-	"os"
-	"time"
 )
 
 // handleKafka sends a Kafka relay message to the GRPC server
@@ -24,7 +25,7 @@ func (r *Relay) handleCdcPostgres(ctx context.Context, conn *grpc.ClientConn, me
 	return r.CallWithRetry(ctx, "AddGenericRecord", func(ctx context.Context) error {
 		_, err := client.AddRecord(ctx, &services.GenericRecordRequest{
 			Records: sinkRecords,
-		}, grpc.MaxCallRecvMsgSize(MaxGRPCMessageSize))
+		}, grpc.MaxCallSendMsgSize(MaxGRPCMessageSize))
 		return err
 	})
 }
