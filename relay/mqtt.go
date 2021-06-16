@@ -23,7 +23,7 @@ func (r *Relay) handleMQTT(ctx context.Context, conn *grpc.ClientConn, messages 
 	return r.CallWithRetry(ctx, "AddMQTTRecord", func(ctx context.Context) error {
 		_, err := client.AddMQTTRecord(ctx, &services.MQTTRecordRequest{
 			Records: sinkRecords,
-		}, grpc.MaxCallRecvMsgSize(MaxGRPCMessageSize))
+		}, grpc.MaxCallSendMsgSize(MaxGRPCMessageSize))
 		return err
 	})
 }

@@ -24,7 +24,7 @@ func (r *Relay) handleAzure(ctx context.Context, conn *grpc.ClientConn, messages
 	return r.CallWithRetry(ctx, "AddAzureRecord", func(ctx context.Context) error {
 		_, err := client.AddAzureRecord(ctx, &services.AzureRecordRequest{
 			Records: sinkRecords,
-		}, grpc.MaxCallRecvMsgSize(MaxGRPCMessageSize))
+		}, grpc.MaxCallSendMsgSize(MaxGRPCMessageSize))
 		return err
 	})
 }

@@ -30,7 +30,7 @@ func (r *Relay) handleKafka(ctx context.Context, conn *grpc.ClientConn, messages
 	return r.CallWithRetry(ctx, "AddKafkaRecord", func(ctx context.Context) error {
 		_, err := client.AddKafkaRecord(ctx, &services.KafkaSinkRecordRequest{
 			Records: sinkRecords,
-		}, grpc.MaxCallRecvMsgSize(MaxGRPCMessageSize))
+		}, grpc.MaxCallSendMsgSize(MaxGRPCMessageSize))
 		return err
 	})
 }

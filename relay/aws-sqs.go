@@ -26,7 +26,7 @@ func (r *Relay) handleSQS(ctx context.Context, conn *grpc.ClientConn, messages [
 	r.CallWithRetry(ctx, "AddSQSRecord", func(ctx context.Context) error {
 		_, err := client.AddSQSRecord(ctx, &services.SQSRecordRequest{
 			Records: sinkRecords,
-		}, grpc.MaxCallRecvMsgSize(MaxGRPCMessageSize))
+		}, grpc.MaxCallSendMsgSize(MaxGRPCMessageSize))
 		return err
 	})
 

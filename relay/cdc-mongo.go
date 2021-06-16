@@ -25,7 +25,7 @@ func (r *Relay) handleCDCMongo(ctx context.Context, conn *grpc.ClientConn, messa
 	return r.CallWithRetry(ctx, "AddRecord", func(ctx context.Context) error {
 		_, err := client.AddRecord(ctx, &services.GenericRecordRequest{
 			Records: sinkRecords,
-		}, grpc.MaxCallRecvMsgSize(MaxGRPCMessageSize))
+		}, grpc.MaxCallSendMsgSize(MaxGRPCMessageSize))
 		return err
 	})
 }
