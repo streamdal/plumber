@@ -48,7 +48,7 @@ func (n *Nats) Read() error {
 	defer n.Client.Close()
 	n.log.Info("Listening for message(s) ...")
 
-	lineNumber := 1
+	count := 1
 
 	// nats.Subscribe is async, use channel to wait to exit
 	doneCh := make(chan bool)
@@ -63,10 +63,8 @@ func (n *Nats) Read() error {
 
 		str := string(data)
 
-		if n.Options.ReadLineNumbers {
-			str = fmt.Sprintf("%d: ", lineNumber) + str
-			lineNumber++
-		}
+		str = fmt.Sprintf("%d: ", count) + str
+		count++
 
 		printer.Print(str)
 

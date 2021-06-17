@@ -63,7 +63,7 @@ func (r *RedisStreams) Read() error {
 
 	r.log.Info("Listening for message(s) ...")
 
-	lineNumber := 1
+	count := 1
 
 	for {
 		// Attempt to consume
@@ -105,10 +105,8 @@ func (r *RedisStreams) Read() error {
 
 					str := fmt.Sprintf("[ID: %s Stream: %s Key: %s] %s", message.ID, streamName, k, string(decodedData))
 
-					if r.Options.ReadLineNumbers {
-						str = fmt.Sprintf("%d: %s", lineNumber, str)
-						lineNumber++
-					}
+					str = fmt.Sprintf("%d: %s", count, str)
+					count++
 
 					printer.Print(str)
 				}

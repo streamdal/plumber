@@ -52,7 +52,6 @@ type Options struct {
 	ReadProtobufRootMessage string
 	ReadProtobufDirs        []string
 	ReadFollow              bool
-	ReadLineNumbers         bool
 	ReadConvert             string
 	ReadJSONOutput          bool
 	Verbose                 bool
@@ -215,9 +214,6 @@ func HandleGlobalReadFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("follow", "Continuous read (ie. `tail -f`)").
 		Short('f').
 		BoolVar(&opts.ReadFollow)
-
-	cmd.Flag("line-numbers", "Display line numbers for each message").
-		Default("false").BoolVar(&opts.ReadLineNumbers)
 
 	cmd.Flag("convert", "Convert received message(s) [base64, gzip]").
 		EnumVar(&opts.ReadConvert, "base64", "gzip")

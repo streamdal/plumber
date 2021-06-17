@@ -62,18 +62,18 @@ $ mv plumber /usr/local/bin/plumber
 **Keep it simple**: Read & write messages
 
 ```bash
-$ plumber read kafka --topic orders --address="some-machine.domain.com:9092" --line-numbers --follow
-1: {"sample" : "message 1"}
-2: {"sample" : "message 2"}
-3: {"sample" : "message 3"}
-4: {"sample" : "message 4"}
-5: {"sample" : "message 5"}
-6: {"sample" : "message 6"}
-7: {"sample" : "message 7"}
-8: {"sample" : "message 8"}
-9: {"sample" : "message 9"}
-10: {"sample" : "message 10"}
-11: {"sample" : "message 11"}
+$ plumber read kafka --topic orders --address="some-machine.domain.com:9092" --follow
+{"sample" : "message 1"}
+{"sample" : "message 2"}
+{"sample" : "message 3"}
+{"sample" : "message 4"}
+{"sample" : "message 5"}
+{"sample" : "message 6"}
+{"sample" : "message 7"}
+{"sample" : "message 8"}
+{"sample" : "message 9"}
+{{"sample" : "message 10"}
+{{"sample" : "message 11"}
 ^C
 
 $ plumber write kafka --address="some-machine.domain.com:9092" --topic orders --input-data "plain text"

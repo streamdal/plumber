@@ -58,7 +58,7 @@ func Read(opts *cli.Options) error {
 func (k *Kafka) Read() error {
 	k.log.Info("Initializing (could take a minute or two) ...")
 
-	lineNumber := 1
+	count := 1
 
 	for {
 		// Initial message read can take a while to occur due to how consumer
@@ -78,11 +78,13 @@ func (k *Kafka) Read() error {
 			return err
 		}
 
-		printer.PrintKafkaResult(k.Options, lineNumber, msg, data)
+		printer.PrintKafkaResult(k.Options, count, msg, data)
 
 		if !k.Options.ReadFollow {
 			break
 		}
+
+		count++
 	}
 
 	k.log.Debug("Reader exiting")

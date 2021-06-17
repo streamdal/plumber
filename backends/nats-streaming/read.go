@@ -2,8 +2,9 @@ package nats_streaming
 
 import (
 	"fmt"
-	pb2 "github.com/nats-io/stan.go/pb"
 	"time"
+
+	pb2 "github.com/nats-io/stan.go/pb"
 
 	"github.com/jhump/protoreflect/desc"
 	"github.com/nats-io/stan.go"
@@ -56,7 +57,7 @@ func (n *NatsStreaming) Read() error {
 	defer n.Client.Close()
 	n.log.Info("Listening for message(s) ...")
 
-	lineNumber := 1
+	count := 1
 
 	// stan.Subscribe is async, use channel to wait to exit
 	doneCh := make(chan bool)
@@ -88,10 +89,8 @@ func (n *NatsStreaming) Read() error {
 
 		str := string(data)
 
-		if n.Options.ReadLineNumbers {
-			str = fmt.Sprintf("%d: ", lineNumber) + str
-			lineNumber++
-		}
+		str = fmt.Sprintf("%d: ", count) + str
+		count++
 
 		n.printer.Print(str)
 

@@ -24,6 +24,7 @@ func PrintKafkaResult(opts *cli.Options, count int, msg kafka.Message, data []by
 	properties := [][]string{
 		[]string{"Key", key},
 		[]string{"Topic", msg.Topic},
+		[]string{"Offset", fmt.Sprintf("%d", msg.Offset)},
 		[]string{"Partition", fmt.Sprintf("%d", msg.Partition)},
 	}
 

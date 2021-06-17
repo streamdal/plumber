@@ -66,7 +66,7 @@ func (a *AzureServiceBus) Read() error {
 
 	a.log.Info("Listening for message(s) ...")
 
-	lineNumber := 1
+	count := 1
 
 	var handler servicebus.HandlerFunc = func(ctx context.Context, msg *servicebus.Message) error {
 		data, err := reader.Decode(a.Options, a.MsgDesc, msg.Data)
@@ -76,10 +76,8 @@ func (a *AzureServiceBus) Read() error {
 
 		str := string(data)
 
-		if a.Options.ReadLineNumbers {
-			str = fmt.Sprintf("%d: ", lineNumber) + str
-			lineNumber++
-		}
+		str = fmt.Sprintf("%d: ", count) + str
+		count++
 
 		printer.Print(str)
 
