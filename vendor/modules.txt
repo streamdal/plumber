@@ -125,7 +125,7 @@ github.com/batchcorp/pgoutput
 # github.com/batchcorp/rabbit v0.1.9
 ## explicit
 github.com/batchcorp/rabbit
-# github.com/batchcorp/schemas v0.2.154
+# github.com/batchcorp/schemas v0.2.155
 ## explicit
 github.com/batchcorp/schemas/build/go/events
 github.com/batchcorp/schemas/build/go/events/destinations

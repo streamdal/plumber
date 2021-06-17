@@ -129,6 +129,8 @@ github.com/batchcorp/schemas v0.2.128 h1:EjhxReDCkj3QvkVDiSHHbGOjUXSJ2jrSpZ3QG0F
 github.com/batchcorp/schemas v0.2.128/go.mod h1:R6rjH3b0egODh995q5qwGAfQ5fssAPeDf82gTGZS6d4=
 github.com/batchcorp/schemas v0.2.154 h1:IDjvtZTBGgk7KrdysR/Le4iErT51hHunMOipS8ycrGI=
 github.com/batchcorp/schemas v0.2.154/go.mod h1:R6rjH3b0egODh995q5qwGAfQ5fssAPeDf82gTGZS6d4=
+github.com/batchcorp/schemas v0.2.155 h1:7prx/ApxSH/U4HhZ6tVTU/Ds5Onc1R+1fogrTOMaePA=
+github.com/batchcorp/schemas v0.2.155/go.mod h1:R6rjH3b0egODh995q5qwGAfQ5fssAPeDf82gTGZS6d4=
 github.com/batchcorp/schemas/util/publish v0.0.0-20200622021112-903044310a85/go.mod h1:zD8BqPOqqGw2wWhGrJx8CguDKKuOPGo1TXOuz5b4OR4=
 github.com/beefsack/go-rate v0.0.0-20180408011153-efa7637bb9b6/go.mod h1:6YNgTHLutezwnBvyneBbwvB8C82y3dcoOj5EQJIdGXA=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
