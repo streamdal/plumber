@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/batchcorp/plumber/reader"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -11,7 +12,6 @@ import (
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/reader"
 )
 
 // Read is the entry point function for performing read operations in Kafka.
@@ -75,17 +75,10 @@ func (k *Kafka) Read() error {
 
 		data, err := reader.Decode(k.Options, k.MsgDesc, msg.Value)
 		if err != nil {
-			continue
+			return err
 		}
 
-		str := string(data)
-
-		if k.Options.ReadLineNumbers {
-			str = fmt.Sprintf("%d: ", lineNumber) + str
-			lineNumber++
-		}
-
-		printer.Print(str)
+		printer.PrintKafkaResult(k.Options, lineNumber, msg, data)
 
 		if !k.Options.ReadFollow {
 			break
