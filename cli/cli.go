@@ -234,7 +234,7 @@ func HandleGlobalWriteFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Envar("PLUMBER_RELAY_PROTOBUF_DIR").
 		ExistingDirsVar(&opts.WriteProtobufDirs)
 	cmd.Flag("protobuf-root-message", "Root message in a protobuf descriptor set "+
-		"(required if protobuf-dir set)").
+		"(required if protobuf-dir set; type should contain pkg name(s) separated by a period)").
 		Envar("PLUMBER_RELAY_PROTOBUF_ROOT_MESSAGE").
 		StringVar(&opts.WriteProtobufRootMessage)
 }

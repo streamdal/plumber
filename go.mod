@@ -18,7 +18,7 @@ require (
 	github.com/golang/protobuf v1.4.2
 	github.com/google/uuid v1.1.2
 	github.com/jackc/pgx v3.6.2+incompatible
-	github.com/jhump/protoreflect v1.7.0
+	github.com/jhump/protoreflect v1.8.2
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/kataras/tablewriter v0.0.0-20180708051242-e063d29b7c23
 	github.com/kyleconroy/pgoutput v0.1.0 // indirect

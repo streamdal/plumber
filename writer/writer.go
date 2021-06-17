@@ -121,6 +121,8 @@ func ValidateWriteOptions(opts *cli.Options, busSpecific func(options *cli.Optio
 
 // convertJSONPBToProtobuf converts input data from jsonpb -> protobuf -> bytes
 func convertJSONPBToProtobuf(data []byte, m *dynamic.Message) ([]byte, error) {
+	fmt.Printf("Our data: %s\n", string(data))
+
 	buf := bytes.NewBuffer(data)
 
 	if err := jsonpb.Unmarshal(buf, m); err != nil {
