@@ -221,8 +221,8 @@ func HandleGlobalReadFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("verbose", "Display message metadata if available").
 		BoolVar(&opts.Verbose)
 
-	cmd.Flag("json", "Values should be treated as JSON").
-		Default("true").
+	cmd.Flag("json", "Read data should be treated as JSON").
+		Default("false").
 		BoolVar(&opts.ReadJSONOutput)
 }
 
