@@ -119,7 +119,7 @@ var _ = Describe("Functional", func() {
 						"--input-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound")
+						"--protobuf-root-message", "events.Outbound")
 
 					_, err := cmd.CombinedOutput()
 					Expect(err).ToNot(HaveOccurred())
@@ -337,7 +337,7 @@ var _ = Describe("Functional", func() {
 						"--input-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound",
+						"--protobuf-root-message", "events.Outbound",
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
@@ -363,7 +363,7 @@ var _ = Describe("Functional", func() {
 						"--routing-key", routingKey,
 						"--queue", queueName,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound",
+						"--protobuf-root-message", "events.Outbound",
 					)
 
 					readOut, err := readCmd.CombinedOutput()
@@ -544,7 +544,7 @@ var _ = Describe("Functional", func() {
 						"--input-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound",
+						"--protobuf-root-message", "events.Outbound",
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
@@ -561,7 +561,7 @@ var _ = Describe("Functional", func() {
 						"aws-sqs",
 						"--queue-name", queueName,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound",
+						"--protobuf-root-message", "events.Outbound",
 					)
 
 					readOut, err := readCmd.CombinedOutput()
@@ -707,7 +707,7 @@ var _ = Describe("Functional", func() {
 						"--input-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound",
+						"--protobuf-root-message", "events.Outbound",
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
@@ -832,7 +832,7 @@ var _ = Describe("Functional", func() {
 						"--input-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound",
+						"--protobuf-root-message", "events.Outbound",
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
@@ -850,7 +850,7 @@ var _ = Describe("Functional", func() {
 						"activemq",
 						"--queue", queueName,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound",
+						"--protobuf-root-message", "events.Outbound",
 					)
 
 					readOut, err := readCmd.CombinedOutput()
@@ -995,7 +995,7 @@ var _ = Describe("Functional", func() {
 						"--input-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound",
+						"--protobuf-root-message", "events.Outbound",
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
@@ -1162,7 +1162,7 @@ var _ = Describe("Functional", func() {
 						"--input-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound",
+						"--protobuf-root-message", "events.Outbound",
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
@@ -1339,7 +1339,7 @@ var _ = Describe("Functional", func() {
 						"--input-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound",
+						"--protobuf-root-message", "events.Outbound",
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
@@ -1565,7 +1565,7 @@ var _ = Describe("Functional", func() {
 						"--input-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound",
+						"--protobuf-root-message", "events.Outbound",
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()

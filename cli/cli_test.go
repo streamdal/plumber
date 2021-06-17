@@ -24,7 +24,7 @@ func TestHandleRabbitFlags_read(t *testing.T) {
 		"--no-auto-ack",          // default is true
 		"--consumer-tag", "plumber_123",
 		"--protobuf-dir", "../test-assets/protos",
-		"--protobuf-root-message", "Message",
+		"--protobuf-root-message", "events.Message",
 		"--avro-schema", "../test-assets/avro/test.avsc",
 	}
 
@@ -42,7 +42,7 @@ func TestHandleRabbitFlags_read(t *testing.T) {
 	g.Expect(opts.Rabbit.ReadAutoAck).To(BeFalse())
 	g.Expect(opts.Rabbit.ReadConsumerTag).To(Equal("plumber_123"))
 	g.Expect(opts.ReadProtobufDirs).To(Equal([]string{"../test-assets/protos"}))
-	g.Expect(opts.ReadProtobufRootMessage).To(Equal("Message"))
+	g.Expect(opts.ReadProtobufRootMessage).To(Equal("events.Message"))
 	g.Expect(opts.AvroSchemaFile).To(Equal("../test-assets/avro/test.avsc"))
 }
 
@@ -69,7 +69,7 @@ func TestHandleRabbitFlags_relay(t *testing.T) {
 		"--no-auto-ack",          // default is true
 		"--consumer-tag", "plumber_123",
 		"--protobuf-dir", "../test-assets/protos",
-		"--protobuf-root-message", "Message",
+		"--protobuf-root-message", "events.Message",
 		"--avro-schema", "../test-assets/avro/test.avsc",
 	}
 
@@ -93,7 +93,7 @@ func TestHandleRabbitFlags_relay(t *testing.T) {
 	g.Expect(opts.Rabbit.ReadAutoAck).To(BeFalse())
 	g.Expect(opts.Rabbit.ReadConsumerTag).To(Equal("plumber_123"))
 	g.Expect(opts.ReadProtobufDirs).To(Equal([]string{"../test-assets/protos"}))
-	g.Expect(opts.ReadProtobufRootMessage).To(Equal("Message"))
+	g.Expect(opts.ReadProtobufRootMessage).To(Equal("events.Message"))
 	g.Expect(opts.AvroSchemaFile).To(Equal("../test-assets/avro/test.avsc"))
 }
 
@@ -111,7 +111,7 @@ func TestHandleRabbitFlags_write(t *testing.T) {
 		"--input-file", "cli.go",
 		"--input-type", "jsonpb",
 		"--protobuf-dir", "../test-assets/protos",
-		"--protobuf-root-message", "Message",
+		"--protobuf-root-message", "events.Message",
 		"--avro-schema", "../test-assets/avro/test.avsc",
 	}
 
@@ -127,7 +127,7 @@ func TestHandleRabbitFlags_write(t *testing.T) {
 	g.Expect(opts.WriteInputFile).To(Equal("cli.go"))
 	g.Expect(opts.WriteInputType).To(Equal("jsonpb"))
 	g.Expect(opts.WriteProtobufDirs).To(Equal([]string{"../test-assets/protos"}))
-	g.Expect(opts.WriteProtobufRootMessage).To(Equal("Message"))
+	g.Expect(opts.WriteProtobufRootMessage).To(Equal("events.Message"))
 	g.Expect(opts.AvroSchemaFile).To(Equal("../test-assets/avro/test.avsc"))
 }
 
@@ -147,7 +147,7 @@ func TestHandleMQTTFlags_read(t *testing.T) {
 		"--tls-client-key-file", "cli.go",
 		"--insecure-tls", // default is false
 		"--protobuf-dir", "../test-assets/protos",
-		"--protobuf-root-message", "Message",
+		"--protobuf-root-message", "events.Message",
 		"--avro-schema", "../test-assets/avro/test.avsc",
 	}
 
@@ -164,7 +164,7 @@ func TestHandleMQTTFlags_read(t *testing.T) {
 	g.Expect(opts.MQTT.TLSClientKeyFile).To(Equal("cli.go"))
 	g.Expect(opts.MQTT.TLSClientCertFile).To(Equal("cli.go"))
 	g.Expect(opts.ReadProtobufDirs).To(Equal([]string{"../test-assets/protos"}))
-	g.Expect(opts.ReadProtobufRootMessage).To(Equal("Message"))
+	g.Expect(opts.ReadProtobufRootMessage).To(Equal("events.Message"))
 	g.Expect(opts.AvroSchemaFile).To(Equal("../test-assets/avro/test.avsc"))
 }
 
@@ -187,7 +187,7 @@ func TestHandleMQTTFlags_write(t *testing.T) {
 		"--input-file", "cli.go",
 		"--input-type", "jsonpb",
 		"--protobuf-dir", "../test-assets/protos",
-		"--protobuf-root-message", "Message",
+		"--protobuf-root-message", "events.Message",
 		"--avro-schema", "../test-assets/avro/test.avsc",
 	}
 
@@ -207,7 +207,7 @@ func TestHandleMQTTFlags_write(t *testing.T) {
 	g.Expect(opts.WriteInputFile).To(Equal("cli.go"))
 	g.Expect(opts.WriteInputType).To(Equal("jsonpb"))
 	g.Expect(opts.WriteProtobufDirs).To(Equal([]string{"../test-assets/protos"}))
-	g.Expect(opts.WriteProtobufRootMessage).To(Equal("Message"))
+	g.Expect(opts.WriteProtobufRootMessage).To(Equal("events.Message"))
 	g.Expect(opts.AvroSchemaFile).To(Equal("../test-assets/avro/test.avsc"))
 }
 
@@ -223,7 +223,7 @@ func TestHandleKafkaFlags_read(t *testing.T) {
 		"--timeout", "3s",
 		"--insecure-tls", // default is false
 		"--protobuf-dir", "../test-assets/protos",
-		"--protobuf-root-message", "Message",
+		"--protobuf-root-message", "events.Message",
 		"--avro-schema", "../test-assets/avro/test.avsc",
 	}
 
@@ -236,7 +236,7 @@ func TestHandleKafkaFlags_read(t *testing.T) {
 	g.Expect(opts.Kafka.GroupID).To(Equal("plumber_test_group"))
 	g.Expect(opts.Kafka.Timeout).To(Equal(time.Second * 3))
 	g.Expect(opts.ReadProtobufDirs).To(Equal([]string{"../test-assets/protos"}))
-	g.Expect(opts.ReadProtobufRootMessage).To(Equal("Message"))
+	g.Expect(opts.ReadProtobufRootMessage).To(Equal("events.Message"))
 	g.Expect(opts.AvroSchemaFile).To(Equal("../test-assets/avro/test.avsc"))
 }
 
@@ -256,7 +256,7 @@ func TestHandleKafkaFlags_write(t *testing.T) {
 		"--input-file", "cli.go",
 		"--input-type", "jsonpb",
 		"--protobuf-dir", "../test-assets/protos",
-		"--protobuf-root-message", "Message",
+		"--protobuf-root-message", "events.Message",
 		"--avro-schema", "../test-assets/avro/test.avsc",
 	}
 
@@ -287,7 +287,7 @@ func TestHandleAWSSQSFlags_read(t *testing.T) {
 		"--wait-time-seconds", "3",
 		"--receive-request-attempt-id", "plumber_receiver",
 		"--protobuf-dir", "../test-assets/protos",
-		"--protobuf-root-message", "Message",
+		"--protobuf-root-message", "events.Message",
 		"--avro-schema", "../test-assets/avro/test.avsc",
 	}
 
@@ -300,7 +300,7 @@ func TestHandleAWSSQSFlags_read(t *testing.T) {
 	g.Expect(opts.AWSSQS.ReadWaitTimeSeconds).To(Equal(int64(3)))
 	g.Expect(opts.AWSSQS.ReadReceiveRequestAttemptId).To(Equal("plumber_receiver"))
 	g.Expect(opts.ReadProtobufDirs).To(Equal([]string{"../test-assets/protos"}))
-	g.Expect(opts.ReadProtobufRootMessage).To(Equal("Message"))
+	g.Expect(opts.ReadProtobufRootMessage).To(Equal("events.Message"))
 	g.Expect(opts.AvroSchemaFile).To(Equal("../test-assets/avro/test.avsc"))
 }
 
@@ -318,7 +318,7 @@ func TestHandleAWSSQSFlags_write(t *testing.T) {
 		"--input-file", "cli.go",
 		"--input-type", "jsonpb",
 		"--protobuf-dir", "../test-assets/protos",
-		"--protobuf-root-message", "Message",
+		"--protobuf-root-message", "events.Message",
 		"--avro-schema", "../test-assets/avro/test.avsc",
 	}
 
@@ -349,7 +349,7 @@ func TestHandleGCPPubSubFlags_read(t *testing.T) {
 		"--project-id", "plumber_project",
 		"--no-ack", // default is true
 		"--protobuf-dir", "../test-assets/protos",
-		"--protobuf-root-message", "Message",
+		"--protobuf-root-message", "events.Message",
 		"--avro-schema", "../test-assets/avro/test.avsc",
 	}
 
@@ -361,7 +361,7 @@ func TestHandleGCPPubSubFlags_read(t *testing.T) {
 	g.Expect(opts.GCPPubSub.ProjectId).To(Equal("plumber_project"))
 	g.Expect(opts.GCPPubSub.ReadAck).To(BeFalse())
 	g.Expect(opts.ReadProtobufDirs).To(Equal([]string{"../test-assets/protos"}))
-	g.Expect(opts.ReadProtobufRootMessage).To(Equal("Message"))
+	g.Expect(opts.ReadProtobufRootMessage).To(Equal("events.Message"))
 	g.Expect(opts.AvroSchemaFile).To(Equal("../test-assets/avro/test.avsc"))
 }
 
@@ -377,7 +377,7 @@ func TestHandleGCPPubSubFlags_write(t *testing.T) {
 		"--input-file", "cli.go",
 		"--input-type", "jsonpb",
 		"--protobuf-dir", "../test-assets/protos",
-		"--protobuf-root-message", "Message",
+		"--protobuf-root-message", "events.Message",
 		"--avro-schema", "../test-assets/avro/test.avsc",
 	}
 

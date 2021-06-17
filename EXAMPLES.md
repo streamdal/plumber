@@ -419,7 +419,7 @@ For more advanced mongo usage, see documentation at https://docs.batch.sh/event-
 
 ```bash
 $ plumber read rabbit --address="amqp://localhost" --exchange events --routing-key \# \
-  --line-numbers --protobuf-dir ~/schemas --protobuf-root-message Message --follow
+  --line-numbers --protobuf-dir ~/schemas --protobuf-root-message pkg.Message --follow
 1: {"some-attribute": 123, "numbers" : [1, 2, 3]}
 2: {"some-attribute": 424, "numbers" : [325]}
 3: {"some-attribute": 49, "numbers" : [958, 288, 289, 290]}
@@ -437,7 +437,7 @@ slice to the message bus.
 
 ```bash
 $ plumber write rabbit --exchange events --routing-key foo.bar  \
-  --line-numbers --protobuf-dir ~/schemas --protobuf-root-message Message \
+  --line-numbers --protobuf-dir ~/schemas --protobuf-root-message pkg.Message \
   --input-file ~/fakes/some-jsonpb-file.json --input-type jsonpb
 ```
 
