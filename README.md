@@ -59,29 +59,48 @@ $ mv plumber /usr/local/bin/plumber
 
 ## Usage
 
-**Keep it simple**: Read & write messages
+### Write messages
 
-```bash
-$ plumber read kafka --topic orders --address="some-machine.domain.com:9092" --follow
-{"sample" : "message 1"}
-{"sample" : "message 2"}
-{"sample" : "message 3"}
-{"sample" : "message 4"}
-{"sample" : "message 5"}
-{"sample" : "message 6"}
-{"sample" : "message 7"}
-{"sample" : "message 8"}
-{"sample" : "message 9"}
-{{"sample" : "message 10"}
-{{"sample" : "message 11"}
-^C
+```
+$ plumber write kafka --address="localhost:9092" --topic foo --input-data '{"hello":"world"}'
 
-$ plumber write kafka --address="some-machine.domain.com:9092" --topic orders --input-data "plain text"
-Success! Wrote '1' message(s) to 'localhost:9092'.
+INFO[0000]
+█▀█ █   █ █ █▀▄▀█ █▄▄ █▀▀ █▀█
+█▀▀ █▄▄ █▄█ █ ▀ █ █▄█ ██▄ █▀▄
+INFO[0000] Connected to kafka broker 'localhost:9092'
+INFO[0000] Successfully wrote message to topic 'foo'     pkg=kafka/write.go
 ```
 
 <sub>NOTE: If you want to write JSON either surround the `input-data` in single
 quotes or use `input-file`.
+
+### Read messages
+
+```bash
+$ plumber read kafka --topic foo --address="localhost:9092" --follow --json
+
+INFO[0000]
+█▀█ █   █ █ █▀▄▀█ █▄▄ █▀▀ █▀█
+█▀▀ █▄▄ █▄█ █ ▀ █ █▄█ ██▄ █▀▄
+INFO[0000] Connected to kafka broker 'localhost:9092'
+INFO[0000] Initializing (could take a minute or two) ...  pkg=kafka/read.go
+
+------------- [Count: 1 Received at: 2021-06-17T22:54:55Z] -------------------
+
++----------------------+------------------------------------------+
+| Key                  |                                     NONE |
+| Topic                |                                      foo |
+| Offset               |                                       12 |
+| Partition            |                                        0 |
+| Header(s)            |                                     NONE |
++----------------------+------------------------------------------+
+
+{
+  "hello": "world"
+}
+```
+
+<IMG>
 
 
 #### See [EXAMPLES.md](https://github.com/batchcorp/plumber/blob/master/EXAMPLES.md) for more usage examples
