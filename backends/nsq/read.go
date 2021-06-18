@@ -47,7 +47,7 @@ func Read(opts *cli.Options) error {
 // Read will attempt to consume one or more messages from a given topic,
 // optionally decode it and/or convert the returned output.
 func (n *NSQ) Read() error {
-	config, err := n.getConfig()
+	config, err := getNSQConfig(n.Options)
 	if err != nil {
 		return errors.Wrap(err, "unable to create NSQ config")
 	}
@@ -116,15 +116,15 @@ func validateReadOptions(opts *cli.Options) error {
 	}
 
 	if opts.NSQ.TLSCAFile != "" || opts.NSQ.TLSClientCertFile != "" || opts.NSQ.TLSClientKeyFile != "" {
-		if opts.MQTT.TLSClientKeyFile == "" {
+		if opts.NSQ.TLSClientKeyFile == "" {
 			return ErrMissingTLSKey
 		}
 
-		if opts.MQTT.TLSClientCertFile == "" {
+		if opts.NSQ.TLSClientCertFile == "" {
 			return ErrMissingTlsCert
 		}
 
-		if opts.MQTT.TLSCAFile == "" {
+		if opts.NSQ.TLSCAFile == "" {
 			return ErrMissingTLSCA
 		}
 	}

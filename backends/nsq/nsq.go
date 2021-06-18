@@ -28,17 +28,17 @@ type NSQ struct {
 	log     *NSQLogger
 }
 
-// getConfig returns the config needed for creating a new NSQ consumer or producer
-func (n *NSQ) getConfig() (*nsq.Config, error) {
+// getNSQConfig returns the config needed for creating a new NSQ consumer or producer
+func getNSQConfig(opts *cli.Options) (*nsq.Config, error) {
 	config := nsq.NewConfig()
-	config.ClientID = n.Options.NSQ.ClientID
+	config.ClientID = opts.NSQ.ClientID
 
-	if n.Options.NSQ.AuthSecret != "" {
-		config.AuthSecret = n.Options.NSQ.AuthSecret
+	if opts.NSQ.AuthSecret != "" {
+		config.AuthSecret = opts.NSQ.AuthSecret
 	}
 
-	if n.Options.NSQ.InsecureTLS || n.Options.NSQ.TLSClientCertFile != "" {
-		tlsConfig, err := generateTLSConfig(n.Options)
+	if opts.NSQ.InsecureTLS || opts.NSQ.TLSClientCertFile != "" {
+		tlsConfig, err := generateTLSConfig(opts)
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to generate TLS config")
 		}

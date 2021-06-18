@@ -106,6 +106,8 @@ func PrintRelayOptions(cmd string, opts *cli.Options) {
 		printRedisPubSubOptions(opts)
 	case "redis-streams":
 		printRedisStreamsOptions(opts)
+	case "nsq":
+		printNSQOptions(opts)
 	}
 }
 
@@ -206,6 +208,21 @@ func printRedisStreamsOptions(opts *cli.Options) {
 	logrus.Infof("- %-28s%-6v", "Consumer Name", opts.RedisStreams.ConsumerName)
 	logrus.Infof("- %-28s%-6v", "Consumer Group", opts.RedisStreams.ConsumerGroup)
 	logrus.Infof("- %-28s%-6v", "Recreate Consumer Group", opts.RedisStreams.RecreateConsumerGroup)
+	logrus.Info("")
+}
+
+func printNSQOptions(opts *cli.Options) {
+	logrus.Info("----------------------------------------------------------------")
+	logrus.Info("> NSQ Settings")
+	logrus.Info("----------------------------------------------------------------")
+	logrus.Info("")
+	if opts.NSQ.NSQLookupDAddress != "" {
+		logrus.Infof("- %-24s%-6v", "Address", opts.NSQ.NSQLookupDAddress)
+	} else {
+		logrus.Infof("- %-24s%-6v", "Address", opts.NSQ.NSQDAddress)
+	}
+	logrus.Infof("- %-24s%-6v", "Topic", opts.NSQ.Topic)
+	logrus.Infof("- %-24s%-6v", "Channel", opts.NSQ.Channel)
 	logrus.Info("")
 }
 

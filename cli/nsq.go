@@ -6,6 +6,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
+// NSQOptions stores the values of CLI options for NSQ flags
 type NSQOptions struct {
 	// Shared
 	Topic             string
@@ -22,12 +23,7 @@ type NSQOptions struct {
 	Channel           string
 }
 
-// tls_v1 - Bool enable TLS negotiation
-// tls_root_ca_file - String path to file containing root CA
-// tls_insecure_skip_verify - Bool indicates whether this client should verify server certificates
-// tls_cert - String path to file containing public key for certificate
-// tls_key - String path to file containing private key for certificate
-
+// HandleNSQFlags creates NSQ commands and flags
 func HandleNSQFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Options) {
 	rc := readCmd.Command("nsq", "NSQ Messaging System")
 	addSharedNSQFlags(rc, opts)
@@ -49,18 +45,23 @@ func HandleNSQFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Option
 	}
 
 	addSharedNSQFlags(rec, opts)
+	addReadNSQFlags(rec, opts)
 }
 
+// addSharedNSQFlags creates flags shared between read/write/relay modes
 func addSharedNSQFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("topic", "NSQ Topic to read from or write to").
 		Required().
+		Envar("PLUMBER_RELAY_NSQ_TOPIC").
 		StringVar(&opts.NSQ.Topic)
 
 	cmd.Flag("auth-secret", "Authentication Secret").
+		Envar("PLUMBER_RELAY_NSQ_AUTH_SECRET").
 		StringVar(&opts.NSQ.AuthSecret)
 
 	cmd.Flag("client-id", "Client ID to identify as").
 		Default("plumber").
+		Envar("PLUMBER_RELAY_NSQ_CLIENT_ID").
 		StringVar(&opts.NSQ.ClientID)
 
 	cmd.Flag("tls-ca-file", "CA file (only needed if addr is ssl://").
@@ -81,18 +82,23 @@ func addSharedNSQFlags(cmd *kingpin.CmdClause, opts *Options) {
 		BoolVar(&opts.NSQ.InsecureTLS)
 }
 
+// addReadNSQFlags creates flags used for reading from NSQ
 func addReadNSQFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("channel", "Channel").
 		Required().
+		Envar("PLUMBER_RELAY_NSQ_CHANNEL").
 		StringVar(&opts.NSQ.Channel)
 
 	cmd.Flag("lookupd-address", "Address of LookupD Server (Ex: localhost:4161)").
+		Envar("PLUMBER_RELAY_NSQ_LOOKUPD_ADDRESS").
 		StringVar(&opts.NSQ.NSQLookupDAddress)
 
 	cmd.Flag("nsqd-address", "Address of NSQ Server (Ex: localhost:4150)").
+		Envar("PLUMBER_RELAY_NSQ_NSQD_ADDRESS").
 		StringVar(&opts.NSQ.NSQDAddress)
 }
 
+// addWriteNSQFlags creates flags used for writing to NSQ
 func addWriteNSQFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("nsqd-address", "Address of NSQ Server (Ex: localhost:4150)").
 		Default("localhost:4150").

@@ -47,7 +47,7 @@ func Write(opts *cli.Options) error {
 
 // Write publishes a message to a NSQ topic
 func (n *NSQ) Write(value []byte) error {
-	config, err := n.getConfig()
+	config, err := getNSQConfig(n.Options)
 	if err != nil {
 		return errors.Wrap(err, "unable to create NSQ config")
 	}
@@ -78,15 +78,15 @@ func (n *NSQ) Write(value []byte) error {
 
 func validateWriteOptions(opts *cli.Options) error {
 	if opts.NSQ.TLSCAFile != "" || opts.NSQ.TLSClientCertFile != "" || opts.NSQ.TLSClientKeyFile != "" {
-		if opts.MQTT.TLSClientKeyFile == "" {
+		if opts.NSQ.TLSClientKeyFile == "" {
 			return ErrMissingTLSKey
 		}
 
-		if opts.MQTT.TLSClientCertFile == "" {
+		if opts.NSQ.TLSClientCertFile == "" {
 			return ErrMissingTlsCert
 		}
 
-		if opts.MQTT.TLSCAFile == "" {
+		if opts.NSQ.TLSCAFile == "" {
 			return ErrMissingTLSCA
 		}
 	}

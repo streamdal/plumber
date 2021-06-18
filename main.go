@@ -170,6 +170,9 @@ func parseCmd(cmd string, opts *cli.Options) {
 	case "relay redis-streams":
 		opts.RelayType = "redis-streams"
 		err = rstreams.Relay(opts)
+	case "relay nsq":
+		opts.RelayType = "nsq"
+		err = nsq.Relay(opts)
 
 	// Relay (via env vars)
 	case "relay":
@@ -208,6 +211,8 @@ func ProcessRelayFlags(opts *cli.Options) error {
 		err = rstreams.Relay(opts)
 	case "cdc-postgres":
 		err = cdc_postgres.Relay(opts)
+	case "nsq":
+		err = nsq.Relay(opts)
 	default:
 		err = fmt.Errorf("unsupported messaging system '%s'", opts.RelayType)
 	}
