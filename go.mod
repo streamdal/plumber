@@ -10,13 +10,15 @@ require (
 	github.com/aws/aws-sdk-go v1.34.28
 	github.com/batchcorp/pgoutput v0.3.2
 	github.com/batchcorp/rabbit v0.1.9
-	github.com/batchcorp/schemas v0.2.154
+	github.com/batchcorp/schemas v0.2.155
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.2.0
+	github.com/fatih/color v1.12.0 // indirect
 	github.com/go-redis/redis/v8 v8.4.8
 	github.com/go-stomp/stomp v2.0.6+incompatible
 	github.com/golang/protobuf v1.4.2
 	github.com/google/uuid v1.1.2
+	github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
 	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/jhump/protoreflect v1.8.2
 	github.com/julienschmidt/httprouter v1.3.0
@@ -31,6 +33,7 @@ require (
 	github.com/nats-io/nats-server/v2 v2.1.9 // indirect
 	github.com/nats-io/nats.go v1.10.0
 	github.com/nats-io/stan.go v0.8.3
+	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.14.2
 	github.com/onsi/gomega v1.10.4
 	github.com/pkg/errors v0.9.1

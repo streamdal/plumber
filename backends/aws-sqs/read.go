@@ -81,7 +81,7 @@ func validateReadOptions(opts *cli.Options) error {
 func (a *AWSSQS) Read() error {
 	a.Log.Info("Listening for message(s) ...")
 
-	lineNumber := 1
+	count := 1
 
 	for {
 		msgResult, err := a.Service.ReceiveMessage(&sqs.ReceiveMessageInput{
@@ -126,10 +126,8 @@ func (a *AWSSQS) Read() error {
 
 			str := string(data)
 
-			if a.Options.ReadLineNumbers {
-				str = fmt.Sprintf("%d: ", lineNumber) + str
-				lineNumber++
-			}
+			str = fmt.Sprintf("%d: ", count) + str
+			count++
 
 			a.Printer.Print(str)
 

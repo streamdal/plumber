@@ -74,7 +74,7 @@ func (m *MQTT) Read() error {
 }
 
 func (m *MQTT) subscribe(wg *sync.WaitGroup, errChan chan error) {
-	lineNumber := 1
+	count := 1
 
 	m.Client.Subscribe(m.Options.MQTT.Topic, byte(m.Options.MQTT.QoSLevel), func(client mqtt.Client, msg mqtt.Message) {
 		data, err := reader.Decode(m.Options, m.MsgDesc, msg.Payload())
@@ -91,10 +91,8 @@ func (m *MQTT) subscribe(wg *sync.WaitGroup, errChan chan error) {
 
 		str := string(data)
 
-		if m.Options.ReadLineNumbers {
-			str = fmt.Sprintf("%d: ", lineNumber) + str
-			lineNumber++
-		}
+		str = fmt.Sprintf("%d: ", count) + str
+		count++
 
 		m.printer.Print(str)
 

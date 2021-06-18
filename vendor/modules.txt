@@ -125,7 +125,7 @@ github.com/batchcorp/pgoutput
 # github.com/batchcorp/rabbit v0.1.9
 ## explicit
 github.com/batchcorp/rabbit
-# github.com/batchcorp/schemas v0.2.154
+# github.com/batchcorp/schemas v0.2.155
 ## explicit
 github.com/batchcorp/schemas/build/go/events
 github.com/batchcorp/schemas/build/go/events/destinations
@@ -161,6 +161,9 @@ github.com/dvsekhvalnov/jose2go/padding
 ## explicit
 github.com/eclipse/paho.mqtt.golang
 github.com/eclipse/paho.mqtt.golang/packets
+# github.com/fatih/color v1.12.0
+## explicit
+github.com/fatih/color
 # github.com/fsnotify/fsnotify v1.4.9
 github.com/fsnotify/fsnotify
 # github.com/go-redis/redis/v8 v8.4.8
@@ -216,6 +219,9 @@ github.com/google/uuid
 github.com/googleapis/gax-go/v2
 # github.com/gsterjov/go-libsecret v0.0.0-20161001094733-a6f4afe4910c
 github.com/gsterjov/go-libsecret
+# github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
+## explicit
+github.com/hokaccha/go-prettyjson
 # github.com/jackc/pgx v3.6.2+incompatible
 ## explicit
 github.com/jackc/pgx
@@ -270,6 +276,10 @@ github.com/linkedin/goavro/v2
 # github.com/logrusorgru/aurora v2.0.3+incompatible
 ## explicit
 github.com/logrusorgru/aurora
+# github.com/mattn/go-colorable v0.1.8
+github.com/mattn/go-colorable
+# github.com/mattn/go-isatty v0.0.12
+github.com/mattn/go-isatty
 # github.com/mattn/go-runewidth v0.0.10
 ## explicit
 github.com/mattn/go-runewidth
@@ -310,6 +320,9 @@ github.com/nxadm/tail/ratelimiter
 github.com/nxadm/tail/util
 github.com/nxadm/tail/watch
 github.com/nxadm/tail/winfile
+# github.com/olekukonko/tablewriter v0.0.5
+## explicit
+github.com/olekukonko/tablewriter
 # github.com/onsi/ginkgo v1.14.2
 ## explicit
 github.com/onsi/ginkgo

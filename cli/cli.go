@@ -52,8 +52,8 @@ type Options struct {
 	ReadProtobufRootMessage string
 	ReadProtobufDirs        []string
 	ReadFollow              bool
-	ReadLineNumbers         bool
 	ReadConvert             string
+	ReadJSONOutput          bool
 	Verbose                 bool
 
 	// Shared write flags
@@ -84,7 +84,9 @@ type Options struct {
 
 func Handle(cliArgs []string) (string, *Options, error) {
 	opts := &Options{
-		Kafka:     &KafkaOptions{},
+		Kafka: &KafkaOptions{
+			WriteHeader: make(map[string]string, 0),
+		},
 		Rabbit:    &RabbitOptions{},
 		GCPPubSub: &GCPPubSubOptions{},
 		MQTT:      &MQTTOptions{},
@@ -213,14 +215,15 @@ func HandleGlobalReadFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Short('f').
 		BoolVar(&opts.ReadFollow)
 
-	cmd.Flag("line-numbers", "Display line numbers for each message").
-		Default("false").BoolVar(&opts.ReadLineNumbers)
-
-	cmd.Flag("convert", "Convert received (output) message(s)").
+	cmd.Flag("convert", "Convert received message(s) [base64, gzip]").
 		EnumVar(&opts.ReadConvert, "base64", "gzip")
 
 	cmd.Flag("verbose", "Display message metadata if available").
 		BoolVar(&opts.Verbose)
+
+	cmd.Flag("json", "Read data should be treated as JSON").
+		Default("false").
+		BoolVar(&opts.ReadJSONOutput)
 }
 
 func HandleGlobalWriteFlags(cmd *kingpin.CmdClause, opts *Options) {

@@ -119,9 +119,8 @@ var _ = Describe("AWS SQS Backend", func() {
 			}
 
 			opts := &cli.Options{
-				ReadFollow:      false,
-				ReadLineNumbers: true,
-				AWSSQS:          &cli.AWSSQSOptions{},
+				ReadFollow: false,
+				AWSSQS:     &cli.AWSSQSOptions{},
 			}
 
 			a := &AWSSQS{
@@ -179,7 +178,7 @@ var _ = Describe("AWS SQS Backend", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(sqsFake.ReceiveMessageCallCount()).To(Equal(1))
 			Expect(sqsFake.DeleteMessageCallCount()).To(Equal(1))
-			Expect(readMessage).To(Equal("Test Message"))
+			Expect(readMessage).To(Equal("1: Test Message"))
 		})
 	})
 })

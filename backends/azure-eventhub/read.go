@@ -3,6 +3,7 @@ package azure_eventhub
 import (
 	"context"
 	"fmt"
+
 	eventhub "github.com/Azure/azure-event-hubs-go/v3"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
@@ -51,7 +52,7 @@ func (a *AzureEventHub) Read() error {
 
 	a.log.Info("Listening for message(s) ...")
 
-	lineNumber := 1
+	count := 1
 
 	var hasRead bool
 
@@ -63,10 +64,8 @@ func (a *AzureEventHub) Read() error {
 
 		str := string(data)
 
-		if a.Options.ReadLineNumbers {
-			str = fmt.Sprintf("%d: ", lineNumber) + str
-			lineNumber++
-		}
+		str = fmt.Sprintf("%d: ", count) + str
+		count++
 
 		a.printer.Print(str)
 

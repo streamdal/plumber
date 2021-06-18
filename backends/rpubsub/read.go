@@ -50,7 +50,7 @@ func (r *Redis) Read() error {
 
 	r.log.Info("Listening for message(s) ...")
 
-	lineNumber := 1
+	count := 1
 
 	for {
 		msg, err := ps.ReceiveMessage(ctx)
@@ -67,10 +67,8 @@ func (r *Redis) Read() error {
 
 		str := string(data)
 
-		if r.Options.ReadLineNumbers {
-			str = fmt.Sprintf("%d: ", lineNumber) + str
-			lineNumber++
-		}
+		str = fmt.Sprintf("%d: ", count) + str
+		count++
 
 		printer.Print(str)
 

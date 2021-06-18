@@ -50,7 +50,8 @@ type KafkaOptions struct {
 	CommitInterval   time.Duration
 
 	// Write
-	WriteKey string
+	WriteKey    string
+	WriteHeader map[string]string
 }
 
 func HandleKafkaFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Options) {
@@ -135,34 +136,42 @@ func addReadKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Envar("PLUMBER_RELAY_KAFKA_USE_CONSUMER_GROUP").
 		Default("true").
 		BoolVar(&opts.Kafka.UseConsumerGroup)
+
 	cmd.Flag("group-id", "Specify a specific group-id to use when reading from kafka").
 		Envar("PLUMBER_RELAY_KAFKA_GROUP_ID").
 		Default(DefaultKafkaGroupId).
 		StringVar(&opts.Kafka.GroupID)
+
 	cmd.Flag("read-offset", "Specify what offset the consumer should read from (only works if '--use-consumer-group' is false)").
 		Envar("PLUMBER_RELAY_KAFKA_READ_OFFSET").
 		Default(DefaultKafkaReadOffset).
 		Int64Var(&opts.Kafka.ReadOffset)
+
 	cmd.Flag("max-wait", "How long to wait for new data when reading batches of messages").
 		Envar("PLUMBER_RELAY_KAFKA_MAX_WAIT").
 		Default(defaultMaxWait).
 		DurationVar(&opts.Kafka.MaxWait)
+
 	cmd.Flag("min-bytes", "Minimum number of bytes to fetch in a single kafka request (throughput optimization)").
 		Envar("PLUMBER_RELAY_KAFKA_MIN_BYTES").
 		Default(defaultMinBytes).
 		IntVar(&opts.Kafka.MinBytes)
+
 	cmd.Flag("max-bytes", "Maximum number of bytes to fetch in a single kafka request (throughput optimization)").
 		Envar("PLUMBER_RELAY_KAFKA_MAX_BYTES").
 		Default(defaultMaxBytes).
 		IntVar(&opts.Kafka.MaxBytes)
+
 	cmd.Flag("queue-capacity", "Internal queue capacity").
 		Envar("PLUMBER_RELAY_KAFKA_QUEUE_CAPACITY").
 		Default(defaultQueueCapacity).
 		IntVar(&opts.Kafka.QueueCapacity)
+
 	cmd.Flag("rebalance-timeout", "How long a coordinator will wait for member joins as part of a rebalance").
 		Envar("PLUMBER_RELAY_KAFKA_REBALANCE_TIMEOUT").
 		Default(defaultRebalanceTimeout).
 		DurationVar(&opts.Kafka.RebalanceTimeout)
+
 	cmd.Flag("commit-interval", "How often to commit offsets to broker (0 = synchronous)").
 		Envar("PLUMBER_RELAY_KAFKA_COMMIT_INTERVAL").
 		Default(DefaultKafkaRelayCommitInterval).
@@ -170,5 +179,9 @@ func addReadKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 }
 
 func addWriteKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("key", "Key to write to kafka (not required)").StringVar(&opts.Kafka.WriteKey)
+	cmd.Flag("key", "Key to write to kafka (optional)").
+		StringVar(&opts.Kafka.WriteKey)
+
+	cmd.Flag("header", "Add one or more headers (optional; repeat flags to specify multiple)").
+		StringMapVar(&opts.Kafka.WriteHeader)
 }
