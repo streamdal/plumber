@@ -2,19 +2,14 @@ package printer
 
 import (
 	"fmt"
-	"strings"
-	"time"
+
+	"github.com/logrusorgru/aurora"
+	"github.com/segmentio/kafka-go"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/logrusorgru/aurora"
-	"github.com/olekukonko/tablewriter"
-	"github.com/segmentio/kafka-go"
 )
 
 func PrintKafkaResult(opts *cli.Options, count int, msg kafka.Message, data []byte) {
-	fmt.Printf("\n------------- [Count: %d Received at: %s] -------------------\n\n",
-		aurora.Cyan(count), aurora.Yellow(msg.Time.Format(time.RFC3339)).String())
-
 	key := aurora.Gray(12, "NONE").String()
 
 	if len(msg.Key) != 0 {
@@ -22,28 +17,15 @@ func PrintKafkaResult(opts *cli.Options, count int, msg kafka.Message, data []by
 	}
 
 	properties := [][]string{
-		[]string{"Key", key},
-		[]string{"Topic", msg.Topic},
-		[]string{"Offset", fmt.Sprintf("%d", msg.Offset)},
-		[]string{"Partition", fmt.Sprintf("%d", msg.Partition)},
+		{"Key", key},
+		{"Topic", msg.Topic},
+		{"Offset", fmt.Sprintf("%d", msg.Offset)},
+		{"Partition", fmt.Sprintf("%d", msg.Partition)},
 	}
 
 	properties = append(properties, generateHeaders(msg.Headers)...)
 
-	tableString := &strings.Builder{}
-
-	table := tablewriter.NewWriter(tableString)
-	table.AppendBulk(properties)
-	table.SetColMinWidth(0, 20)
-	table.SetColMinWidth(1, 40)
-	// First column align left, second column align right
-	table.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_RIGHT})
-	table.Render()
-
-	fmt.Println(tableString.String())
-
-	// Display value
-	Print(string(data))
+	printTable(properties, count, msg.Time, data)
 }
 
 func generateHeaders(headers []kafka.Header) [][]string {

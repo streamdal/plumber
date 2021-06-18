@@ -80,6 +80,7 @@ type Options struct {
 	Batch         *BatchOptions
 	CDCPostgres   *CDCPostgresOptions
 	Pulsar        *PulsarOptions
+	NSQ           *NSQOptions
 }
 
 func Handle(cliArgs []string) (string, *Options, error) {
@@ -109,6 +110,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		},
 		CDCPostgres: &CDCPostgresOptions{},
 		Pulsar:      &PulsarOptions{},
+		NSQ:         &NSQOptions{},
 	}
 
 	app := kingpin.New("plumber", "`curl` for messaging systems. See: https://github.com/batchcorp/plumber")
@@ -159,6 +161,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleCDCMongoFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleCDCPostgresFlags(readCmd, writeCmd, relayCmd, opts)
 		HandlePulsarFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleNSQFlags(readCmd, writeCmd, relayCmd, opts)
 	}
 
 	HandleGlobalFlags(readCmd, opts)

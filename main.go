@@ -22,6 +22,7 @@ import (
 	"github.com/batchcorp/plumber/backends/mqtt"
 	"github.com/batchcorp/plumber/backends/nats"
 	nats_streaming "github.com/batchcorp/plumber/backends/nats-streaming"
+	"github.com/batchcorp/plumber/backends/nsq"
 	"github.com/batchcorp/plumber/backends/pulsar"
 	"github.com/batchcorp/plumber/backends/rabbitmq"
 	"github.com/batchcorp/plumber/backends/rpubsub"
@@ -103,6 +104,8 @@ func parseCmd(cmd string, opts *cli.Options) {
 		err = cdc_postgres.Read(opts)
 	case "read pulsar":
 		err = pulsar.Read(opts)
+	case "read nsq":
+		err = nsq.Read(opts)
 
 	// Write
 	case "write rabbit":
@@ -133,6 +136,8 @@ func parseCmd(cmd string, opts *cli.Options) {
 		err = rstreams.Write(opts)
 	case "write pulsar":
 		err = pulsar.Write(opts)
+	case "write nsq":
+		err = nsq.Write(opts)
 
 	// Relay (via CLI flags)
 	case "relay rabbit":

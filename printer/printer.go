@@ -3,8 +3,10 @@ package printer
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/logrusorgru/aurora"
+	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
@@ -205,4 +207,24 @@ func printRedisStreamsOptions(opts *cli.Options) {
 	logrus.Infof("- %-28s%-6v", "Consumer Group", opts.RedisStreams.ConsumerGroup)
 	logrus.Infof("- %-28s%-6v", "Recreate Consumer Group", opts.RedisStreams.RecreateConsumerGroup)
 	logrus.Info("")
+}
+
+func printTable(properties [][]string, count int, timestamp time.Time, data []byte) {
+	fmt.Printf("\n------------- [Count: %d Received at: %s] -------------------\n\n",
+		aurora.Cyan(count), aurora.Yellow(timestamp.Format(time.RFC3339)).String())
+
+	tableString := &strings.Builder{}
+
+	table := tablewriter.NewWriter(tableString)
+	table.AppendBulk(properties)
+	table.SetColMinWidth(0, 20)
+	table.SetColMinWidth(1, 40)
+	// First column align left, second column align right
+	table.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_RIGHT})
+	table.Render()
+
+	fmt.Println(tableString.String())
+
+	// Display value
+	Print(string(data))
 }

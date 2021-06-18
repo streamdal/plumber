@@ -314,6 +314,9 @@ github.com/nats-io/nuid
 ## explicit
 github.com/nats-io/stan.go
 github.com/nats-io/stan.go/pb
+# github.com/nsqio/go-nsq v1.0.8
+## explicit
+github.com/nsqio/go-nsq
 # github.com/nxadm/tail v1.4.4
 github.com/nxadm/tail
 github.com/nxadm/tail/ratelimiter
