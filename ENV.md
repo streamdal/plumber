@@ -138,3 +138,17 @@ Environment Variables
 | `PLUMBER_RELAY_CDCMONGO_DATABASE` | Database name | *Optional* |
 | `PLUMBER_RELAY_CDCMONGO_COLLECTION` | Collection Name | *Optional* |
 | `PLUMBER_RELAY_CDCMONGO_INCLUDE_FULL_DOC` | Include fullDocument in return payload | `false` |
+
+## NSQ
+| Environment Variable  | Description | Default |
+| --------------------- | ------------| ------- |
+| `PLUMBER_RELAY_NSQ_LOOKUPD_ADDRESS` | Address of LookupD server to connect to | `localhost:4161` |
+| `PLUMBER_RELAY_NSQ_NSQD_ADDRESS` | Address of NSQD Server to connect to | `localhost:4150` |
+| `PLUMBER_RELAY_NSQ_TOPIC` | Topic to read from/write to | **Required** |
+| `PLUMBER_RELAY_NSQ_CHANNEL` | Channel to read from | **Required when reading** |
+| `PLUMBER_RELAY_NSQ_AUTH_SECRET` | Database name | *Optional* |
+| `PLUMBER_RELAY_NSQ_CLIENT_ID` | Collection Name | *Optional* |
+| `PLUMBER_RELAY_NSQ_TLS_CA_FILE` | TLS CA file path | *Optional* |
+| `PLUMBER_RELAY_NSQ_TLS_CERT_FILE` | TLS Certificate file path | *Optional* |
+| `PLUMBER_RELAY_NSQ_TLS_KEY_FILE` | TLS KEy file path | *Optional* |
+| `PLUMBER_RELAY_NSQ_SKIP_VERIFY_TLS` | Skip server cert verification if connecting with TLS | `false` |

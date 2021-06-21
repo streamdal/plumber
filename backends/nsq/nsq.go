@@ -49,6 +49,7 @@ func getNSQConfig(opts *cli.Options) (*nsq.Config, error) {
 	return config, nil
 }
 
+// generateTLSConfig generates necessary TLS config for Dialing to an NSQ server
 func generateTLSConfig(opts *cli.Options) (*tls.Config, error) {
 	certpool := x509.NewCertPool()
 
