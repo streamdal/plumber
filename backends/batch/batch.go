@@ -29,6 +29,7 @@ type IBatch interface {
 	ListDestinations() error
 	Get(path string, queryParams map[string]string) (content []byte, statusCode int, err error)
 	Post(path string, params map[string]interface{}) (content []byte, statusCode int, err error)
+	Delete(path string) (content []byte, statusCode int, err error)
 }
 
 type Batch struct {
@@ -62,11 +63,16 @@ var errNotAuthenticated = errors.New("you are not authenticated. run `plumber ba
 
 // New creates a new instance of a Batch struct with defaults
 func New(opts *cli.Options) *Batch {
+	printer := printTable
+	if opts.Batch.OutputType == "json" {
+		printer = printJSON
+	}
+
 	b := &Batch{
 		Log:     logrus.WithField("pkg", "batch"),
 		Opts:    opts,
 		Client:  &http.Client{},
-		Printer: printTable,
+		Printer: printer,
 		ApiUrl:  "https://api.batch.sh",
 	}
 
@@ -91,7 +97,7 @@ func (b *Batch) getCookieJar(path string) *cookiejar.Jar {
 			Name:   "auth_token",
 			Value:  b.Token,
 			Path:   "/",
-			Domain: ".batch.sh",
+			Domain: "." + u.Hostname(),
 		})
 	}
 
@@ -180,6 +186,40 @@ func (b *Batch) Post(path string, params map[string]interface{}) ([]byte, int, e
 	return contents, resp.StatusCode, nil
 }
 
+func (b *Batch) Delete(path string) ([]byte, int, error) {
+	if b.Client.Jar == nil {
+		b.Client.Jar = b.getCookieJar(path)
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, b.ApiUrl+path, nil)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := b.Client.Do(req)
+	if err != nil {
+		return nil, 0, fmt.Errorf("API call to %s failed: %s", path, err)
+	}
+	defer resp.Body.Close()
+
+	// Advise user to use `plumber batch login` first
+	if resp.StatusCode == http.StatusUnauthorized {
+		return nil, 0, errNotAuthenticated
+	}
+
+	contents, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Save auth_token cookie value
+	for _, cookie := range resp.Cookies() {
+		if cookie.Name == "auth_token" {
+			b.Token = cookie.Value
+		}
+	}
+
+	return contents, resp.StatusCode, nil
+}
+
 // printTable displays a slice of structs in an ASCII table
 func printTable(v interface{}) {
 	printer := tableprinter.New(os.Stdout)
@@ -193,4 +233,14 @@ func printTable(v interface{}) {
 	printer.HeaderFgColor = tablewriter.FgCyanColor
 
 	printer.Print(v)
+}
+
+// printJSON displays output from batch commands as JSON. Needed for automation purposes
+func printJSON(v interface{}) {
+	output, err := json.Marshal(v)
+	if err != nil {
+		fmt.Sprintf(`{"error": "%s"}`, err.Error())
+	}
+
+	fmt.Println(string(output))
 }

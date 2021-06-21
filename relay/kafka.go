@@ -8,6 +8,7 @@ import (
 	"github.com/batchcorp/schemas/build/go/events/records"
 	"github.com/batchcorp/schemas/build/go/services"
 	"github.com/pkg/errors"
+	skafka "github.com/segmentio/kafka-go"
 	"google.golang.org/grpc"
 
 	"github.com/batchcorp/plumber/backends/kafka/types"
@@ -30,7 +31,7 @@ func (r *Relay) handleKafka(ctx context.Context, conn *grpc.ClientConn, messages
 	return r.CallWithRetry(ctx, "AddKafkaRecord", func(ctx context.Context) error {
 		_, err := client.AddKafkaRecord(ctx, &services.KafkaSinkRecordRequest{
 			Records: sinkRecords,
-		}, grpc.MaxCallRecvMsgSize(MaxGRPCMessageSize))
+		}, grpc.MaxCallSendMsgSize(MaxGRPCMessageSize))
 		return err
 	})
 }
@@ -70,8 +71,26 @@ func (r *Relay) convertMessagesToKafkaSinkRecords(messages []interface{}) ([]*re
 			Timestamp: time.Now().UTC().UnixNano(),
 			Offset:    relayMessage.Value.Offset,
 			Partition: int32(relayMessage.Value.Partition),
+			Headers:   convertKafkaHeaders(relayMessage.Value.Headers),
 		})
 	}
 
 	return sinkRecords, nil
+}
+
+func convertKafkaHeaders(kafkaHeaders []skafka.Header) []*records.KafkaHeader {
+	if len(kafkaHeaders) == 0 {
+		return nil
+	}
+
+	sinkRecordHeaders := make([]*records.KafkaHeader, 0)
+
+	for _, h := range kafkaHeaders {
+		sinkRecordHeaders = append(sinkRecordHeaders, &records.KafkaHeader{
+			Key:   h.Key,
+			Value: string(h.Value),
+		})
+	}
+
+	return sinkRecordHeaders
 }

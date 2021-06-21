@@ -55,7 +55,7 @@ func (r *RabbitMQ) Read() error {
 	errCh := make(chan *rabbit.ConsumeError)
 	ctx, cancel := context.WithCancel(context.Background())
 
-	lineNumber := 1
+	count := 1
 
 	go r.Consumer.Consume(ctx, errCh, func(msg amqp.Delivery) error {
 
@@ -66,10 +66,8 @@ func (r *RabbitMQ) Read() error {
 
 		str := string(data)
 
-		if r.Options.ReadLineNumbers {
-			str = fmt.Sprintf("%d: ", lineNumber) + str
-			lineNumber++
-		}
+		str = fmt.Sprintf("%d: ", count) + str
+		count++
 
 		printer.Print(str)
 

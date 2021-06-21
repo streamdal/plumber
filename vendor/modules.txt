@@ -10,6 +10,8 @@ cloud.google.com/go/pubsub
 cloud.google.com/go/pubsub/apiv1
 cloud.google.com/go/pubsub/internal/distribution
 cloud.google.com/go/pubsub/internal/scheduler
+# github.com/99designs/keyring v1.1.5
+github.com/99designs/keyring
 # github.com/Azure/azure-amqp-common-go/v3 v3.0.1
 github.com/Azure/azure-amqp-common-go/v3
 github.com/Azure/azure-amqp-common-go/v3/aad
@@ -53,11 +55,28 @@ github.com/Azure/go-autorest/autorest/validation
 github.com/Azure/go-autorest/logger
 # github.com/Azure/go-autorest/tracing v0.6.0
 github.com/Azure/go-autorest/tracing
+# github.com/DataDog/zstd v1.4.6-0.20210211175136-c6db21d202f4
+github.com/DataDog/zstd
 # github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 github.com/alecthomas/template
 github.com/alecthomas/template/parse
 # github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d
 github.com/alecthomas/units
+# github.com/apache/pulsar-client-go v0.5.0
+## explicit
+github.com/apache/pulsar-client-go/pulsar
+github.com/apache/pulsar-client-go/pulsar/internal
+github.com/apache/pulsar-client-go/pulsar/internal/auth
+github.com/apache/pulsar-client-go/pulsar/internal/compression
+github.com/apache/pulsar-client-go/pulsar/internal/pulsar_proto
+github.com/apache/pulsar-client-go/pulsar/log
+# github.com/apache/pulsar-client-go/oauth2 v0.0.0-20201120111947-b8bd55bc02bd
+github.com/apache/pulsar-client-go/oauth2
+github.com/apache/pulsar-client-go/oauth2/cache
+github.com/apache/pulsar-client-go/oauth2/clock
+github.com/apache/pulsar-client-go/oauth2/store
+# github.com/ardielle/ardielle-go v1.5.2
+github.com/ardielle/ardielle-go/rdl
 # github.com/aws/aws-sdk-go v1.34.28
 ## explicit
 github.com/aws/aws-sdk-go/aws
@@ -106,7 +125,7 @@ github.com/batchcorp/pgoutput
 # github.com/batchcorp/rabbit v0.1.9
 ## explicit
 github.com/batchcorp/rabbit
-# github.com/batchcorp/schemas v0.2.153
+# github.com/batchcorp/schemas v0.2.157
 ## explicit
 github.com/batchcorp/schemas/build/go/events
 github.com/batchcorp/schemas/build/go/events/destinations
@@ -114,8 +133,12 @@ github.com/batchcorp/schemas/build/go/events/metrics
 github.com/batchcorp/schemas/build/go/events/records
 github.com/batchcorp/schemas/build/go/events/tasks
 github.com/batchcorp/schemas/build/go/services
+# github.com/beorn7/perks v1.0.1
+github.com/beorn7/perks/quantile
 # github.com/cespare/xxhash/v2 v2.1.1
 github.com/cespare/xxhash/v2
+# github.com/danieljoos/wincred v1.0.2
+github.com/danieljoos/wincred
 # github.com/devigned/tab v0.1.1
 github.com/devigned/tab
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -125,10 +148,22 @@ github.com/dgryski/go-rendezvous
 # github.com/dustin/go-humanize v1.0.0
 ## explicit
 github.com/dustin/go-humanize
+# github.com/dvsekhvalnov/jose2go v0.0.0-20180829124132-7f401d37b68a
+github.com/dvsekhvalnov/jose2go
+github.com/dvsekhvalnov/jose2go/aes
+github.com/dvsekhvalnov/jose2go/arrays
+github.com/dvsekhvalnov/jose2go/base64url
+github.com/dvsekhvalnov/jose2go/compact
+github.com/dvsekhvalnov/jose2go/kdf
+github.com/dvsekhvalnov/jose2go/keys/ecc
+github.com/dvsekhvalnov/jose2go/padding
 # github.com/eclipse/paho.mqtt.golang v1.2.0
 ## explicit
 github.com/eclipse/paho.mqtt.golang
 github.com/eclipse/paho.mqtt.golang/packets
+# github.com/fatih/color v1.12.0
+## explicit
+github.com/fatih/color
 # github.com/fsnotify/fsnotify v1.4.9
 github.com/fsnotify/fsnotify
 # github.com/go-redis/redis/v8 v8.4.8
@@ -146,6 +181,8 @@ github.com/go-stack/stack
 ## explicit
 github.com/go-stomp/stomp
 github.com/go-stomp/stomp/frame
+# github.com/godbus/dbus v0.0.0-20190726142602-4481cbc300e2
+github.com/godbus/dbus
 # github.com/gogo/protobuf v1.3.2
 github.com/gogo/protobuf/gogoproto
 github.com/gogo/protobuf/proto
@@ -175,13 +212,16 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/uuid v1.1.1
+# github.com/google/uuid v1.1.2
 ## explicit
 github.com/google/uuid
 # github.com/googleapis/gax-go/v2 v2.0.5
 github.com/googleapis/gax-go/v2
-# github.com/hashicorp/yamux v0.0.0-20210316155119-a95892c5f864
+# github.com/gsterjov/go-libsecret v0.0.0-20161001094733-a6f4afe4910c
+github.com/gsterjov/go-libsecret
+# github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
 ## explicit
+github.com/hokaccha/go-prettyjson
 # github.com/jackc/pgx v3.6.2+incompatible
 ## explicit
 github.com/jackc/pgx
@@ -190,12 +230,13 @@ github.com/jackc/pgx/internal/sanitize
 github.com/jackc/pgx/pgio
 github.com/jackc/pgx/pgproto3
 github.com/jackc/pgx/pgtype
-# github.com/jhump/protoreflect v1.7.0
+# github.com/jhump/protoreflect v1.8.2
 ## explicit
 github.com/jhump/protoreflect/codec
 github.com/jhump/protoreflect/desc
 github.com/jhump/protoreflect/desc/internal
 github.com/jhump/protoreflect/desc/protoparse
+github.com/jhump/protoreflect/desc/protoparse/ast
 github.com/jhump/protoreflect/dynamic
 github.com/jhump/protoreflect/internal
 github.com/jhump/protoreflect/internal/codec
@@ -213,7 +254,9 @@ github.com/julienschmidt/httprouter
 # github.com/kataras/tablewriter v0.0.0-20180708051242-e063d29b7c23
 ## explicit
 github.com/kataras/tablewriter
-# github.com/klauspost/compress v1.10.3
+# github.com/keybase/go-keychain v0.0.0-20190712205309-48d3d31d256d
+github.com/keybase/go-keychain
+# github.com/klauspost/compress v1.10.8
 github.com/klauspost/compress/flate
 github.com/klauspost/compress/fse
 github.com/klauspost/compress/huff0
@@ -233,17 +276,27 @@ github.com/linkedin/goavro/v2
 # github.com/logrusorgru/aurora v2.0.3+incompatible
 ## explicit
 github.com/logrusorgru/aurora
+# github.com/mattn/go-colorable v0.1.8
+github.com/mattn/go-colorable
+# github.com/mattn/go-isatty v0.0.12
+github.com/mattn/go-isatty
 # github.com/mattn/go-runewidth v0.0.10
 ## explicit
 github.com/mattn/go-runewidth
+# github.com/matttproud/golang_protobuf_extensions v1.0.1
+github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/maxbrunsfeld/counterfeiter/v6 v6.3.0
 ## explicit
 github.com/maxbrunsfeld/counterfeiter/v6
 github.com/maxbrunsfeld/counterfeiter/v6/arguments
 github.com/maxbrunsfeld/counterfeiter/v6/command
 github.com/maxbrunsfeld/counterfeiter/v6/generator
+# github.com/mitchellh/go-homedir v1.1.0
+github.com/mitchellh/go-homedir
 # github.com/mitchellh/mapstructure v1.3.3
 github.com/mitchellh/mapstructure
+# github.com/mtibben/percent v0.2.1
+github.com/mtibben/percent
 # github.com/nats-io/jwt v1.1.0
 github.com/nats-io/jwt
 # github.com/nats-io/nats-server/v2 v2.1.9
@@ -261,12 +314,18 @@ github.com/nats-io/nuid
 ## explicit
 github.com/nats-io/stan.go
 github.com/nats-io/stan.go/pb
+# github.com/nsqio/go-nsq v1.0.8
+## explicit
+github.com/nsqio/go-nsq
 # github.com/nxadm/tail v1.4.4
 github.com/nxadm/tail
 github.com/nxadm/tail/ratelimiter
 github.com/nxadm/tail/util
 github.com/nxadm/tail/watch
 github.com/nxadm/tail/winfile
+# github.com/olekukonko/tablewriter v0.0.5
+## explicit
+github.com/olekukonko/tablewriter
 # github.com/onsi/ginkgo v1.14.2
 ## explicit
 github.com/onsi/ginkgo
@@ -302,12 +361,25 @@ github.com/onsi/gomega/matchers/support/goraph/edge
 github.com/onsi/gomega/matchers/support/goraph/node
 github.com/onsi/gomega/matchers/support/goraph/util
 github.com/onsi/gomega/types
-# github.com/pierrec/lz4 v2.0.5+incompatible
+# github.com/pierrec/lz4 v2.6.0+incompatible
 github.com/pierrec/lz4
 github.com/pierrec/lz4/internal/xxh32
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
+# github.com/prometheus/client_golang v1.7.1
+github.com/prometheus/client_golang/prometheus
+github.com/prometheus/client_golang/prometheus/internal
+# github.com/prometheus/client_model v0.2.0
+github.com/prometheus/client_model/go
+# github.com/prometheus/common v0.10.0
+github.com/prometheus/common/expfmt
+github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg
+github.com/prometheus/common/model
+# github.com/prometheus/procfs v0.1.3
+github.com/prometheus/procfs
+github.com/prometheus/procfs/internal/fs
+github.com/prometheus/procfs/internal/util
 # github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d
 ## explicit
 github.com/relistan/go-director
@@ -316,7 +388,7 @@ github.com/relistan/go-director
 github.com/rivo/uniseg
 # github.com/satori/go.uuid v1.2.0
 github.com/satori/go.uuid
-# github.com/segmentio/kafka-go v0.4.8
+# github.com/segmentio/kafka-go v0.4.16
 ## explicit
 github.com/segmentio/kafka-go
 github.com/segmentio/kafka-go/compress
@@ -325,11 +397,20 @@ github.com/segmentio/kafka-go/compress/lz4
 github.com/segmentio/kafka-go/compress/snappy
 github.com/segmentio/kafka-go/compress/zstd
 github.com/segmentio/kafka-go/protocol
+github.com/segmentio/kafka-go/protocol/alterconfigs
+github.com/segmentio/kafka-go/protocol/alterpartitionreassignments
 github.com/segmentio/kafka-go/protocol/apiversions
+github.com/segmentio/kafka-go/protocol/createpartitions
 github.com/segmentio/kafka-go/protocol/createtopics
 github.com/segmentio/kafka-go/protocol/deletetopics
+github.com/segmentio/kafka-go/protocol/describeconfigs
+github.com/segmentio/kafka-go/protocol/describegroups
+github.com/segmentio/kafka-go/protocol/electleaders
 github.com/segmentio/kafka-go/protocol/fetch
 github.com/segmentio/kafka-go/protocol/findcoordinator
+github.com/segmentio/kafka-go/protocol/incrementalalterconfigs
+github.com/segmentio/kafka-go/protocol/initproducerid
+github.com/segmentio/kafka-go/protocol/listgroups
 github.com/segmentio/kafka-go/protocol/listoffsets
 github.com/segmentio/kafka-go/protocol/metadata
 github.com/segmentio/kafka-go/protocol/offsetfetch
@@ -342,6 +423,8 @@ github.com/segmentio/kafka-go/sasl/scram
 # github.com/sirupsen/logrus v1.7.0
 ## explicit
 github.com/sirupsen/logrus
+# github.com/spaolacci/murmur3 v1.1.0
+github.com/spaolacci/murmur3
 # github.com/streadway/amqp v1.0.0
 ## explicit
 github.com/streadway/amqp
@@ -355,6 +438,10 @@ github.com/xdg-go/stringprep
 github.com/xdg/scram
 # github.com/xdg/stringprep v1.0.0
 github.com/xdg/stringprep
+# github.com/yahoo/athenz v1.8.55
+github.com/yahoo/athenz/clients/go/zts
+github.com/yahoo/athenz/libs/go/zmssvctoken
+github.com/yahoo/athenz/libs/go/ztsroletoken
 # github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d
 github.com/youmark/pkcs8
 # go.mongodb.org/mongo-driver v1.5.1
@@ -421,6 +508,8 @@ go.opentelemetry.io/otel/metric/registry
 go.opentelemetry.io/otel/propagation
 go.opentelemetry.io/otel/trace
 go.opentelemetry.io/otel/unit
+# go.uber.org/atomic v1.7.0
+go.uber.org/atomic
 # golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
 ## explicit
 golang.org/x/crypto/ed25519
@@ -593,7 +682,7 @@ google.golang.org/grpc/serviceconfig
 google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
-# google.golang.org/protobuf v1.25.0
+# google.golang.org/protobuf v1.25.1-0.20200805231151-a709e31e5d12
 google.golang.org/protobuf/cmd/protoc-gen-go/internal_gengo
 google.golang.org/protobuf/compiler/protogen
 google.golang.org/protobuf/encoding/protojson
@@ -608,13 +697,12 @@ google.golang.org/protobuf/internal/encoding/messageset
 google.golang.org/protobuf/internal/encoding/tag
 google.golang.org/protobuf/internal/encoding/text
 google.golang.org/protobuf/internal/errors
-google.golang.org/protobuf/internal/fieldsort
 google.golang.org/protobuf/internal/filedesc
 google.golang.org/protobuf/internal/filetype
 google.golang.org/protobuf/internal/flags
 google.golang.org/protobuf/internal/genid
 google.golang.org/protobuf/internal/impl
-google.golang.org/protobuf/internal/mapsort
+google.golang.org/protobuf/internal/order
 google.golang.org/protobuf/internal/pragma
 google.golang.org/protobuf/internal/set
 google.golang.org/protobuf/internal/strs

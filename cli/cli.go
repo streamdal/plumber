@@ -58,8 +58,8 @@ type Options struct {
 	ReadProtobufRootMessage string
 	ReadProtobufDirs        []string
 	ReadFollow              bool
-	ReadLineNumbers         bool
 	ReadConvert             string
+	ReadJSONOutput          bool
 	Verbose                 bool
 
 	// Shared write flags
@@ -85,11 +85,15 @@ type Options struct {
 	CDCMongo      *CDCMongoOptions
 	Batch         *BatchOptions
 	CDCPostgres   *CDCPostgresOptions
+	Pulsar        *PulsarOptions
+	NSQ           *NSQOptions
 }
 
 func Handle(cliArgs []string) (string, *Options, error) {
 	opts := &Options{
-		Kafka:     &KafkaOptions{},
+		Kafka: &KafkaOptions{
+			WriteHeader: make(map[string]string, 0),
+		},
 		Rabbit:    &RabbitOptions{},
 		GCPPubSub: &GCPPubSubOptions{},
 		MQTT:      &MQTTOptions{},
@@ -111,6 +115,8 @@ func Handle(cliArgs []string) (string, *Options, error) {
 			},
 		},
 		CDCPostgres: &CDCPostgresOptions{},
+		Pulsar:      &PulsarOptions{},
+		NSQ:         &NSQOptions{},
 	}
 
 	app := kingpin.New("plumber", "`curl` for messaging systems. See: https://github.com/batchcorp/plumber")
@@ -143,11 +149,13 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleCDCPostgresFlags(readCmd, writeCmd, relayCmd, opts)
 	case "cdc-mongo":
 		HandleCDCMongoFlags(readCmd, writeCmd, relayCmd, opts)
+	case "mqtt":
+		HandleMQTTFlags(readCmd, writeCmd, relayCmd, opts)
 	default:
 		HandleKafkaFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleGCPPubSubFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleMQTTFlags(readCmd, writeCmd, opts)
+		HandleMQTTFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleActiveMqFlags(readCmd, writeCmd, opts)
 		HandleAWSSNSFlags(readCmd, writeCmd, relayCmd, opts)
@@ -160,6 +168,8 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleCDCMongoFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleCDCPostgresFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleDynamicFlags(dynamicCmd, opts)
+		HandlePulsarFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleNSQFlags(readCmd, writeCmd, relayCmd, opts)
 	}
 
 	HandleGlobalFlags(readCmd, opts)
@@ -218,14 +228,15 @@ func HandleGlobalReadFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Short('f').
 		BoolVar(&opts.ReadFollow)
 
-	cmd.Flag("line-numbers", "Display line numbers for each message").
-		Default("false").BoolVar(&opts.ReadLineNumbers)
-
-	cmd.Flag("convert", "Convert received (output) message(s)").
+	cmd.Flag("convert", "Convert received message(s) [base64, gzip]").
 		EnumVar(&opts.ReadConvert, "base64", "gzip")
 
 	cmd.Flag("verbose", "Display message metadata if available").
 		BoolVar(&opts.Verbose)
+
+	cmd.Flag("json", "Read data should be treated as JSON").
+		Default("false").
+		BoolVar(&opts.ReadJSONOutput)
 }
 
 func HandleGlobalDynamicFlags(cmd *kingpin.CmdClause, opts *Options) {
@@ -257,7 +268,7 @@ func HandleGlobalWriteFlags(cmd *kingpin.CmdClause, opts *Options) {
 		ExistingDirsVar(&opts.WriteProtobufDirs)
 
 	cmd.Flag("protobuf-root-message", "Root message in a protobuf descriptor set "+
-		"(required if protobuf-dir set)").
+		"(required if protobuf-dir set; type should contain pkg name(s) separated by a period)").
 		Envar("PLUMBER_RELAY_PROTOBUF_ROOT_MESSAGE").
 		StringVar(&opts.WriteProtobufRootMessage)
 }
@@ -288,7 +299,8 @@ func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
 func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
 	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs, azure, gcp-pubsub, redis-pubsub, redis-streams").
 		Envar("PLUMBER_RELAY_TYPE").
-		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka", "azure", "gcp-pubsub", "redis-pubsub", "redis-streams", "cdc-postgres", "cdc-mongo")
+		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka", "azure", "gcp-pubsub", "redis-pubsub",
+			"redis-streams", "cdc-postgres", "cdc-mongo", "mqtt")
 
 	relayCmd.Flag("token", "Collection token to use when sending data to Batch").
 		Required().

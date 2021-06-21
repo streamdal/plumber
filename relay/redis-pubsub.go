@@ -24,7 +24,7 @@ func (r *Relay) handleRedisPubSub(ctx context.Context, conn *grpc.ClientConn, me
 	return r.CallWithRetry(ctx, "AddRedisRecord", func(ctx context.Context) error {
 		_, err := client.AddRedisRecord(ctx, &services.RedisRecordRequest{
 			Records: sinkRecords,
-		}, grpc.MaxCallRecvMsgSize(MaxGRPCMessageSize))
+		}, grpc.MaxCallSendMsgSize(MaxGRPCMessageSize))
 		return err
 	})
 }

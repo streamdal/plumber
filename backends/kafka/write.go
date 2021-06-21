@@ -3,14 +3,13 @@ package kafka
 import (
 	"context"
 
+	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/pb"
+	"github.com/batchcorp/plumber/writer"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
-
-	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
-	"github.com/batchcorp/plumber/writer"
 )
 
 // Write is the entry point function for performing write operations in Kafka.
@@ -57,14 +56,29 @@ func Write(opts *cli.Options) error {
 
 // Write writes a message to a kafka topic. It is a wrapper for WriteMessages.
 func (k *Kafka) Write(key, value []byte) error {
-	if err := k.Writer.WriteMessages(context.Background(), skafka.Message{
+	msg := skafka.Message{
 		Key:   key,
 		Value: value,
-	}); err != nil {
+	}
+
+	headers := make([]skafka.Header, 0)
+
+	for headerName, headerValue := range k.Options.Kafka.WriteHeader {
+		headers = append(headers, skafka.Header{
+			Key:   headerName,
+			Value: []byte(headerValue),
+		})
+	}
+
+	if len(headers) != 0 {
+		msg.Headers = headers
+	}
+
+	if err := k.Writer.WriteMessages(context.Background(), msg); err != nil {
 		return errors.Wrap(err, "unable to publish message(s)")
 	}
 
-	k.log.Infof("Successfully wrote message to topic '%s'", k.Options.Kafka.Topic)
+	k.log.Infof("Successfully wrote message to topic '%s'", k.Options.Kafka.Topics[0])
 
 	return nil
 }

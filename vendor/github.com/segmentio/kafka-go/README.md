@@ -66,7 +66,7 @@ some features available from the Kafka API may not be implemented yet.
 
 ## Golang version
 
-`kafka-go` is currently compatible with golang version from 1.12+. To use with older versions of golang use release [v0.2.5](https://github.com/segmentio/kafka-go/releases/tag/v0.2.5).
+`kafka-go` is currently compatible with golang version from 1.13+. To use with older versions of golang use release [v0.2.5](https://github.com/segmentio/kafka-go/releases/tag/v0.2.5).
 
 ## Connection [![GoDoc](https://godoc.org/github.com/segmentio/kafka-go?status.svg)](https://godoc.org/github.com/segmentio/kafka-go#Conn)
 
@@ -79,23 +79,34 @@ Here are some examples showing typical use of a connection object:
 topic := "my-topic"
 partition := 0
 
-conn, _ := kafka.DialLeader(context.Background(), "tcp", "localhost:9092", topic, partition)
+conn, err := kafka.DialLeader(context.Background(), "tcp", "localhost:9092", topic, partition)
+if err != nil {
+    log.Fatal("failed to dial leader:", err)
+}
 
 conn.SetWriteDeadline(time.Now().Add(10*time.Second))
-conn.WriteMessages(
+_, err = conn.WriteMessages(
     kafka.Message{Value: []byte("one!")},
     kafka.Message{Value: []byte("two!")},
     kafka.Message{Value: []byte("three!")},
 )
+if err != nil {
+    log.Fatal("failed to write messages:", err)
+}
 
-conn.Close()
+if err := conn.Close(); err != nil {
+    log.Fatal("failed to close writer:", err)
+}
 ```
 ```go
 // to consume messages
 topic := "my-topic"
 partition := 0
 
-conn, _ := kafka.DialLeader(context.Background(), "tcp", "localhost:9092", topic, partition)
+conn, err := kafka.DialLeader(context.Background(), "tcp", "localhost:9092", topic, partition)
+if err != nil {
+    log.Fatal("failed to dial leader:", err)
+}
 
 conn.SetReadDeadline(time.Now().Add(10*time.Second))
 batch := conn.ReadBatch(10e3, 1e6) // fetch 10KB min, 1MB max
@@ -109,9 +120,106 @@ for {
     fmt.Println(string(b))
 }
 
-batch.Close()
-conn.Close()
+if err := batch.Close(); err != nil {
+    log.Fatal("failed to close batch:", err)
+}
+
+if err := conn.Close(); err != nil {
+    log.Fatal("failed to close connection:", err)
+}
 ```
+
+### To Create Topics
+By default kafka has the `auto.create.topics.enable='true'` (`KAFKA_AUTO_CREATE_TOPICS_ENABLE='true'` in the wurstmeister/kafka kafka docker image). If this value is set to `'true'` then topics will be created as a side effect of `kafka.DialLeader` like so:
+```go
+// to create topics when auto.create.topics.enable='true'
+conn, err := kafka.DialLeader(context.Background(), "tcp", "localhost:9092", "my-topic", 0)
+if err != nil {
+    panic(err.Error())
+}
+```
+
+If `auto.create.topics.enable='false'` then you will need to create topics explicitly like so:
+```go
+// to create topics when auto.create.topics.enable='false'
+topic := "my-topic"
+partition := 0
+
+conn, err := kafka.Dial("tcp", "localhost:9092")
+if err != nil {
+    panic(err.Error())
+}
+defer conn.Close()
+
+controller, err := conn.Controller()
+if err != nil {
+    panic(err.Error())
+}
+var controllerConn *kafka.Conn
+controllerConn, err = kafka.Dial("tcp", net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
+if err != nil {
+    panic(err.Error())
+}
+defer controllerConn.Close()
+
+
+topicConfigs := []kafka.TopicConfig{
+    kafka.TopicConfig{
+        Topic:             topic,
+        NumPartitions:     1,
+        ReplicationFactor: 1,
+    },
+}
+
+err = controllerConn.CreateTopics(topicConfigs...)
+if err != nil {
+    panic(err.Error())
+}
+```
+
+### To Connect To Leader Via a Non-leader Connection
+```go
+// to connect to the kafka leader via an existing non-leader connection rather than using DialLeader
+conn, err := kafka.Dial("tcp", "localhost:9092")
+if err != nil {
+    panic(err.Error())
+}
+defer conn.Close()
+controller, err := conn.Controller()
+if err != nil {
+    panic(err.Error())
+}
+var connLeader *kafka.Conn
+connLeader, err = kafka.Dial("tcp", net.JoinHostPort(controller.Host, strconv.Itoa(controller.Port)))
+if err != nil {
+    panic(err.Error())
+}
+defer connLeader.Close()
+```
+
+### To list topics
+```go
+conn, err := kafka.Dial("tcp", "localhost:9092")
+if err != nil {
+    panic(err.Error())
+}
+defer conn.Close()
+
+partitions, err := conn.ReadPartitions()
+if err != nil {
+    panic(err.Error())
+}
+
+m := map[string]struct{}{}
+
+for _, p := range partitions {
+    m[p.Topic] = struct{}{}
+}
+for k := range m {
+    fmt.Println(k)
+}
+```
+
 
 Because it is low level, the `Conn` type turns out to be a great building block
 for higher level abstractions, like the `Reader` for example.
@@ -144,7 +252,9 @@ for {
     fmt.Printf("message at offset %d: %s = %s\n", m.Offset, string(m.Key), string(m.Value))
 }
 
-r.Close()
+if err := r.Close(); err != nil {
+    log.Fatal("failed to close reader:", err)
+}
 ```
 
 ### Consumer Groups
@@ -172,7 +282,9 @@ for {
     fmt.Printf("message at topic/partition/offset %v/%v/%v: %s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
 }
 
-r.Close()
+if err := r.Close(); err != nil {
+    log.Fatal("failed to close reader:", err)
+}
 ```
 
 There are a number of limitations when using consumer groups:
@@ -196,7 +308,9 @@ for {
         break
     }
     fmt.Printf("message at topic/partition/offset %v/%v/%v: %s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
-    r.CommitMessages(ctx, m)
+    if err := r.CommitMessages(ctx, m); err != nil {
+        log.Fatal("failed to commit messages:", err)
+    }
 }
 ```
 
@@ -239,7 +353,7 @@ w := &kafka.Writer{
 	Balancer: &kafka.LeastBytes{},
 }
 
-w.WriteMessages(context.Background(),
+err := w.WriteMessages(context.Background(),
 	kafka.Message{
 		Key:   []byte("Key-A"),
 		Value: []byte("Hello World!"),
@@ -253,34 +367,59 @@ w.WriteMessages(context.Background(),
 		Value: []byte("Two!"),
 	},
 )
+if err != nil {
+    log.Fatal("failed to write messages:", err)
+}
 
-w.Close()
+if err := w.Close(); err != nil {
+    log.Fatal("failed to close writer:", err)
+}
 ```
-
-**Note:** Even though kafka.Message contain ```Topic``` and ```Partition``` fields, they **MUST NOT** be
-set when writing messages.  They are intended for read use only.
 
 ### Writing to multiple topics
 
-Each writer is bound to a single topic, to write to multiple topics, a program
-must create multiple writers.
+Normally, the `WriterConfig.Topic` is used to initialize a single-topic writer.
+By excluding that particular configuration, you are given the ability to define
+the topic on a per-message basis by setting `Message.Topic`.
 
-We considered making the `kafka.Writer` type interpret the `Topic` field of
-`kafka.Message` values, batching messages per partition or topic/partition pairs
-does not introduce much more complexity. However, supporting this means we would
-also have to report stats broken down by topic. It would also raise the question
-of how we would manage configuration specific to each topic (e.g. different
-compression algorithms). Overall, the amount of coupling between the various
-properties of `kafka.Writer` suggest that we should not support publishing to
-multiple topics from a single writer, and instead encourage the program to
-create a writer for each topic it needs to publish to.
+```go
+w := &kafka.Writer{
+	Addr:     kafka.TCP("localhost:9092"),
+    // NOTE: When Topic is not defined here, each Message must define it instead.
+	Balancer: &kafka.LeastBytes{},
+}
 
-The split of connection management into the `kafka.Transport` in kafka-go 0.4 has
-made writers really cheap to create as they barely manage any state, programs can
-construct new writers configured to publish to kafka topics when needed.
+err := w.WriteMessages(context.Background(),
+    // NOTE: Each Message has Topic defined, otherwise an error is returned.
+	kafka.Message{
+        Topic: "topic-A",
+		Key:   []byte("Key-A"),
+		Value: []byte("Hello World!"),
+	},
+	kafka.Message{
+        Topic: "topic-B",
+		Key:   []byte("Key-B"),
+		Value: []byte("One!"),
+	},
+	kafka.Message{
+        Topic: "topic-C",
+		Key:   []byte("Key-C"),
+		Value: []byte("Two!"),
+	},
+)
+if err != nil {
+    log.Fatal("failed to write messages:", err)
+}
 
-Adding new APIs to facilitate the management of writer sets is an option, and we
-would welcome contributions in this area.
+if err := w.Close(); err != nil {
+    log.Fatal("failed to close writer:", err)
+}
+```
+
+**NOTE:** These 2 patterns are mutually exclusive, if you set `Writer.Topic`,
+you must not also explicitly define `Message.Topic` on the messages you are
+writing. The opposite applies when you do not define a topic for the writer.
+The `Writer` will return an error if it detects this ambiguity.
 
 ### Compatibility with other clients
 
@@ -376,4 +515,140 @@ r := kafka.NewReader(kafka.ReaderConfig{
     Topic:          "topic-A",
     Dialer:         dialer,
 })
+```
+
+### Writer
+
+```go
+dialer := &kafka.Dialer{
+    Timeout:   10 * time.Second,
+    DualStack: true,
+    TLS:       &tls.Config{...tls config...},
+}
+
+w := kafka.NewWriter(kafka.WriterConfig{
+	Brokers: []string{"localhost:9093"},
+	Topic:   "topic-A",
+	Balancer: &kafka.Hash{},
+	Dialer:   dialer,
+})
+```
+
+## SASL Support
+
+You can specify an option on the `Dialer` to use SASL authentication. The `Dialer` can be used directly to open a `Conn` or it can be passed to a `Reader` or `Writer` via their respective configs. If the `SASLMechanism` field is `nil`, it will not authenticate with SASL.
+
+### SASL Authentication Types
+
+#### [Plain](https://godoc.org/github.com/segmentio/kafka-go/sasl/plain#Mechanism)
+```go
+mechanism := plain.Mechanism{
+    Username: "username",
+    Password: "password",
+}
+```
+
+#### [SCRAM](https://godoc.org/github.com/segmentio/kafka-go/sasl/scram#Mechanism)
+```go
+mechanism, err := scram.Mechanism(scram.SHA512, "username", "password")
+if err != nil {
+    panic(err)
+}
+```
+
+### Connection
+
+```go
+mechanism, err := scram.Mechanism(scram.SHA512, "username", "password")
+if err != nil {
+    panic(err)
+}
+
+dialer := &kafka.Dialer{
+    Timeout:       10 * time.Second,
+    DualStack:     true,
+    SASLMechanism: mechanism,
+}
+
+conn, err := dialer.DialContext(ctx, "tcp", "localhost:9093")
+```
+
+
+### Reader
+
+```go
+mechanism, err := scram.Mechanism(scram.SHA512, "username", "password")
+if err != nil {
+    panic(err)
+}
+
+dialer := &kafka.Dialer{
+    Timeout:       10 * time.Second,
+    DualStack:     true,
+    SASLMechanism: mechanism,
+}
+
+r := kafka.NewReader(kafka.ReaderConfig{
+    Brokers:        []string{"localhost:9093"},
+    GroupID:        "consumer-group-id",
+    Topic:          "topic-A",
+    Dialer:         dialer,
+})
+```
+
+### Writer
+
+```go
+mechanism, err := scram.Mechanism(scram.SHA512, "username", "password")
+if err != nil {
+    panic(err)
+}
+
+dialer := &kafka.Dialer{
+    Timeout:       10 * time.Second,
+    DualStack:     true,
+    SASLMechanism: mechanism,
+}
+
+w := kafka.NewWriter(kafka.WriterConfig{
+	Brokers: []string{"localhost:9093"},
+	Topic:   "topic-A",
+	Balancer: &kafka.Hash{},
+	Dialer:   dialer,
+})
+```
+
+#### Reading all messages within a time range
+
+```go
+startTime := time.Now().Add(-time.Hour)
+endTime := time.Now()
+batchSize := int(10e6) // 10MB
+
+r := kafka.NewReader(kafka.ReaderConfig{
+    Brokers:   []string{"localhost:9092"},
+    Topic:     "my-topic1",
+    Partition: 0,
+    MinBytes:  batchSize,
+    MaxBytes:  batchSize,
+})
+
+r.SetOffsetAt(context.Background(), startTime)
+
+for {
+    m, err := r.ReadMessage(context.Background())
+
+    if err != nil {
+        break
+    }
+    if m.Time.After(endTime) {
+        break
+    }
+    // TODO: process message
+    fmt.Printf("message at offset %d: %s = %s\n", m.Offset, string(m.Key), string(m.Value))
+}
+
+if err := r.Close(); err != nil {
+    log.Fatal("failed to close reader:", err)
+}
 ```

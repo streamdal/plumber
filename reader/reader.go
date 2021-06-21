@@ -2,8 +2,10 @@ package reader
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 
+	"github.com/hokaccha/go-prettyjson"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
@@ -79,6 +81,17 @@ func Decode(opts *cli.Options, msgDesc *desc.MessageDescriptor, message []byte) 
 
 		printer.Error(fmt.Sprintf("unable to complete conversion for message: %s", convertErr))
 		return message, nil
+	}
+
+	if opts.ReadJSONOutput {
+		if json.Valid(data) {
+			colorized, err := prettyjson.Format(data)
+			if err != nil {
+				printer.Error(fmt.Sprintf("unable to colorize JSON output: %s", err))
+			} else {
+				data = colorized
+			}
+		}
 	}
 
 	return data, nil

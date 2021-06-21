@@ -64,9 +64,7 @@ func DecodeProtobufToJSON(m *dynamic.Message, data []byte) ([]byte, error) {
 
 func findMessageDescriptor(fds []*desc.FileDescriptor, rootMessage string) (*desc.MessageDescriptor, error) {
 	for _, fd := range fds {
-		fullRootMessage := fd.GetPackage() + "." + rootMessage
-
-		md := fd.FindMessage(fullRootMessage)
+		md := fd.FindMessage(rootMessage)
 		if md != nil {
 			return md, nil
 		}

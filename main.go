@@ -22,6 +22,8 @@ import (
 	"github.com/batchcorp/plumber/backends/mqtt"
 	"github.com/batchcorp/plumber/backends/nats"
 	natsStreaming "github.com/batchcorp/plumber/backends/nats-streaming"
+	"github.com/batchcorp/plumber/backends/nsq"
+	"github.com/batchcorp/plumber/backends/pulsar"
 	"github.com/batchcorp/plumber/backends/rabbitmq"
 	"github.com/batchcorp/plumber/backends/rpubsub"
 	"github.com/batchcorp/plumber/backends/rstreams"
@@ -49,7 +51,7 @@ func main() {
 	}
 
 	// In container mode, force JSON and don't print logo
-	if !terminal.IsTerminal(int(os.Stderr.Fd())) {
+	if !terminal.IsTerminal(int(os.Stderr.Fd())) || opts.Batch.OutputType == "json" {
 		logrus.SetFormatter(&logrus.JSONFormatter{})
 	} else {
 		printer.PrintLogo()
@@ -118,9 +120,13 @@ func parseCmdRead(cmd string, opts *cli.Options) error {
 		return cdcMongo.Read(opts)
 	case "read cdc-postgres":
 		return cdcPostgres.Read(opts)
+	case "read pulsar":
+		return pulsar.Read(opts)
+	case "read nsq":
+		return nsq.Read(opts)
+	default:
+		return fmt.Errorf("unrecognized command: %s", cmd)
 	}
-
-	return fmt.Errorf("unrecognized command: %s", cmd)
 }
 
 func parseCmdWrite(cmd string, opts *cli.Options) error {
@@ -151,34 +157,51 @@ func parseCmdWrite(cmd string, opts *cli.Options) error {
 		return rpubsub.Write(opts)
 	case "write redis-streams":
 		return rstreams.Write(opts)
+	case "write pulsar":
+		return pulsar.Write(opts)
+	case "write nsq":
+		return nsq.Write(opts)
+	default:
+		return fmt.Errorf("unrecognized command: %s", cmd)
 	}
-
-	return fmt.Errorf("unrecognized command: %s", cmd)
 }
 
 func parseCmdRelay(cmd string, opts *cli.Options) error {
 	switch cmd {
 	case "relay rabbit":
+		opts.RelayType = "rabbit"
 		return rabbitmq.Relay(opts)
 	case "relay kafka":
+		opts.RelayType = "kafka"
 		return kafka.Relay(opts)
 	case "relay gcp-pubsub":
+		opts.RelayType = "gcp-pubsub"
 		return gcppubsub.Relay(opts)
 	case "relay mqtt":
+		opts.RelayType = "mqtt"
 		return mqtt.Relay(opts)
 	case "relay aws-sqs":
+		opts.RelayType = "aws-sqs"
 		return awssqs.Relay(opts)
 	case "relay azure":
+		opts.RelayType = "azure"
 		return azure.Relay(opts)
 	case "relay cdc-postgres":
+		opts.RelayType = "cdc-postgres"
 		return cdcPostgres.Relay(opts)
 	case "relay cdc-mongo":
+		opts.RelayType = "cdc-mongo"
 		return cdcMongo.Relay(opts)
 	case "relay redis-pubsub":
+		opts.RelayType = "redis-pubsub"
 		return rpubsub.Relay(opts)
 	case "relay redis-streams":
+		opts.RelayType = "redis-streams"
 		return rstreams.Relay(opts)
-		// Relay (via env vars)
+	case "relay nsq":
+		opts.RelayType = "nsq"
+		return nsq.Relay(opts)
+	// Relay (via env vars)
 	case "relay":
 		return ProcessRelayFlags(opts)
 	}
@@ -244,6 +267,8 @@ func ProcessRelayFlags(opts *cli.Options) error {
 		err = rstreams.Relay(opts)
 	case "cdc-postgres":
 		err = cdcPostgres.Relay(opts)
+	case "nsq":
+		err = nsq.Relay(opts)
 	default:
 		err = fmt.Errorf("unsupported messaging system '%s'", opts.RelayType)
 	}
@@ -278,6 +303,8 @@ func parseBatchCmd(cmd string, opts *cli.Options) {
 		err = b.ListReplays()
 	case cmd == "batch create replay":
 		err = b.CreateReplay()
+	case cmd == "batch archive replay":
+		err = b.ArchiveReplay()
 	case cmd == "batch search":
 		err = b.SearchCollection()
 	default:

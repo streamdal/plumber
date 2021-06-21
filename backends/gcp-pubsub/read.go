@@ -57,7 +57,7 @@ func (g *GCPPubSub) Read() error {
 	// Receive launches several goroutines to exec func, need to use a mutex
 	var m sync.Mutex
 
-	lineNumber := 1
+	count := 1
 
 	// Standard way to cancel Receive in gcp's pubsub
 	cctx, cancel := context.WithCancel(context.Background())
@@ -77,10 +77,8 @@ func (g *GCPPubSub) Read() error {
 
 		str := string(data)
 
-		if g.Options.ReadLineNumbers {
-			str = fmt.Sprintf("%d: ", lineNumber) + str
-			lineNumber++
-		}
+		str = fmt.Sprintf("%d: ", count) + str
+		count++
 
 		printer.Print(str)
 
