@@ -3,10 +3,6 @@ package nsq
 import (
 	"sync"
 
-	"github.com/batchcorp/plumber/reader"
-
-	"github.com/batchcorp/plumber/printer"
-
 	"github.com/jhump/protoreflect/desc"
 	"github.com/nsqio/go-nsq"
 	"github.com/pkg/errors"
@@ -14,6 +10,8 @@ import (
 
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/pb"
+	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/reader"
 )
 
 // Read is the entry point function for performing read operations in NSQ

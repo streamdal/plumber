@@ -6,9 +6,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/pb"
-
 	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/writer"
 )
 
