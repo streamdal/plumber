@@ -3,13 +3,12 @@ package kafka
 import (
 	"context"
 
-	"github.com/batchcorp/plumber/dproxy"
-
+	"github.com/pkg/errors"
+	skafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/pkg/errors"
-	skafka "github.com/segmentio/kafka-go"
+	"github.com/batchcorp/plumber/dproxy"
 )
 
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
@@ -47,7 +46,7 @@ func Dynamic(opts *cli.Options) error {
 				break
 			}
 
-			llog.Debugf("Replayed message to Kafka topic '%s' for replay '%s'", opts.Kafka.Topic, outbound.ReplayId)
+			llog.Debugf("Replayed message to Kafka topic '%s' for replay '%s'", opts.Kafka.Topics[0], outbound.ReplayId)
 		}
 	}
 }

@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/dproxy"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages

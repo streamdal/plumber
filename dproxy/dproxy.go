@@ -5,15 +5,13 @@ import (
 	"io"
 	"time"
 
-	"github.com/batchcorp/schemas/build/go/events"
-
-	"github.com/batchcorp/schemas/build/go/services"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/schemas/build/go/events"
+	"github.com/batchcorp/schemas/build/go/services"
 )
 
 const (

@@ -3,14 +3,13 @@ package azure
 import (
 	"context"
 
-	"github.com/batchcorp/plumber/writer"
-
-	servicebus "github.com/Azure/azure-service-bus-go"
+	serviceBus "github.com/Azure/azure-service-bus-go"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/dproxy"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
+	"github.com/batchcorp/plumber/writer"
 )
 
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
@@ -20,8 +19,8 @@ func Dynamic(opts *cli.Options) error {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	var queue *servicebus.Queue
-	var topic *servicebus.Topic
+	var queue *serviceBus.Queue
+	var topic *serviceBus.Topic
 
 	ctx := context.Background()
 	llog := logrus.WithField("pkg", "azure/dynamic")
@@ -60,7 +59,7 @@ func Dynamic(opts *cli.Options) error {
 	for {
 		select {
 		case outbound := <-grpc.OutboundMessageCh:
-			msg := servicebus.NewMessage(outbound.Blob)
+			msg := serviceBus.NewMessage(outbound.Blob)
 
 			if queue != nil {
 				// Publishing to queue

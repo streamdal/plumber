@@ -1,11 +1,12 @@
 package nats_streaming
 
 import (
-	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/dproxy"
 	"github.com/nats-io/stan.go"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/dproxy"
 )
 
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
