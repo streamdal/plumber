@@ -7,12 +7,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/batchcorp/schemas/build/go/services"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
+
+	"github.com/batchcorp/schemas/build/go/services"
 
 	sqsTypes "github.com/batchcorp/plumber/backends/aws-sqs/types"
 	azureTypes "github.com/batchcorp/plumber/backends/azure/types"
@@ -21,6 +22,7 @@ import (
 	gcpTypes "github.com/batchcorp/plumber/backends/gcp-pubsub/types"
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
 	mqttTypes "github.com/batchcorp/plumber/backends/mqtt/types"
+	nsqTypes "github.com/batchcorp/plumber/backends/nsq/types"
 	rabbitTypes "github.com/batchcorp/plumber/backends/rabbitmq/types"
 	redisTypes "github.com/batchcorp/plumber/backends/rpubsub/types"
 	rstreamsTypes "github.com/batchcorp/plumber/backends/rstreams/types"
@@ -28,16 +30,23 @@ import (
 )
 
 const (
+	// DefaultNumWorkers is the number of goroutine relay workers to launch
 	DefaultNumWorkers = 10
 
+	// QueueFlushInterval is how often to flush messages to GRPC collector if we don't reach the batch size
 	QueueFlushInterval = 10 * time.Second
-	DefaultBatchSize   = 100 // number of messages to batch
 
+	// DefaultBatchSize is the number of messages to send to GRPC collector in each batch
+	DefaultBatchSize = 100 // number of messages to batch
+
+	// MaxGRPCRetries is the number of times we will attempt a GRPC call before giving up
 	MaxGRPCRetries = 5
 
-	// Maximum message size for GRPC client in bytes
+	// MaxGRPCMessageSize is the maximum message size for GRPC client in bytes
 	MaxGRPCMessageSize = 1024 * 1024 * 100 // 100MB
-	GRPCRetrySleep     = time.Second * 5
+
+	// GRPCRetrySleep determines how long we sleep between GRPC call retries
+	GRPCRetrySleep = time.Second * 5
 )
 
 type Relay struct {
@@ -56,6 +65,7 @@ type Config struct {
 	Type        string
 }
 
+// New creates a new instance of the Relay
 func New(relayCfg *Config) (*Relay, error) {
 	if err := validateConfig(relayCfg); err != nil {
 		return nil, errors.Wrap(err, "unable to complete relay config validation")
@@ -256,6 +266,9 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	case *mqttTypes.RelayMessage:
 		r.log.Debugf("flushing %d mqtt message(s)", len(messages))
 		err = r.handleMQTT(ctx, conn, messages)
+	case *nsqTypes.RelayMessage:
+		r.log.Debugf("flushing %d nsq message(s)", len(messages))
+		err = r.handleNSQ(ctx, conn, messages)
 	default:
 		r.log.WithField("type", v).Error("received unknown message type - skipping")
 		return

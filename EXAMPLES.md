@@ -14,6 +14,7 @@
        * [Postgres CDC](#cdc-postgres)
        * [MQTT](#mqtt)
        * [Apache Pulsar](#apache-pulsar)
+       * [NSQ](#nsq)
   * [Publishing](#publishing)
        * [AWS SQS](#aws-sqs-1)
        * [AWS SNS](#aws-sns)
@@ -28,6 +29,7 @@
        * [GCP Pub/Sub](#gcp-pubsub-1)
        * [MQTT](#mqtt-1)
        * [Apache Pulsar](#apache-pulsar-1)
+       * [NSQ](#nsq-1)
   * [Relay Mode](#relay-mode)
        * [Continuously relay messages from your RabbitMQ instance to a Batch.sh collection](#continuously-relay-messages-from-your-rabbitmq-instance-to-a-batchsh-collection)
        * [Continuously relay messages from an SQS queue to a Batch.sh collection](#continuously-relay-messages-from-an-sqs-queue-to-a-batchsh-collection)
@@ -175,6 +177,12 @@ plumber read mqtt --address tcp://localhost:1883 --topic iotdata -qos 1
 plumber read pulsar --topic NEWORDERS --name plumber
 ```
 
+#### NSQ
+
+```bash
+plumber read nsq --lookupd-address localhost:4161 --topic orders --channel neworders 
+```
+
 ## Publishing
 
 ##### AWS SQS
@@ -273,7 +281,7 @@ plumber write redis-pubsub --address="localhost:6379" --channels="new-orders" --
 plumber write redis-streams --address="localhost:6379" --streams="new-orders" --key foo --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
-#### GCP Pub/Sub
+##### GCP Pub/Sub
 
 ```bash
 plumber write gcp-pubsub --topic-id=TOPIC --project-id=PROJECT_ID --input-data='{"Sensor":"Room J","Temp":19}' 
@@ -284,10 +292,16 @@ plumber write gcp-pubsub --topic-id=TOPIC --project-id=PROJECT_ID --input-data='
 ```bash
 plumber write mqtt --address tcp://localhost:1883 --topic iotdata -qos 1 --input-data "{\"id\": 123, \"temperature\": 15}"
 ```
-#### Apache Pulsar
+##### Apache Pulsar
 
 ```bash
 plumber write pulsar --topic NEWORDERS --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+```
+
+##### NSQ
+
+```bash
+plumger write nsq --nsqd-address localhost:4050 --topic orders --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ## Relay Mode

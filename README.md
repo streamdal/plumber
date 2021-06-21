@@ -1,3 +1,4 @@
+
 <img src="https://github.com/batchcorp/plumber/blob/master/assets/gopher.png?raw=true" align="right" />
 
 plumber
@@ -163,6 +164,7 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 * Postgres CDC (Change Data Capture)
 * MongoDB CDC (Change Data Capture)
 * Apache Pulsar
+* NSQ
 
 NOTE: If your messaging tech is not supported - submit an issue and we'll do
 our best to make it happen!

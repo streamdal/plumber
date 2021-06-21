@@ -3,8 +3,10 @@ package printer
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/logrusorgru/aurora"
+	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
@@ -104,6 +106,8 @@ func PrintRelayOptions(cmd string, opts *cli.Options) {
 		printRedisPubSubOptions(opts)
 	case "redis-streams":
 		printRedisStreamsOptions(opts)
+	case "nsq":
+		printNSQOptions(opts)
 	}
 }
 
@@ -205,4 +209,39 @@ func printRedisStreamsOptions(opts *cli.Options) {
 	logrus.Infof("- %-28s%-6v", "Consumer Group", opts.RedisStreams.ConsumerGroup)
 	logrus.Infof("- %-28s%-6v", "Recreate Consumer Group", opts.RedisStreams.RecreateConsumerGroup)
 	logrus.Info("")
+}
+
+func printNSQOptions(opts *cli.Options) {
+	logrus.Info("----------------------------------------------------------------")
+	logrus.Info("> NSQ Settings")
+	logrus.Info("----------------------------------------------------------------")
+	logrus.Info("")
+	if opts.NSQ.NSQLookupDAddress != "" {
+		logrus.Infof("- %-24s%-6v", "Address", opts.NSQ.NSQLookupDAddress)
+	} else {
+		logrus.Infof("- %-24s%-6v", "Address", opts.NSQ.NSQDAddress)
+	}
+	logrus.Infof("- %-24s%-6v", "Topic", opts.NSQ.Topic)
+	logrus.Infof("- %-24s%-6v", "Channel", opts.NSQ.Channel)
+	logrus.Info("")
+}
+
+func printTable(properties [][]string, count int, timestamp time.Time, data []byte) {
+	fmt.Printf("\n------------- [Count: %d Received at: %s] -------------------\n\n",
+		aurora.Cyan(count), aurora.Yellow(timestamp.Format(time.RFC3339)).String())
+
+	tableString := &strings.Builder{}
+
+	table := tablewriter.NewWriter(tableString)
+	table.AppendBulk(properties)
+	table.SetColMinWidth(0, 20)
+	table.SetColMinWidth(1, 40)
+	// First column align left, second column align right
+	table.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_RIGHT})
+	table.Render()
+
+	fmt.Println(tableString.String())
+
+	// Display value
+	Print(string(data))
 }
