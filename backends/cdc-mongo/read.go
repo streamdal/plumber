@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/printer"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/printer"
 )
 
 func Read(opts *cli.Options) error {
@@ -97,7 +98,7 @@ func (m *CDCMongo) Read() error {
 
 func validateReadOptions(opts *cli.Options) error {
 	if opts.CDCMongo.Collection != "" && opts.CDCMongo.Database == "" {
-		return errMissingDatabase
+		return ErrMissingDatabase
 	}
 	return nil
 }

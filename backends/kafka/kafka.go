@@ -49,14 +49,6 @@ func NewReader(opts *cli.Options) (*KafkaReader, error) {
 	// Since you can't specify multiple environment variables with the same name, this is how brokers must be
 	// done for relay mode. The way kingpin handles this natively is by using newline separators
 	// See https://github.com/alecthomas/kingpin/issues/257
-	if len(opts.Kafka.Brokers) == 1 && strings.Contains(opts.Kafka.Brokers[0], ",") {
-		opts.Kafka.Brokers = strings.Split(opts.Kafka.Brokers[0], ",")
-	}
-
-	// Same applies for specifying multiple topics
-	if len(opts.Kafka.Topics) == 1 && strings.Contains(opts.Kafka.Topics[0], ",") {
-		opts.Kafka.Topics = strings.Split(opts.Kafka.Topics[0], ",")
-	}
 
 	dialer := &skafka.Dialer{
 		DualStack: true,

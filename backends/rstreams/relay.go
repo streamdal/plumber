@@ -6,15 +6,12 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/relistan/go-director"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/api"
 	"github.com/batchcorp/plumber/backends/rstreams/types"
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/reader"
 	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/stats"
 )
@@ -24,76 +21,44 @@ const (
 )
 
 type Relayer struct {
-	Client  *redis.Client
-	Options *cli.Options
-	MsgDesc *desc.MessageDescriptor
-	RelayCh chan interface{}
-	log     *logrus.Entry
-	Looper  *director.FreeLooper
-	Context context.Context
-}
-
-type IRedisStreamsRelayer interface {
-	Relay() error
+	Client          *redis.Client
+	Options         *cli.Options
+	RelayCh         chan interface{}
+	log             *logrus.Entry
+	Looper          *director.FreeLooper
+	ShutdownContext context.Context
 }
 
 var (
 	errMissingStream = errors.New("You must specify at least one stream")
 )
 
-// Relay sets up a new RedisStreams relayer, starts GRPC workers and the API server
-func Relay(opts *cli.Options) error {
+// Relay sets up a new RedisStreams relayer
+func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
 	if err := validateRelayOptions(opts); err != nil {
-		return errors.Wrap(err, "unable to verify options")
-	}
-
-	// Create new relayer instance (+ validate token & gRPC address)
-	relayCfg := &relay.Config{
-		Token:       opts.RelayToken,
-		GRPCAddress: opts.RelayGRPCAddress,
-		NumWorkers:  opts.RelayNumWorkers,
-		Timeout:     opts.RelayGRPCTimeout,
-		RelayCh:     make(chan interface{}, 1),
-		DisableTLS:  opts.RelayGRPCDisableTLS,
-		Type:        opts.RelayType,
-	}
-
-	grpcRelayer, err := relay.New(relayCfg)
-	if err != nil {
-		return errors.Wrap(err, "unable to create new gRPC relayer")
-	}
-
-	// Launch HTTP server
-	go func() {
-		if err := api.Start(opts.RelayHTTPListenAddress, opts.Version); err != nil {
-			logrus.Fatalf("unable to start API server: %s", err)
-		}
-	}()
-
-	if err := grpcRelayer.StartWorkers(); err != nil {
-		return errors.Wrap(err, "unable to start gRPC relay workers")
+		return nil, errors.Wrap(err, "unable to verify options")
 	}
 
 	client, err := NewStreamsClient(opts)
 	if err != nil {
-		return errors.Wrap(err, "unable to create client")
+		return nil, errors.Wrap(err, "unable to create client")
 	}
 
 	r := &Relayer{
-		Client:  client,
-		Options: opts,
-		RelayCh: relayCfg.RelayCh,
-		log:     logrus.WithField("pkg", "rstreams/relay"),
-		Looper:  director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
-		Context: context.Background(),
+		Client:          client,
+		Options:         opts,
+		RelayCh:         relayCh,
+		log:             logrus.WithField("pkg", "rstreams/relay"),
+		Looper:          director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
+		ShutdownContext: shutdownCtx,
 	}
 
 	// Create consumer group (and stream) for each stream
-	if err := CreateConsumerGroups(r.Context, client, r.Options.RedisStreams); err != nil {
-		return fmt.Errorf("unable to create consumer group(s): %s", err)
+	if err := CreateConsumerGroups(r.ShutdownContext, client, r.Options.RedisStreams); err != nil {
+		return nil, fmt.Errorf("unable to create consumer group(s): %s", err)
 	}
 
-	return r.Relay()
+	return r, nil
 }
 
 // validateRelayOptions ensures all required CLI options are present before initializing relay mode
@@ -122,7 +87,7 @@ func (r *Relayer) Relay() error {
 	streams := generateStreams(r.Options.RedisStreams.Streams)
 
 	for {
-		streamsResult, err := r.Client.XReadGroup(r.Context, &redis.XReadGroupArgs{
+		streamsResult, err := r.Client.XReadGroup(r.ShutdownContext, &redis.XReadGroupArgs{
 			Group:    r.Options.RedisStreams.ConsumerGroup,
 			Consumer: r.Options.RedisStreams.ConsumerName,
 			Streams:  streams,
@@ -132,6 +97,11 @@ func (r *Relayer) Relay() error {
 		}).Result()
 
 		if err != nil {
+			if err == context.Canceled {
+				r.log.Info("Received shutdown signal, existing relayer")
+				return nil
+			}
+
 			// Temporarily mute stats
 			stats.Mute("redis-streams-relay-consumer")
 			stats.Mute("redis-streams-relay-producer")
@@ -159,13 +129,6 @@ func (r *Relayer) Relay() error {
 						continue
 					}
 
-					decodedData, err := reader.Decode(r.Options, r.MsgDesc, []byte(stringData))
-					if err != nil {
-						r.log.Errorf("[ID: %s Stream: %s Key: %s] unable to decode message: %s; skipping",
-							message.ID, streamName, k, err)
-						continue
-					}
-
 					stats.Incr("redis-streams-relay-consumer", 1)
 
 					// Generate relay message
@@ -173,7 +136,7 @@ func (r *Relayer) Relay() error {
 						ID:     message.ID,
 						Key:    k,
 						Stream: streamName,
-						Value:  decodedData,
+						Value:  []byte(stringData),
 					}
 
 					r.log.Debugf("[ID: %s Stream: %s Key: %s] successfully relayed message", message.ID, streamName, k)

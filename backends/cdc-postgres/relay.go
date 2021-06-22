@@ -3,69 +3,39 @@ package cdc_postgres
 import (
 	"context"
 
+	"github.com/jackc/pgx"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+
 	"github.com/batchcorp/pgoutput"
-	"github.com/batchcorp/plumber/api"
 	"github.com/batchcorp/plumber/backends/cdc-postgres/types"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/stats"
-	"github.com/jackc/pgx"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
 type Relayer struct {
-	Options        *cli.Options
-	RelayCh        chan interface{}
-	log            *logrus.Entry
-	Service        *pgx.ReplicationConn
-	DefaultContext context.Context
+	Options         *cli.Options
+	RelayCh         chan interface{}
+	log             *logrus.Entry
+	Service         *pgx.ReplicationConn
+	ShutdownContext context.Context
 }
 
-func Relay(opts *cli.Options) error {
-
-	// Create new relayer instance (+ validate token & gRPC address)
-	relayCfg := &relay.Config{
-		Token:       opts.RelayToken,
-		GRPCAddress: opts.RelayGRPCAddress,
-		NumWorkers:  opts.RelayNumWorkers,
-		Timeout:     opts.RelayGRPCTimeout,
-		RelayCh:     make(chan interface{}, 1),
-		DisableTLS:  opts.RelayGRPCDisableTLS,
-		Type:        opts.RelayType,
-	}
-
-	grpcRelayer, err := relay.New(relayCfg)
-	if err != nil {
-		return errors.Wrap(err, "unable to create new gRPC relayer")
-	}
-
+func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
 	// Create new service
 	client, err := NewService(opts)
 	if err != nil {
-		return errors.Wrap(err, "unable to create postgres connection")
+		return nil, errors.Wrap(err, "unable to create postgres connection")
 	}
 
-	// Launch HTTP server
-	go func() {
-		if err := api.Start(opts.RelayHTTPListenAddress, opts.Version); err != nil {
-			logrus.Fatalf("unable to start API server: %s", err)
-		}
-	}()
-
-	// Launch gRPC Relayer
-	if err := grpcRelayer.StartWorkers(); err != nil {
-		return errors.Wrap(err, "unable to start gRPC relay workers")
-	}
-
-	r := &Relayer{
-		Options: opts,
-		RelayCh: relayCfg.RelayCh,
-		Service: client,
-		log:     logrus.WithField("pkg", "cdc-postgres/relay.go"),
-	}
-
-	return r.Relay()
+	return &Relayer{
+		Options:         opts,
+		RelayCh:         relayCh,
+		Service:         client,
+		ShutdownContext: shutdownCtx,
+		log:             logrus.WithField("pkg", "cdc-postgres/relay.go"),
+	}, nil
 }
 
 func (r *Relayer) Relay() error {
@@ -124,5 +94,7 @@ func (r *Relayer) Relay() error {
 
 		return nil
 	}
-	return sub.Start(context.Background(), 0, handler)
+
+	// ShutdownContext cancel is handled within the library
+	return sub.Start(r.ShutdownContext, 0, handler)
 }

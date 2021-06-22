@@ -1,6 +1,7 @@
 package awssqs
 
 import (
+	"context"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -8,7 +9,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/api"
 	"github.com/batchcorp/plumber/backends/aws-sqs/types"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
@@ -20,62 +20,35 @@ const (
 )
 
 type Relayer struct {
-	Options  *cli.Options
-	Service  *sqs.SQS
-	QueueURL string
-	RelayCh  chan interface{}
-	log      *logrus.Entry
+	Options         *cli.Options
+	Service         *sqs.SQS
+	QueueURL        string
+	RelayCh         chan interface{}
+	ShutdownContext context.Context
+	log             *logrus.Entry
 }
 
-func Relay(opts *cli.Options) error {
+func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
 	if err := validateRelayOptions(opts); err != nil {
-		return errors.Wrap(err, "unable to verify options")
-	}
-
-	// Create new relayer instance (+ validate token & gRPC address)
-	relayCfg := &relay.Config{
-		Token:       opts.RelayToken,
-		GRPCAddress: opts.RelayGRPCAddress,
-		NumWorkers:  opts.RelayNumWorkers,
-		Timeout:     opts.RelayGRPCTimeout,
-		RelayCh:     make(chan interface{}, 1),
-		DisableTLS:  opts.RelayGRPCDisableTLS,
-		BatchSize:   opts.RelayBatchSize,
-		Type:        opts.RelayType,
-	}
-
-	grpcRelayer, err := relay.New(relayCfg)
-	if err != nil {
-		return errors.Wrap(err, "unable to create new gRPC relayer")
+		return nil, errors.Wrap(err, "unable to verify options")
 	}
 
 	// Create new service
 	svc, queueURL, err := NewService(opts)
 	if err != nil {
-		return errors.Wrap(err, "unable to create new SQS service")
-	}
-
-	// Launch HTTP server
-	go func() {
-		if err := api.Start(opts.RelayHTTPListenAddress, opts.Version); err != nil {
-			logrus.Fatalf("unable to start API server: %s", err)
-		}
-	}()
-
-	// Launch gRPC Relayer
-	if err := grpcRelayer.StartWorkers(); err != nil {
-		return errors.Wrap(err, "unable to start gRPC relay workers")
+		return nil, errors.Wrap(err, "unable to create new SQS service")
 	}
 
 	r := &Relayer{
-		Service:  svc,
-		QueueURL: queueURL,
-		Options:  opts,
-		RelayCh:  relayCfg.RelayCh,
-		log:      logrus.WithField("pkg", "aws-sqs/relay"),
+		Service:         svc,
+		QueueURL:        queueURL,
+		Options:         opts,
+		RelayCh:         relayCh,
+		ShutdownContext: shutdownCtx,
+		log:             logrus.WithField("pkg", "aws-sqs/relay"),
 	}
 
-	return r.Relay()
+	return r, nil
 }
 
 func validateRelayOptions(opts *cli.Options) error {
@@ -99,6 +72,15 @@ func (r *Relayer) Relay() error {
 	// TODO: Optionally print out relay and SQS config
 
 	for {
+		select {
+		case <-r.ShutdownContext.Done():
+			r.log.Info("Received shutdown signal, existing relayer")
+			return nil
+		default:
+			// noop
+		}
+
+		// TODO: does this block or not?
 		// Read message(s) from SQS
 		msgResult, err := r.Service.ReceiveMessage(&sqs.ReceiveMessageInput{
 			MaxNumberOfMessages:     aws.Int64(r.Options.AWSSQS.RelayMaxNumMessages),

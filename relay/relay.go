@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -49,20 +50,36 @@ const (
 	GRPCRetrySleep = time.Second * 5
 )
 
+var (
+	ErrMissingConfig                 = errors.New("Relay config cannot be nil")
+	ErrMissingToken                  = errors.New("Token cannot be empty")
+	ErrMissingServiceShutdownContext = errors.New("ServiceShutdownContext cannot be nil")
+	ErrMissingGRPCAddress            = errors.New("GRPCAddress cannot be empty")
+	ErrMissingRelayCh                = errors.New("RelayCh cannot be nil")
+)
+
+type IRelayBackend interface {
+	Relay() error
+}
+
 type Relay struct {
-	Config *Config
-	log    *logrus.Entry
+	*Config
+	Workers      map[int]struct{}
+	WorkersMutex *sync.RWMutex
+	log          *logrus.Entry
 }
 
 type Config struct {
-	Token       string
-	GRPCAddress string
-	NumWorkers  int
-	BatchSize   int
-	RelayCh     chan interface{}
-	DisableTLS  bool
-	Timeout     time.Duration // general grpc timeout (used for all grpc calls)
-	Type        string
+	Token                  string
+	GRPCAddress            string
+	NumWorkers             int
+	BatchSize              int
+	RelayCh                chan interface{}
+	DisableTLS             bool
+	Timeout                time.Duration // general grpc timeout (used for all grpc calls)
+	Type                   string
+	ServiceShutdownContext context.Context
+	MainShutdownFunc       context.CancelFunc
 }
 
 // New creates a new instance of the Relay
@@ -77,26 +94,32 @@ func New(relayCfg *Config) (*Relay, error) {
 	}
 
 	return &Relay{
-		Config: relayCfg,
-		log:    logrus.WithField("pkg", "relay"),
+		Config:       relayCfg,
+		Workers:      make(map[int]struct{}),
+		WorkersMutex: &sync.RWMutex{},
+		log:          logrus.WithField("pkg", "relay"),
 	}, nil
 }
 
 func validateConfig(cfg *Config) error {
 	if cfg == nil {
-		return errors.New("Relay config cannot be nil")
+		return ErrMissingConfig
 	}
 
 	if cfg.Token == "" {
-		return errors.New("Token cannot be empty")
+		return ErrMissingToken
 	}
 
 	if cfg.GRPCAddress == "" {
-		return errors.New("GRPCAddress cannot be empty")
+		return ErrMissingGRPCAddress
 	}
 
 	if cfg.RelayCh == nil {
-		return errors.New("RelayCh cannot be nil")
+		return ErrMissingRelayCh
+	}
+
+	if cfg.ServiceShutdownContext == nil {
+		return ErrMissingServiceShutdownContext
 	}
 
 	if cfg.NumWorkers <= 0 {
@@ -163,23 +186,65 @@ func NewConnection(address, token string, timeout time.Duration, disableTLS, noC
 	return conn, outCtx, nil
 }
 
-func (r *Relay) StartWorkers() error {
+// WaitForShutdown will wait for service shutdown context to be canceled. It will then start constantly polling
+// the workers map until it is empty. When the workers map is empty, MainShutdownFunc() is called allowing the
+// application to exit gracefully and ensuring we have sent all relay messages to the grpc-collector
+func (r *Relay) WaitForShutdown() {
+
+	// Don't start looping until we are in shutdown mode
+	<-r.ServiceShutdownContext.Done()
+
+	r.log.Debugf("Waiting for relay workers to shut down")
+
+	for {
+		r.WorkersMutex.RLock()
+		if len(r.Workers) == 0 {
+			r.WorkersMutex.RUnlock()
+			r.log.Debug("All relay workers shutdown, exiting application")
+			r.MainShutdownFunc()
+			return
+		}
+		r.WorkersMutex.RUnlock()
+
+		time.Sleep(time.Millisecond * 100)
+
+	}
+}
+
+// removeWorker removes a worker from the workers map so we can track when all workers have shut down
+func (r *Relay) removeWorker(id int) {
+	r.WorkersMutex.Lock()
+	defer r.WorkersMutex.Unlock()
+	delete(r.Workers, id)
+}
+
+// addWorker adds a worker ID to the workers map
+func (r *Relay) addWorker(id int) {
+	r.WorkersMutex.Lock()
+	defer r.WorkersMutex.Unlock()
+	r.Workers[id] = struct{}{}
+}
+
+func (r *Relay) StartWorkers(shutdownCtx context.Context) error {
 	for i := 0; i != r.Config.NumWorkers; i++ {
 		r.log.WithField("workerId", i).Debug("starting worker")
 
-		conn, ctx, err := NewConnection(r.Config.GRPCAddress, r.Config.Token, r.Config.Timeout, r.Config.DisableTLS, true)
+		conn, outboundCtx, err := NewConnection(r.Config.GRPCAddress, r.Config.Token, r.Config.Timeout, r.Config.DisableTLS, true)
 		if err != nil {
 			return fmt.Errorf("unable to create new gRPC connection for worker %d: %s", i, err)
 		}
 
-		go r.Run(i, conn, ctx)
+		go r.Run(i, conn, outboundCtx, shutdownCtx)
 	}
 
 	return nil
 }
 
-func (r *Relay) Run(id int, conn *grpc.ClientConn, ctx context.Context) {
+// Run is a GRPC worker that runs as a goroutine. outboundCtx is used for sending GRPC requests as it will contain
+// metadata, specifically "batch-token". shutdownCtx is passed from the main plumber app to shut down workers
+func (r *Relay) Run(id int, conn *grpc.ClientConn, outboundCtx, shutdownCtx context.Context) {
 	llog := r.log.WithField("relayId", id)
+	r.addWorker(id)
 
 	llog.Debug("Relayer started")
 
@@ -194,6 +259,8 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, ctx context.Context) {
 	stats.Incr(r.Config.Type+"-relay-consumer", 0)
 	stats.Incr(r.Config.Type+"-relay-producer", 0)
 
+	var quit bool
+
 	for {
 		select {
 		case msg := <-r.Config.RelayCh:
@@ -201,25 +268,51 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, ctx context.Context) {
 
 			// Max queue size reached
 			if len(queue) >= r.Config.BatchSize {
-				r.log.Debugf("%d: max queue size reached - flushing!", id)
+				llog.Debugf("%d: max queue size reached - flushing!", id)
 
-				r.flush(ctx, conn, queue...)
+				r.flush(outboundCtx, conn, queue...)
 
 				// Reset queue; since we passed by variadic, the underlying slice can be updated
 				queue = make([]interface{}, 0)
 
 				// Reset ticker (so time-based flush doesn't occur)
 				flushTicker.Reset(QueueFlushInterval)
+
+				// Queue is empty, safe to quit
+				if quit {
+					llog.Debug("Queue empty, worker exiting")
+					r.removeWorker(id)
+					return
+				}
 			}
+
 		case <-flushTicker.C:
 			if len(queue) != 0 {
-				r.log.Debugf("%d: flush ticker hit and queue not empty - flushing!", id)
+				llog.Debugf("%d: flush ticker hit and queue not empty - flushing!", id)
 
-				r.flush(ctx, conn, queue...)
+				r.flush(outboundCtx, conn, queue...)
 
 				// Reset queue; same as above - safe to delete queue contents
 				queue = make([]interface{}, 0)
 			}
+
+			// Queue is empty, safe to quit
+			if quit {
+				llog.Debug("Queue empty, worker exiting")
+				r.removeWorker(id)
+				return
+			}
+		case <-shutdownCtx.Done():
+			llog.Debug("Shutdown signal received")
+
+			// If queue is empty, quit immediately
+			if len(queue) == 0 {
+				llog.Debug("Queue empty, worker exiting")
+				r.removeWorker(id)
+				return
+			}
+
+			quit = true
 		}
 	}
 }
