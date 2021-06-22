@@ -6,13 +6,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/batchcorp/plumber/plumber"
-
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh/terminal"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/plumber"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/stats"
 )
