@@ -2,12 +2,14 @@ package dproxy
 
 import (
 	"context"
+	"crypto/tls"
 	"io"
 	"time"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/schemas/build/go/events"
@@ -34,7 +36,7 @@ type DProxyClient struct {
 func New(opts *cli.Options, bus string) (*DProxyClient, error) {
 	ctx, _ := context.WithTimeout(context.Background(), opts.DproxyGRPCTimeout)
 
-	conn, err := grpc.DialContext(ctx, opts.DProxyAddress, []grpc.DialOption{grpc.WithInsecure(), grpc.WithBlock()}...)
+	conn, err := grpc.DialContext(ctx, opts.DProxyAddress, getDialOptions(opts)...)
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to open connection to %s", opts.DProxyAddress)
 	}
@@ -53,13 +55,30 @@ func New(opts *cli.Options, bus string) (*DProxyClient, error) {
 }
 
 func (d *DProxyClient) reconnect() error {
-	conn, err := grpc.Dial(d.Options.DProxyAddress, []grpc.DialOption{grpc.WithInsecure(), grpc.WithBlock()}...)
+	conn, err := grpc.Dial(d.Options.DProxyAddress, getDialOptions(d.Options)...)
 	if err != nil {
 		return errors.Wrapf(err, "unable to open connection to %s", d.Options.DProxyAddress)
 	}
 
 	d.Client = services.NewDProxyClient(conn)
 	return nil
+}
+
+// getDialOptions returns all necessary grpc dial options to connect to dProxy
+func getDialOptions(opts *cli.Options) []grpc.DialOption {
+	dialOpts := []grpc.DialOption{grpc.WithBlock()}
+
+	if opts.DProxyInsecure {
+		dialOpts = append(dialOpts, grpc.WithInsecure())
+	} else {
+		dialOpts = append(dialOpts, grpc.WithTransportCredentials(credentials.NewTLS(
+			&tls.Config{
+				InsecureSkipVerify: true,
+			},
+		)))
+	}
+
+	return dialOpts
 }
 
 // Start is called by a backend's Dynamic() method. It authorizes the connection and begins reading a GRPC stream of

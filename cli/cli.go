@@ -19,7 +19,7 @@ const (
 	DefaultNumWorkers          = "10"
 	DefaultStatsReportInterval = "5s"
 	DefaultCount               = "10"
-	DefaultDproxyAddress       = "dproxy.batch.sh:7373"
+	DefaultDproxyAddress       = "dproxy.batch.sh:443"
 )
 
 var (
@@ -42,6 +42,7 @@ type Options struct {
 	// Dynamic Destination
 	DProxyAPIToken    string
 	DProxyAddress     string
+	DProxyInsecure    bool
 	DproxyGRPCTimeout time.Duration
 
 	// Relay
@@ -250,6 +251,9 @@ func HandleGlobalDynamicFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("grpc-timeout", "dProxy gRPC server timeout").
 		Default(DefaultGRPCTimeout).
 		DurationVar(&opts.DproxyGRPCTimeout)
+
+	cmd.Flag("dproxy-insecure", "Connect to dProxy server without TLS").
+		BoolVar(&opts.DProxyInsecure)
 }
 
 func HandleGlobalWriteFlags(cmd *kingpin.CmdClause, opts *Options) {
