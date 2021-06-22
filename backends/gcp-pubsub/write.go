@@ -20,7 +20,7 @@ import (
 // to perform the write.
 func Write(opts *cli.Options) error {
 	if err := writer.ValidateWriteOptions(opts, nil); err != nil {
-		return errors.Wrap(err, "unable to validate read options")
+		return errors.Wrap(err, "unable to validate write options")
 	}
 
 	var mdErr error
@@ -49,7 +49,7 @@ func Write(opts *cli.Options) error {
 		Options: opts,
 		MsgDesc: md,
 		Client:  client,
-		log:     logrus.WithField("pkg", "gcppubsub/read.go"),
+		log:     logrus.WithField("pkg", "gcppubsub/write.go"),
 	}
 
 	return g.Write(context.Background(), msg)

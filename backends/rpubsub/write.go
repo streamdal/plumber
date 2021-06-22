@@ -19,7 +19,7 @@ import (
 // to perform the write.
 func Write(opts *cli.Options) error {
 	if err := writer.ValidateWriteOptions(opts, validateWriteOptions); err != nil {
-		return errors.Wrap(err, "unable to validate read options")
+		return errors.Wrap(err, "unable to validate write options")
 	}
 
 	var mdErr error

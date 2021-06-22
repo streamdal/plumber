@@ -17,6 +17,7 @@ The tool enables you to:
 * Decode protobuf data in real-time
 * Capture and relay data to [Batch platform](https://batch.sh)
 * Ship change data capture events to [Batch platform](https://batch.sh)
+* [Replay events into a message system on your local network](https://docs.batch.sh/what-are/what-are-destinations/plumber-as-a-destination)
 
 <sub>\[1] It's like `curl` for messaging systems.</sub>
 
@@ -168,6 +169,15 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 
 NOTE: If your messaging tech is not supported - submit an issue and we'll do
 our best to make it happen!
+
+## Dynamic Replay Destination (NEW!)
+
+Plumber can now act as a replay destination. Dynamic replay mode allows you to run 
+an instance of plumber, on your local network, which will receive messages for a replay.
+This mitigates the need make firewall changes to replay messages from a Batch collection
+back to your message bus.
+
+See https://docs.batch.sh/what-are/what-are-destinations/plumber-as-a-destination for full documentation
 
 ## High Availability
 When running `plumber` in relay mode in production, you will want to run at

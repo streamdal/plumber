@@ -96,10 +96,6 @@ func validateReadOptions(opts *cli.Options) error {
 		return errors.New("--address cannot be empty")
 	}
 
-	if opts.Action == "write" && opts.Rabbit.RoutingKey == "" {
-		return errors.New("--routing-key cannot be empty with write action")
-	}
-
 	// If anything protobuf-related is specified, it's being used
 	if opts.ReadProtobufRootMessage != "" || len(opts.ReadProtobufDirs) != 0 {
 		if err := cli.ValidateProtobufOptions(

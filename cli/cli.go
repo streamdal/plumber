@@ -19,6 +19,7 @@ const (
 	DefaultNumWorkers          = "10"
 	DefaultStatsReportInterval = "5s"
 	DefaultCount               = "10"
+	DefaultDproxyAddress       = "dproxy.batch.sh:443"
 )
 
 var (
@@ -37,6 +38,12 @@ type Options struct {
 
 	// Serializers
 	AvroSchemaFile string
+
+	// Dynamic Destination
+	DProxyAPIToken    string
+	DProxyAddress     string
+	DProxyInsecure    bool
+	DproxyGRPCTimeout time.Duration
 
 	// Relay
 	RelayToken             string
@@ -120,6 +127,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	writeCmd := app.Command("write", "Write message(s) to messaging system")
 	relayCmd := app.Command("relay", "Relay message(s) from messaging system to Batch")
 	batchCmd := app.Command("batch", "Access your Batch.sh account information")
+	dynamicCmd := app.Command("dynamic", "Act as a batch.sh replay destination")
 
 	HandleRelayFlags(relayCmd, opts)
 
@@ -160,6 +168,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleRedisStreamsFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleCDCMongoFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleCDCPostgresFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleDynamicFlags(dynamicCmd, opts)
 		HandlePulsarFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleNSQFlags(readCmd, writeCmd, relayCmd, opts)
 	}
@@ -170,7 +179,9 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	HandleGlobalReadFlags(relayCmd, opts)
 	HandleGlobalFlags(writeCmd, opts)
 	HandleGlobalFlags(relayCmd, opts)
+	HandleGlobalFlags(dynamicCmd, opts)
 	HandleBatchFlags(batchCmd, opts)
+	HandleGlobalDynamicFlags(dynamicCmd, opts)
 
 	app.Version(version)
 	app.HelpFlag.Short('h')
@@ -229,16 +240,37 @@ func HandleGlobalReadFlags(cmd *kingpin.CmdClause, opts *Options) {
 		BoolVar(&opts.ReadJSONOutput)
 }
 
+func HandleGlobalDynamicFlags(cmd *kingpin.CmdClause, opts *Options) {
+	cmd.Flag("api-token", "Batch.SH API Token").
+		StringVar(&opts.DProxyAPIToken)
+
+	cmd.Flag("dproxy-address", "Address of Batch.sh's Dynamic Destination server").
+		Default(DefaultDproxyAddress).
+		StringVar(&opts.DProxyAddress)
+
+	cmd.Flag("grpc-timeout", "dProxy gRPC server timeout").
+		Default(DefaultGRPCTimeout).
+		DurationVar(&opts.DproxyGRPCTimeout)
+
+	cmd.Flag("dproxy-insecure", "Connect to dProxy server without TLS").
+		BoolVar(&opts.DProxyInsecure)
+}
+
 func HandleGlobalWriteFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("input-data", "Data to write").StringVar(&opts.WriteInputData)
+	cmd.Flag("input-data", "Data to write").
+		StringVar(&opts.WriteInputData)
+
 	cmd.Flag("input-file", "File containing input data (overrides input-data; 1 file is 1 message)").
 		ExistingFileVar(&opts.WriteInputFile)
+
 	cmd.Flag("input-type", "Treat input-file as this type [plain, base64, jsonpb]").
 		Default("plain").
 		EnumVar(&opts.WriteInputType, "plain", "base64", "jsonpb")
+
 	cmd.Flag("protobuf-dir", "Directory with .proto files").
 		Envar("PLUMBER_RELAY_PROTOBUF_DIR").
 		ExistingDirsVar(&opts.WriteProtobufDirs)
+
 	cmd.Flag("protobuf-root-message", "Root message in a protobuf descriptor set "+
 		"(required if protobuf-dir set; type should contain pkg name(s) separated by a period)").
 		Envar("PLUMBER_RELAY_PROTOBUF_ROOT_MESSAGE").

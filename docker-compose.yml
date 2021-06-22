@@ -73,7 +73,7 @@ services:
     ports:
       - "6379:6379"
 
-  standalone:
+  pulsar:
     image: apachepulsar/pulsar:latest
     ports:
       - "6650:6650"
