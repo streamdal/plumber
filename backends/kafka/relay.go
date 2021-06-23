@@ -70,7 +70,7 @@ func (r *Relayer) Relay() error {
 	for {
 		msg, err := reader.Reader.ReadMessage(r.ShutdownContext)
 		if err != nil {
-			// Shutdown cancelled, exit out of goroutine so we don't spam logs with context cancelled errors
+			// Shutdown cancelled, exit so we don't spam logs with context cancelled errors
 			if err == context.Canceled {
 				r.log.Info("Received shutdown signal, existing relayer")
 				return nil
@@ -94,5 +94,4 @@ func (r *Relayer) Relay() error {
 			Options: &types.RelayMessageOptions{},
 		}
 	}
-
 }

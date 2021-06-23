@@ -46,10 +46,6 @@ type KafkaWriter struct {
 }
 
 func NewReader(opts *cli.Options) (*KafkaReader, error) {
-	// Since you can't specify multiple environment variables with the same name, this is how brokers must be
-	// done for relay mode. The way kingpin handles this natively is by using newline separators
-	// See https://github.com/alecthomas/kingpin/issues/257
-
 	dialer := &skafka.Dialer{
 		DualStack: true,
 		Timeout:   opts.Kafka.Timeout,

@@ -3,18 +3,16 @@ package rabbitmq
 import (
 	"context"
 
-	"github.com/batchcorp/plumber/backends/rabbitmq/types"
-	"github.com/batchcorp/plumber/stats"
-
 	"github.com/pkg/errors"
 	"github.com/relistan/go-director"
 	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 
-	"github.com/batchcorp/rabbit"
-
+	"github.com/batchcorp/plumber/backends/rabbitmq/types"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
+	"github.com/batchcorp/plumber/stats"
+	"github.com/batchcorp/rabbit"
 )
 
 type Relayer struct {
