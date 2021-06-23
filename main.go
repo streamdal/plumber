@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/sirupsen/logrus"
@@ -32,16 +33,19 @@ func main() {
 	serviceCtx, serviceShutdownFunc := context.WithCancel(context.Background())
 	mainCtx, mainShutdownFunc := context.WithCancel(context.Background())
 
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	signal.Notify(c, syscall.SIGTERM)
+	// We only want to intercept these in relay mode
+	if strings.HasPrefix("cmd", "relay") {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt)
+		signal.Notify(c, syscall.SIGTERM)
 
-	go func() {
-		signal := <-c
-		logrus.Infof("received system call: %+v", signal)
+		go func() {
+			signal := <-c
+			logrus.Infof("received system call: %+v", signal)
 
-		serviceShutdownFunc()
-	}()
+			serviceShutdownFunc()
+		}()
+	}
 
 	if opts.Stats {
 		stats.Start(opts.StatsReportInterval)
