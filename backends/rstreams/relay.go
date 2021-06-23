@@ -21,12 +21,12 @@ const (
 )
 
 type Relayer struct {
-	Client          *redis.Client
-	Options         *cli.Options
-	RelayCh         chan interface{}
-	log             *logrus.Entry
-	Looper          *director.FreeLooper
-	ShutdownContext context.Context
+	Client      *redis.Client
+	Options     *cli.Options
+	RelayCh     chan interface{}
+	log         *logrus.Entry
+	Looper      *director.FreeLooper
+	ShutdownCtx context.Context
 }
 
 var (
@@ -45,16 +45,16 @@ func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Cont
 	}
 
 	r := &Relayer{
-		Client:          client,
-		Options:         opts,
-		RelayCh:         relayCh,
-		log:             logrus.WithField("pkg", "rstreams/relay"),
-		Looper:          director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
-		ShutdownContext: shutdownCtx,
+		Client:      client,
+		Options:     opts,
+		RelayCh:     relayCh,
+		log:         logrus.WithField("pkg", "rstreams/relay"),
+		Looper:      director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
+		ShutdownCtx: shutdownCtx,
 	}
 
 	// Create consumer group (and stream) for each stream
-	if err := CreateConsumerGroups(r.ShutdownContext, client, r.Options.RedisStreams); err != nil {
+	if err := CreateConsumerGroups(r.ShutdownCtx, client, r.Options.RedisStreams); err != nil {
 		return nil, fmt.Errorf("unable to create consumer group(s): %s", err)
 	}
 
@@ -87,7 +87,7 @@ func (r *Relayer) Relay() error {
 	streams := generateStreams(r.Options.RedisStreams.Streams)
 
 	for {
-		streamsResult, err := r.Client.XReadGroup(r.ShutdownContext, &redis.XReadGroupArgs{
+		streamsResult, err := r.Client.XReadGroup(r.ShutdownCtx, &redis.XReadGroupArgs{
 			Group:    r.Options.RedisStreams.ConsumerGroup,
 			Consumer: r.Options.RedisStreams.ConsumerName,
 			Streams:  streams,

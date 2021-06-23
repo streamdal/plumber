@@ -114,37 +114,37 @@ func (p *Plumber) parseCmdRelay() error {
 	switch p.Cmd {
 	case "relay rabbit":
 		p.Options.RelayType = "rabbit"
-		rr, err = rabbitmq.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = rabbitmq.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "relay kafka":
 		p.Options.RelayType = "kafka"
-		rr, err = kafka.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = kafka.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "relay gcp-pubsub":
 		p.Options.RelayType = "gcp-pubsub"
-		rr, err = gcpPubSub.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = gcpPubSub.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "relay mqtt":
 		p.Options.RelayType = "mqtt"
-		rr, err = mqtt.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = mqtt.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "relay aws-sqs":
 		p.Options.RelayType = "aws-sqs"
-		rr, err = awssqs.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = awssqs.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "relay azure":
 		p.Options.RelayType = "azure"
-		rr, err = azure.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = azure.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "relay cdc-postgres":
 		p.Options.RelayType = "cdc-postgres"
-		rr, err = cdcPostgres.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = cdcPostgres.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "relay cdc-mongo":
 		p.Options.RelayType = "cdc-mongo"
-		rr, err = cdcMongo.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = cdcMongo.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "relay redis-pubsub":
 		p.Options.RelayType = "redis-pubsub"
-		rr, err = rpubsub.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = rpubsub.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "relay redis-streams":
 		p.Options.RelayType = "redis-streams"
-		rr, err = rstreams.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = rstreams.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "relay nsq":
 		p.Options.RelayType = "nsq"
-		rr, err = nsq.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = nsq.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "relay": // Relay (via env vars)
 		rr, err = p.processRelayFlags()
 	default:
@@ -163,7 +163,7 @@ func (p *Plumber) parseCmdRelay() error {
 		return err
 	}
 
-	<-p.MainShutdownContext.Done()
+	<-p.MainShutdownCtx.Done()
 
 	p.log.Info("Application exiting")
 
@@ -177,27 +177,27 @@ func (p *Plumber) processRelayFlags() (relay.IRelayBackend, error) {
 
 	switch p.Options.RelayType {
 	case "kafka":
-		rr, err = kafka.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = kafka.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "gcp-pubsub":
-		rr, err = gcpPubSub.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = gcpPubSub.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "mqtt":
-		rr, err = mqtt.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = mqtt.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "aws-sqs":
-		rr, err = awssqs.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = awssqs.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "rabbit":
-		rr, err = rabbitmq.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = rabbitmq.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "azure":
-		rr, err = azure.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = azure.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "cdc-mongo":
-		rr, err = cdcMongo.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = cdcMongo.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "redis-pubsub":
-		rr, err = rpubsub.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = rpubsub.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "redis-streams":
-		rr, err = rstreams.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = rstreams.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "cdc-postgres":
-		rr, err = cdcPostgres.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = cdcPostgres.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "nsq":
-		rr, err = nsq.Relay(p.Options, p.RelayCh, p.ServiceShutdownContext)
+		rr, err = nsq.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	default:
 		err = fmt.Errorf("unsupported messaging system '%s'", p.Options.RelayType)
 	}

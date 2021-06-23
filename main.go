@@ -34,14 +34,15 @@ func main() {
 	mainCtx, mainShutdownFunc := context.WithCancel(context.Background())
 
 	// We only want to intercept these in relay mode
-	if strings.HasPrefix("cmd", "relay") {
+	if strings.HasPrefix(cmd, "relay") {
+		logrus.Debug("Intercepting signals")
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)
 		signal.Notify(c, syscall.SIGTERM)
 
 		go func() {
 			signal := <-c
-			logrus.Infof("received system call: %+v", signal)
+			logrus.Debugf("Received system call: %+v", signal)
 
 			serviceShutdownFunc()
 		}()
@@ -59,11 +60,11 @@ func main() {
 	}
 
 	p, err := plumber.New(&plumber.Config{
-		ServiceShutdownContext: serviceCtx,
-		MainShutdownFunc:       mainShutdownFunc,
-		MainShutdownContext:    mainCtx,
-		Cmd:                    cmd,
-		Options:                opts,
+		ServiceShutdownCtx: serviceCtx,
+		MainShutdownFunc:   mainShutdownFunc,
+		MainShutdownCtx:    mainCtx,
+		Cmd:                cmd,
+		Options:            opts,
 	})
 
 	if err != nil {

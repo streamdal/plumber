@@ -20,12 +20,12 @@ const (
 )
 
 type Relayer struct {
-	Options         *cli.Options
-	Service         *sqs.SQS
-	QueueURL        string
-	RelayCh         chan interface{}
-	ShutdownContext context.Context
-	log             *logrus.Entry
+	Options     *cli.Options
+	Service     *sqs.SQS
+	QueueURL    string
+	RelayCh     chan interface{}
+	ShutdownCtx context.Context
+	log         *logrus.Entry
 }
 
 func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
@@ -40,12 +40,12 @@ func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Cont
 	}
 
 	r := &Relayer{
-		Service:         svc,
-		QueueURL:        queueURL,
-		Options:         opts,
-		RelayCh:         relayCh,
-		ShutdownContext: shutdownCtx,
-		log:             logrus.WithField("pkg", "aws-sqs/relay"),
+		Service:     svc,
+		QueueURL:    queueURL,
+		Options:     opts,
+		RelayCh:     relayCh,
+		ShutdownCtx: shutdownCtx,
+		log:         logrus.WithField("pkg", "aws-sqs/relay"),
 	}
 
 	return r, nil
@@ -69,18 +69,15 @@ func (r *Relayer) Relay() error {
 
 	r.log.Infof("HTTP server listening on '%s'", r.Options.RelayHTTPListenAddress)
 
-	// TODO: Optionally print out relay and SQS config
-
 	for {
 		select {
-		case <-r.ShutdownContext.Done():
+		case <-r.ShutdownCtx.Done():
 			r.log.Info("Received shutdown signal, existing relayer")
 			return nil
 		default:
 			// noop
 		}
 
-		// TODO: does this block or not?
 		// Read message(s) from SQS
 		msgResult, err := r.Service.ReceiveMessage(&sqs.ReceiveMessageInput{
 			MaxNumberOfMessages:     aws.Int64(r.Options.AWSSQS.RelayMaxNumMessages),

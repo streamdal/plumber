@@ -15,11 +15,11 @@ import (
 )
 
 type Relayer struct {
-	Options         *cli.Options
-	RelayCh         chan interface{}
-	log             *logrus.Entry
-	Service         *pgx.ReplicationConn
-	ShutdownContext context.Context
+	Options     *cli.Options
+	RelayCh     chan interface{}
+	log         *logrus.Entry
+	Service     *pgx.ReplicationConn
+	ShutdownCtx context.Context
 }
 
 func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
@@ -30,11 +30,11 @@ func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Cont
 	}
 
 	return &Relayer{
-		Options:         opts,
-		RelayCh:         relayCh,
-		Service:         client,
-		ShutdownContext: shutdownCtx,
-		log:             logrus.WithField("pkg", "cdc-postgres/relay.go"),
+		Options:     opts,
+		RelayCh:     relayCh,
+		Service:     client,
+		ShutdownCtx: shutdownCtx,
+		log:         logrus.WithField("pkg", "cdc-postgres/relay.go"),
 	}, nil
 }
 
@@ -95,6 +95,12 @@ func (r *Relayer) Relay() error {
 		return nil
 	}
 
-	// ShutdownContext cancel is handled within the library
-	return sub.Start(r.ShutdownContext, 0, handler)
+	// Start blocks. ShutdownCtx cancel is handled within the library
+	err := sub.Start(r.ShutdownCtx, 0, handler)
+	if err == context.Canceled {
+		r.log.Info("Received shutdown signal, existing relayer")
+		return nil
+	}
+
+	return err
 }

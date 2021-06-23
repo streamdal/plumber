@@ -2,6 +2,7 @@ package rpubsub
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -20,12 +21,12 @@ const (
 )
 
 type Relayer struct {
-	Client          *redis.Client
-	Options         *cli.Options
-	RelayCh         chan interface{}
-	log             *logrus.Entry
-	Looper          *director.FreeLooper
-	ShutdownContext context.Context
+	Client      *redis.Client
+	Options     *cli.Options
+	RelayCh     chan interface{}
+	log         *logrus.Entry
+	Looper      *director.FreeLooper
+	ShutdownCtx context.Context
 }
 
 var (
@@ -44,12 +45,12 @@ func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Cont
 	}
 
 	return &Relayer{
-		Client:          client,
-		Options:         opts,
-		RelayCh:         relayCh,
-		log:             logrus.WithField("pkg", "rpubsub/relay"),
-		Looper:          director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
-		ShutdownContext: shutdownCtx,
+		Client:      client,
+		Options:     opts,
+		RelayCh:     relayCh,
+		log:         logrus.WithField("pkg", "rpubsub/relay"),
+		Looper:      director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
+		ShutdownCtx: shutdownCtx,
 	}, nil
 }
 
@@ -76,15 +77,25 @@ func (r *Relayer) Relay() error {
 
 	defer r.Client.Close()
 
-	sub := r.Client.Subscribe(r.ShutdownContext, r.Options.RedisPubSub.Channels...)
-	defer sub.Unsubscribe(r.ShutdownContext, r.Options.RedisPubSub.Channels...)
+	sub := r.Client.Subscribe(r.ShutdownCtx, r.Options.RedisPubSub.Channels...)
+	defer sub.Unsubscribe(r.ShutdownCtx, r.Options.RedisPubSub.Channels...)
 
 	for {
-		msg, err := sub.ReceiveMessage(r.ShutdownContext)
+		// Redis library is not handling context cancellation, only timeouts. So we must use a timeout here
+		// to ensure we eventually receive the context cancellation from ShutdownCtx
+		ctx, _ := context.WithTimeout(r.ShutdownCtx, time.Second*5)
+		msg, err := sub.ReceiveMessage(ctx)
 		if err != nil {
-			if err == context.Canceled {
+			// When a timeout occurs
+			if strings.Contains(err.Error(), "operation was canceled") {
 				r.log.Info("Received shutdown signal, existing relayer")
 				return nil
+			}
+
+			// This will happen every loop when the context times out
+			if strings.Contains(err.Error(), "i/o timeout") {
+				time.Sleep(time.Millisecond * 100)
+				continue
 			}
 
 			// Temporarily mute stats

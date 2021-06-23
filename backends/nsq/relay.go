@@ -14,10 +14,10 @@ import (
 )
 
 type Relayer struct {
-	Options         *cli.Options
-	RelayCh         chan interface{}
-	log             *logrus.Entry
-	ShutdownContext context.Context
+	Options     *cli.Options
+	RelayCh     chan interface{}
+	log         *logrus.Entry
+	ShutdownCtx context.Context
 }
 
 func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
@@ -26,10 +26,10 @@ func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Cont
 	}
 
 	return &Relayer{
-		Options:         opts,
-		RelayCh:         relayCh,
-		log:             logrus.WithField("pkg", "nsq/relay"),
-		ShutdownContext: shutdownCtx,
+		Options:     opts,
+		RelayCh:     relayCh,
+		log:         logrus.WithField("pkg", "nsq/relay"),
+		ShutdownCtx: shutdownCtx,
 	}, nil
 }
 
@@ -90,7 +90,7 @@ func (r *Relayer) Relay() error {
 
 	for {
 		select {
-		case <-r.ShutdownContext.Done():
+		case <-r.ShutdownCtx.Done():
 			r.log.Info("Received shutdown signal, existing relayer")
 			return nil
 		default:

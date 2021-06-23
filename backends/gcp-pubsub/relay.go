@@ -20,11 +20,11 @@ const (
 )
 
 type Relayer struct {
-	Client          *pubsub.Client
-	Options         *cli.Options
-	RelayCh         chan interface{}
-	ShutdownContext context.Context
-	log             *logrus.Entry
+	Client      *pubsub.Client
+	Options     *cli.Options
+	RelayCh     chan interface{}
+	ShutdownCtx context.Context
+	log         *logrus.Entry
 }
 
 func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
@@ -36,11 +36,11 @@ func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Cont
 	}
 
 	return &Relayer{
-		Client:          client,
-		Options:         opts,
-		RelayCh:         relayCh,
-		ShutdownContext: shutdownCtx,
-		log:             logrus.WithField("pkg", "gcp-pubsub/relay"),
+		Client:      client,
+		Options:     opts,
+		RelayCh:     relayCh,
+		ShutdownCtx: shutdownCtx,
+		log:         logrus.WithField("pkg", "gcp-pubsub/relay"),
 	}, nil
 }
 
@@ -75,7 +75,7 @@ func (r *Relayer) Relay() error {
 	}
 
 	for {
-		if err := sub.Receive(r.ShutdownContext, readFunc); err != nil {
+		if err := sub.Receive(r.ShutdownCtx, readFunc); err != nil {
 			if err == context.Canceled {
 				r.log.Info("Received shutdown signal, existing relayer")
 				return nil

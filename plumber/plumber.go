@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	ErrMissingShutdownContext  = errors.New("ServiceShutdownContext cannot be nil")
+	ErrMissingShutdownCtx      = errors.New("ServiceShutdownCtx cannot be nil")
 	ErrMissingMainShutdownFunc = errors.New("MainShutdownFunc cannot be nil")
 	ErrMissingMainContext      = errors.New("MainContext cannot be nil")
 	ErrMissingOptions          = errors.New("Options cannot be nil")
@@ -22,11 +22,11 @@ var (
 
 // Config contains configurable options for instantiating a new Plumber
 type Config struct {
-	ServiceShutdownContext context.Context
-	MainShutdownFunc       context.CancelFunc
-	MainShutdownContext    context.Context
-	Options                *cli.Options
-	Cmd                    string
+	ServiceShutdownCtx context.Context
+	MainShutdownFunc   context.CancelFunc
+	MainShutdownCtx    context.Context
+	Options            *cli.Options
+	Cmd                string
 }
 
 type Plumber struct {
@@ -50,15 +50,15 @@ func New(cfg *Config) (*Plumber, error) {
 
 // validateConfig ensures all correct values for Config are passed
 func validateConfig(cfg *Config) error {
-	if cfg.ServiceShutdownContext == nil {
-		return ErrMissingShutdownContext
+	if cfg.ServiceShutdownCtx == nil {
+		return ErrMissingShutdownCtx
 	}
 
 	if cfg.Options == nil {
 		return ErrMissingOptions
 	}
 
-	if cfg.MainShutdownContext == nil {
+	if cfg.MainShutdownCtx == nil {
 		return ErrMissingMainContext
 	}
 
@@ -96,16 +96,16 @@ func (p *Plumber) Run() {
 
 func (p *Plumber) startGRPCService() error {
 	relayCfg := &relay.Config{
-		Token:                  p.Options.RelayToken,
-		GRPCAddress:            p.Options.RelayGRPCAddress,
-		NumWorkers:             p.Options.RelayNumWorkers,
-		Timeout:                p.Options.RelayGRPCTimeout,
-		RelayCh:                p.RelayCh,
-		DisableTLS:             p.Options.RelayGRPCDisableTLS,
-		BatchSize:              p.Options.RelayBatchSize,
-		Type:                   p.Options.RelayType,
-		MainShutdownFunc:       p.MainShutdownFunc,
-		ServiceShutdownContext: p.ServiceShutdownContext,
+		Token:              p.Options.RelayToken,
+		GRPCAddress:        p.Options.RelayGRPCAddress,
+		NumWorkers:         p.Options.RelayNumWorkers,
+		Timeout:            p.Options.RelayGRPCTimeout,
+		RelayCh:            p.RelayCh,
+		DisableTLS:         p.Options.RelayGRPCDisableTLS,
+		BatchSize:          p.Options.RelayBatchSize,
+		Type:               p.Options.RelayType,
+		MainShutdownFunc:   p.MainShutdownFunc,
+		ServiceShutdownCtx: p.ServiceShutdownCtx,
 	}
 
 	grpcRelayer, err := relay.New(relayCfg)
@@ -121,7 +121,7 @@ func (p *Plumber) startGRPCService() error {
 	}()
 
 	// Launch gRPC Relayer
-	if err := grpcRelayer.StartWorkers(p.ServiceShutdownContext); err != nil {
+	if err := grpcRelayer.StartWorkers(p.ServiceShutdownCtx); err != nil {
 		return errors.Wrap(err, "unable to start gRPC relay workers")
 	}
 

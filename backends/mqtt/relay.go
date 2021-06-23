@@ -19,12 +19,12 @@ import (
 )
 
 type Relayer struct {
-	Client          pahomqtt.Client
-	Options         *cli.Options
-	RelayCh         chan interface{}
-	log             *logrus.Entry
-	Looper          *director.FreeLooper
-	ShutdownContext context.Context
+	Client      pahomqtt.Client
+	Options     *cli.Options
+	RelayCh     chan interface{}
+	log         *logrus.Entry
+	Looper      *director.FreeLooper
+	ShutdownCtx context.Context
 }
 
 // Relay sets up a new MQTT relayer
@@ -39,12 +39,12 @@ func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Cont
 	}
 
 	return &Relayer{
-		Client:          client,
-		Options:         opts,
-		RelayCh:         relayCh,
-		log:             logrus.WithField("pkg", "mqtt/relay"),
-		Looper:          director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
-		ShutdownContext: shutdownCtx,
+		Client:      client,
+		Options:     opts,
+		RelayCh:     relayCh,
+		log:         logrus.WithField("pkg", "mqtt/relay"),
+		Looper:      director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
+		ShutdownCtx: shutdownCtx,
 	}, nil
 }
 
@@ -113,7 +113,7 @@ func (r *Relayer) Relay() error {
 
 	for {
 		select {
-		case <-r.ShutdownContext.Done():
+		case <-r.ShutdownCtx.Done():
 			r.log.Info("Received shutdown signal, existing relayer")
 			return nil
 		default:

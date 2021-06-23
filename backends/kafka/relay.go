@@ -19,11 +19,11 @@ const (
 )
 
 type Relayer struct {
-	Options         *cli.Options
-	RelayCh         chan interface{}
-	log             *logrus.Entry
-	Looper          *director.FreeLooper
-	ShutdownContext context.Context
+	Options     *cli.Options
+	RelayCh     chan interface{}
+	log         *logrus.Entry
+	Looper      *director.FreeLooper
+	ShutdownCtx context.Context
 }
 
 var (
@@ -37,11 +37,11 @@ func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Cont
 	}
 
 	return &Relayer{
-		Options:         opts,
-		RelayCh:         relayCh,
-		log:             logrus.WithField("pkg", "kafka/relay"),
-		Looper:          director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
-		ShutdownContext: shutdownCtx,
+		Options:     opts,
+		RelayCh:     relayCh,
+		log:         logrus.WithField("pkg", "kafka/relay"),
+		Looper:      director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
+		ShutdownCtx: shutdownCtx,
 	}, nil
 }
 
@@ -68,7 +68,7 @@ func (r *Relayer) Relay() error {
 	defer reader.Conn.Close()
 
 	for {
-		msg, err := reader.Reader.ReadMessage(r.ShutdownContext)
+		msg, err := reader.Reader.ReadMessage(r.ShutdownCtx)
 		if err != nil {
 			// Shutdown cancelled, exit so we don't spam logs with context cancelled errors
 			if err == context.Canceled {

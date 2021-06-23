@@ -14,12 +14,12 @@ import (
 )
 
 type Relayer struct {
-	Options         *cli.Options
-	RelayCh         chan interface{}
-	log             *logrus.Entry
-	Queue           *servicebus.Queue
-	Topic           *servicebus.Topic
-	ShutdownContext context.Context
+	Options     *cli.Options
+	RelayCh     chan interface{}
+	log         *logrus.Entry
+	Queue       *servicebus.Queue
+	Topic       *servicebus.Topic
+	ShutdownCtx context.Context
 }
 
 func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
@@ -30,10 +30,10 @@ func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Cont
 	}
 
 	r := &Relayer{
-		Options:         opts,
-		RelayCh:         relayCh,
-		ShutdownContext: shutdownCtx,
-		log:             logrus.WithField("pkg", "azure/relay.go"),
+		Options:     opts,
+		RelayCh:     relayCh,
+		ShutdownCtx: shutdownCtx,
+		log:         logrus.WithField("pkg", "azure/relay.go"),
 	}
 
 	if opts.Azure.Queue != "" {
@@ -57,9 +57,9 @@ func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Cont
 
 // readQueue reads messages from an ASB queue
 func (r *Relayer) readQueue(handler servicebus.HandlerFunc) error {
-	defer r.Queue.Close(r.ShutdownContext)
+	defer r.Queue.Close(r.ShutdownCtx)
 	for {
-		if err := r.Queue.ReceiveOne(r.ShutdownContext, handler); err != nil {
+		if err := r.Queue.ReceiveOne(r.ShutdownCtx, handler); err != nil {
 			if err == context.Canceled {
 				r.log.Info("Received shutdown signal, existing relayer")
 				return nil
@@ -77,10 +77,10 @@ func (r *Relayer) readTopic(handler servicebus.HandlerFunc) error {
 		return errors.Wrap(err, "unable to create topic subscription")
 	}
 
-	defer sub.Close(r.ShutdownContext)
+	defer sub.Close(r.ShutdownCtx)
 
 	for {
-		if err := sub.ReceiveOne(r.ShutdownContext, handler); err != nil {
+		if err := sub.ReceiveOne(r.ShutdownCtx, handler); err != nil {
 			if err == context.Canceled {
 				r.log.Info("Received shutdown signal, existing relayer")
 				return nil

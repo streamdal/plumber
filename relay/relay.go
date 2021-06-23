@@ -51,11 +51,11 @@ const (
 )
 
 var (
-	ErrMissingConfig                 = errors.New("Relay config cannot be nil")
-	ErrMissingToken                  = errors.New("Token cannot be empty")
-	ErrMissingServiceShutdownContext = errors.New("ServiceShutdownContext cannot be nil")
-	ErrMissingGRPCAddress            = errors.New("GRPCAddress cannot be empty")
-	ErrMissingRelayCh                = errors.New("RelayCh cannot be nil")
+	ErrMissingConfig             = errors.New("Relay config cannot be nil")
+	ErrMissingToken              = errors.New("Token cannot be empty")
+	ErrMissingServiceShutdownCtx = errors.New("ServiceShutdownCtx cannot be nil")
+	ErrMissingGRPCAddress        = errors.New("GRPCAddress cannot be empty")
+	ErrMissingRelayCh            = errors.New("RelayCh cannot be nil")
 )
 
 type IRelayBackend interface {
@@ -70,16 +70,16 @@ type Relay struct {
 }
 
 type Config struct {
-	Token                  string
-	GRPCAddress            string
-	NumWorkers             int
-	BatchSize              int
-	RelayCh                chan interface{}
-	DisableTLS             bool
-	Timeout                time.Duration // general grpc timeout (used for all grpc calls)
-	Type                   string
-	ServiceShutdownContext context.Context
-	MainShutdownFunc       context.CancelFunc
+	Token              string
+	GRPCAddress        string
+	NumWorkers         int
+	BatchSize          int
+	RelayCh            chan interface{}
+	DisableTLS         bool
+	Timeout            time.Duration // general grpc timeout (used for all grpc calls)
+	Type               string
+	ServiceShutdownCtx context.Context
+	MainShutdownFunc   context.CancelFunc
 }
 
 // New creates a new instance of the Relay
@@ -118,8 +118,8 @@ func validateConfig(cfg *Config) error {
 		return ErrMissingRelayCh
 	}
 
-	if cfg.ServiceShutdownContext == nil {
-		return ErrMissingServiceShutdownContext
+	if cfg.ServiceShutdownCtx == nil {
+		return ErrMissingServiceShutdownCtx
 	}
 
 	if cfg.NumWorkers <= 0 {
@@ -192,7 +192,7 @@ func NewConnection(address, token string, timeout time.Duration, disableTLS, noC
 func (r *Relay) WaitForShutdown() {
 
 	// Don't start looping until we are in shutdown mode
-	<-r.ServiceShutdownContext.Done()
+	<-r.ServiceShutdownCtx.Done()
 
 	r.log.Debugf("Waiting for relay workers to shut down")
 
@@ -303,6 +303,11 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, outboundCtx, shutdownCtx cont
 				return
 			}
 		case <-shutdownCtx.Done():
+			if quit == true {
+				// Prevent log spam
+				time.Sleep(time.Millisecond * 50)
+				continue
+			}
 			llog.Debug("Shutdown signal received")
 
 			// If queue is empty, quit immediately

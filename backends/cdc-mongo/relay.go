@@ -15,11 +15,11 @@ import (
 )
 
 type Relayer struct {
-	Options         *cli.Options
-	RelayCh         chan interface{}
-	log             *logrus.Entry
-	Service         *mongo.Client
-	ShutdownContext context.Context
+	Options     *cli.Options
+	RelayCh     chan interface{}
+	log         *logrus.Entry
+	Service     *mongo.Client
+	ShutdownCtx context.Context
 }
 
 func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
@@ -34,11 +34,11 @@ func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Cont
 	}
 
 	return &Relayer{
-		Options:         opts,
-		RelayCh:         relayCh,
-		Service:         client,
-		ShutdownContext: shutdownCtx,
-		log:             logrus.WithField("pkg", "cdc-mongo/relay.go"),
+		Options:     opts,
+		RelayCh:     relayCh,
+		Service:     client,
+		ShutdownCtx: shutdownCtx,
+		log:         logrus.WithField("pkg", "cdc-mongo/relay.go"),
 	}, nil
 }
 
@@ -55,34 +55,33 @@ func (r *Relayer) Relay() error {
 		database := r.Service.Database(r.Options.CDCMongo.Database)
 		if r.Options.CDCMongo.Collection == "" {
 			// Watch specific database and all collections under it
-			cs, err = database.Watch(r.ShutdownContext, mongo.Pipeline{}, streamOpts...)
+			cs, err = database.Watch(r.ShutdownCtx, mongo.Pipeline{}, streamOpts...)
 		} else {
 			// Watch specific database and collection deployment
 			coll := database.Collection(r.Options.CDCMongo.Collection)
-			cs, err = coll.Watch(r.ShutdownContext, mongo.Pipeline{}, streamOpts...)
+			cs, err = coll.Watch(r.ShutdownCtx, mongo.Pipeline{}, streamOpts...)
 		}
 	} else {
 		// Watch entire deployment
-		cs, err = r.Service.Watch(r.ShutdownContext, mongo.Pipeline{}, streamOpts...)
+		cs, err = r.Service.Watch(r.ShutdownCtx, mongo.Pipeline{}, streamOpts...)
 	}
 
 	if err != nil {
 		return errors.Wrap(err, "could not begin change stream")
 	}
 
-	defer cs.Close(r.ShutdownContext)
+	defer cs.Close(r.ShutdownCtx)
 
 	for {
-		select {
-		case <-r.ShutdownContext.Done():
-			r.log.Info("Received shutdown signal, existing relayer")
-			return nil
-		default:
-			// noop
-		}
+		if !cs.Next(r.ShutdownCtx) {
+			if cs.Err() == context.Canceled {
+				r.log.Info("Received shutdown signal, existing relayer")
+				return nil
+			}
 
-		// TODO: test this. Next blocks, but does the underlaying code handle the context correctly?
-		if !cs.Next(r.ShutdownContext) {
+			stats.Mute("redis-pubsub-relay-consumer")
+			stats.Mute("redis-pubsub-relay-producer")
+
 			r.log.Errorf("unable to read message from mongo: %s", cs.Err())
 		}
 

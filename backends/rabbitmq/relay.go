@@ -16,12 +16,12 @@ import (
 )
 
 type Relayer struct {
-	Options         *cli.Options
-	Channel         *amqp.Channel
-	RelayCh         chan interface{}
-	log             *logrus.Entry
-	Looper          *director.FreeLooper
-	ShutdownContext context.Context
+	Options     *cli.Options
+	Channel     *amqp.Channel
+	RelayCh     chan interface{}
+	log         *logrus.Entry
+	Looper      *director.FreeLooper
+	ShutdownCtx context.Context
 }
 
 func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
@@ -30,11 +30,11 @@ func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Cont
 	}
 
 	return &Relayer{
-		Options:         opts,
-		RelayCh:         relayCh,
-		log:             logrus.WithField("pkg", "rabbitmq/relay"),
-		Looper:          director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
-		ShutdownContext: shutdownCtx,
+		Options:     opts,
+		RelayCh:     relayCh,
+		log:         logrus.WithField("pkg", "rabbitmq/relay"),
+		Looper:      director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
+		ShutdownCtx: shutdownCtx,
 	}, nil
 }
 
@@ -78,7 +78,7 @@ func (r *Relayer) Relay() error {
 
 	defer rmq.Close()
 
-	go rmq.Consume(r.ShutdownContext, errCh, func(msg amqp.Delivery) error {
+	go rmq.Consume(r.ShutdownCtx, errCh, func(msg amqp.Delivery) error {
 		if msg.Body == nil {
 			// Ignore empty messages
 			// this will also prevent log spam if a queue goes missing
@@ -100,7 +100,7 @@ func (r *Relayer) Relay() error {
 		select {
 		case errRabbit := <-errCh:
 			r.log.Errorf("runFunc ran into an error: %s", errRabbit.Error.Error())
-		case <-r.ShutdownContext.Done():
+		case <-r.ShutdownCtx.Done():
 			r.log.Info("Received shutdown signal, existing relayer")
 			return nil
 		default:
