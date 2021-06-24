@@ -9,7 +9,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/api"
 	"github.com/batchcorp/plumber/backends/gcp-pubsub/types"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
@@ -21,54 +20,28 @@ const (
 )
 
 type Relayer struct {
-	Client  *pubsub.Client
-	Options *cli.Options
-	RelayCh chan interface{}
-	log     *logrus.Entry
+	Client      *pubsub.Client
+	Options     *cli.Options
+	RelayCh     chan interface{}
+	ShutdownCtx context.Context
+	log         *logrus.Entry
 }
 
-func Relay(opts *cli.Options) error {
-	relayCfg := &relay.Config{
-		Token:       opts.RelayToken,
-		GRPCAddress: opts.RelayGRPCAddress,
-		NumWorkers:  opts.RelayNumWorkers,
-		Timeout:     opts.RelayGRPCTimeout,
-		RelayCh:     make(chan interface{}, 1),
-		DisableTLS:  opts.RelayGRPCDisableTLS,
-		Type:        opts.RelayType,
-	}
-
-	grpcRelayer, err := relay.New(relayCfg)
-	if err != nil {
-		return errors.Wrap(err, "unable to create new gRPC relayer")
-	}
+func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
 
 	// Create new service
 	client, err := NewClient(opts)
 	if err != nil {
-		return errors.Wrap(err, "unable to create new GCP pubsub service")
+		return nil, errors.Wrap(err, "unable to create new GCP pubsub service")
 	}
 
-	// Launch HTTP server
-	go func() {
-		if err := api.Start(opts.RelayHTTPListenAddress, opts.Version); err != nil {
-			logrus.Fatalf("unable to start API server: %s", err)
-		}
-	}()
-
-	// Launch gRPC Relayer
-	if err := grpcRelayer.StartWorkers(); err != nil {
-		return errors.Wrap(err, "unable to start gRPC relay workers")
-	}
-
-	r := &Relayer{
-		Client:  client,
-		Options: opts,
-		RelayCh: relayCfg.RelayCh,
-		log:     logrus.WithField("pkg", "gcp-pubsub/relay"),
-	}
-
-	return r.Relay()
+	return &Relayer{
+		Client:      client,
+		Options:     opts,
+		RelayCh:     relayCh,
+		ShutdownCtx: shutdownCtx,
+		log:         logrus.WithField("pkg", "gcp-pubsub/relay"),
+	}, nil
 }
 
 func (r *Relayer) Relay() error {
@@ -102,7 +75,12 @@ func (r *Relayer) Relay() error {
 	}
 
 	for {
-		if err := sub.Receive(context.Background(), readFunc); err != nil {
+		if err := sub.Receive(r.ShutdownCtx, readFunc); err != nil {
+			if err == context.Canceled {
+				r.log.Info("Received shutdown signal, existing relayer")
+				return nil
+			}
+
 			stats.Mute("gcp-relay-consumer")
 			stats.Mute("gcp-relay-producer")
 

@@ -2,15 +2,14 @@ package rpubsub
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/relistan/go-director"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/api"
 	"github.com/batchcorp/plumber/backends/rpubsub/types"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
@@ -22,77 +21,43 @@ const (
 )
 
 type Relayer struct {
-	Client         *redis.Client
-	Options        *cli.Options
-	MsgDesc        *desc.MessageDescriptor
-	RelayCh        chan interface{}
-	log            *logrus.Entry
-	Looper         *director.FreeLooper
-	DefaultContext context.Context
-}
-
-type IRedisRelayer interface {
-	Relay() error
+	Client      *redis.Client
+	Options     *cli.Options
+	RelayCh     chan interface{}
+	log         *logrus.Entry
+	Looper      *director.FreeLooper
+	ShutdownCtx context.Context
 }
 
 var (
-	errMissingChannel = errors.New("You must specify at least one channel")
+	ErrMissingChannel = errors.New("You must specify at least one channel")
 )
 
-// Relay sets up a new RedisPubSub relayer, starts GRPC workers and the API server
-func Relay(opts *cli.Options) error {
+// Relay sets up a new RedisPubSub relayer
+func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
 	if err := validateRelayOptions(opts); err != nil {
-		return errors.Wrap(err, "unable to verify options")
-	}
-
-	// Create new relayer instance (+ validate token & gRPC address)
-	relayCfg := &relay.Config{
-		Token:       opts.RelayToken,
-		GRPCAddress: opts.RelayGRPCAddress,
-		NumWorkers:  opts.RelayNumWorkers,
-		Timeout:     opts.RelayGRPCTimeout,
-		RelayCh:     make(chan interface{}, 1),
-		DisableTLS:  opts.RelayGRPCDisableTLS,
-		Type:        opts.RelayType,
-	}
-
-	grpcRelayer, err := relay.New(relayCfg)
-	if err != nil {
-		return errors.Wrap(err, "unable to create new gRPC relayer")
-	}
-
-	// Launch HTTP server
-	go func() {
-		if err := api.Start(opts.RelayHTTPListenAddress, opts.Version); err != nil {
-			logrus.Fatalf("unable to start API server: %s", err)
-		}
-	}()
-
-	if err := grpcRelayer.StartWorkers(); err != nil {
-		return errors.Wrap(err, "unable to start gRPC relay workers")
+		return nil, errors.Wrap(err, "unable to verify options")
 	}
 
 	client, err := NewClient(opts)
 	if err != nil {
-		return errors.Wrap(err, "unable to create client")
+		return nil, errors.Wrap(err, "unable to create client")
 	}
 
-	r := &Relayer{
-		Client:         client,
-		Options:        opts,
-		RelayCh:        relayCfg.RelayCh,
-		log:            logrus.WithField("pkg", "redis/relay"),
-		Looper:         director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
-		DefaultContext: context.Background(),
-	}
-
-	return r.Relay()
+	return &Relayer{
+		Client:      client,
+		Options:     opts,
+		RelayCh:     relayCh,
+		log:         logrus.WithField("pkg", "rpubsub/relay"),
+		Looper:      director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
+		ShutdownCtx: shutdownCtx,
+	}, nil
 }
 
 // validateRelayOptions ensures all required CLI options are present before initializing relay mode
 func validateRelayOptions(opts *cli.Options) error {
 	if len(opts.RedisPubSub.Channels) == 0 {
-		return errMissingChannel
+		return ErrMissingChannel
 	}
 
 	// RedisPubSub either supports a password (v1+) OR a username+password (v6+)
@@ -112,12 +77,27 @@ func (r *Relayer) Relay() error {
 
 	defer r.Client.Close()
 
-	sub := r.Client.Subscribe(r.DefaultContext, r.Options.RedisPubSub.Channels...)
-	defer sub.Unsubscribe(r.DefaultContext, r.Options.RedisPubSub.Channels...)
+	sub := r.Client.Subscribe(r.ShutdownCtx, r.Options.RedisPubSub.Channels...)
+	defer sub.Unsubscribe(r.ShutdownCtx, r.Options.RedisPubSub.Channels...)
 
 	for {
-		msg, err := sub.ReceiveMessage(r.DefaultContext)
+		// Redis library is not handling context cancellation, only timeouts. So we must use a timeout here
+		// to ensure we eventually receive the context cancellation from ShutdownCtx
+		ctx, _ := context.WithTimeout(r.ShutdownCtx, time.Second*5)
+		msg, err := sub.ReceiveMessage(ctx)
 		if err != nil {
+			// When a timeout occurs
+			if strings.Contains(err.Error(), "operation was canceled") {
+				r.log.Info("Received shutdown signal, existing relayer")
+				return nil
+			}
+
+			// This will happen every loop when the context times out
+			if strings.Contains(err.Error(), "i/o timeout") {
+				time.Sleep(time.Millisecond * 100)
+				continue
+			}
+
 			// Temporarily mute stats
 			stats.Mute("redis-pubsub-relay-consumer")
 			stats.Mute("redis-pubsub-relay-producer")

@@ -4,11 +4,9 @@ import (
 	"context"
 
 	servicebus "github.com/Azure/azure-service-bus-go"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/api"
 	"github.com/batchcorp/plumber/backends/azure/types"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
@@ -16,97 +14,78 @@ import (
 )
 
 type Relayer struct {
-	Options        *cli.Options
-	MsgDesc        *desc.MessageDescriptor
-	RelayCh        chan interface{}
-	log            *logrus.Entry
-	Queue          *servicebus.Queue
-	Topic          *servicebus.Topic
-	DefaultContext context.Context
+	Options     *cli.Options
+	RelayCh     chan interface{}
+	log         *logrus.Entry
+	Queue       *servicebus.Queue
+	Topic       *servicebus.Topic
+	ShutdownCtx context.Context
 }
 
-func Relay(opts *cli.Options) error {
-
-	// Create new relayer instance (+ validate token & gRPC address)
-	relayCfg := &relay.Config{
-		Token:       opts.RelayToken,
-		GRPCAddress: opts.RelayGRPCAddress,
-		NumWorkers:  opts.RelayNumWorkers,
-		Timeout:     opts.RelayGRPCTimeout,
-		RelayCh:     make(chan interface{}, 1),
-		DisableTLS:  opts.RelayGRPCDisableTLS,
-		Type:        opts.RelayType,
-	}
-
-	grpcRelayer, err := relay.New(relayCfg)
-	if err != nil {
-		return errors.Wrap(err, "unable to create new gRPC relayer")
-	}
-
+func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
 	// Create new service
 	client, err := NewClient(opts)
 	if err != nil {
-		return errors.Wrap(err, "unable to create new azure service")
-	}
-
-	// Launch HTTP server
-	go func() {
-		if err := api.Start(opts.RelayHTTPListenAddress, opts.Version); err != nil {
-			logrus.Fatalf("unable to start API server: %s", err)
-		}
-	}()
-
-	// Launch gRPC Relayer
-	if err := grpcRelayer.StartWorkers(); err != nil {
-		return errors.Wrap(err, "unable to start gRPC relay workers")
+		return nil, errors.Wrap(err, "unable to create new azure service")
 	}
 
 	r := &Relayer{
-		Options: opts,
-		RelayCh: relayCfg.RelayCh,
-		log:     logrus.WithField("pkg", "azure/relay.go"),
+		Options:     opts,
+		RelayCh:     relayCh,
+		ShutdownCtx: shutdownCtx,
+		log:         logrus.WithField("pkg", "azure/relay.go"),
 	}
 
 	if opts.Azure.Queue != "" {
 		queue, err := client.NewQueue(opts.Azure.Queue)
 		if err != nil {
-			return errors.Wrap(err, "unable to create new azure service bus queue client")
+			return nil, errors.Wrap(err, "unable to create new azure service bus queue client")
 		}
 
 		r.Queue = queue
 	} else {
 		topic, err := client.NewTopic(opts.Azure.Topic)
 		if err != nil {
-			return errors.Wrap(err, "unable to create new azure service bus topic client")
+			return nil, errors.Wrap(err, "unable to create new azure service bus topic client")
 		}
 
 		r.Topic = topic
 	}
 
-	return r.Relay()
+	return r, nil
 }
 
 // readQueue reads messages from an ASB queue
-func (r *Relayer) readQueue(ctx context.Context, handler servicebus.HandlerFunc) error {
-	defer r.Queue.Close(ctx)
+func (r *Relayer) readQueue(handler servicebus.HandlerFunc) error {
+	defer r.Queue.Close(r.ShutdownCtx)
 	for {
-		if err := r.Queue.ReceiveOne(ctx, handler); err != nil {
+		if err := r.Queue.ReceiveOne(r.ShutdownCtx, handler); err != nil {
+			if err == context.Canceled {
+				r.log.Info("Received shutdown signal, existing relayer")
+				return nil
+			}
+
 			return err
 		}
 	}
 }
 
 // readTopic reads messages from an ASB topic using the given subscription name
-func (r *Relayer) readTopic(ctx context.Context, handler servicebus.HandlerFunc) error {
+func (r *Relayer) readTopic(handler servicebus.HandlerFunc) error {
 	sub, err := r.Topic.NewSubscription(r.Options.Azure.Subscription)
 	if err != nil {
 		return errors.Wrap(err, "unable to create topic subscription")
 	}
 
-	defer sub.Close(ctx)
+	defer sub.Close(r.ShutdownCtx)
 
 	for {
-		if err := sub.ReceiveOne(ctx, handler); err != nil {
+		if err := sub.ReceiveOne(r.ShutdownCtx, handler); err != nil {
+			if err == context.Canceled {
+				r.log.Info("Received shutdown signal, existing relayer")
+				return nil
+			}
+
 			return err
 		}
 	}
@@ -115,8 +94,6 @@ func (r *Relayer) readTopic(ctx context.Context, handler servicebus.HandlerFunc)
 }
 
 func (r *Relayer) Relay() error {
-	ctx := context.Background()
-
 	if r.Queue != nil {
 		r.log.Infof("Relaying azure service bus messages from '%s' queue -> '%s'",
 			r.Options.Azure.Queue, r.Options.RelayGRPCAddress)
@@ -155,8 +132,8 @@ func (r *Relayer) Relay() error {
 	}
 
 	if r.Queue != nil {
-		return r.readQueue(ctx, handler)
+		return r.readQueue(handler)
 	}
 
-	return r.readTopic(ctx, handler)
+	return r.readTopic(handler)
 }

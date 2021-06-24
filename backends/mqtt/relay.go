@@ -8,79 +8,44 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	pahomqtt "github.com/eclipse/paho.mqtt.golang"
 
-	"github.com/batchcorp/plumber/api"
+	"github.com/pkg/errors"
+	"github.com/relistan/go-director"
+	"github.com/sirupsen/logrus"
+
 	"github.com/batchcorp/plumber/backends/mqtt/types"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/stats"
-	"github.com/jhump/protoreflect/desc"
-	"github.com/pkg/errors"
-	"github.com/relistan/go-director"
-	"github.com/sirupsen/logrus"
 )
 
 type Relayer struct {
-	Client  pahomqtt.Client
-	Options *cli.Options
-	MsgDesc *desc.MessageDescriptor
-	RelayCh chan interface{}
-	log     *logrus.Entry
-	Looper  *director.FreeLooper
-	Context context.Context
+	Client      pahomqtt.Client
+	Options     *cli.Options
+	RelayCh     chan interface{}
+	log         *logrus.Entry
+	Looper      *director.FreeLooper
+	ShutdownCtx context.Context
 }
 
-type IMQTTRelayer interface {
-	Relay() error
-}
-
-// Relay sets up a new MQTT relayer, starts GRPC workers and the API server
-func Relay(opts *cli.Options) error {
+// Relay sets up a new MQTT relayer
+func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
 	if err := validateRelayOptions(opts); err != nil {
-		return errors.Wrap(err, "unable to verify options")
-	}
-
-	// Create new relayer instance (+ validate token & gRPC address)
-	relayCfg := &relay.Config{
-		Token:       opts.RelayToken,
-		GRPCAddress: opts.RelayGRPCAddress,
-		NumWorkers:  opts.RelayNumWorkers,
-		Timeout:     opts.RelayGRPCTimeout,
-		RelayCh:     make(chan interface{}, 1),
-		DisableTLS:  opts.RelayGRPCDisableTLS,
-		Type:        opts.RelayType,
-	}
-
-	grpcRelayer, err := relay.New(relayCfg)
-	if err != nil {
-		return errors.Wrap(err, "unable to create new gRPC relayer")
-	}
-
-	// Launch HTTP server
-	go func() {
-		if err := api.Start(opts.RelayHTTPListenAddress, opts.Version); err != nil {
-			logrus.Fatalf("unable to start API server: %s", err)
-		}
-	}()
-
-	if err := grpcRelayer.StartWorkers(); err != nil {
-		return errors.Wrap(err, "unable to start gRPC relay workers")
+		return nil, errors.Wrap(err, "unable to verify options")
 	}
 
 	client, err := connect(opts)
 	if err != nil {
-		return errors.Wrap(err, "unable to create client")
+		return nil, errors.Wrap(err, "unable to create client")
 	}
 
-	r := &Relayer{
-		Client:  client,
-		Options: opts,
-		RelayCh: relayCfg.RelayCh,
-		log:     logrus.WithField("pkg", "mqtt/relay"),
-		Looper:  director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
-		Context: context.Background(),
-	}
-
-	return r.Relay()
+	return &Relayer{
+		Client:      client,
+		Options:     opts,
+		RelayCh:     relayCh,
+		log:         logrus.WithField("pkg", "mqtt/relay"),
+		Looper:      director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
+		ShutdownCtx: shutdownCtx,
+	}, nil
 }
 
 // validateRelayOptions ensures all required CLI options are present before initializing relay mode
@@ -148,8 +113,11 @@ func (r *Relayer) Relay() error {
 
 	for {
 		select {
-		case <-r.Context.Done():
+		case <-r.ShutdownCtx.Done():
+			r.log.Info("Received shutdown signal, existing relayer")
 			return nil
+		default:
+			// noop
 		}
 	}
 

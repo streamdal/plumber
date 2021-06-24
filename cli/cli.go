@@ -207,13 +207,24 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	return cmd, opts, err
 }
 
+// convertSliceArgs splits up comma delimited flags into a slice. We do this because slice argument
+// environment variables in kingpin are newline delimited for some odd reason
+// See https://github.com/alecthomas/kingpin/issues/257
 func convertSliceArgs(opts *Options) {
-	if len(opts.RedisPubSub.Channels) != 0 {
+	if len(opts.RedisPubSub.Channels) == 1 {
 		opts.RedisPubSub.Channels = strings.Split(opts.RedisPubSub.Channels[0], ",")
 	}
 
-	if len(opts.RedisStreams.Streams) != 0 {
+	if len(opts.RedisStreams.Streams) == 1 {
 		opts.RedisStreams.Streams = strings.Split(opts.RedisStreams.Streams[0], ",")
+	}
+
+	if len(opts.Kafka.Brokers) == 1 && strings.Contains(opts.Kafka.Brokers[0], ",") {
+		opts.Kafka.Brokers = strings.Split(opts.Kafka.Brokers[0], ",")
+	}
+
+	if len(opts.Kafka.Topics) == 1 && strings.Contains(opts.Kafka.Topics[0], ",") {
+		opts.Kafka.Topics = strings.Split(opts.Kafka.Topics[0], ",")
 	}
 }
 
