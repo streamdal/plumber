@@ -2,6 +2,7 @@ package cdc_mongo
 
 import (
 	"context"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -83,6 +84,9 @@ func (r *Relayer) Relay() error {
 			stats.Mute("redis-pubsub-relay-producer")
 
 			r.log.Errorf("unable to read message from mongo: %s", cs.Err())
+
+			time.Sleep(ReadRetryInterval)
+			continue
 		}
 
 		stats.Incr("cdc-mongo-relay-consumer", 1)
