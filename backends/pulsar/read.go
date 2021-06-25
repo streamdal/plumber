@@ -3,8 +3,6 @@ package pulsar
 import (
 	"context"
 
-	"github.com/batchcorp/plumber/reader"
-
 	"github.com/apache/pulsar-client-go/pulsar"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
@@ -12,6 +10,7 @@ import (
 
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/reader"
 )
 
 func Read(opts *cli.Options, md *desc.MessageDescriptor) error {
