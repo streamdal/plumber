@@ -11,7 +11,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/writer"
 )
 
@@ -19,19 +18,9 @@ var (
 	errMissingTopicARN = errors.New("--topic cannot be empty")
 )
 
-func Write(opts *cli.Options) error {
+func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 	if err := writer.ValidateWriteOptions(opts, validateWriteOptions); err != nil {
 		return errors.Wrap(err, "unable to validate write options")
-	}
-
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.WriteInputType == "jsonpb" {
-		md, mdErr = pb.FindMessageDescriptor(opts.WriteProtobufDirs, opts.WriteProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
 	}
 
 	svc, err := NewService(opts)

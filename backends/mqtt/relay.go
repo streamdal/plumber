@@ -2,7 +2,6 @@ package mqtt
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -74,16 +73,6 @@ func validateRelayOptions(opts *cli.Options) error {
 
 	if opts.MQTT.QoSLevel > 2 || opts.MQTT.QoSLevel < 0 {
 		return errInvalidQOSLevel
-	}
-
-	// If anything protobuf-related is specified, it's being used
-	if opts.ReadProtobufRootMessage != "" || len(opts.ReadProtobufDirs) != 0 {
-		if err := cli.ValidateProtobufOptions(
-			opts.ReadProtobufDirs,
-			opts.ReadProtobufRootMessage,
-		); err != nil {
-			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
-		}
 	}
 
 	return nil

@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/jhump/protoreflect/desc"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -14,7 +16,7 @@ import (
 	"github.com/batchcorp/plumber/printer"
 )
 
-func Read(opts *cli.Options) error {
+func Read(opts *cli.Options, _ *desc.MessageDescriptor) error {
 	if err := validateReadOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}

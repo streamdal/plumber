@@ -90,17 +90,6 @@ func ValidateWriteOptions(opts *cli.Options, busSpecific func(options *cli.Optio
 		}
 	}
 
-	// If type is protobuf, ensure both --protobuf-dir and --protobuf-root-message
-	// are set as well
-	if opts.WriteInputType == "jsonpb" {
-		if err := cli.ValidateProtobufOptions(
-			opts.WriteProtobufDirs,
-			opts.WriteProtobufRootMessage,
-		); err != nil {
-			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
-		}
-	}
-
 	if opts.WriteInputData == "" && opts.WriteInputFile == "" {
 		return errors.New("either --input-data or --input-file must be specified")
 	}
