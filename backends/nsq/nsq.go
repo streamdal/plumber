@@ -37,7 +37,7 @@ func getNSQConfig(opts *cli.Options) (*nsq.Config, error) {
 		config.AuthSecret = opts.NSQ.AuthSecret
 	}
 
-	if opts.NSQ.InsecureTLS || opts.NSQ.TLSClientCertFile != "" {
+	if opts.NSQ.UseTLS || opts.NSQ.TLSClientCertFile != "" {
 		tlsConfig, err := generateTLSConfig(opts)
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to generate TLS config")
@@ -51,6 +51,13 @@ func getNSQConfig(opts *cli.Options) (*nsq.Config, error) {
 
 // generateTLSConfig generates necessary TLS config for Dialing to an NSQ server
 func generateTLSConfig(opts *cli.Options) (*tls.Config, error) {
+	// No client certs
+	if opts.NSQ.TLSClientCertFile == "" {
+		return &tls.Config{
+			InsecureSkipVerify: opts.NSQ.InsecureTLS,
+		}, nil
+	}
+
 	certpool := x509.NewCertPool()
 
 	pemCerts, err := ioutil.ReadFile(opts.NSQ.TLSCAFile)

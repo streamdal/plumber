@@ -13,6 +13,7 @@ type NSQOptions struct {
 	NSQDAddress       string
 	AuthSecret        string
 	ClientID          string
+	UseTLS            bool
 	InsecureTLS       bool
 	TLSClientKeyFile  string
 	TLSClientCertFile string
@@ -64,17 +65,22 @@ func addSharedNSQFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Envar("PLUMBER_RELAY_NSQ_CLIENT_ID").
 		StringVar(&opts.NSQ.ClientID)
 
-	cmd.Flag("tls-ca-file", "CA file (only needed if addr is ssl://").
+	cmd.Flag("tls-ca-file", "CA file").
 		Envar("PLUMBER_RELAY_NSQ_TLS_CA_FILE").
 		ExistingFileVar(&opts.NSQ.TLSCAFile)
 
-	cmd.Flag("tls-client-cert-file", "Client cert file (only needed if addr is ssl://").
+	cmd.Flag("tls-client-cert-file", "Client cert file").
 		Envar("PLUMBER_RELAY_NSQ_TLS_CERT_FILE").
 		ExistingFileVar(&opts.NSQ.TLSClientCertFile)
 
-	cmd.Flag("tls-client-key-file", "Client key file (only needed if addr is ssl://").
+	cmd.Flag("tls-client-key-file", "Client key file").
 		Envar("PLUMBER_RELAY_NSQ_TLS_KEY_FILE").
 		ExistingFileVar(&opts.NSQ.TLSClientKeyFile)
+
+	cmd.Flag("use-tls", "Connect securely via TLS").
+		Envar("PLUMBER_RELAY_NSQ_USE_TLS").
+		Default("false").
+		BoolVar(&opts.NSQ.UseTLS)
 
 	cmd.Flag("insecure-tls", "Whether to verify server certificate").
 		Envar("PLUMBER_RELAY_NSQ_SKIP_VERIFY_TLS").
