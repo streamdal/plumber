@@ -2,13 +2,16 @@ package plumber
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
+	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/api"
 	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/relay"
 )
@@ -32,6 +35,7 @@ type Config struct {
 type Plumber struct {
 	*Config
 	RelayCh chan interface{}
+	MsgDesc *desc.MessageDescriptor
 	log     *logrus.Entry
 }
 
@@ -41,11 +45,58 @@ func New(cfg *Config) (*Plumber, error) {
 		return nil, errors.Wrap(err, "unable to validate config")
 	}
 
+	md, err := getMd(cfg.Options)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Plumber{
 		Config:  cfg,
 		RelayCh: make(chan interface{}, 1),
+		MsgDesc: md,
 		log:     logrus.WithField("pkg", "plumber"),
 	}, nil
+}
+
+// getMd retrieves a protobuf message descriptor if protobuf read/write flags are specified
+func getMd(opts *cli.Options) (*desc.MessageDescriptor, error) {
+	var err error
+	var md *desc.MessageDescriptor
+
+	// If anything protobuf-related is specified, it's being used
+	if opts.ReadProtobufRootMessage != "" || len(opts.ReadProtobufDirs) != 0 {
+		if err := cli.ValidateProtobufOptions(
+			opts.ReadProtobufDirs,
+			opts.ReadProtobufRootMessage,
+		); err != nil {
+			return nil, fmt.Errorf("unable to validate protobuf option(s): %s", err)
+		}
+	}
+
+	if opts.WriteInputType == "jsonpb" {
+		if err := cli.ValidateProtobufOptions(
+			opts.WriteProtobufDirs,
+			opts.WriteProtobufRootMessage,
+		); err != nil {
+			return nil, fmt.Errorf("unable to validate protobuf option(s): %s", err)
+		}
+	}
+
+	if opts.WriteInputType == "jsonpb" {
+		md, err = pb.FindMessageDescriptor(opts.WriteProtobufDirs, opts.WriteProtobufRootMessage)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to find root message descriptor")
+		}
+	}
+
+	if opts.ReadProtobufRootMessage != "" {
+		md, err = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to find root message descriptor")
+		}
+	}
+
+	return md, err
 }
 
 // validateConfig ensures all correct values for Config are passed
@@ -94,6 +145,7 @@ func (p *Plumber) Run() {
 	}
 }
 
+// startGRPCService starts relay workers which send relay messages to grpc-collector
 func (p *Plumber) startGRPCService() error {
 	relayCfg := &relay.Config{
 		Token:              p.Options.RelayToken,

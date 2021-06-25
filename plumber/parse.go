@@ -32,37 +32,37 @@ import (
 func (p *Plumber) parseCmdRead() error {
 	switch p.Cmd {
 	case "read rabbit":
-		return rabbitmq.Read(p.Options)
+		return rabbitmq.Read(p.Options, p.MsgDesc)
 	case "read kafka":
-		return kafka.Read(p.Options)
+		return kafka.Read(p.Options, p.MsgDesc)
 	case "read gcp-pubsub":
-		return gcpPubSub.Read(p.Options)
+		return gcpPubSub.Read(p.Options, p.MsgDesc)
 	case "read mqtt":
-		return mqtt.Read(p.Options)
+		return mqtt.Read(p.Options, p.MsgDesc)
 	case "read aws-sqs":
-		return awssqs.Read(p.Options)
+		return awssqs.Read(p.Options, p.MsgDesc)
 	case "read activemq":
-		return activemq.Read(p.Options)
+		return activemq.Read(p.Options, p.MsgDesc)
 	case "read azure":
-		return azure.Read(p.Options)
+		return azure.Read(p.Options, p.MsgDesc)
 	case "read azure-eventhub":
-		return azureEventhub.Read(p.Options)
+		return azureEventhub.Read(p.Options, p.MsgDesc)
 	case "read nats":
-		return nats.Read(p.Options)
+		return nats.Read(p.Options, p.MsgDesc)
 	case "read nats-streaming":
-		return natsStreaming.Read(p.Options)
+		return natsStreaming.Read(p.Options, p.MsgDesc)
 	case "read redis-pubsub":
-		return rpubsub.Read(p.Options)
+		return rpubsub.Read(p.Options, p.MsgDesc)
 	case "read redis-streams":
-		return rstreams.Read(p.Options)
+		return rstreams.Read(p.Options, p.MsgDesc)
 	case "read cdc-mongo":
-		return cdcMongo.Read(p.Options)
+		return cdcMongo.Read(p.Options, p.MsgDesc)
 	case "read cdc-postgres":
-		return cdcPostgres.Read(p.Options)
+		return cdcPostgres.Read(p.Options, p.MsgDesc)
 	case "read pulsar":
-		return pulsar.Read(p.Options)
+		return pulsar.Read(p.Options, p.MsgDesc)
 	case "read nsq":
-		return nsq.Read(p.Options)
+		return nsq.Read(p.Options, p.MsgDesc)
 	default:
 		return fmt.Errorf("unrecognized command: %s", p.Cmd)
 	}
@@ -72,35 +72,35 @@ func (p *Plumber) parseCmdRead() error {
 func (p *Plumber) parseCmdWrite() error {
 	switch p.Cmd {
 	case "write rabbit":
-		return rabbitmq.Write(p.Options)
+		return rabbitmq.Write(p.Options, p.MsgDesc)
 	case "write kafka":
-		return kafka.Write(p.Options)
+		return kafka.Write(p.Options, p.MsgDesc)
 	case "write gcp-pubsub":
-		return gcpPubSub.Write(p.Options)
+		return gcpPubSub.Write(p.Options, p.MsgDesc)
 	case "write mqtt":
-		return mqtt.Write(p.Options)
+		return mqtt.Write(p.Options, p.MsgDesc)
 	case "write aws-sqs":
-		return awssqs.Write(p.Options)
+		return awssqs.Write(p.Options, p.MsgDesc)
 	case "write activemq":
-		return activemq.Write(p.Options)
+		return activemq.Write(p.Options, p.MsgDesc)
 	case "write aws-sns":
-		return awssns.Write(p.Options)
+		return awssns.Write(p.Options, p.MsgDesc)
 	case "write azure":
-		return azure.Write(p.Options)
+		return azure.Write(p.Options, p.MsgDesc)
 	case "write azure-eventhub":
-		return azureEventhub.Write(p.Options)
+		return azureEventhub.Write(p.Options, p.MsgDesc)
 	case "write nats":
-		return nats.Write(p.Options)
+		return nats.Write(p.Options, p.MsgDesc)
 	case "write nats-streaming":
-		return natsStreaming.Write(p.Options)
+		return natsStreaming.Write(p.Options, p.MsgDesc)
 	case "write redis-pubsub":
-		return rpubsub.Write(p.Options)
+		return rpubsub.Write(p.Options, p.MsgDesc)
 	case "write redis-streams":
-		return rstreams.Write(p.Options)
+		return rstreams.Write(p.Options, p.MsgDesc)
 	case "write pulsar":
-		return pulsar.Write(p.Options)
+		return pulsar.Write(p.Options, p.MsgDesc)
 	case "write nsq":
-		return nsq.Write(p.Options)
+		return nsq.Write(p.Options, p.MsgDesc)
 	default:
 		return fmt.Errorf("unrecognized command: %s", p.Cmd)
 	}

@@ -2,16 +2,17 @@ package awssqs
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
-	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/writer"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"strings"
+
+	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/writer"
 )
 
 const (
@@ -25,19 +26,9 @@ const (
 // This is where we verify that the passed args and flags combo makes sense,
 // attempt to establish a connection, parse protobuf before finally attempting
 // to perform the write.
-func Write(opts *cli.Options) error {
+func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 	if err := writer.ValidateWriteOptions(opts, validateWriteOptions); err != nil {
 		return errors.Wrap(err, "unable to validate write options")
-	}
-
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.WriteInputType == "jsonpb" {
-		md, mdErr = pb.FindMessageDescriptor(opts.WriteProtobufDirs, opts.WriteProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
 	}
 
 	svc, queueURL, err := NewService(opts)

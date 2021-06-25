@@ -2,9 +2,6 @@ package pulsar
 
 import (
 	"context"
-	"fmt"
-
-	"github.com/batchcorp/plumber/reader"
 
 	"github.com/apache/pulsar-client-go/pulsar"
 	"github.com/jhump/protoreflect/desc"
@@ -12,23 +9,13 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/reader"
 )
 
-func Read(opts *cli.Options) error {
+func Read(opts *cli.Options, md *desc.MessageDescriptor) error {
 	if err := validateReadOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
-	}
-
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.ReadProtobufRootMessage != "" {
-		md, mdErr = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
 	}
 
 	client, err := NewClient(opts)
@@ -87,16 +74,6 @@ func (p *Pulsar) Read() error {
 
 // validateReadOptions ensures all specified read flags are correct
 func validateReadOptions(opts *cli.Options) error {
-	// If anything protobuf-related is specified, it's being used
-	if opts.ReadProtobufRootMessage != "" || len(opts.ReadProtobufDirs) != 0 {
-		if err := cli.ValidateProtobufOptions(
-			opts.ReadProtobufDirs,
-			opts.ReadProtobufRootMessage,
-		); err != nil {
-			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
-		}
-	}
-
 	return nil
 }
 
