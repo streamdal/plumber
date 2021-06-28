@@ -65,6 +65,8 @@ func (r *Relayer) readQueue(handler servicebus.HandlerFunc) error {
 				return nil
 			}
 
+			stats.IncrPromCounter("plumber_read_errors", 1)
+
 			return err
 		}
 	}
@@ -85,6 +87,8 @@ func (r *Relayer) readTopic(handler servicebus.HandlerFunc) error {
 				r.log.Info("Received shutdown signal, existing relayer")
 				return nil
 			}
+
+			stats.IncrPromCounter("plumber_read_errors", 1)
 
 			return err
 		}

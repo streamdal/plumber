@@ -84,6 +84,8 @@ func (r *Relayer) Relay() error {
 			stats.Mute("gcp-relay-consumer")
 			stats.Mute("gcp-relay-producer")
 
+			stats.IncrPromCounter("plumber_read_errors", 1)
+
 			r.log.WithField("err", err).Error("unable to read message(s) from GCP pubsub")
 			time.Sleep(RetryReadInterval)
 			continue
