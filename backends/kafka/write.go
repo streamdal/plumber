@@ -22,7 +22,7 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	value, err := writer.GenerateWriteValue(md, opts)
+	writeValues, err := writer.GenerateWriteValues(md, opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}
@@ -41,7 +41,13 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 	defer kafkaWriter.Conn.Close()
 	defer kafkaWriter.Writer.Close()
 
-	return k.Write([]byte(opts.Kafka.WriteKey), value)
+	for _, value := range writeValues {
+		if err := k.Write([]byte(opts.Kafka.WriteKey), value); err != nil {
+			k.log.Error(err)
+		}
+	}
+
+	return nil
 }
 
 // Write writes a message to a kafka topic. It is a wrapper for WriteMessages.

@@ -20,6 +20,11 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
+	writeValues, err := writer.GenerateWriteValues(md, opts)
+	if err != nil {
+		return errors.Wrap(err, "unable to generate write value")
+	}
+
 	r, err := New(opts, md)
 	if err != nil {
 		return errors.Wrap(err, "unable to initialize rabbitmq consumer")
@@ -27,14 +32,15 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 
 	defer r.Consumer.Close()
 
-	msg, err := writer.GenerateWriteValue(md, opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to generate write value")
-	}
-
 	ctx := context.Background()
 
-	return r.Write(ctx, msg)
+	for _, value := range writeValues {
+		if err := r.Write(ctx, value); err != nil {
+			r.log.Error(err)
+		}
+	}
+
+	return nil
 }
 
 // Write is a wrapper for amqp Publish method. We wrap it so that we can mock

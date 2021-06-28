@@ -22,6 +22,11 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
+	writeValues, err := writer.GenerateWriteValues(md, opts)
+	if err != nil {
+		return errors.Wrap(err, "unable to generate write value")
+	}
+
 	client, err := NewStreamsClient(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to create client")
@@ -37,12 +42,13 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 
 	defer client.Close()
 
-	msg, err := writer.GenerateWriteValue(md, opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to generate write value")
+	for _, value := range writeValues {
+		if err := r.Write(value); err != nil {
+			r.log.Error(err)
+		}
 	}
 
-	return r.Write(msg)
+	return nil
 }
 
 func (r *RedisStreams) Write(value []byte) error {

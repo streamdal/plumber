@@ -33,8 +33,8 @@ require (
 	github.com/nats-io/nats-server/v2 v2.1.9 // indirect
 	github.com/nats-io/nats.go v1.10.0
 	github.com/nats-io/stan.go v0.8.3
-	github.com/olekukonko/tablewriter v0.0.5
 	github.com/nsqio/go-nsq v1.0.8
+	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.14.2
 	github.com/onsi/gomega v1.10.4
 	github.com/pkg/errors v0.9.1
@@ -43,6 +43,7 @@ require (
 	github.com/segmentio/kafka-go v0.4.16
 	github.com/sirupsen/logrus v1.7.0
 	github.com/streadway/amqp v1.0.0
+	github.com/tidwall/gjson v1.8.0
 	go.mongodb.org/mongo-driver v1.5.1
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
 	google.golang.org/grpc v1.30.0
