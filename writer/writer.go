@@ -113,7 +113,7 @@ func ValidateWriteOptions(opts *cli.Options, busSpecific func(options *cli.Optio
 	}
 
 	// InputData and file cannot be set at the same time
-	if len(opts.WriteInputData) == 0 && opts.WriteInputFile != "" {
+	if len(opts.WriteInputData) > 0 && opts.WriteInputFile != "" {
 		return fmt.Errorf("--input-data and --input-file cannot both be set")
 	}
 
