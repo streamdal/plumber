@@ -31,6 +31,11 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
+	writeValues, err := writer.GenerateWriteValues(md, opts)
+	if err != nil {
+		return errors.Wrap(err, "unable to generate write value")
+	}
+
 	svc, queueURL, err := NewService(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new service")
@@ -45,12 +50,13 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 		Printer:  printer.New(),
 	}
 
-	msg, err := writer.GenerateWriteValue(md, opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to generate write value")
+	for _, value := range writeValues {
+		if err := a.Write(value); err != nil {
+			a.Log.Error(err)
+		}
 	}
 
-	return a.Write(msg)
+	return nil
 }
 
 func validateWriteOptions(opts *cli.Options) error {

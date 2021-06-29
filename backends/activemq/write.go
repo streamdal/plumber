@@ -14,7 +14,7 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	value, err := writer.GenerateWriteValue(md, opts)
+	writeValues, err := writer.GenerateWriteValues(md, opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}
@@ -31,7 +31,13 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 		log:     logrus.WithField("pkg", "activemq/write.go"),
 	}
 
-	return a.Write(value)
+	for _, value := range writeValues {
+		if err := a.Write(value); err != nil {
+			a.log.Error(err)
+		}
+	}
+
+	return nil
 }
 
 // Write writes a message to an ActiveMQ topic

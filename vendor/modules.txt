@@ -431,6 +431,13 @@ github.com/spaolacci/murmur3
 # github.com/streadway/amqp v1.0.0
 ## explicit
 github.com/streadway/amqp
+# github.com/tidwall/gjson v1.8.0
+## explicit
+github.com/tidwall/gjson
+# github.com/tidwall/match v1.0.3
+github.com/tidwall/match
+# github.com/tidwall/pretty v1.1.0
+github.com/tidwall/pretty
 # github.com/xdg-go/pbkdf2 v1.0.0
 github.com/xdg-go/pbkdf2
 # github.com/xdg-go/scram v1.0.2

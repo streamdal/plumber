@@ -44,6 +44,7 @@ require (
 	github.com/segmentio/kafka-go v0.4.16
 	github.com/sirupsen/logrus v1.7.0
 	github.com/streadway/amqp v1.0.0
+	github.com/tidwall/gjson v1.8.0
 	go.mongodb.org/mongo-driver v1.5.1
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
 	google.golang.org/grpc v1.30.0

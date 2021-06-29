@@ -102,6 +102,44 @@ INFO[0000] Initializing (could take a minute or two) ...  pkg=kafka/read.go
 }
 ```
 
+### Write messages via pipe
+
+Write a single message
+
+```bash
+$ echo "some data" | plumber write kafka --topic foo
+
+INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
+```
+
+Write multiple messages separated by newlines. Each line will be a message
+
+```bash
+$ cat mydata.txt
+line1
+line2
+line3
+
+$ cat mydata.txt | plumber write kafka --topic foo
+
+INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
+INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
+INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
+```
+
+Write each element of a JSON array as a message
+
+```bash
+$ cat mydata.json
+[{"key": "value1"},{"key": "value2"}]
+
+$ cat mydata.json | plumber write kafka --topic foo --json-array
+
+INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
+INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
+```
+
+
 <IMG>
 
 

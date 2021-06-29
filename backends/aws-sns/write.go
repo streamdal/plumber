@@ -23,6 +23,11 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
+	writeValues, err := writer.GenerateWriteValues(nil, opts)
+	if err != nil {
+		return errors.Wrap(err, "unable to generate write value")
+	}
+
 	svc, err := NewService(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new service")
@@ -35,12 +40,13 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 		log:     logrus.WithField("pkg", "aws-sns/write.go"),
 	}
 
-	msg, err := writer.GenerateWriteValue(nil, opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to generate write value")
+	for _, value := range writeValues {
+		if err := a.Write(value); err != nil {
+			a.log.Error(err)
+		}
 	}
 
-	return a.Write(msg)
+	return nil
 }
 
 func validateWriteOptions(opts *cli.Options) error {

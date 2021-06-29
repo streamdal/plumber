@@ -64,11 +64,12 @@ type Options struct {
 	Verbose                 bool
 
 	// Shared write flags
-	WriteInputData           string
+	WriteInputData           []string
 	WriteInputFile           string
 	WriteInputType           string
 	WriteProtobufDirs        []string
 	WriteProtobufRootMessage string
+	WriteInputIsJsonArray    bool
 
 	Kafka         *KafkaOptions
 	Rabbit        *RabbitOptions
@@ -269,7 +270,7 @@ func HandleGlobalDynamicFlags(cmd *kingpin.CmdClause, opts *Options) {
 
 func HandleGlobalWriteFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("input-data", "Data to write").
-		StringVar(&opts.WriteInputData)
+		StringsVar(&opts.WriteInputData)
 
 	cmd.Flag("input-file", "File containing input data (overrides input-data; 1 file is 1 message)").
 		ExistingFileVar(&opts.WriteInputFile)
@@ -286,6 +287,10 @@ func HandleGlobalWriteFlags(cmd *kingpin.CmdClause, opts *Options) {
 		"(required if protobuf-dir set; type should contain pkg name(s) separated by a period)").
 		Envar("PLUMBER_RELAY_PROTOBUF_ROOT_MESSAGE").
 		StringVar(&opts.WriteProtobufRootMessage)
+
+	cmd.Flag("json-array", "Handle input as JSON array instead of newline delimited data. "+
+		"Each array element will be written as a separate item").
+		BoolVar(&opts.WriteInputIsJsonArray)
 }
 
 func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {

@@ -16,7 +16,7 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	value, err := writer.GenerateWriteValue(md, opts)
+	writeValues, err := writer.GenerateWriteValues(md, opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}
@@ -34,7 +34,13 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 		printer: printer.New(),
 	}
 
-	return n.Write(value)
+	for _, value := range writeValues {
+		if err := n.Write(value); err != nil {
+			n.log.Error(err)
+		}
+	}
+
+	return nil
 }
 
 // Write publishes a message to a NATS streaming channel. The publish is synchronous, and will not complete until

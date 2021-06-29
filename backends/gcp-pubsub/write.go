@@ -22,17 +22,17 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
+	writeValues, err := writer.GenerateWriteValues(md, opts)
+	if err != nil {
+		return errors.Wrap(err, "unable to generate write value")
+	}
+
 	client, err := NewClient(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to create client")
 	}
 
 	defer client.Close()
-
-	msg, err := writer.GenerateWriteValue(md, opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to generate write value")
-	}
 
 	g := &GCPPubSub{
 		Options: opts,
@@ -41,7 +41,15 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 		log:     logrus.WithField("pkg", "gcppubsub/write.go"),
 	}
 
-	return g.Write(context.Background(), msg)
+	ctx := context.Background()
+
+	for _, value := range writeValues {
+		if err := g.Write(ctx, value); err != nil {
+			g.log.Error(err)
+		}
+	}
+
+	return nil
 }
 
 // Write is a wrapper for amqp Publish method. We wrap it so that we can mock

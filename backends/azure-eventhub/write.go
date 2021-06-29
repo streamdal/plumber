@@ -21,7 +21,7 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	msg, err := writer.GenerateWriteValue(md, opts)
+	writeValues, err := writer.GenerateWriteValues(md, opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}
@@ -38,7 +38,13 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 		log:     logrus.WithField("pkg", "azure-eventhub/write.go"),
 	}
 
-	return a.Write(ctx, msg)
+	for _, value := range writeValues {
+		if err := a.Write(ctx, value); err != nil {
+			a.log.Error(err)
+		}
+	}
+
+	return nil
 }
 
 // Write writes a message to a random partition on
