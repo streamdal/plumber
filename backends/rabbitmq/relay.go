@@ -100,6 +100,8 @@ func (r *Relayer) Relay() error {
 		select {
 		case errRabbit := <-errCh:
 			r.log.Errorf("runFunc ran into an error: %s", errRabbit.Error.Error())
+
+			stats.IncrPromCounter("plumber_read_errors", 1)
 		case <-r.ShutdownCtx.Done():
 			r.log.Info("Received shutdown signal, existing relayer")
 			return nil

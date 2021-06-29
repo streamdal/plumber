@@ -46,6 +46,9 @@ func main() {
 
 			serviceShutdownFunc()
 		}()
+
+		// Create prometheus counters/gauges
+		stats.InitPrometheusMetrics()
 	}
 
 	if opts.Stats {

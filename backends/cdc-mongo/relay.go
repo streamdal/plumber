@@ -83,6 +83,8 @@ func (r *Relayer) Relay() error {
 			stats.Mute("redis-pubsub-relay-consumer")
 			stats.Mute("redis-pubsub-relay-producer")
 
+			stats.IncrPromCounter("plumber_read_errors", 1)
+
 			r.log.Errorf("unable to read message from mongo: %s", cs.Err())
 
 			time.Sleep(ReadRetryInterval)

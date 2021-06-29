@@ -7,10 +7,11 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/batchcorp/schemas/build/go/events/records"
-	"github.com/batchcorp/schemas/build/go/services"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+
+	"github.com/batchcorp/schemas/build/go/events/records"
+	"github.com/batchcorp/schemas/build/go/services"
 
 	"github.com/batchcorp/plumber/backends/aws-sqs/types"
 )

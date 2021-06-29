@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 )
 
@@ -32,6 +33,7 @@ func Start(listenAddress, version string) error {
 
 	router.HandlerFunc("GET", "/health-check", a.healthCheckHandler)
 	router.HandlerFunc("GET", "/version", a.versionHandler)
+	router.Handler("GET", "/metrics", promhttp.Handler())
 
 	return http.ListenAndServe(listenAddress, router)
 }

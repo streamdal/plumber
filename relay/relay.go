@@ -377,7 +377,9 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 		return
 	}
 
-	stats.Incr(r.Config.Type+"-relay-producer", len(messages))
+	numMsgs := len(messages)
+	stats.Incr(r.Config.Type+"-relay-producer", numMsgs)
+	stats.IncrPromCounter("plumber_relay_total", numMsgs)
 }
 
 // CallWithRetry will retry a GRPC call until it succeeds or reaches a maximum number of retries defined by MaxGRPCRetries
@@ -387,6 +389,7 @@ func (r *Relay) CallWithRetry(ctx context.Context, method string, publish func(c
 	for i := 1; i <= MaxGRPCRetries; i++ {
 		err = publish(ctx)
 		if err != nil {
+			stats.IncrPromCounter("plumber_grpc_errors", 1)
 			r.log.Debugf("unable to complete %s call [retry %d/%d]", method, i, 5)
 			time.Sleep(GRPCRetrySleep)
 			continue

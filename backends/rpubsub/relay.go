@@ -102,6 +102,8 @@ func (r *Relayer) Relay() error {
 			stats.Mute("redis-pubsub-relay-consumer")
 			stats.Mute("redis-pubsub-relay-producer")
 
+			stats.IncrPromCounter("plumber_read_errors", 1)
+
 			r.log.Errorf("Unable to read message: %s (retrying in %s)", err, RetryReadInterval)
 
 			time.Sleep(RetryReadInterval)

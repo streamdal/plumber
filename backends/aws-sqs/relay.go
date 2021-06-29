@@ -89,6 +89,8 @@ func (r *Relayer) Relay() error {
 			stats.Mute("sqs-relay-consumer")
 			stats.Mute("sqs-relay-producer")
 
+			stats.IncrPromCounter("plumber_read_errors", 1)
+
 			r.log.WithField("err", err).Error("unable to read message(s) from SQS")
 			time.Sleep(RetryReadInterval)
 
