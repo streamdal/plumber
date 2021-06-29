@@ -45,6 +45,45 @@ type KafkaWriter struct {
 	Conn   *skafka.Conn
 }
 
+func NewConnection(opts *cli.Options) (*skafka.Conn, *skafka.Client, error) {
+	dialer := &skafka.Dialer{
+		DualStack: true,
+		Timeout:   opts.Kafka.Timeout,
+	}
+
+	if opts.Kafka.InsecureTLS {
+		dialer.TLS = &tls.Config{
+			InsecureSkipVerify: true,
+		}
+	}
+
+	auth, err := getAuthenticationMechanism(opts)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "unable to get authentication mechanism")
+	}
+
+	dialer.SASLMechanism = auth
+
+	// The dialer timeout does not get utilized under some conditions (such as
+	// when kafka is configured to NOT auto create topics) - we need a
+	// mechanism to bail out early.
+	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(opts.Kafka.Timeout))
+
+	// Attempt to establish connection on startup
+	conn, err := dialer.DialContext(ctxDeadline, "tcp", opts.Kafka.Address)
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
+			opts.Kafka.Address, err)
+	}
+
+	kclient := &skafka.Client{
+		Timeout: opts.Kafka.Timeout,
+	}
+
+	return conn, kclient, err
+
+}
+
 func NewReader(opts *cli.Options) (*KafkaReader, error) {
 	dialer := &skafka.Dialer{
 		DualStack: true,

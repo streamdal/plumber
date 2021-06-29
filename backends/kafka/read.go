@@ -85,6 +85,17 @@ func (k *Kafka) Read() error {
 			lineNumber++
 		}
 
+		if k.Options.ReadLag {
+
+			lag, err := k.Reader.ReadLag(context.Background())
+
+			if err != nil {
+				continue
+			}
+
+			str = fmt.Sprintf("%d: ", lag) + str
+		}
+
 		printer.Print(str)
 
 		if !k.Options.ReadFollow {

@@ -52,6 +52,7 @@ type Options struct {
 	ReadProtobufRootMessage string
 	ReadProtobufDirs        []string
 	ReadFollow              bool
+	ReadLag                 bool
 	ReadLineNumbers         bool
 	ReadConvert             string
 	Verbose                 bool
@@ -216,6 +217,9 @@ func HandleGlobalReadFlags(cmd *kingpin.CmdClause, opts *Options) {
 
 	cmd.Flag("verbose", "Display message metadata if available").
 		BoolVar(&opts.Verbose)
+
+	cmd.Flag("lag", "Display lag reader lag for each message").
+		Default("false").BoolVar(&opts.ReadLag)
 }
 
 func HandleGlobalWriteFlags(cmd *kingpin.CmdClause, opts *Options) {

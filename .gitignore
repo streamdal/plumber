@@ -3,3 +3,7 @@
 .DS*
 test-assets/backend-data/*
 start-*.sh
+.vscode/launch.json
+.vscode/settings.json
+plumber.exe
+main.exe
