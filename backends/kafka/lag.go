@@ -39,13 +39,46 @@ func LagCalculation(kc *skafka.Conn, topic string, kcli *skafka.Client, groupId 
 		return errors.Wrap(err, "unable to obtain partitions")
 	}
 
+	partitionIds := make([]int, len(partitionList))
+	offsetRequestList := make([]skafka.OffsetRequest, len(partitionList))
+
+	for i, partition := range partitionList {
+		partitionIds[i] = partition.ID
+
+		offsetRequestList[i] = skafka.OffsetRequest{
+			Partition: partition.ID,
+			Timestamp: 0,
+		}
+	}
+
 	// goal: get lag per partition in topic
+
+	// obtain last offset per partition
+
+	listoffsetResponse, err := kcli.ListOffsets(context.Background(), &skafka.ListOffsetsRequest{
+		Addr:   kc.RemoteAddr(),
+		Topics: map[string][]skafka.OffsetRequest{topic: offsetRequestList},
+	})
+
+	partitionOffsetMap := make(map[int]skafka.PartitionOffsets)
+
+	for _, v := range listoffsetResponse.Topics[topic] {
+		partitionOffsetMap[v.Partition] = v
+	}
+
+	// obtained last commited offset per partition
 
 	offsetResponse, err := kcli.OffsetFetch(context.Background(), &skafka.OffsetFetchRequest{
 		Addr:    kc.RemoteAddr(),
 		GroupID: groupId,
-		Topics:  map[string][]int{topic: pa},
+		Topics:  map[string][]int{topic: partitionIds},
 	})
+
+	lastCommitedOffset := make(map[int]skafka.OffsetFetchPartition)
+
+	for _, v := range offsetResponse.Topics[topic] {
+		lastCommitedOffset[v.Partition] = v
+	}
 
 }
 
