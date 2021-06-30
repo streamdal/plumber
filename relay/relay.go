@@ -390,6 +390,11 @@ func (r *Relay) CallWithRetry(ctx context.Context, method string, publish func(c
 		err = publish(ctx)
 		if err != nil {
 			stats.IncrPromCounter("plumber_grpc_errors", 1)
+
+			// Paused collection, retries will fail, exit early
+			if strings.Contains(err.Error(), "collection is paused") {
+				return err
+			}
 			r.log.Debugf("unable to complete %s call [retry %d/%d]", method, i, 5)
 			time.Sleep(GRPCRetrySleep)
 			continue
