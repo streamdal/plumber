@@ -19,6 +19,7 @@ const (
 	DefaultNumWorkers          = "10"
 	DefaultStatsReportInterval = "5s"
 	DefaultCount               = "10"
+	DefaultDproxyAddress       = "dproxy.batch.sh:443"
 )
 
 var (
@@ -38,6 +39,12 @@ type Options struct {
 	// Serializers
 	AvroSchemaFile string
 
+	// Dynamic Destination
+	DProxyAPIToken    string
+	DProxyAddress     string
+	DProxyInsecure    bool
+	DproxyGRPCTimeout time.Duration
+
 	// Relay
 	RelayToken             string
 	RelayGRPCAddress       string
@@ -53,16 +60,17 @@ type Options struct {
 	ReadProtobufDirs        []string
 	ReadFollow              bool
 	ReadLag                 bool
-	ReadLineNumbers         bool
 	ReadConvert             string
+	ReadJSONOutput          bool
 	Verbose                 bool
 
 	// Shared write flags
-	WriteInputData           string
+	WriteInputData           []string
 	WriteInputFile           string
 	WriteInputType           string
 	WriteProtobufDirs        []string
 	WriteProtobufRootMessage string
+	WriteInputIsJsonArray    bool
 
 	Kafka         *KafkaOptions
 	Rabbit        *RabbitOptions
@@ -80,11 +88,15 @@ type Options struct {
 	CDCMongo      *CDCMongoOptions
 	Batch         *BatchOptions
 	CDCPostgres   *CDCPostgresOptions
+	Pulsar        *PulsarOptions
+	NSQ           *NSQOptions
 }
 
 func Handle(cliArgs []string) (string, *Options, error) {
 	opts := &Options{
-		Kafka:     &KafkaOptions{},
+		Kafka: &KafkaOptions{
+			WriteHeader: make(map[string]string, 0),
+		},
 		Rabbit:    &RabbitOptions{},
 		GCPPubSub: &GCPPubSubOptions{},
 		MQTT:      &MQTTOptions{},
@@ -106,6 +118,8 @@ func Handle(cliArgs []string) (string, *Options, error) {
 			},
 		},
 		CDCPostgres: &CDCPostgresOptions{},
+		Pulsar:      &PulsarOptions{},
+		NSQ:         &NSQOptions{},
 	}
 
 	app := kingpin.New("plumber", "`curl` for messaging systems. See: https://github.com/batchcorp/plumber")
@@ -116,6 +130,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	relayCmd := app.Command("relay", "Relay message(s) from messaging system to Batch")
 	batchCmd := app.Command("batch", "Access your Batch.sh account information")
 	lagCmd := app.Command("lag", "Monitor lag in the messaging system")
+	dynamicCmd := app.Command("dynamic", "Act as a batch.sh replay destination")
 
 	HandleRelayFlags(relayCmd, opts)
 
@@ -138,11 +153,13 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleCDCPostgresFlags(readCmd, writeCmd, relayCmd, opts)
 	case "cdc-mongo":
 		HandleCDCMongoFlags(readCmd, writeCmd, relayCmd, opts)
+	case "mqtt":
+		HandleMQTTFlags(readCmd, writeCmd, relayCmd, opts)
 	default:
 		HandleKafkaFlags(readCmd, writeCmd, relayCmd, lagCmd, opts)
 		HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleGCPPubSubFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleMQTTFlags(readCmd, writeCmd, opts)
+		HandleMQTTFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleActiveMqFlags(readCmd, writeCmd, opts)
 		HandleAWSSNSFlags(readCmd, writeCmd, relayCmd, opts)
@@ -154,6 +171,9 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleRedisStreamsFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleCDCMongoFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleCDCPostgresFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleDynamicFlags(dynamicCmd, opts)
+		HandlePulsarFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleNSQFlags(readCmd, writeCmd, relayCmd, opts)
 	}
 
 	HandleGlobalFlags(readCmd, opts)
@@ -162,7 +182,9 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	HandleGlobalReadFlags(relayCmd, opts)
 	HandleGlobalFlags(writeCmd, opts)
 	HandleGlobalFlags(relayCmd, opts)
+	HandleGlobalFlags(dynamicCmd, opts)
 	HandleBatchFlags(batchCmd, opts)
+	HandleGlobalDynamicFlags(dynamicCmd, opts)
 
 	app.Version(version)
 	app.HelpFlag.Short('h')
@@ -188,13 +210,24 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	return cmd, opts, err
 }
 
+// convertSliceArgs splits up comma delimited flags into a slice. We do this because slice argument
+// environment variables in kingpin are newline delimited for some odd reason
+// See https://github.com/alecthomas/kingpin/issues/257
 func convertSliceArgs(opts *Options) {
-	if len(opts.RedisPubSub.Channels) != 0 {
+	if len(opts.RedisPubSub.Channels) == 1 {
 		opts.RedisPubSub.Channels = strings.Split(opts.RedisPubSub.Channels[0], ",")
 	}
 
-	if len(opts.RedisStreams.Streams) != 0 {
+	if len(opts.RedisStreams.Streams) == 1 {
 		opts.RedisStreams.Streams = strings.Split(opts.RedisStreams.Streams[0], ",")
+	}
+
+	if len(opts.Kafka.Brokers) == 1 && strings.Contains(opts.Kafka.Brokers[0], ",") {
+		opts.Kafka.Brokers = strings.Split(opts.Kafka.Brokers[0], ",")
+	}
+
+	if len(opts.Kafka.Topics) == 1 && strings.Contains(opts.Kafka.Topics[0], ",") {
+		opts.Kafka.Topics = strings.Split(opts.Kafka.Topics[0], ",")
 	}
 }
 
@@ -210,10 +243,7 @@ func HandleGlobalReadFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Short('f').
 		BoolVar(&opts.ReadFollow)
 
-	cmd.Flag("line-numbers", "Display line numbers for each message").
-		Default("false").BoolVar(&opts.ReadLineNumbers)
-
-	cmd.Flag("convert", "Convert received (output) message(s)").
+	cmd.Flag("convert", "Convert received message(s) [base64, gzip]").
 		EnumVar(&opts.ReadConvert, "base64", "gzip")
 
 	cmd.Flag("verbose", "Display message metadata if available").
@@ -221,22 +251,51 @@ func HandleGlobalReadFlags(cmd *kingpin.CmdClause, opts *Options) {
 
 	cmd.Flag("lag", "Display amount of messages with un-commited offset, if different from the previous message").
 		Default("false").BoolVar(&opts.ReadLag)
+
+	cmd.Flag("json", "Read data should be treated as JSON").
+		Default("false").
+		BoolVar(&opts.ReadJSONOutput)
+}
+
+func HandleGlobalDynamicFlags(cmd *kingpin.CmdClause, opts *Options) {
+	cmd.Flag("api-token", "Batch.SH API Token").
+		StringVar(&opts.DProxyAPIToken)
+
+	cmd.Flag("dproxy-address", "Address of Batch.sh's Dynamic Destination server").
+		Default(DefaultDproxyAddress).
+		StringVar(&opts.DProxyAddress)
+
+	cmd.Flag("grpc-timeout", "dProxy gRPC server timeout").
+		Default(DefaultGRPCTimeout).
+		DurationVar(&opts.DproxyGRPCTimeout)
+
+	cmd.Flag("dproxy-insecure", "Connect to dProxy server without TLS").
+		BoolVar(&opts.DProxyInsecure)
 }
 
 func HandleGlobalWriteFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("input-data", "Data to write").StringVar(&opts.WriteInputData)
+	cmd.Flag("input-data", "Data to write").
+		StringsVar(&opts.WriteInputData)
+
 	cmd.Flag("input-file", "File containing input data (overrides input-data; 1 file is 1 message)").
 		ExistingFileVar(&opts.WriteInputFile)
+
 	cmd.Flag("input-type", "Treat input-file as this type [plain, base64, jsonpb]").
 		Default("plain").
 		EnumVar(&opts.WriteInputType, "plain", "base64", "jsonpb")
+
 	cmd.Flag("protobuf-dir", "Directory with .proto files").
 		Envar("PLUMBER_RELAY_PROTOBUF_DIR").
 		ExistingDirsVar(&opts.WriteProtobufDirs)
+
 	cmd.Flag("protobuf-root-message", "Root message in a protobuf descriptor set "+
-		"(required if protobuf-dir set)").
+		"(required if protobuf-dir set; type should contain pkg name(s) separated by a period)").
 		Envar("PLUMBER_RELAY_PROTOBUF_ROOT_MESSAGE").
 		StringVar(&opts.WriteProtobufRootMessage)
+
+	cmd.Flag("json-array", "Handle input as JSON array instead of newline delimited data. "+
+		"Each array element will be written as a separate item").
+		BoolVar(&opts.WriteInputIsJsonArray)
 }
 
 func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
@@ -265,7 +324,8 @@ func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
 func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
 	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs, azure, gcp-pubsub, redis-pubsub, redis-streams").
 		Envar("PLUMBER_RELAY_TYPE").
-		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka", "azure", "gcp-pubsub", "redis-pubsub", "redis-streams", "cdc-postgres", "cdc-mongo")
+		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka", "azure", "gcp-pubsub", "redis-pubsub",
+			"redis-streams", "cdc-postgres", "cdc-mongo", "mqtt")
 
 	relayCmd.Flag("token", "Collection token to use when sending data to Batch").
 		Required().

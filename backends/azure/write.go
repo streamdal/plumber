@@ -9,29 +9,18 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/writer"
 )
 
 // Write performs necessary setup and calls AzureServiceBus.Write() to write the actual message
-func Write(opts *cli.Options) error {
+func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 	ctx := context.Background()
 
 	if err := writer.ValidateWriteOptions(opts, validateWriteOptions); err != nil {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.WriteInputType == "jsonpb" {
-		md, mdErr = pb.FindMessageDescriptor(opts.WriteProtobufDirs, opts.WriteProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
-	}
-
-	msg, err := writer.GenerateWriteValue(md, opts)
+	writeValues, err := writer.GenerateWriteValues(md, opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}
@@ -68,7 +57,13 @@ func Write(opts *cli.Options) error {
 		a.Topic = topic
 	}
 
-	return a.Write(ctx, msg)
+	for _, value := range writeValues {
+		if err := a.Write(ctx, value); err != nil {
+			a.log.Error(err)
+		}
+	}
+
+	return nil
 }
 
 // Write writes a message to an ASB topic or queue, depending on which is specified

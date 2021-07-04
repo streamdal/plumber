@@ -9,7 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/writer"
 )
 
@@ -18,19 +17,14 @@ import (
 // This is where we verify that the passed args and flags combo makes sense,
 // attempt to establish a connection, parse protobuf before finally attempting
 // to perform the write.
-func Write(opts *cli.Options) error {
+func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 	if err := writer.ValidateWriteOptions(opts, validateWriteOptions); err != nil {
-		return errors.Wrap(err, "unable to validate read options")
+		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.WriteInputType == "jsonpb" {
-		md, mdErr = pb.FindMessageDescriptor(opts.WriteProtobufDirs, opts.WriteProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
+	writeValues, err := writer.GenerateWriteValues(md, opts)
+	if err != nil {
+		return errors.Wrap(err, "unable to generate write value")
 	}
 
 	client, err := NewStreamsClient(opts)
@@ -48,12 +42,13 @@ func Write(opts *cli.Options) error {
 
 	defer client.Close()
 
-	msg, err := writer.GenerateWriteValue(md, opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to generate write value")
+	for _, value := range writeValues {
+		if err := r.Write(value); err != nil {
+			r.log.Error(err)
+		}
 	}
 
-	return r.Write(msg)
+	return nil
 }
 
 func (r *RedisStreams) Write(value []byte) error {

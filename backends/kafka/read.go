@@ -9,7 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 )
@@ -18,19 +17,9 @@ import (
 //
 // This is where we verify that the provided arguments and flag combination
 // makes sense/are valid; this is also where we will perform our initial conn.
-func Read(opts *cli.Options) error {
+func Read(opts *cli.Options, md *desc.MessageDescriptor) error {
 	if err := validateReadOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
-	}
-
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.ReadProtobufRootMessage != "" {
-		md, mdErr = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
 	}
 
 	kafkaReader, err := NewReader(opts)
@@ -58,8 +47,8 @@ func Read(opts *cli.Options) error {
 func (k *Kafka) Read() error {
 	k.log.Info("Initializing (could take a minute or two) ...")
 
-	lineNumber := 1
 	lastCalculatedLag := 0
+	count := 1
 
 	for {
 		// Initial message read can take a while to occur due to how consumer
@@ -75,39 +64,35 @@ func (k *Kafka) Read() error {
 		}
 
 		data, err := reader.Decode(k.Options, k.MsgDesc, msg.Value)
-		if err != nil {
-			continue
-		}
-
-		str := string(data)
-
-		if k.Options.ReadLineNumbers {
-			str = fmt.Sprintf("%d: ", lineNumber) + str
-			lineNumber++
-		}
-
+    
+    
 		if k.Options.ReadLag {
 
 			calculatedLag, err := LagCalculationPerPartition(msg.Topic, k.Reader.Config().GroupID, msg.Partition, k.Options)
 
 			if calculatedLag != int64(lastCalculatedLag) {
-
-				str = fmt.Sprintf("%d: ", calculatedLag) + str
-
+        
 				lastCalculatedLag = int(calculatedLag)
-			}
+			
+      }
 
 			if err != nil {
 				continue
 			}
 
 		}
+    
+		if err != nil {
+			return err
+		}
 
-		printer.Print(str)
+		printer.PrintKafkaResult(k.Options, count, msg, data)
 
 		if !k.Options.ReadFollow {
 			break
 		}
+
+		count++
 	}
 
 	k.log.Debug("Reader exiting")
@@ -116,16 +101,6 @@ func (k *Kafka) Read() error {
 }
 
 func validateReadOptions(opts *cli.Options) error {
-	// If anything protobuf-related is specified, it's being used
-	if opts.ReadProtobufRootMessage != "" || len(opts.ReadProtobufDirs) != 0 {
-		if err := cli.ValidateProtobufOptions(
-			opts.ReadProtobufDirs,
-			opts.ReadProtobufRootMessage,
-		); err != nil {
-			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
-		}
-	}
-
 	if opts.Kafka.ReadOffset < 0 {
 		return errors.New("read offset must be >= 0")
 	}

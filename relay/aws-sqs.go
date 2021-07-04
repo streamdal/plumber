@@ -7,10 +7,11 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/batchcorp/schemas/build/go/events/records"
-	"github.com/batchcorp/schemas/build/go/services"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+
+	"github.com/batchcorp/schemas/build/go/events/records"
+	"github.com/batchcorp/schemas/build/go/services"
 
 	"github.com/batchcorp/plumber/backends/aws-sqs/types"
 )
@@ -26,7 +27,7 @@ func (r *Relay) handleSQS(ctx context.Context, conn *grpc.ClientConn, messages [
 	r.CallWithRetry(ctx, "AddSQSRecord", func(ctx context.Context) error {
 		_, err := client.AddSQSRecord(ctx, &services.SQSRecordRequest{
 			Records: sinkRecords,
-		}, grpc.MaxCallRecvMsgSize(MaxGRPCMessageSize))
+		}, grpc.MaxCallSendMsgSize(MaxGRPCMessageSize))
 		return err
 	})
 

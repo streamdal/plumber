@@ -119,7 +119,7 @@ var _ = Describe("Functional", func() {
 						"--input-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound")
+						"--protobuf-root-message", "events.Outbound")
 
 					_, err := cmd.CombinedOutput()
 					Expect(err).ToNot(HaveOccurred())
@@ -337,7 +337,7 @@ var _ = Describe("Functional", func() {
 						"--input-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound",
+						"--protobuf-root-message", "events.Outbound",
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
@@ -363,7 +363,7 @@ var _ = Describe("Functional", func() {
 						"--routing-key", routingKey,
 						"--queue", queueName,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound",
+						"--protobuf-root-message", "events.Outbound",
 					)
 
 					readOut, err := readCmd.CombinedOutput()
@@ -544,7 +544,7 @@ var _ = Describe("Functional", func() {
 						"--input-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound",
+						"--protobuf-root-message", "events.Outbound",
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
@@ -561,7 +561,7 @@ var _ = Describe("Functional", func() {
 						"aws-sqs",
 						"--queue-name", queueName,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound",
+						"--protobuf-root-message", "events.Outbound",
 					)
 
 					readOut, err := readCmd.CombinedOutput()
@@ -707,7 +707,7 @@ var _ = Describe("Functional", func() {
 						"--input-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound",
+						"--protobuf-root-message", "events.Outbound",
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
@@ -832,7 +832,7 @@ var _ = Describe("Functional", func() {
 						"--input-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound",
+						"--protobuf-root-message", "events.Outbound",
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
@@ -850,7 +850,7 @@ var _ = Describe("Functional", func() {
 						"activemq",
 						"--queue", queueName,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound",
+						"--protobuf-root-message", "events.Outbound",
 					)
 
 					readOut, err := readCmd.CombinedOutput()
@@ -995,7 +995,7 @@ var _ = Describe("Functional", func() {
 						"--input-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound",
+						"--protobuf-root-message", "events.Outbound",
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
@@ -1162,7 +1162,7 @@ var _ = Describe("Functional", func() {
 						"--input-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound",
+						"--protobuf-root-message", "events.Outbound",
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
@@ -1339,7 +1339,7 @@ var _ = Describe("Functional", func() {
 						"--input-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "Outbound",
+						"--protobuf-root-message", "events.Outbound",
 					)
 
 					writeOut, err := writeCmd.CombinedOutput()
@@ -1407,6 +1407,231 @@ var _ = Describe("Functional", func() {
 					writeGot := string(writeOut[:])
 
 					writeWant := fmt.Sprintf("Successfully wrote message to stream '%s' with key", topicName)
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					output := <-capture
+					close(capture)
+
+					readGot := string(output[:])
+					Expect(readGot).To(ContainSubstring(testMessage))
+				})
+			})
+		})
+	})
+
+	Describe("Apache Pulsar", func() {
+		Describe("read/write", func() {
+			var topicName string
+
+			BeforeEach(func() {
+				topicName = fmt.Sprintf("FunctionalTestTopic%d", rand.Int())
+			})
+
+			Context("plain input and output", func() {
+				It("reads using a subscription", func() {
+					const testMessage string = "welovemessaging"
+
+					capture := make(chan []byte)
+
+					// Start Pulsar reader command
+					go func() {
+						defer GinkgoRecover()
+
+						readCmd := exec.Command(
+							binary,
+							"read",
+							"pulsar",
+							"--topic", topicName,
+							"--name", "plumber",
+						)
+
+						readOutput, err := readCmd.CombinedOutput()
+						Expect(err).ToNot(HaveOccurred())
+						capture <- readOutput
+					}()
+
+					// Wait for reader to start up
+					time.Sleep(time.Millisecond * 100)
+
+					// Reader is ready, write the message to RedisPubSub
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"pulsar",
+						"--topic", topicName,
+						"--input-data", testMessage,
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					if err != nil {
+						Fail("write failed: " + string(writeOut))
+					}
+
+					writeGot := string(writeOut[:])
+
+					writeWant := fmt.Sprintf("Successfully wrote message to topic '%s'", topicName)
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					output := <-capture
+					close(capture)
+
+					readGot := string(output[:])
+					Expect(readGot).To(ContainSubstring(testMessage))
+				})
+
+				It("reads using reader", func() {
+					const testMessage string = "welovemessaging"
+
+					capture := make(chan []byte)
+
+					// Start Pulsar reader command
+					go func() {
+						defer GinkgoRecover()
+
+						readCmd := exec.Command(
+							binary,
+							"read",
+							"pulsar",
+							"--topic", topicName,
+							"--name", "plumber",
+						)
+
+						readOutput, err := readCmd.CombinedOutput()
+						Expect(err).ToNot(HaveOccurred())
+						capture <- readOutput
+					}()
+
+					// Wait for reader to start up
+					time.Sleep(time.Millisecond * 100)
+
+					// Reader is ready, write the message to RedisPubSub
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"pulsar",
+						"--topic", topicName,
+						"--input-data", testMessage,
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					if err != nil {
+						Fail("write failed: " + string(writeOut))
+					}
+
+					writeGot := string(writeOut[:])
+
+					writeWant := fmt.Sprintf("Successfully wrote message to topic '%s'", topicName)
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					output := <-capture
+					close(capture)
+
+					readGot := string(output[:])
+					Expect(readGot).To(ContainSubstring(testMessage))
+				})
+			})
+
+			Context("jsonpb input, protobuf output", func() {
+				It("should work", func() {
+
+					capture := make(chan []byte)
+
+					// Start Pulsar reader command
+					go func() {
+						defer GinkgoRecover()
+
+						readCmd := exec.Command(
+							binary,
+							"read",
+							"pulsar",
+							"--topic", topicName,
+							"--name", "plumber",
+						)
+
+						readOutput, err := readCmd.CombinedOutput()
+						Expect(err).ToNot(HaveOccurred())
+						capture <- readOutput
+					}()
+
+					// Wait for reader to start up
+					time.Sleep(time.Millisecond * 50)
+
+					// Reader is ready, write the message to RedisPubSub
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"pulsar",
+						"--topic", topicName,
+						"--input-type", "jsonpb",
+						"--input-file", sampleOutboundJSONPB,
+						"--protobuf-dir", protoSchemasDir,
+						"--protobuf-root-message", "events.Outbound",
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					if err != nil {
+						Fail("write failed: " + string(writeOut))
+					}
+
+					writeGot := string(writeOut[:])
+					writeWant := fmt.Sprintf("Successfully wrote message to topic '%s'", topicName)
+
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					output := <-capture
+					close(capture)
+
+					readGot := string(output[:])
+					Expect(readGot).To(ContainSubstring("30ddb850-1aca-4ee5-870c-1bb7b339ee5d"))
+					Expect(readGot).To(ContainSubstring("{\"hello\":\"dan\"}"))
+				})
+			})
+
+			Context("avro and json", func() {
+				It("should work", func() {
+					const testMessage string = "{\"company\":\"Batch Corp\"}"
+
+					capture := make(chan []byte)
+
+					// Start Pulsar reader command
+					go func() {
+						defer GinkgoRecover()
+
+						readCmd := exec.Command(
+							binary,
+							"read",
+							"pulsar",
+							"--topic", topicName,
+							"--name", "plumber",
+							"--avro-schema", "./test-assets/avro/test.avsc",
+						)
+
+						readOutput, err := readCmd.CombinedOutput()
+						Expect(err).ToNot(HaveOccurred())
+						capture <- readOutput
+					}()
+
+					// Wait for reader to start up
+					time.Sleep(time.Millisecond * 50)
+
+					// First write the message to RedisPubSub
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"pulsar",
+						"--topic", topicName,
+						"--input-data", testMessage,
+						"--avro-schema", "./test-assets/avro/test.avsc",
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					if err != nil {
+						Fail("write failed: " + string(writeOut))
+					}
+
+					writeGot := string(writeOut[:])
+
+					writeWant := fmt.Sprintf("Successfully wrote message to topic '%s'", topicName)
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
 					output := <-capture
@@ -1495,8 +1720,7 @@ func newKafkaWriter(address, topic string) (*Kafka, error) {
 		Dialer: dialer,
 		Conn:   conn,
 		Writer: &skafka.Writer{
-			Addr:  skafka.TCP(address),
-			Topic: topic,
+			Addr: skafka.TCP(address),
 		},
 	}, nil
 }

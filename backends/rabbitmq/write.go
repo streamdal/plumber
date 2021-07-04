@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/writer"
 
 	"github.com/jhump/protoreflect/desc"
@@ -16,19 +15,14 @@ import (
 // This is where we verify that the passed args and flags combo makes sense,
 // attempt to establish a connection, parse protobuf before finally attempting
 // to perform the write.
-func Write(opts *cli.Options) error {
+func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 	if err := writer.ValidateWriteOptions(opts, nil); err != nil {
-		return errors.Wrap(err, "unable to validate read options")
+		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.WriteInputType == "jsonpb" {
-		md, mdErr = pb.FindMessageDescriptor(opts.WriteProtobufDirs, opts.WriteProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
+	writeValues, err := writer.GenerateWriteValues(md, opts)
+	if err != nil {
+		return errors.Wrap(err, "unable to generate write value")
 	}
 
 	r, err := New(opts, md)
@@ -38,14 +32,15 @@ func Write(opts *cli.Options) error {
 
 	defer r.Consumer.Close()
 
-	msg, err := writer.GenerateWriteValue(md, opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to generate write value")
-	}
-
 	ctx := context.Background()
 
-	return r.Write(ctx, msg)
+	for _, value := range writeValues {
+		if err := r.Write(ctx, value); err != nil {
+			r.log.Error(err)
+		}
+	}
+
+	return nil
 }
 
 // Write is a wrapper for amqp Publish method. We wrap it so that we can mock

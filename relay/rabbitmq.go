@@ -26,7 +26,7 @@ func (r *Relay) handleRabbit(ctx context.Context, conn *grpc.ClientConn, message
 	return r.CallWithRetry(ctx, "AddAMQPRecord", func(ctx context.Context) error {
 		_, err := client.AddAMQPRecord(ctx, &services.AMQPRecordRequest{
 			Records: sinkRecords,
-		}, grpc.MaxCallRecvMsgSize(MaxGRPCMessageSize))
+		}, grpc.MaxCallSendMsgSize(MaxGRPCMessageSize))
 		return err
 	})
 }

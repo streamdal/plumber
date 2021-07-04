@@ -1,31 +1,20 @@
 package main
 
 import (
-	"fmt"
+	"bufio"
+	"context"
+	"io"
 	"os"
+	"os/signal"
 	"strings"
-
-	"golang.org/x/crypto/ssh/terminal"
+	"syscall"
 
 	"github.com/sirupsen/logrus"
+	"github.com/tidwall/gjson"
+	"golang.org/x/crypto/ssh/terminal"
 
-	"github.com/batchcorp/plumber/backends/activemq"
-	awssns "github.com/batchcorp/plumber/backends/aws-sns"
-	awssqs "github.com/batchcorp/plumber/backends/aws-sqs"
-	"github.com/batchcorp/plumber/backends/azure"
-	azure_eventhub "github.com/batchcorp/plumber/backends/azure-eventhub"
-	"github.com/batchcorp/plumber/backends/batch"
-	cdc_mongo "github.com/batchcorp/plumber/backends/cdc-mongo"
-	cdc_postgres "github.com/batchcorp/plumber/backends/cdc-postgres"
-	gcppubsub "github.com/batchcorp/plumber/backends/gcp-pubsub"
-	"github.com/batchcorp/plumber/backends/kafka"
-	"github.com/batchcorp/plumber/backends/mqtt"
-	"github.com/batchcorp/plumber/backends/nats"
-	nats_streaming "github.com/batchcorp/plumber/backends/nats-streaming"
-	"github.com/batchcorp/plumber/backends/rabbitmq"
-	"github.com/batchcorp/plumber/backends/rpubsub"
-	"github.com/batchcorp/plumber/backends/rstreams"
 	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/plumber"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/stats"
 )
@@ -36,6 +25,8 @@ func main() {
 		logrus.Fatalf("Unable to handle CLI input: %s", err)
 	}
 
+	readFromStdin(opts)
+
 	if opts.Debug {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
@@ -44,195 +35,97 @@ func main() {
 		logrus.SetLevel(logrus.ErrorLevel)
 	}
 
+	serviceCtx, serviceShutdownFunc := context.WithCancel(context.Background())
+	mainCtx, mainShutdownFunc := context.WithCancel(context.Background())
+
+	// We only want to intercept these in relay mode
+	if strings.HasPrefix(cmd, "relay") {
+		logrus.Debug("Intercepting signals")
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt)
+		signal.Notify(c, syscall.SIGTERM)
+
+		go func() {
+			signal := <-c
+			logrus.Debugf("Received system call: %+v", signal)
+
+			serviceShutdownFunc()
+		}()
+
+		// Create prometheus counters/gauges
+		stats.InitPrometheusMetrics()
+	}
+
 	if opts.Stats {
 		stats.Start(opts.StatsReportInterval)
 	}
 
 	// In container mode, force JSON and don't print logo
-	if !terminal.IsTerminal(int(os.Stderr.Fd())) {
+	if !terminal.IsTerminal(int(os.Stderr.Fd())) || opts.Batch.OutputType == "json" {
 		logrus.SetFormatter(&logrus.JSONFormatter{})
 	} else {
 		printer.PrintLogo()
 	}
 
-	if strings.HasPrefix(cmd, "relay") {
-		printer.PrintRelayOptions(cmd, opts)
+	p, err := plumber.New(&plumber.Config{
+		ServiceShutdownCtx: serviceCtx,
+		MainShutdownFunc:   mainShutdownFunc,
+		MainShutdownCtx:    mainCtx,
+		Cmd:                cmd,
+		Options:            opts,
+	})
+
+	if err != nil {
+		logrus.Fatal(err)
 	}
 
-	if strings.HasPrefix(cmd, "batch") {
-		parseBatchCmd(cmd, opts)
+	p.Run()
+}
+
+// readFromStdin reads data piped into stdin
+func readFromStdin(opts *cli.Options) {
+	info, err := os.Stdin.Stat()
+	if err != nil {
+		logrus.Fatal(err)
+	}
+
+	if info.Mode()&os.ModeCharDevice != 0 || info.Size() <= 0 {
 		return
 	}
 
-	parseCmd(cmd, opts)
+	inputData := make([]string, 0)
+
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		line, err := reader.ReadBytes('\n')
+		if err != nil && err == io.EOF {
+			break
+		}
+		inputData = append(inputData, strings.Trim(string(line), "\n"))
+	}
+
+	// Treat input as a JSON array
+	if opts.WriteInputIsJsonArray {
+		opts.WriteInputData = convertJSONInput(inputData[0])
+		return
+	}
+
+	// Treat input as new object on each line
+	opts.WriteInputData = inputData
 }
 
-func parseCmd(cmd string, opts *cli.Options) {
-	var err error
-
-	switch cmd {
-	// Read
-	case "read rabbit":
-		err = rabbitmq.Read(opts)
-	case "read kafka":
-		err = kafka.Read(opts)
-	case "read gcp-pubsub":
-		err = gcppubsub.Read(opts)
-	case "read mqtt":
-		err = mqtt.Read(opts)
-	case "read aws-sqs":
-		err = awssqs.Read(opts)
-	case "read activemq":
-		err = activemq.Read(opts)
-	case "read azure":
-		err = azure.Read(opts)
-	case "read azure-eventhub":
-		err = azure_eventhub.Read(opts)
-	case "read nats":
-		err = nats.Read(opts)
-	case "read nats-streaming":
-		err = nats_streaming.Read(opts)
-	case "read redis-pubsub":
-		err = rpubsub.Read(opts)
-	case "read redis-streams":
-		err = rstreams.Read(opts)
-	case "read cdc-mongo":
-		err = cdc_mongo.Read(opts)
-	case "read cdc-postgres":
-		err = cdc_postgres.Read(opts)
-
-	// Write
-	case "write rabbit":
-		err = rabbitmq.Write(opts)
-	case "write kafka":
-		err = kafka.Write(opts)
-	case "write gcp-pubsub":
-		err = gcppubsub.Write(opts)
-	case "write mqtt":
-		err = mqtt.Write(opts)
-	case "write aws-sqs":
-		err = awssqs.Write(opts)
-	case "write activemq":
-		err = activemq.Write(opts)
-	case "write aws-sns":
-		err = awssns.Write(opts)
-	case "write azure":
-		err = azure.Write(opts)
-	case "write azure-eventhub":
-		err = azure_eventhub.Write(opts)
-	case "write nats":
-		err = nats.Write(opts)
-	case "write nats-streaming":
-		err = nats_streaming.Write(opts)
-	case "write redis-pubsub":
-		err = rpubsub.Write(opts)
-	case "write redis-streams":
-		err = rstreams.Write(opts)
-
-	// Relay (via CLI flags)
-	case "relay rabbit":
-		err = rabbitmq.Relay(opts)
-	case "relay kafka":
-		err = kafka.Relay(opts)
-	case "relay gcp-pubsub":
-		err = gcppubsub.Relay(opts)
-	case "relay mqtt":
-		err = mqtt.Relay(opts)
-	case "relay aws-sqs":
-		err = awssqs.Relay(opts)
-	case "relay azure":
-		err = azure.Relay(opts)
-	case "relay cdc-postgres":
-		err = cdc_postgres.Relay(opts)
-	case "relay cdc-mongo":
-		err = cdc_mongo.Relay(opts)
-	case "relay redis-pubsub":
-		err = rpubsub.Relay(opts)
-	case "relay redis-streams":
-		err = rstreams.Relay(opts)
-
-	// Relay (via env vars)
-	case "relay":
-		err = ProcessRelayFlags(opts)
-
-	// Lag
-	case "lag kafka":
-		err = kafka.Lag(opts)
-
-	default:
-		logrus.Fatalf("Unrecognized command: %s", cmd)
+// convertJSONInput converts a JSON array to a slice of strings for the writer to consume
+func convertJSONInput(value string) []string {
+	inputData := make([]string, 0)
+	jsonArray := gjson.Parse(value)
+	if !jsonArray.IsArray() {
+		logrus.Fatal("--json-array option was passed, but input data is not a valid JSON array")
 	}
 
-	if err != nil {
-		logrus.Fatalf("Unable to complete command: %s", err)
-	}
-}
+	jsonArray.ForEach(func(key, value gjson.Result) bool {
+		inputData = append(inputData, value.Raw)
+		return true
+	})
 
-func ProcessRelayFlags(opts *cli.Options) error {
-	var err error
-
-	switch opts.RelayType {
-	case "kafka":
-		err = kafka.Relay(opts)
-	case "gcp-pubsub":
-		err = gcppubsub.Relay(opts)
-	case "mqtt":
-		err = mqtt.Relay(opts)
-	case "aws-sqs":
-		err = awssqs.Relay(opts)
-	case "rabbit":
-		err = rabbitmq.Relay(opts)
-	case "azure":
-		err = azure.Relay(opts)
-	case "cdc-mongo":
-		err = cdc_mongo.Relay(opts)
-	case "redis-pubsub":
-		err = rpubsub.Relay(opts)
-	case "redis-streams":
-		err = rstreams.Relay(opts)
-	case "cdc-postgres":
-		err = cdc_postgres.Relay(opts)
-	default:
-		err = fmt.Errorf("unsupported messaging system '%s'", opts.RelayType)
-	}
-
-	return err
-}
-
-// parseBatchCmd handles all commands related to Batch.sh API
-func parseBatchCmd(cmd string, opts *cli.Options) {
-	var err error
-
-	b := batch.New(opts)
-
-	commands := strings.Split(cmd, " ")
-
-	switch {
-	case cmd == "batch login":
-		err = b.Login()
-	case cmd == "batch logout":
-		err = b.Logout()
-	case cmd == "batch list collection":
-		err = b.ListCollections()
-	case cmd == "batch create collection":
-		err = b.CreateCollection()
-	case cmd == "batch list destination":
-		err = b.ListDestinations()
-	case strings.HasPrefix(cmd, "batch create destination"):
-		err = b.CreateDestination(commands[3])
-	case cmd == "batch list schema":
-		err = b.ListSchemas()
-	case cmd == "batch list replay":
-		err = b.ListReplays()
-	case cmd == "batch create replay":
-		err = b.CreateReplay()
-	case cmd == "batch search":
-		err = b.SearchCollection()
-	default:
-		logrus.Fatalf("Unrecognized command: %s", cmd)
-	}
-
-	if err != nil {
-		logrus.Fatalf("Unable to complete command: %s", err)
-	}
+	return inputData
 }

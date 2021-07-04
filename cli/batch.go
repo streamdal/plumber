@@ -13,6 +13,7 @@ type BatchOptions struct {
 	Notes         string
 	Query         string
 	Page          int
+	OutputType    string
 
 	// Collection specific
 	CollectionName string
@@ -66,6 +67,9 @@ func HandleBatchFlags(batchCmd *kingpin.CmdClause, opts *Options) {
 	listCmd.Command("destination", "Replay destinations")
 	listCmd.Command("schema", "Schemas")
 	listCmd.Command("collection", "Collections")
+	listCmd.Command("replay", "Replays")
+
+	handleListFlags(listCmd, opts)
 
 	// Create
 	createCmd := batchCmd.Command("create", "Create a batch resource")
@@ -79,6 +83,10 @@ func HandleBatchFlags(batchCmd *kingpin.CmdClause, opts *Options) {
 	createReplayCmd := createCmd.Command("replay", "Create and start a new replay")
 	handleCreateReplayFlags(createReplayCmd, opts)
 
+	archiveCmd := batchCmd.Command("archive", "Archive a batch resource")
+	archiveCmd.Command("replay", "Archive a Replay")
+	handleArchiveReplayFlags(archiveCmd, opts)
+
 	// Search
 	searchCmd := batchCmd.Command("search", "Search A Collection")
 	searchCmd.Flag("query", "Search a specified collection").
@@ -90,6 +98,18 @@ func HandleBatchFlags(batchCmd *kingpin.CmdClause, opts *Options) {
 
 	searchCmd.Flag("page", "Page of search results to display. A page is 25 results").
 		IntVar(&opts.Batch.Page)
+}
+
+func handleListFlags(cmd *kingpin.CmdClause, opts *Options) {
+	cmd.Flag("output", "Output type").
+		Default("table").
+		EnumVar(&opts.Batch.OutputType, "table", "json")
+}
+
+func handleArchiveReplayFlags(cmd *kingpin.CmdClause, opts *Options) {
+	cmd.Flag("replay-id", "Replay ID").
+		Required().
+		StringVar(&opts.Batch.ReplayID)
 }
 
 func handleCreateReplayFlags(cmd *kingpin.CmdClause, opts *Options) {

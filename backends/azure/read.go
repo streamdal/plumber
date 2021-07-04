@@ -10,24 +10,13 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 )
 
-func Read(opts *cli.Options) error {
+func Read(opts *cli.Options, md *desc.MessageDescriptor) error {
 	if err := validateReadOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
-	}
-
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.ReadProtobufRootMessage != "" {
-		md, mdErr = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
 	}
 
 	client, err := NewClient(opts)
@@ -66,7 +55,7 @@ func (a *AzureServiceBus) Read() error {
 
 	a.log.Info("Listening for message(s) ...")
 
-	lineNumber := 1
+	count := 1
 
 	var handler servicebus.HandlerFunc = func(ctx context.Context, msg *servicebus.Message) error {
 		data, err := reader.Decode(a.Options, a.MsgDesc, msg.Data)
@@ -76,10 +65,8 @@ func (a *AzureServiceBus) Read() error {
 
 		str := string(data)
 
-		if a.Options.ReadLineNumbers {
-			str = fmt.Sprintf("%d: ", lineNumber) + str
-			lineNumber++
-		}
+		str = fmt.Sprintf("%d: ", count) + str
+		count++
 
 		printer.Print(str)
 

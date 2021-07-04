@@ -17,7 +17,13 @@ import (
 )
 
 var (
-	errInvalidAddress = errors.New("URI scheme must be ssl:// or tcp://")
+	errInvalidAddress  = errors.New("URI scheme must be ssl:// or tcp://")
+	errMissingAddress  = errors.New("--address cannot be empty")
+	errMissingTopic    = errors.New("--topic cannot be empty")
+	errMissingTLSKey   = errors.New("--tls-client-key-file cannot be blank if using ssl")
+	errMissingTlsCert  = errors.New("--tls-client-cert-file cannot be blank if using ssl")
+	errMissingTLSCA    = errors.New("--tls-ca-file cannot be blank if using ssl")
+	errInvalidQOSLevel = errors.New("QoS level can only be 0, 1 or 2")
 )
 
 type MQTT struct {

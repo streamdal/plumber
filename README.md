@@ -1,9 +1,10 @@
+
 <img src="https://github.com/batchcorp/plumber/blob/master/assets/gopher.png?raw=true" align="right" />
 
 plumber
 =======
 
-[![Master build status](https://github.com/batchcorp/plumber/workflows/master/badge.svg)](https://github.com/batchcorp/p) [![Go Report Card](https://goreportcard.com/badge/github.com/batchcorp/plumber)](https://goreportcard.com/badge/github.com/batchcorp/plumber)
+[![Master build status](https://github.com/batchcorp/plumber/workflows/master/badge.svg)](https://github.com/batchcorp/plumber/actions/workflows/master-test.yaml) [![Go Report Card](https://goreportcard.com/badge/github.com/batchcorp/plumber)](https://goreportcard.com/report/github.com/batchcorp/plumber)
 
 plumber is a CLI devtool for inspecting, piping, massaging and redirecting data
 in message systems like Kafka, RabbitMQ , GCP PubSub and 
@@ -16,6 +17,7 @@ The tool enables you to:
 * Decode protobuf data in real-time
 * Capture and relay data to [Batch platform](https://batch.sh)
 * Ship change data capture events to [Batch platform](https://batch.sh)
+* [Replay events into a message system on your local network](https://docs.batch.sh/what-are/what-are-destinations/plumber-as-a-destination)
 
 <sub>\[1] It's like `curl` for messaging systems.</sub>
 
@@ -59,29 +61,86 @@ $ mv plumber /usr/local/bin/plumber
 
 ## Usage
 
-**Keep it simple**: Read & write messages
+### Write messages
 
-```bash
-$ plumber read kafka --topic orders --address="some-machine.domain.com:9092" --line-numbers --follow
-1: {"sample" : "message 1"}
-2: {"sample" : "message 2"}
-3: {"sample" : "message 3"}
-4: {"sample" : "message 4"}
-5: {"sample" : "message 5"}
-6: {"sample" : "message 6"}
-7: {"sample" : "message 7"}
-8: {"sample" : "message 8"}
-9: {"sample" : "message 9"}
-10: {"sample" : "message 10"}
-11: {"sample" : "message 11"}
-^C
+```
+$ plumber write kafka --address="localhost:9092" --topic foo --input-data '{"hello":"world"}'
 
-$ plumber write kafka --address="some-machine.domain.com:9092" --topic orders --input-data "plain text"
-Success! Wrote '1' message(s) to 'localhost:9092'.
+INFO[0000]
+█▀█ █   █ █ █▀▄▀█ █▄▄ █▀▀ █▀█
+█▀▀ █▄▄ █▄█ █ ▀ █ █▄█ ██▄ █▀▄
+INFO[0000] Connected to kafka broker 'localhost:9092'
+INFO[0000] Successfully wrote message to topic 'foo'     pkg=kafka/write.go
 ```
 
 <sub>NOTE: If you want to write JSON either surround the `input-data` in single
 quotes or use `input-file`.
+
+### Read messages
+
+```bash
+$ plumber read kafka --topic foo --address="localhost:9092" --follow --json
+
+INFO[0000]
+█▀█ █   █ █ █▀▄▀█ █▄▄ █▀▀ █▀█
+█▀▀ █▄▄ █▄█ █ ▀ █ █▄█ ██▄ █▀▄
+INFO[0000] Connected to kafka broker 'localhost:9092'
+INFO[0000] Initializing (could take a minute or two) ...  pkg=kafka/read.go
+
+------------- [Count: 1 Received at: 2021-06-17T22:54:55Z] -------------------
+
++----------------------+------------------------------------------+
+| Key                  |                                     NONE |
+| Topic                |                                      foo |
+| Offset               |                                       12 |
+| Partition            |                                        0 |
+| Header(s)            |                                     NONE |
++----------------------+------------------------------------------+
+
+{
+  "hello": "world"
+}
+```
+
+### Write messages via pipe
+
+Write a single message
+
+```bash
+$ echo "some data" | plumber write kafka --topic foo
+
+INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
+```
+
+Write multiple messages separated by newlines. Each line will be a message
+
+```bash
+$ cat mydata.txt
+line1
+line2
+line3
+
+$ cat mydata.txt | plumber write kafka --topic foo
+
+INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
+INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
+INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
+```
+
+Write each element of a JSON array as a message
+
+```bash
+$ cat mydata.json
+[{"key": "value1"},{"key": "value2"}]
+
+$ cat mydata.json | plumber write kafka --topic foo --json-array
+
+INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
+INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
+```
+
+
+<IMG>
 
 
 #### See [EXAMPLES.md](https://github.com/batchcorp/plumber/blob/master/EXAMPLES.md) for more usage examples
@@ -143,9 +202,20 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 * Redis-Streams
 * Postgres CDC (Change Data Capture)
 * MongoDB CDC (Change Data Capture)
+* Apache Pulsar
+* NSQ
 
 NOTE: If your messaging tech is not supported - submit an issue and we'll do
 our best to make it happen!
+
+## Dynamic Replay Destination (NEW!)
+
+Plumber can now act as a replay destination. Dynamic replay mode allows you to run 
+an instance of plumber, on your local network, which will receive messages for a replay.
+This mitigates the need make firewall changes to replay messages from a Batch collection
+back to your message bus.
+
+See https://docs.batch.sh/what-are/what-are-destinations/plumber-as-a-destination for full documentation
 
 ## High Availability
 When running `plumber` in relay mode in production, you will want to run at

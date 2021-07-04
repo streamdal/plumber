@@ -12,24 +12,13 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 )
 
-func Read(opts *cli.Options) error {
+func Read(opts *cli.Options, md *desc.MessageDescriptor) error {
 	if err := validateReadOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
-	}
-
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.ReadProtobufRootMessage != "" {
-		md, mdErr = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
 	}
 
 	client, err := NewClient(opts)
@@ -57,7 +46,7 @@ func (g *GCPPubSub) Read() error {
 	// Receive launches several goroutines to exec func, need to use a mutex
 	var m sync.Mutex
 
-	lineNumber := 1
+	count := 1
 
 	// Standard way to cancel Receive in gcp's pubsub
 	cctx, cancel := context.WithCancel(context.Background())
@@ -77,10 +66,8 @@ func (g *GCPPubSub) Read() error {
 
 		str := string(data)
 
-		if g.Options.ReadLineNumbers {
-			str = fmt.Sprintf("%d: ", lineNumber) + str
-			lineNumber++
-		}
+		str = fmt.Sprintf("%d: ", count) + str
+		count++
 
 		printer.Print(str)
 
@@ -102,16 +89,6 @@ func validateReadOptions(opts *cli.Options) error {
 	appCreds := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
 	if emulator == "" && appCreds == "" {
 		return errors.New("GOOGLE_APPLICATION_CREDENTIALS or PUBSUB_EMULATOR_HOST must be set")
-	}
-
-	// If anything protobuf-related is specified, it's being used
-	if opts.ReadProtobufRootMessage != "" || len(opts.ReadProtobufDirs) != 0 {
-		if err := cli.ValidateProtobufOptions(
-			opts.ReadProtobufDirs,
-			opts.ReadProtobufRootMessage,
-		); err != nil {
-			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
-		}
 	}
 
 	return nil

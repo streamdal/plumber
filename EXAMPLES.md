@@ -12,6 +12,9 @@
        * [Redis Streams](#redis-streams)
        * [GCP Pub/Sub](#gcp-pubsub)
        * [Postgres CDC](#cdc-postgres)
+       * [MQTT](#mqtt)
+       * [Apache Pulsar](#apache-pulsar)
+       * [NSQ](#nsq)
   * [Publishing](#publishing)
        * [AWS SQS](#aws-sqs-1)
        * [AWS SNS](#aws-sns)
@@ -24,6 +27,9 @@
        * [Redis PubSub](#redis-pubsub-1)
        * [Redis Streams](#redis-streams-1)
        * [GCP Pub/Sub](#gcp-pubsub-1)
+       * [MQTT](#mqtt-1)
+       * [Apache Pulsar](#apache-pulsar-1)
+       * [NSQ](#nsq-1)
   * [Relay Mode](#relay-mode)
        * [Continuously relay messages from your RabbitMQ instance to a Batch.sh collection](#continuously-relay-messages-from-your-rabbitmq-instance-to-a-batchsh-collection)
        * [Continuously relay messages from an SQS queue to a Batch.sh collection](#continuously-relay-messages-from-an-sqs-queue-to-a-batchsh-collection)
@@ -32,11 +38,13 @@
        * [Continuously relay messages for multiple Redis channels to a Batch.sh collection](#continuously-relay-messages-from-multiple-redis-channels-to-a-batchsh-collection)
        * [Continuously relay messages for multiple Redis streams to a Batch.sh collection](#continuously-relay-messages-from-multiple-redis-streams-to-a-batchsh-collection)
        * [Continuously relay messages from a Kafka topic (on Confluent) to a Batch.sh collection (via CLI)](#continuously-relay-messages-from-a-kafka-topic-on-confluent-to-a-batchsh-collection-via-cli)
+       * [Continuously relay messages from a MQTT topic to a Batch.sh collection](#continuously-relay-messages-from-a-mqtt-topic-to-a-batchsh-collection)
   * [Change Data Capture](#change-data-capture)
        * [Continuously relay Postgres change events to a Batch.sh collection](#continuously-relay-postgres-change-events-to-a-batchsh-collection)
        * [Continuously relay MongoDB change stream events to a Batch.sh collection](#continuously-relay-mongodb-change-stream-events-to-a-batchsh-collection)
   * [Advanced Usage](#advanced-usage)
        * [Decoding protobuf encoded messages and viewing them live](#decoding-protobuf-encoded-messages-and-viewing-them-live)
+       * [Prometheus Metrics](#prometheus-metrics)
 
 ## Consuming
 
@@ -81,13 +89,23 @@ plumber read rabbit
 Read a single message
 
 ```
-plumber read kafka --topic orders --address="some-machine.domain.com:9092" --line-numbers --follow
+plumber read kafka --topic orders --address="broker1.domain.com:9092"
+```
+
+You may specify multiple brokers by specifying the `--address` flag multiple times
+
+```
+plumber read kafka --topic orders \
+    --address="broker1.domain.com:9092" \
+    --address="broker2.domain.com:9092" \
+    --address="broker3.domain.com:9092" \
+    --follow
 ```
 
 Continuously read messages
 
 ```
-plumber read kafka --topic orders --address="some-machine.domain.com:9092" --follow
+plumber read kafka --topic orders --address="broker1.domain.com:9092" --follow
 ```
 
 ##### Azure Service Bus
@@ -142,10 +160,28 @@ plumber read redis-pubsub --address="localhost:6379" --channels="new-orders"
 plumber read redis-streams --address="localhost:6379" --streams="new-orders"
 ```
 
-#### GCP Pub/Sub
+##### GCP Pub/Sub
 
 ```bash
 plumber read gcp-pubsub --project-id=PROJECT_ID --sub-id=SUBSCRIPTION
+```
+
+##### MQTT
+
+```bash
+plumber read mqtt --address tcp://localhost:1883 --topic iotdata -qos 1
+```
+
+#### Apache Pulsar
+
+```bash
+plumber read pulsar --topic NEWORDERS --name plumber
+```
+
+#### NSQ
+
+```bash
+plumber read nsq --lookupd-address localhost:4161 --topic orders --channel neworders 
 ```
 
 ## Publishing
@@ -166,6 +202,18 @@ plumber write rabbit --address="aqmp://rabbit.yourdomain.net:5672" --exchange=Ne
 
 ```
 plumber write kafka --address="localhost:9092" --topic=neworders --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+```
+
+You may specify multiple brokers by specifying the `--address` flag multiple times.
+
+To read from more than one topic, you may specify multiple `--topic` flags.
+
+```
+plumber write kafka --topic neworders \
+    --address "broker1.domain.com:9092" \
+    --address "broker2.domain.com:9092" \
+    --address "broker3.domain.com:9092" \
+    --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ##### AWS SNS
@@ -234,10 +282,27 @@ plumber write redis-pubsub --address="localhost:6379" --channels="new-orders" --
 plumber write redis-streams --address="localhost:6379" --streams="new-orders" --key foo --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
-#### GCP Pub/Sub
+##### GCP Pub/Sub
 
 ```bash
 plumber write gcp-pubsub --topic-id=TOPIC --project-id=PROJECT_ID --input-data='{"Sensor":"Room J","Temp":19}' 
+```
+
+##### MQTT
+
+```bash
+plumber write mqtt --address tcp://localhost:1883 --topic iotdata -qos 1 --input-data "{\"id\": 123, \"temperature\": 15}"
+```
+##### Apache Pulsar
+
+```bash
+plumber write pulsar --topic NEWORDERS --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+```
+
+##### NSQ
+
+```bash
+plumger write nsq --nsqd-address localhost:4050 --topic orders --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ## Relay Mode
@@ -318,7 +383,7 @@ docker run -d --name plumber-redis-streams -p 8080:8080 \
 ```
 export PLUMBER_RELAY_TYPE="kafka"
 export PLUMBER_RELAY_TOKEN="$YOUR-BATCHSH-TOKEN-HERE"
-export PLUMBER_RELAY_KAFKA_ADDRESS="pkc-4kgmg.us-west-2.aws.confluent.cloud:9092"
+export PLUMBER_RELAY_KAFKA_ADDRESS="pkc-4kgmg.us-west-2.aws.confluent.cloud:9092,pkc-5kgmg.us-west-2.aws.confluent.cloud:9092"
 export PLUMBER_RELAY_KAFKA_TOPIC="$YOUR_TOPIC"
 export PLUMBER_RELAY_KAFKA_INSECURE_TLS="true"
 export PLUMBER_RELAY_KAFKA_USERNAME="$YOUR_CONFLUENT_API_KEY"
@@ -327,6 +392,19 @@ export PLUMBER_RELAY_KAFKA_SASL_TYPE="plain"
 
 $ plumber relay
 ```
+
+##### Continuously relay messages from a MQTT topic to a Batch.sh collection
+
+```bash
+docker run -d --name plumber-mqtt -p 8080:8080 \
+    -e PLUMBER_RELAY_MQTT_ADDRESS=tcp://localhost:1883 \
+    -e PLUMBER_RELAY_MQTT_TOPIC=iotdata \
+    -e PLUMBER_RELAY_MQTT_QOS=1 \
+    -e PLUMBER_RELAY_TYPE=mqtt \
+    -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
+    batchcorp/plumber 
+```
+
 
 ## Change Data Capture
 
@@ -356,7 +434,7 @@ For more advanced mongo usage, see documentation at https://docs.batch.sh/event-
 
 ```bash
 $ plumber read rabbit --address="amqp://localhost" --exchange events --routing-key \# \
-  --line-numbers --protobuf-dir ~/schemas --protobuf-root-message Message --follow
+  --protobuf-dir ~/schemas --protobuf-root-message pkg.Message --follow
 1: {"some-attribute": 123, "numbers" : [1, 2, 3]}
 2: {"some-attribute": 424, "numbers" : [325]}
 3: {"some-attribute": 49, "numbers" : [958, 288, 289, 290]}
@@ -374,7 +452,7 @@ slice to the message bus.
 
 ```bash
 $ plumber write rabbit --exchange events --routing-key foo.bar  \
-  --line-numbers --protobuf-dir ~/schemas --protobuf-root-message Message \
+  --protobuf-dir ~/schemas --protobuf-root-message pkg.Message \
   --input-file ~/fakes/some-jsonpb-file.json --input-type jsonpb
 ```
 
@@ -388,3 +466,30 @@ $ plumber read kafka --topic=orders --avro-schema=some_schema.avsc
 If your schemas are located in multiple places, you can specify `--protobuf-dir`
 multiple times. Treat it the same as you would `protoc -I`.
 </sub> 
+
+##### Prometheus Metrics
+
+In relay mode, plumber will launch a http server exposing Prometheus metrics running at http://localhost:8080/metrics
+
+Prometheus metrics can be pulled from Plumber by adding a new source to your `prometheus.yml` config
+
+```yaml
+scrape_configs:
+- job_name: plumber
+  scrape_interval: 5s
+  static_configs:
+  - targets:
+    - your-hostname:8080
+```
+
+You may modify the listen address/port using the `PLUMBER_RELAY_HTTP_LISTEN_ADDRESS` environment variable or
+the `--listen-address` flag.
+
+The following metrics are available in addition to all golang metrics
+
+| Metric | Type | Description |
+|----|----|----|
+| plumber_relay_rate | gauge | Current rare of messages being relayed to Batch.sh (5 second interval) |
+| plumber_relay_total | counter | Total number of events relayed to Batch.sh | 
+| plumber_read_errors | counter | Number of errors when reading messages |
+| plumber_grpc_errors | counter | Number of errors when making GRPC calls |

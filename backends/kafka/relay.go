@@ -4,12 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/relistan/go-director"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/api"
 	"github.com/batchcorp/plumber/backends/kafka/types"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
@@ -21,78 +19,44 @@ const (
 )
 
 type Relayer struct {
-	Options        *cli.Options
-	MsgDesc        *desc.MessageDescriptor
-	RelayCh        chan interface{}
-	log            *logrus.Entry
-	Looper         *director.FreeLooper
-	DefaultContext context.Context
-}
-
-type IKafkaRelayer interface {
-	Relay() error
+	Options     *cli.Options
+	RelayCh     chan interface{}
+	log         *logrus.Entry
+	Looper      *director.FreeLooper
+	ShutdownCtx context.Context
 }
 
 var (
-	errMissingTopic = errors.New("You must specify a topic")
+	ErrMissingTopic = errors.New("You must specify at least one topic")
 )
 
-// Relay sets up a new Kafka relayer, starts GRPC workers and the API server
-func Relay(opts *cli.Options) error {
+// Relay sets up a new Kafka relayer
+func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
 	if err := validateRelayOptions(opts); err != nil {
-		return errors.Wrap(err, "unable to verify options")
+		return nil, errors.Wrap(err, "unable to verify options")
 	}
 
-	// Create new relayer instance (+ validate token & gRPC address)
-	relayCfg := &relay.Config{
-		Token:       opts.RelayToken,
-		GRPCAddress: opts.RelayGRPCAddress,
-		NumWorkers:  opts.RelayNumWorkers,
-		Timeout:     opts.RelayGRPCTimeout,
-		RelayCh:     make(chan interface{}, 1),
-		DisableTLS:  opts.RelayGRPCDisableTLS,
-		Type:        opts.RelayType,
-	}
-
-	grpcRelayer, err := relay.New(relayCfg)
-	if err != nil {
-		return errors.Wrap(err, "unable to create new gRPC relayer")
-	}
-
-	// Launch HTTP server
-	go func() {
-		if err := api.Start(opts.RelayHTTPListenAddress, opts.Version); err != nil {
-			logrus.Fatalf("unable to start API server: %s", err)
-		}
-	}()
-
-	if err := grpcRelayer.StartWorkers(); err != nil {
-		return errors.Wrap(err, "unable to start gRPC relay workers")
-	}
-
-	r := &Relayer{
-		Options:        opts,
-		RelayCh:        relayCfg.RelayCh,
-		log:            logrus.WithField("pkg", "kafka/relay"),
-		Looper:         director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
-		DefaultContext: context.Background(),
-	}
-
-	return r.Relay()
+	return &Relayer{
+		Options:     opts,
+		RelayCh:     relayCh,
+		log:         logrus.WithField("pkg", "kafka/relay"),
+		Looper:      director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
+		ShutdownCtx: shutdownCtx,
+	}, nil
 }
 
 // validateRelayOptions ensures all required CLI options are present before initializing relay mode
 func validateRelayOptions(opts *cli.Options) error {
-	if opts.Kafka.Topic == "" {
-		return errMissingTopic
+	if len(opts.Kafka.Topics) == 0 {
+		return ErrMissingTopic
 	}
 	return nil
 }
 
 // Relay reads messages from Kafka and sends them to RelayCh which is then read by relay.Run()
 func (r *Relayer) Relay() error {
-	r.log.Infof("Relaying Kafka messages from '%s' topic -> '%s'",
-		r.Options.Kafka.Topic, r.Options.RelayGRPCAddress)
+	r.log.Infof("Relaying Kafka messages from '%s' topic(s) -> '%s'",
+		r.Options.Kafka.Topics, r.Options.RelayGRPCAddress)
 
 	r.log.Infof("HTTP server listening on '%s'", r.Options.RelayHTTPListenAddress)
 
@@ -104,12 +68,21 @@ func (r *Relayer) Relay() error {
 	defer reader.Conn.Close()
 
 	for {
-		msg, err := reader.Reader.ReadMessage(r.DefaultContext)
+		msg, err := reader.Reader.ReadMessage(r.ShutdownCtx)
 		if err != nil {
+			// Shutdown cancelled, exit so we don't spam logs with context cancelled errors
+			if err == context.Canceled {
+				r.log.Info("Received shutdown signal, existing relayer")
+				return nil
+			}
+
 			stats.Mute("kafka-relay-consumer")
 			stats.Mute("kafka-relay-producer")
 
+			stats.IncrPromCounter("plumber_read_errors", 1)
+
 			r.log.Errorf("Unable to read kafka message: %s; retrying in %s", err, RetryReadInterval)
+			time.Sleep(RetryReadInterval)
 
 			continue
 		}

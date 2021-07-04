@@ -2,76 +2,40 @@ package rabbitmq
 
 import (
 	"context"
-	"github.com/batchcorp/plumber/backends/rabbitmq/types"
-	"github.com/batchcorp/plumber/stats"
 
-	"github.com/batchcorp/rabbit"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/relistan/go-director"
 	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 
-	"github.com/batchcorp/plumber/api"
+	"github.com/batchcorp/plumber/backends/rabbitmq/types"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
+	"github.com/batchcorp/plumber/stats"
+	"github.com/batchcorp/rabbit"
 )
 
 type Relayer struct {
-	Options        *cli.Options
-	Channel        *amqp.Channel
-	MsgDesc        *desc.MessageDescriptor
-	RelayCh        chan interface{}
-	log            *logrus.Entry
-	Looper         *director.FreeLooper
-	DefaultContext context.Context
+	Options     *cli.Options
+	Channel     *amqp.Channel
+	RelayCh     chan interface{}
+	log         *logrus.Entry
+	Looper      *director.FreeLooper
+	ShutdownCtx context.Context
 }
 
-func Relay(opts *cli.Options) error {
+func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
 	if err := validateRelayOptions(opts); err != nil {
-		return errors.Wrap(err, "unable to verify options")
+		return nil, errors.Wrap(err, "unable to verify options")
 	}
 
-	// TODO: move this up the chain?
-	ctx := context.Background()
-
-	// Create new relayer instance (+ validate token & gRPC address)
-	relayCfg := &relay.Config{
-		Token:       opts.RelayToken,
-		GRPCAddress: opts.RelayGRPCAddress,
-		NumWorkers:  opts.RelayNumWorkers,
-		Timeout:     opts.RelayGRPCTimeout,
-		RelayCh:     make(chan interface{}, 1),
-		DisableTLS:  opts.RelayGRPCDisableTLS,
-		Type:        opts.RelayType,
-	}
-
-	grpcRelayer, err := relay.New(relayCfg)
-	if err != nil {
-		return errors.Wrap(err, "unable to create new gRPC relayer")
-	}
-
-	// Launch HTTP server
-	go func() {
-		if err := api.Start(opts.RelayHTTPListenAddress, opts.Version); err != nil {
-			logrus.Fatalf("unable to start API server: %s", err)
-		}
-	}()
-
-	// Launch gRPC Relayer
-	if err := grpcRelayer.StartWorkers(); err != nil {
-		return errors.Wrap(err, "unable to start gRPC relay workers")
-	}
-
-	r := &Relayer{
-		Options:        opts,
-		RelayCh:        relayCfg.RelayCh,
-		log:            logrus.WithField("pkg", "rabbitmq/relay"),
-		Looper:         director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
-		DefaultContext: ctx,
-	}
-
-	return r.Relay()
+	return &Relayer{
+		Options:     opts,
+		RelayCh:     relayCh,
+		log:         logrus.WithField("pkg", "rabbitmq/relay"),
+		Looper:      director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
+		ShutdownCtx: shutdownCtx,
+	}, nil
 }
 
 func validateRelayOptions(opts *cli.Options) error {
@@ -114,9 +78,7 @@ func (r *Relayer) Relay() error {
 
 	defer rmq.Close()
 
-	ctx, cancel := context.WithCancel(context.Background())
-
-	go rmq.Consume(ctx, errCh, func(msg amqp.Delivery) error {
+	go rmq.Consume(r.ShutdownCtx, errCh, func(msg amqp.Delivery) error {
 		if msg.Body == nil {
 			// Ignore empty messages
 			// this will also prevent log spam if a queue goes missing
@@ -138,9 +100,15 @@ func (r *Relayer) Relay() error {
 		select {
 		case errRabbit := <-errCh:
 			r.log.Errorf("runFunc ran into an error: %s", errRabbit.Error.Error())
+
+			stats.IncrPromCounter("plumber_read_errors", 1)
+		case <-r.ShutdownCtx.Done():
+			r.log.Info("Received shutdown signal, existing relayer")
+			return nil
+		default:
+			// noop
 		}
 	}
 
-	cancel()
 	return nil
 }

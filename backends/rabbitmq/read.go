@@ -4,36 +4,23 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/batchcorp/rabbit"
-	"github.com/streadway/amqp"
-
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
+	"github.com/streadway/amqp"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
+	"github.com/batchcorp/rabbit"
 )
 
 // Read is the entry point function for performing read operations in RabbitMQ.
 //
 // This is where we verify that the provided arguments and flag combination
 // makes sense/are valid; this is also where we will perform our initial conn.
-func Read(opts *cli.Options) error {
+func Read(opts *cli.Options, md *desc.MessageDescriptor) error {
 	if err := validateReadOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
-	}
-
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	// Expecting protobuf
-	if opts.ReadProtobufRootMessage != "" {
-		md, mdErr = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
 	}
 
 	r, err := New(opts, md)
@@ -55,7 +42,7 @@ func (r *RabbitMQ) Read() error {
 	errCh := make(chan *rabbit.ConsumeError)
 	ctx, cancel := context.WithCancel(context.Background())
 
-	lineNumber := 1
+	count := 1
 
 	go r.Consumer.Consume(ctx, errCh, func(msg amqp.Delivery) error {
 
@@ -66,10 +53,8 @@ func (r *RabbitMQ) Read() error {
 
 		str := string(data)
 
-		if r.Options.ReadLineNumbers {
-			str = fmt.Sprintf("%d: ", lineNumber) + str
-			lineNumber++
-		}
+		str = fmt.Sprintf("%d: ", count) + str
+		count++
 
 		printer.Print(str)
 
@@ -96,20 +81,6 @@ func (r *RabbitMQ) Read() error {
 func validateReadOptions(opts *cli.Options) error {
 	if opts.Rabbit.Address == "" {
 		return errors.New("--address cannot be empty")
-	}
-
-	if opts.Action == "write" && opts.Rabbit.RoutingKey == "" {
-		return errors.New("--routing-key cannot be empty with write action")
-	}
-
-	// If anything protobuf-related is specified, it's being used
-	if opts.ReadProtobufRootMessage != "" || len(opts.ReadProtobufDirs) != 0 {
-		if err := cli.ValidateProtobufOptions(
-			opts.ReadProtobufDirs,
-			opts.ReadProtobufRootMessage,
-		); err != nil {
-			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
-		}
 	}
 
 	return nil

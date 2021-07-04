@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/batchcorp/schemas/build/go/events/records"
-	"github.com/batchcorp/schemas/build/go/services"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+
+	"github.com/batchcorp/schemas/build/go/events/records"
+	"github.com/batchcorp/schemas/build/go/services"
 
 	"github.com/batchcorp/plumber/backends/rstreams/types"
 )
@@ -31,7 +32,7 @@ func (r *Relay) handleRedisStreams(ctx context.Context, conn *grpc.ClientConn, m
 	return r.CallWithRetry(ctx, "AddRedisStreamsRecord", func(ctx context.Context) error {
 		_, err := client.AddRedisStreamsRecord(ctx, &services.RedisStreamsRecordRequest{
 			Records: sinkRecords,
-		}, grpc.MaxCallRecvMsgSize(MaxGRPCMessageSize))
+		}, grpc.MaxCallSendMsgSize(MaxGRPCMessageSize))
 		return err
 	})
 }

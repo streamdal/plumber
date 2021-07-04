@@ -11,7 +11,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 )
@@ -20,19 +19,9 @@ import (
 //
 // This is where we verify that the provided arguments and flag combination
 // makes sense/are valid; this is also where we will perform our initial conn.
-func Read(opts *cli.Options) error {
+func Read(opts *cli.Options, md *desc.MessageDescriptor) error {
 	if err := validateReadOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
-	}
-
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.ReadProtobufRootMessage != "" {
-		md, mdErr = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
 	}
 
 	client, err := connect(opts)
@@ -74,9 +63,9 @@ func (m *MQTT) Read() error {
 }
 
 func (m *MQTT) subscribe(wg *sync.WaitGroup, errChan chan error) {
-	lineNumber := 1
+	count := 1
 
-	m.Client.Subscribe(m.Options.MQTT.Topic, 0, func(client mqtt.Client, msg mqtt.Message) {
+	m.Client.Subscribe(m.Options.MQTT.Topic, byte(m.Options.MQTT.QoSLevel), func(client mqtt.Client, msg mqtt.Message) {
 		data, err := reader.Decode(m.Options, m.MsgDesc, msg.Payload())
 
 		if err != nil {
@@ -91,10 +80,8 @@ func (m *MQTT) subscribe(wg *sync.WaitGroup, errChan chan error) {
 
 		str := string(data)
 
-		if m.Options.ReadLineNumbers {
-			str = fmt.Sprintf("%d: ", lineNumber) + str
-			lineNumber++
-		}
+		str = fmt.Sprintf("%d: ", count) + str
+		count++
 
 		m.printer.Print(str)
 
@@ -106,15 +93,6 @@ func (m *MQTT) subscribe(wg *sync.WaitGroup, errChan chan error) {
 		}
 	})
 }
-
-var (
-	errMissingAddress  = errors.New("--address cannot be empty")
-	errMissingTopic    = errors.New("--topic cannot be empty")
-	errMissingTLSKey   = errors.New("--tls-client-key-file cannot be blank if using ssl")
-	errMissingTlsCert  = errors.New("--tls-client-cert-file cannot be blank if using ssl")
-	errMissingTLSCA    = errors.New("--tls-ca-file cannot be blank if using ssl")
-	errInvalidQOSLevel = errors.New("QoS level can only be 0, 1 or 2")
-)
 
 func validateReadOptions(opts *cli.Options) error {
 	if opts.MQTT.Address == "" {
@@ -141,16 +119,6 @@ func validateReadOptions(opts *cli.Options) error {
 
 	if opts.MQTT.QoSLevel > 2 || opts.MQTT.QoSLevel < 0 {
 		return errInvalidQOSLevel
-	}
-
-	// If anything protobuf-related is specified, it's being used
-	if opts.ReadProtobufRootMessage != "" || len(opts.ReadProtobufDirs) != 0 {
-		if err := cli.ValidateProtobufOptions(
-			opts.ReadProtobufDirs,
-			opts.ReadProtobufRootMessage,
-		); err != nil {
-			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
-		}
 	}
 
 	return nil

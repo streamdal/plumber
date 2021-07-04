@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/batchcorp/schemas/build/go/events/records"
-	"github.com/batchcorp/schemas/build/go/services"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+
+	"github.com/batchcorp/schemas/build/go/events/records"
+	"github.com/batchcorp/schemas/build/go/services"
 
 	"github.com/batchcorp/plumber/backends/azure/types"
 )
@@ -16,7 +17,7 @@ import (
 func (r *Relay) handleAzure(ctx context.Context, conn *grpc.ClientConn, messages []interface{}) error {
 	sinkRecords, err := r.convertMessagesToAzureSinkRecords(messages)
 	if err != nil {
-		return fmt.Errorf("unable to convert messages to kafka sink records: %s", err)
+		return fmt.Errorf("unable to convert messages to azure sink records: %s", err)
 	}
 
 	client := services.NewGRPCCollectorClient(conn)
@@ -24,7 +25,7 @@ func (r *Relay) handleAzure(ctx context.Context, conn *grpc.ClientConn, messages
 	return r.CallWithRetry(ctx, "AddAzureRecord", func(ctx context.Context) error {
 		_, err := client.AddAzureRecord(ctx, &services.AzureRecordRequest{
 			Records: sinkRecords,
-		}, grpc.MaxCallRecvMsgSize(MaxGRPCMessageSize))
+		}, grpc.MaxCallSendMsgSize(MaxGRPCMessageSize))
 		return err
 	})
 }

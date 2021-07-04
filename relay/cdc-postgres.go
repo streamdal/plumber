@@ -4,19 +4,21 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
+	"time"
+
+	"google.golang.org/grpc"
+
 	"github.com/batchcorp/plumber/backends/cdc-postgres/types"
 	"github.com/batchcorp/schemas/build/go/events/records"
 	"github.com/batchcorp/schemas/build/go/services"
-	"google.golang.org/grpc"
-	"os"
-	"time"
 )
 
-// handleKafka sends a Kafka relay message to the GRPC server
+// handleCdcPostgres sends a cdc-postgres relay message to the GRPC server
 func (r *Relay) handleCdcPostgres(ctx context.Context, conn *grpc.ClientConn, messages []interface{}) error {
 	sinkRecords, err := r.convertMessagesToPostgresRecords(messages)
 	if err != nil {
-		return fmt.Errorf("unable to convert messages to kafka sink records: %s", err)
+		return fmt.Errorf("unable to convert messages to generic sink records: %s", err)
 	}
 
 	client := services.NewGRPCCollectorClient(conn)
@@ -24,12 +26,12 @@ func (r *Relay) handleCdcPostgres(ctx context.Context, conn *grpc.ClientConn, me
 	return r.CallWithRetry(ctx, "AddGenericRecord", func(ctx context.Context) error {
 		_, err := client.AddRecord(ctx, &services.GenericRecordRequest{
 			Records: sinkRecords,
-		}, grpc.MaxCallRecvMsgSize(MaxGRPCMessageSize))
+		}, grpc.MaxCallSendMsgSize(MaxGRPCMessageSize))
 		return err
 	})
 }
 
-// validateKafkaRelayMessage ensures all necessary values are present for a Kafka relay message
+// validateCDCPostgresRelayMessage ensures all necessary values are present for a cdc-postgres relay message
 func (r *Relay) validateCDCPostgresRelayMessage(msg *types.RelayMessage) error {
 	if msg == nil {
 		return errMissingMessage

@@ -2,104 +2,93 @@ package cdc_mongo
 
 import (
 	"context"
+	"time"
 
-	"github.com/batchcorp/plumber/api"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+
 	"github.com/batchcorp/plumber/backends/cdc-mongo/types"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/stats"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Relayer struct {
-	Options        *cli.Options
-	RelayCh        chan interface{}
-	log            *logrus.Entry
-	Service        *mongo.Client
-	DefaultContext context.Context
+	Options     *cli.Options
+	RelayCh     chan interface{}
+	log         *logrus.Entry
+	Service     *mongo.Client
+	ShutdownCtx context.Context
 }
 
-func Relay(opts *cli.Options) error {
+func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
 	if err := validateRelayOptions(opts); err != nil {
-		return errors.Wrap(err, "unable to verify options")
-	}
-
-	// Create new relayer instance (+ validate token & gRPC address)
-	relayCfg := &relay.Config{
-		Token:       opts.RelayToken,
-		GRPCAddress: opts.RelayGRPCAddress,
-		NumWorkers:  opts.RelayNumWorkers,
-		Timeout:     opts.RelayGRPCTimeout,
-		RelayCh:     make(chan interface{}, 1),
-		DisableTLS:  opts.RelayGRPCDisableTLS,
-		Type:        opts.RelayType,
-	}
-
-	grpcRelayer, err := relay.New(relayCfg)
-	if err != nil {
-		return errors.Wrap(err, "unable to create new gRPC relayer")
+		return nil, errors.Wrap(err, "unable to verify options")
 	}
 
 	// Create new service
 	client, err := NewService(opts)
 	if err != nil {
-		return errors.Wrap(err, "unable to create mongo connection")
+		return nil, errors.Wrap(err, "unable to create mongo connection")
 	}
 
-	// Launch HTTP server
-	go func() {
-		if err := api.Start(opts.RelayHTTPListenAddress, opts.Version); err != nil {
-			logrus.Fatalf("unable to start API server: %s", err)
-		}
-	}()
-
-	// Launch gRPC Relayer
-	if err := grpcRelayer.StartWorkers(); err != nil {
-		return errors.Wrap(err, "unable to start gRPC relay workers")
-	}
-
-	r := &Relayer{
-		Options: opts,
-		RelayCh: relayCfg.RelayCh,
-		Service: client,
-		log:     logrus.WithField("pkg", "cdc-mongo/relay.go"),
-	}
-
-	return r.Relay()
+	return &Relayer{
+		Options:     opts,
+		RelayCh:     relayCh,
+		Service:     client,
+		ShutdownCtx: shutdownCtx,
+		log:         logrus.WithField("pkg", "cdc-mongo/relay.go"),
+	}, nil
 }
 
 func (r *Relayer) Relay() error {
-	ctx := context.TODO()
-
 	var err error
 	var cs *mongo.ChangeStream
+	streamOpts := make([]*options.ChangeStreamOptions, 0)
+
+	if r.Options.CDCMongo.IncludeFullDocument {
+		streamOpts = append(streamOpts, options.ChangeStream().SetFullDocument(options.UpdateLookup))
+	}
 
 	if r.Options.CDCMongo.Database != "" {
 		database := r.Service.Database(r.Options.CDCMongo.Database)
 		if r.Options.CDCMongo.Collection == "" {
 			// Watch specific database and all collections under it
-			cs, err = database.Watch(ctx, mongo.Pipeline{})
+			cs, err = database.Watch(r.ShutdownCtx, mongo.Pipeline{}, streamOpts...)
 		} else {
-			// Watch specific database and collection
+			// Watch specific database and collection deployment
 			coll := database.Collection(r.Options.CDCMongo.Collection)
-			cs, err = coll.Watch(ctx, mongo.Pipeline{})
+			cs, err = coll.Watch(r.ShutdownCtx, mongo.Pipeline{}, streamOpts...)
 		}
 	} else {
 		// Watch entire deployment
-		cs, err = r.Service.Watch(ctx, mongo.Pipeline{})
+		cs, err = r.Service.Watch(r.ShutdownCtx, mongo.Pipeline{}, streamOpts...)
 	}
 
 	if err != nil {
 		return errors.Wrap(err, "could not begin change stream")
 	}
 
-	defer cs.Close(ctx)
+	defer cs.Close(r.ShutdownCtx)
 
 	for {
-		if !cs.Next(ctx) {
+		if !cs.Next(r.ShutdownCtx) {
+			if cs.Err() == context.Canceled {
+				r.log.Info("Received shutdown signal, existing relayer")
+				return nil
+			}
+
+			stats.Mute("redis-pubsub-relay-consumer")
+			stats.Mute("redis-pubsub-relay-producer")
+
+			stats.IncrPromCounter("plumber_read_errors", 1)
+
 			r.log.Errorf("unable to read message from mongo: %s", cs.Err())
+
+			time.Sleep(ReadRetryInterval)
+			continue
 		}
 
 		stats.Incr("cdc-mongo-relay-consumer", 1)
@@ -113,7 +102,7 @@ func (r *Relayer) Relay() error {
 
 func validateRelayOptions(opts *cli.Options) error {
 	if opts.CDCMongo.Collection != "" && opts.CDCMongo.Database == "" {
-		return errMissingDatabase
+		return ErrMissingDatabase
 	}
 	return nil
 }

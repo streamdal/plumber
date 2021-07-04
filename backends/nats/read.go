@@ -9,24 +9,13 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 )
 
-func Read(opts *cli.Options) error {
+func Read(opts *cli.Options, md *desc.MessageDescriptor) error {
 	if err := validateReadOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
-	}
-
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.ReadProtobufRootMessage != "" {
-		md, mdErr = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
 	}
 
 	client, err := NewClient(opts)
@@ -48,7 +37,7 @@ func (n *Nats) Read() error {
 	defer n.Client.Close()
 	n.log.Info("Listening for message(s) ...")
 
-	lineNumber := 1
+	count := 1
 
 	// nats.Subscribe is async, use channel to wait to exit
 	doneCh := make(chan bool)
@@ -63,10 +52,8 @@ func (n *Nats) Read() error {
 
 		str := string(data)
 
-		if n.Options.ReadLineNumbers {
-			str = fmt.Sprintf("%d: ", lineNumber) + str
-			lineNumber++
-		}
+		str = fmt.Sprintf("%d: ", count) + str
+		count++
 
 		printer.Print(str)
 

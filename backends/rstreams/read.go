@@ -10,22 +10,11 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 )
 
-func Read(opts *cli.Options) error {
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.ReadProtobufRootMessage != "" {
-		md, mdErr = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
-	}
-
+func Read(opts *cli.Options, md *desc.MessageDescriptor) error {
 	client, err := NewStreamsClient(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to create client")
@@ -63,7 +52,7 @@ func (r *RedisStreams) Read() error {
 
 	r.log.Info("Listening for message(s) ...")
 
-	lineNumber := 1
+	count := 1
 
 	for {
 		// Attempt to consume
@@ -105,10 +94,8 @@ func (r *RedisStreams) Read() error {
 
 					str := fmt.Sprintf("[ID: %s Stream: %s Key: %s] %s", message.ID, streamName, k, string(decodedData))
 
-					if r.Options.ReadLineNumbers {
-						str = fmt.Sprintf("%d: %s", lineNumber, str)
-						lineNumber++
-					}
+					str = fmt.Sprintf("%d: %s", count, str)
+					count++
 
 					printer.Print(str)
 				}

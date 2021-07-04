@@ -17,24 +17,42 @@ import (
 	"github.com/batchcorp/plumber/serializers"
 )
 
-// GenerateWriteValue will transform input data into the required format for transmission
-func GenerateWriteValue(md *desc.MessageDescriptor, opts *cli.Options) ([]byte, error) {
-	// Do we read value or file?
-	var data []byte
+func GenerateWriteValues(md *desc.MessageDescriptor, opts *cli.Options) ([][]byte, error) {
+	writeValues := make([][]byte, 0)
 
-	if opts.WriteInputData != "" {
-		data = []byte(opts.WriteInputData)
-	}
-
+	// File source
 	if opts.WriteInputFile != "" {
-		var readErr error
-
-		data, readErr = ioutil.ReadFile(opts.WriteInputFile)
-		if readErr != nil {
-			return nil, fmt.Errorf("unable to read file '%s': %s", opts.WriteInputFile, readErr)
+		data, err := ioutil.ReadFile(opts.WriteInputFile)
+		if err != nil {
+			return nil, fmt.Errorf("unable to read file '%s': %s", opts.WriteInputFile, err)
 		}
+
+		wv, err := generateWriteValue(data, md, opts)
+		if err != nil {
+			return nil, err
+		}
+
+		writeValues = append(writeValues, wv)
+		return writeValues, nil
 	}
 
+	fmt.Printf("%+v\n", opts.WriteInputData)
+
+	// Stdin source
+	for _, data := range opts.WriteInputData {
+		wv, err := generateWriteValue([]byte(data), md, opts)
+		if err != nil {
+			return nil, err
+		}
+
+		writeValues = append(writeValues, wv)
+	}
+
+	return writeValues, nil
+}
+
+// generateWriteValue will transform input data into the required format for transmission
+func generateWriteValue(data []byte, md *desc.MessageDescriptor, opts *cli.Options) ([]byte, error) {
 	// Ensure we do not try to operate on a nil md
 	if opts.WriteInputFile == "jsonpb" && md == nil {
 		return nil, errors.New("message descriptor cannot be nil when --input-type is jsonpb")
@@ -90,23 +108,12 @@ func ValidateWriteOptions(opts *cli.Options, busSpecific func(options *cli.Optio
 		}
 	}
 
-	// If type is protobuf, ensure both --protobuf-dir and --protobuf-root-message
-	// are set as well
-	if opts.WriteInputType == "jsonpb" {
-		if err := cli.ValidateProtobufOptions(
-			opts.WriteProtobufDirs,
-			opts.WriteProtobufRootMessage,
-		); err != nil {
-			return fmt.Errorf("unable to validate protobuf option(s): %s", err)
-		}
-	}
-
-	if opts.WriteInputData == "" && opts.WriteInputFile == "" {
+	if len(opts.WriteInputData) == 0 && opts.WriteInputFile == "" {
 		return errors.New("either --input-data or --input-file must be specified")
 	}
 
 	// InputData and file cannot be set at the same time
-	if opts.WriteInputData != "" && opts.WriteInputFile != "" {
+	if len(opts.WriteInputData) > 0 && opts.WriteInputFile != "" {
 		return fmt.Errorf("--input-data and --input-file cannot both be set")
 	}
 

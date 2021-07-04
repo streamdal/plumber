@@ -6,26 +6,15 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/writer"
 )
 
-func Write(opts *cli.Options) error {
+func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 	if err := writer.ValidateWriteOptions(opts, nil); err != nil {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	var mdErr error
-	var md *desc.MessageDescriptor
-
-	if opts.WriteInputType == "jsonpb" {
-		md, mdErr = pb.FindMessageDescriptor(opts.WriteProtobufDirs, opts.WriteProtobufRootMessage)
-		if mdErr != nil {
-			return errors.Wrap(mdErr, "unable to find root message descriptor")
-		}
-	}
-
-	value, err := writer.GenerateWriteValue(md, opts)
+	writeValues, err := writer.GenerateWriteValues(md, opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}
@@ -42,7 +31,13 @@ func Write(opts *cli.Options) error {
 		log:     logrus.WithField("pkg", "activemq/write.go"),
 	}
 
-	return a.Write(value)
+	for _, value := range writeValues {
+		if err := a.Write(value); err != nil {
+			a.log.Error(err)
+		}
+	}
+
+	return nil
 }
 
 // Write writes a message to an ActiveMQ topic
