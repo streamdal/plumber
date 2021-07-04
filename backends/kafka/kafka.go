@@ -33,7 +33,6 @@ type Kafka struct {
 	Options *cli.Options
 	MsgDesc *desc.MessageDescriptor
 	log     *logrus.Entry
-	Conn    *skafka.Conn
 }
 
 type KafkaReader struct {

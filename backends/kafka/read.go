@@ -46,7 +46,6 @@ func Read(opts *cli.Options) error {
 		MsgDesc: md,
 		Reader:  kafkaReader.Reader,
 		log:     logrus.WithField("pkg", "kafka/read.go"),
-		Conn:    kafkaReader.Conn,
 	}
 
 	return k.Read()
@@ -60,6 +59,7 @@ func (k *Kafka) Read() error {
 	k.log.Info("Initializing (could take a minute or two) ...")
 
 	lineNumber := 1
+	lastCalculatedLag := 0
 
 	for {
 		// Initial message read can take a while to occur due to how consumer
@@ -88,13 +88,19 @@ func (k *Kafka) Read() error {
 
 		if k.Options.ReadLag {
 
-			calculatedLag, err := LagCalculationPerPartition(k.Conn, msg.Topic, k.Reader.Config().GroupID, msg.Partition, k.Options)
+			calculatedLag, err := LagCalculationPerPartition(msg.Topic, k.Reader.Config().GroupID, msg.Partition, k.Options)
+
+			if calculatedLag != int64(lastCalculatedLag) {
+
+				str = fmt.Sprintf("%d: ", calculatedLag) + str
+
+				lastCalculatedLag = int(calculatedLag)
+			}
 
 			if err != nil {
 				continue
 			}
 
-			str = fmt.Sprintf("%d: ", calculatedLag) + str
 		}
 
 		printer.Print(str)

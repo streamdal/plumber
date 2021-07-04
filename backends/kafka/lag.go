@@ -46,7 +46,7 @@ func LagCalculation(kc *skafka.Conn, topic string, groupId string, opts *cli.Opt
 
 	for _, part := range partitionList {
 
-		lagPerPartition, err := LagCalculationPerPartition(kc, topic, groupId, part.ID, opts)
+		lagPerPartition, err := LagCalculationPerPartition(topic, groupId, part.ID, opts)
 
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("unable to calculate lag for partition %v", part))
@@ -61,36 +61,48 @@ func LagCalculation(kc *skafka.Conn, topic string, groupId string, opts *cli.Opt
 
 }
 
-func LagCalculationPerPartition(kc *skafka.Conn, topic string, groupId string, part int, opts *cli.Options) (int64, error) {
+func LagCalculationPerPartition(topic string, groupId string, part int, opts *cli.Options) (int64, error) {
 
 	// get last offset in partition
 
-	partitions, err := kc.ReadPartitions(topic)
+	partDiscoverConn, err := NewConnection(opts)
 
-	var newConn *skafka.Conn
+	defer partDiscoverConn.Close()
 
-	for _, v := range partitions {
-		if v.ID == part {
-			newConn, err = NewConnection(opts)
+	if err != nil {
+		return -1, errors.Wrap(err, "Unable establish a connection to the broker")
+	}
 
-			defer newConn.Close()
+	partitions, err := partDiscoverConn.ReadPartitions(topic)
+
+	var partConn *skafka.Conn
+
+	for _, pt := range partitions {
+		if pt.ID == part {
+			partConn, err = NewConnection(opts)
+
+			defer partConn.Close()
+
+			if err != nil {
+				return -1, errors.Wrap(err, "Unable establish a connection to the partition")
+			}
 		}
 	}
 
-	_, lastOffet, err := newConn.ReadOffsets()
+	_, lastOffet, err := partConn.ReadOffsets()
 
 	// obtain last commited offset for a given partition
 
-	kcli := &skafka.Client{Addr: kc.RemoteAddr()}
+	kcli := &skafka.Client{Addr: partDiscoverConn.RemoteAddr()}
 
 	offsetResponse, err := kcli.OffsetFetch(context.Background(), &skafka.OffsetFetchRequest{
-		Addr:    newConn.RemoteAddr(),
+		Addr:    partConn.RemoteAddr(),
 		GroupID: groupId,
 		Topics:  map[string][]int{topic: {part}},
 	})
 
 	if err != nil {
-		return -1, errors.Wrap(err, "unable to obtain last commited offset per partition")
+		return -1, errors.Wrap(err, "Unable to obtain last commited offset per partition")
 	}
 
 	var lastCommitedOffset int64

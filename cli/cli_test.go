@@ -211,6 +211,26 @@ func TestHandleMQTTFlags_write(t *testing.T) {
 	g.Expect(opts.AvroSchemaFile).To(Equal("../test-assets/avro/test.avsc"))
 }
 
+func TestHandleKafkaFlags_lag(t *testing.T) {
+
+	g := NewGomegaWithT(t)
+
+	args := []string{
+		"lag", "kafka",
+		"--address", "testing.tld:9092",
+		"--topic", "plumber_test",
+		"--group-id", "plumber_test_group",
+	}
+
+	cmd, opts, err := Handle(args)
+
+	g.Expect(err).ToNot(HaveOccurred())
+	g.Expect(cmd).To(Equal("lag kafka"))
+	g.Expect(opts.Kafka.Address).To(Equal("testing.tld:9092"))
+	g.Expect(opts.Kafka.Topic).To(Equal("plumber_test"))
+	g.Expect(opts.Kafka.GroupID).To(Equal("plumber_test_group"))
+}
+
 func TestHandleKafkaFlags_read(t *testing.T) {
 
 	g := NewGomegaWithT(t)
@@ -225,6 +245,7 @@ func TestHandleKafkaFlags_read(t *testing.T) {
 		"--protobuf-dir", "../test-assets/protos",
 		"--protobuf-root-message", "Message",
 		"--avro-schema", "../test-assets/avro/test.avsc",
+		"--lag",
 	}
 
 	cmd, opts, err := Handle(args)
@@ -238,6 +259,7 @@ func TestHandleKafkaFlags_read(t *testing.T) {
 	g.Expect(opts.ReadProtobufDirs).To(Equal([]string{"../test-assets/protos"}))
 	g.Expect(opts.ReadProtobufRootMessage).To(Equal("Message"))
 	g.Expect(opts.AvroSchemaFile).To(Equal("../test-assets/avro/test.avsc"))
+	g.Expect(opts.ReadLag).To(BeTrue())
 }
 
 func TestHandleKafkaFlags_write(t *testing.T) {
