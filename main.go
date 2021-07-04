@@ -155,7 +155,7 @@ func parseCmd(cmd string, opts *cli.Options) {
 	case "relay":
 		err = ProcessRelayFlags(opts)
 
-	// Read
+	// Lag
 	case "lag kafka":
 		err = kafka.Lag(opts)
 

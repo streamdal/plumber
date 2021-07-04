@@ -219,7 +219,7 @@ func HandleGlobalReadFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("verbose", "Display message metadata if available").
 		BoolVar(&opts.Verbose)
 
-	cmd.Flag("lag", "Display lag reader lag for each message").
+	cmd.Flag("lag", "Display amount of messages with un-commited offset, if different from the previous message").
 		Default("false").BoolVar(&opts.ReadLag)
 }
 
