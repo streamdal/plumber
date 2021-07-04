@@ -52,7 +52,7 @@ func LagCalculation(kc *skafka.Conn, topic string, groupId string, opts *cli.Opt
 			return errors.Wrap(err, fmt.Sprintf("unable to calculate lag for partition %v", part))
 		}
 
-		sb.WriteString(fmt.Sprintf("Lag for partition %v is %v \n", part.ID, lagPerPartition))
+		sb.WriteString(fmt.Sprintf("Lag in partition %v is <%v messages> for consumer with group-id \"%s\" \n", part.ID, lagPerPartition, groupId))
 	}
 
 	printer.Print(sb.String())
