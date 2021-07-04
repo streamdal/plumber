@@ -115,12 +115,13 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	writeCmd := app.Command("write", "Write message(s) to messaging system")
 	relayCmd := app.Command("relay", "Relay message(s) from messaging system to Batch")
 	batchCmd := app.Command("batch", "Access your Batch.sh account information")
+	lagCmd := app.Command("lag", "Monitor lag in the messaging system")
 
 	HandleRelayFlags(relayCmd, opts)
 
 	switch os.Getenv("PLUMBER_RELAY_TYPE") {
 	case "kafka":
-		HandleKafkaFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleKafkaFlags(readCmd, writeCmd, relayCmd, lagCmd, opts)
 	case "rabbit":
 		HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
 	case "aws-sqs":
@@ -138,7 +139,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	case "cdc-mongo":
 		HandleCDCMongoFlags(readCmd, writeCmd, relayCmd, opts)
 	default:
-		HandleKafkaFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleKafkaFlags(readCmd, writeCmd, relayCmd, lagCmd, opts)
 		HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleGCPPubSubFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleMQTTFlags(readCmd, writeCmd, opts)

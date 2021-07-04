@@ -53,11 +53,16 @@ type KafkaOptions struct {
 	WriteKey string
 }
 
-func HandleKafkaFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Options) {
+func HandleKafkaFlags(readCmd, writeCmd, relayCmd, lagCmd *kingpin.CmdClause, opts *Options) {
 	rc := readCmd.Command("kafka", "Kafka message system")
 
 	addSharedKafkaFlags(rc, opts)
 	addReadKafkaFlags(rc, opts)
+
+	// Kafka lag cmd
+	lc := lagCmd.Command("kafka", "Kafka message system")
+
+	addSharedKafkaFlags(lc, opts)
 
 	// Kafka write cmd
 	wc := writeCmd.Command("kafka", "Kafka message system")

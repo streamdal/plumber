@@ -82,11 +82,6 @@ func NewConnection(opts *cli.Options) (*skafka.Conn, error) {
 			opts.Kafka.Address, err)
 	}
 
-	// kclient := &skafka.Client{
-	// 	Addr:    conn.RemoteAddr(),
-	// 	Timeout: opts.Kafka.Timeout,
-	// }
-
 	return conn, err
 
 }

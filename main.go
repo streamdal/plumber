@@ -155,6 +155,10 @@ func parseCmd(cmd string, opts *cli.Options) {
 	case "relay":
 		err = ProcessRelayFlags(opts)
 
+	// Read
+	case "lag kafka":
+		err = kafka.Lag(opts)
+
 	default:
 		logrus.Fatalf("Unrecognized command: %s", cmd)
 	}

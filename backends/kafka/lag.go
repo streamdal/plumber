@@ -52,7 +52,7 @@ func LagCalculation(kc *skafka.Conn, topic string, groupId string, opts *cli.Opt
 			return errors.Wrap(err, fmt.Sprintf("unable to calculate lag for partition %v", part))
 		}
 
-		sb.WriteString(fmt.Sprintf("Lag for partition %v is %T \n", part, lagPerPartition))
+		sb.WriteString(fmt.Sprintf("Lag for partition %v is %v \n", part.ID, lagPerPartition))
 	}
 
 	printer.Print(sb.String())
@@ -63,11 +63,13 @@ func LagCalculation(kc *skafka.Conn, topic string, groupId string, opts *cli.Opt
 
 func LagCalculationPerPartition(kc *skafka.Conn, topic string, groupId string, part int, opts *cli.Options) (int64, error) {
 
-	tempPartitions, err := kc.ReadPartitions(topic)
+	// get last offset in partition
+
+	partitions, err := kc.ReadPartitions(topic)
 
 	var newConn *skafka.Conn
 
-	for _, v := range tempPartitions {
+	for _, v := range partitions {
 		if v.ID == part {
 			newConn, err = NewConnection(opts)
 
@@ -75,11 +77,11 @@ func LagCalculationPerPartition(kc *skafka.Conn, topic string, groupId string, p
 		}
 	}
 
-	_, lOff, err := newConn.ReadOffsets()
-
-	kcli := &skafka.Client{Addr: kc.RemoteAddr()}
+	_, lastOffet, err := newConn.ReadOffsets()
 
 	// obtain last commited offset for a given partition
+
+	kcli := &skafka.Client{Addr: kc.RemoteAddr()}
 
 	offsetResponse, err := kcli.OffsetFetch(context.Background(), &skafka.OffsetFetchRequest{
 		Addr:    newConn.RemoteAddr(),
@@ -100,15 +102,16 @@ func LagCalculationPerPartition(kc *skafka.Conn, topic string, groupId string, p
 		}
 	}
 
-	lagInPartition := lOff - lastCommitedOffset
+	lagInPartition := lastOffet - lastCommitedOffset
 
 	return lagInPartition, nil
 
 }
 
 func validateLagOptions(opts *cli.Options) error {
-	if !opts.ReadLag {
-		return fmt.Errorf("Read Lag option isn't available: %t", opts.ReadLag)
+
+	if opts.Kafka.Address == "" {
+		return fmt.Errorf("No broker address available")
 	}
 
 	if opts.Kafka.Topic == "" {
