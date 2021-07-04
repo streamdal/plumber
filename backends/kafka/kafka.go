@@ -33,6 +33,7 @@ type Kafka struct {
 	Options *cli.Options
 	MsgDesc *desc.MessageDescriptor
 	log     *logrus.Entry
+	Conn    *skafka.Conn
 }
 
 type KafkaReader struct {
@@ -45,7 +46,11 @@ type KafkaWriter struct {
 	Conn   *skafka.Conn
 }
 
-func NewConnection(opts *cli.Options) (*skafka.Conn, *skafka.Client, error) {
+type KafkaLag struct {
+	partitionIds []int
+}
+
+func NewConnection(opts *cli.Options) (*skafka.Conn, error) {
 	dialer := &skafka.Dialer{
 		DualStack: true,
 		Timeout:   opts.Kafka.Timeout,
@@ -59,7 +64,7 @@ func NewConnection(opts *cli.Options) (*skafka.Conn, *skafka.Client, error) {
 
 	auth, err := getAuthenticationMechanism(opts)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "unable to get authentication mechanism")
+		return nil, errors.Wrap(err, "unable to get authentication mechanism")
 	}
 
 	dialer.SASLMechanism = auth
@@ -70,17 +75,19 @@ func NewConnection(opts *cli.Options) (*skafka.Conn, *skafka.Client, error) {
 	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(opts.Kafka.Timeout))
 
 	// Attempt to establish connection on startup
-	conn, err := dialer.DialContext(ctxDeadline, "tcp", opts.Kafka.Address)
+	conn, err := dialer.DialLeader(ctxDeadline, "tcp", opts.Kafka.Address, opts.Kafka.Topic, 0)
+
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
+		return nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
 			opts.Kafka.Address, err)
 	}
 
-	kclient := &skafka.Client{
-		Timeout: opts.Kafka.Timeout,
-	}
+	// kclient := &skafka.Client{
+	// 	Addr:    conn.RemoteAddr(),
+	// 	Timeout: opts.Kafka.Timeout,
+	// }
 
-	return conn, kclient, err
+	return conn, err
 
 }
 

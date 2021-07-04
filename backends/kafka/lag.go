@@ -3,8 +3,10 @@ package kafka
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/printer"
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 )
@@ -15,7 +17,7 @@ func Lag(opts *cli.Options) error {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	kafkaConn, kafkaClient, err := NewConnection(opts)
+	kafkaConn, err := NewConnection(opts)
 
 	if err != nil {
 		return errors.Wrap(err, "unable to create connection")
@@ -27,11 +29,11 @@ func Lag(opts *cli.Options) error {
 
 	defer kafkaConn.Close()
 
-	return LagCalculation(kafkaConn, opts.Kafka.Topic, kafkaClient, groupId)
+	return LagCalculation(kafkaConn, opts.Kafka.Topic, groupId, opts)
 }
 
 // calculate lag with a given connection
-func LagCalculation(kc *skafka.Conn, topic string, kcli *skafka.Client, groupId string) error {
+func LagCalculation(kc *skafka.Conn, topic string, groupId string, opts *cli.Options) error {
 
 	partitionList, err := kc.ReadPartitions(topic)
 
@@ -39,46 +41,68 @@ func LagCalculation(kc *skafka.Conn, topic string, kcli *skafka.Client, groupId 
 		return errors.Wrap(err, "unable to obtain partitions")
 	}
 
-	partitionIds := make([]int, len(partitionList))
-	offsetRequestList := make([]skafka.OffsetRequest, len(partitionList))
+	// calculate and print lag
+	var sb strings.Builder
 
-	for i, partition := range partitionList {
-		partitionIds[i] = partition.ID
+	for _, part := range partitionList {
 
-		offsetRequestList[i] = skafka.OffsetRequest{
-			Partition: partition.ID,
-			Timestamp: 0,
+		lagPerPartition, err := LagCalculationPerPartition(kc, topic, groupId, part.ID, opts)
+
+		if err != nil {
+			return errors.Wrap(err, fmt.Sprintf("unable to calculate lag for partition %v", part))
+		}
+
+		sb.WriteString(fmt.Sprintf("Lag for partition %v is %T \n", part, lagPerPartition))
+	}
+
+	printer.Print(sb.String())
+
+	return nil
+
+}
+
+func LagCalculationPerPartition(kc *skafka.Conn, topic string, groupId string, part int, opts *cli.Options) (int64, error) {
+
+	tempPartitions, err := kc.ReadPartitions(topic)
+
+	var newConn *skafka.Conn
+
+	for _, v := range tempPartitions {
+		if v.ID == part {
+			newConn, err = NewConnection(opts)
+
+			defer newConn.Close()
 		}
 	}
 
-	// goal: get lag per partition in topic
+	_, lOff, err := newConn.ReadOffsets()
 
-	// obtain last offset per partition
+	kcli := &skafka.Client{Addr: kc.RemoteAddr()}
 
-	listoffsetResponse, err := kcli.ListOffsets(context.Background(), &skafka.ListOffsetsRequest{
-		Addr:   kc.RemoteAddr(),
-		Topics: map[string][]skafka.OffsetRequest{topic: offsetRequestList},
-	})
-
-	partitionOffsetMap := make(map[int]skafka.PartitionOffsets)
-
-	for _, v := range listoffsetResponse.Topics[topic] {
-		partitionOffsetMap[v.Partition] = v
-	}
-
-	// obtained last commited offset per partition
+	// obtain last commited offset for a given partition
 
 	offsetResponse, err := kcli.OffsetFetch(context.Background(), &skafka.OffsetFetchRequest{
-		Addr:    kc.RemoteAddr(),
+		Addr:    newConn.RemoteAddr(),
 		GroupID: groupId,
-		Topics:  map[string][]int{topic: partitionIds},
+		Topics:  map[string][]int{topic: {part}},
 	})
 
-	lastCommitedOffset := make(map[int]skafka.OffsetFetchPartition)
+	if err != nil {
+		return -1, errors.Wrap(err, "unable to obtain last commited offset per partition")
+	}
+
+	var lastCommitedOffset int64
 
 	for _, v := range offsetResponse.Topics[topic] {
-		lastCommitedOffset[v.Partition] = v
+		if v.Partition == part {
+			lastCommitedOffset = v.CommittedOffset
+			break
+		}
 	}
+
+	lagInPartition := lOff - lastCommitedOffset
+
+	return lagInPartition, nil
 
 }
 

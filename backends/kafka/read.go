@@ -46,6 +46,7 @@ func Read(opts *cli.Options) error {
 		MsgDesc: md,
 		Reader:  kafkaReader.Reader,
 		log:     logrus.WithField("pkg", "kafka/read.go"),
+		Conn:    kafkaReader.Conn,
 	}
 
 	return k.Read()
@@ -87,13 +88,13 @@ func (k *Kafka) Read() error {
 
 		if k.Options.ReadLag {
 
-			lag, err := k.Reader.ReadLag(context.Background())
+			calculatedLag, err := LagCalculationPerPartition(k.Conn, msg.Topic, k.Reader.Config().GroupID, msg.Partition, k.Options)
 
 			if err != nil {
 				continue
 			}
 
-			str = fmt.Sprintf("%d: ", lag) + str
+			str = fmt.Sprintf("%d: ", calculatedLag) + str
 		}
 
 		printer.Print(str)
