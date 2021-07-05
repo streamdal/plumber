@@ -226,8 +226,8 @@ func TestHandleKafkaFlags_lag(t *testing.T) {
 
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(cmd).To(Equal("lag kafka"))
-	g.Expect(opts.Kafka.Address).To(Equal("testing.tld:9092"))
-	g.Expect(opts.Kafka.Topic).To(Equal("plumber_test"))
+	g.Expect(opts.Kafka.Brokers[0]).To(Equal("testing.tld:9092"))
+	g.Expect(opts.Kafka.Topics).To(Equal([]string{"plumber_test"}))
 	g.Expect(opts.Kafka.GroupID).To(Equal("plumber_test_group"))
 }
 

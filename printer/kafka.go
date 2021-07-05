@@ -2,6 +2,7 @@ package printer
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/logrusorgru/aurora"
 	"github.com/segmentio/kafka-go"
@@ -9,7 +10,7 @@ import (
 	"github.com/batchcorp/plumber/cli"
 )
 
-func PrintKafkaResult(opts *cli.Options, count int, msg kafka.Message, data []byte) {
+func PrintKafkaResult(opts *cli.Options, count int, lastOffset int64, msg kafka.Message, data []byte) {
 	key := aurora.Gray(12, "NONE").String()
 
 	if len(msg.Key) != 0 {
@@ -21,6 +22,13 @@ func PrintKafkaResult(opts *cli.Options, count int, msg kafka.Message, data []by
 		{"Topic", msg.Topic},
 		{"Offset", fmt.Sprintf("%d", msg.Offset)},
 		{"Partition", fmt.Sprintf("%d", msg.Partition)},
+	}
+
+	if lastOffset != 0 {
+
+		lastOffStr := strconv.FormatUint(uint64(lastOffset), 10)
+
+		properties = append(properties, []string{"LastOfsset", lastOffStr})
 	}
 
 	properties = append(properties, generateHeaders(msg.Headers)...)

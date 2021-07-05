@@ -68,6 +68,16 @@ func (p *Plumber) parseCmdRead() error {
 	}
 }
 
+// parseCmdRead handles read mode
+func (p *Plumber) parseCmdLag() error {
+	switch p.Cmd {
+	case "lag kafka":
+		return kafka.Lag(p.Options)
+	default:
+		return fmt.Errorf("unrecognized command: %s", p.Cmd)
+	}
+}
+
 // parseCmdWrite handles write mode
 func (p *Plumber) parseCmdWrite() error {
 	switch p.Cmd {

@@ -17,69 +17,85 @@ func Lag(opts *cli.Options) error {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	kafkaConn, err := NewConnection(opts)
+	kafkaLag, err := NewKafkaLagConnection(opts)
+
+	for _, v := range kafkaLag.partitionDiscoverConn {
+		defer v.Close()
+	}
 
 	if err != nil {
 		return errors.Wrap(err, "unable to create connection")
 	}
 
-	kafkaConn.RemoteAddr()
-
 	groupId := opts.Kafka.GroupID
 
-	defer kafkaConn.Close()
-
-	return LagCalculation(kafkaConn, opts.Kafka.Topic, groupId, opts)
+	return kafkaLag.LagCalculationForConsumerGroup(groupId, opts)
 }
 
 // calculate lag with a given connection
-func LagCalculation(kc *skafka.Conn, topic string, groupId string, opts *cli.Options) error {
+func (kLag *KafkaLag) LagCalculationForConsumerGroup(groupId string, opts *cli.Options) error {
 
-	partitionList, err := kc.ReadPartitions(topic)
+	topicPartionMap := make(map[string][]skafka.Partition)
 
-	if err != nil {
-		return errors.Wrap(err, "unable to obtain partitions")
+	for tp, kc := range kLag.partitionDiscoverConn {
+
+		partitionList, err := kc.ReadPartitions(tp)
+
+		if err != nil {
+			return errors.Wrap(err, "unable to obtain partitions")
+		}
+
+		topicPartionMap[tp] = partitionList
 	}
 
 	// calculate and print lag
 	var sb strings.Builder
 
-	for _, part := range partitionList {
+	for tpKey, partValue := range topicPartionMap {
 
-		lagPerPartition, err := LagCalculationPerPartition(topic, groupId, part.ID, opts)
+		for _, part := range partValue {
 
-		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("unable to calculate lag for partition %v", part))
+			lagPerPartition, err := kLag.LagCalculationPerPartition(tpKey, groupId, part.ID, opts)
+
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("unable to calculate lag for partition %v", part))
+			}
+
+			sb.WriteString(fmt.Sprintf("Lag in partition %v is <%v messages> for consumer with group-id \"%s\" \n", part.ID, lagPerPartition, groupId))
 		}
 
-		sb.WriteString(fmt.Sprintf("Lag in partition %v is <%v messages> for consumer with group-id \"%s\" \n", part.ID, lagPerPartition, groupId))
-	}
+		printer.Print(sb.String())
 
-	printer.Print(sb.String())
+	}
 
 	return nil
 
 }
 
-func LagCalculationPerPartition(topic string, groupId string, part int, opts *cli.Options) (int64, error) {
-
-	// get last offset in partition
-
-	partDiscoverConn, err := NewConnection(opts)
-
-	defer partDiscoverConn.Close()
-
-	if err != nil {
-		return -1, errors.Wrap(err, "Unable establish a connection to the broker")
-	}
+func discoverPartitions(topic string, partDiscoverConn *skafka.Conn, opts *cli.Options) ([]skafka.Partition, error) {
 
 	partitions, err := partDiscoverConn.ReadPartitions(topic)
+
+	if err != nil {
+		return nil, errors.Wrap(err, "Failed to get partition list")
+	}
+
+	return partitions, nil
+}
+
+func (kLag *KafkaLag) GetLastOfssetPerPartition(topic string, groupId string, part int, opts *cli.Options) (int64, error) {
+
+	partitions, err := discoverPartitions(topic, kLag.partitionDiscoverConn[topic], opts)
+
+	if err != nil {
+		return -1, err
+	}
 
 	var partConn *skafka.Conn
 
 	for _, pt := range partitions {
 		if pt.ID == part {
-			partConn, err = NewConnection(opts)
+			partConn, err = newConnectionPerPartition(topic, pt.ID, opts)
 
 			defer partConn.Close()
 
@@ -91,12 +107,22 @@ func LagCalculationPerPartition(topic string, groupId string, part int, opts *cl
 
 	_, lastOffet, err := partConn.ReadOffsets()
 
-	// obtain last commited offset for a given partition
+	return lastOffet, err
+}
 
-	kcli := &skafka.Client{Addr: partDiscoverConn.RemoteAddr()}
+// create new connection per topic and address
+func (kLag *KafkaLag) LagCalculationPerPartition(topic string, groupId string, part int, opts *cli.Options) (int64, error) {
+
+	// get last offset per partition
+
+	lastOffset, err := kLag.GetLastOfssetPerPartition(topic, groupId, part, opts)
+
+	// obtain last commited offset for a given partition and consumer group
+
+	kcli := &skafka.Client{Addr: kLag.partitionDiscoverConn[topic].RemoteAddr()}
 
 	offsetResponse, err := kcli.OffsetFetch(context.Background(), &skafka.OffsetFetchRequest{
-		Addr:    partConn.RemoteAddr(),
+		Addr:    kLag.partitionDiscoverConn[topic].RemoteAddr(),
 		GroupID: groupId,
 		Topics:  map[string][]int{topic: {part}},
 	})
@@ -114,7 +140,7 @@ func LagCalculationPerPartition(topic string, groupId string, part int, opts *cl
 		}
 	}
 
-	lagInPartition := lastOffet - lastCommitedOffset
+	lagInPartition := lastOffset - lastCommitedOffset
 
 	return lagInPartition, nil
 
@@ -122,11 +148,11 @@ func LagCalculationPerPartition(topic string, groupId string, part int, opts *cl
 
 func validateLagOptions(opts *cli.Options) error {
 
-	if opts.Kafka.Address == "" {
+	if len(opts.Kafka.Brokers) == 0 {
 		return fmt.Errorf("No broker address available")
 	}
 
-	if opts.Kafka.Topic == "" {
+	if len(opts.Kafka.Topics) == 0 {
 		return fmt.Errorf("No topic available in options")
 	}
 

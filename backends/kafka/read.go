@@ -47,8 +47,23 @@ func Read(opts *cli.Options, md *desc.MessageDescriptor) error {
 func (k *Kafka) Read() error {
 	k.log.Info("Initializing (could take a minute or two) ...")
 
-	lastCalculatedLag := 0
 	count := 1
+	lastOfsset := int64(0)
+
+	var lagConn *KafkaLag
+
+	var err error
+
+	// init only one connection for partition discovery
+	if k.Options.ReadLag {
+
+		lagConn, err = NewKafkaLagConnection(k.Options)
+
+		if err != nil {
+			return errors.Wrap(err, "unable to initialize partition discovery connection")
+		}
+
+	}
 
 	for {
 		// Initial message read can take a while to occur due to how consumer
@@ -64,29 +79,21 @@ func (k *Kafka) Read() error {
 		}
 
 		data, err := reader.Decode(k.Options, k.MsgDesc, msg.Value)
-    
-    
-		if k.Options.ReadLag {
 
-			calculatedLag, err := LagCalculationPerPartition(msg.Topic, k.Reader.Config().GroupID, msg.Partition, k.Options)
-
-			if calculatedLag != int64(lastCalculatedLag) {
-        
-				lastCalculatedLag = int(calculatedLag)
-			
-      }
-
-			if err != nil {
-				continue
-			}
-
-		}
-    
 		if err != nil {
 			return err
 		}
 
-		printer.PrintKafkaResult(k.Options, count, msg, data)
+		if k.Options.ReadLag && lastOfsset == 0 {
+
+			lastOfsset, err = lagConn.GetLastOfssetPerPartition(msg.Topic, k.Reader.Config().GroupID, msg.Partition, k.Options)
+
+			if err != nil {
+				return errors.Wrap(err, "unable to obtain lastOffset for partition")
+			}
+		}
+
+		printer.PrintKafkaResult(k.Options, count, lastOfsset, msg, data)
 
 		if !k.Options.ReadFollow {
 			break
