@@ -49,6 +49,7 @@ func (k *Kafka) Read() error {
 
 	count := 1
 	lastOfsset := int64(-1)
+	lastPartitionProcessed := -1
 
 	var lagConn *KafkaLag
 
@@ -69,6 +70,7 @@ func (k *Kafka) Read() error {
 		// Initial message read can take a while to occur due to how consumer
 		// groups are setup on initial connect.
 		msg, err := k.Reader.ReadMessage(context.Background())
+
 		if err != nil {
 			if !k.Options.ReadFollow {
 				return errors.Wrap(err, "unable to read message")
@@ -84,12 +86,17 @@ func (k *Kafka) Read() error {
 			return err
 		}
 
-		if k.Options.ReadLag && lastOfsset < 0 {
+		if k.Options.ReadLag {
 
-			lastOfsset, err = lagConn.GetLastOfssetPerPartition(msg.Topic, k.Reader.Config().GroupID, msg.Partition, k.Options)
+			if msg.Partition != lastPartitionProcessed {
 
-			if err != nil {
-				return errors.Wrap(err, "unable to obtain lastOffset for partition")
+				lastPartitionProcessed = msg.Partition
+
+				lastOfsset, err = lagConn.GetLastOfssetPerPartition(msg.Topic, k.Reader.Config().GroupID, msg.Partition, k.Options)
+
+				if err != nil {
+					return errors.Wrap(err, "unable to obtain lastOffset for partition")
+				}
 			}
 		}
 
