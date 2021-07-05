@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"github.com/batchcorp/plumber/backends/kafka/types"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
@@ -91,7 +92,12 @@ func (k *Kafka) Read() error {
 			}
 		}
 
-		printer.PrintKafkaResult(k.Options, count, lastOfsset, msg, data)
+		offsetInfo := &types.OffsetInfo{
+			Count:      count,
+			LastOffset: lastOfsset,
+		}
+
+		printer.PrintKafkaResult(k.Options, offsetInfo, msg, data)
 
 		if !k.Options.ReadFollow {
 			break

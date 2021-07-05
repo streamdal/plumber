@@ -13,3 +13,9 @@ type RelayMessage struct {
 // RelayMessageOptions contains any additional options necessary for processing of Kafka messages by the relayer
 type RelayMessageOptions struct {
 }
+
+// OffsetInfo encapsulates info related to the offset count in the
+type OffsetInfo struct {
+	Count      int
+	LastOffset int64
+}
