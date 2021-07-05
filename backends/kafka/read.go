@@ -48,7 +48,7 @@ func (k *Kafka) Read() error {
 	k.log.Info("Initializing (could take a minute or two) ...")
 
 	count := 1
-	lastOfsset := int64(0)
+	lastOfsset := int64(-1)
 
 	var lagConn *KafkaLag
 
@@ -84,7 +84,7 @@ func (k *Kafka) Read() error {
 			return err
 		}
 
-		if k.Options.ReadLag && lastOfsset == 0 {
+		if k.Options.ReadLag && lastOfsset < 0 {
 
 			lastOfsset, err = lagConn.GetLastOfssetPerPartition(msg.Topic, k.Reader.Config().GroupID, msg.Partition, k.Options)
 
