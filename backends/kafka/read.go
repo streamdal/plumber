@@ -53,19 +53,7 @@ func (k *Kafka) Read() error {
 
 	var lagConn *KafkaLag
 
-	var err error
-
 	// init only one connection for partition discovery
-	if k.Options.ReadLag {
-
-		lagConn, err = NewKafkaLagConnection(k.Options)
-
-		if err != nil {
-			return errors.Wrap(err, "unable to initialize partition discovery connection")
-		}
-
-	}
-
 	for {
 		// Initial message read can take a while to occur due to how consumer
 		// groups are setup on initial connect.
@@ -91,6 +79,12 @@ func (k *Kafka) Read() error {
 			if msg.Partition != lastPartitionProcessed {
 
 				lastPartitionProcessed = msg.Partition
+
+				lagConn, err = NewKafkaLagConnection(k.Options)
+
+				if err != nil {
+					continue
+				}
 
 				lastOfsset, err = lagConn.GetLastOfssetPerPartition(msg.Topic, k.Reader.Config().GroupID, msg.Partition, k.Options)
 
