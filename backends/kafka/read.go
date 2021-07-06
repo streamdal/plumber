@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"github.com/batchcorp/plumber/backends/kafka/types"
 	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
@@ -48,11 +49,17 @@ func (k *Kafka) Read() error {
 	k.log.Info("Initializing (could take a minute or two) ...")
 
 	count := 1
+	lastOffset := int64(-1)
+	lastPartitionProcessed := -1
 
+	var lagConn *KafkaLag
+
+	// init only one connection for partition discovery
 	for {
 		// Initial message read can take a while to occur due to how consumer
 		// groups are setup on initial connect.
 		msg, err := k.Reader.ReadMessage(context.Background())
+
 		if err != nil {
 			if !k.Options.ReadFollow {
 				return errors.Wrap(err, "unable to read message")
@@ -63,11 +70,35 @@ func (k *Kafka) Read() error {
 		}
 
 		data, err := reader.Decode(k.Options, k.MsgDesc, msg.Value)
+
 		if err != nil {
 			return err
 		}
 
-		printer.PrintKafkaResult(k.Options, count, msg, data)
+		if k.Options.ReadLag && msg.Partition != lastPartitionProcessed {
+
+			lastPartitionProcessed = msg.Partition
+
+			lagConn, err = NewKafkaLagConnection(k.Options)
+
+			if err != nil {
+				k.log.Debugf("Unable to connect establish a kafka lag connection: %s", err)
+				continue
+			}
+
+			lastOffset, err = lagConn.GetLastOffsetPerPartition(msg.Topic, k.Reader.Config().GroupID, msg.Partition, k.Options)
+
+			if err != nil {
+				return errors.Wrap(err, "unable to obtain lastOffset for partition")
+			}
+		}
+
+		offsetInfo := &types.OffsetInfo{
+			Count:      count,
+			LastOffset: lastOffset,
+		}
+
+		printer.PrintKafkaResult(k.Options, offsetInfo, msg, data)
 
 		if !k.Options.ReadFollow {
 			break

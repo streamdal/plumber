@@ -45,6 +45,103 @@ type KafkaWriter struct {
 	Conn   *skafka.Conn
 }
 
+type KafkaLag struct {
+	partitionDiscoverConn map[string]*skafka.Conn
+}
+
+func NewKafkaLagConnection(opts *cli.Options) (*KafkaLag, error) {
+	dialer := &skafka.Dialer{
+		DualStack: true,
+		Timeout:   opts.Kafka.Timeout,
+	}
+
+	if opts.Kafka.InsecureTLS {
+		dialer.TLS = &tls.Config{
+			InsecureSkipVerify: true,
+		}
+	}
+
+	auth, err := getAuthenticationMechanism(opts)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to get authentication mechanism")
+	}
+
+	dialer.SASLMechanism = auth
+
+	// The dialer timeout does not get utilized under some conditions (such as
+	// when kafka is configured to NOT auto create topics) - we need a
+	// mechanism to bail out early.
+	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(opts.Kafka.Timeout))
+
+	connMap := make(map[string]*skafka.Conn, len(opts.Kafka.Topics))
+
+	// Establish connection with with leader broker
+
+	for _, v := range opts.Kafka.Topics {
+
+		conn, err := dialer.DialLeader(ctxDeadline, "tcp", opts.Kafka.Brokers[0], v, 0)
+
+		if err != nil {
+			return nil, err
+		}
+
+		connMap[v] = conn
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
+			opts.Kafka.Brokers[0], err)
+	}
+
+	kLag := &KafkaLag{
+		partitionDiscoverConn: connMap,
+	}
+
+	return kLag, err
+
+}
+
+func newConnectionPerPartition(topic string, partition int, opts *cli.Options) (*skafka.Conn, error) {
+	dialer := &skafka.Dialer{
+		DualStack: true,
+		Timeout:   opts.Kafka.Timeout,
+	}
+
+	if opts.Kafka.InsecureTLS {
+		dialer.TLS = &tls.Config{
+			InsecureSkipVerify: true,
+		}
+	}
+
+	auth, err := getAuthenticationMechanism(opts)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to get authentication mechanism")
+	}
+
+	dialer.SASLMechanism = auth
+
+	// The dialer timeout does not get utilized under some conditions (such as
+	// when kafka is configured to NOT auto create topics) - we need a
+	// mechanism to bail out early.
+	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(opts.Kafka.Timeout))
+
+	// Establish connection with with leader broker
+
+	conn, err := dialer.DialLeader(ctxDeadline, "tcp", opts.Kafka.Brokers[0], topic, partition)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
+			opts.Kafka.Brokers[0], err)
+	}
+
+	return conn, err
+
+}
+
 func NewReader(opts *cli.Options) (*KafkaReader, error) {
 	dialer := &skafka.Dialer{
 		DualStack: true,

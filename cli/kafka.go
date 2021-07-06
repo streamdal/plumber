@@ -54,11 +54,17 @@ type KafkaOptions struct {
 	WriteHeader map[string]string
 }
 
-func HandleKafkaFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Options) {
+func HandleKafkaFlags(readCmd, writeCmd, relayCmd, lagCmd *kingpin.CmdClause, opts *Options) {
 	rc := readCmd.Command("kafka", "Kafka message system")
 
 	addSharedKafkaFlags(rc, opts)
 	addReadKafkaFlags(rc, opts)
+
+	// Kafka lag cmd
+	lc := lagCmd.Command("kafka", "Kafka message system")
+
+	addSharedKafkaFlags(lc, opts)
+	addLagKafkaFlags(lc, opts)
 
 	// Kafka write cmd
 	wc := writeCmd.Command("kafka", "Kafka message system")
@@ -176,6 +182,18 @@ func addReadKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Envar("PLUMBER_RELAY_KAFKA_COMMIT_INTERVAL").
 		Default(DefaultKafkaRelayCommitInterval).
 		DurationVar(&opts.Kafka.CommitInterval)
+}
+
+func addLagKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
+
+	cmd.Flag("use-consumer-group", "Whether plumber should use a consumer group").
+		Envar("PLUMBER_RELAY_KAFKA_USE_CONSUMER_GROUP").
+		Default("true").
+		BoolVar(&opts.Kafka.UseConsumerGroup)
+	cmd.Flag("group-id", "Specify a specific group-id to use when reading from kafka").
+		Envar("PLUMBER_RELAY_KAFKA_GROUP_ID").
+		Default(DefaultKafkaGroupId).
+		StringVar(&opts.Kafka.GroupID)
 }
 
 func addWriteKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {

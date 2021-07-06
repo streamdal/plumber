@@ -2,14 +2,16 @@ package printer
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/logrusorgru/aurora"
 	"github.com/segmentio/kafka-go"
 
+	"github.com/batchcorp/plumber/backends/kafka/types"
 	"github.com/batchcorp/plumber/cli"
 )
 
-func PrintKafkaResult(opts *cli.Options, count int, msg kafka.Message, data []byte) {
+func PrintKafkaResult(opts *cli.Options, offsetInfo *types.OffsetInfo, msg kafka.Message, data []byte) {
 	key := aurora.Gray(12, "NONE").String()
 
 	if len(msg.Key) != 0 {
@@ -23,9 +25,16 @@ func PrintKafkaResult(opts *cli.Options, count int, msg kafka.Message, data []by
 		{"Partition", fmt.Sprintf("%d", msg.Partition)},
 	}
 
+	if offsetInfo.LastOffset != 0 {
+
+		lastOffStr := strconv.FormatUint(uint64(offsetInfo.LastOffset), 10)
+
+		properties = append(properties, []string{"LastOfsset", lastOffStr})
+	}
+
 	properties = append(properties, generateHeaders(msg.Headers)...)
 
-	printTable(properties, count, msg.Time, data)
+	printTable(properties, offsetInfo.Count, msg.Time, data)
 }
 
 func generateHeaders(headers []kafka.Header) [][]string {

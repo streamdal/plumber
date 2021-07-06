@@ -3,3 +3,5 @@
 .DS*
 test-assets/backend-data/*
 start-*.sh
+.vscode/*
+.exe

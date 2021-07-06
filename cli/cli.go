@@ -59,6 +59,7 @@ type Options struct {
 	ReadProtobufRootMessage string
 	ReadProtobufDirs        []string
 	ReadFollow              bool
+	ReadLag                 bool
 	ReadConvert             string
 	ReadJSONOutput          bool
 	Verbose                 bool
@@ -128,13 +129,14 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	writeCmd := app.Command("write", "Write message(s) to messaging system")
 	relayCmd := app.Command("relay", "Relay message(s) from messaging system to Batch")
 	batchCmd := app.Command("batch", "Access your Batch.sh account information")
+	lagCmd := app.Command("lag", "Monitor lag in the messaging system")
 	dynamicCmd := app.Command("dynamic", "Act as a batch.sh replay destination")
 
 	HandleRelayFlags(relayCmd, opts)
 
 	switch os.Getenv("PLUMBER_RELAY_TYPE") {
 	case "kafka":
-		HandleKafkaFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleKafkaFlags(readCmd, writeCmd, relayCmd, lagCmd, opts)
 	case "rabbit":
 		HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
 	case "aws-sqs":
@@ -154,7 +156,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	case "mqtt":
 		HandleMQTTFlags(readCmd, writeCmd, relayCmd, opts)
 	default:
-		HandleKafkaFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleKafkaFlags(readCmd, writeCmd, relayCmd, lagCmd, opts)
 		HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleGCPPubSubFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleMQTTFlags(readCmd, writeCmd, relayCmd, opts)
@@ -246,6 +248,9 @@ func HandleGlobalReadFlags(cmd *kingpin.CmdClause, opts *Options) {
 
 	cmd.Flag("verbose", "Display message metadata if available").
 		BoolVar(&opts.Verbose)
+
+	cmd.Flag("lag", "Display amount of messages with un-commited offset, if different from the previous message").
+		Default("false").BoolVar(&opts.ReadLag)
 
 	cmd.Flag("json", "Read data should be treated as JSON").
 		Default("false").
