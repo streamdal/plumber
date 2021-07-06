@@ -27,7 +27,7 @@ func PrintKafkaResult(opts *cli.Options, offsetInfo *types.OffsetInfo, msg kafka
 
 	if offsetInfo.LastOffset != 0 {
 
-		lastOffStr := strconv.FormatUint(uint64(lastOffset), 10)
+		lastOffStr := strconv.FormatUint(uint64(offsetInfo.LastOffset), 10)
 
 		properties = append(properties, []string{"LastOfsset", lastOffStr})
 	}
