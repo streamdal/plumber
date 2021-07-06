@@ -83,7 +83,8 @@ func discoverPartitions(topic string, partDiscoverConn *skafka.Conn, opts *cli.O
 	return partitions, nil
 }
 
-func (kLag *KafkaLag) GetLastOfssetPerPartition(topic string, groupId string, part int, opts *cli.Options) (int64, error) {
+func (kLag *KafkaLag) GetLastOffsetPerPartition(topic string, groupId string, part int, opts *cli.Options) (int64, error) {
+
 
 	partitions, err := discoverPartitions(topic, kLag.partitionDiscoverConn[topic], opts)
 
