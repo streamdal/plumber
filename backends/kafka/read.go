@@ -94,7 +94,7 @@ func (k *Kafka) Read() error {
 
 		offsetInfo := &types.OffsetInfo{
 			Count:      count,
-			LastOffset: lastOfsset,
+			LastOffset: lastOffset,
 		}
 
 		printer.PrintKafkaResult(k.Options, offsetInfo, msg, data)
