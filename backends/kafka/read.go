@@ -49,7 +49,7 @@ func (k *Kafka) Read() error {
 	k.log.Info("Initializing (could take a minute or two) ...")
 
 	count := 1
-	lastOfsset := int64(-1)
+	lastOffset := int64(-1)
 	lastPartitionProcessed := -1
 
 	var lagConn *KafkaLag
