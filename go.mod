@@ -21,6 +21,7 @@ require (
 	github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
 	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/jhump/protoreflect v1.8.2
+	github.com/json-iterator/go v1.1.11
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/kataras/tablewriter v0.0.0-20180708051242-e063d29b7c23
 	github.com/kyleconroy/pgoutput v0.1.0 // indirect
@@ -44,7 +45,11 @@ require (
 	github.com/segmentio/kafka-go v0.4.16
 	github.com/sirupsen/logrus v1.7.0
 	github.com/streadway/amqp v1.0.0
+	github.com/thrift-iterator/go v0.0.0-20190402154806-9b5a67519118
 	github.com/tidwall/gjson v1.8.0
+	github.com/v2pro/plz v0.0.0-20200805122259-422184e41b6e // indirect
+	github.com/v2pro/quokka v0.0.0-20171201153428-382cb39c6ee6 // indirect
+	github.com/v2pro/wombat v0.0.0-20180402055224-a56dbdcddef2 // indirect
 	go.mongodb.org/mongo-driver v1.5.1
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
 	google.golang.org/grpc v1.30.0

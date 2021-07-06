@@ -61,6 +61,7 @@ type Options struct {
 	ReadFollow              bool
 	ReadConvert             string
 	ReadJSONOutput          bool
+	ReadThriftOutput        bool
 	Verbose                 bool
 
 	// Shared write flags
@@ -250,6 +251,10 @@ func HandleGlobalReadFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("json", "Read data should be treated as JSON").
 		Default("false").
 		BoolVar(&opts.ReadJSONOutput)
+
+	cmd.Flag("thrift", "Read data as a thrift encoded message").
+		Default("false").
+		BoolVar(&opts.ReadThriftOutput)
 }
 
 func HandleGlobalDynamicFlags(cmd *kingpin.CmdClause, opts *Options) {

@@ -36,8 +36,6 @@ func GenerateWriteValues(md *desc.MessageDescriptor, opts *cli.Options) ([][]byt
 		return writeValues, nil
 	}
 
-	fmt.Printf("%+v\n", opts.WriteInputData)
-
 	// Stdin source
 	for _, data := range opts.WriteInputData {
 		wv, err := generateWriteValue([]byte(data), md, opts)
