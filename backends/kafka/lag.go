@@ -150,7 +150,8 @@ func (kLag *KafkaLag) LagCalculationPerPartition(topic string, groupId string, p
 func validateLagOptions(opts *cli.Options) error {
 
 	if len(opts.Kafka.Brokers) == 0 {
-		return fmt.Errorf("No broker address available")
+		return errors.New("no broker address available")
+
 	}
 
 	if len(opts.Kafka.Topics) == 0 {
