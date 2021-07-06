@@ -155,7 +155,8 @@ func validateLagOptions(opts *cli.Options) error {
 	}
 
 	if len(opts.Kafka.Topics) == 0 {
-		return fmt.Errorf("No topic available in options")
+		return errors.New("no topic available in options")
+
 	}
 
 	return nil
