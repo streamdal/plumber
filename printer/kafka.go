@@ -25,7 +25,7 @@ func PrintKafkaResult(opts *cli.Options, offsetInfo *types.OffsetInfo, msg kafka
 		{"Partition", fmt.Sprintf("%d", msg.Partition)},
 	}
 
-	if lastOffset != 0 {
+	if offsetInfo.LastOffset != 0 {
 
 		lastOffStr := strconv.FormatUint(uint64(lastOffset), 10)
 
