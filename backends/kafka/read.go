@@ -85,7 +85,7 @@ func (k *Kafka) Read() error {
 				continue
 			}
 
-			lastOfsset, err = lagConn.GetLastOfssetPerPartition(msg.Topic, k.Reader.Config().GroupID, msg.Partition, k.Options)
+			lastOffset, err = lagConn.GetLastOffsetPerPartition(msg.Topic, k.Reader.Config().GroupID, msg.Partition, k.Options)
 
 			if err != nil {
 				return errors.Wrap(err, "unable to obtain lastOffset for partition")
