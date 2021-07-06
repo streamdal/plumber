@@ -34,7 +34,7 @@ func PrintKafkaResult(opts *cli.Options, offsetInfo *types.OffsetInfo, msg kafka
 
 	properties = append(properties, generateHeaders(msg.Headers)...)
 
-	printTable(properties, count, msg.Time, data)
+	printTable(properties, offsetInfo.Count, msg.Time, data)
 }
 
 func generateHeaders(headers []kafka.Header) [][]string {

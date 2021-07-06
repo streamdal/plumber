@@ -82,6 +82,7 @@ func (k *Kafka) Read() error {
 			lagConn, err = NewKafkaLagConnection(k.Options)
 
 			if err != nil {
+				k.log.Debugf("Unable to connect establish a kafka lag connection: %s", err)
 				continue
 			}
 

@@ -19,12 +19,12 @@ func Lag(opts *cli.Options) error {
 
 	kafkaLag, err := NewKafkaLagConnection(opts)
 
-	for _, v := range kafkaLag.partitionDiscoverConn {
-		defer v.Close()
-	}
-
 	if err != nil {
 		return errors.Wrap(err, "unable to create connection")
+	}
+
+	for _, v := range kafkaLag.partitionDiscoverConn {
+		defer v.Close()
 	}
 
 	groupId := opts.Kafka.GroupID
@@ -56,7 +56,6 @@ func (kLag *KafkaLag) LagCalculationForConsumerGroup(groupId string, opts *cli.O
 		for _, part := range partValue {
 
 			lagPerPartition, err := kLag.LagCalculationPerPartition(tpKey, groupId, part.ID, opts)
-
 			if err != nil {
 				return errors.Wrap(err, fmt.Sprintf("unable to calculate lag for partition %v", part))
 			}
@@ -85,11 +84,10 @@ func discoverPartitions(topic string, partDiscoverConn *skafka.Conn, opts *cli.O
 
 func (kLag *KafkaLag) GetLastOffsetPerPartition(topic string, groupId string, part int, opts *cli.Options) (int64, error) {
 
-
 	partitions, err := discoverPartitions(topic, kLag.partitionDiscoverConn[topic], opts)
 
 	if err != nil {
-		return -1, err
+		return -1, errors.Wrapf(err, "unable to discover partitions")
 	}
 
 	var partConn *skafka.Conn
@@ -97,14 +95,17 @@ func (kLag *KafkaLag) GetLastOffsetPerPartition(topic string, groupId string, pa
 	for _, pt := range partitions {
 		if pt.ID == part {
 			partConn, err = newConnectionPerPartition(topic, pt.ID, opts)
-
-			defer partConn.Close()
-
 			if err != nil {
 				return -1, errors.Wrap(err, "Unable establish a connection to the partition")
 			}
 		}
 	}
+
+	if partConn == nil {
+		return 0, fmt.Errorf("partition not found for topic '%s'", topic)
+	}
+
+	defer partConn.Close()
 
 	_, lastOffet, err := partConn.ReadOffsets()
 
@@ -116,7 +117,7 @@ func (kLag *KafkaLag) LagCalculationPerPartition(topic string, groupId string, p
 
 	// get last offset per partition
 
-	lastOffset, err := kLag.GetLastOfssetPerPartition(topic, groupId, part, opts)
+	lastOffset, err := kLag.GetLastOffsetPerPartition(topic, groupId, part, opts)
 
 	// obtain last commited offset for a given partition and consumer group
 
