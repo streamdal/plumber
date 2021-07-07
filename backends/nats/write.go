@@ -25,6 +25,8 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 		return errors.Wrap(err, "unable to create client")
 	}
 
+	defer client.Close()
+
 	n := &Nats{
 		Options: opts,
 		MsgDesc: md,
@@ -43,7 +45,6 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 
 // Write publishes a message to a NATS subject
 func (n *Nats) Write(value []byte) error {
-	defer n.Client.Close()
 	if err := n.Client.Publish(n.Options.Nats.Subject, value); err != nil {
 		return errors.Wrap(err, "unable to publish message")
 	}

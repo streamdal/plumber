@@ -24,6 +24,26 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 	logger := &NSQLogger{}
 	logger.Entry = logrus.WithField("pkg", "nsq")
 
+	config, err := getNSQConfig(opts)
+	if err != nil {
+		return errors.Wrap(err, "unable to create NSQ config")
+	}
+
+	producer, err := nsq.NewProducer(opts.NSQ.NSQDAddress, config)
+	if err != nil {
+		return errors.Wrap(err, "unable to start NSQ producer")
+	}
+
+	logLevel := nsq.LogLevelError
+	if opts.Debug {
+		logLevel = nsq.LogLevelDebug
+	}
+
+	defer producer.Stop()
+
+	// Use logrus for NSQ logs
+	producer.SetLogger(logger, logLevel)
+
 	n := &NSQ{
 		Options: opts,
 		MsgDesc: md,
@@ -41,28 +61,7 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 
 // Write publishes a message to a NSQ topic
 func (n *NSQ) Write(value []byte) error {
-	config, err := getNSQConfig(n.Options)
-	if err != nil {
-		return errors.Wrap(err, "unable to create NSQ config")
-	}
-
-	producer, err := nsq.NewProducer(n.Options.NSQ.NSQDAddress, config)
-	if err != nil {
-		return errors.Wrap(err, "unable to start NSQ producer")
-	}
-
-	logLevel := nsq.LogLevelError
-	if n.Options.Debug {
-		logLevel = nsq.LogLevelDebug
-	}
-
-	// Use logrus for NSQ logs
-	producer.SetLogger(n.log, logLevel)
-
-	defer producer.Stop()
-
-	err = producer.Publish(n.Options.NSQ.Topic, value)
-	if err != nil {
+	if err := n.Producer.Publish(n.Options.NSQ.Topic, value); err != nil {
 		return errors.Wrap(err, "unable to publish message to NSQ")
 	}
 

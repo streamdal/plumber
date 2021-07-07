@@ -14,11 +14,12 @@ import (
 )
 
 type Pulsar struct {
-	Options *cli.Options
-	Client  pulsar.Client
-	MsgDesc *desc.MessageDescriptor
-	log     *logrus.Entry
-	printer printer.IPrinter
+	Options  *cli.Options
+	Client   pulsar.Client
+	Producer pulsar.Producer
+	MsgDesc  *desc.MessageDescriptor
+	log      *logrus.Entry
+	printer  printer.IPrinter
 }
 
 // NewClient creates a new pulsar client connection

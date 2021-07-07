@@ -21,17 +21,27 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 		return errors.Wrap(err, "unable to generate write value")
 	}
 
-	nc, err := NewClient(opts)
+	natsClient, err := NewClient(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to create client")
 	}
 
+	defer natsClient.Close()
+
+	stanClient, err := stan.Connect(opts.NatsStreaming.ClusterID, opts.NatsStreaming.ClientID, stan.NatsConn(natsClient))
+	if err != nil {
+		return errors.Wrap(err, "could not create NATS subscription")
+	}
+
+	defer stanClient.Close()
+
 	n := &NatsStreaming{
-		Options: opts,
-		MsgDesc: md,
-		Client:  nc,
-		log:     logrus.WithField("pkg", "nats-streaming/write.go"),
-		printer: printer.New(),
+		Options:    opts,
+		MsgDesc:    md,
+		Client:     natsClient,
+		StanClient: stanClient,
+		log:        logrus.WithField("pkg", "nats-streaming/write.go"),
+		printer:    printer.New(),
 	}
 
 	for _, value := range writeValues {
@@ -46,16 +56,7 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 // Write publishes a message to a NATS streaming channel. The publish is synchronous, and will not complete until
 // an ACK has been received by the server
 func (n *NatsStreaming) Write(value []byte) error {
-	defer n.Client.Close()
-
-	sub, err := stan.Connect(n.Options.NatsStreaming.ClusterID, n.Options.NatsStreaming.ClientID, stan.NatsConn(n.Client))
-	if err != nil {
-		return errors.Wrap(err, "could not create NATS subscription")
-	}
-
-	defer sub.Close()
-
-	if err := sub.Publish(n.Options.NatsStreaming.Channel, value); err != nil {
+	if err := n.StanClient.Publish(n.Options.NatsStreaming.Channel, value); err != nil {
 		return errors.Wrap(err, "unable to publish message")
 	}
 
