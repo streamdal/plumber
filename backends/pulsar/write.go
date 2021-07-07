@@ -39,10 +39,11 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 	defer producer.Close()
 
 	p := &Pulsar{
-		Options: opts,
-		MsgDesc: md,
-		Client:  client,
-		log:     logrus.WithField("pkg", "pulsar/write.go"),
+		Options:  opts,
+		MsgDesc:  md,
+		Client:   client,
+		Producer: producer,
+		log:      logrus.WithField("pkg", "pulsar/write.go"),
 	}
 
 	for _, value := range writeValues {
@@ -56,7 +57,6 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 
 // Write writes a message to an ActiveMQ topic
 func (p *Pulsar) Write(value []byte) error {
-
 	_, err := p.Producer.Send(context.Background(), &pulsar.ProducerMessage{Payload: value})
 	if err != nil {
 		p.log.Infof("Unable to write message to topic '%s': %s", p.Options.Pulsar.Topic, err)
