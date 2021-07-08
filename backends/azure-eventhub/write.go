@@ -31,6 +31,8 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 		return errors.Wrap(err, "unable to create client")
 	}
 
+	defer client.Close(ctx)
+
 	a := &AzureEventHub{
 		Options: opts,
 		MsgDesc: md,

@@ -193,7 +193,7 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 * MQTT
 * Amazon SQS
 * Amazon SNS (Publishing)
-* ActiveMQ
+* ActiveMQ (STOMP protocol)
 * Azure Service Bus
 * Azure Event Hub
 * NATS

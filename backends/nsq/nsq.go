@@ -23,9 +23,10 @@ var (
 
 // NSQ encapsulates options for calling Read() and Write() methods
 type NSQ struct {
-	Options *cli.Options
-	MsgDesc *desc.MessageDescriptor
-	log     *NSQLogger
+	Options  *cli.Options
+	MsgDesc  *desc.MessageDescriptor
+	Producer *nsq.Producer
+	log      *NSQLogger
 }
 
 // getNSQConfig returns the config needed for creating a new NSQ consumer or producer

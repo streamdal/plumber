@@ -34,11 +34,18 @@ func Read(opts *cli.Options, md *desc.MessageDescriptor) error {
 }
 
 func (a *ActiveMq) Read() error {
+	defer a.Client.Disconnect()
+
 	a.log.Info("Listening for message(s) ...")
 
 	count := 1
 
-	sub, _ := a.Client.Subscribe(a.getDestination(), stomp.AckClient)
+	sub, err := a.Client.Subscribe(a.getDestination(), stomp.AckClient)
+	if err != nil {
+		return errors.Wrap(err, "unable to create subscription")
+	}
+
+	defer sub.Unsubscribe()
 
 	for msg := range sub.C {
 		data, err := reader.Decode(a.Options, a.MsgDesc, msg.Body)
@@ -56,13 +63,6 @@ func (a *ActiveMq) Read() error {
 		a.Client.Ack(msg)
 
 		if !a.Options.ReadFollow {
-			if err := sub.Unsubscribe(); err != nil {
-				return errors.Wrap(err, "unable to unsubcribe from activemq channel")
-			}
-
-			if err := a.Client.Disconnect(); err != nil {
-				return errors.Wrap(err, "unable to disconnect nicely from activemq server")
-			}
 			return nil
 		}
 	}

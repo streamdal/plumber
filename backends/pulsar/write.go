@@ -27,11 +27,23 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 		return errors.Wrap(err, "unable to create client")
 	}
 
+	defer client.Close()
+
+	producer, err := client.CreateProducer(pulsar.ProducerOptions{
+		Topic: opts.Pulsar.Topic,
+	})
+	if err != nil {
+		return errors.Wrap(err, "unable to create Pulsar producer")
+	}
+
+	defer producer.Close()
+
 	p := &Pulsar{
-		Options: opts,
-		MsgDesc: md,
-		Client:  client,
-		log:     logrus.WithField("pkg", "pulsar/write.go"),
+		Options:  opts,
+		MsgDesc:  md,
+		Client:   client,
+		Producer: producer,
+		log:      logrus.WithField("pkg", "pulsar/write.go"),
 	}
 
 	for _, value := range writeValues {
@@ -45,17 +57,7 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 
 // Write writes a message to an ActiveMQ topic
 func (p *Pulsar) Write(value []byte) error {
-
-	producer, err := p.Client.CreateProducer(pulsar.ProducerOptions{
-		Topic: p.Options.Pulsar.Topic,
-	})
-
-	_, err = producer.Send(context.Background(), &pulsar.ProducerMessage{
-		Payload: value,
-	})
-
-	defer producer.Close()
-
+	_, err := p.Producer.Send(context.Background(), &pulsar.ProducerMessage{Payload: value})
 	if err != nil {
 		p.log.Infof("Unable to write message to topic '%s': %s", p.Options.Pulsar.Topic, err)
 		return errors.Wrap(err, "unable to write message")

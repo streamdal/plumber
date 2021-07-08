@@ -3,22 +3,26 @@ package nats_streaming
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/printer"
-	"github.com/jhump/protoreflect/desc"
-	"github.com/nats-io/nats.go"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/url"
+
+	"github.com/jhump/protoreflect/desc"
+	"github.com/nats-io/nats.go"
+	"github.com/nats-io/stan.go"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/printer"
 )
 
 type NatsStreaming struct {
-	Options *cli.Options
-	MsgDesc *desc.MessageDescriptor
-	Client  *nats.Conn
-	log     *logrus.Entry
-	printer printer.IPrinter
+	Options    *cli.Options
+	MsgDesc    *desc.MessageDescriptor
+	Client     *nats.Conn
+	StanClient stan.Conn
+	log        *logrus.Entry
+	printer    printer.IPrinter
 }
 
 // NewClient creates a new Nats client connection
