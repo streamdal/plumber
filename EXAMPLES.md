@@ -15,7 +15,7 @@
        * [MQTT](#mqtt)
        * [Apache Pulsar](#apache-pulsar)
        * [NSQ](#nsq)
-       * [Thrift Decoding](#thrift)
+       * [Thrift Decoding](#thrift-decoding)
   * [Publishing](#publishing)
        * [AWS SQS](#aws-sqs-1)
        * [AWS SNS](#aws-sns)
@@ -197,7 +197,7 @@ plumber read kafka --topic orders --thrift --json
   "1": 54392501,
   "2": "Test Order",
   "3": {
-    "1": "Product Name"
+    "1": "Product Name",
     "2": "green",
     "3": "2091.99"
   }
