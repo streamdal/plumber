@@ -5,6 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 
+	jsoniter "github.com/json-iterator/go"
+	thrifter "github.com/thrift-iterator/go"
+	"github.com/thrift-iterator/go/general"
+
 	"github.com/hokaccha/go-prettyjson"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
@@ -61,6 +65,16 @@ func Decode(opts *cli.Options, msgDesc *desc.MessageDescriptor, message []byte) 
 		message = decoded
 	}
 
+	if opts.ReadThriftOutput {
+		decoded, err := decodeThrift(message)
+		if err != nil {
+			printer.Error(fmt.Sprintf("unable to decode Thrift message: %s", err))
+			return nil, err
+		}
+
+		message = decoded
+	}
+
 	var data []byte
 
 	var convertErr error
@@ -95,4 +109,21 @@ func Decode(opts *cli.Options, msgDesc *desc.MessageDescriptor, message []byte) 
 	}
 
 	return data, nil
+}
+
+// decodeThrift decodes a thrift encoded message
+func decodeThrift(message []byte) ([]byte, error) {
+	var obj general.Struct
+
+	err := thrifter.Unmarshal(message, &obj)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to read thrift message")
+	}
+
+	// jsoniter is needed to marshal map[interface{}]interface{} types
+	js, err := jsoniter.Marshal(obj)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to marshal thrift message to json")
+	}
+	return js, nil
 }

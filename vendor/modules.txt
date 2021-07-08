@@ -244,6 +244,9 @@ github.com/jhump/protoreflect/internal/codec
 github.com/jmespath/go-jmespath
 # github.com/jpillora/backoff v1.0.0
 github.com/jpillora/backoff
+# github.com/json-iterator/go v1.1.11
+## explicit
+github.com/json-iterator/go
 # github.com/jstemmer/go-junit-report v0.9.1
 github.com/jstemmer/go-junit-report
 github.com/jstemmer/go-junit-report/formatter
@@ -295,6 +298,10 @@ github.com/maxbrunsfeld/counterfeiter/v6/generator
 github.com/mitchellh/go-homedir
 # github.com/mitchellh/mapstructure v1.3.3
 github.com/mitchellh/mapstructure
+# github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
+github.com/modern-go/concurrent
+# github.com/modern-go/reflect2 v1.0.1
+github.com/modern-go/reflect2
 # github.com/mtibben/percent v0.2.1
 github.com/mtibben/percent
 # github.com/nats-io/jwt v1.1.0
@@ -431,6 +438,17 @@ github.com/spaolacci/murmur3
 # github.com/streadway/amqp v1.0.0
 ## explicit
 github.com/streadway/amqp
+# github.com/thrift-iterator/go v0.0.0-20190402154806-9b5a67519118
+## explicit
+github.com/thrift-iterator/go
+github.com/thrift-iterator/go/binding/codegen
+github.com/thrift-iterator/go/binding/reflection
+github.com/thrift-iterator/go/general
+github.com/thrift-iterator/go/protocol
+github.com/thrift-iterator/go/protocol/binary
+github.com/thrift-iterator/go/protocol/compact
+github.com/thrift-iterator/go/raw
+github.com/thrift-iterator/go/spi
 # github.com/tidwall/gjson v1.8.0
 ## explicit
 github.com/tidwall/gjson
@@ -438,6 +456,28 @@ github.com/tidwall/gjson
 github.com/tidwall/match
 # github.com/tidwall/pretty v1.1.0
 github.com/tidwall/pretty
+# github.com/v2pro/plz v0.0.0-20200805122259-422184e41b6e
+## explicit
+github.com/v2pro/plz/concurrent
+github.com/v2pro/plz/countlog
+github.com/v2pro/plz/countlog/loglog
+github.com/v2pro/plz/countlog/output
+github.com/v2pro/plz/countlog/output/hrf
+github.com/v2pro/plz/countlog/spi
+github.com/v2pro/plz/countlog/stats
+github.com/v2pro/plz/gls
+github.com/v2pro/plz/msgfmt
+github.com/v2pro/plz/msgfmt/jsonfmt
+github.com/v2pro/plz/parse
+github.com/v2pro/plz/parse/read
+github.com/v2pro/plz/parse/skip
+github.com/v2pro/plz/reflect2
+# github.com/v2pro/quokka v0.0.0-20171201153428-382cb39c6ee6
+## explicit
+github.com/v2pro/quokka/docstore/compiler
+# github.com/v2pro/wombat v0.0.0-20180402055224-a56dbdcddef2
+## explicit
+github.com/v2pro/wombat/generic
 # github.com/xdg-go/pbkdf2 v1.0.0
 github.com/xdg-go/pbkdf2
 # github.com/xdg-go/scram v1.0.2

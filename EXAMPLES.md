@@ -15,6 +15,7 @@
        * [MQTT](#mqtt)
        * [Apache Pulsar](#apache-pulsar)
        * [NSQ](#nsq)
+       * [Thrift Decoding](#thrift)
   * [Publishing](#publishing)
        * [AWS SQS](#aws-sqs-1)
        * [AWS SNS](#aws-sns)
@@ -182,6 +183,25 @@ plumber read pulsar --topic NEWORDERS --name plumber
 
 ```bash
 plumber read nsq --lookupd-address localhost:4161 --topic orders --channel neworders 
+```
+
+#### Thrift Decoding
+
+Plumber can decode thrift output, and display it as nested JSON. The key is the field's ID, and the
+value is the actual value in the message. Add the `--json` flag for human readable output
+
+```bash
+plumber read kafka --topic orders --thrift --json
+
+{
+  "1": 54392501,
+  "2": "Test Order",
+  "3": {
+    "1": "Product Name"
+    "2": "green",
+    "3": "2091.99"
+  }
+}
 ```
 
 ## Publishing
