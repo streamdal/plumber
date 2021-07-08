@@ -25,12 +25,13 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/batchcorp/schemas/build/go/events"
 	"github.com/golang/protobuf/proto"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
+
+	"github.com/batchcorp/schemas/build/go/events"
 )
 
 func init() {
@@ -231,6 +232,55 @@ var _ = Describe("Functional", func() {
 
 						Expect(string(readOut)).To(ContainSubstring(string(writtenRecords[randOffset].Value)))
 					}
+				})
+			})
+
+			Context("thrift decoding", func() {
+				It("should work", func() {
+					// First write the message to Rabbit
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"kafka",
+						"--topic", kafkaTopic,
+						"--input-file", "test-assets/thrift/test_message.bin",
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					if err != nil {
+						Fail("write failed: " + string(writeOut))
+					}
+
+					writeGot := string(writeOut[:])
+					writeWant := fmt.Sprintf("Successfully wrote message to topic '%s'", kafkaTopic)
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+					defer cancel()
+
+					time.Sleep(time.Second * 1)
+
+					// Now try and read from the RabbitMQ queue
+					readCmd := exec.CommandContext(
+						ctx,
+						binary,
+						"read",
+						"kafka",
+						"--topic", kafkaTopic,
+						"--thrift",
+					)
+
+					readOutput, err := readCmd.CombinedOutput()
+					if err != nil {
+						Fail("read failed: " + string(readOutput))
+					}
+
+					if ctx.Err() == context.DeadlineExceeded {
+						Fail("Kafka thrift read failed")
+					}
+
+					readGot := string(readOutput[:])
+					Expect(readGot).To(ContainSubstring(`{"1":"submessage value here"}`))
 				})
 			})
 		})

@@ -161,6 +161,7 @@ $ plumber relay --help
 ## Features
 
 * Dynamic protobuf & avro encode & decode
+* Dynamic Thrift IDL decoding
 * Gzip compress & decompress
 * `--follow` support (ie. `tail -f`)
 * Observe, relay and archive messaging data
