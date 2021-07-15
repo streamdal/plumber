@@ -73,25 +73,24 @@ type Options struct {
 	WriteProtobufRootMessage string
 	WriteInputIsJsonArray    bool
 
-	Kafka           *KafkaOptions
-	Rabbit          *RabbitOptions
-	RabbitMQStreams *RabbitMQStreamsOptions
-	GCPPubSub       *GCPPubSubOptions
-	MQTT            *MQTTOptions
-	AWSSQS          *AWSSQSOptions
-	AWSSNS          *AWSSNSOptions
-	ActiveMq        *ActiveMqOptions
-	RedisPubSub     *RedisPubSubOptions
-	RedisStreams    *RedisStreamsOptions
-	Azure           *AzureServiceBusOptions
-	AzureEventHub   *AzureEventHubOptions
-	Nats            *NatsOptions
-	NatsStreaming   *NatsStreamingOptions
-	CDCMongo        *CDCMongoOptions
-	Batch           *BatchOptions
-	CDCPostgres     *CDCPostgresOptions
-	Pulsar          *PulsarOptions
-	NSQ             *NSQOptions
+	Kafka         *KafkaOptions
+	Rabbit        *RabbitOptions
+	GCPPubSub     *GCPPubSubOptions
+	MQTT          *MQTTOptions
+	AWSSQS        *AWSSQSOptions
+	AWSSNS        *AWSSNSOptions
+	ActiveMq      *ActiveMqOptions
+	RedisPubSub   *RedisPubSubOptions
+	RedisStreams  *RedisStreamsOptions
+	Azure         *AzureServiceBusOptions
+	AzureEventHub *AzureEventHubOptions
+	Nats          *NatsOptions
+	NatsStreaming *NatsStreamingOptions
+	CDCMongo      *CDCMongoOptions
+	Batch         *BatchOptions
+	CDCPostgres   *CDCPostgresOptions
+	Pulsar        *PulsarOptions
+	NSQ           *NSQOptions
 }
 
 func Handle(cliArgs []string) (string, *Options, error) {
@@ -99,10 +98,9 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		Kafka: &KafkaOptions{
 			WriteHeader: make(map[string]string, 0),
 		},
-		Rabbit:          &RabbitOptions{},
-		RabbitMQStreams: &RabbitMQStreamsOptions{},
-		GCPPubSub:       &GCPPubSubOptions{},
-		MQTT:            &MQTTOptions{},
+		Rabbit:    &RabbitOptions{},
+		GCPPubSub: &GCPPubSubOptions{},
+		MQTT:      &MQTTOptions{},
 		AWSSQS: &AWSSQSOptions{
 			WriteAttributes: make(map[string]string, 0),
 		},
@@ -142,8 +140,6 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleKafkaFlags(readCmd, writeCmd, relayCmd, lagCmd, opts)
 	case "rabbit":
 		HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
-	case "rabbit-streams":
-		HandleRabbitStreamsFlags(readCmd, writeCmd, relayCmd, opts)
 	case "aws-sqs":
 		HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
 	case "azure":
@@ -163,7 +159,6 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	default:
 		HandleKafkaFlags(readCmd, writeCmd, relayCmd, lagCmd, opts)
 		HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleRabbitStreamsFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleGCPPubSubFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleMQTTFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
