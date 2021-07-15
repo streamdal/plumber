@@ -190,7 +190,6 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 
 * Kafka
 * RabbitMQ
-* RabbitMQ Streams 
 * Google Cloud Platform PubSub
 * MQTT
 * Amazon SQS

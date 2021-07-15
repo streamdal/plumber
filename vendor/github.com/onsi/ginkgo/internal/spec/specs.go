@@ -4,7 +4,6 @@ import (
 	"math/rand"
 	"regexp"
 	"sort"
-	"strings"
 )
 
 type Specs struct {
@@ -47,11 +46,11 @@ func (e *Specs) Shuffle(r *rand.Rand) {
 	e.names = names
 }
 
-func (e *Specs) ApplyFocus(description string, focus, skip []string) {
-	if len(focus)+len(skip) == 0 {
+func (e *Specs) ApplyFocus(description string, focusString string, skipString string) {
+	if focusString == "" && skipString == "" {
 		e.applyProgrammaticFocus()
 	} else {
-		e.applyRegExpFocusAndSkip(description, focus, skip)
+		e.applyRegExpFocusAndSkip(description, focusString, skipString)
 	}
 }
 
@@ -91,13 +90,14 @@ func (e *Specs) toMatch(description string, i int) []byte {
 	}
 }
 
-func (e *Specs) applyRegExpFocusAndSkip(description string, focus, skip []string) {
-	var focusFilter, skipFilter *regexp.Regexp
-	if len(focus) > 0 {
-		focusFilter = regexp.MustCompile(strings.Join(focus, "|"))
+func (e *Specs) applyRegExpFocusAndSkip(description string, focusString string, skipString string) {
+	var focusFilter *regexp.Regexp
+	if focusString != "" {
+		focusFilter = regexp.MustCompile(focusString)
 	}
-	if len(skip) > 0 {
-		skipFilter = regexp.MustCompile(strings.Join(skip, "|"))
+	var skipFilter *regexp.Regexp
+	if skipString != "" {
+		skipFilter = regexp.MustCompile(skipString)
 	}
 
 	for i, spec := range e.specs {

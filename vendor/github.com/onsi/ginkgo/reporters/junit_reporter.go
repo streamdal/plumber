@@ -33,10 +33,15 @@ type JUnitTestSuite struct {
 type JUnitTestCase struct {
 	Name           string               `xml:"name,attr"`
 	ClassName      string               `xml:"classname,attr"`
+	PassedMessage  *JUnitPassedMessage  `xml:"passed,omitempty"`
 	FailureMessage *JUnitFailureMessage `xml:"failure,omitempty"`
 	Skipped        *JUnitSkipped        `xml:"skipped,omitempty"`
 	Time           float64              `xml:"time,attr"`
 	SystemOut      string               `xml:"system-out,omitempty"`
+}
+
+type JUnitPassedMessage struct {
+	Message string `xml:",chardata"`
 }
 
 type JUnitFailureMessage struct {
@@ -109,7 +114,9 @@ func (reporter *JUnitReporter) SpecDidComplete(specSummary *types.SpecSummary) {
 		ClassName: reporter.testSuiteName,
 	}
 	if reporter.ReporterConfig.ReportPassed && specSummary.State == types.SpecStatePassed {
-		testCase.SystemOut = specSummary.CapturedOutput
+		testCase.PassedMessage = &JUnitPassedMessage{
+			Message: specSummary.CapturedOutput,
+		}
 	}
 	if specSummary.State == types.SpecStateFailed || specSummary.State == types.SpecStateTimedOut || specSummary.State == types.SpecStatePanicked {
 		testCase.FailureMessage = &JUnitFailureMessage{
