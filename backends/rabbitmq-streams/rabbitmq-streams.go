@@ -44,23 +44,18 @@ func NewClient(opts *cli.Options) (*stream.Environment, error) {
 		return nil, errors.Wrap(err, "could not validate rabbitmq streams options")
 	}
 
-	// Declare Stream if it doesn't exist
-	streamExists, err := env.StreamExists(opts.RabbitMQStreams.Stream)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to determine if stream exists")
-	}
-	if !streamExists {
-		logrus.Debug("Stream doesn't exist, declaring")
-		err = env.DeclareStream(opts.RabbitMQStreams.Stream,
-			&stream.StreamOptions{
-				MaxLengthBytes: stream.ByteCapacity{}.From(opts.RabbitMQStreams.DeclareStreamSize),
-			},
-		)
-		if err != nil {
-			return nil, errors.Wrap(err, "unable to declare rabbitmq stream")
-		}
-	} else {
+	// Declare Stream
+	err = env.DeclareStream(opts.RabbitMQStreams.Stream,
+		&stream.StreamOptions{
+			MaxLengthBytes: stream.ByteCapacity{}.From(opts.RabbitMQStreams.DeclareStreamSize),
+		},
+	)
+	if err == stream.StreamAlreadyExists {
 		logrus.Debug("Stream already exists, ignoring --declare-stream")
+		return env, nil
+	}
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to declare rabbitmq stream")
 	}
 
 	return env, nil
