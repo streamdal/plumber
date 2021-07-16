@@ -30,7 +30,7 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 
 	producer, err := client.NewProducer(opts.RabbitMQStreams.Stream, &stream.ProducerOptions{
 		Name:      opts.RabbitMQStreams.ClientName,
-		QueueSize: 0,
+		QueueSize: len(writeValues),
 		BatchSize: len(writeValues),
 	})
 	if err != nil {
