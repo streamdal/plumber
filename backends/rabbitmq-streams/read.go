@@ -75,9 +75,9 @@ func (r *RabbitMQStreams) Read() error {
 	closeCh := consumer.NotifyClose()
 
 	select {
-	case <-closeCh:
+	case closeEvent := <-closeCh:
 		// TODO: implement reconnect logic
-		r.log.Debug("Stream closed by remote host")
+		r.log.Debugf("Stream closed by remote host: %s", closeEvent.Reason)
 	}
 
 	return nil
