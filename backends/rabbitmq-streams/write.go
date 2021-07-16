@@ -28,11 +28,11 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 
 	defer client.Close()
 
-	producer, err := client.NewProducer(opts.RabbitMQStreams.Stream, &stream.ProducerOptions{
-		Name:      opts.RabbitMQStreams.ClientName,
-		QueueSize: len(writeValues),
-		BatchSize: len(writeValues),
-	})
+	producer, err := client.NewProducer(opts.RabbitMQStreams.Stream,
+		stream.NewProducerOptions().
+			SetProducerName(opts.RabbitMQStreams.ClientName).
+			SetBatchSize(len(writeValues)).
+			SetBatchSize(len(writeValues)))
 	if err != nil {
 		return errors.Wrap(err, "unable to create rabbitmq streams producer")
 	}
