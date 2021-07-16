@@ -1,6 +1,8 @@
 package rabbitmqStreams
 
 import (
+	"sync"
+
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/stream"
@@ -15,11 +17,12 @@ var (
 )
 
 type RabbitMQStreams struct {
-	Client   *stream.Environment
-	Producer *stream.Producer
-	Options  *cli.Options
-	MsgDesc  *desc.MessageDescriptor
-	log      *logrus.Entry
+	Client    *stream.Environment
+	Producer  *stream.Producer
+	Options   *cli.Options
+	MsgDesc   *desc.MessageDescriptor
+	log       *logrus.Entry
+	waitGroup *sync.WaitGroup
 }
 
 func NewClient(opts *cli.Options) (*stream.Environment, error) {
