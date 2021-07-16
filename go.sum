@@ -586,6 +586,8 @@ github.com/prometheus/procfs v0.6.0/go.mod h1:cz+aTbrPOrUb4q7XlbU9ygM+/jj0fzG6c1
 github.com/prometheus/tsdb v0.7.1/go.mod h1:qhTCs0VvXwvX/y3TZrWD7rabWM+ijKTux40TwIPHuXU=
 github.com/rabbitmq/rabbitmq-stream-go-client v0.0.0-20210705074332-033ffd89e010 h1:8bltOWKsFpOGHEleRJyN5TJFs4FtOrEJ4pOiqD1Gjgo=
 github.com/rabbitmq/rabbitmq-stream-go-client v0.0.0-20210705074332-033ffd89e010/go.mod h1:dZtRwYizmzN1EwkcW7/CoN9rFbGSEA7i/889iakOJZE=
+github.com/rabbitmq/rabbitmq-stream-go-client v0.0.0-20210716073243-89ba0a849ed8 h1:SkPj+yEn4SuQIRWzurJ4a9jUIocqhWHqs7v7lW4PgJM=
+github.com/rabbitmq/rabbitmq-stream-go-client v0.0.0-20210716073243-89ba0a849ed8/go.mod h1:dZtRwYizmzN1EwkcW7/CoN9rFbGSEA7i/889iakOJZE=
 github.com/rakyll/statik v0.1.7/go.mod h1:AlZONWzMtEnMs7W4e/1LURLiI49pIMmp6V9Unghqrcc=
 github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d h1:NWE6gufaNLgqs6VUzsqXkogQkMEcZxQjdRTSbf79NCA=
 github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d/go.mod h1:zxI04y3OTmbrx/ef0ahmkEy9/eBLLseHAjy6M5iKsws=

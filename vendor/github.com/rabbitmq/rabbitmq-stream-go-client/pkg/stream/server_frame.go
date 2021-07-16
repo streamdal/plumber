@@ -8,6 +8,7 @@ import (
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/logs"
 	"hash/crc32"
 	"io"
+	"time"
 )
 
 type ReaderProtocol struct {
@@ -31,6 +32,7 @@ func (c *Client) handleResponse() {
 			_ = c.Close()
 			break
 		}
+		c.lastHeartBeat = time.Now()
 		readerProtocol.FrameLen = frameLen
 		readerProtocol.CommandID = uShortExtractResponseCode(readUShort(buffer))
 		readerProtocol.Version = readUShort(buffer)
@@ -90,7 +92,7 @@ func (c *Client) handleResponse() {
 		case commandHeartbeat:
 			{
 
-				//logDebug("RECEIVED Heartbeat %d buff:%d \n", readerProtocol.CommandID, buffer.Buffered())
+				c.handleHeartbeat()
 
 			}
 		case CommandQueryOffset:
@@ -261,8 +263,12 @@ func (c *Client) queryPublisherSequenceFrameHandler(readProtocol *ReaderProtocol
 func (c *Client) handleDeliver(r *bufio.Reader) {
 
 	subscriptionId := readByte(r)
-	consumer, _ := c.coordinator.GetConsumerById(subscriptionId)
+	consumer, err := c.coordinator.GetConsumerById(subscriptionId)
+	if err != nil {
+		logs.LogError("Handle Deliver consumer not found %s", err)
+		return
 
+	}
 	_ = readByte(r)
 	chunkType := readByte(r)
 	if chunkType != 0 {
@@ -469,4 +475,9 @@ func (c *Client) closeFrameHandler(readProtocol *ReaderProtocol, r *bufio.Reader
 		return
 	}
 
+}
+
+func (c *Client) handleHeartbeat() {
+	logs.LogDebug("Heart beat received at %s", time.Now())
+	c.setLastHeartBeat(time.Now())
 }

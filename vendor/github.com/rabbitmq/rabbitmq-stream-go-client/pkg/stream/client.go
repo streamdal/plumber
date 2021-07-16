@@ -9,9 +9,8 @@ import (
 	"math/rand"
 	"net"
 	"net/url"
-	"runtime"
 	"sync"
-	"syscall"
+	"sync/atomic"
 	"time"
 )
 
@@ -35,6 +34,7 @@ type Client struct {
 
 	mutex            *sync.Mutex
 	metadataListener metadataListener
+	lastHeartBeat    time.Time
 }
 
 func newClient(connectionName string, broker *Broker) *Client {
@@ -50,6 +50,7 @@ func newClient(connectionName string, broker *Broker) *Client {
 		mutex:            &sync.Mutex{},
 		clientProperties: ClientProperties{items: make(map[string]string)},
 		plainCRCBuffer:   make([]byte, 4096),
+		lastHeartBeat:    time.Now(),
 	}
 	c.setConnectionName(connectionName)
 	return c
@@ -76,7 +77,18 @@ func (c *Client) getTuneState() TuneState {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 	return c.tuneState
+}
 
+func (c *Client) getLastHeartBeat() time.Time {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	return c.lastHeartBeat
+}
+
+func (c *Client) setLastHeartBeat(value time.Time) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	c.lastHeartBeat = value
 }
 
 func (c *Client) connect() error {
@@ -92,24 +104,7 @@ func (c *Client) connect() error {
 		c.tuneState.requestedMaxFrameSize = 1048576
 
 		var dialer = &net.Dialer{
-			Control: func(network, address string, c syscall.RawConn) error {
-				return c.Control(func(fd uintptr) {
-					err := syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_RCVBUF, defaultSocketBuffer)
-					runtime.KeepAlive(fd)
-					if err != nil {
-						logs.LogError("Set socket option error: %s", err)
-						return
-					}
-
-					err = syscall.SetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_SNDBUF, defaultSocketBuffer)
-					runtime.KeepAlive(fd)
-					if err != nil {
-						logs.LogError("Set socket option error: %s", err)
-						return
-					}
-
-				})
-			},
+			Control: controlFunc,
 		}
 
 		var connection net.Conn
@@ -310,9 +305,28 @@ func (c *Client) DeleteStream(streamName string) error {
 }
 
 func (c *Client) heartBeat() {
-
 	ticker := time.NewTicker(60 * time.Second)
+	tickerHeatBeat := time.NewTicker(20 * time.Second)
 	resp := c.coordinator.NewResponseWitName("heartbeat")
+	var heartBeatMissed int32
+	go func() {
+		for c.socket.isOpen() {
+			<-tickerHeatBeat.C
+			if time.Since(c.getLastHeartBeat()) > time.Duration(c.tuneState.requestedHeartbeat)*time.Second {
+				v := atomic.AddInt32(&heartBeatMissed, 1)
+				logs.LogWarn("Missing heart beat: %d", v)
+				if v >= 2 {
+					logs.LogWarn("Too many heartbeat missing: %d", v)
+					c.Close()
+				}
+			} else {
+				atomic.StoreInt32(&heartBeatMissed, 0)
+			}
+
+		}
+		tickerHeatBeat.Stop()
+	}()
+
 	go func() {
 		for {
 			select {
@@ -320,12 +334,15 @@ func (c *Client) heartBeat() {
 				if code.id == closeChannel {
 					_ = c.coordinator.RemoveResponseByName("heartbeat")
 				}
+				ticker.Stop()
 				return
 			case <-ticker.C:
+				logs.LogDebug("Sending heart beat: %s", time.Now())
 				c.sendHeartbeat()
 			}
 		}
 	}()
+
 }
 
 func (c *Client) sendHeartbeat() {
@@ -491,12 +508,13 @@ func (c *Client) metaData(streams ...string) *StreamsMetadata {
 		writeString(b, stream)
 	}
 
-	err := c.handleWrite(b.Bytes(), resp)
+	err := c.handleWriteWithResponse(b.Bytes(), resp, false)
 	if err.Err != nil {
 		return nil
 	}
 
 	data := <-resp.data
+	_ = c.coordinator.RemoveResponseById(resp.correlationid)
 	return data.(*StreamsMetadata)
 }
 
@@ -510,9 +528,9 @@ func (c *Client) queryPublisherSequence(publisherReference string, stream string
 
 	writeString(b, publisherReference)
 	writeString(b, stream)
-	c.handleWrite(b.Bytes(), resp)
-
+	c.handleWriteWithResponse(b.Bytes(), resp, false)
 	sequence := <-resp.data
+	_ = c.coordinator.RemoveResponseById(resp.correlationid)
 	return sequence.(int64)
 
 }

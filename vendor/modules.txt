@@ -390,7 +390,7 @@ github.com/prometheus/common/model
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
-# github.com/rabbitmq/rabbitmq-stream-go-client v0.0.0-20210705074332-033ffd89e010
+# github.com/rabbitmq/rabbitmq-stream-go-client v0.0.0-20210716073243-89ba0a849ed8
 ## explicit
 github.com/rabbitmq/rabbitmq-stream-go-client/pkg/amqp
 github.com/rabbitmq/rabbitmq-stream-go-client/pkg/logs

@@ -101,7 +101,16 @@ func (coordinator *Coordinator) RemoveProducerById(id uint8, reason Event) error
 }
 
 func (coordinator *Coordinator) RemoveResponseById(id interface{}) error {
-	return coordinator.removeById(fmt.Sprintf("%d", id), coordinator.responses)
+	resp, err := coordinator.GetResponseByName(fmt.Sprintf("%d", id))
+	if err != nil {
+		return err
+	}
+
+	err = coordinator.removeById(fmt.Sprintf("%d", id), coordinator.responses)
+	close(resp.code)
+	close(resp.data)
+	close(resp.messages)
+	return err
 }
 
 func (coordinator *Coordinator) ProducersCount() int {

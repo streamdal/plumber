@@ -40,7 +40,7 @@ require (
 	github.com/onsi/gomega v1.11.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.0
-	github.com/rabbitmq/rabbitmq-stream-go-client v0.0.0-20210705074332-033ffd89e010
+	github.com/rabbitmq/rabbitmq-stream-go-client v0.0.0-20210716073243-89ba0a849ed8
 	github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/segmentio/kafka-go v0.4.16
