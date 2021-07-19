@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	rabbitmqStreams "github.com/batchcorp/plumber/backends/rabbitmq-streams"
+
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber/relay"
@@ -33,6 +35,8 @@ func (p *Plumber) parseCmdRead() error {
 	switch p.Cmd {
 	case "read rabbit":
 		return rabbitmq.Read(p.Options, p.MsgDesc)
+	case "read rabbit-streams":
+		return rabbitmqStreams.Read(p.Options, p.MsgDesc)
 	case "read kafka":
 		return kafka.Read(p.Options, p.MsgDesc)
 	case "read gcp-pubsub":
@@ -83,6 +87,8 @@ func (p *Plumber) parseCmdWrite() error {
 	switch p.Cmd {
 	case "write rabbit":
 		return rabbitmq.Write(p.Options, p.MsgDesc)
+	case "write rabbit-streams":
+		return rabbitmqStreams.Write(p.Options, p.MsgDesc)
 	case "write kafka":
 		return kafka.Write(p.Options, p.MsgDesc)
 	case "write gcp-pubsub":

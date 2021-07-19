@@ -3,6 +3,7 @@
   * [Consuming](#consuming)
        * [AWS SQS](#aws-sqs)
        * [RabbitMQ](#rabbitmq)
+       * [RabbitMQ Streams](#rabbitmq-streams)
        * [Kafka](#kafka)
        * [Azure Service Bus](#azure-service-bus)
        * [Azure Event Hub](#azure-event-hub)
@@ -20,6 +21,7 @@
        * [AWS SQS](#aws-sqs-1)
        * [AWS SNS](#aws-sns)
        * [RabbitMQ](#rabbitmq-1)
+       * [RabbitMQ Streams](#rabbitmq-streams-1)
        * [Kafka](#kafka-1)
        * [Azure Service Bus](#azure-service-bus-1)
        * [Azure Event Hub](#azure-event-hub-1)
@@ -83,6 +85,12 @@ plumber read rabbit
     --queue=testqueue \
     --routing-key="orders.#"
     --follow
+```
+
+##### RabbitMQ Streams
+
+```
+plumber read rabbit-streams --address rabbitmq-stream://guest:guest@localhost:5552 --stream new_orders --offset last
 ```
 
 ##### Kafka
@@ -216,6 +224,12 @@ plumber write aws-sqs --queue-name=NewOrders --input-data="{\"order_id\": \"A-34
 
 ```
 plumber write rabbit --address="aqmp://rabbit.yourdomain.net:5672" --exchange=NewOrders --routing-key="orders.oregon.coffee" --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+```
+
+##### RabbitMQ Streams
+
+```
+plumber write rabbit-streams --address rabbitmq-stream://guest:guest@localhost:5552 --stream new_orders --input-data "{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ##### Kafka

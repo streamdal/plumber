@@ -17,7 +17,7 @@ require (
 	github.com/go-redis/redis/v8 v8.4.8
 	github.com/go-stomp/stomp v2.0.6+incompatible
 	github.com/golang/protobuf v1.4.4-0.20210303013846-acacf8158c9a
-	github.com/google/uuid v1.1.2
+	github.com/google/uuid v1.2.0
 	github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
 	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/jhump/protoreflect v1.8.2
@@ -36,10 +36,11 @@ require (
 	github.com/nats-io/stan.go v0.8.3
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/onsi/ginkgo v1.14.2
-	github.com/onsi/gomega v1.10.4
+	github.com/onsi/ginkgo v1.15.1
+	github.com/onsi/gomega v1.11.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.0
+	github.com/rabbitmq/rabbitmq-stream-go-client v0.0.0-20210718174647-8ed32be73644
 	github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/segmentio/kafka-go v0.4.16

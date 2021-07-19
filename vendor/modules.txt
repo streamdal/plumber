@@ -212,7 +212,7 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/uuid v1.1.2
+# github.com/google/uuid v1.2.0
 ## explicit
 github.com/google/uuid
 # github.com/googleapis/gax-go/v2 v2.0.5
@@ -324,7 +324,7 @@ github.com/nats-io/stan.go/pb
 # github.com/nsqio/go-nsq v1.0.8
 ## explicit
 github.com/nsqio/go-nsq
-# github.com/nxadm/tail v1.4.4
+# github.com/nxadm/tail v1.4.8
 github.com/nxadm/tail
 github.com/nxadm/tail/ratelimiter
 github.com/nxadm/tail/util
@@ -333,7 +333,7 @@ github.com/nxadm/tail/winfile
 # github.com/olekukonko/tablewriter v0.0.5
 ## explicit
 github.com/olekukonko/tablewriter
-# github.com/onsi/ginkgo v1.14.2
+# github.com/onsi/ginkgo v1.15.1
 ## explicit
 github.com/onsi/ginkgo
 github.com/onsi/ginkgo/config
@@ -354,7 +354,7 @@ github.com/onsi/ginkgo/reporters/stenographer
 github.com/onsi/ginkgo/reporters/stenographer/support/go-colorable
 github.com/onsi/ginkgo/reporters/stenographer/support/go-isatty
 github.com/onsi/ginkgo/types
-# github.com/onsi/gomega v1.10.4
+# github.com/onsi/gomega v1.11.0
 ## explicit
 github.com/onsi/gomega
 github.com/onsi/gomega/format
@@ -390,6 +390,12 @@ github.com/prometheus/common/model
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
+# github.com/rabbitmq/rabbitmq-stream-go-client v0.0.0-20210718174647-8ed32be73644
+## explicit
+github.com/rabbitmq/rabbitmq-stream-go-client/pkg/amqp
+github.com/rabbitmq/rabbitmq-stream-go-client/pkg/logs
+github.com/rabbitmq/rabbitmq-stream-go-client/pkg/message
+github.com/rabbitmq/rabbitmq-stream-go-client/pkg/stream
 # github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d
 ## explicit
 github.com/relistan/go-director
@@ -780,7 +786,7 @@ google.golang.org/protobuf/types/pluginpb
 gopkg.in/alecthomas/kingpin.v2
 # gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
 gopkg.in/tomb.v1
-# gopkg.in/yaml.v2 v2.3.0
+# gopkg.in/yaml.v2 v2.4.0
 gopkg.in/yaml.v2
 # nhooyr.io/websocket v1.8.6
 nhooyr.io/websocket
