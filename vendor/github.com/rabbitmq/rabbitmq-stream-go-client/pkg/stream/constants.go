@@ -11,8 +11,8 @@ import (
 // for example the producer status
 
 const (
-	running = iota
-	closed  = iota
+	open   = iota
+	closed = iota
 )
 
 const initBufferPublishSize = 2 + 2 + 1 + 4
@@ -76,13 +76,21 @@ const (
 	LocalhostUriConnection = "rabbitmq-stream://guest:guest@localhost:5552/%2f"
 
 	///
-	defaultSocketBuffer = 4096
+	defaultSocketBuffer       = 4096
+	defaultQueuePublisherSize = 10000
+	minQueuePublisherSize     = 100
+	maxQueuePublisherSize     = 1_000_000
 
+	minBatchSize     = 1
+	maxBatchSize     = 10_000
+	defaultBatchSize = 100
 	//
-	ClientVersion = "0.9-alpha"
+	ClientVersion = "0.10-alpha"
 
 	StreamTcpPort = "5552"
 )
+
+var AlreadyClosed = errors.New("Already Closed")
 
 var PreconditionFailed = errors.New("Precondition Failed")
 var AuthenticationFailure = errors.New("Authentication Failure")

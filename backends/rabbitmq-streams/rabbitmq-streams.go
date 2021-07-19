@@ -28,8 +28,7 @@ type RabbitMQStreams struct {
 func NewClient(opts *cli.Options) (*stream.Environment, error) {
 	env, err := stream.NewEnvironment(
 		stream.NewEnvironmentOptions().
-			SetHost(opts.RabbitMQStreams.Address).
-			SetPort(opts.RabbitMQStreams.Port).
+			SetUri(opts.RabbitMQStreams.Address).
 			SetUser(opts.RabbitMQStreams.Username).
 			SetPassword(opts.RabbitMQStreams.Password).
 			SetMaxConsumersPerClient(1).

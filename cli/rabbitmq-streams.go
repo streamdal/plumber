@@ -51,13 +51,9 @@ func HandleRabbitStreamsFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, op
 }
 
 func addSharedRabbitMQStreamsFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("address", "Address of RabbitMQ Server").
-		Default("localhost").
+	cmd.Flag("address", "Dial string for RabbitMQ Server. Ex: rabbitmq-stream://guest:guest@localhost:5552").
+		Default("rabbitmq-stream://guest:guest@localhost:5552").
 		StringVar(&opts.RabbitMQStreams.Address)
-
-	cmd.Flag("port", "RabbitMQ Streams Server Port").
-		Default("5552").
-		IntVar(&opts.RabbitMQStreams.Port)
 
 	cmd.Flag("stream", "Stream Name").
 		Required().

@@ -54,12 +54,9 @@ func (r *RabbitMQStreams) Read() error {
 		}
 
 		if !r.Options.ReadFollow {
-			consumerContext.Consumer.CloseHandler <- stream.Event{}
 			consumerContext.Consumer.Close()
 		}
 	}
-
-	defer r.Client.Close()
 
 	consumer, err := r.Client.NewConsumer(r.Options.RabbitMQStreams.Stream,
 		handleMessage,

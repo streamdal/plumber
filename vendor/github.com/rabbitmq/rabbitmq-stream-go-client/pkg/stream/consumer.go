@@ -18,7 +18,21 @@ type Consumer struct {
 	// different form ConsumerOptions.offset. ConsumerOptions.offset is just the configuration
 	// and won't change. currentOffset is the status of the offset
 	currentOffset int64
-	CloseHandler  chan Event
+	closeHandler  chan Event
+
+	status int
+}
+
+func (consumer *Consumer) setStatus(status int) {
+	consumer.mutex.Lock()
+	defer consumer.mutex.Unlock()
+	consumer.status = status
+}
+
+func (consumer *Consumer) getStatus() int {
+	consumer.mutex.Lock()
+	defer consumer.mutex.Unlock()
+	return consumer.status
 }
 
 func (consumer *Consumer) GetStreamName() string {
@@ -50,7 +64,7 @@ func (consumer *Consumer) GetOffset() int64 {
 
 func (consumer *Consumer) NotifyClose() ChannelClose {
 	ch := make(chan Event, 1)
-	consumer.CloseHandler = ch
+	consumer.closeHandler = ch
 	return ch
 }
 
@@ -60,7 +74,7 @@ type ConsumerContext struct {
 
 type MessagesHandler func(consumerContext ConsumerContext, message *amqp.Message)
 
-type ConsumerOptions struct {
+type /**/ ConsumerOptions struct {
 	client       *Client
 	ConsumerName string
 	streamName   string
@@ -105,6 +119,10 @@ func (c *Client) credit(subscriptionId byte, credit int16) {
 }
 
 func (consumer *Consumer) Close() error {
+	if consumer.getStatus() == closed {
+		return AlreadyClosed
+	}
+	consumer.setStatus(closed)
 	_, errGet := consumer.options.client.coordinator.GetConsumerById(consumer.ID)
 	if errGet != nil {
 		return nil

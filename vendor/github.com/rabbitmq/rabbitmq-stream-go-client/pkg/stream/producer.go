@@ -71,8 +71,8 @@ func (po *ProducerOptions) SetBatchSize(size int) *ProducerOptions {
 
 func NewProducerOptions() *ProducerOptions {
 	return &ProducerOptions{
-		QueueSize: 10000,
-		BatchSize: 100,
+		QueueSize: defaultQueuePublisherSize,
+		BatchSize: defaultBatchSize,
 	}
 }
 
@@ -302,9 +302,12 @@ func (producer *Producer) FlushUnConfirmedMessages() {
 }
 
 func (producer *Producer) Close() error {
+	if producer.getStatus() == closed {
+		return AlreadyClosed
+	}
 	producer.setStatus(closed)
 	if !producer.options.client.socket.isOpen() {
-		return fmt.Errorf("connection already closed")
+		return fmt.Errorf("tcp connection is closed")
 	}
 
 	err := producer.options.client.deletePublisher(producer.ID)

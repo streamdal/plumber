@@ -440,6 +440,17 @@ func (c *Client) DeclarePublisher(streamName string, options *ProducerOptions) (
 	if options == nil {
 		options = NewProducerOptions()
 	}
+
+	if options.QueueSize < minQueuePublisherSize || options.QueueSize > maxQueuePublisherSize {
+		return nil, fmt.Errorf("QueueSize values must be between %d and %d",
+			minQueuePublisherSize, maxQueuePublisherSize)
+	}
+
+	if options.BatchSize < minBatchSize || options.BatchSize > maxBatchSize {
+		return nil, fmt.Errorf("BatchSize values must be between %d and %d",
+			minBatchSize, maxBatchSize)
+	}
+
 	producer, err := c.coordinator.NewProducer(&ProducerOptions{
 		client:     c,
 		streamName: streamName,
@@ -619,6 +630,10 @@ func (c *Client) DeclareSubscriber(streamName string,
 	options *ConsumerOptions) (*Consumer, error) {
 	if options == nil {
 		options = NewConsumerOptions()
+	}
+
+	if options.Offset.typeOfs <= 0 || options.Offset.typeOfs > 6 {
+		return nil, fmt.Errorf("specify a valid Offset")
 	}
 
 	options.client = c

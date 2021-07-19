@@ -588,6 +588,8 @@ github.com/rabbitmq/rabbitmq-stream-go-client v0.0.0-20210705074332-033ffd89e010
 github.com/rabbitmq/rabbitmq-stream-go-client v0.0.0-20210705074332-033ffd89e010/go.mod h1:dZtRwYizmzN1EwkcW7/CoN9rFbGSEA7i/889iakOJZE=
 github.com/rabbitmq/rabbitmq-stream-go-client v0.0.0-20210716073243-89ba0a849ed8 h1:SkPj+yEn4SuQIRWzurJ4a9jUIocqhWHqs7v7lW4PgJM=
 github.com/rabbitmq/rabbitmq-stream-go-client v0.0.0-20210716073243-89ba0a849ed8/go.mod h1:dZtRwYizmzN1EwkcW7/CoN9rFbGSEA7i/889iakOJZE=
+github.com/rabbitmq/rabbitmq-stream-go-client v0.0.0-20210718174647-8ed32be73644 h1:6iCiwan9DONSXD1pKm0sF1zBVu0qtjkU9ba381rmb0I=
+github.com/rabbitmq/rabbitmq-stream-go-client v0.0.0-20210718174647-8ed32be73644/go.mod h1:dZtRwYizmzN1EwkcW7/CoN9rFbGSEA7i/889iakOJZE=
 github.com/rakyll/statik v0.1.7/go.mod h1:AlZONWzMtEnMs7W4e/1LURLiI49pIMmp6V9Unghqrcc=
 github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d h1:NWE6gufaNLgqs6VUzsqXkogQkMEcZxQjdRTSbf79NCA=
 github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d/go.mod h1:zxI04y3OTmbrx/ef0ahmkEy9/eBLLseHAjy6M5iKsws=

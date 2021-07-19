@@ -347,8 +347,10 @@ func (c *Client) handleDeliver(r *bufio.Reader) {
 		panic("Error during CRC")
 	} /// ???
 	//
-	consumer.response.data <- offset
-	consumer.response.messages <- batchConsumingMessages
+	if consumer.getStatus() == open {
+		consumer.response.data <- offset
+		consumer.response.messages <- batchConsumingMessages
+	}
 
 }
 

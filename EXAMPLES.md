@@ -90,7 +90,7 @@ plumber read rabbit
 ##### RabbitMQ Streams
 
 ```
-plumber read rabbit-streams --address localhost --port 5552 --stream new_orders --offset last
+plumber read rabbit-streams --address rabbitmq-stream://guest:guest@localhost:5552 --stream new_orders --offset last
 ```
 
 ##### Kafka
@@ -229,7 +229,7 @@ plumber write rabbit --address="aqmp://rabbit.yourdomain.net:5672" --exchange=Ne
 ##### RabbitMQ Streams
 
 ```
-plumber write rabbit-streams --address localhost --port 5552 --stream new_orders --input-data "{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+plumber write rabbit-streams --address rabbitmq-stream://guest:guest@localhost:5552 --stream new_orders --input-data "{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ##### Kafka

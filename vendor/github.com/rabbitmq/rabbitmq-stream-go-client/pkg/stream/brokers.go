@@ -52,7 +52,7 @@ func (br *Broker) mergeWithDefault() {
 	if br.Password == "" {
 		br.Password = broker.Password
 	}
-	if br.Port == "" {
+	if br.Port == "" || br.Port == "0" {
 		br.Port = broker.Port
 	}
 	if br.Scheme == "" {

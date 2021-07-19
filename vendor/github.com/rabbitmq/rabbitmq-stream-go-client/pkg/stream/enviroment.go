@@ -3,6 +3,7 @@ package stream
 import (
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/logs"
 	"math/rand"
 	"net/url"
@@ -28,12 +29,10 @@ func NewEnvironment(options *EnvironmentOptions) (*Environment, error) {
 	if options == nil {
 		options = NewEnvironmentOptions()
 	}
-	if options.MaxConsumersPerClient == 0 {
-		options.MaxConsumersPerClient = 1
-	}
 
-	if options.MaxProducersPerClient == 0 {
-		options.MaxProducersPerClient = 1
+	if options.MaxConsumersPerClient <= 0 || options.MaxProducersPerClient <= 0 ||
+		options.MaxConsumersPerClient > 254 || options.MaxProducersPerClient > 254 {
+		return nil, fmt.Errorf(" MaxConsumersPerClient and MaxProducersPerClient must be between 1 and 254")
 	}
 
 	if len(options.ConnectionParameters) == 0 {
@@ -188,14 +187,6 @@ func (env *Environment) NewConsumer(streamName string,
 
 	return env.consumers.NewSubscriber(client, streamName, messagesHandler, options)
 }
-
-//func (env *Environment) NewStreamMessage(data []byte) message.StreamMessage {
-//	env.options.Codec
-//	return &AMQP10{
-//		message:      newMessage(data),
-//		publishingId: -1,
-//	}
-//}
 
 func (env *Environment) Close() error {
 	_ = env.producers.close()

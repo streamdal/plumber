@@ -56,7 +56,7 @@ func (coordinator *Coordinator) NewProducer(
 		options:             parameters,
 		mutex:               &sync.Mutex{},
 		unConfirmedMessages: map[int64]*UnConfirmedMessage{},
-		status:              running,
+		status:              open,
 		messageSequenceCh:   make(chan messageSequence, size),
 		pendingMessages: pendingMessagesSequence{
 			messages: make([]messageSequence, 0),
@@ -74,8 +74,8 @@ func (coordinator *Coordinator) RemoveConsumerById(id interface{}, reason Event)
 	reason.StreamName = consumer.GetStreamName()
 	reason.Name = consumer.GetName()
 
-	if consumer.CloseHandler != nil {
-		consumer.CloseHandler <- reason
+	if consumer.closeHandler != nil {
+		consumer.closeHandler <- reason
 	}
 	return coordinator.removeById(id, coordinator.consumers)
 }
@@ -121,7 +121,7 @@ func (coordinator *Coordinator) ProducersCount() int {
 func newResponse(commandDescription string) *Response {
 	res := &Response{}
 	res.commandDescription = commandDescription
-	res.code = make(chan Code)
+	res.code = make(chan Code, 1)
 	res.data = make(chan interface{})
 	res.messages = make(chan []*amqp.Message, 100)
 	return res
@@ -188,7 +188,9 @@ func (coordinator *Coordinator) NewConsumer(messagesHandler MessagesHandler,
 	defer coordinator.mutex.Unlock()
 	var lastId, _ = coordinator.getNextConsumerItem()
 	var item = &Consumer{ID: lastId, options: parameters,
-		response: newResponse(lookUpCommand(commandSubscribe)), mutex: &sync.Mutex{},
+		response:        newResponse(lookUpCommand(commandSubscribe)),
+		status:          open,
+		mutex:           &sync.Mutex{},
 		MessagesHandler: messagesHandler,
 	}
 
