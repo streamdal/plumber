@@ -9,7 +9,7 @@ type ServerOptions struct {
 
 func HandleServerFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("address", "Listen address and port. Ex: localhost:8080").
-		Default("localhost:8080").
+		Default("localhost:9090").
 		StringVar(&opts.Server.ListenAddress)
 
 	cmd.Flag("token", "Plumber authentication token").
