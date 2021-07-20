@@ -125,6 +125,8 @@ func (p *Plumber) Run() {
 	var err error
 
 	switch {
+	case p.Cmd == "serve":
+		err = p.Serve()
 	case strings.HasPrefix(p.Cmd, "batch"):
 		err = p.parseBatchCmd()
 	case strings.HasPrefix(p.Cmd, "read"):

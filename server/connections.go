@@ -1,0 +1,179 @@
+package server
+
+import (
+	"context"
+	"errors"
+	"fmt"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/conns"
+
+	uuid "github.com/satori/go.uuid"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+)
+
+var (
+	ErrMissingConnection = errors.New("connection cannot be nil")
+	ErrMissingAddress    = errors.New("at least one kafka server address must be specified")
+	ErrMissingUsername   = errors.New("you must provide a username when specifying a SASL type")
+	ErrMissingPassword   = errors.New("you must provide a password when specifying a SASL type")
+)
+
+// setConn sets in-memory connection
+func (p *PlumberServer) setConn(connID string, conn *protos.Connection) {
+	p.ConnectionsMutex.Lock()
+	defer p.ConnectionsMutex.Unlock()
+	p.Connections[connID] = conn
+}
+
+// getConn retrieves in memory connection
+func (p *PlumberServer) getConn(connID string) *protos.Connection {
+	p.ConnectionsMutex.RLock()
+	defer p.ConnectionsMutex.RUnlock()
+	return p.Connections[connID]
+}
+
+func (p *PlumberServer) GetAllConnections(_ context.Context, req *protos.GetAllConnectionsRequest) (*protos.GetAllConnectionsResponse, error) {
+	if err := p.validateRequest(req.Auth); err != nil {
+		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
+	}
+
+	return &protos.GetAllConnectionsResponse{
+		Connections: p.Connections,
+	}, nil
+}
+
+func (p *PlumberServer) GetConnection(_ context.Context, req *protos.GetConnectionRequest) (*protos.GetConnectionResponse, error) {
+	if err := p.validateRequest(req.Auth); err != nil {
+		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
+	}
+
+	conn := p.getConn(req.ConnectionId)
+	if conn == nil {
+		return nil, CustomError(common.Code_NOT_FOUND, "no such connection id")
+	}
+
+	return &protos.GetConnectionResponse{
+		Connection: conn,
+	}, nil
+}
+
+func (p *PlumberServer) CreateConnection(_ context.Context, req *protos.CreateConnectionRequest) (*protos.CreateConnectionResponse, error) {
+	if err := p.validateRequest(req.Auth); err != nil {
+		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
+	}
+
+	connID := "default" //TODO: uuid.NewV4().String()
+
+	req.GetConnection()
+
+	if err := validateConnection(req.GetConnection()); err != nil {
+		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
+	}
+
+	p.setConn(connID, req.Connection)
+
+	p.Log.Infof("Connection '%s' created", connID)
+
+	return &protos.CreateConnectionResponse{
+		ConnectionId: connID,
+	}, nil
+}
+
+func (p *PlumberServer) TestConnection(_ context.Context, req *protos.TestConnectionRequest) (*protos.TestConnectionResponse, error) {
+	if err := p.validateRequest(req.Auth); err != nil {
+		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
+	}
+
+	if err := validateConnection(req.GetConnection()); err != nil {
+		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
+	}
+
+	// TODO
+
+	return nil, nil
+}
+
+func (p *PlumberServer) UpdateConnection(_ context.Context, req *protos.UpdateConnectionRequest) (*protos.UpdateConnectionResponse, error) {
+	if err := p.validateRequest(req.Auth); err != nil {
+		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
+	}
+
+	conn := p.getConn(req.ConnectionId)
+	if conn == nil {
+		return nil, CustomError(common.Code_NOT_FOUND, "no such connection id")
+	}
+
+	if err := validateConnection(req.GetConnection()); err != nil {
+		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
+	}
+
+	p.setConn(req.ConnectionId, req.Connection)
+
+	p.Log.Infof("Connection '%s' updated", req.ConnectionId)
+
+	return &protos.UpdateConnectionResponse{
+		Status: &common.Status{
+			Code:      common.Code_OK,
+			Message:   "Connection updated",
+			RequestId: uuid.NewV4().String(), // TODO: what should this be?
+		},
+	}, nil
+}
+
+func (p *PlumberServer) DeleteConnection(_ context.Context, req *protos.DeleteConnectionRequest) (*protos.DeleteConnectionResponse, error) {
+	if err := p.validateRequest(req.Auth); err != nil {
+		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
+	}
+
+	p.ConnectionsMutex.Lock()
+	defer p.ConnectionsMutex.Unlock()
+	_, ok := p.Connections[req.ConnectionId]
+	if !ok {
+		return nil, CustomError(common.Code_NOT_FOUND, "no such connection id")
+	}
+
+	delete(p.Connections, req.ConnectionId)
+
+	p.Log.Infof("Connection '%s' deleted", req.ConnectionId)
+
+	return &protos.DeleteConnectionResponse{
+		Status: &common.Status{
+			Code:      common.Code_OK,
+			Message:   "Connection deleted",
+			RequestId: uuid.NewV4().String(),
+		},
+	}, nil
+}
+
+// validateConnection ensures all required parameters are passed when creating/testing/updating a connection
+func validateConnection(conn *protos.Connection) error {
+	if conn == nil {
+		return ErrMissingConnection
+	}
+
+	switch {
+	case conn.GetKafka() != nil:
+		return validateConnectionKafka(conn.GetKafka())
+	}
+
+	return nil
+}
+
+// validateConnectionKafka ensures all required parameters are passed when creating/testing/updating a kafka connection
+func validateConnectionKafka(conn *conns.Kafka) error {
+	if len(conn.Address) == 0 {
+		return ErrMissingAddress
+	}
+
+	if conn.SaslType != conns.SASLType_NONE && conn.SaslUsername == "" {
+		return ErrMissingUsername
+	}
+
+	if conn.SaslType != conns.SASLType_NONE && conn.SaslPassword == "" {
+		return ErrMissingPassword
+	}
+
+	return nil
+}

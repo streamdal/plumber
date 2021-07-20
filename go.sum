@@ -121,6 +121,14 @@ github.com/batchcorp/pgoutput v0.3.1 h1:lzZiNPE9JTU5O38WlU9RG/Sbk0Ylmo5RJJ+qfZFg
 github.com/batchcorp/pgoutput v0.3.1/go.mod h1:xzkr73rAlqUdvt2oMAQav1lIt6xnG8bqYYXt4GrXM/I=
 github.com/batchcorp/pgoutput v0.3.2 h1:Jck/nJLwXWmsNHF2iEfjFWrsds5LLGtqu6y6TjjU8Aw=
 github.com/batchcorp/pgoutput v0.3.2/go.mod h1:xzkr73rAlqUdvt2oMAQav1lIt6xnG8bqYYXt4GrXM/I=
+github.com/batchcorp/plumber-schemas v0.0.2 h1:7CRY01FFBlHA3wsjS3+XJUymxcNOdG9kKfdIaYuIbF8=
+github.com/batchcorp/plumber-schemas v0.0.2/go.mod h1:NnAGQqxelKbYws+Y8F9H3yqHZpu3NWUn45+FryCYBHA=
+github.com/batchcorp/plumber-schemas v0.0.4 h1:68u8msdb439S0pfvwe29Id/22MVsbUtTOz9vOofDnck=
+github.com/batchcorp/plumber-schemas v0.0.4/go.mod h1:NnAGQqxelKbYws+Y8F9H3yqHZpu3NWUn45+FryCYBHA=
+github.com/batchcorp/plumber-schemas v0.0.5 h1:Z1CKtRsYlmTUXKLNZBXYqb72jTqTMJpUaENrogDEQEs=
+github.com/batchcorp/plumber-schemas v0.0.5/go.mod h1:NnAGQqxelKbYws+Y8F9H3yqHZpu3NWUn45+FryCYBHA=
+github.com/batchcorp/plumber-schemas v0.0.6 h1:InLVw0+h3jjOisOy3MS4XVD4SK277fNTwW8y3/q4n6M=
+github.com/batchcorp/plumber-schemas v0.0.6/go.mod h1:NnAGQqxelKbYws+Y8F9H3yqHZpu3NWUn45+FryCYBHA=
 github.com/batchcorp/rabbit v0.1.9 h1:BzQStzeo0WuvC7+PKYaEBYtn9qqramlaZCN1CxmNM6U=
 github.com/batchcorp/rabbit v0.1.9/go.mod h1:LaAQ6FCNkir0/SbJ9jX3JNNP1ULAU2M3QZN/IwFRwXw=
 github.com/batchcorp/schemas v0.1.8/go.mod h1:OS0jIg50R8wrMJAVwOEirnvpyPKnJlVadifqH4LJlD4=
@@ -304,6 +312,8 @@ github.com/golang/protobuf v1.4.3 h1:JjCZWpVbqXDqFVmTfYWEVTMIYrL/NPdPSCHPJ0T/raM
 github.com/golang/protobuf v1.4.3/go.mod h1:oDoupMAO8OvCJWAcko0GGGIgR6R6ocIYbsSw735rRwI=
 github.com/golang/protobuf v1.4.4-0.20210303013846-acacf8158c9a h1:UnnOFbVzen159/ls3RjtxtNxgviO5/G01ZhdfT55QQM=
 github.com/golang/protobuf v1.4.4-0.20210303013846-acacf8158c9a/go.mod h1:Ey/Q3yRp1ZsFQ2CaZydu5H26KQmAkmal+iobkXMKKKU=
+github.com/golang/protobuf v1.5.0 h1:LUVKkCeviFUMKqHa4tXIIij/lbhnMbP7Fn5wKdKkRh4=
+github.com/golang/protobuf v1.5.0/go.mod h1:FsONVRAS9T7sI+LIUmWTfcYkHO4aIWwzhcaSAoJOfIk=
 github.com/golang/snappy v0.0.1 h1:Qgr9rKW7uDUkrbSmQeiDsGa8SjGyCOGtuasMWwvp2P4=
 github.com/golang/snappy v0.0.1/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
 github.com/google/btree v0.0.0-20180813153112-4030bb1f1f0c/go.mod h1:lNA+9X1NB3Zf8V7Ke586lFgjr2dZNuvo3lPJSGZ5JPQ=
@@ -1026,6 +1036,8 @@ google.golang.org/protobuf v1.25.1-0.20200805231151-a709e31e5d12 h1:OwhZOOMuf7le
 google.golang.org/protobuf v1.25.1-0.20200805231151-a709e31e5d12/go.mod h1:9JNX74DMeImyA3h4bdi1ymwjUzf21/xIlbajtzgsN7c=
 google.golang.org/protobuf v1.26.0-rc.1 h1:7QnIQpGRHE5RnLKnESfDoxm2dTapTZua5a0kS0A+VXQ=
 google.golang.org/protobuf v1.26.0-rc.1/go.mod h1:jlhhOSvTdKEhbULTjvd4ARK9grFBp09yW+WbY/TyQbw=
+google.golang.org/protobuf v1.26.1-0.20210525005349-febffdd88e85 h1:1EyOCfxGvEyBKPiIKOnR2MHf5VY2abMJyR50KtXaHog=
+google.golang.org/protobuf v1.26.1-0.20210525005349-febffdd88e85/go.mod h1:9q0QmTI4eRPtz6boOQmLYwt+qCgq0jsYwAQnmE0givc=
 gopkg.in/alecthomas/kingpin.v2 v2.2.6 h1:jMFz6MfLP0/4fUyZle81rXUoxOBFi19VUFKVDOQfozc=
 gopkg.in/alecthomas/kingpin.v2 v2.2.6/go.mod h1:FMv+mEhP44yOT+4EoQTLFTRgOQ1FBLkstjWtayDeSgw=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
