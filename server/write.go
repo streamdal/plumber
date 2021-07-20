@@ -88,6 +88,9 @@ func (p *PlumberServer) Write(ctx context.Context, req *protos.WriteRequest) (*p
 		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
 	}
 
+	defer backend.Conn.Close()
+	defer backend.Writer.Close()
+
 	messages := make([]skafka.Message, 0)
 
 	for _, v := range req.Records {
@@ -100,12 +103,27 @@ func (p *PlumberServer) Write(ctx context.Context, req *protos.WriteRequest) (*p
 		})
 	}
 
-	backend.Writer.WriteMessages(ctx, messages...)
+	if err := backend.Writer.WriteMessages(ctx, messages...); err != nil {
+		err = errors.Wrap(err, "unable to write messages to kafka")
+		p.Log.Error(err)
+
+		return &protos.WriteResponse{
+			Status: &common.Status{
+				Code:      common.Code_DATA_LOSS,
+				Message:   err.Error(),
+				RequestId: uuid.NewV4().String(),
+			},
+		}, nil
+	}
+
+	logMsg := fmt.Sprintf("%d record(s) written", len(messages))
+
+	p.Log.Info(logMsg)
 
 	return &protos.WriteResponse{
 		Status: &common.Status{
 			Code:      common.Code_OK,
-			Message:   fmt.Sprintf("%d record(s) written", len(messages)),
+			Message:   logMsg,
 			RequestId: uuid.NewV4().String(),
 		},
 	}, nil

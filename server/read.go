@@ -136,6 +136,8 @@ func convertKafkaHeadersToProto(original []skafka.Header) []*records.KafkaHeader
 // Read is a goroutine that is launched when a read is started. It will continue running until plumber exiits
 // or a read is stopped via the API
 func (r *Read) Read() {
+	defer r.Backend.Reader.Close()
+
 	for {
 		select {
 		case <-r.ContextCxl.Done():

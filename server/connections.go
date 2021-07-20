@@ -64,7 +64,7 @@ func (p *PlumberServer) CreateConnection(_ context.Context, req *protos.CreateCo
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	connID := "default" //TODO: uuid.NewV4().String()
+	connID := uuid.NewV4().String()
 
 	req.GetConnection()
 
