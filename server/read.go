@@ -77,7 +77,7 @@ func (p *PlumberServer) StartRead(req *protos.StartReadRequest, srv protos.Plumb
 			messages := make([]*records.Message, 0)
 
 			// TODO: batch these up and send multiple per response?
-			messages = append(messages, generateKafkaPayload(cfg, msg))
+			messages = append(messages, p.generateKafkaPayload(cfg, msg))
 
 			srv.Send(&protos.StartReadResponse{
 				Status: &common.Status{
@@ -98,13 +98,13 @@ func (p *PlumberServer) StartRead(req *protos.StartReadRequest, srv protos.Plumb
 }
 
 // generateKafkaPayload generates a records.Message protobuf struct from a kafka message struct
-func generateKafkaPayload(cfg *args.Kafka, msg *skafka.Message) *records.Message {
+func (p *PlumberServer) generateKafkaPayload(cfg *args.Kafka, msg *skafka.Message) *records.Message {
 
 	// TODO: decode here
 
 	return &records.Message{
-		MessageId:        uuid.NewV4().String(), // TODO: what to put here?
-		PlumberId:        "plumber",             // TODO: generate and store UUID in plumber config so this is a static value
+		MessageId:        uuid.NewV4().String(),        // TODO: what to put here?
+		PlumberId:        p.PersistentConfig.PlumberID, // TODO: generate and store UUID in plumber config so this is a static value
 		UnixTimestampUtc: time.Now().UTC().UnixNano(),
 		Message: &records.Message_Kafka{Kafka: &records.Kafka{
 			Topic:     msg.Topic, // TODO: which topic?

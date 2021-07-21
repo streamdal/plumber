@@ -5,6 +5,7 @@ import (
 	"net"
 	"sync"
 
+	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
@@ -22,6 +23,12 @@ func (p *Plumber) Serve() error {
 
 	grpcServer := grpc.NewServer(opts...)
 
+	// Each plumber instance needs an ID. Set one and save
+	if p.PersistentConfig.PlumberID == "" {
+		p.PersistentConfig.PlumberID = uuid.NewV4().String()
+		p.PersistentConfig.Save()
+	}
+
 	plumberServer := &server.PlumberServer{
 		PersistentConfig: p.PersistentConfig,
 		AuthToken:        p.Options.Server.AuthToken,
@@ -34,6 +41,7 @@ func (p *Plumber) Serve() error {
 	protos.RegisterPlumberServerServer(grpcServer, plumberServer)
 
 	p.log.Infof("gRPC server listening on: %s", p.Options.Server.ListenAddress)
+	p.log.Infof("Plumber Instance ID: %s", p.PersistentConfig.PlumberID)
 
 	if err := grpcServer.Serve(lis); err != nil {
 		return fmt.Errorf("unable to start gRPC server: %s", err)

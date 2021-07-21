@@ -135,6 +135,7 @@ func convertJSONInput(value string) []string {
 	return inputData
 }
 
+// getConfig returns either a stored config if there is one, or a fresh config
 func getConfig() *config.Config {
 	var cfg *config.Config
 	var err error

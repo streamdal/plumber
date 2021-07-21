@@ -58,7 +58,10 @@ func (p *Config) Save() error {
 // Marshal marshals a Config struct to JSON
 func (p *Config) Marshal() ([]byte, error) {
 	cfg := &StorageConfig{
-		Token:       "abc",
+		PlumberID:   p.PlumberID,
+		Token:       p.Token,
+		TeamID:      p.TeamID,
+		UserID:      p.UserID,
 		Connections: make(map[string][]byte, 0),
 	}
 
@@ -98,7 +101,10 @@ func ReadConfig(fileName string) (*Config, error) {
 	}
 
 	cfg := &Config{
+		PlumberID:   storedCfg.PlumberID,
 		Token:       storedCfg.Token,
+		TeamID:      storedCfg.TeamID,
+		UserID:      storedCfg.UserID,
 		Connections: make(map[string]*protos.Connection, 0),
 	}
 
