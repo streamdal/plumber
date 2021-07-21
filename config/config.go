@@ -30,19 +30,15 @@ type Config struct {
 	Connections map[string]*protos.Connection `json:"connection"`
 }
 
-type StorageConfig struct {
+// storageConfig is used to persist the config to disk. Protos can't be marshaled along with regular JSON, so we
+// marshal each connection message into bytes and add them to the connections slice. The resulting JSON can then
+// be marshalled normally
+type storageConfig struct {
 	PlumberID   string            `json:"plumber_id"`
 	Token       string            `json:"token"`
 	TeamID      string            `json:"team_id"`
 	UserID      string            `json:"user_id"`
 	Connections map[string][]byte `json:"connections"`
-}
-
-type BatchConfig struct {
-	PlumberID string `json:"plumber_id"`
-	Token     string `json:"token"`
-	TeamID    string `json:"team_id"`
-	UserID    string `json:"user_id"`
 }
 
 // Save is a convenience method of persisting the config to disk via a single call
@@ -57,7 +53,7 @@ func (p *Config) Save() error {
 
 // Marshal marshals a Config struct to JSON
 func (p *Config) Marshal() ([]byte, error) {
-	cfg := &StorageConfig{
+	cfg := &storageConfig{
 		PlumberID:   p.PlumberID,
 		Token:       p.Token,
 		TeamID:      p.TeamID,
@@ -67,6 +63,7 @@ func (p *Config) Marshal() ([]byte, error) {
 
 	m := jsonpb.Marshaler{}
 
+	// Connection proto messages need to be marshaled individually before we can marshal the entire struct
 	for k, v := range p.Connections {
 		buf := bytes.NewBuffer([]byte(``))
 		m.Marshal(buf, v)
@@ -95,7 +92,7 @@ func ReadConfig(fileName string) (*Config, error) {
 		return nil, errors.Wrapf(err, "could not read ~/.batchsh/%s", fileName)
 	}
 
-	storedCfg := &StorageConfig{}
+	storedCfg := &storageConfig{}
 	if err := json.Unmarshal(data, storedCfg); err != nil {
 		return nil, errors.Wrapf(err, "could not unmarshal ~/.batchsh/%s", fileName)
 	}
@@ -108,6 +105,7 @@ func ReadConfig(fileName string) (*Config, error) {
 		Connections: make(map[string]*protos.Connection, 0),
 	}
 
+	// Connection proto messages need to be un-marshaled individually
 	var count int
 	for k, v := range storedCfg.Connections {
 		conn := &protos.Connection{}
@@ -140,6 +138,25 @@ func Exists(fileName string) bool {
 	return true
 }
 
+// WriteConfig writes a Batch struct as JSON into a config.json file
+func WriteConfig(fileName string, data []byte) error {
+	configDir, err := getConfigDir()
+	if err != nil {
+		return err
+	}
+
+	configPath := path.Join(configDir, fileName)
+
+	f, err := os.OpenFile(configPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = f.Write(data)
+	return err
+}
+
 // getConfigJson attempts to read a user's .batchsh/config.json file to get saved credentials
 func getConfigJson(fileName string) (*os.File, error) {
 	configDir, err := getConfigDir()
@@ -165,25 +182,6 @@ func getConfigJson(fileName string) (*os.File, error) {
 
 	// Config exists, open it
 	return os.Open(configPath)
-}
-
-// WriteConfig writes a Batch struct as JSON into a config.json file
-func WriteConfig(fileName string, data []byte) error {
-	configDir, err := getConfigDir()
-	if err != nil {
-		return err
-	}
-
-	configPath := path.Join(configDir, fileName)
-
-	f, err := os.OpenFile(configPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	_, err = f.Write(data)
-	return err
 }
 
 // getConfigDir returns a directory where the batch configuration will be stored
