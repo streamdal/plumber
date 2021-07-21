@@ -140,6 +140,10 @@ func (p *PlumberServer) DeleteConnection(_ context.Context, req *protos.DeleteCo
 
 	delete(p.PersistentConfig.Connections, req.ConnectionId)
 
+	if err := p.PersistentConfig.Save(); err != nil {
+		p.Log.Errorf("unable to save updated connections list: %s", err)
+	}
+
 	p.Log.Infof("Connection '%s' deleted", req.ConnectionId)
 
 	return &protos.DeleteConnectionResponse{
