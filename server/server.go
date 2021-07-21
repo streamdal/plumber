@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/batchcorp/plumber/config"
+
 	"github.com/sirupsen/logrus"
 
 	uuid "github.com/satori/go.uuid"
@@ -16,7 +18,7 @@ import (
 
 type PlumberServer struct {
 	AuthToken        string
-	Connections      map[string]*protos.Connection
+	PersistentConfig *config.Config
 	ConnectionsMutex *sync.RWMutex
 	Reads            map[string]*Read
 	ReadsMutex       *sync.RWMutex

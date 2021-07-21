@@ -11,6 +11,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/batchcorp/plumber/config"
+
 	"github.com/kataras/tablewriter"
 	"github.com/lensesio/tableprinter"
 	"github.com/pkg/errors"
@@ -33,14 +35,12 @@ type IBatch interface {
 }
 
 type Batch struct {
-	Token   string
-	TeamID  string
-	UserID  string
-	Log     *logrus.Entry
-	Opts    *cli.Options
-	Client  *http.Client
-	Printer PrinterFunc
-	ApiUrl  string
+	PersistentConfig *config.Config
+	Log              *logrus.Entry
+	Opts             *cli.Options
+	Client           *http.Client
+	Printer          PrinterFunc
+	ApiUrl           string
 }
 
 type BlunderError struct {
@@ -62,26 +62,25 @@ type PrinterFunc func(v interface{})
 var errNotAuthenticated = errors.New("you are not authenticated. run `plumber batch login`")
 
 // New creates a new instance of a Batch struct with defaults
-func New(opts *cli.Options) *Batch {
+func New(opts *cli.Options, cfg *config.Config) *Batch {
 	printer := printTable
 	if opts.Batch.OutputType == "json" {
 		printer = printJSON
 	}
 
 	b := &Batch{
-		Log:     logrus.WithField("pkg", "batch"),
-		Opts:    opts,
-		Client:  &http.Client{},
-		Printer: printer,
-		ApiUrl:  "https://api.batch.sh",
+		PersistentConfig: cfg,
+		Log:              logrus.WithField("pkg", "batch"),
+		Opts:             opts,
+		Client:           &http.Client{},
+		Printer:          printer,
+		ApiUrl:           "https://api.batch.sh",
 	}
 
 	url := os.Getenv("API_URL")
 	if url != "" {
 		b.ApiUrl = url
 	}
-
-	b.LoadConfig()
 
 	return b
 }
@@ -92,10 +91,10 @@ func (b *Batch) getCookieJar(path string) *cookiejar.Jar {
 
 	u, _ := url.Parse(b.ApiUrl + path)
 
-	if b.Token != "" {
+	if b.PersistentConfig.Token != "" {
 		cookies = append(cookies, &http.Cookie{
 			Name:   "auth_token",
-			Value:  b.Token,
+			Value:  b.PersistentConfig.Token,
 			Path:   "/",
 			Domain: "." + u.Hostname(),
 		})
@@ -179,7 +178,7 @@ func (b *Batch) Post(path string, params map[string]interface{}) ([]byte, int, e
 	// Save auth_token cookie value
 	for _, cookie := range resp.Cookies() {
 		if cookie.Name == "auth_token" {
-			b.Token = cookie.Value
+			b.PersistentConfig.Token = cookie.Value
 		}
 	}
 
@@ -213,7 +212,7 @@ func (b *Batch) Delete(path string) ([]byte, int, error) {
 	// Save auth_token cookie value
 	for _, cookie := range resp.Cookies() {
 		if cookie.Name == "auth_token" {
-			b.Token = cookie.Value
+			b.PersistentConfig.Token = cookie.Value
 		}
 	}
 

@@ -23,8 +23,8 @@ func (p *Plumber) Serve() error {
 	grpcServer := grpc.NewServer(opts...)
 
 	plumberServer := &server.PlumberServer{
+		PersistentConfig: p.PersistentConfig,
 		AuthToken:        p.Options.Server.AuthToken,
-		Connections:      make(map[string]*protos.Connection, 0),
 		ConnectionsMutex: &sync.RWMutex{},
 		Reads:            make(map[string]*server.Read),
 		ReadsMutex:       &sync.RWMutex{},

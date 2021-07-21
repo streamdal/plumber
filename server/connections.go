@@ -23,15 +23,19 @@ var (
 // setConn sets in-memory connection
 func (p *PlumberServer) setConn(connID string, conn *protos.Connection) {
 	p.ConnectionsMutex.Lock()
-	defer p.ConnectionsMutex.Unlock()
-	p.Connections[connID] = conn
+	p.PersistentConfig.Connections[connID] = conn
+	p.ConnectionsMutex.Unlock()
+
+	if err := p.PersistentConfig.Save(); err != nil {
+		p.Log.Error(err)
+	}
 }
 
 // getConn retrieves in memory connection
 func (p *PlumberServer) getConn(connID string) *protos.Connection {
 	p.ConnectionsMutex.RLock()
 	defer p.ConnectionsMutex.RUnlock()
-	return p.Connections[connID]
+	return p.PersistentConfig.Connections[connID]
 }
 
 func (p *PlumberServer) GetAllConnections(_ context.Context, req *protos.GetAllConnectionsRequest) (*protos.GetAllConnectionsResponse, error) {
@@ -40,7 +44,7 @@ func (p *PlumberServer) GetAllConnections(_ context.Context, req *protos.GetAllC
 	}
 
 	return &protos.GetAllConnectionsResponse{
-		Connections: p.Connections,
+		Connections: p.PersistentConfig.Connections,
 	}, nil
 }
 
@@ -129,12 +133,12 @@ func (p *PlumberServer) DeleteConnection(_ context.Context, req *protos.DeleteCo
 
 	p.ConnectionsMutex.Lock()
 	defer p.ConnectionsMutex.Unlock()
-	_, ok := p.Connections[req.ConnectionId]
+	_, ok := p.PersistentConfig.Connections[req.ConnectionId]
 	if !ok {
 		return nil, CustomError(common.Code_NOT_FOUND, "no such connection id")
 	}
 
-	delete(p.Connections, req.ConnectionId)
+	delete(p.PersistentConfig.Connections, req.ConnectionId)
 
 	p.Log.Infof("Connection '%s' deleted", req.ConnectionId)
 

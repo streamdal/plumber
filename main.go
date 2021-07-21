@@ -9,6 +9,10 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
+
+	"github.com/batchcorp/plumber/config"
+
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/ssh/terminal"
@@ -68,6 +72,7 @@ func main() {
 	}
 
 	p, err := plumber.New(&plumber.Config{
+		PersistentConfig:   getConfig(),
 		ServiceShutdownCtx: serviceCtx,
 		MainShutdownFunc:   mainShutdownFunc,
 		MainShutdownCtx:    mainCtx,
@@ -128,4 +133,25 @@ func convertJSONInput(value string) []string {
 	})
 
 	return inputData
+}
+
+func getConfig() *config.Config {
+	var cfg *config.Config
+	var err error
+
+	// No need to pollute user's FS if they aren't running in server mode
+	if config.Exists("config.json") {
+		cfg, err = config.ReadConfig("config.json")
+		if err != nil {
+			logrus.Error("unable to load config: %s", err)
+		}
+	}
+
+	if cfg == nil {
+		cfg = &config.Config{
+			Connections: make(map[string]*protos.Connection),
+		}
+	}
+
+	return cfg
 }

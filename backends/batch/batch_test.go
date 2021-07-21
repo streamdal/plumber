@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/batchcorp/plumber/config"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -48,7 +50,7 @@ func BatchWithMockResponse(httpCode int, responseBody string) *Batch {
 var _ = Describe("Batch", func() {
 	Context("New", func() {
 		It("returns a new instance of Batch struct", func() {
-			b := New(&cli.Options{Batch: &cli.BatchOptions{}})
+			b := New(&cli.Options{Batch: &cli.BatchOptions{}}, &config.Config{})
 			Expect(b).To(BeAssignableToTypeOf(&Batch{}))
 		})
 	})

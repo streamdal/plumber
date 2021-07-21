@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/batchcorp/plumber/config"
+
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -25,6 +27,7 @@ var (
 
 // Config contains configurable options for instantiating a new Plumber
 type Config struct {
+	PersistentConfig   *config.Config
 	ServiceShutdownCtx context.Context
 	MainShutdownFunc   context.CancelFunc
 	MainShutdownCtx    context.Context

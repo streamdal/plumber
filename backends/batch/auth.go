@@ -10,6 +10,8 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/batchcorp/plumber/config"
+
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -23,7 +25,7 @@ type AuthResponse struct {
 	OnboardingStateStatus string `json:"onboarding_state_status"`
 	Team                  struct {
 		ID   string `json:"id"`
-		Name string `json: "name"`
+		Name string `json:"name"`
 	}
 }
 
@@ -53,14 +55,19 @@ func (b *Batch) Login() error {
 		return errCouldNotLogin
 	}
 
-	cfg := &Config{
+	cfg := &config.Config{
 		TeamID: authResponse.Team.ID,
 		UserID: authResponse.AccountID,
-		Token:  b.Token,
+		Token:  b.PersistentConfig.Token,
+	}
+
+	data, err := cfg.Marshal()
+	if err != nil {
+		return errors.Wrap(err, "unable to marshal config data")
 	}
 
 	// Successfully authenticated, write token to cache
-	if err := writeConfig(cfg); err != nil {
+	if err := config.WriteConfig("config.json", data); err != nil {
 		return errors.Wrap(err, "unable to cache login credentials")
 	}
 
@@ -75,7 +82,7 @@ func (b *Batch) Logout() error {
 	b.Post("/auth/logout", nil)
 
 	// Clear saved credentials
-	cfg, err := readConfig()
+	cfg, err := config.ReadConfig("config.json")
 	if err != nil {
 		// Just clearing these out for the sake of cleaning up. We don't need to worry about errors at this point
 		return nil
@@ -85,7 +92,12 @@ func (b *Batch) Logout() error {
 	cfg.TeamID = ""
 	cfg.UserID = ""
 
-	writeConfig(cfg)
+	data, err := cfg.Marshal()
+	if err != nil {
+		return errors.Wrap(err, "unable to marshal config data")
+	}
+
+	config.WriteConfig("config.json", data)
 
 	return nil
 }
