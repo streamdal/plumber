@@ -103,11 +103,11 @@ func (p *PlumberServer) generateKafkaPayload(cfg *args.Kafka, msg *skafka.Messag
 	// TODO: decode here
 
 	return &records.Message{
-		MessageId:        uuid.NewV4().String(),        // TODO: what to put here?
-		PlumberId:        p.PersistentConfig.PlumberID, // TODO: generate and store UUID in plumber config so this is a static value
+		MessageId:        uuid.NewV4().String(), // TODO: what to put here?
+		PlumberId:        p.PersistentConfig.PlumberID,
 		UnixTimestampUtc: time.Now().UTC().UnixNano(),
 		Message: &records.Message_Kafka{Kafka: &records.Kafka{
-			Topic:     msg.Topic, // TODO: which topic?
+			Topic:     msg.Topic,
 			Key:       msg.Key,
 			Value:     msg.Value, // TODO: decode
 			Blob:      msg.Value,
