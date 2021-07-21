@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
+
 	"github.com/batchcorp/plumber/config"
 
 	. "github.com/onsi/ginkgo"
@@ -44,6 +46,9 @@ func BatchWithMockResponse(httpCode int, responseBody string) *Batch {
 		Opts: &cli.Options{
 			Batch: &cli.BatchOptions{},
 		},
+		PersistentConfig: &config.Config{
+			Connections: make(map[string]*protos.Connection),
+		},
 	}
 }
 
@@ -59,8 +64,8 @@ var _ = Describe("Batch", func() {
 			const Token = "testin123"
 
 			b := &Batch{
-				Token:  Token,
-				ApiUrl: "https://api.batch.sh",
+				PersistentConfig: &config.Config{Token: Token},
+				ApiUrl:           "https://api.batch.sh",
 			}
 
 			jar := b.getCookieJar("/v1/collection")

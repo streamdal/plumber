@@ -144,7 +144,7 @@ func getConfig() *config.Config {
 	if config.Exists("config.json") {
 		cfg, err = config.ReadConfig("config.json")
 		if err != nil {
-			logrus.Error("unable to load config: %s", err)
+			logrus.Errorf("unable to load config: %s", err)
 		}
 	}
 
