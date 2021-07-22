@@ -10,16 +10,8 @@ import (
 	"github.com/batchcorp/plumber/printer"
 )
 
-// AvroEncode takes in a path to a AVRO schema file, and plain json data
-// and returns the binary encoded representation
-func AvroEncode(avroSchemaPath string, data []byte) ([]byte, error) {
-
-	avroSchema, readErr := ioutil.ReadFile(avroSchemaPath)
-	if readErr != nil {
-		return nil, fmt.Errorf("unable to read AVRO schema file '%s': %s", avroSchemaPath, readErr)
-	}
-
-	codec, err := goavro.NewCodec(string(avroSchema))
+func AvroEncode(schema, data []byte) ([]byte, error) {
+	codec, err := goavro.NewCodec(string(schema))
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to read AVRO schema")
 	}
@@ -39,18 +31,11 @@ func AvroEncode(avroSchemaPath string, data []byte) ([]byte, error) {
 	return binary, nil
 }
 
-// AvroEncode takes in a path to a AVRO schema file, and binary encoded data
+// AvroDecode takes in a path to a AVRO schema file, and binary encoded data
 // and returns the plain JSON representation
-func AvroDecode(avroSchemaPath string, data []byte) ([]byte, error) {
-	if avroSchemaPath == "" {
-		return data, nil
-	}
-	avroSchema, readErr := ioutil.ReadFile(avroSchemaPath)
-	if readErr != nil {
-		return nil, fmt.Errorf("unable to read AVRO schema file '%s': %s", avroSchemaPath, readErr)
-	}
+func AvroDecode(schema, data []byte) ([]byte, error) {
 
-	codec, err := goavro.NewCodec(string(avroSchema))
+	codec, err := goavro.NewCodec(string(schema))
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to read AVRO schema")
 	}
@@ -62,4 +47,25 @@ func AvroDecode(avroSchemaPath string, data []byte) ([]byte, error) {
 	}
 
 	return codec.TextualFromNative(nil, native)
+}
+
+func AvroEncodeWithSchemaFile(schemaPath string, data []byte) ([]byte, error) {
+	schema, readErr := ioutil.ReadFile(schemaPath)
+	if readErr != nil {
+		return nil, fmt.Errorf("unable to read AVRO schema file '%s': %s", schemaPath, readErr)
+	}
+
+	return AvroEncode(schema, data)
+}
+
+func AvroDecodeWithSchemaFile(schemaPath string, data []byte) ([]byte, error) {
+	if schemaPath == "" {
+		return data, nil
+	}
+	schema, readErr := ioutil.ReadFile(schemaPath)
+	if readErr != nil {
+		return nil, fmt.Errorf("unable to read AVRO schema file '%s': %s", schemaPath, readErr)
+	}
+
+	return AvroDecode(schema, data)
 }

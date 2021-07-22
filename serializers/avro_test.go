@@ -16,7 +16,7 @@ func TestAvroEncode(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to read test data file %s", dataFile)
 	}
-	got, err := AvroEncode(schemaFile, data)
+	got, err := AvroEncodeWithSchemaFile(schemaFile, data)
 	if err != nil {
 		t.Errorf("AvroEncode returned error %s", err.Error())
 	}
@@ -32,7 +32,7 @@ func TestAvroDecode(t *testing.T) {
 		t.Fatalf("Unable to read test data file %s", dataFile)
 	}
 
-	got, err := AvroDecode(schemaFile, encodedAvroData)
+	got, err := AvroDecodeWithSchemaFile(schemaFile, encodedAvroData)
 	if err != nil {
 		t.Errorf("AvroDecode returned error %s", err.Error())
 	}

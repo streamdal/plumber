@@ -58,7 +58,7 @@ func generateWriteValue(data []byte, md *desc.MessageDescriptor, opts *cli.Optio
 
 	// Handle AVRO
 	if opts.AvroSchemaFile != "" {
-		data, err := serializers.AvroEncode(opts.AvroSchemaFile, data)
+		data, err := serializers.AvroEncodeWithSchemaFile(opts.AvroSchemaFile, data)
 		if err != nil {
 			return nil, err
 		}
@@ -81,7 +81,7 @@ func generateWriteValue(data []byte, md *desc.MessageDescriptor, opts *cli.Optio
 	if opts.WriteInputType == "jsonpb" {
 		var convertErr error
 
-		data, convertErr = convertJSONPBToProtobuf(data, dynamic.NewMessage(md))
+		data, convertErr = ConvertJSONPBToProtobuf(data, dynamic.NewMessage(md))
 		if convertErr != nil {
 			return nil, errors.Wrap(convertErr, "unable to convert JSONPB to protobuf")
 		}
@@ -124,8 +124,8 @@ func ValidateWriteOptions(opts *cli.Options, busSpecific func(options *cli.Optio
 	return nil
 }
 
-// convertJSONPBToProtobuf converts input data from jsonpb -> protobuf -> bytes
-func convertJSONPBToProtobuf(data []byte, m *dynamic.Message) ([]byte, error) {
+// ConvertJSONPBToProtobuf converts input data from jsonpb -> protobuf -> bytes
+func ConvertJSONPBToProtobuf(data []byte, m *dynamic.Message) ([]byte, error) {
 	buf := bytes.NewBuffer(data)
 
 	if err := jsonpb.Unmarshal(buf, m); err != nil {

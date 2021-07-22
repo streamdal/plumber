@@ -7,9 +7,6 @@ import (
 	"time"
 
 	"github.com/jhump/protoreflect/desc"
-
-	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
-
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	skafka "github.com/segmentio/kafka-go"
@@ -18,13 +15,15 @@ import (
 	"github.com/segmentio/kafka-go/sasl/scram"
 	"github.com/sirupsen/logrus"
 
+	"github.com/batchcorp/plumber/backends/kafka"
+	"github.com/batchcorp/plumber/serializers"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/conns"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-
-	"github.com/batchcorp/plumber/backends/kafka"
 )
 
 type Read struct {
@@ -45,22 +44,15 @@ func (p *PlumberServer) StartRead(req *protos.StartReadRequest, srv protos.Plumb
 		return CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	var md *desc.MessageDescriptor
-	var err error
-
-	if pbOptions := req.DecodeOptions.GetProtobuf(); pbOptions != nil {
-		// Get Message descriptor from zip file
-		md, err = ProcessProtobufArchive(pbOptions.RootType, pbOptions.ZipArchive)
-		if err != nil {
-			return errors.Wrap(err, "unable to parse protobuf zip")
-		}
-
-	}
-
 	requestID := uuid.NewV4().String()
 
 	// Reader needs a unique ID that frontend can reference
 	readerID := uuid.NewV4().String()
+
+	md, err := generateMD(req.DecodeOptions)
+	if err != nil {
+		return err
+	}
 
 	ctx, cancelFunc := context.WithCancel(context.Background())
 
@@ -131,7 +123,10 @@ func (r *Read) generateKafkaPayload(msg *skafka.Message) (*records.Message, erro
 			return nil, errors.Wrap(err, "unable to decode protobuf")
 		}
 	case encoding.Type_AVRO:
-		// TODO
+		data, err = serializers.AvroDecode(r.DecodeOptions.GetAvro().Schema, msg.Value)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to decode AVRO message")
+		}
 		fallthrough
 	case encoding.Type_JSON_SCHEMA:
 		// TODO

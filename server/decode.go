@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
+
 	"github.com/jhump/protoreflect/dynamic"
 
 	"github.com/jhump/protoreflect/desc/protoparse"
@@ -16,6 +18,23 @@ import (
 
 	"github.com/batchcorp/plumber/pb"
 )
+
+// generateMD returns the root type message descriptor from an encoding options message
+func generateMD(opts *encoding.Options) (*desc.MessageDescriptor, error) {
+	pbOptions := opts.GetProtobuf()
+	if pbOptions == nil {
+		// Not protobuf encoding/decoding request, nothing to do
+		return nil, nil
+	}
+
+	// Get Message descriptor from zip file
+	md, err := ProcessProtobufArchive(pbOptions.RootType, pbOptions.ZipArchive)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to parse protobuf zip")
+	}
+
+	return md, nil
+}
 
 // DecodeProtobuf decodes a protobuf message to json
 func DecodeProtobuf(md *desc.MessageDescriptor, message []byte) ([]byte, error) {

@@ -21,9 +21,9 @@ var (
 )
 
 // setConn sets in-memory connection
-func (p *PlumberServer) setConn(connID string, conn *protos.Connection) {
+func (p *PlumberServer) setConn(conn *protos.Connection) {
 	p.ConnectionsMutex.Lock()
-	p.PersistentConfig.Connections[connID] = conn
+	p.PersistentConfig.Connections[conn.Id] = conn
 	p.ConnectionsMutex.Unlock()
 
 	if err := p.PersistentConfig.Save(); err != nil {
@@ -73,20 +73,19 @@ func (p *PlumberServer) CreateConnection(_ context.Context, req *protos.CreateCo
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	connID := uuid.NewV4().String()
-
-	req.GetConnection()
+	conn := req.GetConnection()
+	conn.Id = uuid.NewV4().String()
 
 	if err := validateConnection(req.GetConnection()); err != nil {
 		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
 	}
 
-	p.setConn(connID, req.Connection)
+	p.setConn(req.Connection)
 
-	p.Log.Infof("Connection '%s' created", connID)
+	p.Log.Infof("Connection '%s' created", conn.Id)
 
 	return &protos.CreateConnectionResponse{
-		ConnectionId: connID,
+		ConnectionId: conn.Id,
 	}, nil
 }
 
@@ -120,7 +119,7 @@ func (p *PlumberServer) UpdateConnection(_ context.Context, req *protos.UpdateCo
 		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
 	}
 
-	p.setConn(req.ConnectionId, req.Connection)
+	p.setConn(req.Connection)
 
 	p.Log.WithField("request_id", requestID).Infof("Connection '%s' updated", req.ConnectionId)
 
