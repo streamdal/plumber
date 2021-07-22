@@ -9,7 +9,7 @@ require (
 	github.com/apache/pulsar-client-go v0.5.0
 	github.com/aws/aws-sdk-go v1.34.28
 	github.com/batchcorp/pgoutput v0.3.2
-	github.com/batchcorp/plumber-schemas v0.0.6
+	github.com/batchcorp/plumber-schemas v0.0.11
 	github.com/batchcorp/rabbit v0.1.9
 	github.com/batchcorp/schemas v0.2.157
 	github.com/dustin/go-humanize v1.0.0 // indirect

@@ -43,8 +43,13 @@ func (p *PlumberServer) GetAllConnections(_ context.Context, req *protos.GetAllC
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
+	conns := make([]*protos.Connection, 0)
+	for _, v := range p.PersistentConfig.Connections {
+		conns = append(conns, v)
+	}
+
 	return &protos.GetAllConnectionsResponse{
-		Connections: p.PersistentConfig.Connections,
+		Connections: conns,
 	}, nil
 }
 
