@@ -104,6 +104,8 @@ func (p *PlumberServer) UpdateConnection(_ context.Context, req *protos.UpdateCo
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
+	requestID := uuid.NewV4().String()
+
 	conn := p.getConn(req.ConnectionId)
 	if conn == nil {
 		return nil, CustomError(common.Code_NOT_FOUND, "no such connection id")
@@ -115,13 +117,13 @@ func (p *PlumberServer) UpdateConnection(_ context.Context, req *protos.UpdateCo
 
 	p.setConn(req.ConnectionId, req.Connection)
 
-	p.Log.Infof("Connection '%s' updated", req.ConnectionId)
+	p.Log.WithField("request_id", requestID).Infof("Connection '%s' updated", req.ConnectionId)
 
 	return &protos.UpdateConnectionResponse{
 		Status: &common.Status{
 			Code:      common.Code_OK,
 			Message:   "Connection updated",
-			RequestId: uuid.NewV4().String(), // TODO: what should this be?
+			RequestId: requestID,
 		},
 	}, nil
 }
@@ -130,6 +132,8 @@ func (p *PlumberServer) DeleteConnection(_ context.Context, req *protos.DeleteCo
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
+
+	requestID := uuid.NewV4().String()
 
 	p.ConnectionsMutex.Lock()
 	defer p.ConnectionsMutex.Unlock()
@@ -144,13 +148,13 @@ func (p *PlumberServer) DeleteConnection(_ context.Context, req *protos.DeleteCo
 		p.Log.Errorf("unable to save updated connections list: %s", err)
 	}
 
-	p.Log.Infof("Connection '%s' deleted", req.ConnectionId)
+	p.Log.WithField("request_id", requestID).Infof("Connection '%s' deleted", req.ConnectionId)
 
 	return &protos.DeleteConnectionResponse{
 		Status: &common.Status{
 			Code:      common.Code_OK,
 			Message:   "Connection deleted",
-			RequestId: uuid.NewV4().String(),
+			RequestId: requestID,
 		},
 	}, nil
 }

@@ -38,7 +38,7 @@ func FindMessageDescriptor(protobufDirs []string, protobufRootMessage string) (*
 		return nil, errors.Wrap(err, "unable to read file descriptors")
 	}
 
-	md, err := findMessageDescriptor(fds, protobufRootMessage)
+	md, err := FindMessageDescriptorInFDS(fds, protobufRootMessage)
 	if err != nil {
 		return nil, fmt.Errorf("unable to find message descriptor for message '%s': %s",
 			protobufRootMessage, err)
@@ -62,7 +62,7 @@ func DecodeProtobufToJSON(m *dynamic.Message, data []byte) ([]byte, error) {
 	return jsonData, nil
 }
 
-func findMessageDescriptor(fds []*desc.FileDescriptor, rootMessage string) (*desc.MessageDescriptor, error) {
+func FindMessageDescriptorInFDS(fds []*desc.FileDescriptor, rootMessage string) (*desc.MessageDescriptor, error) {
 	for _, fd := range fds {
 		md := fd.FindMessage(rootMessage)
 		if md != nil {

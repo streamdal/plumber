@@ -6,6 +6,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jhump/protoreflect/desc"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
+
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	skafka "github.com/segmentio/kafka-go"
@@ -24,18 +28,33 @@ import (
 )
 
 type Read struct {
-	ID           string
-	ContextCxl   context.Context
-	CancelFunc   context.CancelFunc
-	Backend      *kafka.KafkaReader // TODO: have to genercize once backend refactor is done
-	ConnectionID string
-	MessageCh    chan *skafka.Message // TODO: have to genercize this somehow
-	log          *logrus.Entry
+	PlumberID     string
+	ID            string
+	ContextCxl    context.Context
+	CancelFunc    context.CancelFunc
+	Backend       *kafka.KafkaReader // TODO: have to genercize once backend refactor is done
+	ConnectionID  string
+	MessageCh     chan *records.Message // TODO: have to genercize this somehow
+	DecodeOptions *encoding.Options
+	MsgDesc       *desc.MessageDescriptor
+	log           *logrus.Entry
 }
 
 func (p *PlumberServer) StartRead(req *protos.StartReadRequest, srv protos.PlumberServer_StartReadServer) error {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
+	}
+
+	var md *desc.MessageDescriptor
+	var err error
+
+	if pbOptions := req.DecodeOptions.GetProtobuf(); pbOptions != nil {
+		// Get Message descriptor from zip file
+		md, err = ProcessProtobufArchive(pbOptions.RootType, pbOptions.ZipArchive)
+		if err != nil {
+			return errors.Wrap(err, "unable to parse protobuf zip")
+		}
+
 	}
 
 	requestID := uuid.NewV4().String()
@@ -54,17 +73,20 @@ func (p *PlumberServer) StartRead(req *protos.StartReadRequest, srv protos.Plumb
 		return CustomError(common.Code_ABORTED, err.Error())
 	}
 
-	cfg := req.GetKafka()
+	//cfg := req.GetKafka()
 
 	// Launch reader and record
 	reader := &Read{
-		ID:           readerID,
-		ContextCxl:   ctx,
-		CancelFunc:   cancelFunc,
-		Backend:      backend,
-		ConnectionID: req.ConnectionId,
-		MessageCh:    make(chan *skafka.Message, 100),
-		log:          p.Log.WithField("read_id", readerID),
+		PlumberID:     p.PersistentConfig.PlumberID,
+		ID:            readerID,
+		ContextCxl:    ctx,
+		CancelFunc:    cancelFunc,
+		Backend:       backend,
+		ConnectionID:  req.ConnectionId,
+		MessageCh:     make(chan *records.Message, 100),
+		DecodeOptions: req.DecodeOptions,
+		MsgDesc:       md,
+		log:           p.Log.WithField("read_id", readerID),
 	}
 
 	p.setRead(readerID, reader)
@@ -77,7 +99,7 @@ func (p *PlumberServer) StartRead(req *protos.StartReadRequest, srv protos.Plumb
 			messages := make([]*records.Message, 0)
 
 			// TODO: batch these up and send multiple per response?
-			messages = append(messages, p.generateKafkaPayload(cfg, msg))
+			messages = append(messages, msg)
 
 			srv.Send(&protos.StartReadResponse{
 				Status: &common.Status{
@@ -98,25 +120,41 @@ func (p *PlumberServer) StartRead(req *protos.StartReadRequest, srv protos.Plumb
 }
 
 // generateKafkaPayload generates a records.Message protobuf struct from a kafka message struct
-func (p *PlumberServer) generateKafkaPayload(cfg *args.Kafka, msg *skafka.Message) *records.Message {
+func (r *Read) generateKafkaPayload(msg *skafka.Message) (*records.Message, error) {
+	var err error
+	var data []byte
 
-	// TODO: decode here
+	switch r.DecodeOptions.Type {
+	case encoding.Type_PROTOBUF:
+		data, err = DecodeProtobuf(r.MsgDesc, msg.Value)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to decode protobuf")
+		}
+	case encoding.Type_AVRO:
+		// TODO
+		fallthrough
+	case encoding.Type_JSON_SCHEMA:
+		// TODO
+		fallthrough
+	default:
+		data = msg.Value
+	}
 
 	return &records.Message{
-		MessageId:        uuid.NewV4().String(), // TODO: what to put here?
-		PlumberId:        p.PersistentConfig.PlumberID,
+		MessageId:        uuid.NewV4().String(),
+		PlumberId:        r.PlumberID,
 		UnixTimestampUtc: time.Now().UTC().UnixNano(),
 		Message: &records.Message_Kafka{Kafka: &records.Kafka{
 			Topic:     msg.Topic,
 			Key:       msg.Key,
-			Value:     msg.Value, // TODO: decode
+			Value:     data,
 			Blob:      msg.Value,
 			Timestamp: msg.Time.UTC().UnixNano(),
 			Offset:    msg.Offset,
 			Partition: int32(msg.Partition),
 			Headers:   convertKafkaHeadersToProto(msg.Headers),
 		}},
-	}
+	}, nil
 }
 
 // convertKafkaHeadersToProto converts type of header slice from segmentio's to our protobuf type
@@ -147,13 +185,20 @@ func (r *Read) Read() {
 			// noop
 		}
 
+		var err error
+
 		msg, err := r.Backend.Reader.ReadMessage(r.ContextCxl)
 		if err != nil && err != context.Canceled {
 			r.log.Errorf("unable to read kafka message: %s", err)
 			continue
 		}
 
-		r.MessageCh <- &msg
+		payload, err := r.generateKafkaPayload(&msg)
+		if err != nil {
+			r.log.Errorf("unable to generate kafka payload: %s", err)
+		}
+
+		r.MessageCh <- payload
 	}
 
 }
@@ -263,6 +308,8 @@ func (p *PlumberServer) StopRead(_ context.Context, req *protos.StopReadRequest)
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
+	requestID := uuid.NewV4().String()
+
 	// Get reader and cancel
 	read := p.getRead(req.ReadId)
 	if read == nil {
@@ -272,11 +319,13 @@ func (p *PlumberServer) StopRead(_ context.Context, req *protos.StopReadRequest)
 
 	read.CancelFunc()
 
+	p.Log.WithField("request_id", requestID).Infof("Read '%s' stopped", req.ReadId)
+
 	return &protos.StopReadResponse{
 		Status: &common.Status{
 			Code:      common.Code_OK,
 			Message:   "Message read",
-			RequestId: uuid.NewV4().String(),
+			RequestId: requestID,
 		},
 	}, nil
 }
