@@ -1,9 +1,7 @@
 package server
 
 import (
-	"context"
 	"errors"
-	"fmt"
 	"sync"
 
 	"github.com/batchcorp/plumber/config"
@@ -12,7 +10,6 @@ import (
 
 	uuid "github.com/satori/go.uuid"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 )
 
@@ -22,6 +19,8 @@ type PlumberServer struct {
 	ConnectionsMutex *sync.RWMutex
 	Reads            map[string]*Read
 	ReadsMutex       *sync.RWMutex
+	Relays           map[string]*Relay
+	RelaysMutex      *sync.RWMutex
 	Log              *logrus.Entry
 }
 
@@ -41,38 +40,6 @@ func CustomError(c common.Code, msg string) error {
 			RequestId: uuid.NewV4().String(),
 		},
 	}
-}
-
-func (p *PlumberServer) CreateRelay(ctx context.Context, req *protos.CreateRelayRequest) (*protos.CreateRelayResponse, error) {
-	if err := p.validateRequest(req.Auth); err != nil {
-		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
-	}
-
-	return nil, nil
-}
-
-func (p *PlumberServer) UpdateRelay(ctx context.Context, req *protos.UpdateRelayRequest) (*protos.UpdateRelayResponse, error) {
-	if err := p.validateRequest(req.Auth); err != nil {
-		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
-	}
-
-	return nil, nil
-}
-
-func (p *PlumberServer) StopRelay(ctx context.Context, req *protos.StopRelayRequest) (*protos.StopRelayResponse, error) {
-	if err := p.validateRequest(req.Auth); err != nil {
-		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
-	}
-
-	return nil, nil
-}
-
-func (p *PlumberServer) DeleteRelay(ctx context.Context, req *protos.DeleteRelayRequest) (*protos.DeleteRelayResponse, error) {
-	if err := p.validateRequest(req.Auth); err != nil {
-		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
-	}
-
-	return nil, nil
 }
 
 func (p *PlumberServer) validateRequest(auth *common.Auth) error {
@@ -103,4 +70,22 @@ func (p *PlumberServer) setRead(readID string, read *Read) {
 	defer p.ReadsMutex.Unlock()
 
 	p.Reads[readID] = read
+}
+
+// getRead returns an in-progress read from the Relay map
+func (p *PlumberServer) getRelay(relayID string) *Relay {
+	p.RelaysMutex.RLock()
+	defer p.RelaysMutex.RUnlock()
+
+	r, _ := p.Relays[relayID]
+
+	return r
+}
+
+// setRelay adds an in-progress read to the Relay map
+func (p *PlumberServer) setRelay(relayID string, read *Relay) {
+	p.RelaysMutex.Lock()
+	defer p.RelaysMutex.Unlock()
+
+	p.Relays[relayID] = read
 }

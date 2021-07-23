@@ -35,6 +35,8 @@ func (p *Plumber) Serve() error {
 		ConnectionsMutex: &sync.RWMutex{},
 		Reads:            make(map[string]*server.Read),
 		ReadsMutex:       &sync.RWMutex{},
+		Relays:           make(map[string]*server.Relay),
+		RelaysMutex:      &sync.RWMutex{},
 		Log:              logrus.WithField("pkg", "plumber/server.go"),
 	}
 

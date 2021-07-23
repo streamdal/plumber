@@ -139,6 +139,8 @@ github.com/batchcorp/plumber-schemas v0.0.14 h1:pAQKmV8Zb3qpN3PYF50fuNxA3RTCJT6d
 github.com/batchcorp/plumber-schemas v0.0.14/go.mod h1:NnAGQqxelKbYws+Y8F9H3yqHZpu3NWUn45+FryCYBHA=
 github.com/batchcorp/plumber-schemas v0.0.15 h1:En3i67eq25Wk530QMpv73uQXSqLuJwIRk1f+yY3GZTY=
 github.com/batchcorp/plumber-schemas v0.0.15/go.mod h1:NnAGQqxelKbYws+Y8F9H3yqHZpu3NWUn45+FryCYBHA=
+github.com/batchcorp/plumber-schemas v0.0.16 h1:R17PII49nIaQ64gC7o9bOXWK5YtaqGoMofxxWRXHaDs=
+github.com/batchcorp/plumber-schemas v0.0.16/go.mod h1:NnAGQqxelKbYws+Y8F9H3yqHZpu3NWUn45+FryCYBHA=
 github.com/batchcorp/rabbit v0.1.9 h1:BzQStzeo0WuvC7+PKYaEBYtn9qqramlaZCN1CxmNM6U=
 github.com/batchcorp/rabbit v0.1.9/go.mod h1:LaAQ6FCNkir0/SbJ9jX3JNNP1ULAU2M3QZN/IwFRwXw=
 github.com/batchcorp/schemas v0.1.8/go.mod h1:OS0jIg50R8wrMJAVwOEirnvpyPKnJlVadifqH4LJlD4=

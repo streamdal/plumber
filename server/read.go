@@ -309,7 +309,6 @@ func (p *PlumberServer) StopRead(_ context.Context, req *protos.StopReadRequest)
 	read := p.getRead(req.ReadId)
 	if read == nil {
 		return nil, CustomError(common.Code_NOT_FOUND, "read does not exist or has already been stopped")
-
 	}
 
 	read.CancelFunc()
