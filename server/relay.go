@@ -104,6 +104,8 @@ func (p *PlumberServer) CreateRelay(_ context.Context, req *protos.CreateRelayRe
 
 	p.setRelay(r.Id, r)
 
+	p.Log.Infof("Relay '%s' started", r.Id)
+
 	return &protos.CreateRelayResponse{
 		Status: &common.Status{
 			Code:      common.Code_OK,
@@ -119,9 +121,46 @@ func (p *PlumberServer) UpdateRelay(_ context.Context, req *protos.UpdateRelayRe
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	// TODO:
+	// Stop existing relay
+	relay := p.getRelay(req.RelayId)
+	if relay == nil {
+		return nil, CustomError(common.Code_NOT_FOUND, "relay does not exist")
+	}
 
-	return nil, nil
+	// Stop workers
+	relay.CancelFunc()
+
+	p.Log.Infof("Relay '%s' stopped", relay.Id)
+
+	// TODO: need to get signal of when relay shutdown is complete
+	time.Sleep(time.Second)
+
+	// Update relay config
+	relay.Config = req.Relay
+
+	// Restart relay
+	conn := p.getConn(relay.Config.ConnectionId)
+	if conn == nil {
+		return nil, CustomError(common.Code_NOT_FOUND, "connection does not exist")
+	}
+
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	relay.ContextCxl = ctx
+	relay.CancelFunc = cancelFunc
+
+	if err := relay.StartRelay(conn); err != nil {
+		return nil, errors.Wrap(err, "unable to start relay")
+	}
+
+	p.Log.Infof("Relay '%s' started", relay.Id)
+
+	return &protos.UpdateRelayResponse{
+		Status: &common.Status{
+			Code:      common.Code_OK,
+			Message:   "Relay updated",
+			RequestId: uuid.NewV4().String(),
+		},
+	}, nil
 }
 
 func (p *PlumberServer) StopRelay(_ context.Context, req *protos.StopRelayRequest) (*protos.StopRelayResponse, error) {
@@ -136,6 +175,8 @@ func (p *PlumberServer) StopRelay(_ context.Context, req *protos.StopRelayReques
 
 	// Stop workers
 	relay.CancelFunc()
+
+	p.Log.Infof("Relay '%s' stopped", relay.Id)
 
 	return &protos.StopRelayResponse{
 		Status: &common.Status{
@@ -168,6 +209,9 @@ func (p *PlumberServer) ResumeRelay(ctx context.Context, req *protos.ResumeRelay
 	if err := relay.StartRelay(conn); err != nil {
 		return nil, errors.Wrap(err, "unable to start relay")
 	}
+
+	p.Log.Infof("Relay '%s' started", relay.Id)
+
 	return &protos.ResumeRelayResponse{
 		Status: &common.Status{
 			Code:      common.Code_OK,
