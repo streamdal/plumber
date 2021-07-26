@@ -20,71 +20,48 @@ import (
 )
 
 type Relay struct {
-	Id         string
-	ContextCxl context.Context
-	CancelFunc context.CancelFunc
-	RelayCh    chan interface{}
-	log        *logrus.Entry
+	Id         string              `json:"id"`
+	ContextCxl context.Context     `json:"-"`
+	CancelFunc context.CancelFunc  `json:"-"`
+	RelayCh    chan interface{}    `json:"-"`
+	Backend    relay.IRelayBackend `json:"-"`
+	Config     *protos.Relay       `json:"config"`
+	log        *logrus.Entry       `json:"-"`
 }
 
-func (p *PlumberServer) CreateRelay(ctx context.Context, req *protos.CreateRelayRequest) (*protos.CreateRelayResponse, error) {
-	if err := p.validateRequest(req.Auth); err != nil {
-		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
-	}
-
-	// Get stored connection information
-	conn := p.getConn(req.Relay.ConnectionId)
-	if conn == nil {
-		return &protos.CreateRelayResponse{
-			Status: &common.Status{
-				Code:      common.Code_NOT_FOUND,
-				Message:   fmt.Sprintf("Connection '%s' does not exist", req.Relay.ConnectionId),
-				RequestId: uuid.NewV4().String(),
-			},
-		}, nil
-	}
+func (r *Relay) StartRelay(conn *protos.Connection) error {
 
 	relayCh := make(chan interface{})
 
 	// Needed to satisfy relay.Config{}, not used
 	_, stubCancelFunc := context.WithCancel(context.Background())
 
-	// Used to shutdown relays on StopRelay() gRPC call
-	shutdownCtx, shutdownFunc := context.WithCancel(context.Background())
-
-	rr, relayType, err := p.getRelayBackend(req, conn, relayCh, shutdownCtx)
+	rr, relayType, err := getRelayBackend(r.Config, conn, relayCh, r.ContextCxl)
 	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, err.Error())
-	}
-
-	r := &Relay{
-		Id:         uuid.NewV4().String(),
-		ContextCxl: shutdownCtx,
-		CancelFunc: shutdownFunc,
-		log:        nil,
+		return CustomError(common.Code_ABORTED, err.Error())
 	}
 
 	relayCfg := &relay.Config{
-		Token:              req.Relay.BatchCollectionToken,
-		GRPCAddress:        req.Relay.BatchshGrpcAddress,
+		Token:              r.Config.BatchCollectionToken,
+		GRPCAddress:        r.Config.BatchshGrpcAddress,
 		NumWorkers:         5,                // TODO: protos?
 		Timeout:            time.Second * 10, // TODO: protos?
 		RelayCh:            relayCh,
-		DisableTLS:         req.Relay.BatchshGrpcDisableTls,
-		BatchSize:          int(req.Relay.BatchSize),
+		DisableTLS:         r.Config.BatchshGrpcDisableTls,
+		BatchSize:          int(r.Config.BatchSize),
 		Type:               relayType,
 		MainShutdownFunc:   stubCancelFunc,
-		ServiceShutdownCtx: shutdownCtx,
+		ServiceShutdownCtx: r.ContextCxl,
 	}
 
 	grpcRelayer, err := relay.New(relayCfg)
 	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, err.Error())
+		return CustomError(common.Code_ABORTED, err.Error())
 	}
 
-	// Launch gRPC Relayer
-	if err := grpcRelayer.StartWorkers(shutdownCtx); err != nil {
-		return nil, errors.Wrap(err, "unable to start gRPC relay workers")
+	// Launch gRPC Workers
+	if err := grpcRelayer.StartWorkers(r.ContextCxl); err != nil {
+		return errors.Wrap(err, "unable to start gRPC relay workers")
 	}
 
 	// TODO: The relay needs to be ran in a goroutine so it continues in the background, but we
@@ -94,6 +71,36 @@ func (p *PlumberServer) CreateRelay(ctx context.Context, req *protos.CreateRelay
 			return
 		}
 	}()
+
+	r.Backend = rr
+
+	return nil
+}
+
+func (p *PlumberServer) CreateRelay(_ context.Context, req *protos.CreateRelayRequest) (*protos.CreateRelayResponse, error) {
+	if err := p.validateRequest(req.Auth); err != nil {
+		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
+	}
+
+	// Get stored connection information
+	conn := p.getConn(req.Relay.ConnectionId)
+	if conn == nil {
+		return nil, fmt.Errorf("connection '%s' does not exist", req.Relay.ConnectionId)
+	}
+
+	// Used to shutdown relays on StopRelay() gRPC call
+	shutdownCtx, shutdownFunc := context.WithCancel(context.Background())
+
+	r := &Relay{
+		Id:         uuid.NewV4().String(),
+		CancelFunc: shutdownFunc,
+		ContextCxl: shutdownCtx,
+		Config:     req.Relay,
+	}
+
+	if err := r.StartRelay(conn); err != nil {
+		return nil, errors.Wrap(err, "unable to start relay")
+	}
 
 	p.setRelay(r.Id, r)
 
@@ -107,7 +114,7 @@ func (p *PlumberServer) CreateRelay(ctx context.Context, req *protos.CreateRelay
 	}, nil
 }
 
-func (p *PlumberServer) UpdateRelay(ctx context.Context, req *protos.UpdateRelayRequest) (*protos.UpdateRelayResponse, error) {
+func (p *PlumberServer) UpdateRelay(_ context.Context, req *protos.UpdateRelayRequest) (*protos.UpdateRelayResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -117,7 +124,7 @@ func (p *PlumberServer) UpdateRelay(ctx context.Context, req *protos.UpdateRelay
 	return nil, nil
 }
 
-func (p *PlumberServer) StopRelay(ctx context.Context, req *protos.StopRelayRequest) (*protos.StopRelayResponse, error) {
+func (p *PlumberServer) StopRelay(_ context.Context, req *protos.StopRelayRequest) (*protos.StopRelayResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -144,9 +151,30 @@ func (p *PlumberServer) ResumeRelay(ctx context.Context, req *protos.ResumeRelay
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	// TODO
+	relay := p.getRelay(req.RelayId)
+	if relay == nil {
+		return nil, CustomError(common.Code_NOT_FOUND, "relay does not exist")
+	}
 
-	return nil, nil
+	conn := p.getConn(relay.Config.ConnectionId)
+	if conn == nil {
+		return nil, CustomError(common.Code_NOT_FOUND, "connection does not exist")
+	}
+
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	relay.ContextCxl = ctx
+	relay.CancelFunc = cancelFunc
+
+	if err := relay.StartRelay(conn); err != nil {
+		return nil, errors.Wrap(err, "unable to start relay")
+	}
+	return &protos.ResumeRelayResponse{
+		Status: &common.Status{
+			Code:      common.Code_OK,
+			Message:   "Relay resumed",
+			RequestId: uuid.NewV4().String(),
+		},
+	}, nil
 }
 
 func (p *PlumberServer) DeleteRelay(_ context.Context, req *protos.DeleteRelayRequest) (*protos.DeleteRelayResponse, error) {
@@ -175,8 +203,8 @@ func (p *PlumberServer) DeleteRelay(_ context.Context, req *protos.DeleteRelayRe
 	}, nil
 }
 
-func (p *PlumberServer) getRelayBackend(
-	req *protos.CreateRelayRequest,
+func getRelayBackend(
+	req *protos.Relay,
 	conn *protos.Connection,
 	relayCh chan interface{},
 	shutdownCtx context.Context,
@@ -188,10 +216,25 @@ func (p *PlumberServer) getRelayBackend(
 		cfg := conn.GetKafka()
 		relayType = "kafka"
 
-		commitInterval, _ := time.ParseDuration(fmt.Sprintf("%ds", args.CommitIntervalSeconds))
-		maxWait, _ := time.ParseDuration(fmt.Sprintf("%ds", args.MaxWaitSeconds))
-		rebalanceTimeout, _ := time.ParseDuration(fmt.Sprintf("%ds", args.RebalanceTimeoutSeconds))
-		connectTimeout, _ := time.ParseDuration(fmt.Sprintf("%ds", cfg.TimeoutSeconds))
+		commitInterval, err := time.ParseDuration(fmt.Sprintf("%ds", args.CommitIntervalSeconds))
+		if err != nil {
+			return nil, "kafka", errors.Wrap(err, "unable to parse CommitIntervalSeconds")
+		}
+
+		maxWait, err := time.ParseDuration(fmt.Sprintf("%ds", args.MaxWaitSeconds))
+		if err != nil {
+			return nil, "kafka", errors.Wrap(err, "unable to parse MaxWaitSeconds")
+		}
+
+		rebalanceTimeout, err := time.ParseDuration(fmt.Sprintf("%ds", args.RebalanceTimeoutSeconds))
+		if err != nil {
+			return nil, "kafka", errors.Wrap(err, "unable to parse RebalanceTimeoutSeconds")
+		}
+
+		connectTimeout, err := time.ParseDuration(fmt.Sprintf("%ds", cfg.TimeoutSeconds))
+		if err != nil {
+			return nil, "kafka", errors.Wrap(err, "unable to parse TimeoutSeconds")
+		}
 
 		// TODO: I think all relays should take their own unique struct instead of passing cli.Options
 		opts := &cli.Options{

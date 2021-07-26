@@ -262,9 +262,20 @@ func (p *PlumberServer) getBackendReadKafka(connCfg *protos.Connection, args *ar
 		return nil, err
 	}
 
-	commitInterval, _ := time.ParseDuration(fmt.Sprintf("%ds", args.CommitIntervalSeconds))
-	maxWait, _ := time.ParseDuration(fmt.Sprintf("%ds", args.MaxWaitSeconds))
-	rebalanceTimeout, _ := time.ParseDuration(fmt.Sprintf("%ds", args.RebalanceTimeoutSeconds))
+	commitInterval, err := time.ParseDuration(fmt.Sprintf("%ds", args.CommitIntervalSeconds))
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to parse CommitIntervalSeconds")
+	}
+
+	maxWait, err := time.ParseDuration(fmt.Sprintf("%ds", args.MaxWaitSeconds))
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to parse MaxWaitSeconds")
+	}
+
+	rebalanceTimeout, err := time.ParseDuration(fmt.Sprintf("%ds", args.RebalanceTimeoutSeconds))
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to parse RebalanceTimeoutSeconds")
+	}
 
 	rc := skafka.ReaderConfig{
 		Brokers:          kafkaCfg.Address,
