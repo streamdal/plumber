@@ -73,6 +73,9 @@ func (p *PlumberServer) CreateConnection(_ context.Context, req *protos.CreateCo
 	}
 
 	conn := req.GetConnection()
+	if conn == nil {
+		return nil, CustomError(common.Code_FAILED_PRECONDITION, "No connection message found in the payload")
+	}
 	conn.Id = uuid.NewV4().String()
 
 	if err := validateConnection(req.GetConnection()); err != nil {
