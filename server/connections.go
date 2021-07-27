@@ -5,12 +5,11 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/conns"
-
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/conns"
 )
 
 var (

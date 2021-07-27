@@ -4,13 +4,12 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/batchcorp/plumber/config"
-
+	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 
-	uuid "github.com/satori/go.uuid"
-
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+	"github.com/batchcorp/plumber/config"
+	"github.com/batchcorp/plumber/server/types"
 )
 
 type PlumberServer struct {
@@ -19,7 +18,6 @@ type PlumberServer struct {
 	ConnectionsMutex *sync.RWMutex
 	Reads            map[string]*Read
 	ReadsMutex       *sync.RWMutex
-	Relays           map[string]*Relay
 	RelaysMutex      *sync.RWMutex
 	Log              *logrus.Entry
 }
@@ -73,19 +71,19 @@ func (p *PlumberServer) setRead(readID string, read *Read) {
 }
 
 // getRead returns an in-progress read from the Relay map
-func (p *PlumberServer) getRelay(relayID string) *Relay {
+func (p *PlumberServer) getRelay(relayID string) *types.Relay {
 	p.RelaysMutex.RLock()
 	defer p.RelaysMutex.RUnlock()
 
-	r, _ := p.Relays[relayID]
+	r, _ := p.PersistentConfig.Relays[relayID]
 
 	return r
 }
 
 // setRelay adds an in-progress read to the Relay map
-func (p *PlumberServer) setRelay(relayID string, read *Relay) {
+func (p *PlumberServer) setRelay(relayID string, relay *types.Relay) {
 	p.RelaysMutex.Lock()
 	defer p.RelaysMutex.Unlock()
 
-	p.Relays[relayID] = read
+	p.PersistentConfig.Relays[relayID] = relay
 }

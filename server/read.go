@@ -65,8 +65,6 @@ func (p *PlumberServer) StartRead(req *protos.StartReadRequest, srv protos.Plumb
 		return CustomError(common.Code_ABORTED, err.Error())
 	}
 
-	//cfg := req.GetKafka()
-
 	// Launch reader and record
 	reader := &Read{
 		PlumberID:     p.PersistentConfig.PlumberID,

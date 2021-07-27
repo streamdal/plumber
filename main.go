@@ -9,6 +9,8 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/batchcorp/plumber/server/types"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 
 	"github.com/batchcorp/plumber/config"
@@ -151,6 +153,7 @@ func getConfig() *config.Config {
 	if cfg == nil {
 		cfg = &config.Config{
 			Connections: make(map[string]*protos.Connection),
+			Relays:      make(map[string]*types.Relay),
 		}
 	}
 

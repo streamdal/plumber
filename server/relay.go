@@ -5,76 +5,31 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/batchcorp/plumber/backends/kafka"
-	"github.com/batchcorp/plumber/cli"
-
-	uuid "github.com/satori/go.uuid"
-
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
-	"github.com/batchcorp/plumber/relay"
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+	"github.com/batchcorp/plumber/server/types"
 )
 
-type Relay struct {
-	Id         string              `json:"id"`
-	ContextCxl context.Context     `json:"-"`
-	CancelFunc context.CancelFunc  `json:"-"`
-	RelayCh    chan interface{}    `json:"-"`
-	Backend    relay.IRelayBackend `json:"-"`
-	Config     *protos.Relay       `json:"config"`
-	log        *logrus.Entry       `json:"-"`
-}
-
-func (r *Relay) StartRelay(conn *protos.Connection) error {
-
-	relayCh := make(chan interface{})
-
-	// Needed to satisfy relay.Config{}, not used
-	_, stubCancelFunc := context.WithCancel(context.Background())
-
-	rr, relayType, err := getRelayBackend(r.Config, conn, relayCh, r.ContextCxl)
-	if err != nil {
-		return CustomError(common.Code_ABORTED, err.Error())
+func (p *PlumberServer) GetAllRelays(_ context.Context, req *protos.GetAllRelaysRequest) (*protos.GetAllRelaysResponse, error) {
+	if err := p.validateRequest(req.Auth); err != nil {
+		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	relayCfg := &relay.Config{
-		Token:              r.Config.BatchCollectionToken,
-		GRPCAddress:        r.Config.BatchshGrpcAddress,
-		NumWorkers:         5,                // TODO: protos?
-		Timeout:            time.Second * 10, // TODO: protos?
-		RelayCh:            relayCh,
-		DisableTLS:         r.Config.BatchshGrpcDisableTls,
-		BatchSize:          int(r.Config.BatchSize),
-		Type:               relayType,
-		MainShutdownFunc:   stubCancelFunc,
-		ServiceShutdownCtx: r.ContextCxl,
+	relays := make([]*protos.Relay, 0)
+	for _, v := range p.PersistentConfig.Relays {
+		relays = append(relays, v.Config)
 	}
 
-	grpcRelayer, err := relay.New(relayCfg)
-	if err != nil {
-		return CustomError(common.Code_ABORTED, err.Error())
-	}
-
-	// Launch gRPC Workers
-	if err := grpcRelayer.StartWorkers(r.ContextCxl); err != nil {
-		return errors.Wrap(err, "unable to start gRPC relay workers")
-	}
-
-	// TODO: The relay needs to be ran in a goroutine so it continues in the background, but we
-	// TODO: need to check if it errors on startup somehow. Maybe move reader initialization outside of kafka.Relay()?
-	go func() {
-		if err := rr.Relay(); err != nil {
-			return
-		}
-	}()
-
-	r.Backend = rr
-
-	return nil
+	return &protos.GetAllRelaysResponse{
+		Status: &common.Status{
+			Code:      common.Code_OK,
+			RequestId: uuid.NewV4().String(),
+		},
+		Relays: relays,
+	}, nil
 }
 
 func (p *PlumberServer) CreateRelay(_ context.Context, req *protos.CreateRelayRequest) (*protos.CreateRelayResponse, error) {
@@ -91,7 +46,7 @@ func (p *PlumberServer) CreateRelay(_ context.Context, req *protos.CreateRelayRe
 	// Used to shutdown relays on StopRelay() gRPC call
 	shutdownCtx, shutdownFunc := context.WithCancel(context.Background())
 
-	r := &Relay{
+	r := &types.Relay{
 		Id:         uuid.NewV4().String(),
 		CancelFunc: shutdownFunc,
 		ContextCxl: shutdownCtx,
@@ -102,9 +57,15 @@ func (p *PlumberServer) CreateRelay(_ context.Context, req *protos.CreateRelayRe
 		return nil, errors.Wrap(err, "unable to start relay")
 	}
 
+	r.Config.RelayId = r.Id
+	r.Active = true
 	p.setRelay(r.Id, r)
 
 	p.Log.Infof("Relay '%s' started", r.Id)
+
+	if err := p.PersistentConfig.Save(); err != nil {
+		p.Log.Errorf("Could not persist config to disk: %s", err)
+	}
 
 	return &protos.CreateRelayResponse{
 		Status: &common.Status{
@@ -154,6 +115,8 @@ func (p *PlumberServer) UpdateRelay(_ context.Context, req *protos.UpdateRelayRe
 
 	p.Log.Infof("Relay '%s' started", relay.Id)
 
+	relay.Active = true
+
 	return &protos.UpdateRelayResponse{
 		Status: &common.Status{
 			Code:      common.Code_OK,
@@ -175,6 +138,7 @@ func (p *PlumberServer) StopRelay(_ context.Context, req *protos.StopRelayReques
 
 	// Stop workers
 	relay.CancelFunc()
+	relay.Active = false
 
 	p.Log.Infof("Relay '%s' stopped", relay.Id)
 
@@ -212,6 +176,8 @@ func (p *PlumberServer) ResumeRelay(ctx context.Context, req *protos.ResumeRelay
 
 	p.Log.Infof("Relay '%s' started", relay.Id)
 
+	relay.Active = true
+
 	return &protos.ResumeRelayResponse{
 		Status: &common.Status{
 			Code:      common.Code_OK,
@@ -236,7 +202,11 @@ func (p *PlumberServer) DeleteRelay(_ context.Context, req *protos.DeleteRelayRe
 
 	p.RelaysMutex.Lock()
 	defer p.RelaysMutex.Unlock()
-	delete(p.Relays, req.RelayId)
+	delete(p.PersistentConfig.Relays, req.RelayId)
+
+	if err := p.PersistentConfig.Save(); err != nil {
+		p.Log.Errorf("Could not persist config to disk: %s", err)
+	}
 
 	return &protos.DeleteRelayResponse{
 		Status: &common.Status{
@@ -245,71 +215,4 @@ func (p *PlumberServer) DeleteRelay(_ context.Context, req *protos.DeleteRelayRe
 			RequestId: uuid.NewV4().String(),
 		},
 	}, nil
-}
-
-func getRelayBackend(
-	req *protos.Relay,
-	conn *protos.Connection,
-	relayCh chan interface{},
-	shutdownCtx context.Context,
-) (rr relay.IRelayBackend, relayType string, err error) {
-
-	switch {
-	case req.GetKafka() != nil:
-		args := req.GetKafka()
-		cfg := conn.GetKafka()
-		relayType = "kafka"
-
-		commitInterval, err := time.ParseDuration(fmt.Sprintf("%ds", args.CommitIntervalSeconds))
-		if err != nil {
-			return nil, "kafka", errors.Wrap(err, "unable to parse CommitIntervalSeconds")
-		}
-
-		maxWait, err := time.ParseDuration(fmt.Sprintf("%ds", args.MaxWaitSeconds))
-		if err != nil {
-			return nil, "kafka", errors.Wrap(err, "unable to parse MaxWaitSeconds")
-		}
-
-		rebalanceTimeout, err := time.ParseDuration(fmt.Sprintf("%ds", args.RebalanceTimeoutSeconds))
-		if err != nil {
-			return nil, "kafka", errors.Wrap(err, "unable to parse RebalanceTimeoutSeconds")
-		}
-
-		connectTimeout, err := time.ParseDuration(fmt.Sprintf("%ds", cfg.TimeoutSeconds))
-		if err != nil {
-			return nil, "kafka", errors.Wrap(err, "unable to parse TimeoutSeconds")
-		}
-
-		// TODO: I think all relays should take their own unique struct instead of passing cli.Options
-		opts := &cli.Options{
-			Kafka: &cli.KafkaOptions{
-				Brokers:            cfg.Address,
-				Topics:             args.Topics,
-				Timeout:            connectTimeout,
-				InsecureTLS:        cfg.InsecureTls,
-				Username:           cfg.SaslUsername,
-				Password:           cfg.SaslPassword,
-				AuthenticationType: cfg.SaslType.String(),
-				UseConsumerGroup:   args.UseConsumerGroup,
-				GroupID:            args.ConsumerGroupName,
-				ReadOffset:         args.ReadOffset,
-				MaxWait:            maxWait,
-				MinBytes:           int(args.MinBytes),
-				MaxBytes:           int(args.MaxBytes),
-				QueueCapacity:      1, // TODO: protos?
-				RebalanceTimeout:   rebalanceTimeout,
-				CommitInterval:     commitInterval,
-				WriteKey:           "",
-				WriteHeader:        nil,
-			},
-		}
-		rr, err = kafka.Relay(opts, relayCh, shutdownCtx)
-		if err != nil {
-			return rr, "kafka", err
-		}
-	default:
-		return nil, "", errors.New("unknown relay type")
-	}
-
-	return rr, relayType, nil
 }
