@@ -19,7 +19,7 @@ import (
 type Relay struct {
 	Active     bool
 	Id         string
-	ContextCxl context.Context
+	CancelCtx  context.Context
 	CancelFunc context.CancelFunc
 	RelayCh    chan interface{}
 	Backend    relay.IRelayBackend
@@ -34,7 +34,7 @@ func (r *Relay) StartRelay(conn *protos.Connection) error {
 	// Needed to satisfy relay.Config{}, not used
 	_, stubCancelFunc := context.WithCancel(context.Background())
 
-	rr, relayType, err := getRelayBackend(r.Config, conn, relayCh, r.ContextCxl)
+	rr, relayType, err := getRelayBackend(r.Config, conn, relayCh, r.CancelCtx)
 	if err != nil {
 		return err
 	}
@@ -49,7 +49,7 @@ func (r *Relay) StartRelay(conn *protos.Connection) error {
 		BatchSize:          int(r.Config.BatchSize),
 		Type:               relayType,
 		MainShutdownFunc:   stubCancelFunc,
-		ServiceShutdownCtx: r.ContextCxl,
+		ServiceShutdownCtx: r.CancelCtx,
 	}
 
 	grpcRelayer, err := relay.New(relayCfg)
@@ -58,13 +58,14 @@ func (r *Relay) StartRelay(conn *protos.Connection) error {
 	}
 
 	// Launch gRPC Workers
-	if err := grpcRelayer.StartWorkers(r.ContextCxl); err != nil {
+	if err := grpcRelayer.StartWorkers(r.CancelCtx); err != nil {
 		return errors.Wrap(err, "unable to start gRPC relay workers")
 	}
 
 	// TODO: The relay needs to be ran in a goroutine so it continues in the background, but we
 	// TODO: need to check if it errors on startup somehow. Maybe move reader initialization outside of kafka.Relay()?
 	go func() {
+		// TODO: channel to return error and sit and wait for a while before returning CreateRelayResponse
 		if err := rr.Relay(); err != nil {
 			return
 		}

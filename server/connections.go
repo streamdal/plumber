@@ -2,21 +2,12 @@ package server
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/conns"
-)
-
-var (
-	ErrMissingConnection = errors.New("connection cannot be nil")
-	ErrMissingAddress    = errors.New("at least one kafka server address must be specified")
-	ErrMissingUsername   = errors.New("you must provide a username when specifying a SASL type")
-	ErrMissingPassword   = errors.New("you must provide a password when specifying a SASL type")
 )
 
 // setConn sets in-memory connection
@@ -163,35 +154,4 @@ func (p *PlumberServer) DeleteConnection(_ context.Context, req *protos.DeleteCo
 			RequestId: requestID,
 		},
 	}, nil
-}
-
-// validateConnection ensures all required parameters are passed when creating/testing/updating a connection
-func validateConnection(conn *protos.Connection) error {
-	if conn == nil {
-		return ErrMissingConnection
-	}
-
-	switch {
-	case conn.GetKafka() != nil:
-		return validateConnectionKafka(conn.GetKafka())
-	}
-
-	return nil
-}
-
-// validateConnectionKafka ensures all required parameters are passed when creating/testing/updating a kafka connection
-func validateConnectionKafka(conn *conns.Kafka) error {
-	if len(conn.Address) == 0 {
-		return ErrMissingAddress
-	}
-
-	if conn.SaslType != conns.SASLType_NONE && conn.SaslUsername == "" {
-		return ErrMissingUsername
-	}
-
-	if conn.SaslType != conns.SASLType_NONE && conn.SaslPassword == "" {
-		return ErrMissingPassword
-	}
-
-	return nil
 }

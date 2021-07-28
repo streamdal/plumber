@@ -15,4 +15,7 @@ func HandleServerFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("token", "Plumber authentication token").
 		Default("batchcorp").
 		StringVar(&opts.Server.AuthToken)
+
+	cmd.Flag("debug", "Enable debug logging").
+		BoolVar(&opts.Debug)
 }

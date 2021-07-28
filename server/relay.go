@@ -49,7 +49,7 @@ func (p *PlumberServer) CreateRelay(_ context.Context, req *protos.CreateRelayRe
 	r := &types.Relay{
 		Id:         uuid.NewV4().String(),
 		CancelFunc: shutdownFunc,
-		ContextCxl: shutdownCtx,
+		CancelCtx:  shutdownCtx,
 		Config:     req.Relay,
 	}
 
@@ -106,7 +106,7 @@ func (p *PlumberServer) UpdateRelay(_ context.Context, req *protos.UpdateRelayRe
 	}
 
 	ctx, cancelFunc := context.WithCancel(context.Background())
-	relay.ContextCxl = ctx
+	relay.CancelCtx = ctx
 	relay.CancelFunc = cancelFunc
 
 	if err := relay.StartRelay(conn); err != nil {
@@ -136,6 +136,10 @@ func (p *PlumberServer) StopRelay(_ context.Context, req *protos.StopRelayReques
 		return nil, CustomError(common.Code_NOT_FOUND, "relay does not exist")
 	}
 
+	if !relay.Active {
+		return nil, CustomError(common.Code_FAILED_PRECONDITION, "Relay is not active")
+	}
+
 	// Stop workers
 	relay.CancelFunc()
 	relay.Active = false
@@ -161,13 +165,17 @@ func (p *PlumberServer) ResumeRelay(ctx context.Context, req *protos.ResumeRelay
 		return nil, CustomError(common.Code_NOT_FOUND, "relay does not exist")
 	}
 
+	if relay.Active {
+		return nil, CustomError(common.Code_FAILED_PRECONDITION, "Relay is not stopped")
+	}
+
 	conn := p.getConn(relay.Config.ConnectionId)
 	if conn == nil {
 		return nil, CustomError(common.Code_NOT_FOUND, "connection does not exist")
 	}
 
 	ctx, cancelFunc := context.WithCancel(context.Background())
-	relay.ContextCxl = ctx
+	relay.CancelCtx = ctx
 	relay.CancelFunc = cancelFunc
 
 	if err := relay.StartRelay(conn); err != nil {
