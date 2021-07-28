@@ -93,7 +93,13 @@ func (p *PlumberServer) TestConnection(_ context.Context, req *protos.TestConnec
 
 	// TODO
 
-	return nil, nil
+	return &protos.TestConnectionResponse{
+		Status: &common.Status{
+			Code:      common.Code_OK,
+			Message:   "Connected successfully",
+			RequestId: uuid.NewV4().String(),
+		},
+	}, nil
 }
 
 func (p *PlumberServer) UpdateConnection(_ context.Context, req *protos.UpdateConnectionRequest) (*protos.UpdateConnectionResponse, error) {
