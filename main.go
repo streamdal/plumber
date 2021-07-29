@@ -9,19 +9,15 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/batchcorp/plumber/server/types"
-
-	"github.com/batchcorp/plumber-schemas/build/go/protos"
-
-	"github.com/batchcorp/plumber/config"
-
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/plumber"
 	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/server/types"
 	"github.com/batchcorp/plumber/stats"
 )
 
@@ -152,7 +148,7 @@ func getConfig() *config.Config {
 
 	if cfg == nil {
 		cfg = &config.Config{
-			Connections: make(map[string]*protos.Connection),
+			Connections: make(map[string]*types.Connection),
 			Relays:      make(map[string]*types.Relay),
 		}
 	}

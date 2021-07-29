@@ -8,10 +8,11 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+	"github.com/batchcorp/plumber/server/types"
 )
 
 // setConn sets in-memory connection
-func (p *PlumberServer) setConn(conn *protos.Connection) {
+func (p *PlumberServer) setConn(conn *types.Connection) {
 	p.ConnectionsMutex.Lock()
 	p.PersistentConfig.Connections[conn.Id] = conn
 	p.ConnectionsMutex.Unlock()
@@ -22,7 +23,7 @@ func (p *PlumberServer) setConn(conn *protos.Connection) {
 }
 
 // getConn retrieves in memory connection
-func (p *PlumberServer) getConn(connID string) *protos.Connection {
+func (p *PlumberServer) getConn(connID string) *types.Connection {
 	p.ConnectionsMutex.RLock()
 	defer p.ConnectionsMutex.RUnlock()
 	return p.PersistentConfig.Connections[connID]
@@ -35,7 +36,7 @@ func (p *PlumberServer) GetAllConnections(_ context.Context, req *protos.GetAllC
 
 	conns := make([]*protos.Connection, 0)
 	for _, v := range p.PersistentConfig.Connections {
-		conns = append(conns, v)
+		conns = append(conns, v.Connection)
 	}
 
 	return &protos.GetAllConnectionsResponse{
@@ -54,7 +55,7 @@ func (p *PlumberServer) GetConnection(_ context.Context, req *protos.GetConnecti
 	}
 
 	return &protos.GetConnectionResponse{
-		Connection: conn,
+		Connection: conn.Connection,
 	}, nil
 }
 
@@ -73,7 +74,7 @@ func (p *PlumberServer) CreateConnection(_ context.Context, req *protos.CreateCo
 		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
 	}
 
-	p.setConn(req.Connection)
+	p.setConn(&types.Connection{Connection: req.Connection})
 
 	p.Log.Infof("Connection '%s' created", conn.Id)
 
@@ -118,7 +119,7 @@ func (p *PlumberServer) UpdateConnection(_ context.Context, req *protos.UpdateCo
 		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
 	}
 
-	p.setConn(req.Connection)
+	p.setConn(&types.Connection{Connection: req.Connection})
 
 	p.Log.WithField("request_id", requestID).Infof("Connection '%s' updated", req.ConnectionId)
 

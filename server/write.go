@@ -11,7 +11,6 @@ import (
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	skafka "github.com/segmentio/kafka-go"
-	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber/backends/kafka"
@@ -59,18 +58,6 @@ func (p *PlumberServer) getBackendWriteKafka(connCfg *conns.Kafka) (*kafka.Kafka
 
 	dialer.SASLMechanism = auth
 
-	// Attempt to establish connection on startup
-	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(time.Second*10))
-
-	// TODO: handle multiple brokers
-	kafkaConn, err := dialer.DialContext(ctxDeadline, "tcp", connCfg.Address[0])
-	if err != nil {
-		logrus.Errorf("unable to create initial connection to broker '%s', trying next broker", connCfg.Address[0])
-	}
-	if err != nil {
-		return nil, err
-	}
-
 	writer := skafka.NewWriter(skafka.WriterConfig{
 		Brokers:   connCfg.Address,
 		Dialer:    dialer,
@@ -79,7 +66,6 @@ func (p *PlumberServer) getBackendWriteKafka(connCfg *conns.Kafka) (*kafka.Kafka
 
 	return &kafka.KafkaWriter{
 		Writer: writer,
-		Conn:   kafkaConn,
 	}, nil
 }
 

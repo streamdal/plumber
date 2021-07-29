@@ -61,7 +61,7 @@ func (b *Batch) Login() error {
 		Token:  b.PersistentConfig.Token,
 	}
 
-	data, err := cfg.Marshal()
+	data, err := json.Marshal(cfg)
 	if err != nil {
 		return errors.Wrap(err, "unable to marshal config data")
 	}
@@ -92,7 +92,7 @@ func (b *Batch) Logout() error {
 	cfg.TeamID = ""
 	cfg.UserID = ""
 
-	data, err := cfg.Marshal()
+	data, err := json.Marshal(cfg)
 	if err != nil {
 		return errors.Wrap(err, "unable to marshal config data")
 	}

@@ -1,17 +1,14 @@
 package config
 
 import (
-	"bytes"
 	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path"
 
-	"github.com/golang/protobuf/jsonpb"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber/server/types"
 )
 
@@ -23,69 +20,22 @@ type IConfig interface {
 
 // Config stores Account IDs and the auth_token cookie
 type Config struct {
-	PlumberID   string
-	Token       string
-	TeamID      string
-	UserID      string
-	Connections map[string]*protos.Connection
-	Relays      map[string]*types.Relay
-}
-
-// storageConfig is used to persist the config to disk. Protos can't be marshaled along with regular JSON, so we
-// marshal each connection message into bytes and add them to the connections slice. The resulting JSON can then
-// be marshalled normally
-type storageConfig struct {
-	PlumberID   string            `json:"plumber_id"`
-	Token       string            `json:"token"`
-	TeamID      string            `json:"team_id"`
-	UserID      string            `json:"user_id"`
-	Connections map[string][]byte `json:"connections"`
-	Relays      map[string][]byte `json:"relays"`
+	PlumberID   string                       `json:"plumber_id"`
+	Token       string                       `json:"token"`
+	TeamID      string                       `json:"team_id"`
+	UserID      string                       `json:"user_id"`
+	Connections map[string]*types.Connection `json:"connections"`
+	Relays      map[string]*types.Relay      `json:"relays"`
 }
 
 // Save is a convenience method of persisting the config to disk via a single call
 func (p *Config) Save() error {
-	data, err := p.Marshal()
+	data, err := json.Marshal(p)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "unable to marshal config to JSON")
 	}
 
 	return WriteConfig("config.json", data)
-}
-
-// Marshal marshals a Config struct to JSON
-func (p *Config) Marshal() ([]byte, error) {
-	cfg := &storageConfig{
-		PlumberID:   p.PlumberID,
-		Token:       p.Token,
-		TeamID:      p.TeamID,
-		UserID:      p.UserID,
-		Connections: make(map[string][]byte, 0),
-		Relays:      make(map[string][]byte, 0),
-	}
-
-	m := jsonpb.Marshaler{}
-
-	// Connection proto messages need to be marshaled individually before we can marshal the entire struct
-	for k, v := range p.Connections {
-		buf := bytes.NewBuffer([]byte(``))
-		m.Marshal(buf, v)
-		cfg.Connections[k] = buf.Bytes()
-	}
-
-	// Relay proto messages need to be marshaled individually before we can marshal the entire struct
-	for k, v := range p.Relays {
-		buf := bytes.NewBuffer([]byte(``))
-		m.Marshal(buf, v.Config)
-		cfg.Relays[k] = buf.Bytes()
-	}
-
-	data, err := json.Marshal(cfg)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not marshal to JSON")
-	}
-
-	return data, nil
 }
 
 // ReadConfig reads a config JSON file into a Config struct
@@ -102,52 +52,13 @@ func ReadConfig(fileName string) (*Config, error) {
 		return nil, errors.Wrapf(err, "could not read ~/.batchsh/%s", fileName)
 	}
 
-	storedCfg := &storageConfig{}
-	if err := json.Unmarshal(data, storedCfg); err != nil {
+	cfg := &Config{}
+	if err := json.Unmarshal(data, cfg); err != nil {
 		return nil, errors.Wrapf(err, "could not unmarshal ~/.batchsh/%s", fileName)
 	}
 
-	cfg := &Config{
-		PlumberID:   storedCfg.PlumberID,
-		Token:       storedCfg.Token,
-		TeamID:      storedCfg.TeamID,
-		UserID:      storedCfg.UserID,
-		Connections: make(map[string]*protos.Connection, 0),
-		Relays:      make(map[string]*types.Relay, 0),
-	}
-
-	// Connection proto messages need to be un-marshaled individually
-	var count int
-	for k, v := range storedCfg.Connections {
-		conn := &protos.Connection{}
-
-		if err := jsonpb.Unmarshal(bytes.NewBuffer(v), conn); err != nil {
-			return nil, errors.Wrapf(err, "unable to unmarshal stored connection '%s'", k)
-		}
-
-		cfg.Connections[k] = conn
-		count++
-	}
-
-	logrus.Infof("Loaded '%d' stored connections", count)
-
-	// Relay proto messages need to be un-marshaled individually
-	var relayCount int
-	for k, v := range storedCfg.Relays {
-		relay := &protos.Relay{}
-
-		if err := jsonpb.Unmarshal(bytes.NewBuffer(v), relay); err != nil {
-			return nil, errors.Wrapf(err, "unable to unmarshal stored connection '%s'", k)
-		}
-
-		cfg.Relays[k] = &types.Relay{
-			Id:     k,
-			Config: relay,
-		}
-		relayCount++
-	}
-
-	logrus.Infof("Loaded '%d' stored relays", relayCount)
+	logrus.Infof("Loaded '%d' stored connections", len(cfg.Connections))
+	logrus.Infof("Loaded '%d' stored relays", len(cfg.Relays))
 
 	return cfg, nil
 }
