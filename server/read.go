@@ -316,7 +316,7 @@ func (p *PlumberServer) getBackendRead(read *protos.Read) (*kafka.KafkaReader, e
 	switch {
 	case read.GetKafka() != nil:
 		args := read.GetKafka()
-		return p.getBackendReadKafka(connCfg, args)
+		return p.getBackendReadKafka(connCfg.Connection, args)
 	}
 
 	return nil, errors.New("unknown message bus")
