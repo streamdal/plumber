@@ -2,9 +2,7 @@ package server
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
-	"time"
 
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
@@ -13,61 +11,13 @@ import (
 	skafka "github.com/segmentio/kafka-go"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
-	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/serializers"
 	"github.com/batchcorp/plumber/writer"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/conns"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
-
-// getBackendWrite gets the backend message bus needed to read/write from
-// TODO: genericize after backend refactor
-func (p *PlumberServer) getBackendWrite(req *protos.WriteRequest) (*kafka.KafkaWriter, error) {
-	connCfg := p.getConn(req.ConnectionId)
-	if connCfg == nil {
-		return nil, errors.New("connection does not exist")
-	}
-
-	switch {
-	case connCfg.GetKafka() != nil:
-		return p.getBackendWriteKafka(connCfg.GetKafka())
-	}
-
-	return nil, errors.New("unknown message bus")
-}
-
-func (p *PlumberServer) getBackendWriteKafka(connCfg *conns.Kafka) (*kafka.KafkaWriter, error) {
-	dialer := &skafka.Dialer{
-		DualStack: true,
-		Timeout:   time.Second * 10,
-	}
-
-	if connCfg.InsecureTls {
-		dialer.TLS = &tls.Config{
-			InsecureSkipVerify: true,
-		}
-	}
-
-	auth, err := getKafkaAuthConfig(connCfg)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not get authentication mechanism")
-	}
-
-	dialer.SASLMechanism = auth
-
-	writer := skafka.NewWriter(skafka.WriterConfig{
-		Brokers:   connCfg.Address,
-		Dialer:    dialer,
-		BatchSize: 1, // TODO: add to protos?
-	})
-
-	return &kafka.KafkaWriter{
-		Writer: writer,
-	}, nil
-}
 
 func (p *PlumberServer) Write(ctx context.Context, req *protos.WriteRequest) (*protos.WriteResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {

@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"math"
 	"sync"
@@ -12,18 +11,13 @@ import (
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	skafka "github.com/segmentio/kafka-go"
-	"github.com/segmentio/kafka-go/sasl"
-	"github.com/segmentio/kafka-go/sasl/plain"
-	"github.com/segmentio/kafka-go/sasl/scram"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/serializers"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/conns"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
@@ -374,107 +368,6 @@ func (r *Read) StartRead(offsetStart, offsetStep int64) {
 		}
 	}
 
-}
-
-func getKafkaAuthConfig(cfg *conns.Kafka) (sasl.Mechanism, error) {
-	switch cfg.SaslType {
-	case conns.SASLType_SCRAM:
-		return scram.Mechanism(scram.SHA512, cfg.SaslUsername, cfg.SaslPassword)
-	case conns.SASLType_PLAIN:
-		return plain.Mechanism{
-			Username: cfg.SaslUsername,
-			Password: cfg.SaslPassword,
-		}, nil
-	}
-
-	return nil, nil
-}
-
-// getBackendRead gets the backend message bus needed to read/write from
-// TODO: genericize after backend refactor
-func (p *PlumberServer) getBackendRead(read *protos.Read) (*kafka.KafkaReader, error) {
-	connCfg := p.getConn(read.ConnectionId)
-	if connCfg == nil {
-		return nil, errors.New("connection does not exist")
-	}
-
-	switch {
-	case read.GetKafka() != nil:
-		args := read.GetKafka()
-		samp := read.GetSampleOptions()
-		return p.getBackendReadKafka(connCfg.Connection, args, samp)
-	}
-
-	return nil, errors.New("unknown message bus")
-}
-
-func (p *PlumberServer) getBackendReadKafka(connCfg *protos.Connection, args *args.Kafka, samp *protos.SampleOptions) (*kafka.KafkaReader, error) {
-	kafkaCfg := connCfg.GetKafka()
-
-	dialer := &skafka.Dialer{
-		DualStack: true,
-		Timeout:   time.Second * 10,
-	}
-
-	if kafkaCfg.InsecureTls {
-		dialer.TLS = &tls.Config{
-			InsecureSkipVerify: true,
-		}
-	}
-
-	auth, err := getKafkaAuthConfig(kafkaCfg)
-	if err != nil {
-		return nil, errors.Wrap(err, "could not get authentication mechanism")
-	}
-
-	dialer.SASLMechanism = auth
-
-	commitInterval, err := time.ParseDuration(fmt.Sprintf("%ds", args.CommitIntervalSeconds))
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to parse CommitIntervalSeconds")
-	}
-
-	maxWait, err := time.ParseDuration(fmt.Sprintf("%ds", args.MaxWaitSeconds))
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to parse MaxWaitSeconds")
-	}
-
-	rebalanceTimeout, err := time.ParseDuration(fmt.Sprintf("%ds", args.RebalanceTimeoutSeconds))
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to parse RebalanceTimeoutSeconds")
-	}
-
-	rc := skafka.ReaderConfig{
-		Brokers:          kafkaCfg.Address,
-		CommitInterval:   commitInterval,
-		Dialer:           dialer,
-		MaxWait:          maxWait,
-		MinBytes:         int(args.MinBytes),
-		MaxBytes:         int(args.MaxBytes),
-		QueueCapacity:    100, // TODO: add to protos?
-		RebalanceTimeout: rebalanceTimeout,
-	}
-
-	if samp != nil {
-		// Sampling mode. No consumer group
-		rc.Topic = args.Topics[0]
-		rc.StartOffset = args.ReadOffset
-	} else {
-		// Non sampling mode
-		if args.UseConsumerGroup {
-			rc.GroupTopics = args.Topics
-			rc.GroupID = args.ConsumerGroupName
-		} else {
-			rc.Topic = args.Topics[0]
-			rc.StartOffset = args.ReadOffset
-		}
-	}
-
-	r := skafka.NewReader(rc)
-
-	return &kafka.KafkaReader{
-		Reader: r,
-	}, nil
 }
 
 func (p *PlumberServer) StopRead(_ context.Context, req *protos.StopReadRequest) (*protos.StopReadResponse, error) {

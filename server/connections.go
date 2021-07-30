@@ -92,7 +92,15 @@ func (p *PlumberServer) TestConnection(_ context.Context, req *protos.TestConnec
 		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
 	}
 
-	// TODO
+	if err := testConnection(req.GetConnection()); err != nil {
+		return &protos.TestConnectionResponse{
+			Status: &common.Status{
+				Code:      common.Code_INTERNAL,
+				Message:   err.Error(),
+				RequestId: uuid.NewV4().String(),
+			},
+		}, nil
+	}
 
 	return &protos.TestConnectionResponse{
 		Status: &common.Status{
