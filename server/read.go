@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"math"
 	"sync"
 	"time"
 
@@ -27,23 +28,23 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
+const SampleOffsetInterval = time.Second * 10 //time.Minute
+
 type AttachedStream struct {
 	MessageCh chan *records.Message
 }
 
 type Read struct {
-	//Active     bool
-	AttachedStreamsMutex *sync.RWMutex
-	AttachedStreams      map[string]*AttachedStream
+	AttachedClientsMutex *sync.RWMutex
+	AttachedClients      map[string]*AttachedStream
 	PlumberID            string
 	ID                   string
 	Config               *protos.Read
 	ContextCxl           context.Context
 	CancelFunc           context.CancelFunc
 	Backend              *kafka.KafkaReader // TODO: have to genercize once backend refactor is done
-	//MessageCh            chan *records.Message // TODO: have to genercize this somehow
-	MsgDesc *desc.MessageDescriptor
-	log     *logrus.Entry
+	MsgDesc              *desc.MessageDescriptor
+	log                  *logrus.Entry
 }
 
 func (p *PlumberServer) GetAllReads(_ context.Context, req *protos.GetAllReadsRequest) (*protos.GetAllReadsResponse, error) {
@@ -83,21 +84,21 @@ func (p *PlumberServer) StreamRead(req *protos.StreamReadRequest, srv protos.Plu
 	}
 
 	stream := &AttachedStream{
-		MessageCh: make(chan *records.Message, 1),
+		MessageCh: make(chan *records.Message, 1000),
 	}
 
-	read.AttachedStreamsMutex.Lock()
-	read.AttachedStreams[requestID] = stream
-	read.AttachedStreamsMutex.Unlock()
+	read.AttachedClientsMutex.Lock()
+	read.AttachedClients[requestID] = stream
+	read.AttachedClientsMutex.Unlock()
 
 	llog := p.Log.WithField("read_id", read.ID).
 		WithField("client_id", requestID)
 
 	// Ensure we remove this client from the active streams on exit
 	defer func() {
-		read.AttachedStreamsMutex.Lock()
-		delete(read.AttachedStreams, requestID)
-		read.AttachedStreamsMutex.Unlock()
+		read.AttachedClientsMutex.Lock()
+		delete(read.AttachedClients, requestID)
+		read.AttachedClientsMutex.Unlock()
 		llog.Debugf("Stream detached for '%s'", requestID)
 	}()
 
@@ -126,8 +127,8 @@ func (p *PlumberServer) StreamRead(req *protos.StreamReadRequest, srv protos.Plu
 			}
 			llog.Debugf("Sent message to client '%s'", requestID)
 		case <-read.ContextCxl.Done():
-			// Read stopped. close out all streams for it
-			llog.Debugf("Read stopped. closing stream for client '%s'", requestID)
+			// StartRead stopped. close out all streams for it
+			llog.Debugf("StartRead stopped. closing stream for client '%s'", requestID)
 			return nil
 		default:
 			// NOOP
@@ -140,8 +141,8 @@ func (p *PlumberServer) StartRead(_ context.Context, req *protos.StartReadReques
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	read := req.GetRead()
-	if err := validateRead(read); err != nil {
+	readCfg := req.GetRead()
+	if err := validateRead(readCfg); err != nil {
 		return nil, err
 	}
 
@@ -150,42 +151,53 @@ func (p *PlumberServer) StartRead(_ context.Context, req *protos.StartReadReques
 	// Reader needs a unique ID that frontend can reference
 	readerID := uuid.NewV4().String()
 
-	md, err := generateMD(read.DecodeOptions)
+	md, err := generateMD(readCfg.DecodeOptions)
 	if err != nil {
 		return nil, err
 	}
 
 	ctx, cancelFunc := context.WithCancel(context.Background())
 
-	backend, err := p.getBackendRead(read)
+	backend, err := p.getBackendRead(readCfg)
 	if err != nil {
 		cancelFunc()
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
 
-	// Launch reader and record
-	reader := &Read{
-		AttachedStreams:      make(map[string]*AttachedStream, 0),
-		AttachedStreamsMutex: &sync.RWMutex{},
+	// Launch read and record
+	read := &Read{
+		AttachedClients:      make(map[string]*AttachedStream, 0),
+		AttachedClientsMutex: &sync.RWMutex{},
 		PlumberID:            p.PersistentConfig.PlumberID,
 		ID:                   readerID,
-		Config:               read,
+		Config:               readCfg,
 		ContextCxl:           ctx,
 		CancelFunc:           cancelFunc,
 		Backend:              backend,
-		//MessageCh:            make(chan *records.Message, 100),
-		MsgDesc: md,
-		log:     p.Log.WithField("read_id", readerID),
+		MsgDesc:              md,
+		log:                  p.Log.WithField("read_id", readerID),
 	}
 
-	p.setRead(readerID, reader)
+	p.setRead(readerID, read)
 
-	go reader.Read()
+	var offsetStart, offsetStep int64
+
+	// Can't wait forever. If no traffic on the topic after 2 minutes, cancel sample call
+	timeoutCtx, _ := context.WithTimeout(context.Background(), SampleOffsetInterval*2)
+
+	if readCfg.GetSampleOptions() != nil {
+		offsetStep, offsetStart, err = read.GetSampleRate(timeoutCtx)
+		if err != nil {
+			return nil, CustomError(common.Code_ABORTED, "could not calculate sample rate: "+err.Error())
+		}
+	}
+
+	go read.StartRead(offsetStart, offsetStep)
 
 	return &protos.StartReadResponse{
 		Status: &common.Status{
 			Code:      common.Code_OK,
-			Message:   "Read started",
+			Message:   "StartRead started",
 			RequestId: requestID,
 		},
 		ReadId: readerID,
@@ -247,21 +259,91 @@ func convertKafkaHeadersToProto(original []skafka.Header) []*records.KafkaHeader
 	return converted
 }
 
-// Read is a goroutine that is launched when a read is started. It will continue running until plumber exiits
+// GetSampleRate gets the number of messages received in SampleOffsetInterval in order to calculate how many
+func (r *Read) GetSampleRate(ctx context.Context) (offsetStep int64, offsetStart int64, err error) {
+	if err := r.Backend.Reader.SetOffset(skafka.LastOffset); err != nil {
+		return 0, 0, errors.Wrap(err, "unable to set latest offset")
+	}
+
+	r.log.Debug("starting sample rate calculation")
+
+	msg, err := r.Backend.Reader.ReadMessage(ctx)
+	if err != nil {
+		if err == context.Canceled {
+			err = errors.New("context cancelled, could not get sample rate")
+			return 0, 0, err
+		} else {
+			err = fmt.Errorf("unable to read kafka message: %s", err)
+			return 0, 0, err
+		}
+	}
+
+	offsetStart = msg.Offset
+
+	r.log.Debugf("Got first offset: %d", offsetStart)
+
+	time.Sleep(SampleOffsetInterval)
+
+	if err := r.Backend.Reader.SetOffset(skafka.LastOffset); err != nil {
+		return 0, 0, errors.Wrap(err, "unable to set latest offset")
+	}
+
+	msg, err = r.Backend.Reader.ReadMessage(ctx)
+	if err != nil {
+		if err == context.Canceled {
+			err = errors.New("context cancelled, could not get sample rate")
+			return 0, 0, err
+		} else {
+			err = fmt.Errorf("unable to read kafka message: %s", err)
+			return 0, 0, err
+		}
+	}
+
+	span := float64(msg.Offset - offsetStart)
+
+	sampleOpts := r.Config.SampleOptions
+
+	var rate float64
+	switch sampleOpts.SampleInterval {
+	case protos.SampleOptions_MINUTE:
+		rate = float64(sampleOpts.SampleRate)
+	case protos.SampleOptions_SECOND:
+		rate = float64(sampleOpts.SampleRate) * 60
+	default:
+		return 0, 0, fmt.Errorf("unknown sample interval: '%d'", sampleOpts.SampleInterval)
+	}
+
+	offsetStep = int64(math.Round(span / rate))
+
+	r.log.Debugf("Calculated offsetStep (offset %d - offset %d) / rate %d = %d",
+		msg.Offset, offsetStart, int(rate), offsetStep)
+
+	return offsetStep, offsetStart, nil
+}
+
+// StartRead is a goroutine that is launched when a read is started. It will continue running until plumber exits
 // or a read is stopped via the API
-func (r *Read) Read() {
+func (r *Read) StartRead(offsetStart, offsetStep int64) {
 	defer r.Backend.Reader.Close()
+
+	if offsetStart > 0 {
+		r.log.Debugf("Starting read at %d with step %d", offsetStart, offsetStep)
+	}
 
 	for {
 		select {
 		case <-r.ContextCxl.Done():
-			r.log.Info("Read stopped")
+			r.log.Info("StartRead stopped")
 			return
 		default:
 			// noop
 		}
 
 		var err error
+
+		if offsetStart > 0 {
+			r.Backend.Reader.SetOffset(offsetStart)
+		}
 
 		msg, err := r.Backend.Reader.ReadMessage(r.ContextCxl)
 		if err != nil {
@@ -273,20 +355,23 @@ func (r *Read) Read() {
 			}
 		}
 
-		r.log.Debug("Read Message")
-
 		payload, err := r.generateKafkaPayload(&msg)
 		if err != nil {
 			r.log.Errorf("unable to generate kafka payload: %s", err)
 		}
 
 		// Send message payload to all attached streams
-		r.AttachedStreamsMutex.RLock()
-		for id, s := range r.AttachedStreams {
-			r.log.Debugf("Read message to stream '%s'", id)
+		r.AttachedClientsMutex.RLock()
+		for id, s := range r.AttachedClients {
+			r.log.Debugf("StartRead message to stream '%s'", id)
 			s.MessageCh <- payload
 		}
-		r.AttachedStreamsMutex.RUnlock()
+		r.AttachedClientsMutex.RUnlock()
+
+		// Sampled read, increment offset offset
+		if offsetStart > 0 {
+			offsetStart += offsetStep
+		}
 	}
 
 }
@@ -316,13 +401,14 @@ func (p *PlumberServer) getBackendRead(read *protos.Read) (*kafka.KafkaReader, e
 	switch {
 	case read.GetKafka() != nil:
 		args := read.GetKafka()
-		return p.getBackendReadKafka(connCfg.Connection, args)
+		samp := read.GetSampleOptions()
+		return p.getBackendReadKafka(connCfg.Connection, args, samp)
 	}
 
 	return nil, errors.New("unknown message bus")
 }
 
-func (p *PlumberServer) getBackendReadKafka(connCfg *protos.Connection, args *args.Kafka) (*kafka.KafkaReader, error) {
+func (p *PlumberServer) getBackendReadKafka(connCfg *protos.Connection, args *args.Kafka, samp *protos.SampleOptions) (*kafka.KafkaReader, error) {
 	kafkaCfg := connCfg.GetKafka()
 
 	dialer := &skafka.Dialer{
@@ -342,17 +428,6 @@ func (p *PlumberServer) getBackendReadKafka(connCfg *protos.Connection, args *ar
 	}
 
 	dialer.SASLMechanism = auth
-
-	// Attempt to establish connection on startup
-	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(time.Second*10))
-
-	kafkaConn, err := dialer.DialContext(ctxDeadline, "tcp", kafkaCfg.Address[0])
-	if err != nil {
-		logrus.Errorf("unable to create initial connection to broker '%s', trying next broker", kafkaCfg.Address[0])
-	}
-	if err != nil {
-		return nil, err
-	}
 
 	commitInterval, err := time.ParseDuration(fmt.Sprintf("%ds", args.CommitIntervalSeconds))
 	if err != nil {
@@ -380,24 +455,25 @@ func (p *PlumberServer) getBackendReadKafka(connCfg *protos.Connection, args *ar
 		RebalanceTimeout: rebalanceTimeout,
 	}
 
-	if args.UseConsumerGroup {
-		rc.GroupTopics = args.Topics
-		rc.GroupID = args.ConsumerGroupName
-	} else {
+	if samp != nil {
+		// Sampling mode. No consumer group
 		rc.Topic = args.Topics[0]
+		rc.StartOffset = args.ReadOffset
+	} else {
+		// Non sampling mode
+		if args.UseConsumerGroup {
+			rc.GroupTopics = args.Topics
+			rc.GroupID = args.ConsumerGroupName
+		} else {
+			rc.Topic = args.Topics[0]
+			rc.StartOffset = args.ReadOffset
+		}
 	}
 
 	r := skafka.NewReader(rc)
 
-	if !args.UseConsumerGroup {
-		if err := r.SetOffset(args.ReadOffset); err != nil {
-			return nil, errors.Wrap(err, "unable to set read offset")
-		}
-	}
-
 	return &kafka.KafkaReader{
 		Reader: r,
-		Conn:   kafkaConn,
 	}, nil
 }
 
@@ -416,7 +492,7 @@ func (p *PlumberServer) StopRead(_ context.Context, req *protos.StopReadRequest)
 
 	read.CancelFunc()
 
-	p.Log.WithField("request_id", requestID).Infof("Read '%s' stopped", req.ReadId)
+	p.Log.WithField("request_id", requestID).Infof("StartRead '%s' stopped", req.ReadId)
 
 	return &protos.StopReadResponse{
 		Status: &common.Status{
