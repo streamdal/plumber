@@ -143,7 +143,7 @@ func (p *PlumberServer) StartRead(_ context.Context, req *protos.StartReadReques
 	requestID := uuid.NewV4().String()
 
 	// Reader needs a unique ID that frontend can reference
-	readerID := uuid.NewV4().String()
+	readCfg.Id = uuid.NewV4().String()
 
 	md, err := generateMD(readCfg.DecodeOptions)
 	if err != nil {
@@ -163,16 +163,16 @@ func (p *PlumberServer) StartRead(_ context.Context, req *protos.StartReadReques
 		AttachedClients:      make(map[string]*AttachedStream, 0),
 		AttachedClientsMutex: &sync.RWMutex{},
 		PlumberID:            p.PersistentConfig.PlumberID,
-		ID:                   readerID,
+		ID:                   readCfg.Id,
 		Config:               readCfg,
 		ContextCxl:           ctx,
 		CancelFunc:           cancelFunc,
 		Backend:              backend,
 		MsgDesc:              md,
-		log:                  p.Log.WithField("read_id", readerID),
+		log:                  p.Log.WithField("read_id", readCfg.Id),
 	}
 
-	p.setRead(readerID, read)
+	p.setRead(readCfg.Id, read)
 
 	var offsetStart, offsetStep int64
 
@@ -194,7 +194,7 @@ func (p *PlumberServer) StartRead(_ context.Context, req *protos.StartReadReques
 			Message:   "StartRead started",
 			RequestId: requestID,
 		},
-		ReadId: readerID,
+		ReadId: readCfg.Id,
 	}, nil
 }
 
