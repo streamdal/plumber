@@ -14,8 +14,10 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/plumber"
 	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/server/types"
 	"github.com/batchcorp/plumber/stats"
 )
 
@@ -68,6 +70,7 @@ func main() {
 	}
 
 	p, err := plumber.New(&plumber.Config{
+		PersistentConfig:   getConfig(),
 		ServiceShutdownCtx: serviceCtx,
 		MainShutdownFunc:   mainShutdownFunc,
 		MainShutdownCtx:    mainCtx,
@@ -128,4 +131,27 @@ func convertJSONInput(value string) []string {
 	})
 
 	return inputData
+}
+
+// getConfig returns either a stored config if there is one, or a fresh config
+func getConfig() *config.Config {
+	var cfg *config.Config
+	var err error
+
+	// No need to pollute user's FS if they aren't running in server mode
+	if config.Exists("config.json") {
+		cfg, err = config.ReadConfig("config.json")
+		if err != nil {
+			logrus.Errorf("unable to load config: %s", err)
+		}
+	}
+
+	if cfg == nil {
+		cfg = &config.Config{
+			Connections: make(map[string]*types.Connection),
+			Relays:      make(map[string]*types.Relay),
+		}
+	}
+
+	return cfg
 }

@@ -6,6 +6,9 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/batchcorp/plumber/config"
+	"github.com/batchcorp/plumber/server/types"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -42,13 +45,16 @@ func BatchWithMockResponse(httpCode int, responseBody string) *Batch {
 		Opts: &cli.Options{
 			Batch: &cli.BatchOptions{},
 		},
+		PersistentConfig: &config.Config{
+			Connections: make(map[string]*types.Connection),
+		},
 	}
 }
 
 var _ = Describe("Batch", func() {
 	Context("New", func() {
 		It("returns a new instance of Batch struct", func() {
-			b := New(&cli.Options{Batch: &cli.BatchOptions{}})
+			b := New(&cli.Options{Batch: &cli.BatchOptions{}}, &config.Config{})
 			Expect(b).To(BeAssignableToTypeOf(&Batch{}))
 		})
 	})
@@ -57,8 +63,8 @@ var _ = Describe("Batch", func() {
 			const Token = "testin123"
 
 			b := &Batch{
-				Token:  Token,
-				ApiUrl: "https://api.batch.sh",
+				PersistentConfig: &config.Config{Token: Token},
+				ApiUrl:           "https://api.batch.sh",
 			}
 
 			jar := b.getCookieJar("/v1/collection")

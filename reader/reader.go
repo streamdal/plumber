@@ -57,7 +57,7 @@ func Decode(opts *cli.Options, msgDesc *desc.MessageDescriptor, message []byte) 
 			message = plain
 		}
 
-		decoded, err := serializers.AvroDecode(opts.AvroSchemaFile, message)
+		decoded, err := serializers.AvroDecodeWithSchemaFile(opts.AvroSchemaFile, message)
 		if err != nil {
 			printer.Error(fmt.Sprintf("unable to decode AVRO message: %s", err))
 			return nil, err

@@ -304,7 +304,7 @@ func getAuthenticationMechanism(opts *cli.Options) (sasl.Mechanism, error) {
 		opts.Kafka.Password = password
 	}
 
-	switch opts.Kafka.AuthenticationType {
+	switch strings.ToLower(opts.Kafka.AuthenticationType) {
 	case "scram":
 		return scram.Mechanism(scram.SHA512, opts.Kafka.Username, opts.Kafka.Password)
 	default:

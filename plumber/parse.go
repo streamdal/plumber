@@ -258,7 +258,7 @@ func (p *Plumber) parseCmdDynamic() error {
 
 // parseBatchCmd handles all commands related to Batch.sh API
 func (p *Plumber) parseBatchCmd() error {
-	b := batch.New(p.Options)
+	b := batch.New(p.Options, p.PersistentConfig)
 
 	switch {
 	case p.Cmd == "batch login":

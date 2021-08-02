@@ -92,6 +92,7 @@ type Options struct {
 	CDCPostgres     *CDCPostgresOptions
 	Pulsar          *PulsarOptions
 	NSQ             *NSQOptions
+	Server          *ServerOptions
 }
 
 func Handle(cliArgs []string) (string, *Options, error) {
@@ -123,6 +124,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		CDCPostgres: &CDCPostgresOptions{},
 		Pulsar:      &PulsarOptions{},
 		NSQ:         &NSQOptions{},
+		Server:      &ServerOptions{},
 	}
 
 	app := kingpin.New("plumber", "`curl` for messaging systems. See: https://github.com/batchcorp/plumber")
@@ -134,6 +136,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	batchCmd := app.Command("batch", "Access your Batch.sh account information")
 	lagCmd := app.Command("lag", "Monitor lag in the messaging system")
 	dynamicCmd := app.Command("dynamic", "Act as a batch.sh replay destination")
+	serveCmd := app.Command("serve", "Run plumber in server mode")
 
 	HandleRelayFlags(relayCmd, opts)
 
@@ -182,6 +185,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleNSQFlags(readCmd, writeCmd, relayCmd, opts)
 	}
 
+	HandleServerFlags(serveCmd, opts)
 	HandleGlobalFlags(readCmd, opts)
 	HandleGlobalReadFlags(readCmd, opts)
 	HandleGlobalWriteFlags(writeCmd, opts)

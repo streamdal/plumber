@@ -122,6 +122,14 @@ github.com/aws/aws-sdk-go/service/sts/stsiface
 # github.com/batchcorp/pgoutput v0.3.2
 ## explicit
 github.com/batchcorp/pgoutput
+# github.com/batchcorp/plumber-schemas v0.0.19
+## explicit
+github.com/batchcorp/plumber-schemas/build/go/protos
+github.com/batchcorp/plumber-schemas/build/go/protos/args
+github.com/batchcorp/plumber-schemas/build/go/protos/common
+github.com/batchcorp/plumber-schemas/build/go/protos/conns
+github.com/batchcorp/plumber-schemas/build/go/protos/encoding
+github.com/batchcorp/plumber-schemas/build/go/protos/records
 # github.com/batchcorp/rabbit v0.1.9
 ## explicit
 github.com/batchcorp/rabbit
@@ -189,7 +197,7 @@ github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 # github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 github.com/golang/groupcache/lru
-# github.com/golang/protobuf v1.4.4-0.20210303013846-acacf8158c9a
+# github.com/golang/protobuf v1.5.0
 ## explicit
 github.com/golang/protobuf/internal/gengogrpc
 github.com/golang/protobuf/jsonpb
@@ -403,6 +411,7 @@ github.com/relistan/go-director
 ## explicit
 github.com/rivo/uniseg
 # github.com/satori/go.uuid v1.2.0
+## explicit
 github.com/satori/go.uuid
 # github.com/segmentio/kafka-go v0.4.16
 ## explicit
@@ -738,7 +747,8 @@ google.golang.org/grpc/serviceconfig
 google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
-# google.golang.org/protobuf v1.26.0-rc.1
+# google.golang.org/protobuf v1.26.1-0.20210525005349-febffdd88e85
+## explicit
 google.golang.org/protobuf/cmd/protoc-gen-go/internal_gengo
 google.golang.org/protobuf/compiler/protogen
 google.golang.org/protobuf/encoding/protojson
