@@ -32,12 +32,13 @@ type Read struct {
 	AttachedClientsMutex *sync.RWMutex
 	AttachedClients      map[string]*AttachedStream
 	PlumberID            string
-	ID                   string
 	Config               *protos.Read
 	ContextCxl           context.Context
 	CancelFunc           context.CancelFunc
 	Backend              *kafka.KafkaReader // TODO: have to genercize once backend refactor is done
 	MsgDesc              *desc.MessageDescriptor
+	SampleStart          int64
+	SampleStep           int64
 	log                  *logrus.Entry
 }
 
@@ -61,7 +62,7 @@ func (p *PlumberServer) GetAllReads(_ context.Context, req *protos.GetAllReadsRe
 	}, nil
 }
 
-func (p *PlumberServer) StreamRead(req *protos.StreamReadRequest, srv protos.PlumberServer_StreamReadServer) error {
+func (p *PlumberServer) StartRead(req *protos.StartReadRequest, srv protos.PlumberServer_StartReadServer) error {
 	requestID := uuid.NewV4().String()
 
 	if err := p.validateRequest(req.Auth); err != nil {
@@ -85,7 +86,7 @@ func (p *PlumberServer) StreamRead(req *protos.StreamReadRequest, srv protos.Plu
 	read.AttachedClients[requestID] = stream
 	read.AttachedClientsMutex.Unlock()
 
-	llog := p.Log.WithField("read_id", read.ID).
+	llog := p.Log.WithField("read_id", read.Config.Id).
 		WithField("client_id", requestID)
 
 	// Ensure we remove this client from the active streams on exit
@@ -107,7 +108,7 @@ func (p *PlumberServer) StreamRead(req *protos.StreamReadRequest, srv protos.Plu
 			// TODO: batch these up and send multiple per response?
 			messages = append(messages, msg)
 
-			res := &protos.StreamReadResponse{
+			res := &protos.StartReadResponse{
 				Status: &common.Status{
 					Code:      common.Code_OK,
 					Message:   "Message read",
@@ -130,7 +131,7 @@ func (p *PlumberServer) StreamRead(req *protos.StreamReadRequest, srv protos.Plu
 	}
 }
 
-func (p *PlumberServer) StartRead(_ context.Context, req *protos.StartReadRequest) (*protos.StartReadResponse, error) {
+func (p *PlumberServer) CreateRead(_ context.Context, req *protos.CreateReadRequest) (*protos.CreateReadResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -163,7 +164,6 @@ func (p *PlumberServer) StartRead(_ context.Context, req *protos.StartReadReques
 		AttachedClients:      make(map[string]*AttachedStream, 0),
 		AttachedClientsMutex: &sync.RWMutex{},
 		PlumberID:            p.PersistentConfig.PlumberID,
-		ID:                   readCfg.Id,
 		Config:               readCfg,
 		ContextCxl:           ctx,
 		CancelFunc:           cancelFunc,
@@ -186,9 +186,12 @@ func (p *PlumberServer) StartRead(_ context.Context, req *protos.StartReadReques
 		}
 	}
 
-	go read.StartRead(offsetStart, offsetStep)
+	read.SampleStart = offsetStart
+	read.SampleStep = offsetStep
 
-	return &protos.StartReadResponse{
+	go read.StartRead()
+
+	return &protos.CreateReadResponse{
 		Status: &common.Status{
 			Code:      common.Code_OK,
 			Message:   "StartRead started",
@@ -317,11 +320,12 @@ func (r *Read) GetSampleRate(ctx context.Context) (offsetStep int64, offsetStart
 
 // StartRead is a goroutine that is launched when a read is started. It will continue running until plumber exits
 // or a read is stopped via the API
-func (r *Read) StartRead(offsetStart, offsetStep int64) {
+func (r *Read) StartRead() {
 	defer r.Backend.Reader.Close()
+	r.Config.Active = true
 
-	if offsetStart > 0 {
-		r.log.Debugf("Starting read at %d with step %d", offsetStart, offsetStep)
+	if r.SampleStart > 0 {
+		r.log.Debugf("Starting read at %d with step %d", r.SampleStart, r.SampleStep)
 	}
 
 	for {
@@ -335,8 +339,8 @@ func (r *Read) StartRead(offsetStart, offsetStep int64) {
 
 		var err error
 
-		if offsetStart > 0 {
-			r.Backend.Reader.SetOffset(offsetStart)
+		if r.SampleStart > 0 {
+			r.Backend.Reader.SetOffset(r.SampleStart)
 		}
 
 		msg, err := r.Backend.Reader.ReadMessage(r.ContextCxl)
@@ -363,8 +367,8 @@ func (r *Read) StartRead(offsetStart, offsetStep int64) {
 		r.AttachedClientsMutex.RUnlock()
 
 		// Sampled read, increment offset offset
-		if offsetStart > 0 {
-			offsetStart += offsetStep
+		if r.SampleStart > 0 {
+			r.SampleStart += r.SampleStep
 		}
 	}
 
@@ -383,14 +387,97 @@ func (p *PlumberServer) StopRead(_ context.Context, req *protos.StopReadRequest)
 		return nil, CustomError(common.Code_NOT_FOUND, "read does not exist or has already been stopped")
 	}
 
+	if !read.Config.Active {
+		return nil, CustomError(common.Code_FAILED_PRECONDITION, "Read is already stopped")
+	}
+
 	read.CancelFunc()
 
-	p.Log.WithField("request_id", requestID).Infof("StartRead '%s' stopped", req.ReadId)
+	read.Config.Active = false
+
+	p.Log.WithField("request_id", requestID).Infof("Read '%s' stopped", req.ReadId)
 
 	return &protos.StopReadResponse{
 		Status: &common.Status{
 			Code:      common.Code_OK,
 			Message:   "Message read",
+			RequestId: requestID,
+		},
+	}, nil
+}
+
+func (p *PlumberServer) ResumeRead(_ context.Context, req *protos.ResumeReadRequest) (*protos.ResumeReadResponse, error) {
+	if err := p.validateRequest(req.Auth); err != nil {
+		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
+	}
+
+	requestID := uuid.NewV4().String()
+
+	// Get reader and cancel
+	read := p.getRead(req.ReadId)
+	if read == nil {
+		return nil, CustomError(common.Code_NOT_FOUND, "read does not exist or has already been stopped")
+	}
+
+	if read.Config.Active {
+		return nil, CustomError(common.Code_FAILED_PRECONDITION, "Read is already active")
+	}
+
+	ctx, cancelFunc := context.WithCancel(context.Background())
+
+	backend, err := p.getBackendRead(read.Config)
+	if err != nil {
+		cancelFunc()
+		return nil, CustomError(common.Code_ABORTED, err.Error())
+	}
+
+	// Fresh connection and context
+	read.Backend = backend
+	read.ContextCxl = ctx
+	read.CancelFunc = cancelFunc
+	read.Config.Active = true
+
+	go read.StartRead()
+
+	p.Log.WithField("request_id", requestID).Infof("Read '%s' resumed", req.ReadId)
+
+	return &protos.ResumeReadResponse{
+		Status: &common.Status{
+			Code:      common.Code_OK,
+			Message:   "Message read",
+			RequestId: requestID,
+		},
+	}, nil
+}
+
+func (p *PlumberServer) DeleteRead(_ context.Context, req *protos.DeleteReadRequest) (*protos.DeleteReadResponse, error) {
+	if err := p.validateRequest(req.Auth); err != nil {
+		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
+	}
+
+	requestID := uuid.NewV4().String()
+
+	// Get reader and cancel
+	read := p.getRead(req.ReadId)
+	if read == nil {
+		return nil, CustomError(common.Code_NOT_FOUND, "read does not exist or has already been stopped")
+	}
+
+	// Stop it if it's in progress
+	if read.Config.Active {
+		read.CancelFunc()
+	}
+
+	p.ReadsMutex.Lock()
+	delete(p.Reads, req.ReadId)
+	p.ReadsMutex.Unlock()
+
+	p.Log.WithField("request_id", requestID).Infof("Read '%s' deleted", req.ReadId)
+
+	return &protos.DeleteReadResponse{
+		Status: &common.Status{
+			Code:      common.Code_OK,
+			Message:   "Read Deleted",
 			RequestId: requestID,
 		},
 	}, nil

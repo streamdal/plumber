@@ -27,36 +27,37 @@ const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 func init() { proto.RegisterFile("base.proto", fileDescriptor_db1b6b0986796150) }
 
 var fileDescriptor_db1b6b0986796150 = []byte{
-	// 453 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x94, 0xd1, 0xab, 0xd3, 0x30,
-	0x14, 0xc6, 0xf1, 0x41, 0xd1, 0x33, 0x27, 0x1a, 0x14, 0xef, 0xad, 0x57, 0xbd, 0xfe, 0x01, 0xae,
-	0xa2, 0x17, 0xdf, 0x04, 0x75, 0xba, 0x21, 0x08, 0x4a, 0xeb, 0x50, 0x7c, 0x4b, 0xdb, 0xc3, 0x56,
-	0x68, 0x9b, 0x9a, 0xa4, 0xca, 0xde, 0xfc, 0xd3, 0xa5, 0x4d, 0xb2, 0xa4, 0x49, 0xeb, 0xd3, 0x96,
-	0xef, 0x3b, 0xe7, 0xd7, 0x2f, 0xed, 0x49, 0x00, 0x32, 0x2a, 0x70, 0xd5, 0x72, 0x26, 0x19, 0xb9,
-	0x31, 0xfc, 0x88, 0x68, 0x99, 0xb3, 0xa6, 0xc1, 0x5c, 0x2a, 0x39, 0x02, 0x8e, 0xb4, 0xd0, 0xff,
-	0x17, 0x7f, 0x78, 0x29, 0xd1, 0x2c, 0x38, 0x56, 0xf4, 0xa8, 0x16, 0x2f, 0xff, 0x02, 0x2c, 0xbf,
-	0x56, 0x5d, 0x9d, 0x21, 0x4f, 0x91, 0xff, 0x46, 0x4e, 0x7e, 0xc0, 0xbd, 0x2d, 0xca, 0x77, 0x55,
-	0xb5, 0x56, 0xb8, 0x92, 0x35, 0x82, 0x5c, 0xaa, 0x72, 0xb1, 0x0a, 0xac, 0x04, 0x7f, 0x75, 0x28,
-	0x64, 0xf4, 0xec, 0x3f, 0x15, 0xa2, 0x65, 0x8d, 0x40, 0xf2, 0x19, 0x96, 0x5b, 0x94, 0xd6, 0x21,
-	0x17, 0x4e, 0x8f, 0x95, 0x0d, 0xf1, 0xf1, 0x8c, 0xab, 0x69, 0x3b, 0xb8, 0xbb, 0xe6, 0x48, 0x25,
-	0x3a, 0xc0, 0xa7, 0xa6, 0xc5, 0x77, 0x0c, 0xf3, 0x72, 0xbe, 0x40, 0x63, 0xbf, 0xc0, 0x9d, 0x6f,
-	0x28, 0xdc, 0x94, 0xa7, 0x1c, 0x63, 0xdd, 0x20, 0x9f, 0xcc, 0xd9, 0x36, 0xe7, 0xae, 0x2d, 0x66,
-	0x72, 0xfa, 0x4e, 0x90, 0x33, 0x2c, 0xb0, 0xd8, 0x0f, 0x58, 0xe1, 0x34, 0xd6, 0x77, 0x02, 0x6c,
-	0x58, 0xa0, 0xb1, 0x6f, 0xe1, 0x56, 0x2a, 0x29, 0x97, 0x09, 0xd2, 0x82, 0x9c, 0x99, 0xf2, 0x93,
-	0x64, 0x40, 0xe7, 0x13, 0x8e, 0x26, 0x7c, 0x04, 0x48, 0x25, 0x47, 0x5a, 0x0f, 0x08, 0xa7, 0xd0,
-	0x68, 0x86, 0x11, 0x4d, 0x59, 0x0a, 0xf2, 0xe2, 0x1a, 0xd9, 0xc0, 0x42, 0x4d, 0x52, 0xaf, 0x0b,
-	0x12, 0x8d, 0xc7, 0x6b, 0x10, 0x0d, 0xe8, 0xd1, 0xa4, 0xa7, 0xe3, 0xbc, 0x81, 0x9b, 0xa9, 0x64,
-	0xed, 0x10, 0xe6, 0xa1, 0x7d, 0xa2, 0x52, 0x0c, 0xe1, 0x2c, 0x34, 0x74, 0xfb, 0x15, 0x5c, 0xff,
-	0xde, 0x9f, 0x1d, 0x72, 0xdf, 0x94, 0x0c, 0x4b, 0xd3, 0xf8, 0xc0, 0x53, 0x75, 0xd7, 0x06, 0x16,
-	0x6a, 0xc0, 0x92, 0xfe, 0xa8, 0xd9, 0xf0, 0x8e, 0x18, 0x84, 0x1f, 0x79, 0x96, 0xa3, 0x06, 0xc0,
-	0xe3, 0x38, 0x62, 0xc0, 0x19, 0x79, 0x96, 0x93, 0xa0, 0xe8, 0x6a, 0x9f, 0xe3, 0x88, 0x01, 0x67,
-	0xe4, 0xb9, 0xd3, 0xd1, 0xbf, 0xa1, 0x9e, 0xe2, 0xbd, 0x34, 0x87, 0x71, 0x3e, 0xe1, 0x68, 0xc2,
-	0x27, 0xb8, 0x6d, 0xbe, 0x52, 0x45, 0x8f, 0x82, 0x04, 0xdf, 0xae, 0x57, 0x0d, 0xe7, 0x62, 0xda,
-	0xb4, 0x9b, 0x52, 0x63, 0xec, 0x6d, 0xca, 0x11, 0x83, 0x4d, 0x8d, 0x3c, 0xc5, 0x79, 0xff, 0xfa,
-	0xe7, 0xd5, 0xbe, 0x94, 0x87, 0x2e, 0x5b, 0xe5, 0xac, 0x8e, 0x33, 0x2a, 0xf3, 0x43, 0xce, 0x78,
-	0x1b, 0xb7, 0xea, 0x5a, 0x7c, 0x2e, 0xf2, 0x03, 0xd6, 0x54, 0xc4, 0x59, 0x57, 0x56, 0x45, 0xbc,
-	0x67, 0xb1, 0x62, 0x65, 0xea, 0xde, 0x7d, 0xf5, 0x2f, 0x00, 0x00, 0xff, 0xff, 0xd2, 0xfb, 0x4b,
-	0x7a, 0x8c, 0x05, 0x00, 0x00,
+	// 480 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x95, 0x51, 0x6f, 0xd3, 0x30,
+	0x10, 0xc7, 0xc5, 0x03, 0x08, 0xae, 0x14, 0x81, 0x05, 0x62, 0x0d, 0x03, 0xc6, 0x07, 0xa0, 0x41,
+	0x30, 0xf1, 0x86, 0x04, 0x2b, 0xda, 0x84, 0x84, 0x04, 0x6a, 0x99, 0x40, 0xbc, 0x39, 0xe9, 0x69,
+	0xad, 0xe4, 0xc6, 0xc1, 0x76, 0x40, 0xf9, 0x0a, 0x7c, 0x6a, 0x94, 0xd8, 0x37, 0xdb, 0x71, 0xc2,
+	0x53, 0xeb, 0xff, 0xff, 0xee, 0xd7, 0xf3, 0xdd, 0x35, 0x01, 0x28, 0xb8, 0xc6, 0x65, 0xad, 0xa4,
+	0x91, 0xec, 0x56, 0xff, 0xa1, 0xb3, 0x79, 0x29, 0xab, 0x0a, 0x4b, 0x63, 0xe5, 0x0c, 0x14, 0xf2,
+	0xad, 0xfb, 0x3e, 0xfb, 0xa3, 0xf6, 0x06, 0xe9, 0xa0, 0x50, 0xf0, 0xd6, 0x1e, 0x5e, 0xff, 0x9d,
+	0xc1, 0xfc, 0xab, 0x68, 0x0e, 0x05, 0xaa, 0x0d, 0xaa, 0xdf, 0xa8, 0xd8, 0x0f, 0x78, 0x70, 0x81,
+	0xe6, 0x83, 0x10, 0x2b, 0x8b, 0xdb, 0xcb, 0x4a, 0xb3, 0x13, 0x1b, 0xae, 0x97, 0x89, 0xb5, 0xc6,
+	0x5f, 0x0d, 0x6a, 0x93, 0xbd, 0xf8, 0x4f, 0x84, 0xae, 0x65, 0xa5, 0x91, 0x7d, 0x86, 0xf9, 0x05,
+	0x1a, 0xef, 0xb0, 0xe3, 0x20, 0xc7, 0xcb, 0x44, 0x7c, 0x3a, 0xe1, 0x3a, 0xda, 0x25, 0xdc, 0x5f,
+	0x29, 0xe4, 0x06, 0x03, 0xe0, 0x73, 0x4a, 0x19, 0x3a, 0xc4, 0x3c, 0x99, 0x0e, 0x70, 0xd8, 0x2f,
+	0x70, 0xef, 0x1b, 0xea, 0xb0, 0xca, 0xeb, 0x3a, 0x62, 0x9d, 0x90, 0xcf, 0xa6, 0x6c, 0x5f, 0xe7,
+	0x65, 0xbd, 0x9d, 0xa8, 0x73, 0xe8, 0x24, 0x75, 0xa6, 0x01, 0x1e, 0xfb, 0x11, 0x05, 0x8e, 0x63,
+	0x87, 0x4e, 0x82, 0x4d, 0x03, 0x1c, 0x76, 0x05, 0x60, 0x5b, 0xb3, 0x46, 0xbe, 0x65, 0x8b, 0xb8,
+	0x5d, 0x9d, 0x46, 0xa8, 0x6c, 0xcc, 0x72, 0x90, 0x33, 0xb8, 0xb3, 0x31, 0x5c, 0x99, 0x9e, 0x71,
+	0x44, 0x81, 0xd7, 0x12, 0x21, 0x16, 0x23, 0x8e, 0x25, 0xbc, 0xba, 0xc1, 0xce, 0x61, 0x66, 0x37,
+	0xa9, 0xd3, 0x35, 0xcb, 0xe2, 0xf5, 0xea, 0x45, 0xe2, 0x3c, 0x19, 0xf5, 0x5c, 0x2d, 0xef, 0xe0,
+	0xf6, 0xc6, 0xc8, 0xba, 0x2f, 0xe5, 0xb1, 0xff, 0x41, 0xab, 0x10, 0xe1, 0x28, 0x35, 0x7c, 0x3f,
+	0xd6, 0xa8, 0x9b, 0xc3, 0xa0, 0x1f, 0x5e, 0x4b, 0xfa, 0x11, 0x5a, 0x1e, 0x62, 0x1b, 0x1e, 0x43,
+	0xbc, 0x96, 0x40, 0x42, 0xcb, 0x41, 0x4e, 0xe1, 0xe6, 0xf7, 0xee, 0x5f, 0xcc, 0x1e, 0x52, 0x50,
+	0x7f, 0xa4, 0xd4, 0x47, 0x03, 0xd5, 0x65, 0x9d, 0xc3, 0x8c, 0x06, 0x24, 0x78, 0xcb, 0x92, 0xa9,
+	0x09, 0xde, 0x26, 0x6d, 0x8c, 0x3c, 0xcf, 0xb1, 0xab, 0x38, 0xe0, 0x04, 0x62, 0xc2, 0x89, 0x3c,
+	0xcf, 0xa1, 0x06, 0x45, 0x9c, 0x40, 0x4c, 0x38, 0x91, 0xe7, 0x38, 0xef, 0xbb, 0x15, 0xeb, 0x66,
+	0xd5, 0x51, 0x06, 0xe3, 0x0b, 0x18, 0x8b, 0x11, 0xc7, 0x11, 0x3e, 0xc1, 0x5d, 0xda, 0x17, 0xc1,
+	0x5b, 0xcd, 0x92, 0x2d, 0xea, 0x54, 0xe2, 0x1c, 0x8f, 0x9b, 0xfe, 0x52, 0x34, 0xb0, 0xe8, 0x52,
+	0x81, 0x98, 0x5c, 0x2a, 0xf2, 0x2c, 0xe7, 0xec, 0xed, 0xcf, 0xd3, 0xab, 0xbd, 0xd9, 0x35, 0xc5,
+	0xb2, 0x94, 0x87, 0xbc, 0xe0, 0xa6, 0xdc, 0x95, 0x52, 0xd5, 0x79, 0x6d, 0x1f, 0xd0, 0x2f, 0x75,
+	0xb9, 0xc3, 0x03, 0xd7, 0x79, 0xd1, 0xec, 0xc5, 0x36, 0xbf, 0x92, 0xb9, 0x65, 0x15, 0xf6, 0x0d,
+	0xf0, 0xe6, 0x5f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x86, 0x35, 0x2d, 0x01, 0x16, 0x06, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -84,13 +85,17 @@ type PlumberServerClient interface {
 	// If there are any active connections, delete will cause them to get closed
 	DeleteConnection(ctx context.Context, in *DeleteConnectionRequest, opts ...grpc.CallOption) (*DeleteConnectionResponse, error)
 	// Start reading data from a connection
-	StartRead(ctx context.Context, in *StartReadRequest, opts ...grpc.CallOption) (*StartReadResponse, error)
+	CreateRead(ctx context.Context, in *CreateReadRequest, opts ...grpc.CallOption) (*CreateReadResponse, error)
 	// Streams messages received off of a read
-	StreamRead(ctx context.Context, in *StreamReadRequest, opts ...grpc.CallOption) (PlumberServer_StreamReadClient, error)
+	StartRead(ctx context.Context, in *StartReadRequest, opts ...grpc.CallOption) (PlumberServer_StartReadClient, error)
 	// List all reads that have been created
 	GetAllReads(ctx context.Context, in *GetAllReadsRequest, opts ...grpc.CallOption) (*GetAllReadsResponse, error)
 	// Stop reading data from a connection
 	StopRead(ctx context.Context, in *StopReadRequest, opts ...grpc.CallOption) (*StopReadResponse, error)
+	// Resume reading data from an existing read
+	ResumeRead(ctx context.Context, in *ResumeReadRequest, opts ...grpc.CallOption) (*ResumeReadResponse, error)
+	// Resume reading data from an existing read
+	DeleteRead(ctx context.Context, in *DeleteReadRequest, opts ...grpc.CallOption) (*DeleteReadResponse, error)
 	// Write data to a connection
 	Write(ctx context.Context, in *WriteRequest, opts ...grpc.CallOption) (*WriteResponse, error)
 	// Create a data relay from plumber server to the Batch platform
@@ -166,21 +171,21 @@ func (c *plumberServerClient) DeleteConnection(ctx context.Context, in *DeleteCo
 	return out, nil
 }
 
-func (c *plumberServerClient) StartRead(ctx context.Context, in *StartReadRequest, opts ...grpc.CallOption) (*StartReadResponse, error) {
-	out := new(StartReadResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/StartRead", in, out, opts...)
+func (c *plumberServerClient) CreateRead(ctx context.Context, in *CreateReadRequest, opts ...grpc.CallOption) (*CreateReadResponse, error) {
+	out := new(CreateReadResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/CreateRead", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *plumberServerClient) StreamRead(ctx context.Context, in *StreamReadRequest, opts ...grpc.CallOption) (PlumberServer_StreamReadClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_PlumberServer_serviceDesc.Streams[0], "/protos.PlumberServer/StreamRead", opts...)
+func (c *plumberServerClient) StartRead(ctx context.Context, in *StartReadRequest, opts ...grpc.CallOption) (PlumberServer_StartReadClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_PlumberServer_serviceDesc.Streams[0], "/protos.PlumberServer/StartRead", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &plumberServerStreamReadClient{stream}
+	x := &plumberServerStartReadClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -190,17 +195,17 @@ func (c *plumberServerClient) StreamRead(ctx context.Context, in *StreamReadRequ
 	return x, nil
 }
 
-type PlumberServer_StreamReadClient interface {
-	Recv() (*StreamReadResponse, error)
+type PlumberServer_StartReadClient interface {
+	Recv() (*StartReadResponse, error)
 	grpc.ClientStream
 }
 
-type plumberServerStreamReadClient struct {
+type plumberServerStartReadClient struct {
 	grpc.ClientStream
 }
 
-func (x *plumberServerStreamReadClient) Recv() (*StreamReadResponse, error) {
-	m := new(StreamReadResponse)
+func (x *plumberServerStartReadClient) Recv() (*StartReadResponse, error) {
+	m := new(StartReadResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -219,6 +224,24 @@ func (c *plumberServerClient) GetAllReads(ctx context.Context, in *GetAllReadsRe
 func (c *plumberServerClient) StopRead(ctx context.Context, in *StopReadRequest, opts ...grpc.CallOption) (*StopReadResponse, error) {
 	out := new(StopReadResponse)
 	err := c.cc.Invoke(ctx, "/protos.PlumberServer/StopRead", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *plumberServerClient) ResumeRead(ctx context.Context, in *ResumeReadRequest, opts ...grpc.CallOption) (*ResumeReadResponse, error) {
+	out := new(ResumeReadResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/ResumeRead", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *plumberServerClient) DeleteRead(ctx context.Context, in *DeleteReadRequest, opts ...grpc.CallOption) (*DeleteReadResponse, error) {
+	out := new(DeleteReadResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/DeleteRead", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -303,13 +326,17 @@ type PlumberServerServer interface {
 	// If there are any active connections, delete will cause them to get closed
 	DeleteConnection(context.Context, *DeleteConnectionRequest) (*DeleteConnectionResponse, error)
 	// Start reading data from a connection
-	StartRead(context.Context, *StartReadRequest) (*StartReadResponse, error)
+	CreateRead(context.Context, *CreateReadRequest) (*CreateReadResponse, error)
 	// Streams messages received off of a read
-	StreamRead(*StreamReadRequest, PlumberServer_StreamReadServer) error
+	StartRead(*StartReadRequest, PlumberServer_StartReadServer) error
 	// List all reads that have been created
 	GetAllReads(context.Context, *GetAllReadsRequest) (*GetAllReadsResponse, error)
 	// Stop reading data from a connection
 	StopRead(context.Context, *StopReadRequest) (*StopReadResponse, error)
+	// Resume reading data from an existing read
+	ResumeRead(context.Context, *ResumeReadRequest) (*ResumeReadResponse, error)
+	// Resume reading data from an existing read
+	DeleteRead(context.Context, *DeleteReadRequest) (*DeleteReadResponse, error)
 	// Write data to a connection
 	Write(context.Context, *WriteRequest) (*WriteResponse, error)
 	// Create a data relay from plumber server to the Batch platform
@@ -345,17 +372,23 @@ func (*UnimplementedPlumberServerServer) UpdateConnection(ctx context.Context, r
 func (*UnimplementedPlumberServerServer) DeleteConnection(ctx context.Context, req *DeleteConnectionRequest) (*DeleteConnectionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteConnection not implemented")
 }
-func (*UnimplementedPlumberServerServer) StartRead(ctx context.Context, req *StartReadRequest) (*StartReadResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StartRead not implemented")
+func (*UnimplementedPlumberServerServer) CreateRead(ctx context.Context, req *CreateReadRequest) (*CreateReadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateRead not implemented")
 }
-func (*UnimplementedPlumberServerServer) StreamRead(req *StreamReadRequest, srv PlumberServer_StreamReadServer) error {
-	return status.Errorf(codes.Unimplemented, "method StreamRead not implemented")
+func (*UnimplementedPlumberServerServer) StartRead(req *StartReadRequest, srv PlumberServer_StartReadServer) error {
+	return status.Errorf(codes.Unimplemented, "method StartRead not implemented")
 }
 func (*UnimplementedPlumberServerServer) GetAllReads(ctx context.Context, req *GetAllReadsRequest) (*GetAllReadsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllReads not implemented")
 }
 func (*UnimplementedPlumberServerServer) StopRead(ctx context.Context, req *StopReadRequest) (*StopReadResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StopRead not implemented")
+}
+func (*UnimplementedPlumberServerServer) ResumeRead(ctx context.Context, req *ResumeReadRequest) (*ResumeReadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResumeRead not implemented")
+}
+func (*UnimplementedPlumberServerServer) DeleteRead(ctx context.Context, req *DeleteReadRequest) (*DeleteReadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteRead not implemented")
 }
 func (*UnimplementedPlumberServerServer) Write(ctx context.Context, req *WriteRequest) (*WriteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Write not implemented")
@@ -491,42 +524,42 @@ func _PlumberServer_DeleteConnection_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PlumberServer_StartRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StartReadRequest)
+func _PlumberServer_CreateRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateReadRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PlumberServerServer).StartRead(ctx, in)
+		return srv.(PlumberServerServer).CreateRead(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.PlumberServer/StartRead",
+		FullMethod: "/protos.PlumberServer/CreateRead",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).StartRead(ctx, req.(*StartReadRequest))
+		return srv.(PlumberServerServer).CreateRead(ctx, req.(*CreateReadRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PlumberServer_StreamRead_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(StreamReadRequest)
+func _PlumberServer_StartRead_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(StartReadRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(PlumberServerServer).StreamRead(m, &plumberServerStreamReadServer{stream})
+	return srv.(PlumberServerServer).StartRead(m, &plumberServerStartReadServer{stream})
 }
 
-type PlumberServer_StreamReadServer interface {
-	Send(*StreamReadResponse) error
+type PlumberServer_StartReadServer interface {
+	Send(*StartReadResponse) error
 	grpc.ServerStream
 }
 
-type plumberServerStreamReadServer struct {
+type plumberServerStartReadServer struct {
 	grpc.ServerStream
 }
 
-func (x *plumberServerStreamReadServer) Send(m *StreamReadResponse) error {
+func (x *plumberServerStartReadServer) Send(m *StartReadResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -562,6 +595,42 @@ func _PlumberServer_StopRead_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PlumberServerServer).StopRead(ctx, req.(*StopReadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PlumberServer_ResumeRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResumeReadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlumberServerServer).ResumeRead(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.PlumberServer/ResumeRead",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlumberServerServer).ResumeRead(ctx, req.(*ResumeReadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PlumberServer_DeleteRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteReadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlumberServerServer).DeleteRead(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.PlumberServer/DeleteRead",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlumberServerServer).DeleteRead(ctx, req.(*DeleteReadRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -721,8 +790,8 @@ var _PlumberServer_serviceDesc = grpc.ServiceDesc{
 			Handler:    _PlumberServer_DeleteConnection_Handler,
 		},
 		{
-			MethodName: "StartRead",
-			Handler:    _PlumberServer_StartRead_Handler,
+			MethodName: "CreateRead",
+			Handler:    _PlumberServer_CreateRead_Handler,
 		},
 		{
 			MethodName: "GetAllReads",
@@ -731,6 +800,14 @@ var _PlumberServer_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StopRead",
 			Handler:    _PlumberServer_StopRead_Handler,
+		},
+		{
+			MethodName: "ResumeRead",
+			Handler:    _PlumberServer_ResumeRead_Handler,
+		},
+		{
+			MethodName: "DeleteRead",
+			Handler:    _PlumberServer_DeleteRead_Handler,
 		},
 		{
 			MethodName: "Write",
@@ -763,8 +840,8 @@ var _PlumberServer_serviceDesc = grpc.ServiceDesc{
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "StreamRead",
-			Handler:       _PlumberServer_StreamRead_Handler,
+			StreamName:    "StartRead",
+			Handler:       _PlumberServer_StartRead_Handler,
 			ServerStreams: true,
 		},
 	},
