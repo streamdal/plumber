@@ -10,8 +10,8 @@ import (
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 
-	"github.com/batchcorp/schemas/build/go/events/records"
-	"github.com/batchcorp/schemas/build/go/services"
+	"github.com/batchcorp/collector-schemas/build/go/protos/records"
+	"github.com/batchcorp/collector-schemas/build/go/protos/services"
 
 	"github.com/batchcorp/plumber/backends/aws-sqs/types"
 )

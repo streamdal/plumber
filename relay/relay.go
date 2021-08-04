@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
 
-	"github.com/batchcorp/schemas/build/go/services"
+	"github.com/batchcorp/collector-schemas/build/go/protos/services"
 
 	sqsTypes "github.com/batchcorp/plumber/backends/aws-sqs/types"
 	azureTypes "github.com/batchcorp/plumber/backends/azure/types"
