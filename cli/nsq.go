@@ -95,18 +95,18 @@ func addReadNSQFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Envar("PLUMBER_RELAY_NSQ_CHANNEL").
 		StringVar(&opts.NSQ.Channel)
 
-	cmd.Flag("lookupd-address", "Address of LookupD Server (Ex: localhost:4161)").
+	cmd.Flag("lookupd-address", "Address of LookupD RunServer (Ex: localhost:4161)").
 		Envar("PLUMBER_RELAY_NSQ_LOOKUPD_ADDRESS").
 		StringVar(&opts.NSQ.NSQLookupDAddress)
 
-	cmd.Flag("nsqd-address", "Address of NSQ Server (Ex: localhost:4150)").
+	cmd.Flag("nsqd-address", "Address of NSQ RunServer (Ex: localhost:4150)").
 		Envar("PLUMBER_RELAY_NSQ_NSQD_ADDRESS").
 		StringVar(&opts.NSQ.NSQDAddress)
 }
 
 // addWriteNSQFlags creates flags used for writing to NSQ
 func addWriteNSQFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("nsqd-address", "Address of NSQ Server (Ex: localhost:4150)").
+	cmd.Flag("nsqd-address", "Address of NSQ RunServer (Ex: localhost:4150)").
 		Default("localhost:4150").
 		StringVar(&opts.NSQ.NSQDAddress)
 }

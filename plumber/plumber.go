@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/batchcorp/plumber/config"
+	"github.com/batchcorp/plumber/embed/etcd"
 
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
@@ -37,6 +38,7 @@ type Config struct {
 
 type Plumber struct {
 	*Config
+	Etcd    *etcd.Etcd
 	RelayCh chan interface{}
 	MsgDesc *desc.MessageDescriptor
 	log     *logrus.Entry
@@ -129,7 +131,7 @@ func (p *Plumber) Run() {
 
 	switch {
 	case p.Cmd == "serve":
-		err = p.Serve()
+		err = p.RunServer()
 	case strings.HasPrefix(p.Cmd, "batch"):
 		err = p.parseBatchCmd()
 	case strings.HasPrefix(p.Cmd, "read"):

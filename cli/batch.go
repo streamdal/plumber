@@ -173,7 +173,7 @@ func handleCreateDestinationFlagsKafka(cmd *kingpin.CmdClause, opts *Options) {
 		Required().
 		StringVar(&opts.Batch.DestinationMetadata.KafkaTopic)
 
-	cmd.Flag("address", "Kafka Server Address and Port. (Ex: msg.domain.com:9092)").
+	cmd.Flag("address", "Kafka RunServer Address and Port. (Ex: msg.domain.com:9092)").
 		Required().
 		StringVar(&opts.Batch.DestinationMetadata.KafkaAddress)
 

@@ -1,10 +1,13 @@
 package plumber
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"sync"
 
+	"github.com/batchcorp/plumber/embed/etcd"
+	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -13,7 +16,38 @@ import (
 	"github.com/batchcorp/plumber/server"
 )
 
-func (p *Plumber) Serve() error {
+// RunServer is a wrapper for validating server options, starting embedded etcd
+// and starting the gRPC server.
+func (p *Plumber) RunServer() error {
+	if err := p.startEtcd(); err != nil {
+		return errors.Wrap(err, "unable to start embedded etcd")
+	}
+
+	// Blocks until exit
+	if err := p.runServer(); err != nil {
+		return errors.Wrap(err, "unable to run server")
+	}
+
+	return nil
+}
+
+func (p *Plumber) startEtcd() error {
+	e, err := etcd.New(p.Config.Options.Server)
+	if err != nil {
+		return errors.Wrap(err, "unable to instantiate etcd")
+	}
+
+	// TODO: Different context? (etcd)
+	if err := e.Start(context.Background()); err != nil {
+		return errors.Wrap(err, "unable to start embedded etcd")
+	}
+
+	p.Etcd = e
+
+	return nil
+}
+
+func (p *Plumber) runServer() error {
 	lis, err := net.Listen("tcp", p.Options.Server.ListenAddress)
 	if err != nil {
 		return fmt.Errorf("unable to listen on '%s': %s", p.Options.Server.ListenAddress, err)

@@ -12,10 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-redis/redis/v8/internal"
 	"github.com/go-redis/redis/v8/internal/pool"
-	"go.opentelemetry.io/otel/label"
-	"go.opentelemetry.io/otel/trace"
 )
 
 // Limiter is the interface of a rate limiter or a circuit breaker.
@@ -79,8 +76,12 @@ type Options struct {
 	// Default is ReadTimeout.
 	WriteTimeout time.Duration
 
+	// Type of connection pool.
+	// true for FIFO pool, false for LIFO pool.
+	// Note that fifo has higher overhead compared to lifo.
+	PoolFIFO bool
 	// Maximum number of socket connections.
-	// Default is 10 connections per every CPU as reported by runtime.NumCPU.
+	// Default is 10 connections per every available CPU as reported by runtime.GOMAXPROCS.
 	PoolSize int
 	// Minimum number of idle connections which is useful when establishing
 	// new connection is slow.
@@ -139,7 +140,7 @@ func (opt *Options) init() {
 		}
 	}
 	if opt.PoolSize == 0 {
-		opt.PoolSize = 10 * runtime.NumCPU()
+		opt.PoolSize = 10 * runtime.GOMAXPROCS(0)
 	}
 	switch opt.ReadTimeout {
 	case -1:
@@ -292,21 +293,9 @@ func getUserPassword(u *url.URL) (string, string) {
 func newConnPool(opt *Options) *pool.ConnPool {
 	return pool.NewConnPool(&pool.Options{
 		Dialer: func(ctx context.Context) (net.Conn, error) {
-			var conn net.Conn
-			err := internal.WithSpan(ctx, "redis.dial", func(ctx context.Context, span trace.Span) error {
-				span.SetAttributes(
-					label.String("db.connection_string", opt.Addr),
-				)
-
-				var err error
-				conn, err = opt.Dialer(ctx, opt.Network, opt.Addr)
-				if err != nil {
-					_ = internal.RecordError(ctx, span, err)
-				}
-				return err
-			})
-			return conn, err
+			return opt.Dialer(ctx, opt.Network, opt.Addr)
 		},
+		PoolFIFO:           opt.PoolFIFO,
 		PoolSize:           opt.PoolSize,
 		MinIdleConns:       opt.MinIdleConns,
 		MaxConnAge:         opt.MaxConnAge,

@@ -68,6 +68,9 @@ type ClusterOptions struct {
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
 
+	// PoolFIFO uses FIFO mode for each node connection pool GET/PUT (default LIFO).
+	PoolFIFO bool
+
 	// PoolSize applies per cluster node and not for the whole cluster.
 	PoolSize           int
 	MinIdleConns       int
@@ -91,7 +94,7 @@ func (opt *ClusterOptions) init() {
 	}
 
 	if opt.PoolSize == 0 {
-		opt.PoolSize = 5 * runtime.NumCPU()
+		opt.PoolSize = 5 * runtime.GOMAXPROCS(0)
 	}
 
 	switch opt.ReadTimeout {
@@ -146,6 +149,7 @@ func (opt *ClusterOptions) clientOptions() *Options {
 		ReadTimeout:  opt.ReadTimeout,
 		WriteTimeout: opt.WriteTimeout,
 
+		PoolFIFO:           opt.PoolFIFO,
 		PoolSize:           opt.PoolSize,
 		MinIdleConns:       opt.MinIdleConns,
 		MaxConnAge:         opt.MaxConnAge,
@@ -295,8 +299,9 @@ func (c *clusterNodes) Close() error {
 
 func (c *clusterNodes) Addrs() ([]string, error) {
 	var addrs []string
+
 	c.mu.RLock()
-	closed := c.closed
+	closed := c.closed //nolint:ifshort
 	if !closed {
 		if len(c.activeAddrs) > 0 {
 			addrs = c.activeAddrs
@@ -590,8 +595,16 @@ func (c *clusterState) slotRandomNode(slot int) (*clusterNode, error) {
 	if len(nodes) == 0 {
 		return c.nodes.Random()
 	}
-	n := rand.Intn(len(nodes))
-	return nodes[n], nil
+	if len(nodes) == 1 {
+		return nodes[0], nil
+	}
+	randomNodes := rand.Perm(len(nodes))
+	for _, idx := range randomNodes {
+		if node := nodes[idx]; !node.Failing() {
+			return node, nil
+		}
+	}
+	return nodes[randomNodes[0]], nil
 }
 
 func (c *clusterState) slotNodes(slot int) []*clusterNode {
@@ -632,14 +645,14 @@ func (c *clusterStateHolder) Reload(ctx context.Context) (*clusterState, error) 
 	return state, nil
 }
 
-func (c *clusterStateHolder) LazyReload(ctx context.Context) {
+func (c *clusterStateHolder) LazyReload() {
 	if !atomic.CompareAndSwapUint32(&c.reloading, 0, 1) {
 		return
 	}
 	go func() {
 		defer atomic.StoreUint32(&c.reloading, 0)
 
-		_, err := c.Reload(ctx)
+		_, err := c.Reload(context.Background())
 		if err != nil {
 			return
 		}
@@ -649,14 +662,15 @@ func (c *clusterStateHolder) LazyReload(ctx context.Context) {
 
 func (c *clusterStateHolder) Get(ctx context.Context) (*clusterState, error) {
 	v := c.state.Load()
-	if v != nil {
-		state := v.(*clusterState)
-		if time.Since(state.createdAt) > 10*time.Second {
-			c.LazyReload(ctx)
-		}
-		return state, nil
+	if v == nil {
+		return c.Reload(ctx)
 	}
-	return c.Reload(ctx)
+
+	state := v.(*clusterState)
+	if time.Since(state.createdAt) > 10*time.Second {
+		c.LazyReload()
+	}
+	return state, nil
 }
 
 func (c *clusterStateHolder) ReloadOrGet(ctx context.Context) (*clusterState, error) {
@@ -732,7 +746,7 @@ func (c *ClusterClient) Options() *ClusterOptions {
 // ReloadState reloads cluster state. If available it calls ClusterSlots func
 // to get cluster slots information.
 func (c *ClusterClient) ReloadState(ctx context.Context) {
-	c.state.LazyReload(ctx)
+	c.state.LazyReload()
 }
 
 // Close closes the cluster client, releasing any open resources.
@@ -793,7 +807,7 @@ func (c *ClusterClient) process(ctx context.Context, cmd Cmder) error {
 		}
 		if isReadOnly := isReadOnlyError(lastErr); isReadOnly || lastErr == pool.ErrClosed {
 			if isReadOnly {
-				c.state.LazyReload(ctx)
+				c.state.LazyReload()
 			}
 			node = nil
 			continue
@@ -1228,7 +1242,7 @@ func (c *ClusterClient) checkMovedErr(
 	}
 
 	if moved {
-		c.state.LazyReload(ctx)
+		c.state.LazyReload()
 		failedCmds.Add(node, cmd)
 		return true
 	}
@@ -1414,7 +1428,7 @@ func (c *ClusterClient) cmdsMoved(
 	}
 
 	if moved {
-		c.state.LazyReload(ctx)
+		c.state.LazyReload()
 		for _, cmd := range cmds {
 			failedCmds.Add(node, cmd)
 		}
@@ -1472,7 +1486,7 @@ func (c *ClusterClient) Watch(ctx context.Context, fn func(*Tx) error, keys ...s
 
 		if isReadOnly := isReadOnlyError(err); isReadOnly || err == pool.ErrClosed {
 			if isReadOnly {
-				c.state.LazyReload(ctx)
+				c.state.LazyReload()
 			}
 			node, err = c.slotMasterNode(ctx, slot)
 			if err != nil {
@@ -1639,7 +1653,7 @@ func (c *ClusterClient) cmdNode(
 		return nil, err
 	}
 
-	if (c.opt.RouteByLatency || c.opt.RouteRandomly) && cmdInfo != nil && cmdInfo.ReadOnly {
+	if c.opt.ReadOnly && cmdInfo != nil && cmdInfo.ReadOnly {
 		return c.slotReadOnlyNode(state, slot)
 	}
 	return state.slotMasterNode(slot)
