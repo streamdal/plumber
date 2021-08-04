@@ -31,7 +31,7 @@ import (
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 
-	"github.com/batchcorp/schemas/build/go/events"
+	"github.com/batchcorp/collector-schemas/build/go/protos/events"
 )
 
 func init() {

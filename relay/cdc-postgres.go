@@ -9,9 +9,9 @@ import (
 
 	"google.golang.org/grpc"
 
+	"github.com/batchcorp/collector-schemas/build/go/protos/records"
+	"github.com/batchcorp/collector-schemas/build/go/protos/services"
 	"github.com/batchcorp/plumber/backends/cdc-postgres/types"
-	"github.com/batchcorp/schemas/build/go/events/records"
-	"github.com/batchcorp/schemas/build/go/services"
 )
 
 // handleCdcPostgres sends a cdc-postgres relay message to the GRPC server

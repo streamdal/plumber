@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/batchcorp/schemas/build/go/events/records"
-	"github.com/batchcorp/schemas/build/go/services"
 	"google.golang.org/grpc"
+
+	"github.com/batchcorp/collector-schemas/build/go/protos/records"
+	"github.com/batchcorp/collector-schemas/build/go/protos/services"
 
 	"github.com/batchcorp/plumber/backends/rpubsub/types"
 )
