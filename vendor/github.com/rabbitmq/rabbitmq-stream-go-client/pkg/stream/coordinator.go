@@ -76,7 +76,9 @@ func (coordinator *Coordinator) RemoveConsumerById(id interface{}, reason Event)
 
 	if consumer.closeHandler != nil {
 		consumer.closeHandler <- reason
+		close(consumer.closeHandler)
 	}
+
 	return coordinator.removeById(id, coordinator.consumers)
 }
 func (coordinator *Coordinator) RemoveProducerById(id uint8, reason Event) error {
@@ -175,10 +177,6 @@ func (coordinator *Coordinator) RemoveResponseByName(id string) error {
 	coordinator.responses[id] = nil
 	delete(coordinator.responses, id)
 	return nil
-}
-
-func (coordinator *Coordinator) ResponsesCount() int {
-	return coordinator.count(coordinator.responses)
 }
 
 /// Consumer functions

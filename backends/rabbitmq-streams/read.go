@@ -54,7 +54,9 @@ func (r *RabbitMQStreams) Read() error {
 		}
 
 		if !r.Options.ReadFollow {
-			consumerContext.Consumer.Close()
+			go func() {
+				_ = consumerContext.Consumer.Close()
+			}()
 		}
 	}
 

@@ -279,7 +279,7 @@ func (producer *Producer) internalBatchSend(messagesSequence []messageSequence) 
 	err := producer.options.client.socket.writeAndFlush(b.Bytes())
 	if err != nil {
 		// This sleep is need to wait the
-		// 200 milliseconds to flush all the pending messages
+		// 800 milliseconds to flush all the pending messages
 		time.Sleep(800 * time.Millisecond)
 		producer.setStatus(closed)
 		producer.FlushUnConfirmedMessages()

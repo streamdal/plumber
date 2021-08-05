@@ -22,6 +22,8 @@ func (sck *socket) setOpen() {
 }
 
 func (sck *socket) isOpen() bool {
+	sck.mutex.Lock()
+	defer sck.mutex.Unlock()
 	return atomic.LoadInt32(&sck.closed) == 1
 }
 func (sck *socket) shutdown(err error) {

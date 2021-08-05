@@ -8,6 +8,11 @@ import (
 	"sync"
 )
 
+type AddressResolver struct {
+	Host string
+	Port int
+}
+
 type Broker struct {
 	Host      string
 	Port      string
@@ -17,6 +22,8 @@ type Broker struct {
 	Password  string
 	Scheme    string
 	tlsConfig *tls.Config
+	advHost   string
+	advPort   string
 }
 
 func newBrokerDefault() *Broker {
@@ -65,13 +72,16 @@ func (br *Broker) mergeWithDefault() {
 
 }
 
-func (br *Broker) cloneFrom(broker *Broker) {
+func (br *Broker) cloneFrom(broker *Broker, resolver *AddressResolver) {
 	br.User = broker.User
 	br.Password = broker.Password
 	br.Vhost = broker.Vhost
 	br.Scheme = broker.Scheme
 	br.tlsConfig = broker.tlsConfig
-
+	if resolver != nil {
+		br.Host = resolver.Host
+		br.Port = strconv.Itoa(resolver.Port)
+	}
 }
 
 func (br *Broker) GetUri() string {

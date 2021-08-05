@@ -63,6 +63,8 @@ func (consumer *Consumer) GetOffset() int64 {
 }
 
 func (consumer *Consumer) NotifyClose() ChannelClose {
+	consumer.mutex.Lock()
+	defer consumer.mutex.Unlock()
 	ch := make(chan Event, 1)
 	consumer.closeHandler = ch
 	return ch
