@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-
 	"github.com/sirupsen/logrus"
 )
 
@@ -35,6 +34,7 @@ type UserCodeResponse struct {
 	UserCode        string
 	VerificationURL string
 	ExpiresIn       time.Time
+	CheckInterval   time.Duration
 }
 
 // New returns a configured Github struct
@@ -75,11 +75,17 @@ func (g *Github) GetUserCode() (*UserCodeResponse, error) {
 		return nil, errors.Wrap(err, "unable to parse expiration time of Github response")
 	}
 
+	checkInterval, err := time.ParseDuration(result.Get("interval") + "s")
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to parse authorization check interval")
+	}
+
 	return &UserCodeResponse{
 		DeviceCode:      result.Get("device_code"),
 		UserCode:        result.Get("user_code"),
 		VerificationURL: result.Get("verification_uri"),
 		ExpiresIn:       time.Now().UTC().Add(expiresDuration),
+		CheckInterval:   checkInterval,
 	}, nil
 }
 
@@ -101,7 +107,7 @@ func (g *Github) PollForAccessToken(cfg *UserCodeResponse) (string, error) {
 		bearerToken, err := g.GetAccessToken(cfg.DeviceCode)
 		if err == ErrPendingAuth {
 			g.log.Debug("Still waiting on user to enter auth code")
-			time.Sleep(time.Second * 5)
+			time.Sleep(cfg.CheckInterval)
 			continue
 		}
 		if err != nil {
