@@ -85,7 +85,7 @@ const (
 	maxBatchSize     = 10_000
 	defaultBatchSize = 100
 	//
-	ClientVersion = "0.10-alpha"
+	ClientVersion = "0.11-alpha"
 
 	StreamTcpPort = "5552"
 )

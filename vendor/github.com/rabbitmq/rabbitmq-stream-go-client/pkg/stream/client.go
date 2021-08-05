@@ -23,18 +23,29 @@ type ClientProperties struct {
 	items map[string]string
 }
 
+type ConnectionProperties struct {
+	host string
+	port string
+}
+
+type HeartBeat struct {
+	mutex sync.Mutex
+	value time.Time
+}
+
 type Client struct {
-	socket           socket
-	destructor       *sync.Once
-	clientProperties ClientProperties
-	tuneState        TuneState
-	coordinator      *Coordinator
-	broker           *Broker
-	plainCRCBuffer   []byte
+	socket               socket
+	destructor           *sync.Once
+	clientProperties     ClientProperties
+	connectionProperties ConnectionProperties
+	tuneState            TuneState
+	coordinator          *Coordinator
+	broker               *Broker
+	plainCRCBuffer       []byte
 
 	mutex            *sync.Mutex
 	metadataListener metadataListener
-	lastHeartBeat    time.Time
+	lastHeartBeat    HeartBeat
 }
 
 func newClient(connectionName string, broker *Broker) *Client {
@@ -44,13 +55,20 @@ func newClient(connectionName string, broker *Broker) *Client {
 	}
 
 	c := &Client{
-		coordinator:      NewCoordinator(),
-		broker:           clientBroker,
-		destructor:       &sync.Once{},
-		mutex:            &sync.Mutex{},
-		clientProperties: ClientProperties{items: make(map[string]string)},
-		plainCRCBuffer:   make([]byte, 4096),
-		lastHeartBeat:    time.Now(),
+		coordinator:          NewCoordinator(),
+		broker:               clientBroker,
+		destructor:           &sync.Once{},
+		mutex:                &sync.Mutex{},
+		clientProperties:     ClientProperties{items: make(map[string]string)},
+		connectionProperties: ConnectionProperties{},
+		plainCRCBuffer:       make([]byte, 4096),
+		lastHeartBeat: HeartBeat{
+			value: time.Now(),
+		},
+		socket: socket{
+			mutex:      &sync.Mutex{},
+			destructor: &sync.Once{},
+		},
 	}
 	c.setConnectionName(connectionName)
 	return c
@@ -67,10 +85,11 @@ func (c *Client) getSocket() *socket {
 	return &c.socket
 }
 
-func (c *Client) setSocket(sck socket) {
+func (c *Client) setSocketConnection(connection net.Conn) {
 	//c.mutex.Lock()
 	//defer c.mutex.Unlock()
-	c.socket = sck
+	c.socket.connection = connection
+	c.socket.writer = bufio.NewWriter(connection)
 }
 
 func (c *Client) getTuneState() TuneState {
@@ -80,15 +99,15 @@ func (c *Client) getTuneState() TuneState {
 }
 
 func (c *Client) getLastHeartBeat() time.Time {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-	return c.lastHeartBeat
+	c.lastHeartBeat.mutex.Lock()
+	defer c.lastHeartBeat.mutex.Unlock()
+	return c.lastHeartBeat.value
 }
 
 func (c *Client) setLastHeartBeat(value time.Time) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-	c.lastHeartBeat = value
+	c.lastHeartBeat.mutex.Lock()
+	defer c.lastHeartBeat.mutex.Unlock()
+	c.lastHeartBeat.value = value
 }
 
 func (c *Client) connect() error {
@@ -110,9 +129,7 @@ func (c *Client) connect() error {
 		var connection net.Conn
 		var errorConnection error
 		if c.broker.isTLS() {
-			conf := &tls.Config{
-				InsecureSkipVerify: true,
-			}
+			conf := &tls.Config{}
 
 			if c.broker.tlsConfig != nil {
 				conf = c.broker.tlsConfig
@@ -137,10 +154,7 @@ func (c *Client) connect() error {
 			}
 		}
 
-		c.setSocket(socket{connection: connection, mutex: &sync.Mutex{},
-			writer:     bufio.NewWriter(connection),
-			destructor: &sync.Once{},
-		})
+		c.setSocketConnection(connection)
 		c.socket.setOpen()
 
 		go c.handleResponse()
@@ -165,6 +179,7 @@ func (c *Client) connect() error {
 			logs.LogDebug("%s", err2)
 			return err2
 		}
+
 		c.heartBeat()
 		logs.LogDebug("User %s, connected to: %s, vhost:%s", u.User.Username(),
 			net.JoinHostPort(host, port),
@@ -283,9 +298,9 @@ func (c *Client) open(virtualHost string) error {
 	}
 
 	advHostPort := <-resp.data
-	for k, v := range advHostPort.(ClientProperties).items {
-		c.clientProperties.items[k] = v
-	}
+	c.connectionProperties.host = advHostPort.(ConnectionProperties).host
+	c.connectionProperties.port = advHostPort.(ConnectionProperties).port
+
 	_ = c.coordinator.RemoveResponseById(resp.correlationid)
 	return nil
 
@@ -392,34 +407,31 @@ func (c *Client) Close() error {
 		}
 	}
 
-	c.mutex.Lock()
+	//c.mutex.Lock()
 	if c.metadataListener != nil {
 		close(c.metadataListener)
 		c.metadataListener = nil
 	}
-	c.mutex.Unlock()
+	//c.mutex.Unlock()
 
 	var err error
 	if c.getSocket().isOpen() {
 
 		c.closeHartBeat()
 		res := c.coordinator.NewResponse(CommandClose)
-		length := 2 + 2 + 4 + 2
+		length := 2 + 2 + 4 + 2 + 2 + len("OK")
 		var b = bytes.NewBuffer(make([]byte, 0, length+4))
-		writeInt(b, length)
-		writeUShort(b, uShortEncodeResponseCode(CommandClose))
-		writeShort(b, version1)
+		writeProtocolHeader(b, length, CommandClose, res.correlationid)
 		writeUShort(b, responseCodeOk)
+		writeString(b, "OK")
 
-		err = c.socket.writeAndFlush(b.Bytes())
-		if err != nil {
-			logs.LogWarn("error during send client close %s", err)
+		errW := c.socket.writeAndFlush(b.Bytes())
+		if errW != nil {
+			logs.LogWarn("error during send client close %s", errW)
 		}
 		_ = c.coordinator.RemoveResponseById(res.correlationid)
 	}
-	c.mutex.Lock()
 	c.getSocket().shutdown(nil)
-	c.mutex.Unlock()
 	return err
 }
 
@@ -560,6 +572,8 @@ func (c *Client) BrokerLeader(stream string) (*Broker, error) {
 		return nil, fmt.Errorf("leader error for stream for stream: %s", stream)
 	}
 
+	streamMetadata.Leader.advPort = streamMetadata.Leader.Port
+	streamMetadata.Leader.advHost = streamMetadata.Leader.Host
 	return streamMetadata.Leader, nil
 }
 

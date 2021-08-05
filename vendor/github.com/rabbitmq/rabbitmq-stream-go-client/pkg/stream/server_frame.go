@@ -32,7 +32,7 @@ func (c *Client) handleResponse() {
 			_ = c.Close()
 			break
 		}
-		c.lastHeartBeat = time.Now()
+		c.setLastHeartBeat(time.Now())
 		readerProtocol.FrameLen = frameLen
 		readerProtocol.CommandID = uShortExtractResponseCode(readUShort(buffer))
 		readerProtocol.Version = readUShort(buffer)
@@ -197,12 +197,23 @@ func (c *Client) handleGenericResponse(readProtocol *ReaderProtocol, r *bufio.Re
 func (c *Client) commandOpen(readProtocol *ReaderProtocol, r *bufio.Reader) {
 	readProtocol.CorrelationId, _ = readUInt(r)
 	readProtocol.ResponseCode = uShortExtractResponseCode(readUShort(r))
-	clientProperties := ClientProperties{
-		items: map[string]string{},
-	}
+	clientProperties := ConnectionProperties{}
 	connectionPropertiesCount, _ := readUInt(r)
 	for i := 0; i < int(connectionPropertiesCount); i++ {
-		clientProperties.items[readString(r)] = readString(r)
+		v := readString(r)
+		switch v {
+
+		case "advertised_host":
+			{
+				clientProperties.host = readString(r)
+			}
+		case "advertised_port":
+			{
+				clientProperties.port = readString(r)
+			}
+
+		}
+
 	}
 
 	res, err := c.coordinator.GetResponseById(readProtocol.CorrelationId)
@@ -384,7 +395,7 @@ func (c *Client) handlePublishError(buffer *bufio.Reader) {
 		code = readUShort(buffer)
 		producer, err := c.coordinator.GetProducerById(publisherId)
 		if err != nil {
-			logs.LogWarn("producer not found :%s", err)
+			logs.LogWarn("producer id %d not found, publish error :%s", publishingId, lookErrorCode(code))
 			producer = &Producer{unConfirmedMessages: map[int64]*UnConfirmedMessage{}}
 		} else {
 			producer.mutex.Lock()
@@ -463,8 +474,8 @@ func (c *Client) closeFrameHandler(readProtocol *ReaderProtocol, r *bufio.Reader
 	readProtocol.CorrelationId, _ = readUInt(r)
 	readProtocol.ResponseCode = uShortExtractResponseCode(readUShort(r))
 	closeReason := readString(r)
-	logs.LogInfo("Received close from server, reason: {} {}", lookErrorCode(readProtocol.ResponseCode),
-		closeReason)
+	logs.LogDebug("Received close from server, reason: %s %s %d", lookErrorCode(readProtocol.ResponseCode),
+		closeReason, readProtocol.ResponseCode)
 
 	length := 2 + 2 + 4 + 2
 	var b = bytes.NewBuffer(make([]byte, 0, length))
