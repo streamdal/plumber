@@ -9,6 +9,7 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber/config"
+	"github.com/batchcorp/plumber/github"
 	"github.com/batchcorp/plumber/server/types"
 )
 
@@ -19,6 +20,8 @@ type PlumberServer struct {
 	Reads            map[string]*Read
 	ReadsMutex       *sync.RWMutex
 	RelaysMutex      *sync.RWMutex
+	GithubAuth       *github.UserCodeResponse
+	GithubService    github.IGithub
 	Log              *logrus.Entry
 }
 

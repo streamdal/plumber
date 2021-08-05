@@ -20,7 +20,7 @@ type IGithub interface {
 	GetAccessToken(deviceCode string) (string, error)
 	GetUserCode() (*UserCodeResponse, error)
 	PollForAccessToken(cfg *UserCodeResponse) (string, error)
-	Post(url string, params map[string]interface{}) ([]byte, int, error)
+	Post(url string, values url.Values) ([]byte, int, error)
 }
 
 type Github struct {

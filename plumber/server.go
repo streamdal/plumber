@@ -5,6 +5,8 @@ import (
 	"net"
 	"sync"
 
+	"github.com/batchcorp/plumber/github"
+
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -29,6 +31,8 @@ func (p *Plumber) Serve() error {
 		p.PersistentConfig.Save()
 	}
 
+	gh, _ := github.New()
+
 	plumberServer := &server.PlumberServer{
 		PersistentConfig: p.PersistentConfig,
 		AuthToken:        p.Options.Server.AuthToken,
@@ -36,6 +40,7 @@ func (p *Plumber) Serve() error {
 		Reads:            make(map[string]*server.Read),
 		ReadsMutex:       &sync.RWMutex{},
 		RelaysMutex:      &sync.RWMutex{},
+		GithubService:    gh,
 		Log:              logrus.WithField("pkg", "plumber/server.go"),
 	}
 
