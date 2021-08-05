@@ -143,6 +143,8 @@ func (p *Plumber) Run() {
 		err = p.parseCmdDynamic()
 	case strings.HasPrefix(p.Cmd, "lag"):
 		err = p.parseCmdLag()
+	case strings.HasPrefix(p.Cmd, "github"):
+		err = p.parseCmdGithub()
 	default:
 		logrus.Fatalf("unrecognized command: %s", p.Cmd)
 	}
