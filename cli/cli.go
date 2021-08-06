@@ -136,6 +136,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	batchCmd := app.Command("batch", "Access your Batch.sh account information")
 	lagCmd := app.Command("lag", "Monitor lag in the messaging system")
 	dynamicCmd := app.Command("dynamic", "Act as a batch.sh replay destination")
+	githubCmd := app.Command("github", "Authorize plumber to access your github repos")
 	serverCmd := app.Command("server", "Run plumber in server mode")
 
 	HandleRelayFlags(relayCmd, opts)
@@ -195,6 +196,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	HandleGlobalFlags(dynamicCmd, opts)
 	HandleBatchFlags(batchCmd, opts)
 	HandleGlobalDynamicFlags(dynamicCmd, opts)
+	HandleGithubFlags(githubCmd, opts)
 
 	app.Version(version)
 	app.HelpFlag.Short('h')

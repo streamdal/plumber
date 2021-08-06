@@ -288,3 +288,13 @@ func (p *Plumber) parseBatchCmd() error {
 		return fmt.Errorf("unrecognized command: %s", p.Cmd)
 	}
 }
+
+// parseCmdDynamic handles dynamic replay destination mode commands
+func (p *Plumber) parseCmdGithub() error {
+	switch {
+	case p.Cmd == "github login":
+		return p.githubLogin()
+	default:
+		return fmt.Errorf("unrecognized command: %s", p.Cmd)
+	}
+}

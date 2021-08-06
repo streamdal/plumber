@@ -26,6 +26,7 @@ type Config struct {
 	UserID      string                       `json:"user_id"`
 	Connections map[string]*types.Connection `json:"connections"`
 	Relays      map[string]*types.Relay      `json:"relays"`
+	GitHubToken string                       `json:"github_bearer_token"`
 }
 
 // Save is a convenience method of persisting the config to disk via a single call

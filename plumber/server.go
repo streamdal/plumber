@@ -6,13 +6,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/batchcorp/plumber/embed/etcd"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber/embed/etcd"
+	"github.com/batchcorp/plumber/github"
 	"github.com/batchcorp/plumber/server"
 )
 
@@ -64,6 +65,8 @@ func (p *Plumber) runServer() error {
 		p.PersistentConfig.Save()
 	}
 
+	gh, _ := github.New()
+
 	plumberServer := &server.PlumberServer{
 		PersistentConfig: p.PersistentConfig,
 		AuthToken:        p.Options.Server.AuthToken,
@@ -71,6 +74,7 @@ func (p *Plumber) runServer() error {
 		Reads:            make(map[string]*server.Read),
 		ReadsMutex:       &sync.RWMutex{},
 		RelaysMutex:      &sync.RWMutex{},
+		GithubService:    gh,
 		Log:              logrus.WithField("pkg", "plumber/server.go"),
 	}
 
