@@ -59,7 +59,7 @@ func addSharedNatsStreamingFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("address", "Dial string for NATS server. Ex: nats://localhost:4222").
 		StringVar(&opts.NatsStreaming.Address)
 
-	cmd.Flag("cluster-id", "Cluster ID of the Nats RunServer").
+	cmd.Flag("cluster-id", "Cluster ID of the Nats server").
 		Required().
 		StringVar(&opts.NatsStreaming.ClusterID)
 
