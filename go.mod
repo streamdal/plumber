@@ -15,9 +15,9 @@ require (
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fatih/color v1.12.0 // indirect
-	github.com/go-redis/redis/v8 v8.4.8
+	github.com/go-redis/redis/v8 v8.11.1
 	github.com/go-stomp/stomp v2.0.6+incompatible
-	github.com/golang/protobuf v1.5.0
+	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.2.0
 	github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
 	github.com/jackc/pgx v3.6.2+incompatible
@@ -53,9 +53,10 @@ require (
 	github.com/v2pro/plz v0.0.0-20200805122259-422184e41b6e // indirect
 	github.com/v2pro/quokka v0.0.0-20171201153428-382cb39c6ee6 // indirect
 	github.com/v2pro/wombat v0.0.0-20180402055224-a56dbdcddef2 // indirect
+	go.etcd.io/etcd/server/v3 v3.5.0
 	go.mongodb.org/mongo-driver v1.5.1
-	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
-	google.golang.org/grpc v1.30.0
+	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
+	google.golang.org/grpc v1.38.0
 	google.golang.org/protobuf v1.26.1-0.20210525005349-febffdd88e85 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )

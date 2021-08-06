@@ -40,8 +40,8 @@ func main() {
 	serviceCtx, serviceShutdownFunc := context.WithCancel(context.Background())
 	mainCtx, mainShutdownFunc := context.WithCancel(context.Background())
 
-	// We only want to intercept these in relay mode
-	if strings.HasPrefix(cmd, "relay") {
+	// We only want to intercept these in relay or serve mode
+	if strings.HasPrefix(cmd, "relay") || strings.HasPrefix(cmd, "serve") {
 		logrus.Debug("Intercepting signals")
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)

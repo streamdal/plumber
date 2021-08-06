@@ -37,7 +37,7 @@ func HandleRedisPubSubFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts
 }
 
 func addSharedRedisPubSubFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("address", "Address of RedisPubSub Server").
+	cmd.Flag("address", "Address of RedisPubSub server").
 		Default("localhost:6379").
 		Envar("PLUMBER_RELAY_REDIS_PUBSUB_ADDRESS").
 		StringVar(&opts.RedisPubSub.Address)
