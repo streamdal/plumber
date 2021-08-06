@@ -12,7 +12,10 @@ import (
 )
 
 var (
-	ErrClosed      = errors.New("redis: client is closed")
+	// ErrClosed performs any operation on the closed client will return this error.
+	ErrClosed = errors.New("redis: client is closed")
+
+	// ErrPoolTimeout timed out waiting to get a connection from the connection pool.
 	ErrPoolTimeout = errors.New("redis: connection pool timeout")
 )
 
@@ -54,6 +57,7 @@ type Options struct {
 	Dialer  func(context.Context) (net.Conn, error)
 	OnClose func(*Conn) error
 
+	PoolFIFO           bool
 	PoolSize           int
 	MinIdleConns       int
 	MaxConnAge         time.Duration
@@ -185,7 +189,6 @@ func (p *ConnPool) dialConn(ctx context.Context, pooled bool) (*Conn, error) {
 		return nil, err
 	}
 
-	internal.NewConnectionsCounter.Add(ctx, 1)
 	cn := NewConn(netConn)
 	cn.pooled = pooled
 	return cn, nil
@@ -228,8 +231,7 @@ func (p *ConnPool) Get(ctx context.Context) (*Conn, error) {
 		return nil, ErrClosed
 	}
 
-	err := p.waitTurn(ctx)
-	if err != nil {
+	if err := p.waitTurn(ctx); err != nil {
 		return nil, err
 	}
 
@@ -307,13 +309,21 @@ func (p *ConnPool) freeTurn() {
 }
 
 func (p *ConnPool) popIdle() *Conn {
-	if len(p.idleConns) == 0 {
+	n := len(p.idleConns)
+	if n == 0 {
 		return nil
 	}
 
-	idx := len(p.idleConns) - 1
-	cn := p.idleConns[idx]
-	p.idleConns = p.idleConns[:idx]
+	var cn *Conn
+	if p.opt.PoolFIFO {
+		cn = p.idleConns[0]
+		copy(p.idleConns, p.idleConns[1:])
+		p.idleConns = p.idleConns[:n-1]
+	} else {
+		idx := n - 1
+		cn = p.idleConns[idx]
+		p.idleConns = p.idleConns[:idx]
+	}
 	p.idleConnsLen--
 	p.checkMinIdleConns()
 	return cn
@@ -510,7 +520,7 @@ func (p *ConnPool) reapStaleConn() *Conn {
 
 func (p *ConnPool) isStaleConn(cn *Conn) bool {
 	if p.opt.IdleTimeout == 0 && p.opt.MaxConnAge == 0 {
-		return false
+		return connCheck(cn.netConn) != nil
 	}
 
 	now := time.Now()
@@ -521,5 +531,5 @@ func (p *ConnPool) isStaleConn(cn *Conn) bool {
 		return true
 	}
 
-	return false
+	return connCheck(cn.netConn) != nil
 }

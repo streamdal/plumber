@@ -136,8 +136,8 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	batchCmd := app.Command("batch", "Access your Batch.sh account information")
 	lagCmd := app.Command("lag", "Monitor lag in the messaging system")
 	dynamicCmd := app.Command("dynamic", "Act as a batch.sh replay destination")
-	serveCmd := app.Command("serve", "Run plumber in server mode")
 	githubCmd := app.Command("github", "Authorize plumber to access your github repos")
+	serverCmd := app.Command("server", "Run plumber in server mode")
 
 	HandleRelayFlags(relayCmd, opts)
 
@@ -186,7 +186,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleNSQFlags(readCmd, writeCmd, relayCmd, opts)
 	}
 
-	HandleServerFlags(serveCmd, opts)
+	HandleServerFlags(serverCmd, opts)
 	HandleGlobalFlags(readCmd, opts)
 	HandleGlobalReadFlags(readCmd, opts)
 	HandleGlobalWriteFlags(writeCmd, opts)

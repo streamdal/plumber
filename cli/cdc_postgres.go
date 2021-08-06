@@ -46,26 +46,26 @@ func addSharedCDCPostgresFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Envar("PLUMBER_RELAY_CDCPOSTGRES_SKIP_VERIFY_TLS").
 		BoolVar(&opts.CDCPostgres.SkipVerifyTLS)
 
-	cmd.Flag("host", "Postgres Server Hostname").
+	cmd.Flag("host", "Postgres server Hostname").
 		Envar("PLUMBER_RELAY_CDCPOSTGRES_HOSTNAME").
 		Required().
 		StringVar(&opts.CDCPostgres.Host)
 
-	cmd.Flag("port", "Postgres Server Port").
+	cmd.Flag("port", "Postgres server Port").
 		Envar("PLUMBER_RELAY_CDCPOSTGRES_PORT").
 		Default("5432").
 		Uint16Var(&opts.CDCPostgres.Port)
 
-	cmd.Flag("username", "Postgres Server Username").
+	cmd.Flag("username", "Postgres server Username").
 		Envar("PLUMBER_RELAY_CDCPOSTGRES_USERNAME").
 		Required().
 		StringVar(&opts.CDCPostgres.Username)
 
-	cmd.Flag("password", "Postgres Server Password").
+	cmd.Flag("password", "Postgres server Password").
 		Envar("PLUMBER_RELAY_CDCPOSTGRES_PASSWORD").
 		StringVar(&opts.CDCPostgres.Password)
 
-	cmd.Flag("database", "Postgres Server Database name").
+	cmd.Flag("database", "Postgres server Database name").
 		Envar("PLUMBER_RELAY_CDCPOSTGRES_DATABASE").
 		Required().
 		StringVar(&opts.CDCPostgres.DatabaseName)

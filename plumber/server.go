@@ -4,18 +4,52 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"time"
 
-	"github.com/batchcorp/plumber/github"
-
+	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber/embed/etcd"
+	"github.com/batchcorp/plumber/github"
 	"github.com/batchcorp/plumber/server"
 )
 
-func (p *Plumber) Serve() error {
+// RunServer is a wrapper for starting embedded etcd and starting the gRPC server
+func (p *Plumber) RunServer() error {
+	p.log.Info("starting embedded etcd")
+
+	if err := p.startEtcd(); err != nil {
+		return errors.Wrap(err, "unable to start embedded etcd")
+	}
+
+	p.log.Info("starting gRPC server")
+
+	if err := p.runServer(); err != nil {
+		return errors.Wrap(err, "unable to run server")
+	}
+
+	return nil
+}
+
+func (p *Plumber) startEtcd() error {
+	e, err := etcd.New(p.Config.Options.Server)
+	if err != nil {
+		return errors.Wrap(err, "unable to instantiate etcd")
+	}
+
+	if err := e.Start(p.Config.ServiceShutdownCtx); err != nil {
+		return errors.Wrap(err, "unable to start embedded etcd")
+	}
+
+	p.Etcd = e
+
+	return nil
+}
+
+func (p *Plumber) runServer() error {
 	lis, err := net.Listen("tcp", p.Options.Server.ListenAddress)
 	if err != nil {
 		return fmt.Errorf("unable to listen on '%s': %s", p.Options.Server.ListenAddress, err)
@@ -46,6 +80,8 @@ func (p *Plumber) Serve() error {
 
 	protos.RegisterPlumberServerServer(grpcServer, plumberServer)
 
+	go p.watchServiceShutdown(grpcServer)
+
 	p.log.Infof("gRPC server listening on: %s", p.Options.Server.ListenAddress)
 	p.log.Infof("Plumber Instance ID: %s", p.PersistentConfig.PlumberID)
 
@@ -54,4 +90,15 @@ func (p *Plumber) Serve() error {
 	}
 
 	return nil
+}
+
+func (p *Plumber) watchServiceShutdown(grpcServer *grpc.Server) {
+	<-p.ServiceShutdownCtx.Done()
+
+	p.log.Debug("received shutdown request in gRPC server via ServiceShutdownCtx")
+
+	// Give etcd a few seconds to shutdown gracefully
+	time.Sleep(10 * time.Second)
+
+	grpcServer.Stop()
 }
