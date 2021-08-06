@@ -130,7 +130,7 @@ func (p *Plumber) Run() {
 	var err error
 
 	switch {
-	case p.Cmd == "serve":
+	case p.Cmd == "server":
 		err = p.RunServer()
 	case strings.HasPrefix(p.Cmd, "batch"):
 		err = p.parseBatchCmd()

@@ -1,18 +1,26 @@
 package etcd
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
 )
 
-var (
-	ValidActions = []string{"foobar"}
+const (
+	DoFoobarAction = "DoFoobar"
+	DoFoobazAction = "DoFoobaz"
 )
 
+var (
+	ValidActions = []Action{DoFoobarAction, DoFoobazAction}
+)
+
+type Action string
+
 type Message struct {
-	Action    int // <- this should be pointing to plumber-schemas messages
-	Data      []byte
+	Action    Action
+	Data      []byte // <- consumer decides what's in here based on action
 	Metadata  map[string]string
 	EmittedBy string
 	EmittedAt time.Time // UTC
@@ -23,8 +31,16 @@ func (m *Message) Validate() error {
 		return errors.New("message cannot be nil")
 	}
 
-	if m.Action == 0 {
-		return errors.New("unrecognized message action")
+	var found bool
+
+	for _, v := range ValidActions {
+		if m.Action == v {
+			found = true
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("unrecognized action '%s'", m.Action)
 	}
 
 	if m.EmittedBy == "" {

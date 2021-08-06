@@ -1,7 +1,6 @@
 package plumber
 
 import (
-	"context"
 	"fmt"
 	"net"
 	"sync"
@@ -37,8 +36,7 @@ func (p *Plumber) startEtcd() error {
 		return errors.Wrap(err, "unable to instantiate etcd")
 	}
 
-	// TODO: Different context? (etcd)
-	if err := e.Start(context.Background()); err != nil {
+	if err := e.Start(p.Config.ServiceShutdownCtx); err != nil {
 		return errors.Wrap(err, "unable to start embedded etcd")
 	}
 
