@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"time"
 
 	"github.com/batchcorp/plumber/embed/etcd"
 	"github.com/pkg/errors"
@@ -22,7 +23,6 @@ func (p *Plumber) RunServer() error {
 		return errors.Wrap(err, "unable to start embedded etcd")
 	}
 
-	// Blocks until exit
 	if err := p.runServer(); err != nil {
 		return errors.Wrap(err, "unable to run server")
 	}
@@ -73,6 +73,8 @@ func (p *Plumber) runServer() error {
 
 	protos.RegisterPlumberServerServer(grpcServer, plumberServer)
 
+	go p.watchServiceShutdown(grpcServer)
+
 	p.log.Infof("gRPC server listening on: %s", p.Options.Server.ListenAddress)
 	p.log.Infof("Plumber Instance ID: %s", p.PersistentConfig.PlumberID)
 
@@ -81,4 +83,15 @@ func (p *Plumber) runServer() error {
 	}
 
 	return nil
+}
+
+func (p *Plumber) watchServiceShutdown(grpcServer *grpc.Server) {
+	<-p.ServiceShutdownCtx.Done()
+
+	p.log.Debug("received shutdown request in gRPC server via ServiceShutdownCtx")
+
+	// Give etcd a few seconds to shutdown gracefully
+	time.Sleep(5 * time.Second)
+
+	grpcServer.Stop()
 }
