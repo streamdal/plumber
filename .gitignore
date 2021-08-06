@@ -5,4 +5,5 @@ test-assets/backend-data/*
 start-*.sh
 .vscode/*
 .exe
-plumber1.etcd
+*.etcd.log
+*.etcd*

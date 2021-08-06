@@ -91,7 +91,7 @@ func (p *Plumber) watchServiceShutdown(grpcServer *grpc.Server) {
 	p.log.Debug("received shutdown request in gRPC server via ServiceShutdownCtx")
 
 	// Give etcd a few seconds to shutdown gracefully
-	time.Sleep(5 * time.Second)
+	time.Sleep(10 * time.Second)
 
 	grpcServer.Stop()
 }

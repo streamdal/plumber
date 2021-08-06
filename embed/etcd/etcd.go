@@ -244,6 +244,7 @@ func (e *Etcd) launchEmbeddedEtcd(ctx context.Context) (*embed.Etcd, error) {
 	cfg.APUrls = []url.URL{*e.cfg.AdvertisePeerURL}
 	cfg.ACUrls = []url.URL{*e.cfg.AdvertiseClientURL}
 	cfg.InitialCluster = e.cfg.InitialCluster
+	cfg.LogOutputs = []string{fmt.Sprintf("./%s.etcd.log", e.cfg.NodeID)}
 
 	embeddedEtcd, err := embed.StartEtcd(cfg)
 	if err != nil {
@@ -280,10 +281,10 @@ MAIN:
 	for {
 		select {
 		case <-consumerCtx.Done():
-			e.log.Warning("asked to exit via consumer context")
+			e.log.Debug("embedded etcd asked to exit via consumer context")
 			break MAIN
 		case <-serviceCtx.Done():
-			e.log.Warning("asked to exit via service context")
+			e.log.Debug("embedded etcd asked to exit via service context")
 			break MAIN
 		case resp := <-watchChan:
 			// TODO: How will watch respond to etcd server going away?
