@@ -203,6 +203,14 @@ func (e *Etcd) writeMessage(ctx context.Context, path string, msg *Message) erro
 		return ServerNotStartedErr
 	}
 
+	if path == "" {
+		return errors.New("path cannot be empty")
+	}
+
+	if msg == nil {
+		return errors.New("msg cannot be nil")
+	}
+
 	msgData, err := json.Marshal(msg)
 	if err != nil {
 		return errors.Wrap(err, "unable to marshal msg to JSON")
