@@ -18,9 +18,13 @@ import (
 
 // RunServer is a wrapper for starting embedded etcd and starting the gRPC server
 func (p *Plumber) RunServer() error {
+	p.log.Info("starting embedded etcd")
+
 	if err := p.startEtcd(); err != nil {
 		return errors.Wrap(err, "unable to start embedded etcd")
 	}
+
+	p.log.Info("starting gRPC server")
 
 	if err := p.runServer(); err != nil {
 		return errors.Wrap(err, "unable to run server")
