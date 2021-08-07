@@ -55,6 +55,13 @@ type DestinationMetadata struct {
 	RabbitExchangeDeclare    bool
 	RabbitExchangeAutoDelete bool
 	RabbitExchangeDurable    bool
+
+	// KubeMQ Queue specific
+	KubeMQQueueAddress     string
+	KubeMQQueueQueue       string
+	KubeMQQueueClientID    string
+	KubeMQQueueTLSCertFile string
+	KubeMQQueueAuthToken   string
 }
 
 func HandleBatchFlags(batchCmd *kingpin.CmdClause, opts *Options) {
@@ -150,11 +157,13 @@ func handleCreateDestinationFlags(cmd *kingpin.CmdClause, opts *Options) {
 	httpCmd := cmd.Command("http", "HTTP Post Destination")
 	sqsCmd := cmd.Command("aws-sqs", "AWS SQS Destination")
 	rabbitCmd := cmd.Command("rabbit", "RabbitMQ Destination")
+	kubemqQueueCmd := cmd.Command("kubemq-queue", "KubeMQ Queue Destination")
 
 	handleCreateDestinationFlagsKafka(kafkaCmd, opts)
 	handleCreateDestinationFlagsHTTP(httpCmd, opts)
 	handleCreateDestinationFlagsSQS(sqsCmd, opts)
 	handleCreateDestinationFlagsRabbit(rabbitCmd, opts)
+	handleCreateDestinationFlagsKubeMQQueue(kubemqQueueCmd, opts)
 }
 
 func handleCreateDestinationFlagsShared(cmd *kingpin.CmdClause, opts *Options) {
@@ -245,6 +254,25 @@ func handleCreateDestinationFlagsRabbit(cmd *kingpin.CmdClause, opts *Options) {
 		BoolVar(&opts.Batch.DestinationMetadata.RabbitExchangeDeclare)
 }
 
+func handleCreateDestinationFlagsKubeMQQueue(cmd *kingpin.CmdClause, opts *Options) {
+	handleCreateDestinationFlagsShared(cmd, opts)
+
+	cmd.Flag("address", "KubeMQ Grpc server address").
+		Default("localhost:50000").
+		StringVar(&opts.Batch.DestinationMetadata.KubeMQQueueAddress)
+
+	cmd.Flag("queue", "KubeMQ Queue name to publish too").
+		StringVar(&opts.Batch.DestinationMetadata.KubeMQQueueQueue)
+
+	cmd.Flag("client-id", "KubeMQ Client ID").
+		StringVar(&opts.Batch.DestinationMetadata.KubeMQQueueClientID)
+
+	cmd.Flag("tls-cert-file", "KubeMQ Client cert file").
+		StringVar(&opts.Batch.DestinationMetadata.KubeMQQueueTLSCertFile)
+
+	cmd.Flag("auth-token", "KubeMQ Client JWT Authentication Token").
+		StringVar(&opts.Batch.DestinationMetadata.KubeMQQueueAuthToken)
+}
 func handleCreateCollectionFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("name", "Collection Name").
 		Required().

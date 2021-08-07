@@ -92,6 +92,7 @@ type Options struct {
 	CDCPostgres     *CDCPostgresOptions
 	Pulsar          *PulsarOptions
 	NSQ             *NSQOptions
+	KubeMQQueue     *KubeMQQueueOptions
 }
 
 func Handle(cliArgs []string) (string, *Options, error) {
@@ -123,6 +124,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		CDCPostgres: &CDCPostgresOptions{},
 		Pulsar:      &PulsarOptions{},
 		NSQ:         &NSQOptions{},
+		KubeMQQueue: &KubeMQQueueOptions{},
 	}
 
 	app := kingpin.New("plumber", "`curl` for messaging systems. See: https://github.com/batchcorp/plumber")
@@ -136,7 +138,6 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	dynamicCmd := app.Command("dynamic", "Act as a batch.sh replay destination")
 
 	HandleRelayFlags(relayCmd, opts)
-
 	switch os.Getenv("PLUMBER_RELAY_TYPE") {
 	case "kafka":
 		HandleKafkaFlags(readCmd, writeCmd, relayCmd, lagCmd, opts)
@@ -160,6 +161,8 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleCDCMongoFlags(readCmd, writeCmd, relayCmd, opts)
 	case "mqtt":
 		HandleMQTTFlags(readCmd, writeCmd, relayCmd, opts)
+	case "kubemq-queue":
+		HandleKubeMQQueueFlags(readCmd, writeCmd, relayCmd, opts)
 	default:
 		HandleKafkaFlags(readCmd, writeCmd, relayCmd, lagCmd, opts)
 		HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
@@ -180,6 +183,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleDynamicFlags(dynamicCmd, opts)
 		HandlePulsarFlags(readCmd, writeCmd, relayCmd, opts)
 		HandleNSQFlags(readCmd, writeCmd, relayCmd, opts)
+		HandleKubeMQQueueFlags(readCmd, writeCmd, relayCmd, opts)
 	}
 
 	HandleGlobalFlags(readCmd, opts)
@@ -332,10 +336,10 @@ func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
 }
 
 func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
-	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs, azure, gcp-pubsub, redis-pubsub, redis-streams").
+	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs, azure, gcp-pubsub, redis-pubsub, redis-streams, kubemq-queue").
 		Envar("PLUMBER_RELAY_TYPE").
 		EnumVar(&opts.RelayType, "aws-sqs", "rabbit", "kafka", "azure", "gcp-pubsub", "redis-pubsub",
-			"redis-streams", "cdc-postgres", "cdc-mongo", "mqtt")
+			"redis-streams", "cdc-postgres", "cdc-mongo", "mqtt", "kubemq-queue")
 
 	relayCmd.Flag("token", "Collection token to use when sending data to Batch").
 		Required().
