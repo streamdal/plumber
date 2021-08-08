@@ -116,3 +116,51 @@ func TestHandleAWSSQSEnvars_relay(t *testing.T) {
 	g.Expect(opts.AWSSQS.RelayWaitTimeSeconds).To(Equal(int64(6)))
 	g.Expect(opts.AWSSQS.RelayReceiveRequestAttemptId).To(Equal("plumber_receiver"))
 }
+
+func TestHandleKubeMQQueueEnvars_relay(t *testing.T) {
+
+	g := NewGomegaWithT(t)
+
+	envars := map[string]string{
+		"PLUMBER_DEBUG":                            "true",
+		"PLUMBER_RELAY_TYPE":                       "kubemq-queue",
+		"PLUMBER_RELAY_TOKEN":                      "8EDB98ED-0D85-4CFD-BE24-8B1E00A9F7C3",
+		"PLUMBER_RELAY_GRPC_ADDRESS":               "localhost:9000",
+		"PLUMBER_RELAY_GRPC_DISABLE_TLS":           "true",
+		"PLUMBER_RELAY_GRPC_TIMEOUT":               "4s",
+		"PLUMBER_RELAY_NUM_WORKERS":                "10",
+		"PLUMBER_RELAY_KUBEMQ_QUEUE_ADDRESS":       "localhost:50000",
+		"PLUMBER_RELAY_KUBEMQ_QUEUE_QUEUE":         "kubemq-queue",
+		"PLUMBER_RELAY_KUBEMQ_QUEUE_CLIENT_ID":     "some-client-id",
+		"PLUMBER_RELAY_KUBEMQ_QUEUE_TLS_CERT_FILE": "cli.go",
+		"PLUMBER_RELAY_KUBEMQ_QUEUE_AUTH_TOKEN":    "some-jwt-token",
+	}
+
+	for k, v := range envars {
+		os.Setenv(k, v)
+	}
+
+	defer func() {
+		// Unset all so we don't interfere with other tests
+		for k, _ := range envars {
+			os.Unsetenv(k)
+		}
+	}()
+
+	cmd, opts, err := Handle([]string{"relay"})
+
+	g.Expect(err).ToNot(HaveOccurred())
+	g.Expect(cmd).To(Equal("relay"))
+	g.Expect(opts.Debug).To(BeTrue())
+	g.Expect(opts.RelayType).To(Equal("kubemq-queue"))
+	g.Expect(opts.RelayToken).To(Equal("8EDB98ED-0D85-4CFD-BE24-8B1E00A9F7C3"))
+	g.Expect(opts.RelayGRPCAddress).To(Equal("localhost:9000"))
+	g.Expect(opts.RelayGRPCDisableTLS).To(BeTrue())
+	g.Expect(opts.RelayGRPCTimeout).To(Equal(time.Second * 4))
+	g.Expect(opts.RelayNumWorkers).To(Equal(10))
+	g.Expect(opts.KubeMQQueue.Address).To(Equal("localhost:50000"))
+	g.Expect(opts.KubeMQQueue.Queue).To(Equal("kubemq-queue"))
+	g.Expect(opts.KubeMQQueue.ClientID).To(Equal("some-client-id"))
+	g.Expect(opts.KubeMQQueue.TLSCertFile).To(Equal("cli.go"))
+	g.Expect(opts.KubeMQQueue.AuthToken).To(Equal("some-jwt-token"))
+}
