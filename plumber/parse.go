@@ -166,6 +166,9 @@ func (p *Plumber) parseCmdRelay() error {
 	case "relay nsq":
 		p.Options.RelayType = "nsq"
 		rr, err = nsq.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
+	case "relay kubemq-queue":
+		p.Options.RelayType = "kubemq-queue"
+		rr, err = kubemq_queue.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "relay": // Relay (via env vars)
 		rr, err = p.processRelayFlags()
 	default:
@@ -219,6 +222,8 @@ func (p *Plumber) processRelayFlags() (relay.IRelayBackend, error) {
 		rr, err = cdcPostgres.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "nsq":
 		rr, err = nsq.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
+	case "kubemq-queue":
+		rr, err = kubemq_queue.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	default:
 		err = fmt.Errorf("unsupported messaging system '%s'", p.Options.RelayType)
 	}
