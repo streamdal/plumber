@@ -121,6 +121,8 @@ github.com/batchcorp/collector-schemas v0.0.2 h1:m827NBxadj/YNnUFXlVKenvhDZ2k4xB
 github.com/batchcorp/collector-schemas v0.0.2/go.mod h1:qSVA1UcrApoLX2mS4cj+aH+IvNwcSfm50vWa0UAN/WU=
 github.com/batchcorp/collector-schemas v0.0.4 h1:4738M0a6Y3K+evqcCceE+znvppgikWZraZ6nPxgl8HU=
 github.com/batchcorp/collector-schemas v0.0.4/go.mod h1:qSVA1UcrApoLX2mS4cj+aH+IvNwcSfm50vWa0UAN/WU=
+github.com/batchcorp/collector-schemas v0.0.5 h1:rNCdbcPs+PrfcSGSxIwP7ncUzi6za8mvKXbz+ICWJBI=
+github.com/batchcorp/collector-schemas v0.0.5/go.mod h1:qSVA1UcrApoLX2mS4cj+aH+IvNwcSfm50vWa0UAN/WU=
 github.com/batchcorp/pgoutput v0.3.0 h1:KS5kYY6uLUNL3uBWYPGKiUwLI3vHebgiaFfjYTa8EzE=
 github.com/batchcorp/pgoutput v0.3.0/go.mod h1:xzkr73rAlqUdvt2oMAQav1lIt6xnG8bqYYXt4GrXM/I=
 github.com/batchcorp/pgoutput v0.3.1 h1:lzZiNPE9JTU5O38WlU9RG/Sbk0Ylmo5RJJ+qfZFgkJ8=

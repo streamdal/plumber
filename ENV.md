@@ -152,3 +152,12 @@ Environment Variables
 | `PLUMBER_RELAY_NSQ_TLS_CERT_FILE` | TLS Certificate file path | *Optional* |
 | `PLUMBER_RELAY_NSQ_TLS_KEY_FILE` | TLS KEy file path | *Optional* |
 | `PLUMBER_RELAY_NSQ_SKIP_VERIFY_TLS` | Skip server cert verification if connecting with TLS | `false` |
+
+## KubeMQ Queues
+| Environment Variable  | Description | Default |
+| --------------------- | ------------| ------- |
+| `PLUMBER_RELAY_KUBEMQ_QUEUE_ADDRESS` | Address of KubeMQ Queue server | `localhost:50000` |
+| `PLUMBER_RELAY_KUBEMQ_QUEUE_QUEUE` | Queue name to relay messages from | `my-queue` |
+| `PLUMBER_RELAY_KUBEMQ_QUEUE_CLIENT_ID` | Client ID to identify KubeMQ as | **Required** |
+| `PLUMBER_RELAY_KUBEMQ_QUEUE_TLS_CERT_FILE` | Path to TLS Certificate file | *Optional*  |
+| `PLUMBER_RELAY_KUBEMQ_QUEUE_AUTH_TOKEN` | Authentication token | *Optional* |

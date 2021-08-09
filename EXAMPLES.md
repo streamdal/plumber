@@ -17,6 +17,7 @@
        * [Apache Pulsar](#apache-pulsar)
        * [NSQ](#nsq)
        * [Thrift Decoding](#thrift-decoding)
+       * [KubeMQ Queue](#kubemq-queue)
   * [Publishing](#publishing)
        * [AWS SQS](#aws-sqs-1)
        * [AWS SNS](#aws-sns)
@@ -33,6 +34,7 @@
        * [MQTT](#mqtt-1)
        * [Apache Pulsar](#apache-pulsar-1)
        * [NSQ](#nsq-1)
+       * [KubeMQ Queue](#kubemq-queue-1)
   * [Relay Mode](#relay-mode)
        * [Continuously relay messages from your RabbitMQ instance to a Batch.sh collection](#continuously-relay-messages-from-your-rabbitmq-instance-to-a-batchsh-collection)
        * [Continuously relay messages from an SQS queue to a Batch.sh collection](#continuously-relay-messages-from-an-sqs-queue-to-a-batchsh-collection)
@@ -42,6 +44,7 @@
        * [Continuously relay messages for multiple Redis streams to a Batch.sh collection](#continuously-relay-messages-from-multiple-redis-streams-to-a-batchsh-collection)
        * [Continuously relay messages from a Kafka topic (on Confluent) to a Batch.sh collection (via CLI)](#continuously-relay-messages-from-a-kafka-topic-on-confluent-to-a-batchsh-collection-via-cli)
        * [Continuously relay messages from a MQTT topic to a Batch.sh collection](#continuously-relay-messages-from-a-mqtt-topic-to-a-batchsh-collection)
+    * [Continuously relay messages from a KubeMQ queue to a Batch.sh collection](#continuously-relay-messages-from-a-kubemq-queue-to-a-batchsh-collection)
   * [Change Data Capture](#change-data-capture)
        * [Continuously relay Postgres change events to a Batch.sh collection](#continuously-relay-postgres-change-events-to-a-batchsh-collection)
        * [Continuously relay MongoDB change stream events to a Batch.sh collection](#continuously-relay-mongodb-change-stream-events-to-a-batchsh-collection)
@@ -212,6 +215,12 @@ plumber read kafka --topic orders --thrift --json
 }
 ```
 
+#### KubeMQ Queue
+
+```bash
+plumber read kubemq-queue --queue my-queue
+```
+
 ## Publishing
 
 ##### AWS SQS
@@ -339,6 +348,12 @@ plumber write pulsar --topic NEWORDERS --input-data="{\"order_id\": \"A-3458-654
 plumger write nsq --nsqd-address localhost:4050 --topic orders --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
+#### KubeMQ Queue
+
+```bash
+plumber write kubemq-queue --queue my-queue --input-data "{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+```
+
 ## Relay Mode
 
 ##### Continuously relay messages from your RabbitMQ instance to a Batch.sh collection
@@ -439,6 +454,17 @@ docker run -d --name plumber-mqtt -p 8080:8080 \
     batchcorp/plumber 
 ```
 
+##### Continuously relay messages from a KubeMQ queue to a Batch.sh collection
+
+```bash
+docker run -d --name plumber-kubemq -p 8080:8080 \
+    -e PLUMBER_RELAY_KUBEMQ_QUEUE_ADDRESS=localhost:50000 \
+    -e PLUMBER_RELAY_KUBEMQ_QUEUE_QUEUE=my-queue \
+    -e PLUMBER_RELAY_KUBEMQ_QUEUE_AUTH_TOKEN=.... \
+    -e PLUMBER_RELAY_TYPE=kubemq-queue \
+    -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
+    batchcorp/plumber 
+```
 
 ## Change Data Capture
 

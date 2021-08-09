@@ -22,6 +22,7 @@ import (
 	postgresTypes "github.com/batchcorp/plumber/backends/cdc-postgres/types"
 	gcpTypes "github.com/batchcorp/plumber/backends/gcp-pubsub/types"
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
+	kubemqTypes "github.com/batchcorp/plumber/backends/kubemq-queue/types"
 	mqttTypes "github.com/batchcorp/plumber/backends/mqtt/types"
 	nsqTypes "github.com/batchcorp/plumber/backends/nsq/types"
 	rabbitTypes "github.com/batchcorp/plumber/backends/rabbitmq/types"
@@ -367,6 +368,9 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	case *nsqTypes.RelayMessage:
 		r.log.Debugf("flushing %d nsq message(s)", len(messages))
 		err = r.handleNSQ(ctx, conn, messages)
+	case *kubemqTypes.RelayMessage:
+		r.log.Debugf("flushing %d kubemq message(s)", len(messages))
+		err = r.handleKubeMQ(ctx, conn, messages)
 	default:
 		r.log.WithField("type", v).Error("received unknown message type - skipping")
 		return

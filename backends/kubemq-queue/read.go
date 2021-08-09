@@ -2,14 +2,15 @@ package kubemq_queue
 
 import (
 	"context"
-	"fmt"
-	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/reader"
+
 	"github.com/jhump/protoreflect/desc"
 	"github.com/kubemq-io/kubemq-go/queues_stream"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/reader"
 )
 
 func Read(opts *cli.Options, md *desc.MessageDescriptor) error {
@@ -36,8 +37,11 @@ func (k *KubeMQQueue) Read() error {
 	defer func() {
 		_ = k.Client.Close()
 	}()
+
 	k.log.Info("Listening for message(s) ...")
+
 	count := 1
+
 	for {
 		response, err := k.Client.Poll(context.Background(),
 			queues_stream.NewPollRequest().
@@ -48,20 +52,20 @@ func (k *KubeMQQueue) Read() error {
 		if err != nil {
 			return err
 		}
+
 		if response.HasMessages() {
 			data, err := reader.Decode(k.Options, k.MsgDesc, response.Messages[0].Body)
 			if err != nil {
 				return err
 			}
+
 			if err := response.AckAll(); err != nil {
 				return err
 			}
-			str := string(data)
 
-			str = fmt.Sprintf("%d: ", count) + str
+			printer.PrintKubeMQResult(k.Options, count, response.Messages[0], data)
+
 			count++
-
-			printer.Print(str)
 
 			if !k.Options.ReadFollow {
 				return nil

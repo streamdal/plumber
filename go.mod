@@ -8,7 +8,7 @@ require (
 	github.com/Azure/azure-service-bus-go v0.10.8
 	github.com/apache/pulsar-client-go v0.5.0
 	github.com/aws/aws-sdk-go v1.34.28
-	github.com/batchcorp/collector-schemas v0.0.4
+	github.com/batchcorp/collector-schemas v0.0.5
 	github.com/batchcorp/pgoutput v0.3.2
 	github.com/batchcorp/rabbit v0.1.9
 	github.com/dustin/go-humanize v1.0.0 // indirect
