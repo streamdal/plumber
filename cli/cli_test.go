@@ -414,3 +414,51 @@ func TestHandleGCPPubSubFlags_write(t *testing.T) {
 	g.Expect(opts.WriteInputType).To(Equal("jsonpb"))
 	g.Expect(opts.AvroSchemaFile).To(Equal("../test-assets/avro/test.avsc"))
 }
+
+func TestHandleKubeMQQueueFlags_read(t *testing.T) {
+
+	g := NewGomegaWithT(t)
+
+	args := []string{
+		"read", "kubemq-queue",
+		"--address", "localhost:50000",
+		"--queue", "kubemq-queue",
+		"--client-id", "some-client-id",
+		"--tls-cert-file", "cli.go",
+		"--auth-token", "some-jwt-token",
+	}
+
+	cmd, opts, err := Handle(args)
+
+	g.Expect(err).ToNot(HaveOccurred())
+	g.Expect(cmd).To(Equal("read kubemq-queue"))
+	g.Expect(opts.KubeMQQueue.Address).To(Equal("localhost:50000"))
+	g.Expect(opts.KubeMQQueue.Queue).To(Equal("kubemq-queue"))
+	g.Expect(opts.KubeMQQueue.ClientID).To(Equal("some-client-id"))
+	g.Expect(opts.KubeMQQueue.TLSCertFile).To(Equal("cli.go"))
+	g.Expect(opts.KubeMQQueue.AuthToken).To(Equal("some-jwt-token"))
+}
+
+func TestHandleKubeMQQueueFlags_write(t *testing.T) {
+
+	g := NewGomegaWithT(t)
+
+	args := []string{
+		"write", "kubemq-queue",
+		"--address", "localhost:50000",
+		"--queue", "kubemq-queue",
+		"--client-id", "some-client-id",
+		"--tls-cert-file", "cli.go",
+		"--auth-token", "some-jwt-token",
+	}
+
+	cmd, opts, err := Handle(args)
+
+	g.Expect(err).ToNot(HaveOccurred())
+	g.Expect(cmd).To(Equal("write kubemq-queue"))
+	g.Expect(opts.KubeMQQueue.Address).To(Equal("localhost:50000"))
+	g.Expect(opts.KubeMQQueue.Queue).To(Equal("kubemq-queue"))
+	g.Expect(opts.KubeMQQueue.ClientID).To(Equal("some-client-id"))
+	g.Expect(opts.KubeMQQueue.TLSCertFile).To(Equal("cli.go"))
+	g.Expect(opts.KubeMQQueue.AuthToken).To(Equal("some-jwt-token"))
+}

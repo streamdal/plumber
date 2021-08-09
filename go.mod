@@ -24,6 +24,7 @@ require (
 	github.com/json-iterator/go v1.1.11
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/kataras/tablewriter v0.0.0-20180708051242-e063d29b7c23
+	github.com/kubemq-io/kubemq-go v1.7.2
 	github.com/kyleconroy/pgoutput v0.1.0 // indirect
 	github.com/lensesio/tableprinter v0.0.0-20201125135848-89e81fc956e7
 	github.com/lib/pq v1.10.0 // indirect
@@ -53,6 +54,6 @@ require (
 	github.com/v2pro/wombat v0.0.0-20180402055224-a56dbdcddef2 // indirect
 	go.mongodb.org/mongo-driver v1.5.1
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
-	google.golang.org/grpc v1.30.0
+	google.golang.org/grpc v1.35.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )

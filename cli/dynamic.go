@@ -54,4 +54,7 @@ func HandleDynamicFlags(dynamicCmd *kingpin.CmdClause, opts *Options) {
 	addSharedRedisStreamsFlags(rStreams, opts)
 	addWriteRedisStreamsFlags(rStreams, opts)
 
+	kubemqQueueCmd := dynamicCmd.Command("kubemq-queue", "KubeMQ Queue as a Replay Destination")
+	addSharedKubeMQQueueFlags(kubemqQueueCmd, opts)
+
 }

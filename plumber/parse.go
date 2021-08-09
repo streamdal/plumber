@@ -20,6 +20,7 @@ import (
 	cdcPostgres "github.com/batchcorp/plumber/backends/cdc-postgres"
 	gcpPubSub "github.com/batchcorp/plumber/backends/gcp-pubsub"
 	"github.com/batchcorp/plumber/backends/kafka"
+	"github.com/batchcorp/plumber/backends/kubemq-queue"
 	"github.com/batchcorp/plumber/backends/mqtt"
 	"github.com/batchcorp/plumber/backends/nats"
 	natsStreaming "github.com/batchcorp/plumber/backends/nats-streaming"
@@ -67,6 +68,8 @@ func (p *Plumber) parseCmdRead() error {
 		return pulsar.Read(p.Options, p.MsgDesc)
 	case "read nsq":
 		return nsq.Read(p.Options, p.MsgDesc)
+	case "read kubemq-queue":
+		return kubemq_queue.Read(p.Options, p.MsgDesc)
 	default:
 		return fmt.Errorf("unrecognized command: %s", p.Cmd)
 	}
@@ -117,6 +120,8 @@ func (p *Plumber) parseCmdWrite() error {
 		return pulsar.Write(p.Options, p.MsgDesc)
 	case "write nsq":
 		return nsq.Write(p.Options, p.MsgDesc)
+	case "write kubemq-queue":
+		return kubemq_queue.Write(p.Options, p.MsgDesc)
 	default:
 		return fmt.Errorf("unrecognized command: %s", p.Cmd)
 	}
@@ -161,6 +166,9 @@ func (p *Plumber) parseCmdRelay() error {
 	case "relay nsq":
 		p.Options.RelayType = "nsq"
 		rr, err = nsq.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
+	case "relay kubemq-queue":
+		p.Options.RelayType = "kubemq-queue"
+		rr, err = kubemq_queue.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "relay": // Relay (via env vars)
 		rr, err = p.processRelayFlags()
 	default:
@@ -214,6 +222,8 @@ func (p *Plumber) processRelayFlags() (relay.IRelayBackend, error) {
 		rr, err = cdcPostgres.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	case "nsq":
 		rr, err = nsq.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
+	case "kubemq-queue":
+		rr, err = kubemq_queue.Relay(p.Options, p.RelayCh, p.ServiceShutdownCtx)
 	default:
 		err = fmt.Errorf("unsupported messaging system '%s'", p.Options.RelayType)
 	}
@@ -251,6 +261,8 @@ func (p *Plumber) parseCmdDynamic() error {
 		return azure.Dynamic(p.Options)
 	case "azure-eventhub":
 		return azureEventhub.Dynamic(p.Options)
+	case "kubemq-queue":
+		return kubemq_queue.Dynamic(p.Options)
 	}
 
 	return fmt.Errorf("unrecognized command: %s", p.Cmd)
