@@ -2,14 +2,16 @@ package kubemq_queue
 
 import (
 	"context"
-	"github.com/batchcorp/plumber/backends/kubemq-queue/types"
-	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/relay"
-	"github.com/batchcorp/plumber/stats"
+
 	"github.com/kubemq-io/kubemq-go/queues_stream"
 	"github.com/pkg/errors"
 	"github.com/relistan/go-director"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber/backends/kubemq-queue/types"
+	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/relay"
+	"github.com/batchcorp/plumber/stats"
 )
 
 type Relayer struct {

@@ -119,7 +119,7 @@ github.com/aws/aws-sdk-go/service/sqs
 github.com/aws/aws-sdk-go/service/sqs/sqsiface
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
-# github.com/batchcorp/collector-schemas v0.0.4
+# github.com/batchcorp/collector-schemas v0.0.5
 ## explicit
 github.com/batchcorp/collector-schemas/build/go/protos/common
 github.com/batchcorp/collector-schemas/build/go/protos/events

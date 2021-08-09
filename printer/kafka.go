@@ -29,7 +29,7 @@ func PrintKafkaResult(opts *cli.Options, offsetInfo *types.OffsetInfo, msg kafka
 
 		lastOffStr := strconv.FormatUint(uint64(offsetInfo.LastOffset), 10)
 
-		properties = append(properties, []string{"LastOfsset", lastOffStr})
+		properties = append(properties, []string{"LastOffset", lastOffStr})
 	}
 
 	properties = append(properties, generateHeaders(msg.Headers)...)

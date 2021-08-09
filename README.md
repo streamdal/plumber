@@ -206,6 +206,7 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 * MongoDB CDC (Change Data Capture)
 * Apache Pulsar
 * NSQ
+* KubeMQ Queue (NEW!)
 
 NOTE: If your messaging tech is not supported - submit an issue and we'll do
 our best to make it happen!

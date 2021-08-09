@@ -2,12 +2,14 @@ package kubemq_queue
 
 import (
 	"context"
-	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/writer"
+
 	"github.com/jhump/protoreflect/desc"
 	"github.com/kubemq-io/kubemq-go/queues_stream"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/writer"
 )
 
 func Write(opts *cli.Options, md *desc.MessageDescriptor) error {

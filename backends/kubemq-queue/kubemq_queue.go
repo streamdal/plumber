@@ -2,13 +2,15 @@ package kubemq_queue
 
 import (
 	"context"
-	"github.com/batchcorp/plumber/cli"
+	"net"
+	"strconv"
+
 	"github.com/jhump/protoreflect/desc"
 	"github.com/kubemq-io/kubemq-go/queues_stream"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"net"
-	"strconv"
+
+	"github.com/batchcorp/plumber/cli"
 )
 
 var (
