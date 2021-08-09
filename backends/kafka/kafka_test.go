@@ -4,13 +4,13 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
 var _ = Describe("Kafka", func() {
 	Context("getAuthenticationMechanism", func() {
 		It("Returns nil when no username/password is specified", func() {
-			opts := &cli.Options{Kafka: &cli.KafkaOptions{
+			opts := &options.Options{Kafka: &options.KafkaOptions{
 				Username: "",
 				Password: "",
 			}}
@@ -22,7 +22,7 @@ var _ = Describe("Kafka", func() {
 		})
 
 		It("Returns SCRAM mechanism", func() {
-			opts := &cli.Options{Kafka: &cli.KafkaOptions{
+			opts := &options.Options{Kafka: &options.KafkaOptions{
 				Username:           "testing",
 				Password:           "hunter2",
 				AuthenticationType: "scram",
@@ -36,7 +36,7 @@ var _ = Describe("Kafka", func() {
 		})
 
 		It("Returns Plain mechanism", func() {
-			opts := &cli.Options{Kafka: &cli.KafkaOptions{
+			opts := &options.Options{Kafka: &options.KafkaOptions{
 				Username:           "testing",
 				Password:           "hunter2",
 				AuthenticationType: "plain",

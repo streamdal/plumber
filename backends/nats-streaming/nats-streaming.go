@@ -12,12 +12,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/printer"
 )
 
 type NatsStreaming struct {
-	Options    *cli.Options
+	Options    *options.Options
 	MsgDesc    *desc.MessageDescriptor
 	Client     *nats.Conn
 	StanClient stan.Conn
@@ -26,7 +26,7 @@ type NatsStreaming struct {
 }
 
 // NewClient creates a new Nats client connection
-func NewClient(opts *cli.Options) (*nats.Conn, error) {
+func NewClient(opts *options.Options) (*nats.Conn, error) {
 	uri, err := url.Parse(opts.Nats.Address)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to parse address")
@@ -61,7 +61,7 @@ func NewClient(opts *cli.Options) (*nats.Conn, error) {
 	return c, nil
 }
 
-func generateTLSConfig(opts *cli.Options) (*tls.Config, error) {
+func generateTLSConfig(opts *options.Options) (*tls.Config, error) {
 	certpool := x509.NewCertPool()
 
 	pemCerts, err := ioutil.ReadFile(opts.Nats.TLSCAFile)

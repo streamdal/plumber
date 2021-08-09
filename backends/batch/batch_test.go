@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
 var logger = &logrus.Logger{Out: ioutil.Discard}
@@ -42,8 +42,8 @@ func BatchWithMockResponse(httpCode int, responseBody string) *Batch {
 	return &Batch{
 		Log:    logrus.NewEntry(logger),
 		Client: client,
-		Opts: &cli.Options{
-			Batch: &cli.BatchOptions{},
+		Opts: &options.Options{
+			Batch: &options.BatchOptions{},
 		},
 		PersistentConfig: &config.Config{
 			Connections: make(map[string]*types.Connection),
@@ -54,7 +54,7 @@ func BatchWithMockResponse(httpCode int, responseBody string) *Batch {
 var _ = Describe("Batch", func() {
 	Context("New", func() {
 		It("returns a new instance of Batch struct", func() {
-			b := New(&cli.Options{Batch: &cli.BatchOptions{}}, &config.Config{})
+			b := New(&options.Options{Batch: &options.BatchOptions{}}, &config.Config{})
 			Expect(b).To(BeAssignableToTypeOf(&Batch{}))
 		})
 	})

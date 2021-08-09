@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/backends/aws-sqs/types"
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/stats"
 )
@@ -20,7 +20,7 @@ const (
 )
 
 type Relayer struct {
-	Options     *cli.Options
+	Options     *options.Options
 	Service     *sqs.SQS
 	QueueURL    string
 	RelayCh     chan interface{}
@@ -28,7 +28,7 @@ type Relayer struct {
 	log         *logrus.Entry
 }
 
-func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
+func Relay(opts *options.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
 	if err := validateRelayOptions(opts); err != nil {
 		return nil, errors.Wrap(err, "unable to verify options")
 	}
@@ -51,7 +51,7 @@ func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Cont
 	return r, nil
 }
 
-func validateRelayOptions(opts *cli.Options) error {
+func validateRelayOptions(opts *options.Options) error {
 	if opts.AWSSQS.RelayMaxNumMessages < 1 || opts.AWSSQS.RelayMaxNumMessages > 10 {
 		return errors.New("RelayMaxNumMessages must be between 1 and 10")
 	}

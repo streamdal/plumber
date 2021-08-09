@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 )
 
 // validate cli options and init connection
-func Lag(opts *cli.Options) error {
+func Lag(opts *options.Options) error {
 	if err := validateLagOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
@@ -33,7 +33,7 @@ func Lag(opts *cli.Options) error {
 }
 
 // calculate lag with a given connection
-func (kLag *KafkaLag) LagCalculationForConsumerGroup(groupId string, opts *cli.Options) error {
+func (kLag *KafkaLag) LagCalculationForConsumerGroup(groupId string, opts *options.Options) error {
 
 	topicPartionMap := make(map[string][]skafka.Partition)
 
@@ -71,7 +71,7 @@ func (kLag *KafkaLag) LagCalculationForConsumerGroup(groupId string, opts *cli.O
 
 }
 
-func discoverPartitions(topic string, partDiscoverConn *skafka.Conn, opts *cli.Options) ([]skafka.Partition, error) {
+func discoverPartitions(topic string, partDiscoverConn *skafka.Conn, opts *options.Options) ([]skafka.Partition, error) {
 
 	partitions, err := partDiscoverConn.ReadPartitions(topic)
 
@@ -82,7 +82,7 @@ func discoverPartitions(topic string, partDiscoverConn *skafka.Conn, opts *cli.O
 	return partitions, nil
 }
 
-func (kLag *KafkaLag) GetLastOffsetPerPartition(topic string, groupId string, part int, opts *cli.Options) (int64, error) {
+func (kLag *KafkaLag) GetLastOffsetPerPartition(topic string, groupId string, part int, opts *options.Options) (int64, error) {
 
 	partitions, err := discoverPartitions(topic, kLag.partitionDiscoverConn[topic], opts)
 
@@ -113,7 +113,7 @@ func (kLag *KafkaLag) GetLastOffsetPerPartition(topic string, groupId string, pa
 }
 
 // create new connection per topic and address
-func (kLag *KafkaLag) LagCalculationPerPartition(topic string, groupId string, part int, opts *cli.Options) (int64, error) {
+func (kLag *KafkaLag) LagCalculationPerPartition(topic string, groupId string, part int, opts *options.Options) (int64, error) {
 
 	// get last offset per partition
 
@@ -148,7 +148,7 @@ func (kLag *KafkaLag) LagCalculationPerPartition(topic string, groupId string, p
 
 }
 
-func validateLagOptions(opts *cli.Options) error {
+func validateLagOptions(opts *options.Options) error {
 
 	if len(opts.Kafka.Brokers) == 0 {
 		return errors.New("no broker address available")

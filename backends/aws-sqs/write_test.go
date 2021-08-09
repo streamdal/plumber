@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/batchcorp/plumber/backends/aws-sqs/types/typesfakes"
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/printer"
 )
 
@@ -16,7 +16,7 @@ var _ = Describe("AWS SQS Backend", func() {
 
 	Context("validateWriteOptions", func() {
 		It("returns an error when delay is out of bounds", func() {
-			opts := &cli.Options{AWSSQS: &cli.AWSSQSOptions{
+			opts := &options.Options{AWSSQS: &options.AWSSQSOptions{
 				WriteDelaySeconds: -1,
 			}}
 
@@ -26,7 +26,7 @@ var _ = Describe("AWS SQS Backend", func() {
 		})
 
 		It("returns nil on valid config", func() {
-			opts := &cli.Options{AWSSQS: &cli.AWSSQSOptions{
+			opts := &options.Options{AWSSQS: &options.AWSSQSOptions{
 				WriteDelaySeconds: 10,
 			}}
 
@@ -43,7 +43,7 @@ var _ = Describe("AWS SQS Backend", func() {
 			}
 
 			a := &AWSSQS{
-				Options: &cli.Options{AWSSQS: &cli.AWSSQSOptions{}},
+				Options: &options.Options{AWSSQS: &options.AWSSQSOptions{}},
 				Service: sqsFake,
 			}
 
@@ -60,7 +60,7 @@ var _ = Describe("AWS SQS Backend", func() {
 				return &sqs.SendMessageOutput{}, nil
 			}
 
-			opts := &cli.Options{AWSSQS: &cli.AWSSQSOptions{
+			opts := &options.Options{AWSSQS: &options.AWSSQSOptions{
 				WriteAttributes: map[string]string{
 					"faz": "baz",
 				},

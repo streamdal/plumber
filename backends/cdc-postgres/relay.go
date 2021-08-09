@@ -9,20 +9,20 @@ import (
 
 	"github.com/batchcorp/pgoutput"
 	"github.com/batchcorp/plumber/backends/cdc-postgres/types"
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/stats"
 )
 
 type Relayer struct {
-	Options     *cli.Options
+	Options     *options.Options
 	RelayCh     chan interface{}
 	log         *logrus.Entry
 	Service     *pgx.ReplicationConn
 	ShutdownCtx context.Context
 }
 
-func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
+func Relay(opts *options.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
 	// Create new service
 	client, err := NewService(opts)
 	if err != nil {

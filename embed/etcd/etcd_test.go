@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
@@ -19,7 +19,7 @@ var _ = Describe("Etcd", func() {
 		pURL, _ = url.Parse("http://127.0.0.1:2380")
 		cURL, _ = url.Parse("http://127.0.0.1:2379")
 
-		goodServerOptions = &cli.ServerOptions{
+		goodServerOptions = &options.ServerOptions{
 			NodeID:             "plumber1",
 			ListenAddress:      "127.0.0.1:9000", // grpc address
 			AuthToken:          "secret",
@@ -97,7 +97,7 @@ var _ = Describe("Etcd", func() {
 })
 
 // wrapper func for writing something to etcd and reading it back
-func writeRead(opts *cli.ServerOptions, key, val string) error {
+func writeRead(opts *options.ServerOptions, key, val string) error {
 	// Put  data
 	c, err := clientv3.New(clientv3.Config{
 		Endpoints: []string{opts.ListenerClientURL.String()},

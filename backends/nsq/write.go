@@ -6,12 +6,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/writer"
 )
 
 // Write performs necessary setup and calls NSQ.Write() to write the actual message
-func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
+func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 	if err := writer.ValidateWriteOptions(opts, validateWriteOptions); err != nil {
 		return errors.Wrap(err, "unable to validate write options")
 	}
@@ -69,7 +69,7 @@ func (n *NSQ) Write(value []byte) error {
 	return nil
 }
 
-func validateWriteOptions(opts *cli.Options) error {
+func validateWriteOptions(opts *options.Options) error {
 	if opts.NSQ.TLSCAFile != "" || opts.NSQ.TLSClientCertFile != "" || opts.NSQ.TLSClientKeyFile != "" {
 		if opts.NSQ.TLSClientKeyFile == "" {
 			return ErrMissingTLSKey

@@ -8,13 +8,13 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 )
 
 // Read is the entry point function for performing read operations in NSQ
-func Read(opts *cli.Options, md *desc.MessageDescriptor) error {
+func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 	if err := validateReadOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
@@ -93,7 +93,7 @@ func (n *NSQ) Read() error {
 }
 
 // validateReadOptions ensures all necessary flags have values required for reading from NSQ
-func validateReadOptions(opts *cli.Options) error {
+func validateReadOptions(opts *options.Options) error {
 	if opts.NSQ.NSQDAddress == "" && opts.NSQ.NSQLookupDAddress == "" {
 		return ErrMissingAddress
 	}

@@ -1,15 +1,15 @@
 package activemq
 
 import (
-	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/dproxy"
+	"github.com/batchcorp/plumber/options"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
 // which are then written to the message bus.
-func Dynamic(opts *cli.Options) error {
+func Dynamic(opts *options.Options) error {
 	llog := logrus.WithField("pkg", "activemq/dynamic")
 
 	// Start up writer
@@ -44,7 +44,7 @@ func Dynamic(opts *cli.Options) error {
 	}
 }
 
-func getDestination(opts *cli.Options) string {
+func getDestination(opts *options.Options) string {
 	if opts.ActiveMq.Topic != "" {
 		return "/topic/" + opts.ActiveMq.Topic
 	}

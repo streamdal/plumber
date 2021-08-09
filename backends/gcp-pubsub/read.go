@@ -11,12 +11,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 )
 
-func Read(opts *cli.Options, md *desc.MessageDescriptor) error {
+func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 	if err := validateReadOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
@@ -84,7 +84,7 @@ func (g *GCPPubSub) Read() error {
 	return nil
 }
 
-func validateReadOptions(opts *cli.Options) error {
+func validateReadOptions(opts *options.Options) error {
 	emulator := os.Getenv("PUBSUB_EMULATOR_HOST")
 	appCreds := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
 	if emulator == "" && appCreds == "" {

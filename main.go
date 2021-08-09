@@ -13,8 +13,8 @@ import (
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/ssh/terminal"
 
-	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/config"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/plumber"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/server/types"
@@ -22,7 +22,7 @@ import (
 )
 
 func main() {
-	cmd, opts, err := cli.Handle(os.Args[1:])
+	cmd, opts, err := options.Handle(os.Args[1:])
 	if err != nil {
 		logrus.Fatalf("Unable to handle CLI input: %s", err)
 	}
@@ -86,7 +86,7 @@ func main() {
 }
 
 // readFromStdin reads data piped into stdin
-func readFromStdin(opts *cli.Options) {
+func readFromStdin(opts *options.Options) {
 	info, err := os.Stdin.Stat()
 	if err != nil {
 		logrus.Fatal(err)

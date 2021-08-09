@@ -8,13 +8,13 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/backends/azure/types"
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/stats"
 )
 
 type Relayer struct {
-	Options     *cli.Options
+	Options     *options.Options
 	RelayCh     chan interface{}
 	log         *logrus.Entry
 	Queue       *servicebus.Queue
@@ -22,7 +22,7 @@ type Relayer struct {
 	ShutdownCtx context.Context
 }
 
-func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
+func Relay(opts *options.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
 	// Create new service
 	client, err := NewClient(opts)
 	if err != nil {

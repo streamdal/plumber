@@ -8,12 +8,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 )
 
-func Read(opts *cli.Options, md *desc.MessageDescriptor) error {
+func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 	client, err := NewClient(opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to create client")

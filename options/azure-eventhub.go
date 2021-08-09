@@ -1,8 +1,9 @@
-package cli
+package options
 
 import (
-	"gopkg.in/alecthomas/kingpin.v2"
 	"os"
+
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 type AzureEventHubOptions struct {

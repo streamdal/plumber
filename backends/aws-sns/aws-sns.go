@@ -7,18 +7,18 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/backends/aws-sns/types"
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
 type AWSSNS struct {
-	Options  *cli.Options
+	Options  *options.Options
 	Service  types.ISNSAPI
 	QueueURL string
 	MsgDesc  *desc.MessageDescriptor
 	log      *logrus.Entry
 }
 
-func NewService(opts *cli.Options) (*sns.SNS, error) {
+func NewService(opts *options.Options) (*sns.SNS, error) {
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 	}))

@@ -3,11 +3,11 @@ package azure
 import (
 	"testing"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
 func TestValidateWriteOptions_Passes(t *testing.T) {
-	opts := &cli.Options{Azure: &cli.AzureServiceBusOptions{
+	opts := &options.Options{Azure: &options.AzureServiceBusOptions{
 		Queue: "test-queue",
 		Topic: "",
 	}}
@@ -18,7 +18,7 @@ func TestValidateWriteOptions_Passes(t *testing.T) {
 }
 
 func TestValidateWriteOptions_Fails(t *testing.T) {
-	opts := &cli.Options{Azure: &cli.AzureServiceBusOptions{
+	opts := &options.Options{Azure: &options.AzureServiceBusOptions{
 		Queue: "test-queue",
 		Topic: "test-topic",
 	}}

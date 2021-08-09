@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
@@ -26,7 +26,7 @@ type HandlerFunc func(context.Context, *clientv3.WatchResponse) error
 type Etcd struct {
 	server             *embed.Etcd
 	client             *clientv3.Client
-	cfg                *cli.ServerOptions
+	cfg                *options.ServerOptions
 	started            bool
 	consumerContext    context.Context
 	consumerCancelFunc context.CancelFunc
@@ -38,7 +38,7 @@ var (
 	ServerAlreadyStartedErr = errors.New("server already started")
 )
 
-func New(cfg *cli.ServerOptions) (*Etcd, error) {
+func New(cfg *options.ServerOptions) (*Etcd, error) {
 	if err := validateOptions(cfg); err != nil {
 		return nil, errors.Wrap(err, "unable to validate options")
 	}
@@ -49,7 +49,7 @@ func New(cfg *cli.ServerOptions) (*Etcd, error) {
 	}, nil
 }
 
-func validateOptions(cfg *cli.ServerOptions) error {
+func validateOptions(cfg *options.ServerOptions) error {
 	if cfg == nil {
 		return errors.New("server options config cannot be nil")
 	}

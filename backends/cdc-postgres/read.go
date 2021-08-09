@@ -11,11 +11,11 @@ import (
 
 	"github.com/batchcorp/pgoutput"
 	"github.com/batchcorp/plumber/backends/cdc-postgres/types"
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/printer"
 )
 
-func Read(opts *cli.Options, _ *desc.MessageDescriptor) error {
+func Read(opts *options.Options, _ *desc.MessageDescriptor) error {
 	if err := validateReadOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
@@ -89,6 +89,6 @@ func (p *CDCPostgres) printRecord(record *types.ChangeRecord) {
 }
 
 // validateReadOptions ensures the correct CLI options are specified for the read action
-func validateReadOptions(opts *cli.Options) error {
+func validateReadOptions(opts *options.Options) error {
 	return nil
 }

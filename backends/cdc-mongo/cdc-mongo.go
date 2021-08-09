@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/printer"
 )
 
@@ -30,12 +30,12 @@ type CDCMongo struct {
 	Id      string
 	Service *mongo.Client
 	Context context.Context
-	Options *cli.Options
+	Options *options.Options
 	log     *logrus.Entry
 	printer printer.IPrinter
 }
 
-func NewService(opts *cli.Options) (*mongo.Client, error) {
+func NewService(opts *options.Options) (*mongo.Client, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), ConnectionTimeout)
 	defer cancel()
 

@@ -9,14 +9,14 @@ import (
 	"github.com/streadway/amqp"
 
 	"github.com/batchcorp/plumber/backends/rabbitmq/types"
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/stats"
 	"github.com/batchcorp/rabbit"
 )
 
 type Relayer struct {
-	Options     *cli.Options
+	Options     *options.Options
 	Channel     *amqp.Channel
 	RelayCh     chan interface{}
 	log         *logrus.Entry
@@ -24,7 +24,7 @@ type Relayer struct {
 	ShutdownCtx context.Context
 }
 
-func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
+func Relay(opts *options.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
 	if err := validateRelayOptions(opts); err != nil {
 		return nil, errors.Wrap(err, "unable to verify options")
 	}
@@ -38,7 +38,7 @@ func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Cont
 	}, nil
 }
 
-func validateRelayOptions(opts *cli.Options) error {
+func validateRelayOptions(opts *options.Options) error {
 	if opts.Rabbit.RoutingKey == "" {
 		return errors.New("You must specify a routing key")
 	}

@@ -10,7 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/backends/aws-sns/types/typesfakes"
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
 var _ = Describe("AWS SNS Backend", func() {
@@ -18,8 +18,8 @@ var _ = Describe("AWS SNS Backend", func() {
 
 	Context("validateWriteOptions", func() {
 		It("Returns error on missing --topic flag", func() {
-			opts := &cli.Options{
-				AWSSNS: &cli.AWSSNSOptions{},
+			opts := &options.Options{
+				AWSSNS: &options.AWSSNSOptions{},
 			}
 
 			err := validateWriteOptions(opts)
@@ -29,8 +29,8 @@ var _ = Describe("AWS SNS Backend", func() {
 		})
 
 		It("Returns error on invalid ARN", func() {
-			opts := &cli.Options{
-				AWSSNS: &cli.AWSSNSOptions{
+			opts := &options.Options{
+				AWSSNS: &options.AWSSNSOptions{
 					TopicArn: "invalid arn",
 				},
 			}
@@ -43,8 +43,8 @@ var _ = Describe("AWS SNS Backend", func() {
 
 		It("Returns nil on valid config", func() {
 
-			opts := &cli.Options{
-				AWSSNS: &cli.AWSSNSOptions{
+			opts := &options.Options{
+				AWSSNS: &options.AWSSNSOptions{
 					TopicArn: "arn:aws:sns:us-east-2:123456789012:MyTopic",
 				},
 			}
@@ -63,8 +63,8 @@ var _ = Describe("AWS SNS Backend", func() {
 				return nil, expectedErr
 			}
 
-			opts := &cli.Options{
-				AWSSNS: &cli.AWSSNSOptions{
+			opts := &options.Options{
+				AWSSNS: &options.AWSSNSOptions{
 					TopicArn: "arn:aws:sns:us-east-2:123456789012:MyTopic",
 				},
 			}
@@ -88,8 +88,8 @@ var _ = Describe("AWS SNS Backend", func() {
 				return &sns.PublishOutput{MessageId: aws.String("testing")}, nil
 			}
 
-			opts := &cli.Options{
-				AWSSNS: &cli.AWSSNSOptions{
+			opts := &options.Options{
+				AWSSNS: &options.AWSSNSOptions{
 					TopicArn: "arn:aws:sns:us-east-2:123456789012:MyTopic",
 				},
 			}

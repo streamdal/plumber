@@ -6,10 +6,10 @@ import (
 
 	"github.com/nsqio/go-nsq"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
-func PrintNSQResult(opts *cli.Options, count int, msg *nsq.Message, data []byte) {
+func PrintNSQResult(opts *options.Options, count int, msg *nsq.Message, data []byte) {
 	ts := time.Unix(0, msg.Timestamp)
 
 	properties := [][]string{

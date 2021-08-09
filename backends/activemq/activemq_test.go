@@ -5,14 +5,14 @@ import (
 
 	. "github.com/onsi/gomega"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
 func TestGetDestination_topic(t *testing.T) {
 	g := NewGomegaWithT(t)
 
-	opts := &cli.Options{
-		ActiveMq: &cli.ActiveMqOptions{
+	opts := &options.Options{
+		ActiveMq: &options.ActiveMqOptions{
 			Topic: "test_topic",
 		},
 	}
@@ -28,8 +28,8 @@ func TestGetDestination_topic(t *testing.T) {
 func TestGetDestination_queue(t *testing.T) {
 	g := NewGomegaWithT(t)
 
-	opts := &cli.Options{
-		ActiveMq: &cli.ActiveMqOptions{
+	opts := &options.Options{
+		ActiveMq: &options.ActiveMqOptions{
 			Queue: "TestQueue",
 		},
 	}

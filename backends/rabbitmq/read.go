@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 	"github.com/batchcorp/rabbit"
@@ -18,7 +18,7 @@ import (
 //
 // This is where we verify that the provided arguments and flag combination
 // makes sense/are valid; this is also where we will perform our initial conn.
-func Read(opts *cli.Options, md *desc.MessageDescriptor) error {
+func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 	if err := validateReadOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
@@ -78,7 +78,7 @@ func (r *RabbitMQ) Read() error {
 	return nil
 }
 
-func validateReadOptions(opts *cli.Options) error {
+func validateReadOptions(opts *options.Options) error {
 	if opts.Rabbit.Address == "" {
 		return errors.New("--address cannot be empty")
 	}

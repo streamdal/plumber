@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
 var _ = Describe("MQTT Backend", func() {
@@ -15,14 +15,14 @@ var _ = Describe("MQTT Backend", func() {
 		It("returns error on invalid URI", func() {
 			url, _ := url.Parse("http://localhost")
 
-			_, err := createClientOptions(&cli.Options{}, url)
+			_, err := createClientOptions(&options.Options{}, url)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(errInvalidAddress))
 		})
 
 		It("returns a valid options struct", func() {
-			opts := &cli.Options{
-				MQTT: &cli.MQTTOptions{
+			opts := &options.Options{
+				MQTT: &options.MQTTOptions{
 					ClientID: "123",
 				},
 			}
@@ -43,8 +43,8 @@ var _ = Describe("MQTT Backend", func() {
 
 	Context("generateTLSConfig", func() {
 		It("returns a valid tls.Config", func() {
-			opts := &cli.Options{
-				MQTT: &cli.MQTTOptions{
+			opts := &options.Options{
+				MQTT: &options.MQTTOptions{
 					TLSClientKeyFile:  "../../test-assets/ssl/client.key",
 					TLSClientCertFile: "../../test-assets/ssl/client.crt",
 					TLSCAFile:         "../../test-assets/ssl/ca.crt",

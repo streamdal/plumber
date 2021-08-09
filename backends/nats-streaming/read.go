@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 )
@@ -21,7 +21,7 @@ var (
 	errInvalidReadOption = errors.New("You may only specify one read option of --last, --all, --seq, --since")
 )
 
-func Read(opts *cli.Options, md *desc.MessageDescriptor) error {
+func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 	if err := validateReadOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
@@ -137,7 +137,7 @@ func (n *NatsStreaming) getReadOptions() []stan.SubscriptionOption {
 }
 
 // validateReadOptions ensures the correct CLI options are specified for the read action
-func validateReadOptions(opts *cli.Options) error {
+func validateReadOptions(opts *options.Options) error {
 	if opts.NatsStreaming.Channel == "" {
 		return errMissingChannel
 	}

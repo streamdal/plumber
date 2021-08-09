@@ -13,11 +13,11 @@ import (
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/serializers"
 )
 
-func GenerateWriteValues(md *desc.MessageDescriptor, opts *cli.Options) ([][]byte, error) {
+func GenerateWriteValues(md *desc.MessageDescriptor, opts *options.Options) ([][]byte, error) {
 	writeValues := make([][]byte, 0)
 
 	// File source
@@ -50,7 +50,7 @@ func GenerateWriteValues(md *desc.MessageDescriptor, opts *cli.Options) ([][]byt
 }
 
 // generateWriteValue will transform input data into the required format for transmission
-func generateWriteValue(data []byte, md *desc.MessageDescriptor, opts *cli.Options) ([]byte, error) {
+func generateWriteValue(data []byte, md *desc.MessageDescriptor, opts *options.Options) ([]byte, error) {
 	// Ensure we do not try to operate on a nil md
 	if opts.WriteInputFile == "jsonpb" && md == nil {
 		return nil, errors.New("message descriptor cannot be nil when --input-type is jsonpb")
@@ -99,7 +99,7 @@ func generateWriteValue(data []byte, md *desc.MessageDescriptor, opts *cli.Optio
 
 // ValidateWriteOptions ensures that the correct flags and their values have been provided.
 // Backends which require additional bus specific validation can pass them in via a closure
-func ValidateWriteOptions(opts *cli.Options, busSpecific func(options *cli.Options) error) error {
+func ValidateWriteOptions(opts *options.Options, busSpecific func(options *options.Options) error) error {
 	if busSpecific != nil {
 		if err := busSpecific(opts); err != nil {
 			return err

@@ -10,20 +10,20 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/batchcorp/plumber/backends/cdc-mongo/types"
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/stats"
 )
 
 type Relayer struct {
-	Options     *cli.Options
+	Options     *options.Options
 	RelayCh     chan interface{}
 	log         *logrus.Entry
 	Service     *mongo.Client
 	ShutdownCtx context.Context
 }
 
-func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
+func Relay(opts *options.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
 	if err := validateRelayOptions(opts); err != nil {
 		return nil, errors.Wrap(err, "unable to verify options")
 	}
@@ -100,7 +100,7 @@ func (r *Relayer) Relay() error {
 	return nil
 }
 
-func validateRelayOptions(opts *cli.Options) error {
+func validateRelayOptions(opts *options.Options) error {
 	if opts.CDCMongo.Collection != "" && opts.CDCMongo.Database == "" {
 		return ErrMissingDatabase
 	}

@@ -1,7 +1,7 @@
 package batch
 
 import (
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -90,7 +90,7 @@ var _ = Describe("Batch", func() {
 			}`
 
 			b := BatchWithMockResponse(200, apiResponse)
-			b.Opts.Batch.DestinationMetadata = &cli.DestinationMetadata{}
+			b.Opts.Batch.DestinationMetadata = &options.DestinationMetadata{}
 
 			destination, err := b.createDestination("http")
 			Expect(err).ToNot(HaveOccurred())
@@ -101,9 +101,9 @@ var _ = Describe("Batch", func() {
 	Context("getDestinationMetadataHTTP", func() {
 		It("returns correct map", func() {
 			b := &Batch{
-				Opts: &cli.Options{
-					Batch: &cli.BatchOptions{
-						DestinationMetadata: &cli.DestinationMetadata{
+				Opts: &options.Options{
+					Batch: &options.BatchOptions{
+						DestinationMetadata: &options.DestinationMetadata{
 							HTTPURL: "http://localhost",
 							HTTPHeaders: map[string]string{
 								"content-type": "application/json",

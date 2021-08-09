@@ -10,11 +10,11 @@ import (
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/stream"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/writer"
 )
 
-func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
+func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	writeValues, err := writer.GenerateWriteValues(md, opts)
 	if err != nil {

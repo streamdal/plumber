@@ -16,7 +16,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
 var (
@@ -55,9 +55,9 @@ var _ = Describe("RabbitMQ", func() {
 			// This test doesn't need to use the separate rabbit channel
 			testBody := []byte(fmt.Sprintf("test-body-contents-%d", rand.Int()))
 
-			opts := &cli.Options{
+			opts := &options.Options{
 				Action: "read",
-				Rabbit: &cli.RabbitOptions{
+				Rabbit: &options.RabbitOptions{
 					Address:             amqpAddress,
 					Exchange:            testExchangeName,
 					RoutingKey:          testRoutingKey,

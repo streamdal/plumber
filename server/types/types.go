@@ -9,7 +9,7 @@ import (
 	"github.com/golang/protobuf/jsonpb"
 
 	"github.com/batchcorp/plumber/backends/kafka"
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 
 	"github.com/pkg/errors"
 
@@ -169,8 +169,8 @@ func getRelayBackend(
 		}
 
 		// TODO: I think all relays should take their own unique struct instead of passing cli.Options
-		opts := &cli.Options{
-			Kafka: &cli.KafkaOptions{
+		opts := &cfg.Options{
+			Kafka: &cfg.KafkaOptions{
 				Brokers:            cfg.Address,
 				Topics:             args.Topics,
 				Timeout:            connectTimeout,

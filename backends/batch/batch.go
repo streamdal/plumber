@@ -18,7 +18,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
 type IBatch interface {
@@ -37,7 +37,7 @@ type IBatch interface {
 type Batch struct {
 	PersistentConfig *config.Config
 	Log              *logrus.Entry
-	Opts             *cli.Options
+	Opts             *options.Options
 	Client           *http.Client
 	Printer          PrinterFunc
 	ApiUrl           string
@@ -62,7 +62,7 @@ type PrinterFunc func(v interface{})
 var errNotAuthenticated = errors.New("you are not authenticated. run `plumber batch login`")
 
 // New creates a new instance of a Batch struct with defaults
-func New(opts *cli.Options, cfg *config.Config) *Batch {
+func New(opts *options.Options, cfg *config.Config) *Batch {
 	printer := printTable
 	if opts.Batch.OutputType == "json" {
 		printer = printJSON

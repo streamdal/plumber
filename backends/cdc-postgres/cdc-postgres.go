@@ -6,7 +6,7 @@ import (
 
 	"github.com/batchcorp/pgoutput"
 	"github.com/batchcorp/plumber/backends/cdc-postgres/types"
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/pgtype"
@@ -37,13 +37,13 @@ Example output
 */
 
 type CDCPostgres struct {
-	Options *cli.Options
+	Options *options.Options
 	Service *pgx.ReplicationConn
 	Log     *logrus.Entry
 	Printer printer.IPrinter
 }
 
-func NewService(opts *cli.Options) (*pgx.ReplicationConn, error) {
+func NewService(opts *options.Options) (*pgx.ReplicationConn, error) {
 	config := pgx.ConnConfig{
 		Database: opts.CDCPostgres.DatabaseName,
 		User:     opts.CDCPostgres.Username,

@@ -8,19 +8,19 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/backends/nsq/types"
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/stats"
 )
 
 type Relayer struct {
-	Options     *cli.Options
+	Options     *options.Options
 	RelayCh     chan interface{}
 	log         *logrus.Entry
 	ShutdownCtx context.Context
 }
 
-func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
+func Relay(opts *options.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
 	if err := validateRelayOptions(opts); err != nil {
 		return nil, errors.Wrap(err, "unable to verify options")
 	}
@@ -33,7 +33,7 @@ func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Cont
 	}, nil
 }
 
-func validateRelayOptions(opts *cli.Options) error {
+func validateRelayOptions(opts *options.Options) error {
 	// These currently accept the same params
 	return validateReadOptions(opts)
 }

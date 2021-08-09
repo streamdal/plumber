@@ -4,13 +4,13 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/dproxy"
+	"github.com/batchcorp/plumber/options"
 )
 
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
 // which are then written to the message bus.
-func Dynamic(opts *cli.Options) error {
+func Dynamic(opts *options.Options) error {
 	llog := logrus.WithField("pkg", "nats/dynamic")
 
 	// Start up client

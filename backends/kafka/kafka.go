@@ -17,7 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh/terminal"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
 const (
@@ -30,7 +30,7 @@ type Kafka struct {
 	Id      string
 	Reader  *skafka.Reader
 	Writer  *skafka.Writer
-	Options *cli.Options
+	Options *options.Options
 	MsgDesc *desc.MessageDescriptor
 	log     *logrus.Entry
 }
@@ -49,7 +49,7 @@ type KafkaLag struct {
 	partitionDiscoverConn map[string]*skafka.Conn
 }
 
-func NewKafkaLagConnection(opts *cli.Options) (*KafkaLag, error) {
+func NewKafkaLagConnection(opts *options.Options) (*KafkaLag, error) {
 	dialer := &skafka.Dialer{
 		DualStack: true,
 		Timeout:   opts.Kafka.Timeout,
@@ -101,7 +101,7 @@ func NewKafkaLagConnection(opts *cli.Options) (*KafkaLag, error) {
 
 }
 
-func newConnectionPerPartition(topic string, partition int, opts *cli.Options) (*skafka.Conn, error) {
+func newConnectionPerPartition(topic string, partition int, opts *options.Options) (*skafka.Conn, error) {
 	dialer := &skafka.Dialer{
 		DualStack: true,
 		Timeout:   opts.Kafka.Timeout,
@@ -142,7 +142,7 @@ func newConnectionPerPartition(topic string, partition int, opts *cli.Options) (
 
 }
 
-func NewReader(opts *cli.Options) (*KafkaReader, error) {
+func NewReader(opts *options.Options) (*KafkaReader, error) {
 	dialer := &skafka.Dialer{
 		DualStack: true,
 		Timeout:   opts.Kafka.Timeout,
@@ -199,7 +199,7 @@ func NewReader(opts *cli.Options) (*KafkaReader, error) {
 	}, nil
 }
 
-func NewWriter(opts *cli.Options) (*KafkaWriter, error) {
+func NewWriter(opts *options.Options) (*KafkaWriter, error) {
 	dialer := &skafka.Dialer{
 		Timeout: opts.Kafka.Timeout,
 	}
@@ -237,7 +237,7 @@ func NewWriter(opts *cli.Options) (*KafkaWriter, error) {
 }
 
 // dialContext attempts to kafka.DialLeader() for any of the brokers a user has provided
-func dialContext(dialer *skafka.Dialer, opts *cli.Options) (*skafka.Conn, error) {
+func dialContext(dialer *skafka.Dialer, opts *options.Options) (*skafka.Conn, error) {
 	var err error
 	var conn *skafka.Conn
 
@@ -263,7 +263,7 @@ func dialContext(dialer *skafka.Dialer, opts *cli.Options) (*skafka.Conn, error)
 }
 
 // dialLeader attempts to kafka.DialLeader() for any of the brokers a user has provided
-func dialLeader(dialer *skafka.Dialer, opts *cli.Options) (*skafka.Conn, error) {
+func dialLeader(dialer *skafka.Dialer, opts *options.Options) (*skafka.Conn, error) {
 	var err error
 	var conn *skafka.Conn
 
@@ -290,7 +290,7 @@ func dialLeader(dialer *skafka.Dialer, opts *cli.Options) (*skafka.Conn, error) 
 
 // getAuthenticationMechanism returns the correct authentication config for use with kafka.Dialer if a username/password
 // is provided. If not, it will return nil
-func getAuthenticationMechanism(opts *cli.Options) (sasl.Mechanism, error) {
+func getAuthenticationMechanism(opts *options.Options) (sasl.Mechanism, error) {
 	if opts.Kafka.Username == "" {
 		return nil, nil
 	}

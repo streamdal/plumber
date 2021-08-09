@@ -6,18 +6,18 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
 type ActiveMq struct {
-	Options *cli.Options
+	Options *options.Options
 	Client  *stomp.Conn
 	MsgDesc *desc.MessageDescriptor
 	log     *logrus.Entry
 }
 
 // NewClient returns a configured instance of stomp.Conn
-func NewClient(opts *cli.Options) (*stomp.Conn, error) {
+func NewClient(opts *options.Options) (*stomp.Conn, error) {
 	o := func(*stomp.Conn) error {
 		return nil
 	}

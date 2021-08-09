@@ -14,10 +14,10 @@ import (
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/stream"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
-func Read(opts *cli.Options, md *desc.MessageDescriptor) error {
+func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 	client, err := NewClient(opts)
 	if err != nil {
 		return err

@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/schemas/build/go/events"
 	"github.com/batchcorp/schemas/build/go/services"
 )
@@ -29,11 +29,11 @@ type DProxyClient struct {
 	MessageBus        string
 	OutboundMessageCh chan *events.Outbound
 
-	Options *cli.Options
+	Options *options.Options
 }
 
 // New validates CLI options and returns a new DProxyClient struct
-func New(opts *cli.Options, bus string) (*DProxyClient, error) {
+func New(opts *options.Options, bus string) (*DProxyClient, error) {
 	ctx, _ := context.WithTimeout(context.Background(), opts.DproxyGRPCTimeout)
 
 	conn, err := grpc.DialContext(ctx, opts.DProxyAddress, getDialOptions(opts)...)
@@ -65,7 +65,7 @@ func (d *DProxyClient) reconnect() error {
 }
 
 // getDialOptions returns all necessary grpc dial options to connect to dProxy
-func getDialOptions(opts *cli.Options) []grpc.DialOption {
+func getDialOptions(opts *options.Options) []grpc.DialOption {
 	dialOpts := []grpc.DialOption{grpc.WithBlock()}
 
 	if opts.DProxyInsecure {

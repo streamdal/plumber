@@ -10,11 +10,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
 type Pulsar struct {
-	Options  *cli.Options
+	Options  *options.Options
 	Client   pulsar.Client
 	Producer pulsar.Producer
 	MsgDesc  *desc.MessageDescriptor
@@ -23,7 +23,7 @@ type Pulsar struct {
 }
 
 // NewClient creates a new pulsar client connection
-func NewClient(opts *cli.Options) (pulsar.Client, error) {
+func NewClient(opts *options.Options) (pulsar.Client, error) {
 	clientOpts := pulsar.ClientOptions{
 		URL:                        opts.Pulsar.Address,
 		OperationTimeout:           30 * time.Second,
