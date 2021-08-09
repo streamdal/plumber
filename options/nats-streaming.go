@@ -1,4 +1,4 @@
-package cli
+package options
 
 import (
 	"gopkg.in/alecthomas/kingpin.v2"

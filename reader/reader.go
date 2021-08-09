@@ -14,14 +14,14 @@ import (
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/serializers"
 	"github.com/batchcorp/plumber/util"
 )
 
-func Decode(opts *cli.Options, msgDesc *desc.MessageDescriptor, message []byte) ([]byte, error) {
+func Decode(opts *options.Options, msgDesc *desc.MessageDescriptor, message []byte) ([]byte, error) {
 	if opts.ReadProtobufRootMessage != "" {
 		// SQS doesn't like binary
 		if opts.AWSSQS.QueueName != "" {

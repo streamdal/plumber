@@ -13,7 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/api"
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/relay"
@@ -32,7 +32,7 @@ type Config struct {
 	ServiceShutdownCtx context.Context
 	MainShutdownFunc   context.CancelFunc
 	MainShutdownCtx    context.Context
-	Options            *cli.Options
+	Options            *options.Options
 	Cmd                string
 }
 
@@ -64,13 +64,13 @@ func New(cfg *Config) (*Plumber, error) {
 }
 
 // getMd retrieves a protobuf message descriptor if protobuf read/write flags are specified
-func getMd(opts *cli.Options) (*desc.MessageDescriptor, error) {
+func getMd(opts *options.Options) (*desc.MessageDescriptor, error) {
 	var err error
 	var md *desc.MessageDescriptor
 
 	// If anything protobuf-related is specified, it's being used
 	if opts.ReadProtobufRootMessage != "" || len(opts.ReadProtobufDirs) != 0 {
-		if err := cli.ValidateProtobufOptions(
+		if err := opts.ValidateProtobufOptions(
 			opts.ReadProtobufDirs,
 			opts.ReadProtobufRootMessage,
 		); err != nil {
@@ -79,7 +79,7 @@ func getMd(opts *cli.Options) (*desc.MessageDescriptor, error) {
 	}
 
 	if opts.WriteInputType == "jsonpb" {
-		if err := cli.ValidateProtobufOptions(
+		if err := opts.ValidateProtobufOptions(
 			opts.WriteProtobufDirs,
 			opts.WriteProtobufRootMessage,
 		); err != nil {

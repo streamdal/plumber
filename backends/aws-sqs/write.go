@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/writer"
 )
@@ -26,7 +26,7 @@ const (
 // This is where we verify that the passed args and flags combo makes sense,
 // attempt to establish a connection, parse protobuf before finally attempting
 // to perform the write.
-func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
+func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 	if err := writer.ValidateWriteOptions(opts, validateWriteOptions); err != nil {
 		return errors.Wrap(err, "unable to validate write options")
 	}
@@ -59,7 +59,7 @@ func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
 	return nil
 }
 
-func validateWriteOptions(opts *cli.Options) error {
+func validateWriteOptions(opts *options.Options) error {
 	if opts.AWSSQS.WriteDelaySeconds < 0 || opts.AWSSQS.WriteDelaySeconds > 900 {
 		return errors.New(ErrInvalidWriteDelaySeconds)
 	}

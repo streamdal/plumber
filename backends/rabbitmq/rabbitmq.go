@@ -1,7 +1,7 @@
 package rabbitmq
 
 import (
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 
 	"github.com/batchcorp/rabbit"
 	"github.com/jhump/protoreflect/desc"
@@ -13,13 +13,13 @@ import (
 // in RabbitMQ. This struct should be instantiated via the rabbitmq.Read(..) or
 // rabbitmq.Write(..) functions.
 type RabbitMQ struct {
-	Options  *cli.Options
+	Options  *options.Options
 	Consumer *rabbit.Rabbit
 	MsgDesc  *desc.MessageDescriptor
 	log      *logrus.Entry
 }
 
-func New(opts *cli.Options, md *desc.MessageDescriptor) (*RabbitMQ, error) {
+func New(opts *options.Options, md *desc.MessageDescriptor) (*RabbitMQ, error) {
 	mode := rabbit.Consumer
 	if opts.Action == "write" {
 		mode = rabbit.Producer

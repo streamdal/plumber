@@ -11,7 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/backends/aws-sqs/types/typesfakes"
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/printer/printerfakes"
 )
@@ -23,7 +23,7 @@ var _ = Describe("AWS SQS Backend", func() {
 
 	Context("validateReadOptions", func() {
 		It("returns an error when max messages is out of bounds", func() {
-			opts := &cli.Options{AWSSQS: &cli.AWSSQSOptions{
+			opts := &options.Options{AWSSQS: &options.AWSSQSOptions{
 				ReadMaxNumMessages: -1,
 			}}
 
@@ -32,7 +32,7 @@ var _ = Describe("AWS SQS Backend", func() {
 		})
 
 		It("returns an error when wait time is out of bounds", func() {
-			opts := &cli.Options{AWSSQS: &cli.AWSSQSOptions{
+			opts := &options.Options{AWSSQS: &options.AWSSQSOptions{
 				ReadMaxNumMessages:  1,
 				ReadWaitTimeSeconds: 30,
 			}}
@@ -42,7 +42,7 @@ var _ = Describe("AWS SQS Backend", func() {
 		})
 
 		It("returns nil on valid config", func() {
-			opts := &cli.Options{AWSSQS: &cli.AWSSQSOptions{
+			opts := &options.Options{AWSSQS: &options.AWSSQSOptions{
 				ReadMaxNumMessages:  10,
 				ReadWaitTimeSeconds: 0,
 			}}
@@ -59,9 +59,9 @@ var _ = Describe("AWS SQS Backend", func() {
 				return nil, errors.New("test error")
 			}
 
-			opts := &cli.Options{
+			opts := &options.Options{
 				ReadFollow: false,
-				AWSSQS:     &cli.AWSSQSOptions{},
+				AWSSQS:     &options.AWSSQSOptions{},
 			}
 
 			a := &AWSSQS{
@@ -83,9 +83,9 @@ var _ = Describe("AWS SQS Backend", func() {
 				return &sqs.ReceiveMessageOutput{}, nil
 			}
 
-			opts := &cli.Options{
+			opts := &options.Options{
 				ReadFollow: false,
-				AWSSQS:     &cli.AWSSQSOptions{},
+				AWSSQS:     &options.AWSSQSOptions{},
 			}
 
 			a := &AWSSQS{
@@ -118,9 +118,9 @@ var _ = Describe("AWS SQS Backend", func() {
 				readMessage = str
 			}
 
-			opts := &cli.Options{
+			opts := &options.Options{
 				ReadFollow: false,
-				AWSSQS:     &cli.AWSSQSOptions{},
+				AWSSQS:     &options.AWSSQSOptions{},
 			}
 
 			a := &AWSSQS{
@@ -159,9 +159,9 @@ var _ = Describe("AWS SQS Backend", func() {
 				readMessage = str
 			}
 
-			opts := &cli.Options{
+			opts := &options.Options{
 				ReadFollow: false,
-				AWSSQS: &cli.AWSSQSOptions{
+				AWSSQS: &options.AWSSQSOptions{
 					ReadAutoDelete: true,
 				},
 			}

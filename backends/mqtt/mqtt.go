@@ -12,7 +12,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/printer"
 )
 
@@ -27,14 +27,14 @@ var (
 )
 
 type MQTT struct {
-	Options *cli.Options
+	Options *options.Options
 	Client  pahomqtt.Client
 	MsgDesc *desc.MessageDescriptor
 	printer printer.IPrinter
 	log     *logrus.Entry
 }
 
-func connect(opts *cli.Options) (pahomqtt.Client, error) {
+func connect(opts *options.Options) (pahomqtt.Client, error) {
 	uri, err := url.Parse(opts.MQTT.Address)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to parse address")
@@ -60,7 +60,7 @@ func connect(opts *cli.Options) (pahomqtt.Client, error) {
 	return client, nil
 }
 
-func createClientOptions(cliOpts *cli.Options, uri *url.URL) (*pahomqtt.ClientOptions, error) {
+func createClientOptions(cliOpts *options.Options, uri *url.URL) (*pahomqtt.ClientOptions, error) {
 	opts := pahomqtt.NewClientOptions()
 
 	if uri.Scheme != "ssl" && uri.Scheme != "tcp" {
@@ -91,7 +91,7 @@ func createClientOptions(cliOpts *cli.Options, uri *url.URL) (*pahomqtt.ClientOp
 	return opts, nil
 }
 
-func generateTLSConfig(opts *cli.Options) (*tls.Config, error) {
+func generateTLSConfig(opts *options.Options) (*tls.Config, error) {
 	certpool := x509.NewCertPool()
 
 	pemCerts, err := ioutil.ReadFile(opts.MQTT.TLSCAFile)

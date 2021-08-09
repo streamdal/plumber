@@ -8,7 +8,7 @@ import (
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/stream"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
 var (
@@ -19,13 +19,13 @@ var (
 type RabbitMQStreams struct {
 	Client    *stream.Environment
 	Producer  *stream.Producer
-	Options   *cli.Options
+	Options   *options.Options
 	MsgDesc   *desc.MessageDescriptor
 	log       *logrus.Entry
 	waitGroup *sync.WaitGroup
 }
 
-func NewClient(opts *cli.Options) (*stream.Environment, error) {
+func NewClient(opts *options.Options) (*stream.Environment, error) {
 	env, err := stream.NewEnvironment(
 		stream.NewEnvironmentOptions().
 			SetUri(opts.RabbitMQStreams.Address).
@@ -63,7 +63,7 @@ func NewClient(opts *cli.Options) (*stream.Environment, error) {
 	return env, nil
 }
 
-func validateDeclareStreamOptions(opts *cli.Options) error {
+func validateDeclareStreamOptions(opts *options.Options) error {
 	if !opts.RabbitMQStreams.DeclareStream {
 		return nil
 	}

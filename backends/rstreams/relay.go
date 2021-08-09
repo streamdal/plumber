@@ -11,7 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/backends/rstreams/types"
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/stats"
 )
@@ -22,7 +22,7 @@ const (
 
 type Relayer struct {
 	Client      *redis.Client
-	Options     *cli.Options
+	Options     *options.Options
 	RelayCh     chan interface{}
 	log         *logrus.Entry
 	Looper      *director.FreeLooper
@@ -34,7 +34,7 @@ var (
 )
 
 // Relay sets up a new RedisStreams relayer
-func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
+func Relay(opts *options.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
 	if err := validateRelayOptions(opts); err != nil {
 		return nil, errors.Wrap(err, "unable to verify options")
 	}
@@ -62,7 +62,7 @@ func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Cont
 }
 
 // validateRelayOptions ensures all required CLI options are present before initializing relay mode
-func validateRelayOptions(opts *cli.Options) error {
+func validateRelayOptions(opts *options.Options) error {
 	if len(opts.RedisStreams.Streams) == 0 {
 		return errMissingStream
 	}

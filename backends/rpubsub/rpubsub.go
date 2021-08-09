@@ -5,17 +5,17 @@ import (
 	"github.com/jhump/protoreflect/desc"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
 type Redis struct {
-	Options *cli.Options
+	Options *options.Options
 	Client  *redis.Client
 	MsgDesc *desc.MessageDescriptor
 	log     *logrus.Entry
 }
 
-func NewClient(opts *cli.Options) (*redis.Client, error) {
+func NewClient(opts *options.Options) (*redis.Client, error) {
 	return redis.NewClient(&redis.Options{
 		Addr:     opts.RedisPubSub.Address,
 		Username: opts.RedisPubSub.Username,

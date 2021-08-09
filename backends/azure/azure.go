@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
 var (
@@ -15,7 +15,7 @@ var (
 )
 
 type AzureServiceBus struct {
-	Options *cli.Options
+	Options *options.Options
 	MsgDesc *desc.MessageDescriptor
 	Client  *servicebus.Namespace
 	Queue   *servicebus.Queue
@@ -24,7 +24,7 @@ type AzureServiceBus struct {
 }
 
 // NewClient returns a properly configured service bus client
-func NewClient(opts *cli.Options) (*servicebus.Namespace, error) {
+func NewClient(opts *options.Options) (*servicebus.Namespace, error) {
 	c, err := servicebus.NewNamespace(servicebus.NamespaceWithConnectionString(opts.Azure.ConnectionString))
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create new azure service bus client")

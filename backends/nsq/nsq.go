@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
 var (
@@ -23,14 +23,14 @@ var (
 
 // NSQ encapsulates options for calling Read() and Write() methods
 type NSQ struct {
-	Options  *cli.Options
+	Options  *options.Options
 	MsgDesc  *desc.MessageDescriptor
 	Producer *nsq.Producer
 	log      *NSQLogger
 }
 
 // getNSQConfig returns the config needed for creating a new NSQ consumer or producer
-func getNSQConfig(opts *cli.Options) (*nsq.Config, error) {
+func getNSQConfig(opts *options.Options) (*nsq.Config, error) {
 	config := nsq.NewConfig()
 	config.ClientID = opts.NSQ.ClientID
 
@@ -51,7 +51,7 @@ func getNSQConfig(opts *cli.Options) (*nsq.Config, error) {
 }
 
 // generateTLSConfig generates necessary TLS config for Dialing to an NSQ server
-func generateTLSConfig(opts *cli.Options) (*tls.Config, error) {
+func generateTLSConfig(opts *options.Options) (*tls.Config, error) {
 	// No client certs
 	if opts.NSQ.TLSClientCertFile == "" {
 		return &tls.Config{

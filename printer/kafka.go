@@ -8,10 +8,10 @@ import (
 	"github.com/segmentio/kafka-go"
 
 	"github.com/batchcorp/plumber/backends/kafka/types"
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
-func PrintKafkaResult(opts *cli.Options, offsetInfo *types.OffsetInfo, msg kafka.Message, data []byte) {
+func PrintKafkaResult(opts *options.Options, offsetInfo *types.OffsetInfo, msg kafka.Message, data []byte) {
 	key := aurora.Gray(12, "NONE").String()
 
 	if len(msg.Key) != 0 {

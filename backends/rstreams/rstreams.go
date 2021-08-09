@@ -8,18 +8,18 @@ import (
 	"github.com/jhump/protoreflect/desc"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
 type RedisStreams struct {
-	Options *cli.Options
+	Options *options.Options
 	Client  *redis.Client
 	MsgDesc *desc.MessageDescriptor
 	Context context.Context
 	log     *logrus.Entry
 }
 
-func NewClient(opts *cli.Options) (*redis.Client, error) {
+func NewClient(opts *options.Options) (*redis.Client, error) {
 	return redis.NewClient(&redis.Options{
 		Addr:     opts.RedisPubSub.Address,
 		Username: opts.RedisPubSub.Username,
@@ -28,7 +28,7 @@ func NewClient(opts *cli.Options) (*redis.Client, error) {
 	}), nil
 }
 
-func NewStreamsClient(opts *cli.Options) (*redis.Client, error) {
+func NewStreamsClient(opts *options.Options) (*redis.Client, error) {
 	return redis.NewClient(&redis.Options{
 		Addr:     opts.RedisStreams.Address,
 		Username: opts.RedisStreams.Username,
@@ -37,7 +37,7 @@ func NewStreamsClient(opts *cli.Options) (*redis.Client, error) {
 	}), nil
 }
 
-func CreateConsumerGroups(ctx context.Context, client *redis.Client, opts *cli.RedisStreamsOptions) error {
+func CreateConsumerGroups(ctx context.Context, client *redis.Client, opts *options.RedisStreamsOptions) error {
 	for _, stream := range opts.Streams {
 		if opts.RecreateConsumerGroup {
 			logrus.Debugf("deleting consumer group '%s'", opts.ConsumerGroup)

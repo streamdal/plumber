@@ -1,7 +1,7 @@
 package batch
 
 import (
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -105,8 +105,8 @@ var _ = Describe("Replays", func() {
 	Context("generateReplayQuery", func() {
 		It("handles wildcard", func() {
 			b := &Batch{
-				Opts: &cli.Options{
-					Batch: &cli.BatchOptions{
+				Opts: &options.Options{
+					Batch: &options.BatchOptions{
 						Query:      "*",
 						ReplayFrom: "2021-04-01T12:13:14Z",
 						ReplayTo:   "2021-04-02T12:13:14Z",
@@ -121,8 +121,8 @@ var _ = Describe("Replays", func() {
 
 		It("handles query with a field", func() {
 			b := &Batch{
-				Opts: &cli.Options{
-					Batch: &cli.BatchOptions{
+				Opts: &options.Options{
+					Batch: &options.BatchOptions{
 						Query:      "batch.team.id: 'foo'",
 						ReplayFrom: "2021-04-01T12:13:14Z",
 						ReplayTo:   "2021-04-02T12:13:14Z",

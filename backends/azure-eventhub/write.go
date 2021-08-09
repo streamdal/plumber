@@ -9,12 +9,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/writer"
 )
 
 // Write performs necessary setup and calls AzureServiceBus.Write() to write the actual message
-func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
+func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 	ctx := context.Background()
 
 	if err := writer.ValidateWriteOptions(opts, validateWriteOptions); err != nil {
@@ -66,6 +66,6 @@ func (a *AzureEventHub) Write(ctx context.Context, value []byte) error {
 }
 
 // validateWriteOptions ensures the correct CLI options are specified for the write action
-func validateWriteOptions(opts *cli.Options) error {
+func validateWriteOptions(opts *options.Options) error {
 	return nil
 }

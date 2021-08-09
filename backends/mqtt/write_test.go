@@ -10,7 +10,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/tools/mqttfakes"
 )
 
@@ -21,11 +21,11 @@ var _ = Describe("MQTT Write", func() {
 	logger.Out = ioutil.Discard
 	log := logrus.NewEntry(logger)
 
-	var opts *cli.Options
+	var opts *options.Options
 
 	BeforeEach(func() {
-		opts = &cli.Options{
-			MQTT: &cli.MQTTOptions{
+		opts = &opts.Options{
+			MQTT: &opts.MQTTOptions{
 				Address:           "ssl://localhost",
 				Topic:             "testing",
 				ClientID:          "123",
@@ -81,8 +81,8 @@ var _ = Describe("MQTT Write", func() {
 
 		BeforeEach(func() {
 			m = &MQTT{
-				Options: &cli.Options{
-					MQTT: &cli.MQTTOptions{},
+				Options: &opts.Options{
+					MQTT: &opts.MQTTOptions{},
 				},
 				log: log,
 			}

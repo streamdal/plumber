@@ -3,7 +3,7 @@ package rabbitmq
 import (
 	"context"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/writer"
 
 	"github.com/jhump/protoreflect/desc"
@@ -15,7 +15,7 @@ import (
 // This is where we verify that the passed args and flags combo makes sense,
 // attempt to establish a connection, parse protobuf before finally attempting
 // to perform the write.
-func Write(opts *cli.Options, md *desc.MessageDescriptor) error {
+func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 	if err := writer.ValidateWriteOptions(opts, nil); err != nil {
 		return errors.Wrap(err, "unable to validate write options")
 	}

@@ -9,7 +9,7 @@ import (
 	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . IPrinter
@@ -59,7 +59,7 @@ func PrintLogo() {
 	logrus.Info(logo)
 }
 
-func PrintRelayOptions(cmd string, opts *cli.Options) {
+func PrintRelayOptions(cmd string, opts *options.Options) {
 	if opts == nil {
 		return
 	}
@@ -111,7 +111,7 @@ func PrintRelayOptions(cmd string, opts *cli.Options) {
 	}
 }
 
-func printKafkaOptions(opts *cli.Options) {
+func printKafkaOptions(opts *options.Options) {
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("> Kafka Settings")
 	logrus.Info("----------------------------------------------------------------")
@@ -126,7 +126,7 @@ func printKafkaOptions(opts *cli.Options) {
 	logrus.Info("")
 }
 
-func printRabbitOptions(opts *cli.Options) {
+func printRabbitOptions(opts *options.Options) {
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("> Rabbit Settings")
 	logrus.Info("----------------------------------------------------------------")
@@ -146,7 +146,7 @@ func printRabbitOptions(opts *cli.Options) {
 	logrus.Info("")
 }
 
-func printAzureOptions(opts *cli.Options) {
+func printAzureOptions(opts *options.Options) {
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("> Azure Settings")
 	logrus.Info("----------------------------------------------------------------")
@@ -158,7 +158,7 @@ func printAzureOptions(opts *cli.Options) {
 	logrus.Info("")
 }
 
-func printSQSOptions(opts *cli.Options) {
+func printSQSOptions(opts *options.Options) {
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("> SQS Settings")
 	logrus.Info("----------------------------------------------------------------")
@@ -172,7 +172,7 @@ func printSQSOptions(opts *cli.Options) {
 	logrus.Info("")
 }
 
-func printGCPOptions(opts *cli.Options) {
+func printGCPOptions(opts *options.Options) {
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("> GCP Settings")
 	logrus.Info("----------------------------------------------------------------")
@@ -183,7 +183,7 @@ func printGCPOptions(opts *cli.Options) {
 	logrus.Info("")
 }
 
-func printRedisPubSubOptions(opts *cli.Options) {
+func printRedisPubSubOptions(opts *options.Options) {
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("> Redis PubSub Settings")
 	logrus.Info("----------------------------------------------------------------")
@@ -195,7 +195,7 @@ func printRedisPubSubOptions(opts *cli.Options) {
 	logrus.Info("")
 }
 
-func printRedisStreamsOptions(opts *cli.Options) {
+func printRedisStreamsOptions(opts *options.Options) {
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("> Redis Streams Settings")
 	logrus.Info("----------------------------------------------------------------")
@@ -211,7 +211,7 @@ func printRedisStreamsOptions(opts *cli.Options) {
 	logrus.Info("")
 }
 
-func printNSQOptions(opts *cli.Options) {
+func printNSQOptions(opts *options.Options) {
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("> NSQ Settings")
 	logrus.Info("----------------------------------------------------------------")

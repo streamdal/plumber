@@ -6,7 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/batchcorp/plumber/backends/aws-sqs/types"
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
@@ -14,7 +14,7 @@ import (
 )
 
 type AWSSQS struct {
-	Options  *cli.Options
+	Options  *options.Options
 	Service  types.ISQSAPI
 	QueueURL string
 	MsgDesc  *desc.MessageDescriptor
@@ -22,7 +22,7 @@ type AWSSQS struct {
 	Printer  printer.IPrinter
 }
 
-func NewService(opts *cli.Options) (*sqs.SQS, string, error) {
+func NewService(opts *options.Options) (*sqs.SQS, string, error) {
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 	}))

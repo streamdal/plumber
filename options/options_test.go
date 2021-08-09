@@ -1,4 +1,4 @@
-package cli
+package options
 
 import (
 	"testing"
@@ -108,7 +108,7 @@ func TestHandleRabbitFlags_write(t *testing.T) {
 		"--routing-key", "testqueue",
 		"--app-id", "plumber_123",
 		"--input-data", "welovemessaging",
-		"--input-file", "cli.go",
+		"--input-file", "options.go",
 		"--input-type", "jsonpb",
 		"--protobuf-dir", "../test-assets/protos",
 		"--protobuf-root-message", "events.Message",
@@ -124,7 +124,7 @@ func TestHandleRabbitFlags_write(t *testing.T) {
 	g.Expect(opts.Rabbit.RoutingKey).To(Equal("testqueue"))
 	g.Expect(opts.Rabbit.WriteAppID).To(Equal("plumber_123"))
 	g.Expect(opts.WriteInputData[0]).To(Equal("welovemessaging"))
-	g.Expect(opts.WriteInputFile).To(Equal("cli.go"))
+	g.Expect(opts.WriteInputFile).To(Equal("options.go"))
 	g.Expect(opts.WriteInputType).To(Equal("jsonpb"))
 	g.Expect(opts.WriteProtobufDirs).To(Equal([]string{"../test-assets/protos"}))
 	g.Expect(opts.WriteProtobufRootMessage).To(Equal("events.Message"))
@@ -142,9 +142,9 @@ func TestHandleMQTTFlags_read(t *testing.T) {
 		"--timeout", "3s",
 		"--read-timeout", "10s",
 		"--qos", "2",
-		"--tls-ca-file", "cli.go",
-		"--tls-client-cert-file", "cli.go",
-		"--tls-client-key-file", "cli.go",
+		"--tls-ca-file", "options.go",
+		"--tls-client-cert-file", "options.go",
+		"--tls-client-key-file", "options.go",
 		"--insecure-tls", // default is false
 		"--protobuf-dir", "../test-assets/protos",
 		"--protobuf-root-message", "events.Message",
@@ -160,9 +160,9 @@ func TestHandleMQTTFlags_read(t *testing.T) {
 	g.Expect(opts.MQTT.Timeout).To(Equal(time.Second * 3))
 	g.Expect(opts.MQTT.ReadTimeout).To(Equal(time.Second * 10))
 	g.Expect(opts.MQTT.QoSLevel).To(Equal(2))
-	g.Expect(opts.MQTT.TLSCAFile).To(Equal("cli.go"))
-	g.Expect(opts.MQTT.TLSClientKeyFile).To(Equal("cli.go"))
-	g.Expect(opts.MQTT.TLSClientCertFile).To(Equal("cli.go"))
+	g.Expect(opts.MQTT.TLSCAFile).To(Equal("options.go"))
+	g.Expect(opts.MQTT.TLSClientKeyFile).To(Equal("options.go"))
+	g.Expect(opts.MQTT.TLSClientCertFile).To(Equal("options.go"))
 	g.Expect(opts.ReadProtobufDirs).To(Equal([]string{"../test-assets/protos"}))
 	g.Expect(opts.ReadProtobufRootMessage).To(Equal("events.Message"))
 	g.Expect(opts.AvroSchemaFile).To(Equal("../test-assets/avro/test.avsc"))
@@ -179,12 +179,12 @@ func TestHandleMQTTFlags_write(t *testing.T) {
 		"--timeout", "3s",
 		"--write-timeout", "10s",
 		"--qos", "2",
-		"--tls-ca-file", "cli.go",
-		"--tls-client-cert-file", "cli.go",
-		"--tls-client-key-file", "cli.go",
+		"--tls-ca-file", "options.go",
+		"--tls-client-cert-file", "options.go",
+		"--tls-client-key-file", "options.go",
 		"--insecure-tls", // default is false
 		"--input-data", "welovemessaging",
-		"--input-file", "cli.go",
+		"--input-file", "options.go",
 		"--input-type", "jsonpb",
 		"--protobuf-dir", "../test-assets/protos",
 		"--protobuf-root-message", "events.Message",
@@ -200,11 +200,11 @@ func TestHandleMQTTFlags_write(t *testing.T) {
 	g.Expect(opts.MQTT.Timeout).To(Equal(time.Second * 3))
 	g.Expect(opts.MQTT.WriteTimeout).To(Equal(time.Second * 10))
 	g.Expect(opts.MQTT.QoSLevel).To(Equal(2))
-	g.Expect(opts.MQTT.TLSCAFile).To(Equal("cli.go"))
-	g.Expect(opts.MQTT.TLSClientKeyFile).To(Equal("cli.go"))
-	g.Expect(opts.MQTT.TLSClientCertFile).To(Equal("cli.go"))
+	g.Expect(opts.MQTT.TLSCAFile).To(Equal("options.go"))
+	g.Expect(opts.MQTT.TLSClientKeyFile).To(Equal("options.go"))
+	g.Expect(opts.MQTT.TLSClientCertFile).To(Equal("options.go"))
 	g.Expect(opts.WriteInputData[0]).To(Equal("welovemessaging"))
-	g.Expect(opts.WriteInputFile).To(Equal("cli.go"))
+	g.Expect(opts.WriteInputFile).To(Equal("options.go"))
 	g.Expect(opts.WriteInputType).To(Equal("jsonpb"))
 	g.Expect(opts.WriteProtobufDirs).To(Equal([]string{"../test-assets/protos"}))
 	g.Expect(opts.WriteProtobufRootMessage).To(Equal("events.Message"))
@@ -275,7 +275,7 @@ func TestHandleKafkaFlags_write(t *testing.T) {
 		"--timeout", "3s",
 		"--insecure-tls", // default is false
 		"--input-data", "welovemessaging",
-		"--input-file", "cli.go",
+		"--input-file", "options.go",
 		"--input-type", "jsonpb",
 		"--protobuf-dir", "../test-assets/protos",
 		"--protobuf-root-message", "events.Message",
@@ -291,7 +291,7 @@ func TestHandleKafkaFlags_write(t *testing.T) {
 	g.Expect(opts.Kafka.WriteKey).To(Equal("plumber_test_key"))
 	g.Expect(opts.Kafka.Timeout).To(Equal(time.Second * 3))
 	g.Expect(opts.WriteInputData[0]).To(Equal("welovemessaging"))
-	g.Expect(opts.WriteInputFile).To(Equal("cli.go"))
+	g.Expect(opts.WriteInputFile).To(Equal("options.go"))
 	g.Expect(opts.WriteInputType).To(Equal("jsonpb"))
 	g.Expect(opts.AvroSchemaFile).To(Equal("../test-assets/avro/test.avsc"))
 }
@@ -337,7 +337,7 @@ func TestHandleAWSSQSFlags_write(t *testing.T) {
 		"--delay-seconds", "6",
 		"--attributes", "tag=value",
 		"--input-data", "welovemessaging",
-		"--input-file", "cli.go",
+		"--input-file", "options.go",
 		"--input-type", "jsonpb",
 		"--protobuf-dir", "../test-assets/protos",
 		"--protobuf-root-message", "events.Message",
@@ -353,7 +353,7 @@ func TestHandleAWSSQSFlags_write(t *testing.T) {
 	g.Expect(opts.AWSSQS.WriteDelaySeconds).To(Equal(int64(6)))
 	g.Expect(opts.AWSSQS.WriteAttributes).To(Equal(map[string]string{"tag": "value"}))
 	g.Expect(opts.WriteInputData[0]).To(Equal("welovemessaging"))
-	g.Expect(opts.WriteInputFile).To(Equal("cli.go"))
+	g.Expect(opts.WriteInputFile).To(Equal("options.go"))
 	g.Expect(opts.WriteInputType).To(Equal("jsonpb"))
 	g.Expect(opts.AvroSchemaFile).To(Equal("../test-assets/avro/test.avsc"))
 }
@@ -396,7 +396,7 @@ func TestHandleGCPPubSubFlags_write(t *testing.T) {
 		"--project-id", "plumber_project",
 		"--topic-id", "plumber_topic",
 		"--input-data", "welovemessaging",
-		"--input-file", "cli.go",
+		"--input-file", "options.go",
 		"--input-type", "jsonpb",
 		"--protobuf-dir", "../test-assets/protos",
 		"--protobuf-root-message", "events.Message",
@@ -410,7 +410,7 @@ func TestHandleGCPPubSubFlags_write(t *testing.T) {
 	g.Expect(opts.GCPPubSub.WriteTopicId).To(Equal("plumber_topic"))
 	g.Expect(opts.GCPPubSub.ProjectId).To(Equal("plumber_project"))
 	g.Expect(opts.WriteInputData[0]).To(Equal("welovemessaging"))
-	g.Expect(opts.WriteInputFile).To(Equal("cli.go"))
+	g.Expect(opts.WriteInputFile).To(Equal("options.go"))
 	g.Expect(opts.WriteInputType).To(Equal("jsonpb"))
 	g.Expect(opts.AvroSchemaFile).To(Equal("../test-assets/avro/test.avsc"))
 }

@@ -8,10 +8,10 @@ import (
 
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/amqp"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 )
 
-func PrintRabbitMQStreamsResult(opts *cli.Options, count int, ctx stream.ConsumerContext, msg *amqp.Message, data []byte) {
+func PrintRabbitMQStreamsResult(opts *options.Options, count int, ctx stream.ConsumerContext, msg *amqp.Message, data []byte) {
 	properties := [][]string{
 		{"Consumer Name", ctx.Consumer.GetName()},
 		{"Stream", ctx.Consumer.GetStreamName()},

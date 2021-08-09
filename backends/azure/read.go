@@ -9,12 +9,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 )
 
-func Read(opts *cli.Options, md *desc.MessageDescriptor) error {
+func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 	if err := validateReadOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
@@ -120,7 +120,7 @@ func (a *AzureServiceBus) readTopic(ctx context.Context, handler servicebus.Hand
 }
 
 // validateReadOptions ensures the correct CLI options are specified for the read action
-func validateReadOptions(opts *cli.Options) error {
+func validateReadOptions(opts *options.Options) error {
 	if opts.Azure.Topic != "" && opts.Azure.Queue != "" {
 		return errTopicOrQueue
 	}
