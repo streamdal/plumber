@@ -20,6 +20,7 @@ type PlumberServer struct {
 	Reads            map[string]*Read
 	ReadsMutex       *sync.RWMutex
 	RelaysMutex      *sync.RWMutex
+	SchemasMutex     *sync.RWMutex
 	GithubAuth       *github.UserCodeResponse
 	GithubService    github.IGithub
 	Log              *logrus.Entry
@@ -89,4 +90,22 @@ func (p *PlumberServer) setRelay(relayID string, relay *types.Relay) {
 	defer p.RelaysMutex.Unlock()
 
 	p.PersistentConfig.Relays[relayID] = relay
+}
+
+// getRead returns a stored schema
+func (p *PlumberServer) getSchema(schemaID string) *types.Schema {
+	p.SchemasMutex.RLock()
+	defer p.SchemasMutex.RUnlock()
+
+	r, _ := p.PersistentConfig.Schemas[schemaID]
+
+	return r
+}
+
+// setSchema adds a schema
+func (p *PlumberServer) setSchema(schemaID string, schema *types.Schema) {
+	p.SchemasMutex.Lock()
+	defer p.SchemasMutex.Unlock()
+
+	p.PersistentConfig.Schemas[schemaID] = schema
 }

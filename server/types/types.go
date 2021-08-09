@@ -24,6 +24,10 @@ type Connection struct {
 	*protos.Connection
 }
 
+type Schema struct {
+	*protos.Schema
+}
+
 type Relay struct {
 	Active     bool                `json:"-"`
 	Id         string              `json:"-"`

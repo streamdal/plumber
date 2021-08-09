@@ -3,7 +3,9 @@ package server
 import (
 	"archive/zip"
 	"bytes"
+	"fmt"
 	"io/ioutil"
+	"math"
 	"path/filepath"
 	"strings"
 
@@ -56,6 +58,24 @@ func readFileDescriptors(files map[string]string) ([]*desc.FileDescriptor, error
 	}
 
 	var p protoparse.Parser
+	p.LookupImport = func(f string) (*desc.FileDescriptor, error) {
+		// TODO: this
+		fmt.Println("looping up import: " + f)
+
+		for k, v := range files {
+			// Most likely scenario
+			if k == f {
+				// do proto
+			}
+
+			if strings.HasSuffix(k, f) {
+				// do proto
+			}
+
+		}
+
+		return nil, nil
+	}
 	p.Accessor = protoparse.FileContentsFromMap(files)
 
 	fds, err := p.ParseFiles(keys...)
@@ -72,6 +92,12 @@ func ProcessProtobufArchive(rootType string, archive []byte) (*desc.MessageDescr
 		return nil, err
 	}
 
+	files = truncateProtoDirectories(files)
+
+	for k := range files {
+		fmt.Println(k)
+	}
+
 	fds, err := readFileDescriptors(files)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to get file descriptors from archive")
@@ -83,6 +109,30 @@ func ProcessProtobufArchive(rootType string, archive []byte) (*desc.MessageDescr
 	}
 
 	return rootMD, nil
+}
+
+// truncateProtoDirectories attempts to locate a .poroto file in the shortest path of a directory tree so that
+// import paths work correctly
+func truncateProtoDirectories(files map[string]string) map[string]string {
+	var rootProtoLocation string
+	depth := math.MaxInt32
+
+	for filePath := range files {
+		dirsDeep := strings.Count(filePath, "/")
+		if dirsDeep < depth {
+			depth = dirsDeep
+			rootProtoLocation = filepath.Dir(filePath)
+		}
+	}
+
+	cleaned := make(map[string]string)
+
+	for filePath, contents := range files {
+		newPath := strings.Replace(filePath, rootProtoLocation+"/", "", 1)
+		cleaned[newPath] = contents
+	}
+
+	return cleaned
 }
 
 // getProtoFilesFromZip reads all proto files from a zip archive
@@ -98,6 +148,7 @@ func getProtoFilesFromZip(archive []byte) (map[string]string, error) {
 
 	// Read all the files from zip archive
 	for _, zipFile := range zipReader.File {
+
 		if zipFile.FileInfo().IsDir() {
 			continue
 		}
