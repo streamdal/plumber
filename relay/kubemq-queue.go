@@ -17,7 +17,7 @@ import (
 func (r *Relay) handleKubeMQ(ctx context.Context, conn *grpc.ClientConn, messages []interface{}) error {
 	sinkRecords, err := r.convertMessagesToKubeMQRecords(messages)
 	if err != nil {
-		return fmt.Errorf("unable to convert messages to kafka sink records: %s", err)
+		return fmt.Errorf("unable to convert messages to kubemq records: %s", err)
 	}
 
 	client := services.NewGRPCCollectorClient(conn)
@@ -30,7 +30,7 @@ func (r *Relay) handleKubeMQ(ctx context.Context, conn *grpc.ClientConn, message
 	})
 }
 
-// validateKubeMQRelayMessage ensures all necessary values are present for a Kafka relay message
+// validateKubeMQRelayMessage ensures all necessary values are present for a kubemq relay message
 func (r *Relay) validateKubeMQRelayMessage(msg *types.RelayMessage) error {
 	if msg == nil {
 		return errMissingMessage
@@ -43,7 +43,7 @@ func (r *Relay) validateKubeMQRelayMessage(msg *types.RelayMessage) error {
 	return nil
 }
 
-// convertKafkaMessageToProtobufRecord creates a queues_stream.QueueMessage from a  which can then
+// convertMessagesToKubeMQRecords creates a queues_stream.QueueMessage from a  which can then
 // be sent to the GRPC server
 func (r *Relay) convertMessagesToKubeMQRecords(messages []interface{}) ([]*records.KubeMQRecord, error) {
 	sinkRecords := make([]*records.KubeMQRecord, 0)
