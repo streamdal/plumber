@@ -42,7 +42,7 @@ func addSharedRedisPubSubFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Envar("PLUMBER_RELAY_REDIS_PUBSUB_ADDRESS").
 		StringVar(&opts.RedisPubSub.Address)
 
-	cmd.Flag("channels", "Channel(s) to read/write/relay to/from").
+	cmd.Flag("channels", "OutputChannel(s) to read/write/relay to/from").
 		Required().
 		Envar("PLUMBER_RELAY_REDIS_PUBSUB_CHANNELS").
 		StringsVar(&opts.RedisPubSub.Channels)

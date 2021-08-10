@@ -21,6 +21,7 @@ import (
 	"github.com/batchcorp/plumber/backends/rpubsub"
 	"github.com/batchcorp/plumber/backends/rstreams"
 	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/types"
 )
 
 var (
@@ -30,11 +31,11 @@ var (
 // Backend is the interface that all backends implement. CLI, server, etc.
 // should utilize the backends via the interface.
 type Backend interface {
-	Connect(ctx context.Context, opts *options.Options) error
+	Connect(ctx context.Context) error // Stop via Disconnect() or cancel context
 	Disconnect(ctx context.Context) error
-	Read(ctx context.Context, opts *options.Options) ([]byte, error)
-	Write(ctx context.Context, opts *options.Options) error
-	Test(ctx context.Context, opts *options.Options) error
+	Read(ctx context.Context, results chan []*types.Message) error // Stop via context
+	Write(ctx context.Context, message ...interface{}) error
+	Test(ctx context.Context) error
 }
 
 // New is a convenience function to instantiate the appropriate backend based on

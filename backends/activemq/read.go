@@ -12,16 +12,18 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (a *ActiveMq) Read(ctx context.Context, opts *options.Options) ([]byte, error) {
+func (a *ActiveMq) Read(ctx context.Context, results chan []*types.Message) error {
 	if a.client == nil {
-		return nil, types.BackendNotConnectedErr
+		return types.BackendNotConnectedErr
 	}
 
-	if err := validateReadOptions(opts); err != nil {
-		return nil, errors.Wrap(err, "unable to validate read options")
+	if err := validateReadOptions(a.Options); err != nil {
+		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	return nil, nil
+	// TODO: Implement
+
+	return nil
 }
 
 func (a *ActiveMq) read() error {

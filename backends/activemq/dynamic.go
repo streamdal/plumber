@@ -1,6 +1,8 @@
 package activemq
 
 import (
+	"context"
+
 	"github.com/batchcorp/plumber/dproxy"
 	"github.com/batchcorp/plumber/options"
 	"github.com/pkg/errors"
@@ -9,39 +11,37 @@ import (
 
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
 // which are then written to the message bus.
-func Dynamic(opts *options.Options) error {
+func (a *ActiveMq) Dynamic(ctx context.Context) error {
 	llog := logrus.WithField("pkg", "activemq/dynamic")
 
-	// Start up writer
-	client, err := NewClient(opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to connect to ActiveMQ")
-	}
-
-	defer client.Disconnect()
-
 	// Start up dynamic connection
-	grpc, err := dproxy.New(opts, "ActiveMQ")
+	grpc, err := dproxy.New(a.Options, "ActiveMQ")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
 
 	go grpc.Start()
 
-	destination := getDestination(opts)
+	destination := getDestination(a.Options)
 
 	// Continually loop looking for messages on the channel.
+MAIN:
 	for {
 		select {
 		case outbound := <-grpc.OutboundMessageCh:
-			if err := client.Send(destination, "", outbound.Blob, nil); err != nil {
+			if err := a.client.Send(destination, "", outbound.Blob, nil); err != nil {
 				llog.Errorf("Unable to replay message: %s", err)
 				break
 			}
 
 			llog.Debugf("Replayed message to ActiveMQ '%s' for replay '%s'", destination, outbound.ReplayId)
+		case <-ctx.Done():
+			llog.Debug("asked to exit via context")
+			break MAIN
 		}
 	}
+
+	return nil
 }
 
 func getDestination(opts *options.Options) string {

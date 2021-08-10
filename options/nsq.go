@@ -90,7 +90,7 @@ func addSharedNSQFlags(cmd *kingpin.CmdClause, opts *Options) {
 
 // addReadNSQFlags creates flags used for reading from NSQ
 func addReadNSQFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("channel", "Channel").
+	cmd.Flag("channel", "OutputChannel").
 		Required().
 		Envar("PLUMBER_RELAY_NSQ_CHANNEL").
 		StringVar(&opts.NSQ.Channel)
