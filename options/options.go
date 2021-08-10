@@ -119,7 +119,6 @@ type DProxyOptions struct {
 type EncodingOptions struct {
 	ProtobufRootMessage string
 	ProtobufDirs        []string
-	AvroSchemaFile      string
 }
 
 type DecodingOptions struct {
@@ -127,10 +126,12 @@ type DecodingOptions struct {
 	ProtobufDirs        []string
 	JSONOutput          bool
 	ThriftOutput        bool
+	AvroSchemaFile      string
 }
 
 func Handle(cliArgs []string) (string, *Options, error) {
 	opts := &Options{
+		// Instantiate main configs
 		Read:     &ReadOptions{},
 		Write:    &WriteOptions{},
 		Encoding: &EncodingOptions{},
@@ -144,7 +145,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 			},
 		},
 
-		// Backends
+		// Instantiate backend configs
 		Kafka: &KafkaOptions{
 			WriteHeader: make(map[string]string, 0),
 		},
@@ -228,11 +229,11 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleNSQFlags(readCmd, writeCmd, relayCmd, opts)
 	}
 
-	HandleServerFlags(serverCmd, opts)
 	HandleGlobalFlags(readCmd, opts)
-	HandleGlobalReadFlags(readCmd, opts)
-	HandleGlobalWriteFlags(writeCmd, opts)
-	HandleGlobalReadFlags(relayCmd, opts)
+	HandleReadFlags(readCmd, opts)
+	HandleWriteFlags(writeCmd, opts)
+	HandleReadFlags(relayCmd, opts)
+	HandleServerFlags(serverCmd, opts)
 	HandleGlobalFlags(writeCmd, opts)
 	HandleGlobalFlags(relayCmd, opts)
 	HandleGlobalFlags(dynamicCmd, opts)
@@ -285,7 +286,7 @@ func convertSliceArgs(opts *Options) {
 	}
 }
 
-func HandleGlobalReadFlags(cmd *kingpin.CmdClause, opts *Options) {
+func HandleReadFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("protobuf-root-message", "Specifies the root message in a protobuf descriptor "+
 		"set (required if protobuf-dir set)").
 		StringVar(&opts.Decoding.ProtobufRootMessage)
@@ -332,7 +333,7 @@ func HandleGlobalDynamicFlags(cmd *kingpin.CmdClause, opts *Options) {
 		BoolVar(&opts.DProxy.Insecure)
 }
 
-func HandleGlobalWriteFlags(cmd *kingpin.CmdClause, opts *Options) {
+func HandleWriteFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("input-data", "Data to write").
 		StringsVar(&opts.Write.InputData)
 
@@ -377,7 +378,7 @@ func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
 		DurationVar(&opts.StatsReportInterval)
 
 	cmd.Flag("avro-schema", "Path to AVRO schema .avsc file").
-		StringVar(&opts.Encoding.AvroSchemaFile)
+		StringVar(&opts.Decoding.AvroSchemaFile) // TODO: This is both, encoding and decoding, not global
 }
 
 func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
