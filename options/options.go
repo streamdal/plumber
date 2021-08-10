@@ -11,8 +11,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"gopkg.in/alecthomas/kingpin.v2"
+
+	"github.com/batchcorp/plumber/types"
 )
 
 const (
@@ -23,6 +26,9 @@ const (
 	DefaultStatsReportInterval = "5s"
 	DefaultCount               = "10"
 	DefaultDproxyAddress       = "dproxy.batch.sh:443"
+
+	STDOUT OutputDestination = iota
+	CHANNEL
 )
 
 var (
@@ -83,10 +89,13 @@ type Options struct {
 	NSQ             *NSQOptions
 }
 
+type OutputDestination int
+
 type ReadOptions struct {
 	Follow  bool
 	Lag     bool
 	Convert string
+	Channel chan []*types.Message
 	Verbose bool
 }
 
@@ -118,6 +127,9 @@ type DProxyOptions struct {
 type EncodingOptions struct {
 	ProtobufRootMessage string
 	ProtobufDirs        []string
+
+	// Set _after_ plumber instantiation
+	MsgDesc *desc.MessageDescriptor
 }
 
 type DecodingOptions struct {
@@ -126,6 +138,9 @@ type DecodingOptions struct {
 	JSONOutput          bool
 	ThriftOutput        bool
 	AvroSchemaFile      string
+
+	// Set _after_ plumber instantiation
+	MsgDesc *desc.MessageDescriptor
 }
 
 func Handle(cliArgs []string) (string, *Options, error) {

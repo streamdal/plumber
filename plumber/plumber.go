@@ -44,7 +44,7 @@ type Plumber struct {
 	log     *logrus.Entry
 }
 
-// New instantiates a properly configured instance Plumber, or configuration error
+// New instantiates a properly configured instance of Plumber or a config error
 func New(cfg *Config) (*Plumber, error) {
 	if err := validateConfig(cfg); err != nil {
 		return nil, errors.Wrap(err, "unable to validate config")

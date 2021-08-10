@@ -10,7 +10,6 @@ import (
 	"github.com/thrift-iterator/go/general"
 
 	"github.com/hokaccha/go-prettyjson"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
 
@@ -21,8 +20,8 @@ import (
 	"github.com/batchcorp/plumber/util"
 )
 
-func Decode(opts *options.Options, msgDesc *desc.MessageDescriptor, message []byte) ([]byte, error) {
-	if opts.Decoding.ProtobufRootMessage != "" {
+func Decode(opts *options.Options, message []byte) ([]byte, error) {
+	if opts.Decoding.MsgDesc != nil {
 		// SQS doesn't like binary
 		if opts.AWSSQS.QueueName != "" {
 			// Our implementation of 'protobuf-over-sqs' encodes protobuf in b64
@@ -33,7 +32,7 @@ func Decode(opts *options.Options, msgDesc *desc.MessageDescriptor, message []by
 			message = plain
 		}
 
-		decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(msgDesc), message)
+		decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(opts.Decoding.MsgDesc), message)
 		if err != nil {
 			if !opts.Read.Follow {
 				return nil, fmt.Errorf("unable to decode protobuf message: %s", err)
