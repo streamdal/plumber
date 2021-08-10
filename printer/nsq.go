@@ -15,7 +15,7 @@ func PrintNSQResult(opts *options.Options, count int, msg *nsq.Message, data []b
 	properties := [][]string{
 		{"Message ID", fmt.Sprintf("%s", msg.ID)},
 		{"topic", opts.NSQ.Topic},
-		{"Channel", opts.NSQ.Channel},
+		{"OutputChannel", opts.NSQ.Channel},
 		{"Attempts", fmt.Sprintf("%d", msg.Attempts)},
 	}
 

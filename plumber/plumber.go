@@ -7,14 +7,14 @@ import (
 
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/embed/etcd"
-
+	"github.com/batchcorp/plumber/pb"
 	"github.com/jhump/protoreflect/desc"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/api"
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/relay"
 )
@@ -40,7 +40,6 @@ type Plumber struct {
 	*Config
 	Etcd    *etcd.Etcd
 	RelayCh chan interface{}
-	MsgDesc *desc.MessageDescriptor
 	log     *logrus.Entry
 }
 
@@ -50,58 +49,59 @@ func New(cfg *Config) (*Plumber, error) {
 		return nil, errors.Wrap(err, "unable to validate config")
 	}
 
-	md, err := getMd(cfg.Options)
-	if err != nil {
-		return nil, err
+	if err := maybePopulateMDs(cfg.Cmd, cfg.Options); err != nil {
+		return nil, errors.Wrap(err, "unable to populate protobuf message descriptors")
 	}
 
 	return &Plumber{
 		Config:  cfg,
 		RelayCh: make(chan interface{}, 1),
-		MsgDesc: md,
 		log:     logrus.WithField("pkg", "plumber"),
 	}, nil
 }
 
-// getMd retrieves a protobuf message descriptor if protobuf read/write flags are specified
-func getMd(opts *options.Options) (*desc.MessageDescriptor, error) {
-	var err error
-	var md *desc.MessageDescriptor
+func maybePopulateMDs(cmd string, opts *options.Options) error {
+	if !strings.HasPrefix(cmd, "read") &&
+		!strings.HasPrefix(cmd, "write") &&
+		!strings.HasPrefix(cmd, "relay") {
+		return nil
+	}
 
-	// If anything protobuf-related is specified, it's being used
-	if opts.ReadProtobufRootMessage != "" || len(opts.ReadProtobufDirs) != 0 {
-		if err := opts.ValidateProtobufOptions(
-			opts.ReadProtobufDirs,
-			opts.ReadProtobufRootMessage,
+	// If anything protobuf related is specified - we are using it!
+	if opts.Decoding.ProtobufRootMessage != "" || len(opts.Decoding.ProtobufDirs) != 0 {
+		if err := options.ValidateProtobufOptions(
+			opts.Decoding.ProtobufDirs,
+			opts.Decoding.ProtobufRootMessage,
 		); err != nil {
-			return nil, fmt.Errorf("unable to validate protobuf option(s): %s", err)
+			return errors.Wrap(err, "unable to validate protobuf encode options")
 		}
+
+		md, err := pb.FindMessageDescriptor(opts.Decoding.ProtobufDirs, opts.Decoding.ProtobufRootMessage)
+		if err != nil {
+			return errors.Wrap(err, "unable to find root message descriptor")
+		}
+
+		opts.Decoding.MsgDesc = md
 	}
 
-	if opts.WriteInputType == "jsonpb" {
-		if err := opts.ValidateProtobufOptions(
-			opts.WriteProtobufDirs,
-			opts.WriteProtobufRootMessage,
+	// If plumber is expected to ingest jsonpb's - protobuf options MUST be specified
+	if opts.Write.InputType == "jsonpb" {
+		if err := options.ValidateProtobufOptions(
+			opts.Encoding.ProtobufDirs,
+			opts.Encoding.ProtobufRootMessage,
 		); err != nil {
-			return nil, fmt.Errorf("unable to validate protobuf option(s): %s", err)
+			return errors.Wrap(err, "unable to validate protobuf encode options")
 		}
-	}
 
-	if opts.WriteInputType == "jsonpb" {
-		md, err = pb.FindMessageDescriptor(opts.WriteProtobufDirs, opts.WriteProtobufRootMessage)
+		md, err := pb.FindMessageDescriptor(opts.Encoding.ProtobufDirs, opts.Encoding.ProtobufRootMessage)
 		if err != nil {
-			return nil, errors.Wrap(err, "unable to find root message descriptor")
+			return errors.Wrap(err, "unable to find root message descriptor")
 		}
+
+		opts.Encoding.MsgDesc = md
 	}
 
-	if opts.ReadProtobufRootMessage != "" {
-		md, err = pb.FindMessageDescriptor(opts.ReadProtobufDirs, opts.ReadProtobufRootMessage)
-		if err != nil {
-			return nil, errors.Wrap(err, "unable to find root message descriptor")
-		}
-	}
-
-	return md, err
+	return nil
 }
 
 // validateConfig ensures all correct values for Config are passed
@@ -132,21 +132,21 @@ func (p *Plumber) Run() {
 	switch {
 	case p.Cmd == "server":
 		err = p.RunServer()
-	case strings.HasPrefix(p.Cmd, "batch"):
-		err = p.parseBatchCmd()
-	case strings.HasPrefix(p.Cmd, "read"):
-		err = p.parseCmdRead()
-	case strings.HasPrefix(p.Cmd, "write"):
-		err = p.parseCmdWrite()
-	case strings.HasPrefix(p.Cmd, "relay"):
+	case strings.HasPrefix(p.Cmd, "batch"): // TODO: Update
+		err = p.handleBatchCmd()
+	case strings.HasPrefix(p.Cmd, "read"): // TODO: Update (in-progress)
+		err = p.handleReadCmd()
+	case strings.HasPrefix(p.Cmd, "write"): // TODO: Update
+		err = p.handleWriteCmd()
+	case strings.HasPrefix(p.Cmd, "relay"): // TODO: Update
 		printer.PrintRelayOptions(p.Cmd, p.Options)
-		err = p.parseCmdRelay()
-	case strings.HasPrefix(p.Cmd, "dynamic"):
-		err = p.parseCmdDynamic()
-	case strings.HasPrefix(p.Cmd, "lag"):
-		err = p.parseCmdLag()
-	case strings.HasPrefix(p.Cmd, "github"):
-		err = p.parseCmdGithub()
+		err = p.handleRelayCmd()
+	case strings.HasPrefix(p.Cmd, "dynamic"): // TODO: Update
+		err = p.handleDynamicCmd()
+	case strings.HasPrefix(p.Cmd, "lag"): // TODO: Update
+		err = p.handleLagCmd()
+	case strings.HasPrefix(p.Cmd, "github"): // TODO: Update
+		err = p.handleGithubCmd()
 	default:
 		logrus.Fatalf("unrecognized command: %s", p.Cmd)
 	}
@@ -156,17 +156,17 @@ func (p *Plumber) Run() {
 	}
 }
 
-// startGRPCService starts relay workers which send relay messages to grpc-collector
-func (p *Plumber) startGRPCService() error {
+// startRelayService starts relay workers which send relay messages to grpc-collector
+func (p *Plumber) startRelayService() error {
 	relayCfg := &relay.Config{
-		Token:              p.Options.RelayToken,
-		GRPCAddress:        p.Options.RelayGRPCAddress,
-		NumWorkers:         p.Options.RelayNumWorkers,
-		Timeout:            p.Options.RelayGRPCTimeout,
+		Token:              p.Options.Relay.Token,
+		GRPCAddress:        p.Options.Relay.GRPCAddress,
+		NumWorkers:         p.Options.Relay.NumWorkers,
+		Timeout:            p.Options.Relay.GRPCTimeout,
 		RelayCh:            p.RelayCh,
-		DisableTLS:         p.Options.RelayGRPCDisableTLS,
-		BatchSize:          p.Options.RelayBatchSize,
-		Type:               p.Options.RelayType,
+		DisableTLS:         p.Options.Relay.GRPCDisableTLS,
+		BatchSize:          p.Options.Relay.BatchSize,
+		Type:               p.Options.Relay.Type,
 		MainShutdownFunc:   p.MainShutdownFunc,
 		ServiceShutdownCtx: p.ServiceShutdownCtx,
 	}
@@ -178,7 +178,7 @@ func (p *Plumber) startGRPCService() error {
 
 	// Launch HTTP server
 	go func() {
-		if err := api.Start(p.Options.RelayHTTPListenAddress, p.Options.Version); err != nil {
+		if err := api.Start(p.Options.Relay.HTTPListenAddress, p.Options.Version); err != nil {
 			logrus.Fatalf("unable to start API server: %s", err)
 		}
 	}()

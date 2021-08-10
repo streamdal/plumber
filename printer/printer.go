@@ -222,7 +222,7 @@ func printNSQOptions(opts *options.Options) {
 		logrus.Infof("- %-24s%-6v", "Address", opts.NSQ.NSQDAddress)
 	}
 	logrus.Infof("- %-24s%-6v", "topic", opts.NSQ.Topic)
-	logrus.Infof("- %-24s%-6v", "Channel", opts.NSQ.Channel)
+	logrus.Infof("- %-24s%-6v", "OutputChannel", opts.NSQ.Channel)
 	logrus.Info("")
 }
 

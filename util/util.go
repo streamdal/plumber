@@ -47,3 +47,13 @@ func DirsExist(dirs []string) error {
 
 	return errors.New(strings.Join(errs, "; "))
 }
+
+func GetBackendName(cmd string) (string, error) {
+	splitCmd := strings.Split(cmd, " ")
+
+	if len(splitCmd) < 2 {
+		return "", errors.New("unexpected number of results in split command")
+	}
+
+	return splitCmd[1], nil
+}

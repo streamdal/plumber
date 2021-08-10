@@ -14,9 +14,8 @@ import (
 type ActiveMq struct {
 	Options *options.Options
 
-	connected bool
-	client    *stomp.Conn
-	log       *logrus.Entry
+	client *stomp.Conn
+	log    *logrus.Entry
 }
 
 func New(opts *options.Options) (*ActiveMq, error) {
@@ -30,9 +29,9 @@ func New(opts *options.Options) (*ActiveMq, error) {
 	}, nil
 }
 
-func (a *ActiveMq) Connect(ctx context.Context, opts *options.Options) error {
-	if a.connected {
-		return types.BackendAlreadyConnectedErr
+func (a *ActiveMq) Connect(ctx context.Context) error {
+	if a.client == nil {
+		return types.BackendNotConnectedErr
 	}
 
 	o := func(*stomp.Conn) error {
@@ -40,7 +39,7 @@ func (a *ActiveMq) Connect(ctx context.Context, opts *options.Options) error {
 	}
 
 	// TODO: Wrap dial with a context
-	conn, err := stomp.Dial("tcp", opts.ActiveMq.Address, o)
+	conn, err := stomp.Dial("tcp", a.Options.ActiveMq.Address, o)
 	if err != nil {
 		return errors.Wrap(err, "unable to create activemq client")
 	}
@@ -51,7 +50,7 @@ func (a *ActiveMq) Connect(ctx context.Context, opts *options.Options) error {
 }
 
 func (a *ActiveMq) Disconnect(ctx context.Context) error {
-	if !a.connected {
+	if a.client == nil {
 		return types.BackendNotConnectedErr
 	}
 
@@ -66,7 +65,7 @@ func (a *ActiveMq) Disconnect(ctx context.Context) error {
 }
 
 // TODO: Implement
-func (a *ActiveMq) Test(ctx context.Context, opts *options.Options) error {
+func (a *ActiveMq) Test(ctx context.Context) error {
 	return nil
 }
 
@@ -80,5 +79,6 @@ func (a *ActiveMq) getDestination() string {
 	if a.Options.ActiveMq.Topic != "" {
 		return "/topic/" + a.Options.ActiveMq.Topic
 	}
+
 	return a.Options.ActiveMq.Queue
 }
