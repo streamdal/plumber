@@ -33,8 +33,8 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	r := &Redis{
 		Options: opts,
-		Client:  client,
-		MsgDesc: md,
+		client:  client,
+		msgDesc: md,
 		log:     logrus.WithField("pkg", "redis/write.go"),
 	}
 
@@ -51,7 +51,7 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 func (r *Redis) Write(value []byte) error {
 	for _, ch := range r.Options.RedisPubSub.Channels {
-		err := r.Client.Publish(context.Background(), ch, value).Err()
+		err := r.client.Publish(context.Background(), ch, value).Err()
 		if err != nil {
 			r.log.Errorf("Failed to publish message to channel '%s': %s", ch, err)
 			continue

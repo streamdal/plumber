@@ -59,7 +59,7 @@ func addSharedRabbitMQStreamsFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Required().
 		StringVar(&opts.RabbitMQStreams.Stream)
 
-	cmd.Flag("client-name", "Consumer or producer name to identify as to RabbitMQ").
+	cmd.Flag("client-name", "consumer or producer name to identify as to RabbitMQ").
 		Default("plumber").
 		StringVar(&opts.RabbitMQStreams.ClientName)
 

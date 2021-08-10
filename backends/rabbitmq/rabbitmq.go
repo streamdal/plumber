@@ -13,13 +13,30 @@ import (
 // in RabbitMQ. This struct should be instantiated via the rabbitmq.Read(..) or
 // rabbitmq.Write(..) functions.
 type RabbitMQ struct {
-	Options  *options.Options
-	Consumer *rabbit.Rabbit
-	MsgDesc  *desc.MessageDescriptor
+	Options *options.Options
+
+	consumer *rabbit.Rabbit
+	msgDesc  *desc.MessageDescriptor
 	log      *logrus.Entry
 }
 
-func New(opts *options.Options, md *desc.MessageDescriptor) (*RabbitMQ, error) {
+func New(opts *options.Options) (*RabbitMQ, error) {
+	if err := validateOpts(opts); err != nil {
+		return nil, errors.Wrap(err, "unable to validate options")
+	}
+
+	return &RabbitMQ{
+		Options: opts,
+		log:     logrus.WithField("backend", "rabbitmq"),
+	}, nil
+}
+
+// TODO: Implement
+func validateOpts(opts *options.Options) error {
+	return nil
+}
+
+func NewConnection(opts *options.Options, md *desc.MessageDescriptor) (*RabbitMQ, error) {
 	mode := rabbit.Consumer
 	if opts.Action == "write" {
 		mode = rabbit.Producer
@@ -47,8 +64,8 @@ func New(opts *options.Options, md *desc.MessageDescriptor) (*RabbitMQ, error) {
 
 	r := &RabbitMQ{
 		Options:  opts,
-		Consumer: rmq,
-		MsgDesc:  md,
+		consumer: rmq,
+		msgDesc:  md,
 		log:      logrus.WithField("pkg", "rabbitmq.go"),
 	}
 

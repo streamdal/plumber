@@ -1,4 +1,4 @@
-package rabbitmqStreams
+package rabbitmq_streams
 
 import (
 	"fmt"
@@ -24,9 +24,9 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 	}
 
 	r := &RabbitMQStreams{
-		Client:  client,
+		client:  client,
 		Options: opts,
-		MsgDesc: md,
+		msgDesc: md,
 		log:     logrus.WithField("pkg", "rabbitmq-streams/read.go"),
 	}
 
@@ -44,7 +44,7 @@ func (r *RabbitMQStreams) Read() error {
 	handleMessage := func(consumerContext stream.ConsumerContext, message *amqp.Message) {
 		for _, value := range message.Data {
 			count++
-			data, err := reader.Decode(r.Options, r.MsgDesc, value)
+			data, err := reader.Decode(r.Options, r.msgDesc, value)
 			if err != nil {
 				r.log.Error(err)
 				continue
@@ -53,12 +53,12 @@ func (r *RabbitMQStreams) Read() error {
 			printer.PrintRabbitMQStreamsResult(r.Options, count, consumerContext, message, data)
 		}
 
-		if !r.Options.ReadFollow {
+		if !r.Options.Read.Follow {
 			consumerContext.Consumer.Close()
 		}
 	}
 
-	consumer, err := r.Client.NewConsumer(r.Options.RabbitMQStreams.Stream,
+	consumer, err := r.client.NewConsumer(r.Options.RabbitMQStreams.Stream,
 		handleMessage,
 		stream.NewConsumerOptions().
 			SetConsumerName(r.Options.RabbitMQStreams.ClientName).

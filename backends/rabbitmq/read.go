@@ -35,7 +35,7 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 // Read will attempt to consume one or more messages from the established rabbit
 // channel.
 func (r *RabbitMQ) Read() error {
-	defer r.Consumer.Close()
+	defer r.consumer.Close()
 
 	r.log.Info("Listening for message(s) ...")
 
@@ -44,9 +44,9 @@ func (r *RabbitMQ) Read() error {
 
 	count := 1
 
-	go r.Consumer.Consume(ctx, errCh, func(msg amqp.Delivery) error {
+	go r.consumer.Consume(ctx, errCh, func(msg amqp.Delivery) error {
 
-		data, err := reader.Decode(r.Options, r.MsgDesc, msg.Body)
+		data, err := reader.Decode(r.Options, r.msgDesc, msg.Body)
 		if err != nil {
 			return err
 		}
@@ -70,7 +70,7 @@ func (r *RabbitMQ) Read() error {
 		case err := <-errCh:
 			return err.Error
 		case <-ctx.Done():
-			r.log.Debug("Reader exiting")
+			r.log.Debug("reader exiting")
 			return nil
 		}
 	}

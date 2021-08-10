@@ -24,10 +24,10 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 		return errors.Wrap(err, "unable to create client")
 	}
 
-	a := &AzureEventHub{
+	a := &EventHub{
 		Options: opts,
-		MsgDesc: md,
-		Client:  client,
+		msgDesc: md,
+		client:  client,
 		printer: printer.New(),
 		log:     logrus.WithField("pkg", "azure-eventhub/read.go"),
 	}
@@ -35,10 +35,10 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 	return a.Read()
 }
 
-func (a *AzureEventHub) Read() error {
+func (a *EventHub) Read() error {
 	ctx := context.Background()
 
-	defer a.Client.Close(ctx)
+	defer a.client.Close(ctx)
 
 	a.log.Info("Listening for message(s) ...")
 
@@ -47,7 +47,7 @@ func (a *AzureEventHub) Read() error {
 	var hasRead bool
 
 	handler := func(c context.Context, event *eventhub.Event) error {
-		data, err := reader.Decode(a.Options, a.MsgDesc, event.Data)
+		data, err := reader.Decode(a.Options, a.msgDesc, event.Data)
 		if err != nil {
 			return err
 		}
@@ -64,7 +64,7 @@ func (a *AzureEventHub) Read() error {
 		return nil
 	}
 
-	runtimeInfo, err := a.Client.GetRuntimeInformation(ctx)
+	runtimeInfo, err := a.client.GetRuntimeInformation(ctx)
 	if err != nil {
 		return errors.Wrap(err, "unable to get azure eventhub partition list")
 	}
@@ -76,7 +76,7 @@ func (a *AzureEventHub) Read() error {
 			// Receive blocks while attempting to connect to hub, then runs until listenerHandle.Close() is called
 			// <- listenerHandle.Done() signals listener has stopped
 			// listenerHandle.Err() provides the last error the receiver encountered
-			listenerHandle, err := a.Client.Receive(ctx, partitionID, handler, eventhub.ReceiveWithLatestOffset())
+			listenerHandle, err := a.client.Receive(ctx, partitionID, handler, eventhub.ReceiveWithLatestOffset())
 			if err != nil {
 				return errors.Wrap(err, "unable to receive message from azure eventhub")
 			}

@@ -24,10 +24,10 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 		return errors.Wrap(err, "unable to create client")
 	}
 
-	a := &AzureServiceBus{
+	a := &ServiceBus{
 		Options: opts,
-		MsgDesc: md,
-		Client:  client,
+		msgDesc: md,
+		client:  client,
 		log:     logrus.WithField("pkg", "azure/read.go"),
 	}
 
@@ -37,20 +37,20 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 			return errors.Wrap(err, "unable to create new azure service bus queue client")
 		}
 
-		a.Queue = queue
+		a.queue = queue
 	} else {
 		topic, err := client.NewTopic(opts.Azure.Topic)
 		if err != nil {
 			return errors.Wrap(err, "unable to create new azure service bus topic client")
 		}
 
-		a.Topic = topic
+		a.topic = topic
 	}
 
 	return a.Read()
 }
 
-func (a *AzureServiceBus) Read() error {
+func (a *ServiceBus) Read() error {
 	ctx := context.Background()
 
 	a.log.Info("Listening for message(s) ...")
@@ -58,7 +58,7 @@ func (a *AzureServiceBus) Read() error {
 	count := 1
 
 	var handler servicebus.HandlerFunc = func(ctx context.Context, msg *servicebus.Message) error {
-		data, err := reader.Decode(a.Options, a.MsgDesc, msg.Data)
+		data, err := reader.Decode(a.Options, a.msgDesc, msg.Data)
 		if err != nil {
 			return err
 		}
@@ -73,11 +73,11 @@ func (a *AzureServiceBus) Read() error {
 		return msg.Complete(ctx)
 	}
 
-	if a.Queue != nil {
+	if a.queue != nil {
 		return a.readQueue(ctx, handler)
 	}
 
-	if a.Topic != nil {
+	if a.topic != nil {
 		return a.readTopic(ctx, handler)
 	}
 
@@ -85,10 +85,10 @@ func (a *AzureServiceBus) Read() error {
 }
 
 // readQueue reads messages from an ASB queue
-func (a *AzureServiceBus) readQueue(ctx context.Context, handler servicebus.HandlerFunc) error {
-	defer a.Queue.Close(ctx)
+func (a *ServiceBus) readQueue(ctx context.Context, handler servicebus.HandlerFunc) error {
+	defer a.queue.Close(ctx)
 	for {
-		if err := a.Queue.ReceiveOne(ctx, handler); err != nil {
+		if err := a.queue.ReceiveOne(ctx, handler); err != nil {
 			return err
 		}
 		if !a.Options.ReadFollow {
@@ -98,8 +98,8 @@ func (a *AzureServiceBus) readQueue(ctx context.Context, handler servicebus.Hand
 }
 
 // readTopic reads messages from an ASB topic using the given subscription name
-func (a *AzureServiceBus) readTopic(ctx context.Context, handler servicebus.HandlerFunc) error {
-	sub, err := a.Topic.NewSubscription(a.Options.Azure.Subscription)
+func (a *ServiceBus) readTopic(ctx context.Context, handler servicebus.HandlerFunc) error {
+	sub, err := a.topic.NewSubscription(a.Options.Azure.Subscription)
 	if err != nil {
 		return errors.Wrap(err, "unable to create topic subscription")
 	}

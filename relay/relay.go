@@ -278,9 +278,9 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, outboundCtx, shutdownCtx cont
 				// Reset ticker (so time-based flush doesn't occur)
 				flushTicker.Reset(QueueFlushInterval)
 
-				// Queue is empty, safe to quit
+				// queue is empty, safe to quit
 				if quit {
-					llog.Debug("Queue empty, worker exiting")
+					llog.Debug("queue empty, worker exiting")
 					r.removeWorker(id)
 					return
 				}
@@ -296,9 +296,9 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, outboundCtx, shutdownCtx cont
 				queue = make([]interface{}, 0)
 			}
 
-			// Queue is empty, safe to quit
+			// queue is empty, safe to quit
 			if quit {
-				llog.Debug("Queue empty, worker exiting")
+				llog.Debug("queue empty, worker exiting")
 				r.removeWorker(id)
 				return
 			}
@@ -312,7 +312,7 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, outboundCtx, shutdownCtx cont
 
 			// If queue is empty, quit immediately
 			if len(queue) == 0 {
-				llog.Debug("Queue empty, worker exiting")
+				llog.Debug("queue empty, worker exiting")
 				r.removeWorker(id)
 				return
 			}

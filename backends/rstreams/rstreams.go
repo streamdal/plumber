@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-redis/redis/v8"
 	"github.com/jhump/protoreflect/desc"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/options"
@@ -13,10 +14,27 @@ import (
 
 type RedisStreams struct {
 	Options *options.Options
-	Client  *redis.Client
-	MsgDesc *desc.MessageDescriptor
-	Context context.Context
+
+	client  *redis.Client
+	msgDesc *desc.MessageDescriptor
+	ctx     context.Context
 	log     *logrus.Entry
+}
+
+func New(opts *options.Options) (*RedisStreams, error) {
+	if err := validateOpts(opts); err != nil {
+		return nil, errors.Wrap(err, "unable to validate options")
+	}
+
+	return &RedisStreams{
+		Options: opts,
+		log:     logrus.WithField("backend", "rstreams"),
+	}, nil
+}
+
+// TODO: Implement
+func validateOpts(opts *options.Options) error {
+	return nil
 }
 
 func NewClient(opts *options.Options) (*redis.Client, error) {
@@ -60,7 +78,7 @@ func CreateConsumerGroups(ctx context.Context, client *redis.Client, opts *optio
 
 		if err != nil {
 			// No problem if consumer group already exists
-			if err.Error() != "BUSYGROUP Consumer Group name already exists" {
+			if err.Error() != "BUSYGROUP consumer Group name already exists" {
 				return fmt.Errorf("error creating consumer group for stream '%s': %s", stream, err)
 			}
 		}

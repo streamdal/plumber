@@ -14,12 +14,29 @@ import (
 )
 
 type Pulsar struct {
-	Options  *options.Options
-	Client   pulsar.Client
-	Producer pulsar.Producer
-	MsgDesc  *desc.MessageDescriptor
+	Options *options.Options
+
+	client   pulsar.Client
+	producer pulsar.Producer
+	msgDesc  *desc.MessageDescriptor
 	log      *logrus.Entry
 	printer  printer.IPrinter
+}
+
+func New(opts *options.Options) (*Pulsar, error) {
+	if err := validateOpts(opts); err != nil {
+		return nil, errors.Wrap(err, "unable to validate options")
+	}
+
+	return &Pulsar{
+		Options: opts,
+		log:     logrus.WithField("backend", "pulsar"),
+	}, nil
+}
+
+// TODO: Implement
+func validateOpts(opts *options.Options) error {
+	return nil
 }
 
 // NewClient creates a new pulsar client connection

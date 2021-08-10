@@ -29,8 +29,8 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	n := &Nats{
 		Options: opts,
-		MsgDesc: md,
-		Client:  client,
+		msgDesc: md,
+		client:  client,
 		log:     logrus.WithField("pkg", "nats/write.go"),
 	}
 
@@ -45,7 +45,7 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 // Write publishes a message to a NATS subject
 func (n *Nats) Write(value []byte) error {
-	if err := n.Client.Publish(n.Options.Nats.Subject, value); err != nil {
+	if err := n.client.Publish(n.Options.Nats.Subject, value); err != nil {
 		return errors.Wrap(err, "unable to publish message")
 	}
 

@@ -71,7 +71,7 @@ var _ = Describe("AWS SNS Backend", func() {
 
 			a := &AWSSNS{
 				Options: opts,
-				Service: fakeSNS,
+				service: fakeSNS,
 			}
 
 			err := a.Write([]byte(`fake message`))
@@ -96,7 +96,7 @@ var _ = Describe("AWS SNS Backend", func() {
 
 			a := &AWSSNS{
 				Options: opts,
-				Service: fakeSNS,
+				service: fakeSNS,
 				log:     logrus.NewEntry(logrus.New()),
 			}
 

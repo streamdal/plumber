@@ -69,7 +69,7 @@ func addSharedMQTTFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Default("tcp://localhost:1883").
 		StringVar(&opts.MQTT.Address)
 
-	cmd.Flag("topic", "Topic to read message(s) from").
+	cmd.Flag("topic", "topic to read message(s) from").
 		Envar("PLUMBER_RELAY_MQTT_TOPIC").
 		Required().
 		StringVar(&opts.MQTT.Topic)
@@ -79,7 +79,7 @@ func addSharedMQTTFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Default(MQTTDefaultConnectTimeout).
 		DurationVar(&opts.MQTT.Timeout)
 
-	cmd.Flag("client-id", "Client id presented to MQTT broker").
+	cmd.Flag("client-id", "client id presented to MQTT broker").
 		Envar("PLUMBER_RELAY_MQTT_CLIENT_ID").
 		Default(clientId).
 		StringVar(&opts.MQTT.ClientID)
@@ -93,11 +93,11 @@ func addSharedMQTTFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Envar("PLUMBER_RELAY_MQTT_TLS_CA_FILE").
 		ExistingFileVar(&opts.MQTT.TLSCAFile)
 
-	cmd.Flag("tls-client-cert-file", "Client cert file (only needed if addr is ssl://").
+	cmd.Flag("tls-client-cert-file", "client cert file (only needed if addr is ssl://").
 		Envar("PLUMBER_RELAY_MQTT_TLS_CERT_FILE").
 		ExistingFileVar(&opts.MQTT.TLSClientCertFile)
 
-	cmd.Flag("tls-client-key-file", "Client key file (only needed if addr is ssl://").
+	cmd.Flag("tls-client-key-file", "client key file (only needed if addr is ssl://").
 		Envar("PLUMBER_RELAY_MQTT_TLS_KEY_FILE").
 		ExistingFileVar(&opts.MQTT.TLSClientKeyFile)
 

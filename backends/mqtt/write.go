@@ -34,8 +34,8 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	r := &MQTT{
 		Options: opts,
-		Client:  client,
-		MsgDesc: md,
+		client:  client,
+		msgDesc: md,
 		log:     logrus.WithField("pkg", "mqtt/write.go"),
 	}
 
@@ -56,7 +56,7 @@ func (m *MQTT) Write(value []byte) error {
 	m.log.Infof("Sending message to broker on topic '%s' as clientId '%s'",
 		m.Options.MQTT.Topic, m.Options.MQTT.ClientID)
 
-	token := m.Client.Publish(m.Options.MQTT.Topic, byte(m.Options.MQTT.QoSLevel), false, value)
+	token := m.client.Publish(m.Options.MQTT.Topic, byte(m.Options.MQTT.QoSLevel), false, value)
 
 	if !token.WaitTimeout(m.Options.MQTT.WriteTimeout) {
 		return fmt.Errorf("timed out attempting to publish message after %s", m.Options.MQTT.WriteTimeout)

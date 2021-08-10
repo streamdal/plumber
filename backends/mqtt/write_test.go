@@ -97,7 +97,7 @@ var _ = Describe("MQTT Write", func() {
 				}
 			}
 
-			m.Client = fakeMqtt
+			m.client = fakeMqtt
 
 			err := m.Write([]byte(`testing`))
 			Expect(err).To(HaveOccurred())
@@ -117,7 +117,7 @@ var _ = Describe("MQTT Write", func() {
 				}
 			}
 
-			m.Client = fakeMqtt
+			m.client = fakeMqtt
 
 			err := m.Write([]byte(`testing`))
 			Expect(err).To(HaveOccurred())
@@ -137,7 +137,7 @@ var _ = Describe("MQTT Write", func() {
 				}
 			}
 
-			m.Client = fakeMqtt
+			m.client = fakeMqtt
 
 			err := m.Write([]byte(`testing`))
 			Expect(err).ToNot(HaveOccurred())

@@ -12,7 +12,7 @@ import (
 	"github.com/batchcorp/plumber/writer"
 )
 
-// Write performs necessary setup and calls AzureServiceBus.Write() to write the actual message
+// Write performs necessary setup and calls ServiceBus.Write() to write the actual message
 func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 	ctx := context.Background()
 
@@ -30,10 +30,10 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 		return errors.Wrap(err, "unable to create client")
 	}
 
-	a := &AzureServiceBus{
+	a := &ServiceBus{
 		Options: opts,
-		MsgDesc: md,
-		Client:  client,
+		msgDesc: md,
+		client:  client,
 		log:     logrus.WithField("pkg", "azure/write.go"),
 	}
 
@@ -45,7 +45,7 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 		defer queue.Close(ctx)
 
-		a.Queue = queue
+		a.queue = queue
 	} else {
 		topic, err := client.NewTopic(opts.Azure.Topic)
 		if err != nil {
@@ -54,7 +54,7 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 		defer topic.Close(ctx)
 
-		a.Topic = topic
+		a.topic = topic
 	}
 
 	for _, value := range writeValues {
@@ -67,7 +67,7 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 }
 
 // Write writes a message to an ASB topic or queue, depending on which is specified
-func (a *AzureServiceBus) Write(ctx context.Context, value []byte) error {
+func (a *ServiceBus) Write(ctx context.Context, value []byte) error {
 	if a.Options.Azure.Queue != "" {
 		return a.writeToQueue(ctx, value)
 	}
@@ -76,25 +76,25 @@ func (a *AzureServiceBus) Write(ctx context.Context, value []byte) error {
 }
 
 // writeToQueue writes the message to an ASB queue
-func (a *AzureServiceBus) writeToQueue(ctx context.Context, value []byte) error {
+func (a *ServiceBus) writeToQueue(ctx context.Context, value []byte) error {
 	msg := servicebus.NewMessage(value)
-	if err := a.Queue.Send(ctx, msg); err != nil {
+	if err := a.queue.Send(ctx, msg); err != nil {
 		return errors.Wrap(err, "message could not be published to queue")
 	}
 
-	a.log.Infof("Write message to queue '%s'", a.Client.Name)
+	a.log.Infof("Write message to queue '%s'", a.client.Name)
 
 	return nil
 }
 
 // writeToTopic writes a message to an ASB topic
-func (a *AzureServiceBus) writeToTopic(ctx context.Context, value []byte) error {
+func (a *ServiceBus) writeToTopic(ctx context.Context, value []byte) error {
 	msg := servicebus.NewMessage(value)
-	if err := a.Topic.Send(ctx, msg); err != nil {
+	if err := a.topic.Send(ctx, msg); err != nil {
 		return errors.Wrap(err, "message could not be published to topic")
 	}
 
-	a.log.Infof("Write message to topic '%s'", a.Client.Name)
+	a.log.Infof("Write message to topic '%s'", a.client.Name)
 
 	return nil
 }

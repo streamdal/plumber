@@ -24,7 +24,7 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	n := &NSQ{
 		Options: opts,
-		MsgDesc: md,
+		msgDesc: md,
 		log:     logger,
 	}
 
@@ -58,7 +58,7 @@ func (n *NSQ) Read() error {
 	count := 1
 
 	consumer.AddHandler(nsq.HandlerFunc(func(msg *nsq.Message) error {
-		data, err := reader.Decode(n.Options, n.MsgDesc, msg.Body)
+		data, err := reader.Decode(n.Options, n.msgDesc, msg.Body)
 		if err != nil {
 			return errors.Wrap(err, "unable to decode msg")
 		}

@@ -72,10 +72,10 @@ func addSharedNatsStreamingFlags(cmd *kingpin.CmdClause, opts *Options) {
 
 	cmd.Flag("tls-ca-file", "CA file (only needed if addr is tls://").ExistingFileVar(&opts.NatsStreaming.TLSCAFile)
 
-	cmd.Flag("tls-client-cert-file", "Client cert file (only needed if addr is tls://").
+	cmd.Flag("tls-client-cert-file", "client cert file (only needed if addr is tls://").
 		ExistingFileVar(&opts.NatsStreaming.TLSClientCertFile)
 
-	cmd.Flag("tls-client-key-file", "Client key file (only needed if addr is tls://").
+	cmd.Flag("tls-client-key-file", "client key file (only needed if addr is tls://").
 		ExistingFileVar(&opts.NatsStreaming.TLSClientKeyFile)
 
 	cmd.Flag("insecure-tls", "Whether to verify server certificate").Default("false").

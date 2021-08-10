@@ -51,7 +51,7 @@ func HandleNSQFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Option
 
 // addSharedNSQFlags creates flags shared between read/write/relay modes
 func addSharedNSQFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("topic", "NSQ Topic to read from or write to").
+	cmd.Flag("topic", "NSQ topic to read from or write to").
 		Required().
 		Envar("PLUMBER_RELAY_NSQ_TOPIC").
 		StringVar(&opts.NSQ.Topic)
@@ -60,7 +60,7 @@ func addSharedNSQFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Envar("PLUMBER_RELAY_NSQ_AUTH_SECRET").
 		StringVar(&opts.NSQ.AuthSecret)
 
-	cmd.Flag("client-id", "Client ID to identify as").
+	cmd.Flag("client-id", "client ID to identify as").
 		Default("plumber").
 		Envar("PLUMBER_RELAY_NSQ_CLIENT_ID").
 		StringVar(&opts.NSQ.ClientID)
@@ -69,11 +69,11 @@ func addSharedNSQFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Envar("PLUMBER_RELAY_NSQ_TLS_CA_FILE").
 		ExistingFileVar(&opts.NSQ.TLSCAFile)
 
-	cmd.Flag("tls-client-cert-file", "Client cert file").
+	cmd.Flag("tls-client-cert-file", "client cert file").
 		Envar("PLUMBER_RELAY_NSQ_TLS_CERT_FILE").
 		ExistingFileVar(&opts.NSQ.TLSClientCertFile)
 
-	cmd.Flag("tls-client-key-file", "Client key file").
+	cmd.Flag("tls-client-key-file", "client key file").
 		Envar("PLUMBER_RELAY_NSQ_TLS_KEY_FILE").
 		ExistingFileVar(&opts.NSQ.TLSClientKeyFile)
 

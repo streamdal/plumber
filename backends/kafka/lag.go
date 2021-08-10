@@ -33,7 +33,7 @@ func Lag(opts *options.Options) error {
 }
 
 // calculate lag with a given connection
-func (kLag *KafkaLag) LagCalculationForConsumerGroup(groupId string, opts *options.Options) error {
+func (kLag *Lagger) LagCalculationForConsumerGroup(groupId string, opts *options.Options) error {
 
 	topicPartionMap := make(map[string][]skafka.Partition)
 
@@ -82,7 +82,7 @@ func discoverPartitions(topic string, partDiscoverConn *skafka.Conn, opts *optio
 	return partitions, nil
 }
 
-func (kLag *KafkaLag) GetLastOffsetPerPartition(topic string, groupId string, part int, opts *options.Options) (int64, error) {
+func (kLag *Lagger) GetLastOffsetPerPartition(topic string, groupId string, part int, opts *options.Options) (int64, error) {
 
 	partitions, err := discoverPartitions(topic, kLag.partitionDiscoverConn[topic], opts)
 
@@ -113,7 +113,7 @@ func (kLag *KafkaLag) GetLastOffsetPerPartition(topic string, groupId string, pa
 }
 
 // create new connection per topic and address
-func (kLag *KafkaLag) LagCalculationPerPartition(topic string, groupId string, part int, opts *options.Options) (int64, error) {
+func (kLag *Lagger) LagCalculationPerPartition(topic string, groupId string, part int, opts *options.Options) (int64, error) {
 
 	// get last offset per partition
 

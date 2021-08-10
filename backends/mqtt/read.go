@@ -31,8 +31,8 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	r := &MQTT{
 		Options: opts,
-		Client:  client,
-		MsgDesc: md,
+		client:  client,
+		msgDesc: md,
 		printer: printer.New(),
 		log:     logrus.WithField("pkg", "mqtt/read.go"),
 	}
@@ -41,7 +41,7 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 }
 
 func (m *MQTT) Read() error {
-	defer m.Client.Disconnect(0)
+	defer m.client.Disconnect(0)
 
 	m.log.Infof("Listening for message(s) on topic '%s' as clientId '%s'",
 		m.Options.MQTT.Topic, m.Options.MQTT.ClientID)
@@ -65,8 +65,8 @@ func (m *MQTT) Read() error {
 func (m *MQTT) subscribe(wg *sync.WaitGroup, errChan chan error) {
 	count := 1
 
-	m.Client.Subscribe(m.Options.MQTT.Topic, byte(m.Options.MQTT.QoSLevel), func(client mqtt.Client, msg mqtt.Message) {
-		data, err := reader.Decode(m.Options, m.MsgDesc, msg.Payload())
+	m.client.Subscribe(m.Options.MQTT.Topic, byte(m.Options.MQTT.QoSLevel), func(client mqtt.Client, msg mqtt.Message) {
+		data, err := reader.Decode(m.Options, m.msgDesc, msg.Payload())
 
 		if err != nil {
 			if !m.Options.ReadFollow {

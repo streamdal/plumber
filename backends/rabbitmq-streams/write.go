@@ -1,4 +1,4 @@
-package rabbitmqStreams
+package rabbitmq_streams
 
 import (
 	"sync"
@@ -40,8 +40,8 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 	defer producer.Close()
 
 	r := &RabbitMQStreams{
-		Client:    client,
-		Producer:  producer,
+		client:    client,
+		producer:  producer,
 		Options:   opts,
 		waitGroup: &sync.WaitGroup{},
 		log:       logrus.WithField("pkg", "rabbitmq-streams/write.go"),
@@ -92,7 +92,7 @@ func (r *RabbitMQStreams) handleConfirm(confirms stream.ChannelPublishConfirm) {
 }
 
 func (r *RabbitMQStreams) Write(value []byte) error {
-	if err := r.Producer.Send(amqp.NewMessage(value)); err != nil {
+	if err := r.producer.Send(amqp.NewMessage(value)); err != nil {
 		return errors.Wrapf(err, "unable to publish message to stream '%s'", r.Options.RabbitMQStreams.Stream)
 	}
 

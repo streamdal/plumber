@@ -71,7 +71,7 @@ func (r *Relay) validateSQSRelayMessage(msg *types.RelayMessage) error {
 	}
 
 	if msg.Options.QueueURL == "" {
-		return errors.New("msg.Options.QueueURL cannot be empty")
+		return errors.New("msg.Options.queueURL cannot be empty")
 	}
 
 	return nil

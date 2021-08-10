@@ -17,12 +17,29 @@ import (
 )
 
 type NatsStreaming struct {
-	Options    *options.Options
-	MsgDesc    *desc.MessageDescriptor
-	Client     *nats.Conn
-	StanClient stan.Conn
+	Options *options.Options
+
+	msgDesc    *desc.MessageDescriptor
+	client     *nats.Conn
+	stanClient stan.Conn
 	log        *logrus.Entry
 	printer    printer.IPrinter
+}
+
+func New(opts *options.Options) (*NatsStreaming, error) {
+	if err := validateOpts(opts); err != nil {
+		return nil, errors.Wrap(err, "unable to validate options")
+	}
+
+	return &NatsStreaming{
+		Options: opts,
+		log:     logrus.WithField("backend", "nats_streaming"),
+	}, nil
+}
+
+// TODO: Implement
+func validateOpts(opts *options.Options) error {
+	return nil
 }
 
 // NewClient creates a new Nats client connection

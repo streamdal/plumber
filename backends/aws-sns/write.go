@@ -35,8 +35,8 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	a := &AWSSNS{
 		Options: opts,
-		Service: svc,
-		MsgDesc: md,
+		service: svc,
+		msgDesc: md,
 		log:     logrus.WithField("pkg", "aws-sns/write.go"),
 	}
 
@@ -61,7 +61,7 @@ func validateWriteOptions(opts *options.Options) error {
 }
 
 func (a *AWSSNS) Write(value []byte) error {
-	result, err := a.Service.Publish(&sns.PublishInput{
+	result, err := a.service.Publish(&sns.PublishInput{
 		Message:  aws.String(string(value)),
 		TopicArn: aws.String(a.Options.AWSSNS.TopicArn),
 	})

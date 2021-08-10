@@ -118,7 +118,7 @@ func printKafkaOptions(opts *options.Options) {
 	logrus.Info("")
 	logrus.Infof("- %-24s%-6v", "Brokers", strings.Join(opts.Kafka.Brokers, ", "))
 	logrus.Infof("- %-24s%-6v", "Topics", strings.Join(opts.Kafka.Topics, ", "))
-	logrus.Infof("- %-24s%-6v", "Consumer Group", opts.Kafka.GroupID)
+	logrus.Infof("- %-24s%-6v", "consumer Group", opts.Kafka.GroupID)
 	logrus.Infof("- %-24s%-6v", "CommitInterval", opts.Kafka.CommitInterval)
 	logrus.Infof("- %-24s%-6v", "MaxWait", opts.Kafka.MaxWait)
 	logrus.Infof("- %-24s%-6v", "MinBytes", opts.Kafka.MinBytes)
@@ -152,8 +152,8 @@ func printAzureOptions(opts *options.Options) {
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("")
 	logrus.Infof("- %-24s%-6v", "Subscription", opts.Azure.Subscription)
-	logrus.Infof("- %-24s%-6v", "Queue", opts.Azure.Queue)
-	logrus.Infof("- %-24s%-6v", "Topic", opts.Azure.Topic)
+	logrus.Infof("- %-24s%-6v", "queue", opts.Azure.Queue)
+	logrus.Infof("- %-24s%-6v", "topic", opts.Azure.Topic)
 	logrus.Infof("- %-24s%-6v", "ConnectionString", opts.Azure.ConnectionString)
 	logrus.Info("")
 }
@@ -205,9 +205,9 @@ func printRedisStreamsOptions(opts *options.Options) {
 	logrus.Infof("- %-28s%-6v", "Username", opts.RedisStreams.Username)
 	logrus.Infof("- %-28s%-6v", "Database", opts.RedisStreams.Database)
 	logrus.Infof("- %-28s%-6v", "Create Streams", opts.RedisStreams.CreateStreams)
-	logrus.Infof("- %-28s%-6v", "Consumer Name", opts.RedisStreams.ConsumerName)
-	logrus.Infof("- %-28s%-6v", "Consumer Group", opts.RedisStreams.ConsumerGroup)
-	logrus.Infof("- %-28s%-6v", "Recreate Consumer Group", opts.RedisStreams.RecreateConsumerGroup)
+	logrus.Infof("- %-28s%-6v", "consumer Name", opts.RedisStreams.ConsumerName)
+	logrus.Infof("- %-28s%-6v", "consumer Group", opts.RedisStreams.ConsumerGroup)
+	logrus.Infof("- %-28s%-6v", "Recreate consumer Group", opts.RedisStreams.RecreateConsumerGroup)
 	logrus.Info("")
 }
 
@@ -221,7 +221,7 @@ func printNSQOptions(opts *options.Options) {
 	} else {
 		logrus.Infof("- %-24s%-6v", "Address", opts.NSQ.NSQDAddress)
 	}
-	logrus.Infof("- %-24s%-6v", "Topic", opts.NSQ.Topic)
+	logrus.Infof("- %-24s%-6v", "topic", opts.NSQ.Topic)
 	logrus.Infof("- %-24s%-6v", "Channel", opts.NSQ.Channel)
 	logrus.Info("")
 }

@@ -699,7 +699,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 100)
 
-					// Reader is ready, write the message to MQTT
+					// reader is ready, write the message to MQTT
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -748,7 +748,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 50)
 
-					// Reader is ready, write the message to MQTT
+					// reader is ready, write the message to MQTT
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -987,7 +987,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 100)
 
-					// Reader is ready, write the message to NATS
+					// reader is ready, write the message to NATS
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -1036,7 +1036,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 50)
 
-					// Reader is ready, write the message to NATS
+					// reader is ready, write the message to NATS
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -1152,7 +1152,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 100)
 
-					// Reader is ready, write the message to RedisPubSub
+					// reader is ready, write the message to RedisPubSub
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -1203,7 +1203,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 50)
 
-					// Reader is ready, write the message to RedisPubSub
+					// reader is ready, write the message to RedisPubSub
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -1326,7 +1326,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 100)
 
-					// Reader is ready, write the message to RedisPubSub
+					// reader is ready, write the message to RedisPubSub
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -1379,7 +1379,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 50)
 
-					// Reader is ready, write the message to RedisPubSub
+					// reader is ready, write the message to RedisPubSub
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -1503,7 +1503,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 100)
 
-					// Reader is ready, write the message to RedisPubSub
+					// reader is ready, write the message to RedisPubSub
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -1554,7 +1554,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 100)
 
-					// Reader is ready, write the message to RedisPubSub
+					// reader is ready, write the message to RedisPubSub
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -1606,7 +1606,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 50)
 
-					// Reader is ready, write the message to RedisPubSub
+					// reader is ready, write the message to RedisPubSub
 					writeCmd := exec.Command(
 						binary,
 						"write",

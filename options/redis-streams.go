@@ -52,12 +52,12 @@ func HandleRedisStreamsFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opt
 }
 
 func addReadRedisStreamsFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("consumer-group", "Consumer group name").
+	cmd.Flag("consumer-group", "consumer group name").
 		Envar("PLUMBER_RELAY_REDIS_STREAMS_CONSUMER_GROUP").
 		Default("plumber").
 		StringVar(&opts.RedisStreams.ConsumerGroup)
 
-	cmd.Flag("consumer-name", "Consumer name").
+	cmd.Flag("consumer-name", "consumer name").
 		Envar("PLUMBER_RELAY_REDIS_STREAMS_CONSUMER_NAME").
 		Default("plumber-consumer-1").
 		StringVar(&opts.RedisStreams.ConsumerName)

@@ -94,7 +94,7 @@ func addSharedKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Envar("PLUMBER_RELAY_KAFKA_ADDRESS").
 		StringsVar(&opts.Kafka.Brokers)
 
-	cmd.Flag("topic", "Topic(s) to read message(s) from "+
+	cmd.Flag("topic", "topic(s) to read message(s) from "+
 		"(NOTE: You may specify this flag multiple times if more than one topic)").
 		Required().
 		Envar("PLUMBER_RELAY_KAFKA_TOPIC").

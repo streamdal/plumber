@@ -25,8 +25,8 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	r := &Pulsar{
 		Options: opts,
-		MsgDesc: md,
-		Client:  client,
+		msgDesc: md,
+		client:  client,
 		printer: printer.New(),
 		log:     logrus.WithField("pkg", "pulsar/read.go"),
 	}
@@ -37,7 +37,7 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 func (p *Pulsar) Read() error {
 	p.log.Info("Listening for message(s) ...")
 
-	consumer, err := p.Client.Subscribe(pulsar.ConsumerOptions{
+	consumer, err := p.client.Subscribe(pulsar.ConsumerOptions{
 		Topic:            p.Options.Pulsar.Topic,
 		SubscriptionName: p.Options.Pulsar.SubscriptionName,
 		Type:             p.getSubscriptionType(),
@@ -55,7 +55,7 @@ func (p *Pulsar) Read() error {
 			return err
 		}
 
-		data, err := reader.Decode(p.Options, p.MsgDesc, msg.Payload())
+		data, err := reader.Decode(p.Options, p.msgDesc, msg.Payload())
 		if err != nil {
 			return err
 		}

@@ -36,8 +36,8 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	g := &GCPPubSub{
 		Options: opts,
-		MsgDesc: md,
-		Client:  client,
+		msgDesc: md,
+		client:  client,
 		log:     logrus.WithField("pkg", "gcppubsub/write.go"),
 	}
 
@@ -55,7 +55,7 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 // Write is a wrapper for amqp Publish method. We wrap it so that we can mock
 // it in tests, add logging etc.
 func (g *GCPPubSub) Write(ctx context.Context, value []byte) error {
-	t := g.Client.Topic(g.Options.GCPPubSub.WriteTopicId)
+	t := g.client.Topic(g.Options.GCPPubSub.WriteTopicId)
 
 	result := t.Publish(ctx, &pubsub.Message{
 		Data: value,

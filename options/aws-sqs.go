@@ -32,13 +32,13 @@ type AWSSQSOptions struct {
 
 func HandleAWSSQSFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Options) {
 	// AWSSQS read cmd
-	rc := readCmd.Command("aws-sqs", "AWS Simple Queue System")
+	rc := readCmd.Command("aws-sqs", "AWS Simple queue System")
 
 	addSharedAWSSQSFlags(rc, opts)
 	addReadAWSSQSFlags(rc, opts)
 
 	// AWSSQS write cmd
-	wc := writeCmd.Command("aws-sqs", "AWS Simple Queue System")
+	wc := writeCmd.Command("aws-sqs", "AWS Simple queue System")
 
 	addSharedAWSSQSFlags(wc, opts)
 	addWriteAWSSQSFlags(wc, opts)
@@ -51,7 +51,7 @@ func HandleAWSSQSFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Opt
 	if relayType != "" {
 		rec = relayCmd
 	} else {
-		rec = relayCmd.Command("aws-sqs", "AWS Simple Queue System")
+		rec = relayCmd.Command("aws-sqs", "AWS Simple queue System")
 	}
 
 	addSharedAWSSQSFlags(rec, opts)
@@ -59,7 +59,7 @@ func HandleAWSSQSFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Opt
 }
 
 func addSharedAWSSQSFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("queue-name", "Queue name").
+	cmd.Flag("queue-name", "queue name").
 		Envar("PLUMBER_RELAY_SQS_QUEUE_NAME").
 		StringVar(&opts.AWSSQS.QueueName)
 
