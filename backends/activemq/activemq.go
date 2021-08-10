@@ -1,8 +1,10 @@
 package activemq
 
 import (
+	"context"
+
+	"github.com/batchcorp/plumber/types"
 	"github.com/go-stomp/stomp"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -12,9 +14,9 @@ import (
 type ActiveMq struct {
 	Options *options.Options
 
-	client  *stomp.Conn
-	msgDesc *desc.MessageDescriptor
-	log     *logrus.Entry
+	connected bool
+	client    *stomp.Conn
+	log       *logrus.Entry
 }
 
 func New(opts *options.Options) (*ActiveMq, error) {
@@ -28,22 +30,49 @@ func New(opts *options.Options) (*ActiveMq, error) {
 	}, nil
 }
 
-// TODO: Implement
-func validateOpts(opts *options.Options) error {
-	return nil
-}
+func (a *ActiveMq) Connect(ctx context.Context, opts *options.Options) error {
+	if a.connected {
+		return types.BackendAlreadyConnectedErr
+	}
 
-// NewClient returns a configured instance of stomp.Conn
-func NewClient(opts *options.Options) (*stomp.Conn, error) {
 	o := func(*stomp.Conn) error {
 		return nil
 	}
 
+	// TODO: Wrap dial with a context
 	conn, err := stomp.Dial("tcp", opts.ActiveMq.Address, o)
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to create activemq client")
+		return errors.Wrap(err, "unable to create activemq client")
 	}
-	return conn, nil
+
+	a.client = conn
+
+	return nil
+}
+
+func (a *ActiveMq) Disconnect(ctx context.Context) error {
+	if !a.connected {
+		return types.BackendNotConnectedErr
+	}
+
+	// TODO: Wrap disconnect in a context
+	if err := a.client.Disconnect(); err != nil {
+		return errors.Wrap(err, "unable to disconnect")
+	}
+
+	a.client = nil
+
+	return nil
+}
+
+// TODO: Implement
+func (a *ActiveMq) Test(ctx context.Context, opts *options.Options) error {
+	return nil
+}
+
+// TODO: Implement
+func validateOpts(opts *options.Options) error {
+	return nil
 }
 
 // getDestination determines the correct string to pass to stomp.Subscribe()
