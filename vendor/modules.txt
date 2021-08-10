@@ -122,7 +122,7 @@ github.com/aws/aws-sdk-go/service/sts/stsiface
 # github.com/batchcorp/pgoutput v0.3.2
 ## explicit
 github.com/batchcorp/pgoutput
-# github.com/batchcorp/plumber-schemas v0.0.25
+# github.com/batchcorp/plumber-schemas v0.0.27
 ## explicit
 github.com/batchcorp/plumber-schemas/build/go/protos
 github.com/batchcorp/plumber-schemas/build/go/protos/args
@@ -561,6 +561,7 @@ go.etcd.io/etcd/client/pkg/v3/types
 # go.etcd.io/etcd/client/v2 v2.305.0
 go.etcd.io/etcd/client/v2
 # go.etcd.io/etcd/client/v3 v3.5.0
+## explicit
 go.etcd.io/etcd/client/v3
 go.etcd.io/etcd/client/v3/concurrency
 go.etcd.io/etcd/client/v3/credentials

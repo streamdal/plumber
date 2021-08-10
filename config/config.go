@@ -26,6 +26,7 @@ type Config struct {
 	UserID      string                       `json:"user_id"`
 	Connections map[string]*types.Connection `json:"connections"`
 	Relays      map[string]*types.Relay      `json:"relays"`
+	Services    map[string]*types.Service    `json:"services"`
 	GitHubToken string                       `json:"github_bearer_token"`
 }
 
@@ -58,8 +59,19 @@ func ReadConfig(fileName string) (*Config, error) {
 		return nil, errors.Wrapf(err, "could not unmarshal ~/.batchsh/%s", fileName)
 	}
 
+	if cfg.Connections == nil {
+		cfg.Connections = make(map[string]*types.Connection)
+	}
+	if cfg.Relays == nil {
+		cfg.Relays = make(map[string]*types.Relay)
+	}
+	if cfg.Services == nil {
+		cfg.Services = make(map[string]*types.Service)
+	}
+
 	logrus.Infof("Loaded '%d' stored connections", len(cfg.Connections))
 	logrus.Infof("Loaded '%d' stored relays", len(cfg.Relays))
+	logrus.Infof("Loaded '%d' stored services", len(cfg.Services))
 
 	return cfg, nil
 }

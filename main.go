@@ -150,6 +150,7 @@ func getConfig() *config.Config {
 		cfg = &config.Config{
 			Connections: make(map[string]*types.Connection),
 			Relays:      make(map[string]*types.Relay),
+			Services:    make(map[string]*types.Service),
 		}
 	}
 
