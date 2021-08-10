@@ -2,6 +2,7 @@ package server
 
 import (
 	"errors"
+	"net/url"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
@@ -29,6 +30,13 @@ var (
 	ErrMissingRootType          = errors.New("root message cannot be empty")
 	ErrMissingZipArchive        = errors.New("zip archive is empty")
 	ErrMissingAVROSchema        = errors.New("AVRO schema cannot be empty")
+
+	// Services
+
+	ErrMissingName    = errors.New("name cannot be empty")
+	ErrMissingOwner   = errors.New("owner cannot be empty")
+	ErrMissingService = errors.New("service cannot be empty")
+	ErrInvalidRepoURL = errors.New("repo URL must be a valid URL or left blank")
 )
 
 // validateConnection ensures all required parameters are passed when creating/testing/updating a connection
@@ -139,6 +147,29 @@ func validateDecodeOptionsAvro(opts *encoding.Avro) error {
 
 	if opts.Schema == nil {
 		return ErrMissingAVROSchema
+	}
+
+	return nil
+}
+
+func validateService(s *protos.Service) error {
+	if s == nil {
+		return ErrMissingService
+	}
+
+	if s.Name == "" {
+		return ErrMissingName
+	}
+
+	if s.OwnerId == "" {
+		return ErrMissingOwner
+	}
+
+	if s.RepoUrl != "" {
+		_, err := url.ParseRequestURI(s.RepoUrl)
+		if err != nil {
+			return ErrInvalidRepoURL
+		}
 	}
 
 	return nil

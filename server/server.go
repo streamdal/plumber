@@ -17,6 +17,7 @@ type PlumberServer struct {
 	AuthToken        string
 	PersistentConfig *config.Config
 	ConnectionsMutex *sync.RWMutex
+	ServicesMutex    *sync.RWMutex
 	Reads            map[string]*Read
 	ReadsMutex       *sync.RWMutex
 	RelaysMutex      *sync.RWMutex
@@ -89,4 +90,22 @@ func (p *PlumberServer) setRelay(relayID string, relay *types.Relay) {
 	defer p.RelaysMutex.Unlock()
 
 	p.PersistentConfig.Relays[relayID] = relay
+}
+
+// getService returns an in-progress read from the Relay map
+func (p *PlumberServer) getService(serviceID string) *types.Service {
+	p.ServicesMutex.RLock()
+	defer p.ServicesMutex.RUnlock()
+
+	r, _ := p.PersistentConfig.Services[serviceID]
+
+	return r
+}
+
+// setService adds an in-progress read to the Service map
+func (p *PlumberServer) setService(serviceID string, svc *types.Service) {
+	p.ServicesMutex.Lock()
+	defer p.ServicesMutex.Unlock()
+
+	p.PersistentConfig.Services[serviceID] = svc
 }
