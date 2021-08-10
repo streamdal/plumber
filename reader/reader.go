@@ -22,7 +22,7 @@ import (
 )
 
 func Decode(opts *options.Options, msgDesc *desc.MessageDescriptor, message []byte) ([]byte, error) {
-	if opts.ReadProtobufRootMessage != "" {
+	if opts.Decoding.ProtobufRootMessage != "" {
 		// SQS doesn't like binary
 		if opts.AWSSQS.QueueName != "" {
 			// Our implementation of 'protobuf-over-sqs' encodes protobuf in b64
@@ -35,7 +35,7 @@ func Decode(opts *options.Options, msgDesc *desc.MessageDescriptor, message []by
 
 		decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(msgDesc), message)
 		if err != nil {
-			if !opts.ReadFollow {
+			if !opts.Read.Follow {
 				return nil, fmt.Errorf("unable to decode protobuf message: %s", err)
 			}
 
@@ -47,7 +47,7 @@ func Decode(opts *options.Options, msgDesc *desc.MessageDescriptor, message []by
 	}
 
 	// Handle AVRO
-	if opts.AvroSchemaFile != "" {
+	if opts.Decoding.AvroSchemaFile != "" {
 		// SQS doesn't like binary
 		if opts.AWSSQS.QueueName != "" {
 			plain, err := base64.StdEncoding.DecodeString(string(message))
@@ -57,7 +57,7 @@ func Decode(opts *options.Options, msgDesc *desc.MessageDescriptor, message []by
 			message = plain
 		}
 
-		decoded, err := serializers.AvroDecodeWithSchemaFile(opts.AvroSchemaFile, message)
+		decoded, err := serializers.AvroDecodeWithSchemaFile(opts.Decoding.AvroSchemaFile, message)
 		if err != nil {
 			printer.Error(fmt.Sprintf("unable to decode AVRO message: %s", err))
 			return nil, err
@@ -65,7 +65,7 @@ func Decode(opts *options.Options, msgDesc *desc.MessageDescriptor, message []by
 		message = decoded
 	}
 
-	if opts.ReadThriftOutput {
+	if opts.Decoding.ThriftOutput {
 		decoded, err := decodeThrift(message)
 		if err != nil {
 			printer.Error(fmt.Sprintf("unable to decode Thrift message: %s", err))
@@ -79,7 +79,7 @@ func Decode(opts *options.Options, msgDesc *desc.MessageDescriptor, message []by
 
 	var convertErr error
 
-	switch opts.ReadConvert {
+	switch opts.Read.Convert {
 	case "base64":
 		data, convertErr = base64.StdEncoding.DecodeString(string(message))
 	case "gzip":
@@ -89,7 +89,7 @@ func Decode(opts *options.Options, msgDesc *desc.MessageDescriptor, message []by
 	}
 
 	if convertErr != nil {
-		if !opts.ReadFollow {
+		if !opts.Read.Follow {
 			return nil, errors.Wrap(convertErr, "unable to complete conversion")
 		}
 
@@ -97,7 +97,7 @@ func Decode(opts *options.Options, msgDesc *desc.MessageDescriptor, message []by
 		return message, nil
 	}
 
-	if opts.ReadJSONOutput {
+	if opts.Decoding.JSONOutput {
 		if json.Valid(data) {
 			colorized, err := prettyjson.Format(data)
 			if err != nil {
