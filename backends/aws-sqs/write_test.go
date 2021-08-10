@@ -44,7 +44,7 @@ var _ = Describe("AWS SQS Backend", func() {
 
 			a := &AWSSQS{
 				Options: &options.Options{AWSSQS: &options.AWSSQSOptions{}},
-				Service: sqsFake,
+				service: sqsFake,
 			}
 
 			err := a.Write([]byte(`test`))
@@ -68,8 +68,8 @@ var _ = Describe("AWS SQS Backend", func() {
 
 			a := &AWSSQS{
 				Options: opts,
-				Service: sqsFake,
-				Printer: printer.New(),
+				service: sqsFake,
+				printer: printer.New(),
 			}
 
 			err := a.Write([]byte(`test`))

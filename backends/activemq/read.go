@@ -25,8 +25,8 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	r := &ActiveMq{
 		Options: opts,
-		MsgDesc: md,
-		Client:  client,
+		msgDesc: md,
+		client:  client,
 		log:     logrus.WithField("pkg", "activemq/read.go"),
 	}
 
@@ -34,13 +34,13 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 }
 
 func (a *ActiveMq) Read() error {
-	defer a.Client.Disconnect()
+	defer a.client.Disconnect()
 
 	a.log.Info("Listening for message(s) ...")
 
 	count := 1
 
-	sub, err := a.Client.Subscribe(a.getDestination(), stomp.AckClient)
+	sub, err := a.client.Subscribe(a.getDestination(), stomp.AckClient)
 	if err != nil {
 		return errors.Wrap(err, "unable to create subscription")
 	}
@@ -48,7 +48,7 @@ func (a *ActiveMq) Read() error {
 	defer sub.Unsubscribe()
 
 	for msg := range sub.C {
-		data, err := reader.Decode(a.Options, a.MsgDesc, msg.Body)
+		data, err := reader.Decode(a.Options, a.msgDesc, msg.Body)
 		if err != nil {
 			return err
 		}
@@ -60,14 +60,14 @@ func (a *ActiveMq) Read() error {
 
 		printer.Print(str)
 
-		a.Client.Ack(msg)
+		a.client.Ack(msg)
 
-		if !a.Options.ReadFollow {
+		if !a.Options.Read.Follow {
 			return nil
 		}
 	}
 
-	a.log.Debug("Reader exiting")
+	a.log.Debug("reader exiting")
 	return nil
 }
 

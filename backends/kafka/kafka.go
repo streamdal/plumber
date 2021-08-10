@@ -27,29 +27,46 @@ const (
 // Kafka holds all attributes required for performing a write to Kafka. This
 // struct should be instantiated via the kafka.Read(..) func.
 type Kafka struct {
-	Id      string
-	Reader  *skafka.Reader
-	Writer  *skafka.Writer
 	Options *options.Options
-	MsgDesc *desc.MessageDescriptor
+
+	id      string
+	reader  *skafka.Reader
+	writer  *skafka.Writer
+	msgDesc *desc.MessageDescriptor
 	log     *logrus.Entry
 }
 
-type KafkaReader struct {
+type Reader struct {
 	Reader *skafka.Reader
 	Conn   *skafka.Conn
 }
 
-type KafkaWriter struct {
+type Writer struct {
 	Writer *skafka.Writer
 	Conn   *skafka.Conn
 }
 
-type KafkaLag struct {
+type Lagger struct {
 	partitionDiscoverConn map[string]*skafka.Conn
 }
 
-func NewKafkaLagConnection(opts *options.Options) (*KafkaLag, error) {
+func New(opts *options.Options) (*Kafka, error) {
+	if err := validateOpts(opts); err != nil {
+		return nil, errors.Wrap(err, "unable to validate options")
+	}
+
+	return &Kafka{
+		Options: opts,
+		log:     logrus.WithField("backend", "kafka"),
+	}, nil
+}
+
+// TODO: Implement
+func validateOpts(opts *options.Options) error {
+	return nil
+}
+
+func NewKafkaLagConnection(opts *options.Options) (*Lagger, error) {
 	dialer := &skafka.Dialer{
 		DualStack: true,
 		Timeout:   opts.Kafka.Timeout,
@@ -93,7 +110,7 @@ func NewKafkaLagConnection(opts *options.Options) (*KafkaLag, error) {
 			opts.Kafka.Brokers[0], err)
 	}
 
-	kLag := &KafkaLag{
+	kLag := &Lagger{
 		partitionDiscoverConn: connMap,
 	}
 
@@ -142,7 +159,7 @@ func newConnectionPerPartition(topic string, partition int, opts *options.Option
 
 }
 
-func NewReader(opts *options.Options) (*KafkaReader, error) {
+func NewReader(opts *options.Options) (*Reader, error) {
 	dialer := &skafka.Dialer{
 		DualStack: true,
 		Timeout:   opts.Kafka.Timeout,
@@ -193,13 +210,13 @@ func NewReader(opts *options.Options) (*KafkaReader, error) {
 		}
 	}
 
-	return &KafkaReader{
+	return &Reader{
 		Reader: r,
 		Conn:   conn,
 	}, nil
 }
 
-func NewWriter(opts *options.Options) (*KafkaWriter, error) {
+func NewWriter(opts *options.Options) (*Writer, error) {
 	dialer := &skafka.Dialer{
 		Timeout: opts.Kafka.Timeout,
 	}
@@ -230,7 +247,7 @@ func NewWriter(opts *options.Options) (*KafkaWriter, error) {
 		BatchSize: DefaultBatchSize,
 	})
 
-	return &KafkaWriter{
+	return &Writer{
 		Writer: w,
 		Conn:   conn,
 	}, nil

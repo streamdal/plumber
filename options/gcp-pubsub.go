@@ -47,14 +47,14 @@ func HandleGCPPubSubFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *
 }
 
 func addSharedGCPPubSubFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("project-id", "Project Id").
+	cmd.Flag("project-id", "Project id").
 		Required().
 		Envar("PLUMBER_RELAY_GCP_PROJECT_ID").
 		StringVar(&opts.GCPPubSub.ProjectId)
 }
 
 func addReadGCPPubSubFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("sub-id", "Subscription Id").
+	cmd.Flag("sub-id", "Subscription id").
 		Required().
 		Envar("PLUMBER_RELAY_GCP_SUBSCRIPTION_ID").
 		StringVar(&opts.GCPPubSub.ReadSubscriptionId)
@@ -65,6 +65,6 @@ func addReadGCPPubSubFlags(cmd *kingpin.CmdClause, opts *Options) {
 }
 
 func addWriteGCPPubSubFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("topic-id", "Topic Id to publish message(s) to").Required().
+	cmd.Flag("topic-id", "topic id to publish message(s) to").Required().
 		StringVar(&opts.GCPPubSub.WriteTopicId)
 }

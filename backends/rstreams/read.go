@@ -22,14 +22,14 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	r := &RedisStreams{
 		Options: opts,
-		Client:  client,
-		MsgDesc: md,
-		Context: context.Background(),
+		client:  client,
+		msgDesc: md,
+		ctx:     context.Background(),
 		log:     logrus.WithField("pkg", "rstreams/read.go"),
 	}
 
 	// Create consumer group (and stream) for each stream
-	if err := CreateConsumerGroups(r.Context, client, r.Options.RedisStreams); err != nil {
+	if err := CreateConsumerGroups(r.ctx, client, r.Options.RedisStreams); err != nil {
 		return fmt.Errorf("unable to create consumer group(s): %s", err)
 	}
 
@@ -46,7 +46,7 @@ func generateStreams(streams []string) []string {
 }
 
 func (r *RedisStreams) Read() error {
-	defer r.Client.Close()
+	defer r.client.Close()
 
 	streams := generateStreams(r.Options.RedisStreams.Streams)
 
@@ -56,7 +56,7 @@ func (r *RedisStreams) Read() error {
 
 	for {
 		// Attempt to consume
-		streamsResult, err := r.Client.XReadGroup(r.Context, &redis.XReadGroupArgs{
+		streamsResult, err := r.client.XReadGroup(r.ctx, &redis.XReadGroupArgs{
 			Group:    r.Options.RedisStreams.ConsumerGroup,
 			Consumer: r.Options.RedisStreams.ConsumerName,
 			Streams:  streams,
@@ -85,7 +85,7 @@ func (r *RedisStreams) Read() error {
 						continue
 					}
 
-					decodedData, err := reader.Decode(r.Options, r.MsgDesc, []byte(stringData))
+					decodedData, err := reader.Decode(r.Options, r.msgDesc, []byte(stringData))
 					if err != nil {
 						r.log.Errorf("[ID: %s Stream: %s Key: %s] unable to decode message: %s; skipping",
 							message.ID, streamName, k, err)

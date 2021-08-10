@@ -372,7 +372,7 @@ func (fake *FakeMessage) Topic() string {
 	}{})
 	stub := fake.TopicStub
 	fakeReturns := fake.topicReturns
-	fake.recordInvocation("Topic", []interface{}{})
+	fake.recordInvocation("topic", []interface{}{})
 	fake.topicMutex.Unlock()
 	if stub != nil {
 		return stub()

@@ -37,9 +37,9 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	n := &NatsStreaming{
 		Options:    opts,
-		MsgDesc:    md,
-		Client:     natsClient,
-		StanClient: stanClient,
+		msgDesc:    md,
+		client:     natsClient,
+		stanClient: stanClient,
 		log:        logrus.WithField("pkg", "nats-streaming/write.go"),
 		printer:    printer.New(),
 	}
@@ -56,7 +56,7 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 // Write publishes a message to a NATS streaming channel. The publish is synchronous, and will not complete until
 // an ACK has been received by the server
 func (n *NatsStreaming) Write(value []byte) error {
-	if err := n.StanClient.Publish(n.Options.NatsStreaming.Channel, value); err != nil {
+	if err := n.stanClient.Publish(n.Options.NatsStreaming.Channel, value); err != nil {
 		return errors.Wrap(err, "unable to publish message")
 	}
 

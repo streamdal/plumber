@@ -13,7 +13,7 @@ import (
 
 func PrintRabbitMQStreamsResult(opts *options.Options, count int, ctx stream.ConsumerContext, msg *amqp.Message, data []byte) {
 	properties := [][]string{
-		{"Consumer Name", ctx.Consumer.GetName()},
+		{"consumer Name", ctx.Consumer.GetName()},
 		{"Stream", ctx.Consumer.GetStreamName()},
 		{"Offset", fmt.Sprintf("%d", ctx.Consumer.GetOffset())},
 	}

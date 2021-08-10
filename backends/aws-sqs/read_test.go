@@ -66,8 +66,8 @@ var _ = Describe("AWS SQS Backend", func() {
 
 			a := &AWSSQS{
 				Options: opts,
-				Service: sqsFake,
-				Log:     log,
+				service: sqsFake,
+				log:     log,
 			}
 
 			err := a.Read()
@@ -90,9 +90,9 @@ var _ = Describe("AWS SQS Backend", func() {
 
 			a := &AWSSQS{
 				Options: opts,
-				Service: sqsFake,
-				Log:     log,
-				Printer: printer.New(),
+				service: sqsFake,
+				log:     log,
+				printer: printer.New(),
 			}
 
 			err := a.Read()
@@ -125,9 +125,9 @@ var _ = Describe("AWS SQS Backend", func() {
 
 			a := &AWSSQS{
 				Options: opts,
-				Service: sqsFake,
-				Log:     log,
-				Printer: printerFake,
+				service: sqsFake,
+				log:     log,
+				printer: printerFake,
 			}
 
 			err := a.Read()
@@ -168,9 +168,9 @@ var _ = Describe("AWS SQS Backend", func() {
 
 			a := &AWSSQS{
 				Options: opts,
-				Service: sqsFake,
-				Log:     log,
-				Printer: printerFake,
+				service: sqsFake,
+				log:     log,
+				printer: printerFake,
 			}
 
 			err := a.Read()

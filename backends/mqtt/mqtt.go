@@ -28,10 +28,27 @@ var (
 
 type MQTT struct {
 	Options *options.Options
-	Client  pahomqtt.Client
-	MsgDesc *desc.MessageDescriptor
+
+	client  pahomqtt.Client
+	msgDesc *desc.MessageDescriptor
 	printer printer.IPrinter
 	log     *logrus.Entry
+}
+
+func New(opts *options.Options) (*MQTT, error) {
+	if err := validateOpts(opts); err != nil {
+		return nil, errors.Wrap(err, "unable to validate options")
+	}
+
+	return &MQTT{
+		Options: opts,
+		log:     logrus.WithField("backend", "mqtt"),
+	}, nil
+}
+
+// TODO: Implement
+func validateOpts(opts *options.Options) error {
+	return nil
 }
 
 func connect(opts *options.Options) (pahomqtt.Client, error) {

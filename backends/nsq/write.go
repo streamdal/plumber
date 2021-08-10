@@ -46,7 +46,7 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	n := &NSQ{
 		Options: opts,
-		MsgDesc: md,
+		msgDesc: md,
 		log:     logger,
 	}
 
@@ -61,7 +61,7 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 // Write publishes a message to a NSQ topic
 func (n *NSQ) Write(value []byte) error {
-	if err := n.Producer.Publish(n.Options.NSQ.Topic, value); err != nil {
+	if err := n.producer.Publish(n.Options.NSQ.Topic, value); err != nil {
 		return errors.Wrap(err, "unable to publish message to NSQ")
 	}
 

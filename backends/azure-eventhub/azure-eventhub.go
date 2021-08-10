@@ -9,12 +9,29 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type AzureEventHub struct {
+type EventHub struct {
 	Options *options.Options
-	MsgDesc *desc.MessageDescriptor
-	Client  *eventhub.Hub
+
+	msgDesc *desc.MessageDescriptor
+	client  *eventhub.Hub
 	log     *logrus.Entry
 	printer printer.IPrinter
+}
+
+func New(opts *options.Options) (*EventHub, error) {
+	if err := validateOpts(opts); err != nil {
+		return nil, errors.Wrap(err, "unable to validate options")
+	}
+
+	return &EventHub{
+		Options: opts,
+		log:     logrus.WithField("backend", "azure_eventhub"),
+	}, nil
+}
+
+// TODO: Implement
+func validateOpts(opts *options.Options) error {
+	return nil
 }
 
 // NewClient returns a properly configured service bus client

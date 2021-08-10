@@ -35,11 +35,11 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	a := &AWSSQS{
 		Options:  opts,
-		Service:  svc,
-		QueueURL: queueURL,
-		MsgDesc:  md,
-		Log:      logrus.WithField("pkg", "awssqs/read.go"),
-		Printer:  printer.New(),
+		service:  svc,
+		queueURL: queueURL,
+		msgDesc:  md,
+		log:      logrus.WithField("pkg", "awssqs/read.go"),
+		printer:  printer.New(),
 	}
 
 	return a.Read()
@@ -58,15 +58,15 @@ func validateReadOptions(opts *options.Options) error {
 }
 
 func (a *AWSSQS) Read() error {
-	a.Log.Info("Listening for message(s) ...")
+	a.log.Info("Listening for message(s) ...")
 
 	count := 1
 
 	for {
-		msgResult, err := a.Service.ReceiveMessage(&sqs.ReceiveMessageInput{
+		msgResult, err := a.service.ReceiveMessage(&sqs.ReceiveMessageInput{
 			// We intentionally do not set VisibilityTimeout as we aren't doing anything special with the message
 			WaitTimeSeconds:         aws.Int64(a.Options.AWSSQS.ReadWaitTimeSeconds),
-			QueueUrl:                aws.String(a.QueueURL),
+			QueueUrl:                aws.String(a.queueURL),
 			ReceiveRequestAttemptId: aws.String(a.Options.AWSSQS.ReadReceiveRequestAttemptId),
 			MaxNumberOfMessages:     aws.Int64(a.Options.AWSSQS.ReadMaxNumMessages),
 		})
@@ -75,7 +75,7 @@ func (a *AWSSQS) Read() error {
 				return fmt.Errorf("unable to receive any message(s) from SQS: %s", err)
 			}
 
-			a.Printer.Error(fmt.Sprintf("unable to receive any message(s) from SQS: %s (retrying in %s)", err, RetryDuration))
+			a.printer.Error(fmt.Sprintf("unable to receive any message(s) from SQS: %s (retrying in %s)", err, RetryDuration))
 			time.Sleep(RetryDuration)
 			continue
 		}
@@ -86,20 +86,20 @@ func (a *AWSSQS) Read() error {
 
 			if a.Options.ReadFollow {
 				outputMessage = outputMessage + fmt.Sprintf("; retrying in %s", RetryDuration)
-				a.Printer.Print(outputMessage)
+				a.printer.Print(outputMessage)
 				time.Sleep(RetryDuration)
 				continue
 			} else {
-				a.Printer.Print(outputMessage)
+				a.printer.Print(outputMessage)
 				break
 			}
 		}
 
 		// Handle decode + output conversion
 		for _, m := range msgResult.Messages {
-			data, err := reader.Decode(a.Options, a.MsgDesc, []byte(*m.Body))
+			data, err := reader.Decode(a.Options, a.msgDesc, []byte(*m.Body))
 			if err != nil {
-				a.Printer.Error(fmt.Sprintf("unable to convert message: %s", err))
+				a.printer.Error(fmt.Sprintf("unable to convert message: %s", err))
 				continue
 			}
 
@@ -108,15 +108,15 @@ func (a *AWSSQS) Read() error {
 			str = fmt.Sprintf("%d: ", count) + str
 			count++
 
-			a.Printer.Print(str)
+			a.printer.Print(str)
 
 			// Cleanup
 			if a.Options.AWSSQS.ReadAutoDelete {
-				if _, err := a.Service.DeleteMessage(&sqs.DeleteMessageInput{
-					QueueUrl:      aws.String(a.QueueURL),
+				if _, err := a.service.DeleteMessage(&sqs.DeleteMessageInput{
+					QueueUrl:      aws.String(a.queueURL),
 					ReceiptHandle: m.ReceiptHandle,
 				}); err != nil {
-					a.Printer.Error(fmt.Sprintf("unable to auto-delete message '%s': %s", *m.MessageId, err))
+					a.printer.Error(fmt.Sprintf("unable to auto-delete message '%s': %s", *m.MessageId, err))
 					continue
 				}
 			}
@@ -127,7 +127,7 @@ func (a *AWSSQS) Read() error {
 		}
 	}
 
-	a.Log.Debug("Reader exiting")
+	a.log.Debug("reader exiting")
 
 	return nil
 }

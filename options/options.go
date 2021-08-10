@@ -37,7 +37,6 @@ type Options struct {
 	StatsReportInterval time.Duration
 	Action              string
 	Version             string
-	Backend             string
 
 	// Read options include settings for reading data
 	Read *ReadOptions

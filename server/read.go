@@ -35,7 +35,7 @@ type Read struct {
 	Config               *protos.Read
 	ContextCxl           context.Context
 	CancelFunc           context.CancelFunc
-	Backend              *kafka.KafkaReader // TODO: have to genercize once backend refactor is done
+	Backend              *kafka.Reader // TODO: have to genercize once backend refactor is done
 	MsgDesc              *desc.MessageDescriptor
 	SampleStart          int64
 	SampleStep           int64
@@ -143,7 +143,7 @@ func (p *PlumberServer) CreateRead(_ context.Context, req *protos.CreateReadRequ
 
 	requestID := uuid.NewV4().String()
 
-	// Reader needs a unique ID that frontend can reference
+	// reader needs a unique ID that frontend can reference
 	readCfg.Id = uuid.NewV4().String()
 
 	md, err := generateMD(readCfg.DecodeOptions)

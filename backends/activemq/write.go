@@ -28,8 +28,8 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	a := &ActiveMq{
 		Options: opts,
-		MsgDesc: md,
-		Client:  client,
+		msgDesc: md,
+		client:  client,
 		log:     logrus.WithField("pkg", "activemq/write.go"),
 	}
 
@@ -44,7 +44,7 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 // Write writes a message to an ActiveMQ topic
 func (a *ActiveMq) Write(value []byte) error {
-	if err := a.Client.Send(a.getDestination(), "", value, nil); err != nil {
+	if err := a.client.Send(a.getDestination(), "", value, nil); err != nil {
 		a.log.Infof("Unable to write message to '%s': %s", a.getDestination(), err)
 		return errors.Wrap(err, "unable to write message")
 	}

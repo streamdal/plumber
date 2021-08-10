@@ -34,9 +34,9 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	r := &RedisStreams{
 		Options: opts,
-		Client:  client,
-		MsgDesc: md,
-		Context: context.Background(),
+		client:  client,
+		msgDesc: md,
+		ctx:     context.Background(),
 		log:     logrus.WithField("pkg", "rstreams/write.go"),
 	}
 
@@ -53,7 +53,7 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 func (r *RedisStreams) Write(value []byte) error {
 	for _, streamName := range r.Options.RedisStreams.Streams {
-		_, err := r.Client.XAdd(r.Context, &redis.XAddArgs{
+		_, err := r.client.XAdd(r.ctx, &redis.XAddArgs{
 			Stream: streamName,
 			ID:     r.Options.RedisStreams.WriteID,
 			Values: map[string]interface{}{

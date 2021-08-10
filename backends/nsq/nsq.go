@@ -23,10 +23,27 @@ var (
 
 // NSQ encapsulates options for calling Read() and Write() methods
 type NSQ struct {
-	Options  *options.Options
-	MsgDesc  *desc.MessageDescriptor
-	Producer *nsq.Producer
+	Options *options.Options
+
+	msgDesc  *desc.MessageDescriptor
+	producer *nsq.Producer
 	log      *NSQLogger
+}
+
+func New(opts *options.Options) (*NSQ, error) {
+	if err := validateOpts(opts); err != nil {
+		return nil, errors.Wrap(err, "unable to validate options")
+	}
+
+	return &NSQ{
+		Options: opts,
+		log:     &NSQLogger{logrus.WithField("backend", "nsq")},
+	}, nil
+}
+
+// TODO: Implement
+func validateOpts(opts *options.Options) error {
+	return nil
 }
 
 // getNSQConfig returns the config needed for creating a new NSQ consumer or producer

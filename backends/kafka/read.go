@@ -33,8 +33,8 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	k := &Kafka{
 		Options: opts,
-		MsgDesc: md,
-		Reader:  kafkaReader.Reader,
+		msgDesc: md,
+		reader:  kafkaReader.Reader,
 		log:     logrus.WithField("pkg", "kafka/read.go"),
 	}
 
@@ -52,13 +52,13 @@ func (k *Kafka) Read() error {
 	lastOffset := int64(-1)
 	lastPartitionProcessed := -1
 
-	var lagConn *KafkaLag
+	var lagConn *Lagger
 
 	// init only one connection for partition discovery
 	for {
 		// Initial message read can take a while to occur due to how consumer
 		// groups are setup on initial connect.
-		msg, err := k.Reader.ReadMessage(context.Background())
+		msg, err := k.reader.ReadMessage(context.Background())
 
 		if err != nil {
 			if !k.Options.ReadFollow {
@@ -69,7 +69,7 @@ func (k *Kafka) Read() error {
 			continue
 		}
 
-		data, err := reader.Decode(k.Options, k.MsgDesc, msg.Value)
+		data, err := reader.Decode(k.Options, k.msgDesc, msg.Value)
 
 		if err != nil {
 			return err
@@ -86,7 +86,7 @@ func (k *Kafka) Read() error {
 				continue
 			}
 
-			lastOffset, err = lagConn.GetLastOffsetPerPartition(msg.Topic, k.Reader.Config().GroupID, msg.Partition, k.Options)
+			lastOffset, err = lagConn.GetLastOffsetPerPartition(msg.Topic, k.reader.Config().GroupID, msg.Partition, k.Options)
 
 			if err != nil {
 				return errors.Wrap(err, "unable to obtain lastOffset for partition")
@@ -107,7 +107,7 @@ func (k *Kafka) Read() error {
 		count++
 	}
 
-	k.log.Debug("Reader exiting")
+	k.log.Debug("reader exiting")
 
 	return nil
 }

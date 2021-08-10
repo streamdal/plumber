@@ -33,8 +33,8 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	n := &NatsStreaming{
 		Options: opts,
-		MsgDesc: md,
-		Client:  client,
+		msgDesc: md,
+		client:  client,
 		log:     logrus.WithField("pkg", "nats/read.go"),
 		printer: printer.New(),
 	}
@@ -43,7 +43,7 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 }
 
 func (n *NatsStreaming) Read() error {
-	defer n.Client.Close()
+	defer n.client.Close()
 	n.log.Info("Listening for message(s) ...")
 
 	count := 1
@@ -52,7 +52,7 @@ func (n *NatsStreaming) Read() error {
 	doneCh := make(chan bool)
 	defer close(doneCh)
 
-	subConn, err := stan.Connect(n.Options.NatsStreaming.ClusterID, n.Options.NatsStreaming.ClientID, stan.NatsConn(n.Client))
+	subConn, err := stan.Connect(n.Options.NatsStreaming.ClusterID, n.Options.NatsStreaming.ClientID, stan.NatsConn(n.client))
 	if err != nil {
 		return errors.Wrap(err, "could not create NATS subscription")
 	}
@@ -60,7 +60,7 @@ func (n *NatsStreaming) Read() error {
 	defer subConn.Close()
 
 	subFunc := func(msg *stan.Msg) {
-		data, err := reader.Decode(n.Options, n.MsgDesc, msg.Data)
+		data, err := reader.Decode(n.Options, n.msgDesc, msg.Data)
 		if err != nil {
 			n.log.Error(err)
 			return

@@ -46,10 +46,10 @@ func addReadAzureFlags(cmd *kingpin.CmdClause, opts *Options) {
 }
 
 func addSharedAzureFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("queue", "Queue name").
+	cmd.Flag("queue", "queue name").
 		Envar("PLUMBER_RELAY_AZURE_QUEUE_NAME").
 		StringVar(&opts.Azure.Queue)
-	cmd.Flag("topic", "Topic name").
+	cmd.Flag("topic", "topic name").
 		Envar("PLUMBER_RELAY_AZURE_TOPIC_NAME").
 		StringVar(&opts.Azure.Topic)
 	cmd.Flag("connection-string", "Connection string").

@@ -1,4 +1,4 @@
-package rabbitmqStreams
+package rabbitmq_streams
 
 import (
 	"sync"
@@ -17,12 +17,29 @@ var (
 )
 
 type RabbitMQStreams struct {
-	Client    *stream.Environment
-	Producer  *stream.Producer
-	Options   *options.Options
-	MsgDesc   *desc.MessageDescriptor
+	Options *options.Options
+
+	client    *stream.Environment
+	producer  *stream.Producer
+	msgDesc   *desc.MessageDescriptor
 	log       *logrus.Entry
 	waitGroup *sync.WaitGroup
+}
+
+func New(opts *options.Options) (*RabbitMQStreams, error) {
+	if err := validateOpts(opts); err != nil {
+		return nil, errors.Wrap(err, "unable to validate options")
+	}
+
+	return &RabbitMQStreams{
+		Options: opts,
+		log:     logrus.WithField("backend", "rabbitmq_streams"),
+	}, nil
+}
+
+// TODO: Implement
+func validateOpts(opts *options.Options) error {
+	return nil
 }
 
 func NewClient(opts *options.Options) (*stream.Environment, error) {

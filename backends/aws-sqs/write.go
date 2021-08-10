@@ -43,16 +43,16 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	a := &AWSSQS{
 		Options:  opts,
-		Service:  svc,
-		QueueURL: queueURL,
-		MsgDesc:  md,
-		Log:      logrus.WithField("pkg", "awssqs/write.go"),
-		Printer:  printer.New(),
+		service:  svc,
+		queueURL: queueURL,
+		msgDesc:  md,
+		log:      logrus.WithField("pkg", "awssqs/write.go"),
+		printer:  printer.New(),
 	}
 
 	for _, value := range writeValues {
 		if err := a.Write(value); err != nil {
-			a.Log.Error(err)
+			a.log.Error(err)
 		}
 	}
 
@@ -75,7 +75,7 @@ func (a *AWSSQS) Write(value []byte) error {
 	input := &sqs.SendMessageInput{
 		DelaySeconds:      aws.Int64(a.Options.AWSSQS.WriteDelaySeconds),
 		MessageBody:       aws.String(string(value)),
-		QueueUrl:          aws.String(a.QueueURL),
+		QueueUrl:          aws.String(a.queueURL),
 		MessageAttributes: make(map[string]*sqs.MessageAttributeValue, 0),
 	}
 
@@ -99,11 +99,11 @@ func (a *AWSSQS) Write(value []byte) error {
 		input.MessageAttributes = nil
 	}
 
-	if _, err := a.Service.SendMessage(input); err != nil {
+	if _, err := a.service.SendMessage(input); err != nil {
 		return errors.Wrap(err, ErrUnableToSend)
 	}
 
-	a.Printer.Print(fmt.Sprintf("Successfully wrote message to AWS queue '%s'", a.Options.AWSSQS.QueueName))
+	a.printer.Print(fmt.Sprintf("Successfully wrote message to AWS queue '%s'", a.Options.AWSSQS.QueueName))
 
 	return nil
 }

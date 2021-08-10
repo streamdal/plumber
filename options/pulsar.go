@@ -52,7 +52,7 @@ func addSharedPulsarFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("insecure-tls", "Whether to verify server certificate").
 		BoolVar(&opts.Pulsar.InsecureTLS)
 
-	cmd.Flag("topic", "Topic to read messages from or write messages to").
+	cmd.Flag("topic", "topic to read messages from or write messages to").
 		StringVar(&opts.Pulsar.Topic)
 }
 

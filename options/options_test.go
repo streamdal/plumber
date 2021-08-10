@@ -358,8 +358,8 @@ func TestHandleAWSSQSFlags_write(t *testing.T) {
 	g.Expect(opts.AvroSchemaFile).To(Equal("../test-assets/avro/test.avsc"))
 }
 
-//--project-id=PROJECT-ID    Project Id
-//--sub-id=SUB-ID            Subscription Id
+//--project-id=PROJECT-ID    Project id
+//--sub-id=SUB-ID            Subscription id
 //--ack                      Whether to acknowledge message receive
 func TestHandleGCPPubSubFlags_read(t *testing.T) {
 

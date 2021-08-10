@@ -13,6 +13,6 @@ func HandleAWSSNSFlags(_, writeCmd, _ *kingpin.CmdClause, opts *Options) {
 }
 
 func addWriteAWSSNSFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("topic", "Topic ARN").
+	cmd.Flag("topic", "topic ARN").
 		StringVar(&opts.AWSSNS.TopicArn)
 }

@@ -13,9 +13,26 @@ import (
 
 type GCPPubSub struct {
 	Options *options.Options
-	MsgDesc *desc.MessageDescriptor
-	Client  *pubsub.Client
+
+	msgDesc *desc.MessageDescriptor
+	client  *pubsub.Client
 	log     *logrus.Entry
+}
+
+func New(opts *options.Options) (*GCPPubSub, error) {
+	if err := validateOpts(opts); err != nil {
+		return nil, errors.Wrap(err, "unable to validate options")
+	}
+
+	return &GCPPubSub{
+		Options: opts,
+		log:     logrus.WithField("backend", "gcppubsub"),
+	}, nil
+}
+
+// TODO: Implement
+func validateOpts(opts *options.Options) error {
+	return nil
 }
 
 func NewClient(opts *options.Options) (*pubsub.Client, error) {

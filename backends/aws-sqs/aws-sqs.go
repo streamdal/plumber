@@ -14,12 +14,29 @@ import (
 )
 
 type AWSSQS struct {
-	Options  *options.Options
-	Service  types.ISQSAPI
-	QueueURL string
-	MsgDesc  *desc.MessageDescriptor
-	Log      *logrus.Entry
-	Printer  printer.IPrinter
+	Options *options.Options
+
+	service  types.ISQSAPI
+	queueURL string
+	msgDesc  *desc.MessageDescriptor
+	log      *logrus.Entry
+	printer  printer.IPrinter
+}
+
+func New(opts *options.Options) (*AWSSQS, error) {
+	if err := validateOpts(opts); err != nil {
+		return nil, errors.Wrap(err, "unable to validate options")
+	}
+
+	return &AWSSQS{
+		Options: opts,
+		log:     logrus.WithField("backend", "awssqs"),
+	}, nil
+}
+
+// TODO: Implement
+func validateOpts(opts *options.Options) error {
+	return nil
 }
 
 func NewService(opts *options.Options) (*sqs.SQS, string, error) {
@@ -46,7 +63,7 @@ func NewService(opts *options.Options) (*sqs.SQS, string, error) {
 		return nil, "", errors.Wrap(err, "unable to get queue URL")
 	}
 
-	logrus.Debugf("AWS QueueURL: %s", *resultURL.QueueUrl)
+	logrus.Debugf("AWS queueURL: %s", *resultURL.QueueUrl)
 
 	return svc, *resultURL.QueueUrl, nil
 }

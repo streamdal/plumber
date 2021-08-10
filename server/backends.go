@@ -58,7 +58,7 @@ func testConnectionKafka(connCfg *conns.Kafka) error {
 }
 
 // getBackendRead gets the backend message bus needed to read/write from
-func (p *PlumberServer) getBackendRead(read *protos.Read) (*kafka.KafkaReader, error) {
+func (p *PlumberServer) getBackendRead(read *protos.Read) (*kafka.Reader, error) {
 	connCfg := p.getConn(read.ConnectionId)
 	if connCfg == nil {
 		return nil, errors.New("connection does not exist")
@@ -98,7 +98,7 @@ func getKafkaDialer(kafkaCfg *conns.Kafka) (*skafka.Dialer, error) {
 }
 
 // getBackendReadKafka returns a properly configured kafka reader instance
-func getBackendReadKafka(connCfg *conns.Kafka, readArgs *args.Kafka, sampleOptions *protos.SampleOptions) (*kafka.KafkaReader, error) {
+func getBackendReadKafka(connCfg *conns.Kafka, readArgs *args.Kafka, sampleOptions *protos.SampleOptions) (*kafka.Reader, error) {
 	dialer, err := getKafkaDialer(connCfg)
 	if err != nil {
 		return nil, err
@@ -147,14 +147,14 @@ func getBackendReadKafka(connCfg *conns.Kafka, readArgs *args.Kafka, sampleOptio
 
 	r := skafka.NewReader(rc)
 
-	return &kafka.KafkaReader{
+	return &kafka.Reader{
 		Reader: r,
 	}, nil
 }
 
 // getBackendWrite gets the backend message bus needed to read/write from
 // TODO: genericize after backend refactor
-func (p *PlumberServer) getBackendWrite(req *protos.WriteRequest) (*kafka.KafkaWriter, error) {
+func (p *PlumberServer) getBackendWrite(req *protos.WriteRequest) (*kafka.Writer, error) {
 	connCfg := p.getConn(req.ConnectionId)
 	if connCfg == nil {
 		return nil, errors.New("connection does not exist")
@@ -169,7 +169,7 @@ func (p *PlumberServer) getBackendWrite(req *protos.WriteRequest) (*kafka.KafkaW
 }
 
 // getBackendWriteKafka returns a properly configured kafka writer instance
-func getBackendWriteKafka(connCfg *conns.Kafka) (*kafka.KafkaWriter, error) {
+func getBackendWriteKafka(connCfg *conns.Kafka) (*kafka.Writer, error) {
 	dialer, err := getKafkaDialer(connCfg)
 	if err != nil {
 		return nil, err
@@ -180,7 +180,7 @@ func getBackendWriteKafka(connCfg *conns.Kafka) (*kafka.KafkaWriter, error) {
 		BatchSize: 1, // TODO: add to protos?
 	})
 
-	return &kafka.KafkaWriter{
+	return &kafka.Writer{
 		Writer: writer,
 	}, nil
 }

@@ -28,8 +28,8 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	r := &GCPPubSub{
 		Options: opts,
-		MsgDesc: md,
-		Client:  client,
+		msgDesc: md,
+		client:  client,
 		log:     logrus.WithField("pkg", "gcp-pubsub/read.go"),
 	}
 
@@ -37,11 +37,11 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 }
 
 func (g *GCPPubSub) Read() error {
-	defer g.Client.Close()
+	defer g.client.Close()
 
 	g.log.Info("Listening for message(s) ...")
 
-	sub := g.Client.Subscription(g.Options.GCPPubSub.ReadSubscriptionId)
+	sub := g.client.Subscription(g.Options.GCPPubSub.ReadSubscriptionId)
 
 	// Receive launches several goroutines to exec func, need to use a mutex
 	var m sync.Mutex
@@ -59,7 +59,7 @@ func (g *GCPPubSub) Read() error {
 			defer msg.Ack()
 		}
 
-		data, err := reader.Decode(g.Options, g.MsgDesc, msg.Data)
+		data, err := reader.Decode(g.Options, g.msgDesc, msg.Data)
 		if err != nil {
 			return
 		}
@@ -79,7 +79,7 @@ func (g *GCPPubSub) Read() error {
 		return errors.Wrap(err, "unable to complete msg receive")
 	}
 
-	g.log.Debug("Reader exiting")
+	g.log.Debug("reader exiting")
 
 	return nil
 }

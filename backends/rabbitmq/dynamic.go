@@ -22,7 +22,7 @@ func Dynamic(opts *options.Options) error {
 		return errors.Wrap(err, "unable to initialize rabbitmq publisher")
 	}
 
-	defer writer.Consumer.Close()
+	defer writer.consumer.Close()
 
 	// Start up dynamic connection
 	grpc, err := dproxy.New(opts, "RabbitMQ")
@@ -36,7 +36,7 @@ func Dynamic(opts *options.Options) error {
 	for {
 		select {
 		case outbound := <-grpc.OutboundMessageCh:
-			if err := writer.Consumer.Publish(ctx, opts.Rabbit.RoutingKey, outbound.Blob); err != nil {
+			if err := writer.consumer.Publish(ctx, opts.Rabbit.RoutingKey, outbound.Blob); err != nil {
 				llog.Errorf("Unable to replay message: %s", err)
 				break
 			}

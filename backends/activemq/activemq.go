@@ -11,9 +11,26 @@ import (
 
 type ActiveMq struct {
 	Options *options.Options
-	Client  *stomp.Conn
-	MsgDesc *desc.MessageDescriptor
+
+	client  *stomp.Conn
+	msgDesc *desc.MessageDescriptor
 	log     *logrus.Entry
+}
+
+func New(opts *options.Options) (*ActiveMq, error) {
+	if err := validateOpts(opts); err != nil {
+		return nil, errors.Wrap(err, "unable to validate options")
+	}
+
+	return &ActiveMq{
+		Options: opts,
+		log:     logrus.WithField("backend", "activemq"),
+	}, nil
+}
+
+// TODO: Implement
+func validateOpts(opts *options.Options) error {
+	return nil
 }
 
 // NewClient returns a configured instance of stomp.Conn

@@ -25,6 +25,6 @@ func HandleActiveMqFlags(readCmd, writeCmd *kingpin.CmdClause, opts *Options) {
 
 func addSharedActiveMqFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("address", "Destination host address").Default("localhost:61613").StringVar(&opts.ActiveMq.Address)
-	cmd.Flag("topic", "Topic to read message(s) from").StringVar(&opts.ActiveMq.Topic)
-	cmd.Flag("queue", "Queue to read message(s) from").StringVar(&opts.ActiveMq.Queue)
+	cmd.Flag("topic", "topic to read message(s) from").StringVar(&opts.ActiveMq.Topic)
+	cmd.Flag("queue", "queue to read message(s) from").StringVar(&opts.ActiveMq.Queue)
 }

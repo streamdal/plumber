@@ -20,7 +20,7 @@ func PrintKafkaResult(opts *options.Options, offsetInfo *types.OffsetInfo, msg k
 
 	properties := [][]string{
 		{"Key", key},
-		{"Topic", msg.Topic},
+		{"topic", msg.Topic},
 		{"Offset", fmt.Sprintf("%d", msg.Offset)},
 		{"Partition", fmt.Sprintf("%d", msg.Partition)},
 	}

@@ -14,13 +14,30 @@ var (
 	errMissingSubscription = errors.New("You must specify a subscription name when reading from a topic")
 )
 
-type AzureServiceBus struct {
+type ServiceBus struct {
 	Options *options.Options
-	MsgDesc *desc.MessageDescriptor
-	Client  *servicebus.Namespace
-	Queue   *servicebus.Queue
-	Topic   *servicebus.Topic
+
+	msgDesc *desc.MessageDescriptor
+	client  *servicebus.Namespace
+	queue   *servicebus.Queue
+	topic   *servicebus.Topic
 	log     *logrus.Entry
+}
+
+func New(opts *options.Options) (*ServiceBus, error) {
+	if err := validateOpts(opts); err != nil {
+		return nil, errors.Wrap(err, "unable to validate options")
+	}
+
+	return &ServiceBus{
+		Options: opts,
+		log:     logrus.WithField("backend", "azure"),
+	}, nil
+}
+
+// TODO: Implement
+func validateOpts(opts *options.Options) error {
+	return nil
 }
 
 // NewClient returns a properly configured service bus client

@@ -33,10 +33,10 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	defer client.Close(ctx)
 
-	a := &AzureEventHub{
+	a := &EventHub{
 		Options: opts,
-		MsgDesc: md,
-		Client:  client,
+		msgDesc: md,
+		client:  client,
 		log:     logrus.WithField("pkg", "azure-eventhub/write.go"),
 	}
 
@@ -50,7 +50,7 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 }
 
 // Write writes a message to a random partition on
-func (a *AzureEventHub) Write(ctx context.Context, value []byte) error {
+func (a *EventHub) Write(ctx context.Context, value []byte) error {
 	opts := make([]eventhub.SendOption, 0)
 
 	if a.Options.AzureEventHub.MessageID != "" {
@@ -62,7 +62,7 @@ func (a *AzureEventHub) Write(ctx context.Context, value []byte) error {
 		event.PartitionKey = &a.Options.AzureEventHub.PartitionKey
 	}
 
-	return a.Client.Send(ctx, event, opts...)
+	return a.client.Send(ctx, event, opts...)
 }
 
 // validateWriteOptions ensures the correct CLI options are specified for the write action

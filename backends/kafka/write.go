@@ -34,7 +34,7 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	k := &Kafka{
 		Options: opts,
-		Writer:  kafkaWriter.Writer,
+		writer:  kafkaWriter.Writer,
 		log:     logrus.WithField("pkg", "kafka/write.go"),
 	}
 
@@ -70,7 +70,7 @@ func (k *Kafka) Write(key, value []byte) error {
 		msg.Headers = headers
 	}
 
-	if err := k.Writer.WriteMessages(context.Background(), msg); err != nil {
+	if err := k.writer.WriteMessages(context.Background(), msg); err != nil {
 		return errors.Wrap(err, "unable to publish message(s)")
 	}
 

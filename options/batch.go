@@ -169,7 +169,7 @@ func handleCreateDestinationFlagsShared(cmd *kingpin.CmdClause, opts *Options) {
 func handleCreateDestinationFlagsKafka(cmd *kingpin.CmdClause, opts *Options) {
 	handleCreateDestinationFlagsShared(cmd, opts)
 
-	cmd.Flag("topic", "Kafka Topic").
+	cmd.Flag("topic", "Kafka topic").
 		Required().
 		StringVar(&opts.Batch.DestinationMetadata.KafkaTopic)
 
@@ -211,7 +211,7 @@ func handleCreateDestinationFlagsSQS(cmd *kingpin.CmdClause, opts *Options) {
 		Required().
 		StringVar(&opts.Batch.DestinationMetadata.SQSAccountID)
 
-	cmd.Flag("queue-name", "SQS Queue name to publish to").
+	cmd.Flag("queue-name", "SQS queue name to publish to").
 		Required().
 		StringVar(&opts.Batch.DestinationMetadata.SQSQueue)
 }

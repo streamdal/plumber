@@ -20,9 +20,26 @@ var (
 
 type Nats struct {
 	Options *options.Options
-	MsgDesc *desc.MessageDescriptor
-	Client  *nats.Conn
+
+	msgDesc *desc.MessageDescriptor
+	client  *nats.Conn
 	log     *logrus.Entry
+}
+
+func New(opts *options.Options) (*Nats, error) {
+	if err := validateOpts(opts); err != nil {
+		return nil, errors.Wrap(err, "unable to validate options")
+	}
+
+	return &Nats{
+		Options: opts,
+		log:     logrus.WithField("backend", "nats"),
+	}, nil
+}
+
+// TODO: Implement
+func validateOpts(opts *options.Options) error {
+	return nil
 }
 
 // NewClient creates a new Nats client connection

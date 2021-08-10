@@ -21,8 +21,8 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 
 	r := &Redis{
 		Options: opts,
-		Client:  client,
-		MsgDesc: md,
+		client:  client,
+		msgDesc: md,
 		log:     logrus.WithField("pkg", "redis/read.go"),
 	}
 
@@ -30,11 +30,11 @@ func Read(opts *options.Options, md *desc.MessageDescriptor) error {
 }
 
 func (r *Redis) Read() error {
-	defer r.Client.Close()
+	defer r.client.Close()
 
 	ctx := context.Background()
 
-	ps := r.Client.Subscribe(ctx, r.Options.RedisPubSub.Channels...)
+	ps := r.client.Subscribe(ctx, r.Options.RedisPubSub.Channels...)
 	defer ps.Unsubscribe(ctx)
 
 	r.log.Info("Listening for message(s) ...")
@@ -48,7 +48,7 @@ func (r *Redis) Read() error {
 			return err
 		}
 
-		data, err := reader.Decode(r.Options, r.MsgDesc, []byte(msg.Payload))
+		data, err := reader.Decode(r.Options, r.msgDesc, []byte(msg.Payload))
 		if err != nil {
 			r.log.Error(err)
 			return err

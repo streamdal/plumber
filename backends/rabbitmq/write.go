@@ -30,7 +30,7 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 		return errors.Wrap(err, "unable to initialize rabbitmq consumer")
 	}
 
-	defer r.Consumer.Close()
+	defer r.consumer.Close()
 
 	ctx := context.Background()
 
@@ -46,7 +46,7 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 // Write is a wrapper for amqp Publish method. We wrap it so that we can mock
 // it in tests, add logging etc.
 func (r *RabbitMQ) Write(ctx context.Context, value []byte) error {
-	err := r.Consumer.Publish(ctx, r.Options.Rabbit.RoutingKey, value)
+	err := r.consumer.Publish(ctx, r.Options.Rabbit.RoutingKey, value)
 	if err != nil {
 		return errors.Wrap(err, "unable to write data to rabbit")
 	}
