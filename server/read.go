@@ -24,7 +24,7 @@ import (
 
 const (
 	NoSample             = -1
-	SampleOffsetInterval = time.Second * 10 //time.Minute
+	SampleOffsetInterval = time.Minute
 )
 
 type AttachedStream struct {
