@@ -5,37 +5,61 @@ import (
 	"fmt"
 
 	"github.com/batchcorp/plumber/backends/activemq"
-	awssns "github.com/batchcorp/plumber/backends/aws-sns"
-	awssqs "github.com/batchcorp/plumber/backends/aws-sqs"
+	"github.com/batchcorp/plumber/backends/aws-sns"
+	"github.com/batchcorp/plumber/backends/aws-sqs"
 	"github.com/batchcorp/plumber/backends/azure"
-	azure_eventhub "github.com/batchcorp/plumber/backends/azure-eventhub"
-	gcppubsub "github.com/batchcorp/plumber/backends/gcp-pubsub"
+	"github.com/batchcorp/plumber/backends/azure-eventhub"
+	"github.com/batchcorp/plumber/backends/gcp-pubsub"
 	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/backends/mqtt"
 	"github.com/batchcorp/plumber/backends/nats"
-	nats_streaming "github.com/batchcorp/plumber/backends/nats-streaming"
+	"github.com/batchcorp/plumber/backends/nats-streaming"
 	"github.com/batchcorp/plumber/backends/nsq"
 	"github.com/batchcorp/plumber/backends/pulsar"
 	"github.com/batchcorp/plumber/backends/rabbitmq"
-	rabbitmq_streams "github.com/batchcorp/plumber/backends/rabbitmq-streams"
+	"github.com/batchcorp/plumber/backends/rabbitmq-streams"
 	"github.com/batchcorp/plumber/backends/rpubsub"
 	"github.com/batchcorp/plumber/backends/rstreams"
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/types"
 )
 
-var (
-	PackageMap = map[string]func(*options.Options) (interface{}, error){}
-)
-
 // Backend is the interface that all backends implement. CLI, server, etc.
 // should utilize the backends via the interface.
 type Backend interface {
-	Connect(ctx context.Context) error // Stop via Disconnect() or cancel context
+	// Connect must be called before any other methods that interact with the
+	// backend. To disconnect, cancel the context.
+	Connect(ctx context.Context) error
+
+	// Disconnect will disconnect an actively connected backend
 	Disconnect(ctx context.Context) error
-	Read(ctx context.Context, results chan []*types.Message) error // Stop via context
+
+	// Read will read data from the bus and dump them in batches to the results
+	// channel. This call blocks until stopped.
+	Read(ctx context.Context, resultsChan chan []*types.Message, errorChan chan []*types.ErrorMessage) error
+
+	// Write will attempt to write the input messages as a batch (if the backend
+	// supports batch writing). This call will block until success/error.
 	Write(ctx context.Context, message ...interface{}) error
+
+	// Test performs a "test" to see if the connection to the backend is alive.
+	// The test varies between backends (ie. in kafka, it might be just attempting
+	// to connect, while in another bus, plumber might try to put/get sample data).
 	Test(ctx context.Context) error
+
+	// Dynamic enables plumber to become a "dynamic replay destination".
+	// This is a blocking call.
+	Dynamic(ctx context.Context) error
+
+	// Lag returns consumer lag stats. Only works for _some_ backends.
+	Lag(ctx context.Context) (*types.LagStats, error)
+
+	// StartRelay will cause plumber to relay all data received on the message bus to
+	// the Batch platform. Not all backends support relays.
+	StartRelay(shutdownCtx context.Context, relayCh chan interface{}) (string, error)
+
+	// StopRelay stops the in-progress relay
+	StopRelay(shutdownCtx context.Context) error
 }
 
 // New is a convenience function to instantiate the appropriate backend based on

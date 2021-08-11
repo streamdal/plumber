@@ -8,8 +8,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-// HandleWriteCmd handles write mode
-func (p *Plumber) HandleWriteCmd() error {
+// HandleDynamicCmd handles dynamic replay destination mode commands
+func (p *Plumber) HandleDynamicCmd() error {
 	backendName, err := util.GetBackendName(p.Cmd)
 	if err != nil {
 		return errors.Wrap(err, "unable to get backend")
@@ -20,9 +20,9 @@ func (p *Plumber) HandleWriteCmd() error {
 		return errors.Wrap(err, "unable to instantiate backend")
 	}
 
-	// TODO: What are we writing?
-	if err := backend.Write(context.Background()); err != nil {
-		return errors.Wrap(err, "unable to complete write(s)")
+	// Blocks until completion
+	if err := backend.Dynamic(context.Background()); err != nil {
+		return errors.Wrap(err, "error(s) during dynamic run")
 	}
 
 	return nil

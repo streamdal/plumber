@@ -17,7 +17,7 @@ import (
 	"github.com/batchcorp/plumber/server"
 )
 
-// RunServer is a wrapper for starting embedded etcd and starting the gRPC server
+// RunServer is a wrapper for starting embedded etcd and starting the gRPC server.
 func (p *Plumber) RunServer() error {
 	p.log.Info("starting embedded etcd")
 
@@ -27,6 +27,7 @@ func (p *Plumber) RunServer() error {
 
 	p.log.Info("starting gRPC server")
 
+	// Blocks
 	if err := p.runServer(); err != nil {
 		return errors.Wrap(err, "unable to run server")
 	}

@@ -16,3 +16,13 @@ type Message struct {
 	MessageNum int
 	Value      interface{}
 }
+
+type ErrorMessage struct {
+	OccurredAt time.Time // UTC
+	SourceIP   string
+	Error      error
+}
+
+// TODO: Implement
+type LagStats struct {
+}

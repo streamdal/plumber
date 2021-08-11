@@ -48,8 +48,8 @@ func main() {
 		signal.Notify(c, syscall.SIGTERM)
 
 		go func() {
-			signal := <-c
-			logrus.Debugf("Received system call: %+v", signal)
+			sig := <-c
+			logrus.Debugf("Received system call: %+v", sig)
 
 			serviceShutdownFunc()
 		}()
@@ -108,13 +108,13 @@ func readFromStdin(opts *options.Options) {
 	}
 
 	// Treat input as a JSON array
-	if opts.WriteInputIsJsonArray {
-		opts.WriteInputData = convertJSONInput(inputData[0])
+	if opts.Write.InputIsJsonArray {
+		opts.Write.InputData = convertJSONInput(inputData[0])
 		return
 	}
 
 	// Treat input as new object on each line
-	opts.WriteInputData = inputData
+	opts.Write.InputData = inputData
 }
 
 // convertJSONInput converts a JSON array to a slice of strings for the writer to consume
