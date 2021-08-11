@@ -2,6 +2,7 @@ package plumber
 
 import (
 	"context"
+	"time"
 
 	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/util"
@@ -18,6 +19,13 @@ func (p *Plumber) HandleDynamicCmd() error {
 	backend, err := backends.New(backendName, p.Options)
 	if err != nil {
 		return errors.Wrap(err, "unable to instantiate backend")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := backend.Connect(ctx); err != nil {
+		return errors.Wrap(err, "unable to connect to backend")
 	}
 
 	// Blocks until completion

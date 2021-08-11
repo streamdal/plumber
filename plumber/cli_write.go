@@ -2,9 +2,11 @@ package plumber
 
 import (
 	"context"
+	"time"
 
 	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/writer"
 	"github.com/pkg/errors"
 )
 
@@ -20,8 +22,19 @@ func (p *Plumber) HandleWriteCmd() error {
 		return errors.Wrap(err, "unable to instantiate backend")
 	}
 
-	// TODO: What are we writing?
-	if err := backend.Write(context.Background()); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := backend.Connect(ctx); err != nil {
+		return errors.Wrap(err, "unable to connect to backend")
+	}
+
+	value, err := writer.GenerateWriteValues(p.Options.Encoding.MsgDesc, p.Options)
+	if err != nil {
+		return errors.Wrap(err, "unable to generate write value")
+	}
+
+	if err := backend.Write(ctx, value); err != nil {
 		return errors.Wrap(err, "unable to complete write(s)")
 	}
 

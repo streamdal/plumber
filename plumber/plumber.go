@@ -63,20 +63,20 @@ func (p *Plumber) Run() {
 	switch {
 	case p.Cmd == "server":
 		err = p.RunServer()
-	case strings.HasPrefix(p.Cmd, "batch"): // TODO: Update
+	case strings.HasPrefix(p.Cmd, "batch"): // DONE
 		err = p.HandleBatchCmd()
-	case strings.HasPrefix(p.Cmd, "read"): // TODO: Update (in-progress)
+	case strings.HasPrefix(p.Cmd, "read"): // TODO: Finish display*
 		err = p.HandleReadCmd()
-	case strings.HasPrefix(p.Cmd, "write"): // TODO: Update
+	case strings.HasPrefix(p.Cmd, "write"): // DONE
 		err = p.HandleWriteCmd()
-	case strings.HasPrefix(p.Cmd, "relay"): // TODO: Update
+	case strings.HasPrefix(p.Cmd, "relay"): // TODO: Update to use backends
 		printer.PrintRelayOptions(p.Cmd, p.Options)
 		err = p.HandleRelayCmd()
-	case strings.HasPrefix(p.Cmd, "dynamic"): // TODO: Update
+	case strings.HasPrefix(p.Cmd, "dynamic"): // DONE
 		err = p.HandleDynamicCmd()
-	case strings.HasPrefix(p.Cmd, "lag"): // TODO: Update
+	case strings.HasPrefix(p.Cmd, "lag"): // TODO: Update lag display
 		err = p.HandleLagCmd()
-	case strings.HasPrefix(p.Cmd, "github"): // TODO: Update
+	case strings.HasPrefix(p.Cmd, "github"): // DONE
 		err = p.HandleGithubCmd()
 	default:
 		logrus.Fatalf("unrecognized command: %s", p.Cmd)

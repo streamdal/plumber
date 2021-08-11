@@ -53,13 +53,6 @@ type Backend interface {
 
 	// Lag returns consumer lag stats. Only works for _some_ backends.
 	Lag(ctx context.Context) (*types.LagStats, error)
-
-	// StartRelay will cause plumber to relay all data received on the message bus to
-	// the Batch platform. Not all backends support relays.
-	StartRelay(shutdownCtx context.Context, relayCh chan interface{}) (string, error)
-
-	// StopRelay stops the in-progress relay
-	StopRelay(shutdownCtx context.Context) error
 }
 
 // New is a convenience function to instantiate the appropriate backend based on
