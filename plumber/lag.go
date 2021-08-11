@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// parseCmdLad handles viewing lag in CLI mode
+// HandleLagCmd handles viewing lag in CLI mode
 func (p *Plumber) HandleLagCmd() error {
 	if p.Cmd != "lag kafka" {
 		return errors.New("fetching consumer lag is only supported with kafka backend")
@@ -26,10 +26,13 @@ func (p *Plumber) HandleLagCmd() error {
 		return errors.Wrap(err, "unable to instantiate backend")
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
 	t := time.NewTicker(5 * time.Second)
 
 	for range t.C {
-		stats, err := backend.Lag(context.Background()) // TODO: Use proper contexts
+		stats, err := backend.Lag(ctx)
 		if err != nil {
 			p.log.Errorf("unable to determine consumer lag: %s", err)
 			continue

@@ -29,7 +29,7 @@ func (p *Plumber) HandleRelayCmd() error {
 		return errors.Wrap(err, "unable to instantiate backend")
 	}
 
-	if err := backend.Relay(context.Background(), p.RelayCh); err != nil {
+	if err := backend.StartRelay(context.Background(), p.RelayCh); err != nil {
 		return errors.Wrap(err, "unable to start relay backend")
 	}
 
