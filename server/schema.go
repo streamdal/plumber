@@ -75,7 +75,15 @@ func (p *PlumberServer) importGithub(ctx context.Context, req *protos.ImportGith
 	var schema *types.Schema
 	// Parse zip file
 	if req.Type == encoding.Type_PROTOBUF {
-		md, err := ProcessProtobufArchive(req.RootType, zipfile)
+		files, err := getProtoFilesFromZip(zipfile)
+		if err != nil {
+			return nil, err
+		}
+
+		// Removes all files not in the root directory and cleans the file paths so imports work properly
+		files = truncateProtoDirectories(files, req.RootDir)
+
+		md, err := ProcessProtobufArchive(req.RootType, files)
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to parse protobuf zip")
 		}
@@ -85,7 +93,7 @@ func (p *PlumberServer) importGithub(ctx context.Context, req *protos.ImportGith
 				Id:                uuid.NewV4().String(),
 				Name:              req.Name,
 				Type:              encoding.Type_PROTOBUF,
-				Data:              zipfile,
+				Files:             files,
 				RootType:          req.RootType,
 				MessageDescriptor: []byte(md.String()),
 			},
@@ -126,6 +134,8 @@ func (p *PlumberServer) DeleteSchema(_ context.Context, req *protos.DeleteSchema
 	p.SchemasMutex.Lock()
 	delete(p.PersistentConfig.Schemas, req.Id)
 	p.SchemasMutex.Unlock()
+
+	p.PersistentConfig.Save()
 
 	return &protos.DeleteSchemaResponse{
 		Status: &common.Status{

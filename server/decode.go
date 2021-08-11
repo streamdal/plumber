@@ -4,8 +4,8 @@ import (
 	"archive/zip"
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
-	"math"
 	"path/filepath"
 	"strings"
 
@@ -29,8 +29,13 @@ func generateMD(opts *encoding.Options) (*desc.MessageDescriptor, error) {
 		return nil, nil
 	}
 
+	files, err := getProtoFilesFromZip(pbOptions.ZipArchive)
+	if err != nil {
+		return nil, err
+	}
+
 	// Get Message descriptor from zip file
-	md, err := ProcessProtobufArchive(pbOptions.RootType, pbOptions.ZipArchive)
+	md, err := ProcessProtobufArchive(pbOptions.RootType, files)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to parse protobuf zip")
 	}
@@ -58,25 +63,16 @@ func readFileDescriptors(files map[string]string) ([]*desc.FileDescriptor, error
 	}
 
 	var p protoparse.Parser
-	p.LookupImport = func(f string) (*desc.FileDescriptor, error) {
-		// TODO: this
-		fmt.Println("looping up import: " + f)
+	p.InferImportPaths = true
 
+	p.Accessor = func(f string) (io.ReadCloser, error) {
 		for k, v := range files {
-			// Most likely scenario
-			if k == f {
-				// do proto
+			if k == f || strings.HasSuffix(k, f) {
+				return io.NopCloser(strings.NewReader(v)), nil
 			}
-
-			if strings.HasSuffix(k, f) {
-				// do proto
-			}
-
 		}
-
-		return nil, nil
+		return nil, fmt.Errorf("unable to find import '%s'", f)
 	}
-	p.Accessor = protoparse.FileContentsFromMap(files)
 
 	fds, err := p.ParseFiles(keys...)
 	if err != nil {
@@ -86,18 +82,7 @@ func readFileDescriptors(files map[string]string) ([]*desc.FileDescriptor, error
 	return fds, nil
 }
 
-func ProcessProtobufArchive(rootType string, archive []byte) (*desc.MessageDescriptor, error) {
-	files, err := getProtoFilesFromZip(archive)
-	if err != nil {
-		return nil, err
-	}
-
-	files = truncateProtoDirectories(files)
-
-	for k := range files {
-		fmt.Println(k)
-	}
-
+func ProcessProtobufArchive(rootType string, files map[string]string) (*desc.MessageDescriptor, error) {
 	fds, err := readFileDescriptors(files)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to get file descriptors from archive")
@@ -111,24 +96,26 @@ func ProcessProtobufArchive(rootType string, archive []byte) (*desc.MessageDescr
 	return rootMD, nil
 }
 
-// truncateProtoDirectories attempts to locate a .poroto file in the shortest path of a directory tree so that
+// truncateProtoDirectories attempts to locate a .proto file in the shortest path of a directory tree so that
 // import paths work correctly
-func truncateProtoDirectories(files map[string]string) map[string]string {
-	var rootProtoLocation string
-	depth := math.MaxInt32
-
-	for filePath := range files {
-		dirsDeep := strings.Count(filePath, "/")
-		if dirsDeep < depth {
-			depth = dirsDeep
-			rootProtoLocation = filepath.Dir(filePath)
-		}
-	}
-
+func truncateProtoDirectories(files map[string]string, rootDir string) map[string]string {
 	cleaned := make(map[string]string)
 
+	var zipBaseDir string
+
 	for filePath, contents := range files {
-		newPath := strings.Replace(filePath, rootProtoLocation+"/", "", 1)
+		// Only need to do this once
+		if zipBaseDir == "" {
+			// Strip out zip base directory, which will look like "batchcorp-schemas-9789dfg70s980fdsfs"
+			parts := strings.Split(filePath, "/")
+			zipBaseDir = parts[0] + "/"
+		}
+
+		if !strings.Contains(filePath, zipBaseDir+rootDir+"/") {
+			continue
+		}
+
+		newPath := strings.Replace(filePath, zipBaseDir+rootDir+"/", "", 1)
 		cleaned[newPath] = contents
 	}
 
