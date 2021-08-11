@@ -78,6 +78,7 @@ func (p *Plumber) runServer() error {
 		ReadsMutex:       &sync.RWMutex{},
 		RelaysMutex:      &sync.RWMutex{},
 		SchemasMutex:     &sync.RWMutex{},
+		ServicesMutex:    &sync.RWMutex{},
 		GithubService:    gh,
 		Log:              logrus.WithField("pkg", "plumber/server.go"),
 	}

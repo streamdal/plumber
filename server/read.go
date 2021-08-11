@@ -22,7 +22,10 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
-const SampleOffsetInterval = time.Second * 10 //time.Minute
+const (
+	NoSample             = -1
+	SampleOffsetInterval = time.Minute
+)
 
 type AttachedStream struct {
 	MessageCh chan *records.Message
@@ -39,6 +42,7 @@ type Read struct {
 	MsgDesc              *desc.MessageDescriptor
 	SampleStart          int64
 	SampleStep           int64
+	FallbackSampleRate   time.Duration
 	log                  *logrus.Entry
 }
 
@@ -179,15 +183,31 @@ func (p *PlumberServer) CreateRead(_ context.Context, req *protos.CreateReadRequ
 	// Can't wait forever. If no traffic on the topic after 2 minutes, cancel sample call
 	timeoutCtx, _ := context.WithTimeout(context.Background(), SampleOffsetInterval*2)
 
+	var sampleRate time.Duration
+
 	if readCfg.GetSampleOptions() != nil {
 		offsetStep, offsetStart, err = read.GetSampleRate(timeoutCtx)
-		if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			p.Log.Warnf("Could not get sample rate: %s", err.Error())
 			return nil, CustomError(common.Code_ABORTED, "could not calculate sample rate: "+err.Error())
+		}
+
+		p.Log.Debugf("Offset step rate: %d, starting at offset %d", offsetStep, offsetStart)
+
+		if offsetStart == NoSample {
+			p.Log.Warn("No traffic on message bus, falling back to time based rate")
+			sr, err := getFallBackSampleRate(readCfg.SampleOptions)
+			if err != nil {
+				return nil, CustomError(common.Code_ABORTED, "could not calculate sample rate: "+err.Error())
+			}
+			p.Log.Debugf("Fallback sample rate is 1 message every %dms", sr.Milliseconds())
+			sampleRate = sr
 		}
 	}
 
 	read.SampleStart = offsetStart
 	read.SampleStep = offsetStep
+	read.FallbackSampleRate = sampleRate
 
 	go read.StartRead()
 
@@ -201,28 +221,53 @@ func (p *PlumberServer) CreateRead(_ context.Context, req *protos.CreateReadRequ
 	}, nil
 }
 
+// getFallBackSampleRate returns a ticker to use to try and read messages from the bus at a given interval.
+// This is used when there is no message bus traffic, so we can't infer an offset rate
+func getFallBackSampleRate(sampleOpts *protos.SampleOptions) (time.Duration, error) {
+	switch sampleOpts.SampleInterval {
+	case protos.SampleOptions_MINUTE:
+		ms := time.Minute.Milliseconds() / int64(sampleOpts.SampleRate)
+		d, err := time.ParseDuration(fmt.Sprintf("%dms", ms))
+		if err != nil {
+			return 0, err
+		}
+		return d, nil
+	case protos.SampleOptions_SECOND:
+		ms := time.Second.Milliseconds() / int64(sampleOpts.SampleRate)
+		d, err := time.ParseDuration(fmt.Sprintf("%dms", ms))
+		if err != nil {
+			return 0, err
+		}
+		return d, nil
+	default:
+		return 0, fmt.Errorf("unknown sample interval: '%d'", sampleOpts.SampleInterval)
+	}
+}
+
 // generateKafkaPayload generates a records.Message protobuf struct from a kafka message struct
 func (r *Read) generateKafkaPayload(msg *skafka.Message) (*records.Message, error) {
 	var err error
 	var data []byte
 
-	switch r.Config.DecodeOptions.Type {
-	case encoding.Type_PROTOBUF:
-		data, err = DecodeProtobuf(r.MsgDesc, msg.Value)
-		if err != nil {
-			return nil, errors.Wrap(err, "unable to decode protobuf")
+	if do := r.Config.GetDecodeOptions(); do != nil {
+		switch do.Type {
+		case encoding.Type_PROTOBUF:
+			data, err = DecodeProtobuf(r.MsgDesc, msg.Value)
+			if err != nil {
+				return nil, errors.Wrap(err, "unable to decode protobuf")
+			}
+		case encoding.Type_AVRO:
+			data, err = serializers.AvroDecode(r.Config.DecodeOptions.GetAvro().Schema, msg.Value)
+			if err != nil {
+				return nil, errors.Wrap(err, "unable to decode AVRO message")
+			}
+			fallthrough
+		case encoding.Type_JSON_SCHEMA:
+			// TODO
+			fallthrough
+		default:
+			data = msg.Value
 		}
-	case encoding.Type_AVRO:
-		data, err = serializers.AvroDecode(r.Config.DecodeOptions.GetAvro().Schema, msg.Value)
-		if err != nil {
-			return nil, errors.Wrap(err, "unable to decode AVRO message")
-		}
-		fallthrough
-	case encoding.Type_JSON_SCHEMA:
-		// TODO
-		fallthrough
-	default:
-		data = msg.Value
 	}
 
 	return &records.Message{
@@ -266,9 +311,9 @@ func (r *Read) GetSampleRate(ctx context.Context) (offsetStep int64, offsetStart
 
 	msg, err := r.Backend.Reader.ReadMessage(ctx)
 	if err != nil {
-		if err == context.Canceled {
-			err = errors.New("context cancelled, could not get sample rate")
-			return 0, 0, err
+		if err == context.DeadlineExceeded {
+			err = errors.New("timed out waiting for messages, could not get sample rate")
+			return NoSample, NoSample, err
 		} else {
 			err = fmt.Errorf("unable to read kafka message: %s", err)
 			return 0, 0, err
@@ -369,6 +414,11 @@ func (r *Read) StartRead() {
 		// Sampled read, increment offset offset
 		if r.SampleStart > 0 {
 			r.SampleStart += r.SampleStep
+		}
+
+		if r.FallbackSampleRate > 0 {
+			time.Sleep(r.FallbackSampleRate)
+			r.Backend.Reader.SetOffset(skafka.LastOffset)
 		}
 	}
 

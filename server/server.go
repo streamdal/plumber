@@ -17,6 +17,7 @@ type PlumberServer struct {
 	AuthToken        string
 	PersistentConfig *config.Config
 	ConnectionsMutex *sync.RWMutex
+	ServicesMutex    *sync.RWMutex
 	Reads            map[string]*Read
 	ReadsMutex       *sync.RWMutex
 	RelaysMutex      *sync.RWMutex
@@ -97,7 +98,25 @@ func (p *PlumberServer) getSchema(schemaID string) *types.Schema {
 	p.SchemasMutex.RLock()
 	defer p.SchemasMutex.RUnlock()
 
-	r, _ := p.PersistentConfig.Schemas[schemaID]
+	s, _ := p.PersistentConfig.Schemas[schemaID]
+
+	return s
+}
+
+// setService adds an in-progress read to the Service map
+func (p *PlumberServer) setService(serviceID string, svc *types.Service) {
+	p.ServicesMutex.Lock()
+	defer p.ServicesMutex.Unlock()
+
+	p.PersistentConfig.Services[serviceID] = svc
+}
+
+// getService returns an in-progress read from the Relay map
+func (p *PlumberServer) getService(serviceID string) *types.Service {
+	p.ServicesMutex.RLock()
+	defer p.ServicesMutex.RUnlock()
+
+	r, _ := p.PersistentConfig.Services[serviceID]
 
 	return r
 }
@@ -108,4 +127,5 @@ func (p *PlumberServer) setSchema(schemaID string, schema *types.Schema) {
 	defer p.SchemasMutex.Unlock()
 
 	p.PersistentConfig.Schemas[schemaID] = schema
+
 }

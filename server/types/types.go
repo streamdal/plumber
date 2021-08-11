@@ -28,6 +28,11 @@ type Schema struct {
 	*protos.Schema
 }
 
+// Service is a wrapper around protos.Service so that we can implement Marshaler interface
+type Service struct {
+	*protos.Service
+}
+
 type Relay struct {
 	Active     bool                `json:"-"`
 	Id         string              `json:"-"`
@@ -85,6 +90,31 @@ func (r *Relay) UnmarshalJSON(v []byte) error {
 	}
 
 	r.Config = cfg
+
+	return nil
+}
+
+// MarshalJSON marshals a service proto message into JSON
+func (r *Service) MarshalJSON() ([]byte, error) {
+	m := jsonpb.Marshaler{}
+
+	buf := bytes.NewBuffer([]byte(``))
+
+	if err := m.Marshal(buf, r.Service); err != nil {
+		return nil, errors.Wrap(err, "could not marshal protos.Service")
+	}
+	return buf.Bytes(), nil
+}
+
+// UnmarshalJSON unmarshals JSON into a service proto message
+func (r *Service) UnmarshalJSON(v []byte) error {
+	cfg := &protos.Service{}
+
+	if err := jsonpb.Unmarshal(bytes.NewBuffer(v), cfg); err != nil {
+		return errors.Wrap(err, "unable to unmarshal stored relay")
+	}
+
+	r.Service = cfg
 
 	return nil
 }
