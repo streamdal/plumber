@@ -4,16 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
-
 	"github.com/pkg/errors"
-
-	"github.com/batchcorp/plumber/server/types"
-
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
+
+	"github.com/batchcorp/plumber/server/types"
 )
 
 func (p *PlumberServer) GetAllSchemas(_ context.Context, req *protos.GetAllSchemasRequest) (*protos.GetAllSchemasResponse, error) {
@@ -67,47 +65,57 @@ func (p *PlumberServer) ImportGithub(ctx context.Context, req *protos.ImportGith
 // importGithub imports a github repo as a schema
 // TODO: types other than protobuf
 func (p *PlumberServer) importGithub(ctx context.Context, req *protos.ImportGithubRequest) (*types.Schema, error) {
+	var schema *types.Schema
+	var err error
+
 	zipfile, err := p.GithubService.GetRepoArchive(ctx, p.PersistentConfig.GitHubToken, req.GithubUrl)
 	if err != nil {
 		return nil, err
 	}
 
-	var schema *types.Schema
-	// Parse zip file
-	if req.Type == encoding.Type_PROTOBUF {
-		files, err := getProtoFilesFromZip(zipfile)
-		if err != nil {
-			return nil, err
-		}
+	switch req.Type {
+	case encoding.Type_PROTOBUF:
+		schema, err = importGithubProtobuf(zipfile, req)
+	case encoding.Type_AVRO:
+	// TODO
+	default:
+		err = CustomError(common.Code_FAILED_PRECONDITION, "only protobuf and avro schemas can be imported from github")
+	}
 
-		// Removes all files not in the root directory and cleans the file paths so imports work properly
-		files = truncateProtoDirectories(files, req.RootDir)
-
-		md, err := ProcessProtobufArchive(req.RootType, files)
-		if err != nil {
-			return nil, errors.Wrap(err, "unable to parse protobuf zip")
-		}
-
-		schema = &types.Schema{
-			Schema: &protos.Schema{
-				Id:                uuid.NewV4().String(),
-				Name:              req.Name,
-				Type:              encoding.Type_PROTOBUF,
-				Files:             files,
-				RootType:          req.RootType,
-				MessageDescriptor: []byte(md.String()),
-			},
-		}
-	} else if req.Type == encoding.Type_AVRO {
-		// TODO
-	} else {
-		return nil, CustomError(common.Code_FAILED_PRECONDITION, "only protobuf and avro schemas can be imported from github")
+	if err != nil {
+		return nil, err
 	}
 
 	p.setSchema(schema.Schema.Id, schema)
 	p.PersistentConfig.Save()
 
 	return schema, nil
+}
+
+func importGithubProtobuf(zipfile []byte, req *protos.ImportGithubRequest) (*types.Schema, error) {
+	files, err := getProtoFilesFromZip(zipfile)
+	if err != nil {
+		return nil, err
+	}
+
+	// Removes all files not in the root directory and cleans the file paths so imports work properly
+	files = truncateProtoDirectories(files, req.RootDir)
+
+	md, err := ProcessProtobufArchive(req.RootType, files)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to parse protobuf zip")
+	}
+
+	return &types.Schema{
+		Schema: &protos.Schema{
+			Id:                uuid.NewV4().String(),
+			Name:              req.Name,
+			Type:              encoding.Type_PROTOBUF,
+			Files:             files,
+			RootType:          req.RootType,
+			MessageDescriptor: []byte(md.String()),
+		},
+	}, nil
 }
 
 func (p *PlumberServer) ImportLocal(_ context.Context, req *protos.ImportLocalRequest) (*protos.ImportLocalResponse, error) {

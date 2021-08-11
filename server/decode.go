@@ -65,6 +65,8 @@ func readFileDescriptors(files map[string]string) ([]*desc.FileDescriptor, error
 	var p protoparse.Parser
 	p.InferImportPaths = true
 
+	// Custom accessor in order to handle import path differences.
+	// Ex: import "events/collect.proto" vs import "collect.proto"
 	p.Accessor = func(f string) (io.ReadCloser, error) {
 		for k, v := range files {
 			if k == f || strings.HasSuffix(k, f) {
