@@ -21,10 +21,10 @@ func GenerateWriteValues(md *desc.MessageDescriptor, opts *options.Options) ([][
 	writeValues := make([][]byte, 0)
 
 	// File source
-	if opts.WriteInputFile != "" {
-		data, err := ioutil.ReadFile(opts.WriteInputFile)
+	if opts.Write.InputFile != "" {
+		data, err := ioutil.ReadFile(opts.Write.InputFile)
 		if err != nil {
-			return nil, fmt.Errorf("unable to read file '%s': %s", opts.WriteInputFile, err)
+			return nil, fmt.Errorf("unable to read file '%s': %s", opts.Write.InputFile, err)
 		}
 
 		wv, err := generateWriteValue(data, md, opts)
@@ -37,7 +37,7 @@ func GenerateWriteValues(md *desc.MessageDescriptor, opts *options.Options) ([][
 	}
 
 	// Stdin source
-	for _, data := range opts.WriteInputData {
+	for _, data := range opts.Write.InputData {
 		wv, err := generateWriteValue([]byte(data), md, opts)
 		if err != nil {
 			return nil, err
@@ -52,13 +52,13 @@ func GenerateWriteValues(md *desc.MessageDescriptor, opts *options.Options) ([][
 // generateWriteValue will transform input data into the required format for transmission
 func generateWriteValue(data []byte, md *desc.MessageDescriptor, opts *options.Options) ([]byte, error) {
 	// Ensure we do not try to operate on a nil md
-	if opts.WriteInputFile == "jsonpb" && md == nil {
+	if opts.Write.InputFile == "jsonpb" && md == nil {
 		return nil, errors.New("message descriptor cannot be nil when --input-type is jsonpb")
 	}
 
 	// Handle AVRO
-	if opts.AvroSchemaFile != "" {
-		data, err := serializers.AvroEncodeWithSchemaFile(opts.AvroSchemaFile, data)
+	if opts.Encoding.AvroSchemaFile != "" {
+		data, err := serializers.AvroEncodeWithSchemaFile(opts.Encoding.AvroSchemaFile, data)
 		if err != nil {
 			return nil, err
 		}
@@ -73,12 +73,12 @@ func generateWriteValue(data []byte, md *desc.MessageDescriptor, opts *options.O
 	}
 
 	// Input: Plain Output: Plain
-	if opts.WriteInputType == "plain" {
+	if opts.Write.InputType == "plain" {
 		return data, nil
 	}
 
 	// Input: JSONPB Output: Protobuf
-	if opts.WriteInputType == "jsonpb" {
+	if opts.Write.InputType == "jsonpb" {
 		var convertErr error
 
 		data, convertErr = ConvertJSONPBToProtobuf(data, dynamic.NewMessage(md))
@@ -106,18 +106,18 @@ func ValidateWriteOptions(opts *options.Options, busSpecific func(options *optio
 		}
 	}
 
-	if len(opts.WriteInputData) == 0 && opts.WriteInputFile == "" {
+	if len(opts.Write.InputData) == 0 && opts.Write.InputFile == "" {
 		return errors.New("either --input-data or --input-file must be specified")
 	}
 
 	// InputData and file cannot be set at the same time
-	if len(opts.WriteInputData) > 0 && opts.WriteInputFile != "" {
+	if len(opts.Write.InputData) > 0 && opts.Write.InputFile != "" {
 		return fmt.Errorf("--input-data and --input-file cannot both be set")
 	}
 
-	if opts.WriteInputFile != "" {
-		if _, err := os.Stat(opts.WriteInputFile); os.IsNotExist(err) {
-			return fmt.Errorf("--file '%s' does not exist", opts.WriteInputFile)
+	if opts.Write.InputFile != "" {
+		if _, err := os.Stat(opts.Write.InputFile); os.IsNotExist(err) {
+			return fmt.Errorf("--file '%s' does not exist", opts.Write.InputFile)
 		}
 	}
 

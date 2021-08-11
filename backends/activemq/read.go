@@ -2,17 +2,16 @@ package activemq
 
 import (
 	"context"
-	"fmt"
+	"time"
 
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 	"github.com/batchcorp/plumber/types"
 	"github.com/go-stomp/stomp"
 	"github.com/pkg/errors"
 )
 
-func (a *ActiveMq) Read(ctx context.Context, results chan []*types.Message) error {
+func (a *ActiveMq) Read(ctx context.Context, resultsCh chan *types.Message) error {
 	if a.client == nil {
 		return types.BackendNotConnectedErr
 	}
@@ -21,12 +20,14 @@ func (a *ActiveMq) Read(ctx context.Context, results chan []*types.Message) erro
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	// TODO: Implement
+	if err := a.read(ctx, resultsCh); err != nil {
+		return errors.Wrap(err, "error(s) performing read")
+	}
 
 	return nil
 }
 
-func (a *ActiveMq) read() error {
+func (a *ActiveMq) read(ctx context.Context, resultsCh chan *types.Message) error {
 	a.log.Info("Listening for message(s) ...")
 
 	count := 1
@@ -38,27 +39,44 @@ func (a *ActiveMq) read() error {
 
 	defer sub.Unsubscribe()
 
-	for msg := range sub.C {
-		data, err := reader.Decode(a.Options, msg.Body)
-		if err != nil {
-			return err
+MAIN:
+	for {
+		select {
+		case msg := <-sub.C:
+			if err := a.handleMessage(msg, resultsCh, count); err != nil {
+				a.log.Errorf("unable to handle message (count %d): %s", count, err)
+			}
+		case <-ctx.Done():
+			a.log.Debug("read cancelled via context")
+			break MAIN
 		}
-
-		str := string(data)
-
-		str = fmt.Sprintf("%d: ", count) + str
-		count++
-
-		printer.Print(str)
-
-		a.client.Ack(msg)
 
 		if !a.Options.Read.Follow {
 			return nil
 		}
+
+		count++
 	}
 
 	a.log.Debug("reader exiting")
+
+	return nil
+}
+
+func (a *ActiveMq) handleMessage(msg *stomp.Message, resultsCh chan *types.Message, count int) error {
+	data, err := reader.Decode(a.Options, msg.Body)
+	if err != nil {
+		return errors.Wrap(err, "unable to decode message")
+	}
+
+	resultsCh <- &types.Message{
+		ReceivedAt: time.Now().UTC(),
+		MessageNum: count,
+		Value:      data,
+	}
+
+	a.client.Ack(msg)
+
 	return nil
 }
 

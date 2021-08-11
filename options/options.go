@@ -129,6 +129,7 @@ type DProxyOptions struct {
 type EncodingOptions struct {
 	ProtobufRootMessage string
 	ProtobufDirs        []string
+	AvroSchemaFile      string
 
 	// Set _after_ plumber instantiation
 	MsgDesc *desc.MessageDescriptor

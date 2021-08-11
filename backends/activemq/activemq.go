@@ -38,10 +38,28 @@ func (a *ActiveMq) Connect(ctx context.Context) error {
 		return nil
 	}
 
-	// TODO: Wrap dial with a context
-	conn, err := stomp.Dial("tcp", a.Options.ActiveMq.Address, o)
-	if err != nil {
-		return errors.Wrap(err, "unable to create activemq client")
+	doneCh := make(chan struct{}, 1)
+	errCh := make(chan error, 1)
+
+	var conn *stomp.Conn
+	var err error
+
+	go func() {
+		conn, err = stomp.Dial("tcp", a.Options.ActiveMq.Address, o)
+		if err != nil {
+			errCh <- errors.Wrap(err, "unable to connect to backend")
+		}
+
+		doneCh <- struct{}{}
+	}()
+
+	select {
+	case <-ctx.Done():
+		return errors.New("context cancelled before backend connected")
+	case err := <-errCh:
+		return err
+	case <-doneCh:
+		break
 	}
 
 	a.client = conn
@@ -54,11 +72,27 @@ func (a *ActiveMq) Disconnect(ctx context.Context) error {
 		return types.BackendNotConnectedErr
 	}
 
-	// TODO: Wrap disconnect in a context
-	if err := a.client.Disconnect(); err != nil {
-		return errors.Wrap(err, "unable to disconnect")
+	doneCh := make(chan struct{}, 1)
+	errCh := make(chan error, 1)
+
+	go func() {
+		if err := a.client.Disconnect(); err != nil {
+			errCh <- err
+		}
+
+		doneCh <- struct{}{}
+	}()
+
+	select {
+	case <-doneCh:
+		break
+	case <-ctx.Done():
+		return errors.New("context cancelled before disconnect completed")
+	case err := <-errCh:
+		return err
 	}
 
+	// Reset client
 	a.client = nil
 
 	return nil
@@ -66,7 +100,11 @@ func (a *ActiveMq) Disconnect(ctx context.Context) error {
 
 // TODO: Implement
 func (a *ActiveMq) Test(ctx context.Context) error {
-	return nil
+	return errors.New("not implemented")
+}
+
+func (a *ActiveMq) Lag(ctx context.Context) error {
+	return errors.New("backend does not support lag stats")
 }
 
 // TODO: Implement
