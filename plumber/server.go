@@ -35,9 +35,6 @@ func (p *Plumber) RunServer() error {
 }
 
 func (p *Plumber) startEtcd() error {
-	// TODO: remove
-	return nil
-
 	e, err := etcd.New(p.Config.Options.Server)
 	if err != nil {
 		return errors.Wrap(err, "unable to instantiate etcd")
