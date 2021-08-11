@@ -9,7 +9,7 @@ require (
 	github.com/apache/pulsar-client-go v0.5.0
 	github.com/aws/aws-sdk-go v1.34.28
 	github.com/batchcorp/pgoutput v0.3.2
-	github.com/batchcorp/plumber-schemas v0.0.27
+	github.com/batchcorp/plumber-schemas v0.0.29
 	github.com/batchcorp/rabbit v0.1.9
 	github.com/batchcorp/schemas v0.2.157
 	github.com/dustin/go-humanize v1.0.0 // indirect
@@ -18,6 +18,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.1
 	github.com/go-stomp/stomp v2.0.6+incompatible
 	github.com/golang/protobuf v1.5.2
+	github.com/google/go-github/v37 v37.0.0
 	github.com/google/uuid v1.2.0
 	github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
 	github.com/jackc/pgx v3.6.2+incompatible
@@ -58,6 +59,7 @@ require (
 	go.mongodb.org/mongo-driver v1.5.1
 	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
 	google.golang.org/grpc v1.38.0
+	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	google.golang.org/protobuf v1.26.1-0.20210525005349-febffdd88e85 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )

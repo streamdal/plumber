@@ -7,8 +7,6 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 
-	"github.com/batchcorp/plumber/github"
-
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 )
 
@@ -59,8 +57,8 @@ func (p *PlumberServer) PollGithubAuth(req *protos.PollGithubAuthRequest, srv pr
 			// NOOP
 		}
 
-		bearerToken, err := p.GithubService.GetAccessToken(cfg.DeviceCode)
-		if err == github.ErrPendingAuth {
+		resp, err := p.GithubService.GetAccessToken(cfg)
+		if resp.BearerToken == "" {
 			srv.Send(&protos.PollGithubAuthResponse{
 				Status: protos.PollGithubAuthResponse_PENDING,
 			})
@@ -71,7 +69,7 @@ func (p *PlumberServer) PollGithubAuth(req *protos.PollGithubAuthRequest, srv pr
 			return CustomError(common.Code_ABORTED, err.Error())
 		}
 
-		p.PersistentConfig.GitHubToken = bearerToken
+		p.PersistentConfig.GitHubToken = resp.BearerToken
 		p.PersistentConfig.Save()
 
 		srv.Send(&protos.PollGithubAuthResponse{

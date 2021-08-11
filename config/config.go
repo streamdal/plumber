@@ -26,6 +26,7 @@ type Config struct {
 	UserID      string                       `json:"user_id"`
 	Connections map[string]*types.Connection `json:"connections"`
 	Relays      map[string]*types.Relay      `json:"relays"`
+	Schemas     map[string]*types.Schema     `json:"schemas"`
 	Services    map[string]*types.Service    `json:"services"`
 	GitHubToken string                       `json:"github_bearer_token"`
 }
@@ -64,6 +65,9 @@ func ReadConfig(fileName string) (*Config, error) {
 	}
 	if cfg.Relays == nil {
 		cfg.Relays = make(map[string]*types.Relay)
+	}
+	if cfg.Schemas == nil {
+		cfg.Schemas = make(map[string]*types.Schema)
 	}
 	if cfg.Services == nil {
 		cfg.Services = make(map[string]*types.Service)
