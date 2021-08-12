@@ -149,7 +149,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 		HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
 	case "azure":
 		HandleAzureFlags(readCmd, writeCmd, relayCmd, opts)
-	case "gcp-pubsup":
+	case "gcp-pubsub":
 		HandleGCPPubSubFlags(readCmd, writeCmd, relayCmd, opts)
 	case "redis-pubsub":
 		HandleRedisPubSubFlags(readCmd, writeCmd, relayCmd, opts)
