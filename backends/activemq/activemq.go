@@ -2,6 +2,7 @@ package activemq
 
 import (
 	"context"
+	"time"
 
 	"github.com/batchcorp/plumber/types"
 	"github.com/go-stomp/stomp"
@@ -23,17 +24,22 @@ func New(opts *options.Options) (*ActiveMq, error) {
 		return nil, errors.Wrap(err, "unable to validate options")
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	conn, err := newConn(ctx, opts)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create connection")
+	}
+
 	return &ActiveMq{
 		Options: opts,
+		client:  conn,
 		log:     logrus.WithField("backend", "activemq"),
 	}, nil
 }
 
-func (a *ActiveMq) Connect(ctx context.Context) error {
-	if a.client == nil {
-		return types.BackendNotConnectedErr
-	}
-
+func newConn(ctx context.Context, opts *options.Options) (*stomp.Conn, error) {
 	o := func(*stomp.Conn) error {
 		return nil
 	}
@@ -45,7 +51,7 @@ func (a *ActiveMq) Connect(ctx context.Context) error {
 	var err error
 
 	go func() {
-		conn, err = stomp.Dial("tcp", a.Options.ActiveMq.Address, o)
+		conn, err = stomp.Dial("tcp", opts.ActiveMq.Address, o)
 		if err != nil {
 			errCh <- errors.Wrap(err, "unable to connect to backend")
 		}
@@ -55,19 +61,17 @@ func (a *ActiveMq) Connect(ctx context.Context) error {
 
 	select {
 	case <-ctx.Done():
-		return errors.New("context cancelled before backend connected")
+		return nil, errors.New("context cancelled before backend connected")
 	case err := <-errCh:
-		return err
+		return nil, err
 	case <-doneCh:
 		break
 	}
 
-	a.client = conn
-
-	return nil
+	return conn, nil
 }
 
-func (a *ActiveMq) Disconnect(ctx context.Context) error {
+func (a *ActiveMq) Close(ctx context.Context) error {
 	if a.client == nil {
 		return types.BackendNotConnectedErr
 	}
@@ -98,18 +102,16 @@ func (a *ActiveMq) Disconnect(ctx context.Context) error {
 	return nil
 }
 
-// TODO: Implement
 func (a *ActiveMq) Test(ctx context.Context) error {
 	return errors.New("not implemented")
 }
 
-func (a *ActiveMq) Lag(ctx context.Context) error {
-	return errors.New("backend does not support lag stats")
+func (a *ActiveMq) Lag(ctx context.Context) (*types.LagStats, error) {
+	return nil, types.UnsupportedFeatureErr
 }
 
-// TODO: Implement
-func validateOpts(opts *options.Options) error {
-	return nil
+func (a *ActiveMq) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {
+	return types.UnsupportedFeatureErr
 }
 
 // getDestination determines the correct string to pass to stomp.Subscribe()
@@ -119,4 +121,16 @@ func (a *ActiveMq) getDestination() string {
 	}
 
 	return a.Options.ActiveMq.Queue
+}
+
+func validateOpts(opts *options.Options) error {
+	if opts == nil {
+		return errors.New("options cannot be nil")
+	}
+
+	if opts.ActiveMq == nil {
+		return errors.New("ActiveMQ options cannot be nil")
+	}
+
+	return nil
 }

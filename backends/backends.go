@@ -27,20 +27,24 @@ import (
 // Backend is the interface that all backends implement. CLI, server, etc.
 // should utilize the backends via the interface.
 type Backend interface {
-	// Connect must be called before any other methods that interact with the
-	// backend. To disconnect, cancel the context.
-	Connect(ctx context.Context) error
-
-	// Disconnect will disconnect an actively connected backend
-	Disconnect(ctx context.Context) error
+	// Close closes any connections the backend has open
+	Close(ctx context.Context) error
 
 	// Read will read data from the bus and dump them in batches to the results
-	// channel. This call blocks until stopped.
-	Read(ctx context.Context, resultsChan chan []*types.Message, errorChan chan []*types.ErrorMessage) error
+	// channel. This method should _not_ decode the message - that is left up
+	// to the upstream user.
+	Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error
 
 	// Write will attempt to write the input messages as a batch (if the backend
 	// supports batch writing). This call will block until success/error.
-	Write(ctx context.Context, message ...interface{}) error
+	//
+	// NOTE: Key, headers and any other metadata is fetched from Options
+	// (that are passed when instantiating the backend). Ie. If you want to
+	// write data to a specific key in Kafka - you'll need to pass
+	// Options.Kafka.WriteKey. This is not great :(
+	//
+	// TODO: Allow Write to accept options (to incl. key, header, etc.)
+	Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error
 
 	// Test performs a "test" to see if the connection to the backend is alive.
 	// The test varies between backends (ie. in kafka, it might be just attempting
@@ -53,6 +57,11 @@ type Backend interface {
 
 	// Lag returns consumer lag stats. Only works for _some_ backends.
 	Lag(ctx context.Context) (*types.LagStats, error)
+
+	// Relay will hook into a message bus as a consumer and relay all messages
+	// to the relayCh; if an error channel is provided, any errors will be piped
+	// to the channel as well. Blocks.
+	Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error
 }
 
 // New is a convenience function to instantiate the appropriate backend based on

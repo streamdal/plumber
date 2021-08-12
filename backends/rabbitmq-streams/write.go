@@ -16,7 +16,7 @@ import (
 
 func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
-	writeValues, err := writer.GenerateWriteValues(md, opts)
+	writeValues, err := writer.GenerateWriteMessageFromOptions(md, opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}

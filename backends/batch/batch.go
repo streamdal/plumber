@@ -1,3 +1,6 @@
+// Package batch is used for interacting with the Batch platform's API. This
+// backend is a non-traditional backend and does not implement the Backend
+// interface; it should be used independently.
 package batch
 
 import (

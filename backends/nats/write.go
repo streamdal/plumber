@@ -15,7 +15,7 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	writeValues, err := writer.GenerateWriteValues(md, opts)
+	writeValues, err := writer.GenerateWriteMessageFromOptions(md, opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}

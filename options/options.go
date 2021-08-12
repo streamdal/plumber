@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/batchcorp/plumber/types"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -95,10 +94,6 @@ type ReadOptions struct {
 	Lag     bool
 	Convert string
 	Verbose bool
-
-	// Backends output result data and errors into channels
-	OutputChannel chan []*types.Message
-	ErrorChannel  chan error
 }
 
 type WriteOptions struct {

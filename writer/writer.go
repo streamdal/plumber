@@ -7,9 +7,9 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/batchcorp/plumber/types"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
 
@@ -17,8 +17,8 @@ import (
 	"github.com/batchcorp/plumber/serializers"
 )
 
-func GenerateWriteValues(md *desc.MessageDescriptor, opts *options.Options) ([][]byte, error) {
-	writeValues := make([][]byte, 0)
+func GenerateWriteMessageFromOptions(opts *options.Options) ([]*types.WriteMessage, error) {
+	writeValues := make([]*types.WriteMessage, 0)
 
 	// File source
 	if opts.Write.InputFile != "" {
@@ -27,35 +27,35 @@ func GenerateWriteValues(md *desc.MessageDescriptor, opts *options.Options) ([][
 			return nil, fmt.Errorf("unable to read file '%s': %s", opts.Write.InputFile, err)
 		}
 
-		wv, err := generateWriteValue(data, md, opts)
+		wv, err := generateWriteValue(data, opts)
 		if err != nil {
 			return nil, err
 		}
 
-		writeValues = append(writeValues, wv)
+		writeValues = append(writeValues, &types.WriteMessage{
+			Value: wv,
+		})
+
 		return writeValues, nil
 	}
 
 	// Stdin source
 	for _, data := range opts.Write.InputData {
-		wv, err := generateWriteValue([]byte(data), md, opts)
+		wv, err := generateWriteValue([]byte(data), opts)
 		if err != nil {
 			return nil, err
 		}
 
-		writeValues = append(writeValues, wv)
+		writeValues = append(writeValues, &types.WriteMessage{
+			Value: wv,
+		})
 	}
 
 	return writeValues, nil
 }
 
 // generateWriteValue will transform input data into the required format for transmission
-func generateWriteValue(data []byte, md *desc.MessageDescriptor, opts *options.Options) ([]byte, error) {
-	// Ensure we do not try to operate on a nil md
-	if opts.Write.InputFile == "jsonpb" && md == nil {
-		return nil, errors.New("message descriptor cannot be nil when --input-type is jsonpb")
-	}
-
+func generateWriteValue(data []byte, opts *options.Options) ([]byte, error) {
 	// Handle AVRO
 	if opts.Encoding.AvroSchemaFile != "" {
 		data, err := serializers.AvroEncodeWithSchemaFile(opts.Encoding.AvroSchemaFile, data)
@@ -81,7 +81,7 @@ func generateWriteValue(data []byte, md *desc.MessageDescriptor, opts *options.O
 	if opts.Write.InputType == "jsonpb" {
 		var convertErr error
 
-		data, convertErr = ConvertJSONPBToProtobuf(data, dynamic.NewMessage(md))
+		data, convertErr = ConvertJSONPBToProtobuf(data, dynamic.NewMessage(opts.Encoding.MsgDesc))
 		if convertErr != nil {
 			return nil, errors.Wrap(convertErr, "unable to convert JSONPB to protobuf")
 		}

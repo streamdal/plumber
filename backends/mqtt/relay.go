@@ -27,7 +27,7 @@ type Relayer struct {
 }
 
 // Relay sets up a new MQTT relayer
-func Relay(opts *options.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
+func (m *MQTT) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {
 	if err := validateRelayOptions(opts); err != nil {
 		return nil, errors.Wrap(err, "unable to verify options")
 	}

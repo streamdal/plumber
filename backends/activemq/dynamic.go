@@ -5,6 +5,7 @@ import (
 
 	"github.com/batchcorp/plumber/dproxy"
 	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/types"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -13,6 +14,10 @@ import (
 // receives a stream of outbound replay messages which are then written to the
 // message bus.
 func (a *ActiveMq) Dynamic(ctx context.Context) error {
+	if a.client == nil {
+		return types.BackendNotConnectedErr
+	}
+
 	llog := logrus.WithField("pkg", "activemq/dynamic")
 
 	// Start up dynamic connection

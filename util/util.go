@@ -7,8 +7,11 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/batchcorp/plumber/types"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // Gunzip decompresses a slice of bytes and returns a slice of decompressed
@@ -56,4 +59,21 @@ func GetBackendName(cmd string) (string, error) {
 	}
 
 	return splitCmd[1], nil
+}
+
+// WriteError is a wrapper for logging an error + writing to an error channel.
+// Both the logger and error channel can be nil.
+func WriteError(l *logrus.Entry, errorCh chan *types.ErrorMessage, err error) {
+	if l != nil {
+		l.Error(err)
+	}
+
+	if errorCh != nil {
+		go func() {
+			errorCh <- &types.ErrorMessage{
+				OccurredAt: time.Now().UTC(),
+				Error:      err,
+			}
+		}()
+	}
 }

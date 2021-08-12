@@ -27,12 +27,12 @@ func ProtobufOptions(dirs []string, rootMessage string) error {
 }
 
 func ReadOptions(opts *options.Options) error {
-	if opts.Read == nil {
-		return errors.New("read options cannot be nil")
+	if opts == nil {
+		return errors.New("options cannot be nil")
 	}
 
-	if opts.Read.OutputChannel == nil {
-		return errors.New("output channel cannot be nil")
+	if opts.Read == nil {
+		return errors.New("read options cannot be nil")
 	}
 
 	return nil

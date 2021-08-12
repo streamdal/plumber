@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/batchcorp/plumber/types"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -17,12 +18,12 @@ import (
 // This is where we verify that the passed args and flags combo makes sense,
 // attempt to establish a connection, parse protobuf before finally attempting
 // to perform the write.
-func Write(opts *options.Options, md *desc.MessageDescriptor) error {
+func (m *MQTT) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {
 	if err := writer.ValidateWriteOptions(opts, validateWriteOptions); err != nil {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	writeValues, err := writer.GenerateWriteValues(md, opts)
+	writeValues, err := writer.GenerateWriteMessageFromOptions(md, opts)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}

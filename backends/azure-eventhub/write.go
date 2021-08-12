@@ -4,53 +4,33 @@ import (
 	"context"
 
 	eventhub "github.com/Azure/azure-event-hubs-go/v3"
-
-	"github.com/jhump/protoreflect/desc"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
+	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
 
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/writer"
+	"github.com/pkg/errors"
 )
 
 // Write performs necessary setup and calls AzureServiceBus.Write() to write the actual message
-func Write(opts *options.Options, md *desc.MessageDescriptor) error {
-	ctx := context.Background()
-
-	if err := writer.ValidateWriteOptions(opts, validateWriteOptions); err != nil {
+func (a *EventHub) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {
+	if err := writer.ValidateWriteOptions(a.Options, validateWriteOptions); err != nil {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	writeValues, err := writer.GenerateWriteValues(md, opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to generate write value")
-	}
-
-	client, err := NewClient(opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to create client")
-	}
-
-	defer client.Close(ctx)
-
-	a := &EventHub{
-		Options: opts,
-		msgDesc: md,
-		client:  client,
-		log:     logrus.WithField("pkg", "azure-eventhub/write.go"),
-	}
-
-	for _, value := range writeValues {
-		if err := a.Write(ctx, value); err != nil {
-			a.log.Error(err)
+	for _, msg := range messages {
+		if err := a.write(ctx, msg.Value); err != nil {
+			util.WriteError(a.log, errorCh, errors.Wrap(err, "unable to write message"))
 		}
 	}
+
+	a.log.Info("finished writing messages")
 
 	return nil
 }
 
 // Write writes a message to a random partition on
-func (a *EventHub) Write(ctx context.Context, value []byte) error {
+func (a *EventHub) write(ctx context.Context, value []byte) error {
 	opts := make([]eventhub.SendOption, 0)
 
 	if a.Options.AzureEventHub.MessageID != "" {

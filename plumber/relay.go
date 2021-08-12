@@ -1,8 +1,6 @@
 package plumber
 
 import (
-	"context"
-
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -29,16 +27,14 @@ func (p *Plumber) HandleRelayCmd() error {
 		return errors.Wrap(err, "unable to instantiate backend")
 	}
 
-	if err := backend.StartRelay(context.Background(), p.RelayCh); err != nil {
-		return errors.Wrap(err, "unable to start relay backend")
-	}
-
 	if err := p.startRelayService(); err != nil {
 		return errors.Wrap(err, "unable to start relay service")
 	}
 
-	// Block until shutdown
-	<-p.MainShutdownCtx.Done()
+	// Blocks until ctx is cancelled
+	if err := backend.Relay(p.ServiceShutdownCtx, p.RelayCh, nil); err != nil {
+		return errors.Wrap(err, "unable to start relay backend")
+	}
 
 	p.log.Info("relay exiting")
 
