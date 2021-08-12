@@ -29,12 +29,16 @@ func (p *Plumber) HandleWriteCmd() error {
 		return errors.Wrap(err, "unable to connect to backend")
 	}
 
-	value, err := writer.GenerateWriteValues(p.Options.Encoding.MsgDesc, p.Options)
+	if err := writer.ValidateWriteOptions(p.Options, nil); err != nil {
+		return errors.Wrap(err, "unable to validate write options")
+	}
+
+	value, err := writer.GenerateWriteMessageFromOptions(p.Options)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}
 
-	if err := backend.Write(ctx, value); err != nil {
+	if err := backend.Write(ctx, nil, value...); err != nil {
 		return errors.Wrap(err, "unable to complete write(s)")
 	}
 

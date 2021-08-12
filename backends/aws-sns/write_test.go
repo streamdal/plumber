@@ -1,10 +1,12 @@
 package awssns
 
 import (
+	"context"
 	"errors"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/batchcorp/plumber/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -22,7 +24,7 @@ var _ = Describe("AWS SNS Backend", func() {
 				AWSSNS: &options.AWSSNSOptions{},
 			}
 
-			err := validateWriteOptions(opts)
+			err := validateOpts(opts)
 
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(errMissingTopicARN))
@@ -35,7 +37,7 @@ var _ = Describe("AWS SNS Backend", func() {
 				},
 			}
 
-			err := validateWriteOptions(opts)
+			err := validateOpts(opts)
 
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(Equal("'invalid arn' is not a valid ARN"))
@@ -49,7 +51,7 @@ var _ = Describe("AWS SNS Backend", func() {
 				},
 			}
 
-			err := validateWriteOptions(opts)
+			err := validateOpts(opts)
 
 			Expect(err).To(BeNil())
 		})
@@ -74,7 +76,9 @@ var _ = Describe("AWS SNS Backend", func() {
 				service: fakeSNS,
 			}
 
-			err := a.Write([]byte(`fake message`))
+			err := a.Write(context.Background(), nil, &types.WriteMessage{
+				Value: []byte(`fake message`),
+			})
 
 			Expect(err).To(HaveOccurred())
 			Expect(fakeSNS.PublishCallCount()).To(Equal(1))
@@ -100,7 +104,9 @@ var _ = Describe("AWS SNS Backend", func() {
 				log:     logrus.NewEntry(logrus.New()),
 			}
 
-			err := a.Write([]byte(`fake message`))
+			err := a.Write(context.Background(), nil, &types.WriteMessage{
+				Value: []byte(`fake message`),
+			})
 
 			Expect(err).To(BeNil())
 			Expect(fakeSNS.PublishCallCount()).To(Equal(1))

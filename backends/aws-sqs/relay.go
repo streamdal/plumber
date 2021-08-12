@@ -6,13 +6,13 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	atypes "github.com/batchcorp/plumber/backends/aws-sqs/types"
+	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/stats"
+	ptypes "github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-
-	"github.com/batchcorp/plumber/backends/aws-sqs/types"
-	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/relay"
-	"github.com/batchcorp/plumber/stats"
 )
 
 const (
@@ -25,30 +25,26 @@ type Relayer struct {
 	QueueURL    string
 	RelayCh     chan interface{}
 	ShutdownCtx context.Context
+	ErrorCh     chan *ptypes.ErrorMessage
 	log         *logrus.Entry
 }
 
-func Relay(opts *options.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
-	if err := validateRelayOptions(opts); err != nil {
-		return nil, errors.Wrap(err, "unable to verify options")
-	}
-
-	// Create new service
-	svc, queueURL, err := NewService(opts)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to create new SQS service")
+func (a *AWSSQS) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *ptypes.ErrorMessage) error {
+	if err := validateRelayOptions(a.Options); err != nil {
+		return errors.Wrap(err, "unable to verify relay options")
 	}
 
 	r := &Relayer{
-		Service:     svc,
-		QueueURL:    queueURL,
-		Options:     opts,
+		Service:     a.service,
+		QueueURL:    a.queueURL,
+		Options:     a.Options,
 		RelayCh:     relayCh,
-		ShutdownCtx: shutdownCtx,
-		log:         logrus.WithField("pkg", "aws-sqs/relay"),
+		ErrorCh:     errorCh,
+		ShutdownCtx: ctx,
+		log:         a.log,
 	}
 
-	return r, nil
+	return r.Relay()
 }
 
 func validateRelayOptions(opts *options.Options) error {
@@ -65,15 +61,16 @@ func validateRelayOptions(opts *options.Options) error {
 
 func (r *Relayer) Relay() error {
 	r.log.Infof("Relaying AWS SQS messages from '%s' queue -> '%s'",
-		r.Options.AWSSQS.QueueName, r.Options.RelayGRPCAddress)
+		r.Options.AWSSQS.QueueName, r.Options.Relay.GRPCAddress)
 
-	r.log.Infof("HTTP server listening on '%s'", r.Options.RelayHTTPListenAddress)
+	r.log.Infof("HTTP server listening on '%s'", r.Options.Relay.HTTPListenAddress)
 
+MAIN:
 	for {
 		select {
 		case <-r.ShutdownCtx.Done():
-			r.log.Info("Received shutdown signal, existing relayer")
-			return nil
+			r.log.Info("Received shutdown signal")
+			break MAIN
 		default:
 			// noop
 		}
@@ -91,7 +88,8 @@ func (r *Relayer) Relay() error {
 
 			stats.IncrPromCounter("plumber_read_errors", 1)
 
-			r.log.WithField("err", err).Error("unable to read message(s) from SQS")
+			util.WriteError(r.log, r.ErrorCh, errors.Wrap(err, "unable to read message (retrying)"))
+
 			time.Sleep(RetryReadInterval)
 
 			continue
@@ -103,9 +101,9 @@ func (r *Relayer) Relay() error {
 
 			r.log.Debug("Writing message to relay channel")
 
-			r.RelayCh <- &types.RelayMessage{
+			r.RelayCh <- &atypes.RelayMessage{
 				Value: v,
-				Options: &types.RelayMessageOptions{
+				Options: &atypes.RelayMessageOptions{
 					Service:    r.Service,
 					QueueURL:   r.QueueURL,
 					AutoDelete: r.Options.AWSSQS.RelayAutoDelete,
@@ -113,6 +111,8 @@ func (r *Relayer) Relay() error {
 			}
 		}
 	}
+
+	r.log.Debug("exiting")
 
 	return nil
 }

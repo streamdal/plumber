@@ -33,7 +33,6 @@ var (
 	errCouldNotLogin   = errors.New("could not authenticate")
 	errMissingUsername = errors.New("you must enter a username")
 	errMissingPassword = errors.New("you must enter a password")
-	errMaxTries        = errors.New("maximum number of retries exceeded")
 )
 
 // Login attempts to login to the Batch.sh API using credentials supplied via stdin

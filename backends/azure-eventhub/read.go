@@ -2,43 +2,18 @@ package azure_eventhub
 
 import (
 	"context"
-	"fmt"
+	"time"
 
 	eventhub "github.com/Azure/azure-event-hubs-go/v3"
-	"github.com/jhump/protoreflect/desc"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/reader"
+	"github.com/batchcorp/plumber/types"
+	"github.com/pkg/errors"
 )
 
-func Read(opts *options.Options, md *desc.MessageDescriptor) error {
-	if err := validateReadOptions(opts); err != nil {
+func (a *EventHub) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {
+	if err := validateReadOptions(a.Options); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
-
-	client, err := NewClient(opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to create client")
-	}
-
-	a := &EventHub{
-		Options: opts,
-		msgDesc: md,
-		client:  client,
-		printer: printer.New(),
-		log:     logrus.WithField("pkg", "azure-eventhub/read.go"),
-	}
-
-	return a.Read()
-}
-
-func (a *EventHub) Read() error {
-	ctx := context.Background()
-
-	defer a.client.Close(ctx)
 
 	a.log.Info("Listening for message(s) ...")
 
@@ -47,18 +22,13 @@ func (a *EventHub) Read() error {
 	var hasRead bool
 
 	handler := func(c context.Context, event *eventhub.Event) error {
-		data, err := reader.Decode(a.Options, a.msgDesc, event.Data)
-		if err != nil {
-			return err
+		resultsChan <- &types.ReadMessage{
+			Value:      event.Data,
+			ReceivedAt: time.Now().UTC(),
+			Num:        count,
 		}
 
-		str := string(data)
-
-		str = fmt.Sprintf("%d: ", count) + str
 		count++
-
-		a.printer.Print(str)
-
 		hasRead = true
 
 		return nil
@@ -69,6 +39,7 @@ func (a *EventHub) Read() error {
 		return errors.Wrap(err, "unable to get azure eventhub partition list")
 	}
 
+MAIN:
 	for {
 		for _, partitionID := range runtimeInfo.PartitionIDs {
 			// Start receiving messages
@@ -81,12 +52,14 @@ func (a *EventHub) Read() error {
 				return errors.Wrap(err, "unable to receive message from azure eventhub")
 			}
 
-			if !a.Options.ReadFollow && hasRead {
+			if !a.Options.Read.Follow && hasRead {
 				listenerHandle.Close(ctx)
-				return nil
+				break MAIN
 			}
 		}
 	}
+
+	a.log.Debug("read exiting")
 
 	return nil
 }

@@ -6,13 +6,14 @@ import (
 	"time"
 
 	"cloud.google.com/go/pubsub"
+	"github.com/batchcorp/plumber/util"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/backends/gcp-pubsub/types"
+	gtypes "github.com/batchcorp/plumber/backends/gcp-pubsub/types"
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/stats"
+	ptypes "github.com/batchcorp/plumber/types"
 )
 
 const (
@@ -23,34 +24,29 @@ type Relayer struct {
 	Client      *pubsub.Client
 	Options     *options.Options
 	RelayCh     chan interface{}
+	ErrorCh     chan *ptypes.ErrorMessage
 	ShutdownCtx context.Context
 	log         *logrus.Entry
 }
 
-func Relay(opts *options.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
-
-	// Create new service
-	client, err := NewClient(opts)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to create new GCP pubsub service")
+func (g *GCPPubSub) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *ptypes.ErrorMessage) error {
+	r := &Relayer{
+		Client:      g.client,
+		Options:     g.Options,
+		RelayCh:     relayCh,
+		ErrorCh:     errorCh,
+		ShutdownCtx: ctx,
+		log:         logrus.WithField("pkg", "gcp-pubsub/relay"),
 	}
 
-	return &Relayer{
-		Client:      client,
-		Options:     opts,
-		RelayCh:     relayCh,
-		ShutdownCtx: shutdownCtx,
-		log:         logrus.WithField("pkg", "gcp-pubsub/relay"),
-	}, nil
+	return r.Relay()
 }
 
 func (r *Relayer) Relay() error {
 	r.log.Infof("Relaying GCP pubsub messages from '%s' queue -> '%s'",
-		r.Options.GCPPubSub.ReadSubscriptionId, r.Options.RelayGRPCAddress)
+		r.Options.GCPPubSub.ReadSubscriptionId, r.Options.Relay.GRPCAddress)
 
-	r.log.Infof("HTTP server listening on '%s'", r.Options.RelayHTTPListenAddress)
-
-	defer r.Client.Close()
+	r.log.Infof("HTTP server listening on '%s'", r.Options.Relay.HTTPListenAddress)
 
 	sub := r.Client.Subscription(r.Options.GCPPubSub.ReadSubscriptionId)
 
@@ -69,15 +65,24 @@ func (r *Relayer) Relay() error {
 
 		r.log.Debug("Writing message to relay channel")
 
-		r.RelayCh <- &types.RelayMessage{
+		r.RelayCh <- &gtypes.RelayMessage{
 			Value: msg,
 		}
 	}
 
+MAIN:
 	for {
+		select {
+		case <-r.ShutdownCtx.Done():
+			r.log.Debug("context closed")
+			break MAIN
+		default:
+			// Don't block
+		}
+
 		if err := sub.Receive(r.ShutdownCtx, readFunc); err != nil {
 			if err == context.Canceled {
-				r.log.Info("Received shutdown signal, existing relayer")
+				r.log.Info("Received shutdown signal, exiting relayer")
 				return nil
 			}
 
@@ -86,11 +91,14 @@ func (r *Relayer) Relay() error {
 
 			stats.IncrPromCounter("plumber_read_errors", 1)
 
-			r.log.WithField("err", err).Error("unable to read message(s) from GCP pubsub")
+			util.WriteError(r.log, r.ErrorCh, errors.Wrap(err, "unable to read message(s) from GCP PubSub"))
+
 			time.Sleep(RetryReadInterval)
 			continue
 		}
 	}
+
+	r.log.Debug("exiting")
 
 	return nil
 }

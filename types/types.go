@@ -7,14 +7,24 @@ import (
 )
 
 var (
-	BackendNotConnectedErr     = errors.New("backend not connected")
-	BackendAlreadyConnectedErr = errors.New("backend already connected")
+	BackendNotConnectedErr = errors.New("backend not connected")
+	UnsupportedFeatureErr  = errors.New("backend does not support this feature")
+	NotImplementedErr      = errors.New("not implemeneted")
 )
 
-type Message struct {
-	ReceivedAt time.Time // UTC
-	MessageNum int
-	Value      interface{}
+// WriteMessage is a generic message encoding used for writing messages to a backend
+type WriteMessage struct {
+	Value []byte
+}
+
+// ReadMessage is a generic encoding for messages that are read from a backend.
+// The metadata field may be filled (or left unset) differently per backend.
+type ReadMessage struct {
+	Value    []byte
+	Metadata map[string]interface{}
+
+	ReceivedAt time.Time
+	Num        int
 }
 
 type ErrorMessage struct {

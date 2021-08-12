@@ -1,10 +1,13 @@
 package mqtt
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
+	"github.com/batchcorp/plumber/types"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
@@ -19,79 +22,38 @@ import (
 //
 // This is where we verify that the provided arguments and flag combination
 // makes sense/are valid; this is also where we will perform our initial conn.
-func Read(opts *options.Options, md *desc.MessageDescriptor) error {
-	if err := validateReadOptions(opts); err != nil {
+func (m *MQTT) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {
+	if err := validateReadOptions(m.Options); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
-
-	client, err := connect(opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to complete initial connect")
-	}
-
-	r := &MQTT{
-		Options: opts,
-		client:  client,
-		msgDesc: md,
-		printer: printer.New(),
-		log:     logrus.WithField("pkg", "mqtt/read.go"),
-	}
-
-	return r.Read()
-}
-
-func (m *MQTT) Read() error {
-	defer m.client.Disconnect(0)
 
 	m.log.Infof("Listening for message(s) on topic '%s' as clientId '%s'",
 		m.Options.MQTT.Topic, m.Options.MQTT.ClientID)
 
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	errChan := make(chan error, 1)
-
-	m.subscribe(wg, errChan)
-
-	wg.Wait()
-
-	err, closed := <-errChan
-	if closed {
-		return nil
-	}
-
-	return err
-}
-
-func (m *MQTT) subscribe(wg *sync.WaitGroup, errChan chan error) {
 	count := 1
 
 	m.client.Subscribe(m.Options.MQTT.Topic, byte(m.Options.MQTT.QoSLevel), func(client mqtt.Client, msg mqtt.Message) {
-		data, err := reader.Decode(m.Options, m.msgDesc, msg.Payload())
-
-		if err != nil {
-			if !m.Options.ReadFollow {
-				errChan <- fmt.Errorf("unable to complete conversion: %s", err)
-				wg.Done()
-				return
-			}
-
-			return
+		resultsChan <- &types.ReadMessage{
+			Value: nil,
+			Metadata: map[string]interface{}{
+				"topic":      msg.Topic(),
+				"message_id": msg.MessageID(),
+			},
+			ReceivedAt: time.Now().UTC(),
+			Num:        count,
 		}
 
-		str := string(data)
-
-		str = fmt.Sprintf("%d: ", count) + str
 		count++
 
-		m.printer.Print(str)
-
-		if !m.Options.ReadFollow {
+		if !m.Options.Read.Follow {
 			m.log.Debug("--follow NOT specified, stopping listen")
 
 			close(errChan)
 			wg.Done()
 		}
 	})
+
+	return err
 }
 
 func validateReadOptions(opts *options.Options) error {

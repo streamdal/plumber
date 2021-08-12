@@ -7,11 +7,12 @@ import (
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/reader"
 	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
 	"github.com/go-stomp/stomp"
 	"github.com/pkg/errors"
 )
 
-func (a *ActiveMq) Read(ctx context.Context, resultsCh chan *types.Message) error {
+func (a *ActiveMq) Read(ctx context.Context, resultsCh chan *types.ReadMessage, errorCh chan *types.ErrorMessage) error {
 	if a.client == nil {
 		return types.BackendNotConnectedErr
 	}
@@ -20,14 +21,14 @@ func (a *ActiveMq) Read(ctx context.Context, resultsCh chan *types.Message) erro
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	if err := a.read(ctx, resultsCh); err != nil {
+	if err := a.read(ctx, resultsCh, errorCh); err != nil {
 		return errors.Wrap(err, "error(s) performing read")
 	}
 
 	return nil
 }
 
-func (a *ActiveMq) read(ctx context.Context, resultsCh chan *types.Message) error {
+func (a *ActiveMq) read(ctx context.Context, resultsCh chan *types.ReadMessage, errorCh chan *types.ErrorMessage) error {
 	a.log.Info("Listening for message(s) ...")
 
 	count := 1
@@ -44,7 +45,8 @@ MAIN:
 		select {
 		case msg := <-sub.C:
 			if err := a.handleMessage(msg, resultsCh, count); err != nil {
-				a.log.Errorf("unable to handle message (count %d): %s", count, err)
+				wrappedError := errors.Wrap(err, "unable to handle message")
+				util.WriteError(a.log, errorCh, wrappedError)
 			}
 		case <-ctx.Done():
 			a.log.Debug("read cancelled via context")
@@ -63,15 +65,15 @@ MAIN:
 	return nil
 }
 
-func (a *ActiveMq) handleMessage(msg *stomp.Message, resultsCh chan *types.Message, count int) error {
+func (a *ActiveMq) handleMessage(msg *stomp.Message, resultsCh chan *types.ReadMessage, count int) error {
 	data, err := reader.Decode(a.Options, msg.Body)
 	if err != nil {
 		return errors.Wrap(err, "unable to decode message")
 	}
 
-	resultsCh <- &types.Message{
+	resultsCh <- &types.ReadMessage{
 		ReceivedAt: time.Now().UTC(),
-		MessageNum: count,
+		Num:        count,
 		Value:      data,
 	}
 

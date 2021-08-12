@@ -8,23 +8,15 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/dproxy"
-	"github.com/batchcorp/plumber/options"
 )
 
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
 // which are then written to the message bus.
-func Dynamic(opts *options.Options) error {
-	ctx := context.Background()
+func (a *EventHub) Dynamic(ctx context.Context) error {
 	llog := logrus.WithField("pkg", "azure-eventhub/dynamic")
 
-	// Start up writer
-	client, err := NewClient(opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to create Azure client")
-	}
-
 	// Start up dynamic connection
-	grpc, err := dproxy.New(opts, "Azure Event Hub")
+	grpc, err := dproxy.New(a.Options, "Azure Event Hub")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
@@ -34,21 +26,30 @@ func Dynamic(opts *options.Options) error {
 	sendOpts := make([]eventhub.SendOption, 0)
 
 	// Continually loop looking for messages on the channel.
+MAIN:
 	for {
 		select {
 		case outbound := <-grpc.OutboundMessageCh:
 
 			event := eventhub.NewEvent(outbound.Blob)
-			if opts.AzureEventHub.PartitionKey != "" {
-				event.PartitionKey = &opts.AzureEventHub.PartitionKey
+
+			if a.Options.AzureEventHub.PartitionKey != "" {
+				event.PartitionKey = &a.Options.AzureEventHub.PartitionKey
 			}
 
-			if err := client.Send(ctx, event, sendOpts...); err != nil {
+			if err := a.client.Send(ctx, event, sendOpts...); err != nil {
 				llog.Errorf("Unable to replay message: %s", err)
 				break
 			}
 
 			llog.Debugf("Replayed message to Azure Event Hub for replay '%s'", outbound.ReplayId)
+		case <-ctx.Done():
+			llog.Warn("received notice to quit on context")
+			break MAIN
 		}
 	}
+
+	llog.Debug("exiting")
+
+	return nil
 }

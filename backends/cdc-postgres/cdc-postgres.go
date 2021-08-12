@@ -5,13 +5,14 @@ import (
 	"fmt"
 
 	"github.com/batchcorp/pgoutput"
-	"github.com/batchcorp/plumber/backends/cdc-postgres/types"
-	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/printer"
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/pgtype"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber/backends/cdc-postgres/types"
+	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/printer"
 )
 
 /*

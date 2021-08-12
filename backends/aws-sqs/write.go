@@ -1,18 +1,16 @@
 package awssqs
 
 import (
-	"fmt"
+	"context"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/jhump/protoreflect/desc"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
 	"github.com/batchcorp/plumber/writer"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -21,57 +19,21 @@ const (
 	ErrMissingMessageGroupID    = "--message-group-id must be specified when writing to a FIFO queue"
 )
 
-// Write is the entry point function for performing write operations in AWSSQS.
-//
-// This is where we verify that the passed args and flags combo makes sense,
-// attempt to establish a connection, parse protobuf before finally attempting
-// to perform the write.
-func Write(opts *options.Options, md *desc.MessageDescriptor) error {
-	if err := writer.ValidateWriteOptions(opts, validateWriteOptions); err != nil {
+func (a *AWSSQS) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {
+	if err := writer.ValidateWriteOptions(a.Options, validateWriteOptions); err != nil {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	writeValues, err := writer.GenerateWriteValues(md, opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to generate write value")
-	}
-
-	svc, queueURL, err := NewService(opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to create new service")
-	}
-
-	a := &AWSSQS{
-		Options:  opts,
-		service:  svc,
-		queueURL: queueURL,
-		msgDesc:  md,
-		log:      logrus.WithField("pkg", "awssqs/write.go"),
-		printer:  printer.New(),
-	}
-
-	for _, value := range writeValues {
-		if err := a.Write(value); err != nil {
-			a.log.Error(err)
+	for _, msg := range messages {
+		if err := a.write(msg.Value); err != nil {
+			util.WriteError(a.log, errorCh, err)
 		}
 	}
 
 	return nil
 }
 
-func validateWriteOptions(opts *options.Options) error {
-	if opts.AWSSQS.WriteDelaySeconds < 0 || opts.AWSSQS.WriteDelaySeconds > 900 {
-		return errors.New(ErrInvalidWriteDelaySeconds)
-	}
-
-	if strings.HasSuffix(opts.AWSSQS.QueueName, ".fifo") && opts.AWSSQS.WriteMessageGroupID == "" {
-		return errors.New(ErrMissingMessageGroupID)
-	}
-
-	return nil
-}
-
-func (a *AWSSQS) Write(value []byte) error {
+func (a *AWSSQS) write(value []byte) error {
 	input := &sqs.SendMessageInput{
 		DelaySeconds:      aws.Int64(a.Options.AWSSQS.WriteDelaySeconds),
 		MessageBody:       aws.String(string(value)),
@@ -103,7 +65,20 @@ func (a *AWSSQS) Write(value []byte) error {
 		return errors.Wrap(err, ErrUnableToSend)
 	}
 
-	a.printer.Print(fmt.Sprintf("Successfully wrote message to AWS queue '%s'", a.Options.AWSSQS.QueueName))
+	// TODO: Where should this go?
+	// a.printer.Print(fmt.Sprintf("Successfully wrote message to AWS queue '%s'", a.Options.AWSSQS.QueueName))
+
+	return nil
+}
+
+func validateWriteOptions(opts *options.Options) error {
+	if opts.AWSSQS.WriteDelaySeconds < 0 || opts.AWSSQS.WriteDelaySeconds > 900 {
+		return errors.New(ErrInvalidWriteDelaySeconds)
+	}
+
+	if strings.HasSuffix(opts.AWSSQS.QueueName, ".fifo") && opts.AWSSQS.WriteMessageGroupID == "" {
+		return errors.New(ErrMissingMessageGroupID)
+	}
 
 	return nil
 }

@@ -1,19 +1,19 @@
 package mqtt
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
 	"net/url"
 
+	"github.com/batchcorp/plumber/types"
 	pahomqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/printer"
 )
 
 var (
@@ -29,10 +29,8 @@ var (
 type MQTT struct {
 	Options *options.Options
 
-	client  pahomqtt.Client
-	msgDesc *desc.MessageDescriptor
-	printer printer.IPrinter
-	log     *logrus.Entry
+	client pahomqtt.Client
+	log    *logrus.Entry
 }
 
 func New(opts *options.Options) (*MQTT, error) {
@@ -40,15 +38,36 @@ func New(opts *options.Options) (*MQTT, error) {
 		return nil, errors.Wrap(err, "unable to validate options")
 	}
 
+	client, err := connect(opts)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to connect to MQTT")
+	}
+
 	return &MQTT{
 		Options: opts,
+		client:  client,
 		log:     logrus.WithField("backend", "mqtt"),
 	}, nil
 }
 
-// TODO: Implement
-func validateOpts(opts *options.Options) error {
+func (m *MQTT) Close(ctx context.Context) error {
+	if m.client == nil {
+		return nil
+	}
+
+	m.client.Disconnect(10000)
+
+	m.client = nil
+
 	return nil
+}
+
+func (m *MQTT) Test(ctx context.Context) error {
+	return types.NotImplementedErr
+}
+
+func (m *MQTT) Lag(ctx context.Context) (*types.LagStats, error) {
+	return nil, types.UnsupportedFeatureErr
 }
 
 func connect(opts *options.Options) (pahomqtt.Client, error) {
@@ -136,4 +155,16 @@ func generateTLSConfig(opts *options.Options) (*tls.Config, error) {
 		InsecureSkipVerify: opts.MQTT.InsecureTLS,
 		Certificates:       []tls.Certificate{cert},
 	}, nil
+}
+
+func validateOpts(opts *options.Options) error {
+	if opts == nil {
+		return errors.New("options cannot be nil")
+	}
+
+	if opts.MQTT == nil {
+		return errors.New("MQTT options cannot be nil")
+	}
+
+	return nil
 }

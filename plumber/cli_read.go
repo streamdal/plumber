@@ -30,12 +30,8 @@ func (p *Plumber) HandleReadCmd() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := backend.Connect(ctx); err != nil {
-		return errors.Wrap(err, "unable to connect backend")
-	}
-
-	resultCh := make(chan []*types.Message, 1000)
-	errorCh := make(chan []*types.ErrorMessage, 100)
+	resultCh := make(chan *types.ReadMessage, 1000)
+	errorCh := make(chan *types.ErrorMessage, 100)
 
 	// Non-blocking call
 	if err := backend.Read(ctx, resultCh, errorCh); err != nil {
@@ -59,11 +55,11 @@ MAIN:
 }
 
 // TODO: Implement
-func (p *Plumber) displayRead(messages []*types.Message) {
+func (p *Plumber) displayRead(m *types.ReadMessage) {
 
 }
 
 // TODO: implement
-func (p *Plumber) displayErrors(messages []*types.ErrorMessage) {
+func (p *Plumber) displayErrors(m *types.ErrorMessage) {
 
 }

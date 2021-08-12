@@ -2,104 +2,64 @@ package azure
 
 import (
 	"context"
-	"fmt"
+	"time"
 
 	servicebus "github.com/Azure/azure-service-bus-go"
-	"github.com/jhump/protoreflect/desc"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/reader"
+	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
+	"github.com/pkg/errors"
 )
 
-func Read(opts *options.Options, md *desc.MessageDescriptor) error {
-	if err := validateReadOptions(opts); err != nil {
+func (s *ServiceBus) Read(ctx context.Context, resultCh chan *types.ReadMessage, errorCh chan *types.ErrorMessage) error {
+	if err := validateReadOptions(s.Options); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	client, err := NewClient(opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to create client")
-	}
-
-	a := &ServiceBus{
-		Options: opts,
-		msgDesc: md,
-		client:  client,
-		log:     logrus.WithField("pkg", "azure/read.go"),
-	}
-
-	if opts.Azure.Queue != "" {
-		queue, err := client.NewQueue(opts.Azure.Queue)
-		if err != nil {
-			return errors.Wrap(err, "unable to create new azure service bus queue client")
-		}
-
-		a.queue = queue
-	} else {
-		topic, err := client.NewTopic(opts.Azure.Topic)
-		if err != nil {
-			return errors.Wrap(err, "unable to create new azure service bus topic client")
-		}
-
-		a.topic = topic
-	}
-
-	return a.Read()
-}
-
-func (a *ServiceBus) Read() error {
-	ctx := context.Background()
-
-	a.log.Info("Listening for message(s) ...")
+	s.log.Info("Listening for message(s) ...")
 
 	count := 1
 
 	var handler servicebus.HandlerFunc = func(ctx context.Context, msg *servicebus.Message) error {
-		data, err := reader.Decode(a.Options, a.msgDesc, msg.Data)
-		if err != nil {
-			return err
+		resultCh <- &types.ReadMessage{
+			Value:      msg.Data,
+			ReceivedAt: time.Now().UTC(),
+			Num:        count,
 		}
 
-		str := string(data)
-
-		str = fmt.Sprintf("%d: ", count) + str
 		count++
-
-		printer.Print(str)
 
 		return msg.Complete(ctx)
 	}
 
-	if a.queue != nil {
-		return a.readQueue(ctx, handler)
+	if s.queue != nil {
+		return s.readQueue(ctx, handler, errorCh)
 	}
 
-	if a.topic != nil {
-		return a.readTopic(ctx, handler)
+	if s.topic != nil {
+		return s.readTopic(ctx, handler, errorCh)
 	}
 
 	return nil
 }
 
 // readQueue reads messages from an ASB queue
-func (a *ServiceBus) readQueue(ctx context.Context, handler servicebus.HandlerFunc) error {
-	defer a.queue.Close(ctx)
+func (s *ServiceBus) readQueue(ctx context.Context, handler servicebus.HandlerFunc, errorChan chan *types.ErrorMessage) error {
 	for {
-		if err := a.queue.ReceiveOne(ctx, handler); err != nil {
+		if err := s.queue.ReceiveOne(ctx, handler); err != nil {
+			util.WriteError(s.log, errorChan, errors.Wrap(err, "unable to receive message on queue"))
 			return err
 		}
-		if !a.Options.ReadFollow {
+
+		if !s.Options.Read.Follow {
 			return nil
 		}
 	}
 }
 
 // readTopic reads messages from an ASB topic using the given subscription name
-func (a *ServiceBus) readTopic(ctx context.Context, handler servicebus.HandlerFunc) error {
-	sub, err := a.topic.NewSubscription(a.Options.Azure.Subscription)
+func (s *ServiceBus) readTopic(ctx context.Context, handler servicebus.HandlerFunc, errorChan chan *types.ErrorMessage) error {
+	sub, err := s.topic.NewSubscription(s.Options.Azure.Subscription)
 	if err != nil {
 		return errors.Wrap(err, "unable to create topic subscription")
 	}
@@ -108,15 +68,14 @@ func (a *ServiceBus) readTopic(ctx context.Context, handler servicebus.HandlerFu
 
 	for {
 		if err := sub.ReceiveOne(ctx, handler); err != nil {
+			util.WriteError(s.log, errorChan, errors.Wrap(err, "unable to receive message on topic"))
 			return err
 		}
 
-		if !a.Options.ReadFollow {
+		if !s.Options.Read.Follow {
 			return nil
 		}
 	}
-
-	return nil
 }
 
 // validateReadOptions ensures the correct CLI options are specified for the read action

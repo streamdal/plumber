@@ -24,15 +24,13 @@ func (r *Relay) handleSQS(ctx context.Context, conn *grpc.ClientConn, messages [
 
 	client := services.NewGRPCCollectorClient(conn)
 
-	r.CallWithRetry(ctx, "AddSQSRecord", func(ctx context.Context) error {
+	if err := r.CallWithRetry(ctx, "AddSQSRecord", func(ctx context.Context) error {
 		_, err := client.AddSQSRecord(ctx, &services.SQSRecordRequest{
 			Records: sinkRecords,
 		}, grpc.MaxCallSendMsgSize(MaxGRPCMessageSize))
 		return err
-	})
-
-	if err != nil {
-		return err
+	}); err != nil {
+		return errors.Wrap(err, "error during CallWithRetry")
 	}
 
 	// Optionally delete message from AWS SQS

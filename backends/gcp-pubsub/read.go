@@ -2,42 +2,21 @@ package gcppubsub
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"sync"
+	"time"
 
 	"cloud.google.com/go/pubsub"
-	"github.com/jhump/protoreflect/desc"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/reader"
+	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
+	"github.com/pkg/errors"
 )
 
-func Read(opts *options.Options, md *desc.MessageDescriptor) error {
-	if err := validateReadOptions(opts); err != nil {
+func (g *GCPPubSub) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {
+	if err := validateReadOptions(g.Options); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
-
-	client, err := NewClient(opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to create client")
-	}
-
-	r := &GCPPubSub{
-		Options: opts,
-		msgDesc: md,
-		client:  client,
-		log:     logrus.WithField("pkg", "gcp-pubsub/read.go"),
-	}
-
-	return r.Read()
-}
-
-func (g *GCPPubSub) Read() error {
-	defer g.client.Close()
 
 	g.log.Info("Listening for message(s) ...")
 
@@ -49,7 +28,7 @@ func (g *GCPPubSub) Read() error {
 	count := 1
 
 	// Standard way to cancel Receive in gcp's pubsub
-	cctx, cancel := context.WithCancel(context.Background())
+	cctx, cancel := context.WithCancel(ctx)
 
 	if err := sub.Receive(cctx, func(ctx context.Context, msg *pubsub.Message) {
 		m.Lock()
@@ -59,23 +38,20 @@ func (g *GCPPubSub) Read() error {
 			defer msg.Ack()
 		}
 
-		data, err := reader.Decode(g.Options, g.msgDesc, msg.Data)
-		if err != nil {
-			return
+		resultsChan <- &types.ReadMessage{
+			Value:      msg.Data,
+			ReceivedAt: time.Now().UTC(),
+			Num:        count,
 		}
 
-		str := string(data)
-
-		str = fmt.Sprintf("%d: ", count) + str
 		count++
 
-		printer.Print(str)
-
-		if !g.Options.ReadFollow {
+		if !g.Options.Read.Follow {
 			cancel()
 			return
 		}
 	}); err != nil {
+		util.WriteError(g.log, errorChan, errors.Wrap(err, "unable to complete msg receive"))
 		return errors.Wrap(err, "unable to complete msg receive")
 	}
 
@@ -84,9 +60,10 @@ func (g *GCPPubSub) Read() error {
 	return nil
 }
 
-func validateReadOptions(opts *options.Options) error {
+func validateReadOptions(_ *options.Options) error {
 	emulator := os.Getenv("PUBSUB_EMULATOR_HOST")
 	appCreds := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
+
 	if emulator == "" && appCreds == "" {
 		return errors.New("GOOGLE_APPLICATION_CREDENTIALS or PUBSUB_EMULATOR_HOST must be set")
 	}

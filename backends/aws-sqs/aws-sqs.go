@@ -1,13 +1,15 @@
 package awssqs
 
 import (
+	"context"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/batchcorp/plumber/backends/aws-sqs/types"
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/types"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -16,7 +18,7 @@ import (
 type AWSSQS struct {
 	Options *options.Options
 
-	service  types.ISQSAPI
+	service  *sqs.SQS
 	queueURL string
 	msgDesc  *desc.MessageDescriptor
 	log      *logrus.Entry
@@ -28,18 +30,37 @@ func New(opts *options.Options) (*AWSSQS, error) {
 		return nil, errors.Wrap(err, "unable to validate options")
 	}
 
+	svc, queueURL, err := newService(opts)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to setup service")
+	}
+
+	logrus.Debugf("AWS queueURL: %s", queueURL)
+
 	return &AWSSQS{
-		Options: opts,
-		log:     logrus.WithField("backend", "awssqs"),
+		Options:  opts,
+		service:  svc,
+		queueURL: queueURL,
+		log:      logrus.WithField("backend", "awssqs"),
 	}, nil
 }
 
-// TODO: Implement
-func validateOpts(opts *options.Options) error {
+// Close sets service to nil. Same as with SNS - there is no "connection" to
+// disconnect.
+func (a *AWSSQS) Close(ctx context.Context) error {
+	a.service = nil
 	return nil
 }
 
-func NewService(opts *options.Options) (*sqs.SQS, string, error) {
+func (a *AWSSQS) Test(ctx context.Context) error {
+	return errors.New("not implemented")
+}
+
+func (a *AWSSQS) Lag(ctx context.Context) (*types.LagStats, error) {
+	return nil, types.UnsupportedFeatureErr
+}
+
+func newService(opts *options.Options) (*sqs.SQS, string, error) {
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 	}))
@@ -63,7 +84,21 @@ func NewService(opts *options.Options) (*sqs.SQS, string, error) {
 		return nil, "", errors.Wrap(err, "unable to get queue URL")
 	}
 
-	logrus.Debugf("AWS queueURL: %s", *resultURL.QueueUrl)
-
 	return svc, *resultURL.QueueUrl, nil
+}
+
+func validateOpts(opts *options.Options) error {
+	if opts == nil {
+		return errors.New("options cannot be nil")
+	}
+
+	if opts.AWSSQS == nil {
+		return errors.New("AWSSQS options cannot be nil")
+	}
+
+	if opts.AWSSQS.QueueName == "" {
+		return errors.New("AWSQS queue name cannot be empty")
+	}
+
+	return nil
 }
