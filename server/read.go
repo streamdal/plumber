@@ -103,9 +103,26 @@ func (p *PlumberServer) StartRead(req *protos.StartReadRequest, srv protos.Plumb
 
 	llog.Debugf("New stream attached")
 
+	ticker := time.NewTicker(time.Minute)
+
 	// Start reading
 	for {
 		select {
+		case <-ticker.C:
+			// NOOP to keep connection open
+			res := &protos.StartReadResponse{
+				Status: &common.Status{
+					Code:      common.Code_OK,
+					Message:   "keep alive",
+					RequestId: requestID,
+				},
+			}
+			if err := srv.Send(res); err != nil {
+				llog.Error(err)
+				continue
+			}
+			llog.Debug("Sent keepalive")
+
 		case msg := <-stream.MessageCh:
 			messages := make([]*records.Message, 0)
 
@@ -150,9 +167,12 @@ func (p *PlumberServer) CreateRead(_ context.Context, req *protos.CreateReadRequ
 	// Reader needs a unique ID that frontend can reference
 	readCfg.Id = uuid.NewV4().String()
 
-	md, err := generateMD(readCfg.DecodeOptions)
+	md, err := p.getMessageDescriptor(readCfg.DecodeOptions)
 	if err != nil {
 		return nil, err
+	}
+	if md == nil {
+		return nil, errors.New("unable to decode message descriptor")
 	}
 
 	ctx, cancelFunc := context.WithCancel(context.Background())
