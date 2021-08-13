@@ -7,6 +7,8 @@ import (
 	"path"
 	"sync"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -21,21 +23,21 @@ type IConfig interface {
 
 // Config stores Account IDs and the auth_token cookie
 type Config struct {
-	PlumberID        string                       `json:"plumber_id"`
-	Token            string                       `json:"token"`
-	TeamID           string                       `json:"team_id"`
-	UserID           string                       `json:"user_id"`
-	Connections      map[string]*types.Connection `json:"-"`
-	Relays           map[string]*types.Relay      `json:"-"`
-	Schemas          map[string]*types.Schema     `json:"-"`
-	Services         map[string]*types.Service    `json:"-"`
-	Reads            map[string]*types.Read       `json:"-"`
-	GitHubToken      string                       `json:"-"`
-	ConnectionsMutex *sync.RWMutex                `json:"-"`
-	ServicesMutex    *sync.RWMutex                `json:"-"`
-	ReadsMutex       *sync.RWMutex                `json:"-"`
-	RelaysMutex      *sync.RWMutex                `json:"-"`
-	SchemasMutex     *sync.RWMutex                `json:"-"`
+	PlumberID        string                        `json:"plumber_id"`
+	Token            string                        `json:"token"`
+	TeamID           string                        `json:"team_id"`
+	UserID           string                        `json:"user_id"`
+	Connections      map[string]*protos.Connection `json:"-"`
+	Relays           map[string]*types.Relay       `json:"-"`
+	Schemas          map[string]*protos.Schema     `json:"-"`
+	Services         map[string]*protos.Service    `json:"-"`
+	Reads            map[string]*types.Read        `json:"-"`
+	GitHubToken      string                        `json:"-"`
+	ConnectionsMutex *sync.RWMutex                 `json:"-"`
+	ServicesMutex    *sync.RWMutex                 `json:"-"`
+	ReadsMutex       *sync.RWMutex                 `json:"-"`
+	RelaysMutex      *sync.RWMutex                 `json:"-"`
+	SchemasMutex     *sync.RWMutex                 `json:"-"`
 }
 
 // Save is a convenience method of persisting the config to disk via a single call
@@ -74,16 +76,16 @@ func ReadConfig(fileName string) (*Config, error) {
 	}
 
 	if cfg.Connections == nil {
-		cfg.Connections = make(map[string]*types.Connection)
+		cfg.Connections = make(map[string]*protos.Connection)
 	}
 	if cfg.Relays == nil {
 		cfg.Relays = make(map[string]*types.Relay)
 	}
 	if cfg.Schemas == nil {
-		cfg.Schemas = make(map[string]*types.Schema)
+		cfg.Schemas = make(map[string]*protos.Schema)
 	}
 	if cfg.Services == nil {
-		cfg.Services = make(map[string]*types.Service)
+		cfg.Services = make(map[string]*protos.Service)
 	}
 
 	logrus.Infof("Loaded '%d' stored connections", len(cfg.Connections))
@@ -229,14 +231,14 @@ func (c *Config) DeleteRelay(relayID string) {
 }
 
 // SetService saves a service to in-memory map
-func (c *Config) SetService(serviceID string, svc *types.Service) {
+func (c *Config) SetService(serviceID string, svc *protos.Service) {
 	c.ServicesMutex.Lock()
 	defer c.ServicesMutex.Unlock()
 	c.Services[serviceID] = svc
 }
 
 // GetService returns a service from the in-memory map
-func (c *Config) GetService(serviceID string) *types.Service {
+func (c *Config) GetService(serviceID string) *protos.Service {
 	c.ServicesMutex.RLock()
 	defer c.ServicesMutex.RUnlock()
 
@@ -253,7 +255,7 @@ func (c *Config) DeleteService(schemaID string) {
 }
 
 // GetSchema returns a stored schema
-func (c *Config) GetSchema(schemaID string) *types.Schema {
+func (c *Config) GetSchema(schemaID string) *protos.Schema {
 	c.SchemasMutex.RLock()
 	defer c.SchemasMutex.RUnlock()
 
@@ -263,7 +265,7 @@ func (c *Config) GetSchema(schemaID string) *types.Schema {
 }
 
 // SetSchema saves a schema to in-memory map
-func (c *Config) SetSchema(schemaID string, schema *types.Schema) {
+func (c *Config) SetSchema(schemaID string, schema *protos.Schema) {
 	c.SchemasMutex.Lock()
 	defer c.SchemasMutex.Unlock()
 	c.Schemas[schemaID] = schema
@@ -277,7 +279,7 @@ func (c *Config) DeleteSchema(schemaID string) {
 }
 
 // GetConnection retrieves a connection from in-memory map
-func (c *Config) GetConnection(connID string) *types.Connection {
+func (c *Config) GetConnection(connID string) *protos.Connection {
 	c.ConnectionsMutex.RLock()
 	defer c.ConnectionsMutex.RUnlock()
 
@@ -287,7 +289,7 @@ func (c *Config) GetConnection(connID string) *types.Connection {
 }
 
 // SetConnection saves a connection to in-memory map
-func (c *Config) SetConnection(connID string, conn *types.Connection) {
+func (c *Config) SetConnection(connID string, conn *protos.Connection) {
 	c.ConnectionsMutex.Lock()
 	defer c.ConnectionsMutex.Unlock()
 	c.Connections[connID] = conn

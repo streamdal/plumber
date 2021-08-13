@@ -54,7 +54,7 @@ func (p *PlumberServer) CreateRelay(ctx context.Context, req *protos.CreateRelay
 		Config:     req.Relay,
 	}
 
-	if err := r.StartRelay(conn.Connection); err != nil {
+	if err := r.StartRelay(conn); err != nil {
 		return nil, errors.Wrap(err, "unable to start relay")
 	}
 
@@ -124,7 +124,7 @@ func (p *PlumberServer) UpdateRelay(_ context.Context, req *protos.UpdateRelayRe
 	relay.CancelCtx = ctx
 	relay.CancelFunc = cancelFunc
 
-	if err := relay.StartRelay(conn.Connection); err != nil {
+	if err := relay.StartRelay(conn); err != nil {
 		return nil, errors.Wrap(err, "unable to start relay")
 	}
 
@@ -212,7 +212,7 @@ func (p *PlumberServer) ResumeRelay(ctx context.Context, req *protos.ResumeRelay
 	relay.CancelCtx = ctx
 	relay.CancelFunc = cancelFunc
 
-	if err := relay.StartRelay(conn.Connection); err != nil {
+	if err := relay.StartRelay(conn); err != nil {
 		return nil, errors.Wrap(err, "unable to start relay")
 	}
 

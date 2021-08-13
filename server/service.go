@@ -7,8 +7,6 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 
-	"github.com/batchcorp/plumber/server/types"
-
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
@@ -26,7 +24,7 @@ func (p *PlumberServer) GetService(_ context.Context, req *protos.GetServiceRequ
 	}
 
 	return &protos.GetServiceResponse{
-		Service: svc.Service,
+		Service: svc,
 		Status: &common.Status{
 			Code:      common.Code_OK,
 			RequestId: uuid.NewV4().String(),
@@ -45,7 +43,7 @@ func (p *PlumberServer) GetAllServices(_ context.Context, req *protos.GetAllServ
 	services := make([]*protos.Service, 0)
 
 	for _, svc := range p.PersistentConfig.Services {
-		services = append(services, svc.Service)
+		services = append(services, svc)
 	}
 
 	return &protos.GetAllServicesResponse{
@@ -85,7 +83,7 @@ func (p *PlumberServer) CreateService(ctx context.Context, req *protos.CreateSer
 		return nil, errors.Wrapf(err, "unable to save schema '%s' to etcd", svc.Id)
 	}
 
-	p.PersistentConfig.SetService(svc.Id, &types.Service{Service: svc})
+	p.PersistentConfig.SetService(svc.Id, svc)
 
 	return &protos.CreateServiceResponse{
 		Service: svc,
@@ -111,9 +109,9 @@ func (p *PlumberServer) UpdateService(ctx context.Context, req *protos.UpdateSer
 		return nil, CustomError(common.Code_FAILED_PRECONDITION, err.Error())
 	}
 
-	svc.Service = req.Service
+	svc = req.Service
 
-	data, err := proto.Marshal(svc.Service)
+	data, err := proto.Marshal(svc)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to save service to etcd")
 	}
@@ -126,12 +124,12 @@ func (p *PlumberServer) UpdateService(ctx context.Context, req *protos.UpdateSer
 
 	p.PersistentConfig.SetService(svc.Id, svc)
 
-	if err := p.Etcd.PublishUpdateService(ctx, svc.Service); err != nil {
+	if err := p.Etcd.PublishUpdateService(ctx, svc); err != nil {
 		p.Log.Error(err)
 	}
 
 	return &protos.UpdateServiceResponse{
-		Service: svc.Service,
+		Service: svc,
 		Status: &common.Status{
 			Code:      common.Code_OK,
 			Message:   "Service updated",
@@ -160,7 +158,7 @@ func (p *PlumberServer) DeleteService(ctx context.Context, req *protos.DeleteSer
 	p.PersistentConfig.DeleteService(svc.Id)
 
 	// Publish DeleteService event
-	if err := p.Etcd.PublishDeleteService(ctx, svc.Service); err != nil {
+	if err := p.Etcd.PublishDeleteService(ctx, svc); err != nil {
 		p.Log.Error(err)
 	}
 

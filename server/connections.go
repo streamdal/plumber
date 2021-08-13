@@ -10,7 +10,6 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
-	"github.com/batchcorp/plumber/server/types"
 )
 
 func (p *PlumberServer) GetAllConnections(_ context.Context, req *protos.GetAllConnectionsRequest) (*protos.GetAllConnectionsResponse, error) {
@@ -20,7 +19,7 @@ func (p *PlumberServer) GetAllConnections(_ context.Context, req *protos.GetAllC
 
 	conns := make([]*protos.Connection, 0)
 	for _, v := range p.PersistentConfig.Connections {
-		conns = append(conns, v.Connection)
+		conns = append(conns, v)
 	}
 
 	return &protos.GetAllConnectionsResponse{
@@ -39,7 +38,7 @@ func (p *PlumberServer) GetConnection(_ context.Context, req *protos.GetConnecti
 	}
 
 	return &protos.GetConnectionResponse{
-		Connection: conn.Connection,
+		Connection: conn,
 	}, nil
 }
 
@@ -69,7 +68,7 @@ func (p *PlumberServer) CreateConnection(ctx context.Context, req *protos.Create
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
 
-	p.PersistentConfig.SetConnection(conn.Id, &types.Connection{Connection: conn})
+	p.PersistentConfig.SetConnection(conn.Id, conn)
 
 	if err := p.Etcd.PublishCreateConnection(ctx, conn); err != nil {
 		p.Log.Error(err)
@@ -126,9 +125,9 @@ func (p *PlumberServer) UpdateConnection(ctx context.Context, req *protos.Update
 		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
 	}
 
-	conn.Connection = req.Connection
+	conn = req.Connection
 
-	data, err := proto.Marshal(conn.Connection)
+	data, err := proto.Marshal(conn)
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
 	}
@@ -140,10 +139,10 @@ func (p *PlumberServer) UpdateConnection(ctx context.Context, req *protos.Update
 	}
 
 	// Update in memory
-	p.PersistentConfig.SetConnection(req.Connection.Id, &types.Connection{Connection: req.Connection})
+	p.PersistentConfig.SetConnection(req.Connection.Id, conn)
 
 	// Publish UpdateConnection event
-	if err := p.Etcd.PublishUpdateConnection(ctx, conn.Connection); err != nil {
+	if err := p.Etcd.PublishUpdateConnection(ctx, conn); err != nil {
 		p.Log.Error(err)
 	}
 
@@ -180,7 +179,7 @@ func (p *PlumberServer) DeleteConnection(ctx context.Context, req *protos.Delete
 	p.PersistentConfig.DeleteConnection(conn.Id)
 
 	// Publish DeleteConnection event
-	if err := p.Etcd.PublishDeleteConnection(ctx, conn.Connection); err != nil {
+	if err := p.Etcd.PublishDeleteConnection(ctx, conn); err != nil {
 		p.Log.Error(err)
 	}
 

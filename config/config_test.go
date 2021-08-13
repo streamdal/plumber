@@ -16,14 +16,14 @@ var _ = Describe("Config", func() {
 	Context("Connections", func() {
 		cfg := &Config{
 			ConnectionsMutex: &sync.RWMutex{},
-			Connections:      make(map[string]*types.Connection),
+			Connections:      make(map[string]*protos.Connection),
 		}
 		It("Can save/get/delete", func() {
 			id := uuid.NewV4().String()
 
-			conn := &types.Connection{Connection: &protos.Connection{
+			conn := &protos.Connection{
 				Id: id,
-			}}
+			}
 
 			// Save
 			cfg.SetConnection(conn.Id, conn)
@@ -42,14 +42,14 @@ var _ = Describe("Config", func() {
 	Context("Services", func() {
 		cfg := &Config{
 			ServicesMutex: &sync.RWMutex{},
-			Services:      make(map[string]*types.Service),
+			Services:      make(map[string]*protos.Service),
 		}
 		It("Can save/get/delete", func() {
 			id := uuid.NewV4().String()
 
-			svc := &types.Service{Service: &protos.Service{
+			svc := &protos.Service{
 				Id: id,
-			}}
+			}
 
 			// Save
 			cfg.SetService(svc.Id, svc)
@@ -96,14 +96,14 @@ var _ = Describe("Config", func() {
 	Context("Schemas", func() {
 		cfg := &Config{
 			SchemasMutex: &sync.RWMutex{},
-			Schemas:      make(map[string]*types.Schema),
+			Schemas:      make(map[string]*protos.Schema),
 		}
 		It("Can save/get/delete", func() {
 			id := uuid.NewV4().String()
 
-			schema := &types.Schema{Schema: &protos.Schema{
+			schema := &protos.Schema{
 				Id: id,
-			}}
+			}
 
 			// Save
 			cfg.SetSchema(schema.Id, schema)
@@ -122,25 +122,25 @@ var _ = Describe("Config", func() {
 	Context("Reads", func() {
 		cfg := &Config{
 			ReadsMutex: &sync.RWMutex{},
-			Reads:      make(map[string]*protos.Read),
+			Reads:      make(map[string]*types.Read),
 		}
 		It("Can save/get/delete", func() {
 			id := uuid.NewV4().String()
 
-			read := &protos.Read{
+			read := &types.Read{Config: &protos.Read{
 				Id: id,
-			}
+			}}
 
 			// Save
-			cfg.SetRead(read.Id, read)
+			cfg.SetRead(read.Config.Id, read)
 
 			// Get
-			stored := cfg.GetRead(read.Id)
+			stored := cfg.GetRead(read.Config.Id)
 			Expect(stored).To(Equal(read))
 
 			// Delete
-			cfg.DeleteRead(read.Id)
-			notThere := cfg.GetRead(read.Id)
+			cfg.DeleteRead(read.Config.Id)
+			notThere := cfg.GetRead(read.Config.Id)
 			Expect(notThere).To(BeNil())
 		})
 	})

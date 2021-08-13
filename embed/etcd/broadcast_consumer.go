@@ -81,7 +81,7 @@ func (e *Etcd) doCreateConnection(_ context.Context, msg *Message) error {
 	}
 
 	// Save connection to in-memory map
-	e.PlumberConfig.SetConnection(conn.Id, &types.Connection{Connection: conn})
+	e.PlumberConfig.SetConnection(conn.Id, conn)
 
 	e.log.Debugf("created connection '%s'", conn.Name)
 
@@ -97,7 +97,7 @@ func (e *Etcd) doUpdateConnection(_ context.Context, msg *Message) error {
 	}
 
 	// Update connection in in-memory map
-	e.PlumberConfig.SetConnection(conn.Id, &types.Connection{Connection: conn})
+	e.PlumberConfig.SetConnection(conn.Id, conn)
 
 	e.log.Debugf("updated connection '%s'", conn.Name)
 
@@ -131,7 +131,7 @@ func (e *Etcd) doCreateService(_ context.Context, msg *Message) error {
 	}
 
 	// Set in config map
-	e.PlumberConfig.SetService(svc.Id, &types.Service{Service: svc})
+	e.PlumberConfig.SetService(svc.Id, svc)
 
 	e.log.Debugf("updated service '%s'", svc.Name)
 
@@ -145,7 +145,7 @@ func (e *Etcd) doUpdateService(_ context.Context, msg *Message) error {
 	}
 
 	// Set in config map
-	e.PlumberConfig.SetService(svc.Id, &types.Service{Service: svc})
+	e.PlumberConfig.SetService(svc.Id, svc)
 
 	e.log.Debugf("updated service '%s'", svc.Name)
 
@@ -173,7 +173,7 @@ func (e *Etcd) doCreateSchema(_ context.Context, msg *Message) error {
 	}
 
 	// Set in config map
-	e.PlumberConfig.SetSchema(schema.Id, &types.Schema{Schema: schema})
+	e.PlumberConfig.SetSchema(schema.Id, schema)
 
 	e.log.Debugf("updated schema '%s'", schema.Name)
 
@@ -187,7 +187,7 @@ func (e *Etcd) doUpdateSchema(_ context.Context, msg *Message) error {
 	}
 
 	// Set in config map
-	e.PlumberConfig.SetSchema(schema.Id, &types.Schema{Schema: schema})
+	e.PlumberConfig.SetSchema(schema.Id, schema)
 
 	e.log.Debugf("updated schema '%s'", schema.Name)
 

@@ -20,7 +20,7 @@ func (p *PlumberServer) GetAllSchemas(_ context.Context, req *protos.GetAllSchem
 	schemas := make([]*protos.Schema, 0)
 
 	for _, v := range p.PersistentConfig.Schemas {
-		schemas = append(schemas, v.Schema)
+		schemas = append(schemas, v)
 	}
 
 	return &protos.GetAllSchemasResponse{
@@ -39,7 +39,7 @@ func (p *PlumberServer) GetSchema(_ context.Context, req *protos.GetSchemaReques
 	}
 
 	return &protos.GetSchemaResponse{
-		Schema: schema.Schema,
+		Schema: schema,
 	}, nil
 }
 
@@ -49,7 +49,7 @@ func (p *PlumberServer) ImportGithub(ctx context.Context, req *protos.ImportGith
 		return nil, CustomError(common.Code_FAILED_PRECONDITION, err.Error())
 	}
 
-	data, err := proto.Marshal(schema.Schema)
+	data, err := proto.Marshal(schema)
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
 	}
@@ -64,7 +64,7 @@ func (p *PlumberServer) ImportGithub(ctx context.Context, req *protos.ImportGith
 	p.PersistentConfig.SetSchema(schema.Id, schema)
 
 	// Publish create event
-	if err := p.Etcd.PublishCreateSchema(ctx, schema.Schema); err != nil {
+	if err := p.Etcd.PublishCreateSchema(ctx, schema); err != nil {
 		p.Log.Error(err)
 	}
 
@@ -74,7 +74,7 @@ func (p *PlumberServer) ImportGithub(ctx context.Context, req *protos.ImportGith
 			Message:   "schema imported successfully",
 			RequestId: uuid.NewV4().String(),
 		},
-		Id: schema.Schema.Id,
+		Id: schema.Id,
 	}, nil
 }
 
@@ -84,7 +84,7 @@ func (p *PlumberServer) ImportLocal(ctx context.Context, req *protos.ImportLocal
 		return nil, CustomError(common.Code_FAILED_PRECONDITION, err.Error())
 	}
 
-	data, err := proto.Marshal(schema.Schema)
+	data, err := proto.Marshal(schema)
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
 	}
@@ -99,7 +99,7 @@ func (p *PlumberServer) ImportLocal(ctx context.Context, req *protos.ImportLocal
 	p.PersistentConfig.SetSchema(schema.Id, schema)
 
 	// Publish create event
-	if err := p.Etcd.PublishCreateSchema(ctx, schema.Schema); err != nil {
+	if err := p.Etcd.PublishCreateSchema(ctx, schema); err != nil {
 		p.Log.Error(err)
 	}
 
@@ -133,7 +133,7 @@ func (p *PlumberServer) DeleteSchema(ctx context.Context, req *protos.DeleteSche
 	p.PersistentConfig.DeleteConnection(schema.Id)
 
 	// Publish delete event
-	if err := p.Etcd.PublishDeleteSchema(ctx, schema.Schema); err != nil {
+	if err := p.Etcd.PublishDeleteSchema(ctx, schema); err != nil {
 		p.Log.Error(err)
 	}
 
