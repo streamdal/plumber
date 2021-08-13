@@ -30,12 +30,11 @@ func (p *PlumberServer) Write(ctx context.Context, req *protos.WriteRequest) (*p
 	}
 
 	// We only need/want to do this once, so generate and pass to generateWriteValue
-	md, err := generateMD(req.EncodeOptions)
+	md, err := p.getMessageDescriptor(req.EncodeOptions)
 	if err != nil {
 		return nil, err
 	}
 
-	defer backend.Conn.Close()
 	defer backend.Writer.Close()
 
 	messages := make([]skafka.Message, 0)

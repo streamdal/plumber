@@ -9,35 +9,77 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
-
-	"github.com/jhump/protoreflect/dynamic"
-
-	"github.com/jhump/protoreflect/desc/protoparse"
-
+	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jhump/protoreflect/desc"
+	"github.com/jhump/protoreflect/desc/protoparse"
+	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber/pb"
 )
 
-// generateMD returns the root type message descriptor from an encoding options message
-func generateMD(opts *encoding.Options) (*desc.MessageDescriptor, error) {
-	pbOptions := opts.GetProtobuf()
-	if pbOptions == nil {
-		// Not protobuf encoding/decoding request, nothing to do
+// getMessageDescriptor returns a message descriptor using either the provided stored schema ID, or
+// the provided protobuf zip file and root type
+func (p *PlumberServer) getMessageDescriptor(opts *encoding.Options) (*desc.MessageDescriptor, error) {
+	if opts.Type != encoding.Type_PROTOBUF {
 		return nil, nil
 	}
 
-	files, err := getProtoFilesFromZip(pbOptions.ZipArchive)
-	if err != nil {
-		return nil, err
+	// Using passed protobuf zip file and root type
+	if opts.SchemaId == "" {
+		pbOptions := opts.GetProtobuf()
+		fds, _, err := GetFDFromArchive(pbOptions.ZipArchive, "")
+		if err != nil {
+			return nil, err
+		}
+
+		return GetMDFromDescriptors(fds, pbOptions.RootType)
 	}
 
-	// Get Message descriptor from zip file
-	md, err := ProcessProtobufArchive(pbOptions.RootType, files)
+	// Using stored schema
+	schema := p.getSchema(opts.SchemaId)
+	if schema == nil {
+		return nil, fmt.Errorf("schema '%s' not found", opts.SchemaId)
+	}
+
+	return GetMDFromDescriptorBlob(schema.MessageDescriptor, schema.RootType)
+
+}
+
+// GetMDFromDescriptors takes a stored sceham's file descriptorset blob and returns the necessary
+// message descriptor for the given rootType
+func GetMDFromDescriptors(fds []*desc.FileDescriptor, rootType string) (*desc.MessageDescriptor, error) {
+	rootFD := FindRootDescriptor(rootType, fds)
+	if rootFD == nil {
+		return nil, fmt.Errorf("message type '%s' not found in file descriptors", rootType)
+	}
+
+	md := rootFD.FindMessage(rootType)
+	if md == nil {
+		return nil, fmt.Errorf("unable to find '%s' message in file descriptors", rootType)
+	}
+
+	return md, nil
+}
+
+// GetMDFromDescriptorBlob takes a stored schemas's file descriptorset blob and returns the necessary
+// message descriptor for the given rootType
+func GetMDFromDescriptorBlob(blob []byte, rootType string) (*desc.MessageDescriptor, error) {
+	fds := &descriptor.FileDescriptorSet{}
+	if err := proto.Unmarshal(blob, fds); err != nil {
+		return nil, errors.Wrap(err, "unable to decode file descriptor set")
+	}
+
+	fd, err := desc.CreateFileDescriptorFromSet(fds)
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to parse protobuf zip")
+		return nil, errors.Wrap(err, "unable to create fd from fds")
+	}
+
+	md := fd.FindMessage(rootType)
+	if md == nil {
+		return nil, fmt.Errorf("unable to find '%s' message in file descriptors", rootType)
 	}
 
 	return md, nil
@@ -84,18 +126,69 @@ func readFileDescriptors(files map[string]string) ([]*desc.FileDescriptor, error
 	return fds, nil
 }
 
-func ProcessProtobufArchive(rootType string, files map[string]string) (*desc.MessageDescriptor, error) {
+// GetFDFromArchive is the main entry point for processing of a zip archive of protobuf definitions
+func GetFDFromArchive(archive []byte, rootDir string) ([]*desc.FileDescriptor, map[string]string, error) {
+	// Get files from zip
+	files, err := getProtoFilesFromZip(archive)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Clean path if necessary
+	if rootDir != "" {
+		files = truncateProtoDirectories(files, rootDir)
+	}
+
+	// Generate file descriptors
 	fds, err := readFileDescriptors(files)
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to get file descriptors from archive")
+		return nil, nil, errors.Wrap(err, "unable to get file descriptors from archive")
 	}
 
-	rootMD, err := pb.FindMessageDescriptorInFDS(fds, rootType)
+	return fds, files, nil
+}
+
+func FindRootDescriptor(rootType string, fds []*desc.FileDescriptor) *desc.FileDescriptor {
+	for _, fd := range fds {
+		messageDescriptor := fd.FindMessage(rootType)
+		if messageDescriptor != nil {
+			return fd
+		}
+
+	}
+
+	return nil
+}
+
+// CreateBlob marshals a root descriptor for storage
+func CreateBlob(fds []*desc.FileDescriptor, rootType string) ([]byte, error) {
+	rootFD := FindRootDescriptor(rootType, fds)
+	if rootFD == nil {
+		return nil, fmt.Errorf("message type '%s' not found in file descriptors", rootType)
+	}
+
+	descSet := desc.ToFileDescriptorSet(rootFD)
+
+	protoBytes, err := proto.Marshal(descSet)
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to find root message descriptor")
+		return nil, errors.Wrap(err, "failed to marshal proto root descriptor")
 	}
 
-	return rootMD, nil
+	return protoBytes, nil
+}
+
+func ProcessProtobufArchive(rootType string, files map[string]string) (*desc.FileDescriptor, map[string]string, error) {
+	fds, err := readFileDescriptors(files)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "unable to get file descriptors from archive")
+	}
+
+	rootFD := FindRootDescriptor(rootType, fds)
+	if rootFD == nil {
+		return nil, nil, errors.New("root type is missing from archive")
+	}
+
+	return rootFD, files, nil
 }
 
 // truncateProtoDirectories attempts to locate a .proto file in the shortest path of a directory tree so that
