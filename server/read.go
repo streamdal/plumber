@@ -167,12 +167,9 @@ func (p *PlumberServer) CreateRead(_ context.Context, req *protos.CreateReadRequ
 	// Reader needs a unique ID that frontend can reference
 	readCfg.Id = uuid.NewV4().String()
 
-	md, err := p.getMessageDescriptor(readCfg.DecodeOptions)
+	md, err := p.getMessageDescriptor(readCfg.GetDecodeOptions())
 	if err != nil {
 		return nil, err
-	}
-	if md == nil {
-		return nil, errors.New("unable to decode message descriptor")
 	}
 
 	ctx, cancelFunc := context.WithCancel(context.Background())
