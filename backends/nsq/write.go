@@ -1,58 +1,23 @@
 package nsq
 
 import (
-	"github.com/jhump/protoreflect/desc"
-	"github.com/nsqio/go-nsq"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
+	"context"
 
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/writer"
+	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
+	"github.com/pkg/errors"
 )
 
 // Write performs necessary setup and calls NSQ.Write() to write the actual message
-func Write(opts *options.Options, md *desc.MessageDescriptor) error {
-	if err := writer.ValidateWriteOptions(opts, validateWriteOptions); err != nil {
+func (n *NSQ) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {
+	if err := validateWriteOptions(n.Options); err != nil {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	writeValues, err := writer.GenerateWriteMessageFromOptions(md, opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to generate write value")
-	}
-
-	logger := &NSQLogger{}
-	logger.Entry = logrus.WithField("pkg", "nsq")
-
-	config, err := getNSQConfig(opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to create NSQ config")
-	}
-
-	producer, err := nsq.NewProducer(opts.NSQ.NSQDAddress, config)
-	if err != nil {
-		return errors.Wrap(err, "unable to start NSQ producer")
-	}
-
-	logLevel := nsq.LogLevelError
-	if opts.Debug {
-		logLevel = nsq.LogLevelDebug
-	}
-
-	defer producer.Stop()
-
-	// Use logrus for NSQ logs
-	producer.SetLogger(logger, logLevel)
-
-	n := &NSQ{
-		Options: opts,
-		msgDesc: md,
-		log:     logger,
-	}
-
-	for _, value := range writeValues {
-		if err := n.Write(value); err != nil {
-			n.log.Error(err)
+	for _, msg := range messages {
+		if err := n.write(msg.Value); err != nil {
+			util.WriteError(n.log.Entry, errorCh, err)
 		}
 	}
 
@@ -60,7 +25,7 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 }
 
 // Write publishes a message to a NSQ topic
-func (n *NSQ) Write(value []byte) error {
+func (n *NSQ) write(value []byte) error {
 	if err := n.producer.Publish(n.Options.NSQ.Topic, value); err != nil {
 		return errors.Wrap(err, "unable to publish message to NSQ")
 	}

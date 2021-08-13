@@ -1,9 +1,11 @@
 package mqtt
 
 import (
+	"context"
 	"io/ioutil"
 	"sync"
 
+	"github.com/batchcorp/plumber/types"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -35,8 +37,8 @@ var _ = Describe("MQTT Read", func() {
 	var opts *options.Options
 
 	BeforeEach(func() {
-		opts = &opts.Options{
-			MQTT: &opts.MQTTOptions{
+		opts = &options.Options{
+			MQTT: &options.MQTTOptions{
 				Address:           "ssl://localhost",
 				Topic:             "testing",
 				ClientID:          "123",
@@ -122,14 +124,18 @@ var _ = Describe("MQTT Read", func() {
 		m := &MQTT{
 			log:    log,
 			client: fakeMQTT,
-			Options: &opts.Options{
-				ReadFollow: false,
-				MQTT:       &opts.MQTTOptions{},
+			Options: &options.Options{
+				Read: &options.ReadOptions{
+					Follow: false,
+				},
+				MQTT: &options.MQTTOptions{},
 			},
-			printer: fakePrinter,
 		}
 
-		err := m.Read()
+		resultsChan := make(chan *types.ReadMessage, 1)
+
+		// TODO: This needs some test work
+		err := m.Read(context.Background(), resultsChan, nil)
 
 		Expect(err).ToNot(HaveOccurred())
 		Expect(readMessage).To(Equal("1: testing"))

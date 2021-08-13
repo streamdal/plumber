@@ -1,11 +1,13 @@
 package nats_streaming
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"io/ioutil"
 	"net/url"
 
+	"github.com/batchcorp/plumber/types"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/stan.go"
@@ -31,22 +33,53 @@ func New(opts *options.Options) (*NatsStreaming, error) {
 		return nil, errors.Wrap(err, "unable to validate options")
 	}
 
+	client, stanClient, err := newClient(opts)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create new nats client")
+	}
+
 	return &NatsStreaming{
-		Options: opts,
-		log:     logrus.WithField("backend", "nats_streaming"),
+		Options:    opts,
+		client:     client,
+		stanClient: stanClient,
+		log:        logrus.WithField("backend", "nats_streaming"),
 	}, nil
 }
 
-// TODO: Implement
-func validateOpts(opts *options.Options) error {
+func (n *NatsStreaming) Close(ctx context.Context) error {
+	if n.client != nil {
+		n.client.Close()
+	}
+
+	if n.stanClient != nil {
+		if err := n.stanClient.Close(); err != nil {
+			return errors.Wrap(err, "unable to close stan client")
+		}
+	}
+
+	n.client = nil
+	n.stanClient = nil
+
 	return nil
 }
 
+func (n *NatsStreaming) Test(ctx context.Context) error {
+	return types.NotImplementedErr
+}
+
+func (n *NatsStreaming) Lag(ctx context.Context) (*types.LagStats, error) {
+	return nil, types.UnsupportedFeatureErr
+}
+
+func (n *NatsStreaming) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {
+	return types.UnsupportedFeatureErr
+}
+
 // NewClient creates a new Nats client connection
-func NewClient(opts *options.Options) (*nats.Conn, error) {
+func newClient(opts *options.Options) (*nats.Conn, stan.Conn, error) {
 	uri, err := url.Parse(opts.Nats.Address)
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to parse address")
+		return nil, nil, errors.Wrap(err, "unable to parse address")
 	}
 
 	// Credentials can be specified by a .creds file if users do not wish to pass in the address
@@ -55,27 +88,32 @@ func NewClient(opts *options.Options) (*nats.Conn, error) {
 		creds = nats.UserCredentials(opts.Nats.CredsFile)
 	}
 
+	var connErr error
+	var client *nats.Conn
+
 	if uri.Scheme != "tls" {
 		// Insecure connection
-		c, err := nats.Connect(opts.Nats.Address, creds)
+		client, connErr = nats.Connect(opts.Nats.Address, creds)
+	} else {
+		// TLS Secured connection
+		tlsConfig, err := generateTLSConfig(opts)
 		if err != nil {
-			return nil, errors.Wrap(err, "unable to create new nats client")
+			return nil, nil, errors.Wrap(err, "unable to generate TLS config")
 		}
-		return c, nil
+
+		client, connErr = nats.Connect(opts.Nats.Address, nats.Secure(tlsConfig), creds)
 	}
 
-	// TLS Secured connection
-	tlsConfig, err := generateTLSConfig(opts)
+	if connErr != nil {
+		return nil, nil, errors.Wrap(err, "unable to create connection")
+	}
+
+	stanClient, err := stan.Connect(opts.NatsStreaming.ClusterID, opts.NatsStreaming.ClientID, stan.NatsConn(client))
 	if err != nil {
-		return nil, err
+		return nil, nil, errors.Wrap(err, "unable to create stan client")
 	}
 
-	c, err := nats.Connect(opts.Nats.Address, nats.Secure(tlsConfig), creds)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to create new nats client")
-	}
-
-	return c, nil
+	return client, stanClient, nil
 }
 
 func generateTLSConfig(opts *options.Options) (*tls.Config, error) {
@@ -107,4 +145,9 @@ func generateTLSConfig(opts *options.Options) (*tls.Config, error) {
 		Certificates:       []tls.Certificate{cert},
 		MinVersion:         tls.VersionTLS12,
 	}, nil
+}
+
+// TODO: Implement
+func validateOpts(opts *options.Options) error {
+	return nil
 }

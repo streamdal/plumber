@@ -3,100 +3,58 @@ package nsq
 import (
 	"context"
 
+	ntypes "github.com/batchcorp/plumber/backends/nsq/types"
+	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/stats"
+	"github.com/batchcorp/plumber/types"
 	"github.com/nsqio/go-nsq"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
-	"github.com/batchcorp/plumber/backends/nsq/types"
-	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/relay"
-	"github.com/batchcorp/plumber/stats"
 )
 
-type Relayer struct {
-	Options     *options.Options
-	RelayCh     chan interface{}
-	log         *logrus.Entry
-	ShutdownCtx context.Context
-}
-
-func Relay(opts *options.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
-	if err := validateRelayOptions(opts); err != nil {
-		return nil, errors.Wrap(err, "unable to verify options")
-	}
-
-	return &Relayer{
-		Options:     opts,
-		RelayCh:     relayCh,
-		log:         logrus.WithField("pkg", "nsq/relay"),
-		ShutdownCtx: shutdownCtx,
-	}, nil
-}
-
-func validateRelayOptions(opts *options.Options) error {
-	// These currently accept the same params
-	return validateReadOptions(opts)
-}
-
 // Relay reads messages from NSQ and sends them to RelayCh which is then read by relay.Run()
-func (r *Relayer) Relay() error {
-	r.log.Infof("Relaying NSQ messages from topic '%s', channel '%s' -> %s",
-		r.Options.NSQ.Topic, r.Options.NSQ.Channel, r.Options.RelayGRPCAddress)
-
-	r.log.Infof("HTTP server listening on '%s'", r.Options.RelayHTTPListenAddress)
-
-	config, err := getNSQConfig(r.Options)
-	if err != nil {
-		return errors.Wrap(err, "unable to create NSQ config")
+func (n *NSQ) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {
+	if err := validateRelayOptions(n.Options); err != nil {
+		return errors.Wrap(err, "unable to verify options")
 	}
 
-	consumer, err := nsq.NewConsumer(r.Options.NSQ.Topic, r.Options.NSQ.Channel, config)
-	if err != nil {
-		return errors.Wrap(err, "Could not start NSQ consumer")
-	}
+	n.log.Infof("Relaying NSQ messages from topic '%s', channel '%s' -> %s",
+		n.Options.NSQ.Topic, n.Options.NSQ.Channel, n.Options.Relay.GRPCAddress)
 
-	// Use logrus for NSQ logs
-	consumer.SetLogger(nil, nsq.LogLevelError)
+	n.log.Infof("HTTP server listening on '%s'", n.Options.Relay.HTTPListenAddress)
 
-	consumer.AddHandler(nsq.HandlerFunc(func(msg *nsq.Message) error {
+	n.consumer.AddHandler(nsq.HandlerFunc(func(msg *nsq.Message) error {
 		stats.Incr("nsq-relay-consumer", 1)
 
-		r.log.Debugf("Writing NSQ message to relay channel: %s", string(msg.Body))
+		n.log.Debugf("Writing NSQ message to relay channel: %s", string(msg.Body))
 
-		r.RelayCh <- &types.RelayMessage{
+		relayCh <- &ntypes.RelayMessage{
 			Value: msg,
-			Options: &types.RelayMessageOptions{
-				Topic:   r.Options.NSQ.Topic,
-				Channel: r.Options.NSQ.Channel,
+			Options: &ntypes.RelayMessageOptions{
+				Topic:   n.Options.NSQ.Topic,
+				Channel: n.Options.NSQ.Channel,
 			},
 		}
 
 		return nil
 	}))
 
-	// Connect to correct server. Reading can be done directly from an NSQD server
-	// or let lookupd find the correct one.
-	if r.Options.NSQ.NSQLookupDAddress != "" {
-		if err := consumer.ConnectToNSQLookupd(r.Options.NSQ.NSQLookupDAddress); err != nil {
-			return errors.Wrap(err, "could not connect to nsqlookupd")
-		}
-	} else {
-		if err := consumer.ConnectToNSQD(r.Options.NSQ.NSQDAddress); err != nil {
-			return errors.Wrap(err, "could not connect to nsqd")
-		}
-	}
-
-	defer consumer.Stop()
-
+MAIN:
 	for {
 		select {
-		case <-r.ShutdownCtx.Done():
-			r.log.Info("Received shutdown signal, existing relayer")
-			return nil
+		case <-ctx.Done():
+			n.log.Info("Received shutdown signal, existing relayer")
+			break MAIN
 		default:
 			// noop
 		}
 	}
 
+	n.log.Debug("exiting")
+
 	return nil
+}
+
+func validateRelayOptions(opts *options.Options) error {
+	// These currently accept the same params
+	return validateReadOptions(opts)
 }

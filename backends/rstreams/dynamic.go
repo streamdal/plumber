@@ -8,24 +8,15 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/dproxy"
-	"github.com/batchcorp/plumber/options"
 )
 
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
 // which are then written to the message bus.
-func Dynamic(opts *options.Options) error {
+func (r *RedisStreams) Dynamic(ctx context.Context) error {
 	llog := logrus.WithField("pkg", "rstreams/dynamic")
 
-	// Start up writer
-	writer, err := NewStreamsClient(opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to connect to Redis Streams")
-	}
-
-	defer writer.Close()
-
 	// Start up dynamic connection
-	grpc, err := dproxy.New(opts, "Redis Streams")
+	grpc, err := dproxy.New(r.Options, "Redis Streams")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
@@ -33,15 +24,16 @@ func Dynamic(opts *options.Options) error {
 	go grpc.Start()
 
 	// Continually loop looking for messages on the channel.
+MAIN:
 	for {
 		select {
 		case outbound := <-grpc.OutboundMessageCh:
-			for _, streamName := range opts.RedisStreams.Streams {
-				_, err := writer.XAdd(context.Background(), &redis.XAddArgs{
+			for _, streamName := range r.Options.RedisStreams.Streams {
+				_, err := r.client.XAdd(context.Background(), &redis.XAddArgs{
 					Stream: streamName,
-					ID:     opts.RedisStreams.WriteID,
+					ID:     r.Options.RedisStreams.WriteID,
 					Values: map[string]interface{}{
-						opts.RedisStreams.WriteKey: outbound.Blob,
+						r.Options.RedisStreams.WriteKey: outbound.Blob,
 					},
 				}).Result()
 				if err != nil {
@@ -51,6 +43,13 @@ func Dynamic(opts *options.Options) error {
 
 				llog.Debugf("Replayed message to Redis stream '%s' for replay '%s'", streamName, outbound.ReplayId)
 			}
+		case <-ctx.Done():
+			r.log.Debug("context cancelled")
+			break MAIN
 		}
 	}
+
+	r.log.Debug("dynamic exiting")
+
+	return nil
 }

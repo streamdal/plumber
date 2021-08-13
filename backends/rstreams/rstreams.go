@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/batchcorp/plumber/types"
 	"github.com/go-redis/redis/v8"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -15,10 +15,8 @@ import (
 type RedisStreams struct {
 	Options *options.Options
 
-	client  *redis.Client
-	msgDesc *desc.MessageDescriptor
-	ctx     context.Context
-	log     *logrus.Entry
+	client *redis.Client
+	log    *logrus.Entry
 }
 
 func New(opts *options.Options) (*RedisStreams, error) {
@@ -26,18 +24,39 @@ func New(opts *options.Options) (*RedisStreams, error) {
 		return nil, errors.Wrap(err, "unable to validate options")
 	}
 
+	client, err := newClient(opts)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create new client")
+	}
+
 	return &RedisStreams{
 		Options: opts,
+		client:  client,
 		log:     logrus.WithField("backend", "rstreams"),
 	}, nil
 }
 
-// TODO: Implement
-func validateOpts(opts *options.Options) error {
+func (r *RedisStreams) Close(ctx context.Context) error {
+	if r.client == nil {
+		return nil
+	}
+
+	if err := r.client.Close(); err != nil {
+		return errors.Wrap(err, "unable to close client")
+	}
+
 	return nil
 }
 
-func NewClient(opts *options.Options) (*redis.Client, error) {
+func (r *RedisStreams) Test(ctx context.Context) error {
+	return types.NotImplementedErr
+}
+
+func (r *RedisStreams) Lag(ctx context.Context) (*types.LagStats, error) {
+	return nil, types.UnsupportedFeatureErr
+}
+
+func newClient(opts *options.Options) (*redis.Client, error) {
 	return redis.NewClient(&redis.Options{
 		Addr:     opts.RedisPubSub.Address,
 		Username: opts.RedisPubSub.Username,
@@ -46,16 +65,7 @@ func NewClient(opts *options.Options) (*redis.Client, error) {
 	}), nil
 }
 
-func NewStreamsClient(opts *options.Options) (*redis.Client, error) {
-	return redis.NewClient(&redis.Options{
-		Addr:     opts.RedisStreams.Address,
-		Username: opts.RedisStreams.Username,
-		Password: opts.RedisStreams.Password,
-		DB:       opts.RedisStreams.Database,
-	}), nil
-}
-
-func CreateConsumerGroups(ctx context.Context, client *redis.Client, opts *options.RedisStreamsOptions) error {
+func createConsumerGroups(ctx context.Context, client *redis.Client, opts *options.RedisStreamsOptions) error {
 	for _, stream := range opts.Streams {
 		if opts.RecreateConsumerGroup {
 			logrus.Debugf("deleting consumer group '%s'", opts.ConsumerGroup)
@@ -82,6 +92,18 @@ func CreateConsumerGroups(ctx context.Context, client *redis.Client, opts *optio
 				return fmt.Errorf("error creating consumer group for stream '%s': %s", stream, err)
 			}
 		}
+	}
+
+	return nil
+}
+
+func validateOpts(opts *options.Options) error {
+	if opts == nil {
+		return errors.New("opts cannot be nil")
+	}
+
+	if opts.RedisStreams == nil {
+		return errors.New("Redis Streams options cannot be nil")
 	}
 
 	return nil

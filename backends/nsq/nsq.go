@@ -1,10 +1,12 @@
 package nsq
 
 import (
+	context "context"
 	"crypto/tls"
 	"crypto/x509"
 	"io/ioutil"
 
+	"github.com/batchcorp/plumber/types"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/nsqio/go-nsq"
 	"github.com/pkg/errors"
@@ -26,6 +28,7 @@ type NSQ struct {
 	Options *options.Options
 
 	msgDesc  *desc.MessageDescriptor
+	consumer *nsq.Consumer
 	producer *nsq.Producer
 	log      *NSQLogger
 }
@@ -35,15 +38,80 @@ func New(opts *options.Options) (*NSQ, error) {
 		return nil, errors.Wrap(err, "unable to validate options")
 	}
 
+	cfg, err := getNSQConfig(opts)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to generate nsq config")
+	}
+
+	logger := &NSQLogger{
+		Entry: logrus.WithField("backend", "nsq"),
+	}
+
+	logLevel := nsq.LogLevelError
+	if opts.Debug {
+		logLevel = nsq.LogLevelDebug
+	}
+
+	consumer, err := nsq.NewConsumer(opts.NSQ.Topic, opts.NSQ.Channel, cfg)
+	if err != nil {
+		return nil, errors.Wrap(err, "Could not start NSQ consumer")
+	}
+
+	// Connect to correct server. Reading can be done directly from an NSQD server
+	// or let lookupd find the correct one.
+	if opts.NSQ.NSQLookupDAddress != "" {
+		if err := consumer.ConnectToNSQLookupd(opts.NSQ.NSQLookupDAddress); err != nil {
+			return nil, errors.Wrap(err, "could not connect to nsqlookupd")
+		}
+	} else {
+		if err := consumer.ConnectToNSQD(opts.NSQ.NSQDAddress); err != nil {
+			return nil, errors.Wrap(err, "could not connect to nsqd")
+		}
+	}
+
+	producer, err := nsq.NewProducer(opts.NSQ.NSQDAddress, cfg)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to start NSQ producer")
+	}
+
+	consumer.SetLogger(logger, logLevel)
+	producer.SetLogger(logger, logLevel)
+
 	return &NSQ{
-		Options: opts,
-		log:     &NSQLogger{logrus.WithField("backend", "nsq")},
+		Options:  opts,
+		consumer: consumer,
+		producer: producer,
+		log:      logger,
 	}, nil
 }
 
-// TODO: Implement
-func validateOpts(opts *options.Options) error {
+func (n *NSQ) Close(ctx context.Context) error {
+	// TODO: Wrap Stop()'s in ctx to support timeout
+
+	if n.consumer != nil {
+		n.consumer.Stop()
+	}
+
+	if n.producer != nil {
+		n.producer.Stop()
+	}
+
+	n.consumer = nil
+	n.producer = nil
+
 	return nil
+}
+
+func (n *NSQ) Test(ctx context.Context) error {
+	return types.NotImplementedErr
+}
+
+func (n *NSQ) Dynamic(ctx context.Context) error {
+	return types.UnsupportedFeatureErr
+}
+
+func (n *NSQ) Lag(ctx context.Context) (*types.LagStats, error) {
+	return nil, types.UnsupportedFeatureErr
 }
 
 // getNSQConfig returns the config needed for creating a new NSQ consumer or producer
@@ -103,6 +171,18 @@ func generateTLSConfig(opts *options.Options) (*tls.Config, error) {
 		InsecureSkipVerify: opts.NSQ.InsecureTLS,
 		Certificates:       []tls.Certificate{cert},
 	}, nil
+}
+
+func validateOpts(opts *options.Options) error {
+	if opts == nil {
+		return errors.New("opts cannot be nil")
+	}
+
+	if opts.NSQ == nil {
+		return errors.New("NSQ opts cannot be nil")
+	}
+
+	return nil
 }
 
 // NSQLogger wraps logrus and implements the Output() method so we can satisfy the interface

@@ -1,52 +1,17 @@
 package nats_streaming
 
 import (
-	"github.com/jhump/protoreflect/desc"
-	"github.com/nats-io/stan.go"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
+	"context"
 
-	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/writer"
+	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
+	"github.com/pkg/errors"
 )
 
-func Write(opts *options.Options, md *desc.MessageDescriptor) error {
-	if err := writer.ValidateWriteOptions(opts, nil); err != nil {
-		return errors.Wrap(err, "unable to validate write options")
-	}
-
-	writeValues, err := writer.GenerateWriteMessageFromOptions(md, opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to generate write value")
-	}
-
-	natsClient, err := NewClient(opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to create client")
-	}
-
-	defer natsClient.Close()
-
-	stanClient, err := stan.Connect(opts.NatsStreaming.ClusterID, opts.NatsStreaming.ClientID, stan.NatsConn(natsClient))
-	if err != nil {
-		return errors.Wrap(err, "could not create NATS subscription")
-	}
-
-	defer stanClient.Close()
-
-	n := &NatsStreaming{
-		Options:    opts,
-		msgDesc:    md,
-		client:     natsClient,
-		stanClient: stanClient,
-		log:        logrus.WithField("pkg", "nats-streaming/write.go"),
-		printer:    printer.New(),
-	}
-
-	for _, value := range writeValues {
-		if err := n.Write(value); err != nil {
-			n.log.Error(err)
+func (n *NatsStreaming) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {
+	for _, msg := range messages {
+		if err := n.write(msg.Value); err != nil {
+			util.WriteError(n.log, errorCh, err)
 		}
 	}
 
@@ -55,7 +20,7 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 // Write publishes a message to a NATS streaming channel. The publish is synchronous, and will not complete until
 // an ACK has been received by the server
-func (n *NatsStreaming) Write(value []byte) error {
+func (n *NatsStreaming) write(value []byte) error {
 	if err := n.stanClient.Publish(n.Options.NatsStreaming.Channel, value); err != nil {
 		return errors.Wrap(err, "unable to publish message")
 	}

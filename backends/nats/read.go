@@ -1,76 +1,43 @@
 package nats
 
 import (
-	"fmt"
+	"context"
 
-	"github.com/jhump/protoreflect/desc"
+	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
-	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/reader"
 )
 
-func Read(opts *options.Options, md *desc.MessageDescriptor) error {
-	if err := validateReadOptions(opts); err != nil {
-		return errors.Wrap(err, "unable to validate read options")
-	}
-
-	client, err := NewClient(opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to create client")
-	}
-
-	n := &Nats{
-		Options: opts,
-		msgDesc: md,
-		client:  client,
-		log:     logrus.WithField("pkg", "nats/read.go"),
-	}
-
-	return n.Read()
-}
-
-func (n *Nats) Read() error {
-	defer n.client.Close()
+func (n *Nats) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {
 	n.log.Info("Listening for message(s) ...")
 
 	count := 1
 
 	// nats.Subscribe is async, use channel to wait to exit
-	doneCh := make(chan bool)
+	doneCh := make(chan struct{})
 	defer close(doneCh)
 
-	n.client.Subscribe(n.Options.Nats.Subject, func(msg *nats.Msg) {
-		data, err := reader.Decode(n.Options, n.msgDesc, msg.Data)
-		if err != nil {
-			n.log.Error(err)
-			return
+	if _, err := n.client.Subscribe(n.Options.Nats.Subject, func(msg *nats.Msg) {
+		resultsChan <- &types.ReadMessage{
+			Value: msg.Data,
+			Metadata: map[string]interface{}{
+				"subject": msg.Subject,
+				"reply":   msg.Reply,
+			},
 		}
 
-		str := string(data)
-
-		str = fmt.Sprintf("%d: ", count) + str
 		count++
 
-		printer.Print(str)
-
-		if !n.Options.ReadFollow {
-			doneCh <- true
+		if !n.Options.Read.Follow {
+			doneCh <- struct{}{}
 		}
-	})
+	}); err != nil {
+		util.WriteError(n.log, errorChan, errors.Wrap(err, "error during subscribe"))
+		return errors.Wrap(err, "error during subscribe")
+	}
 
 	<-doneCh
 
-	return nil
-}
-
-// validateReadOptions ensures the correct CLI options are specified for the read action
-func validateReadOptions(opts *options.Options) error {
-	if opts.Nats.Subject == "" {
-		return errMissingSubject
-	}
 	return nil
 }
