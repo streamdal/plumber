@@ -4,8 +4,13 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/batchcorp/plumber/server/types"
+
+	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	clientv3 "go.etcd.io/etcd/client/v3"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
 )
 
 func (e *Etcd) handleBroadcastWatchResponse(ctx context.Context, resp *clientv3.WatchResponse) error {
@@ -30,8 +35,30 @@ func (e *Etcd) handleBroadcastWatchResponse(ctx context.Context, resp *clientv3.
 
 		// Add actions here that the consumer should respond to
 		switch msg.Action {
-		case DoFoobazAction:
-			err = e.doFoobaz(ctx, msg)
+		case CreateConnection:
+			err = e.doCreateConnection(ctx, msg)
+		case UpdateConnection:
+			err = e.doUpdateConnection(ctx, msg)
+		case DeleteConnection:
+			err = e.doDeleteConnection(ctx, msg)
+		case CreateService:
+			err = e.doCreateService(ctx, msg)
+		case UpdateService:
+			err = e.doUpdateService(ctx, msg)
+		case DeleteService:
+			err = e.doDeleteService(ctx, msg)
+		case CreateSchema:
+			err = e.doCreateSchema(ctx, msg)
+		case UpdateSchema:
+			err = e.doUpdateSchema(ctx, msg)
+		case DeleteSchema:
+			err = e.doDeleteSchema(ctx, msg)
+		case CreateRelay:
+			err = e.doCreateRelay(ctx, msg)
+		case UpdateRelay:
+			err = e.doUpdateRelay(ctx, msg)
+		case DeleteRelay:
+			err = e.doDeleteRelay(ctx, msg)
 		default:
 			e.log.Debugf("unrecognized action '%s' for key '%s' - skipping", msg.Action, string(v.Kv.Key))
 		}
@@ -45,7 +72,180 @@ func (e *Etcd) handleBroadcastWatchResponse(ctx context.Context, resp *clientv3.
 	return nil
 }
 
-func (e *Etcd) doFoobaz(ctx context.Context, msg *Message) error {
-	e.log.Debugf("running doFoobaz handler for msg emitted by %s", msg.EmittedBy)
+func (e *Etcd) doCreateConnection(_ context.Context, msg *Message) error {
+	e.log.Debugf("running doCreateConnection handler for msg emitted by %s", msg.EmittedBy)
+
+	conn := &protos.Connection{}
+	if err := proto.Unmarshal(msg.Data, conn); err != nil {
+		return errors.Wrap(err, "unable to unmarshal message into protos.Connection")
+	}
+
+	// Save connection to in-memory map
+	e.PlumberConfig.SetConnection(conn.Id, &types.Connection{Connection: conn})
+
+	e.log.Debugf("created connection '%s'", conn.Name)
+
+	return nil
+}
+
+func (e *Etcd) doUpdateConnection(_ context.Context, msg *Message) error {
+	e.log.Debugf("running doCreateConnection handler for msg emitted by %s", msg.EmittedBy)
+
+	conn := &protos.Connection{}
+	if err := proto.Unmarshal(msg.Data, conn); err != nil {
+		return errors.Wrap(err, "unable to unmarshal message into protos.Connection")
+	}
+
+	// Update connection in in-memory map
+	e.PlumberConfig.SetConnection(conn.Id, &types.Connection{Connection: conn})
+
+	e.log.Debugf("updated connection '%s'", conn.Name)
+
+	// TODO: some way to signal reads/relays to restart? How will GRPC streams handle this?
+
+	return nil
+}
+
+func (e *Etcd) doDeleteConnection(_ context.Context, msg *Message) error {
+	e.log.Debugf("running doCreateConnection handler for msg emitted by %s", msg.EmittedBy)
+
+	conn := &protos.Connection{}
+	if err := proto.Unmarshal(msg.Data, conn); err != nil {
+		return errors.Wrap(err, "unable to unmarshal message into protos.Connection")
+	}
+
+	// Delete connection
+	e.PlumberConfig.DeleteConnection(conn.Id)
+
+	e.log.Debugf("deleted connection '%s'", conn.Name)
+
+	// TODO: stop reads/relays from this connection?
+
+	return nil
+}
+
+func (e *Etcd) doCreateService(_ context.Context, msg *Message) error {
+	svc := &protos.Service{}
+	if err := proto.Unmarshal(msg.Data, svc); err != nil {
+		return errors.Wrap(err, "unable to unmarshal message into protos.Service")
+	}
+
+	// Set in config map
+	e.PlumberConfig.SetService(svc.Id, &types.Service{Service: svc})
+
+	e.log.Debugf("updated service '%s'", svc.Name)
+
+	return nil
+}
+
+func (e *Etcd) doUpdateService(_ context.Context, msg *Message) error {
+	svc := &protos.Service{}
+	if err := proto.Unmarshal(msg.Data, svc); err != nil {
+		return errors.Wrap(err, "unable to unmarshal message into protos.Service")
+	}
+
+	// Set in config map
+	e.PlumberConfig.SetService(svc.Id, &types.Service{Service: svc})
+
+	e.log.Debugf("updated service '%s'", svc.Name)
+
+	return nil
+}
+
+func (e *Etcd) doDeleteService(_ context.Context, msg *Message) error {
+	svc := &protos.Service{}
+	if err := proto.Unmarshal(msg.Data, svc); err != nil {
+		return errors.Wrap(err, "unable to unmarshal message into protos.Service")
+	}
+
+	// Set in config map
+	e.PlumberConfig.DeleteService(svc.Id)
+
+	e.log.Debugf("deleted service '%s'", svc.Name)
+
+	return nil
+}
+
+func (e *Etcd) doCreateSchema(_ context.Context, msg *Message) error {
+	schema := &protos.Schema{}
+	if err := proto.Unmarshal(msg.Data, schema); err != nil {
+		return errors.Wrap(err, "unable to unmarshal message into protos.Schema")
+	}
+
+	// Set in config map
+	e.PlumberConfig.SetSchema(schema.Id, &types.Schema{Schema: schema})
+
+	e.log.Debugf("updated schema '%s'", schema.Name)
+
+	return nil
+}
+
+func (e *Etcd) doUpdateSchema(_ context.Context, msg *Message) error {
+	schema := &protos.Schema{}
+	if err := proto.Unmarshal(msg.Data, schema); err != nil {
+		return errors.Wrap(err, "unable to unmarshal message into protos.Schema")
+	}
+
+	// Set in config map
+	e.PlumberConfig.SetSchema(schema.Id, &types.Schema{Schema: schema})
+
+	e.log.Debugf("updated schema '%s'", schema.Name)
+
+	return nil
+}
+
+func (e *Etcd) doDeleteSchema(_ context.Context, msg *Message) error {
+	svc := &protos.Schema{}
+	if err := proto.Unmarshal(msg.Data, svc); err != nil {
+		return errors.Wrap(err, "unable to unmarshal message into protos.Schema")
+	}
+
+	// Set in config map
+	e.PlumberConfig.DeleteSchema(svc.Id)
+
+	e.log.Debugf("deleted schema '%s'", svc.Name)
+
+	return nil
+}
+
+func (e *Etcd) doCreateRelay(_ context.Context, msg *Message) error {
+	relay := &protos.Relay{}
+	if err := proto.Unmarshal(msg.Data, relay); err != nil {
+		return errors.Wrap(err, "unable to unmarshal message into protos.Relay")
+	}
+
+	// Set in config map
+	e.PlumberConfig.SetRelay(relay.RelayId, &types.Relay{Config: relay})
+
+	e.log.Debugf("updated relay '%s'", relay.RelayId)
+
+	return nil
+}
+
+func (e *Etcd) doUpdateRelay(_ context.Context, msg *Message) error {
+	relay := &protos.Relay{}
+	if err := proto.Unmarshal(msg.Data, relay); err != nil {
+		return errors.Wrap(err, "unable to unmarshal message into protos.Relay")
+	}
+
+	// Set in config map
+	e.PlumberConfig.SetRelay(relay.RelayId, &types.Relay{Config: relay})
+
+	e.log.Debugf("updated relay '%s'", relay.RelayId)
+
+	return nil
+}
+
+func (e *Etcd) doDeleteRelay(_ context.Context, msg *Message) error {
+	relay := &protos.Relay{}
+	if err := proto.Unmarshal(msg.Data, relay); err != nil {
+		return errors.Wrap(err, "unable to unmarshal message into protos.Relay")
+	}
+
+	// Set in config map
+	e.PlumberConfig.DeleteRelay(relay.RelayId)
+
+	e.log.Debugf("deleted schema '%s'", relay.RelayId)
+
 	return nil
 }

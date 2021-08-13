@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/golang/protobuf/proto"
+	"github.com/pkg/errors"
+
 	"github.com/batchcorp/plumber/server/types"
 
 	uuid "github.com/satori/go.uuid"
@@ -17,7 +20,7 @@ func (p *PlumberServer) GetService(_ context.Context, req *protos.GetServiceRequ
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	svc := p.getService(req.Id)
+	svc := p.PersistentConfig.GetService(req.Id)
 	if svc == nil {
 		return nil, CustomError(common.Code_NOT_FOUND, "service does not exist")
 	}
@@ -36,8 +39,8 @@ func (p *PlumberServer) GetAllServices(_ context.Context, req *protos.GetAllServ
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	p.ServicesMutex.RLock()
-	defer p.ServicesMutex.RUnlock()
+	p.PersistentConfig.ServicesMutex.RLock()
+	defer p.PersistentConfig.ServicesMutex.RUnlock()
 
 	services := make([]*protos.Service, 0)
 
@@ -54,7 +57,7 @@ func (p *PlumberServer) GetAllServices(_ context.Context, req *protos.GetAllServ
 	}, nil
 }
 
-func (p *PlumberServer) CreateService(_ context.Context, req *protos.CreateServiceRequest) (*protos.CreateServiceResponse, error) {
+func (p *PlumberServer) CreateService(ctx context.Context, req *protos.CreateServiceRequest) (*protos.CreateServiceResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -71,8 +74,18 @@ func (p *PlumberServer) CreateService(_ context.Context, req *protos.CreateServi
 
 	svc.Id = uuid.NewV4().String()
 
-	p.setService(svc.Id, &types.Service{Service: svc})
-	p.PersistentConfig.Save()
+	data, err := proto.Marshal(svc)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to save service to etcd")
+	}
+
+	// Save to etcd
+	_, err = p.Etcd.Put(ctx, EtcdServicesPrefix+"/"+svc.Id, string(data))
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to save schema '%s' to etcd", svc.Id)
+	}
+
+	p.PersistentConfig.SetService(svc.Id, &types.Service{Service: svc})
 
 	return &protos.CreateServiceResponse{
 		Service: svc,
@@ -84,12 +97,12 @@ func (p *PlumberServer) CreateService(_ context.Context, req *protos.CreateServi
 	}, nil
 }
 
-func (p *PlumberServer) UpdateService(_ context.Context, req *protos.UpdateServiceRequest) (*protos.UpdateServiceResponse, error) {
+func (p *PlumberServer) UpdateService(ctx context.Context, req *protos.UpdateServiceRequest) (*protos.UpdateServiceResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	svc := p.getService(req.Service.Id)
+	svc := p.PersistentConfig.GetService(req.Service.Id)
 	if svc == nil {
 		return nil, CustomError(common.Code_NOT_FOUND, "service does not exist")
 	}
@@ -100,8 +113,22 @@ func (p *PlumberServer) UpdateService(_ context.Context, req *protos.UpdateServi
 
 	svc.Service = req.Service
 
-	p.setService(svc.Id, svc)
-	p.PersistentConfig.Save()
+	data, err := proto.Marshal(svc.Service)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to save service to etcd")
+	}
+
+	// Save to etcd
+	_, err = p.Etcd.Put(ctx, EtcdServicesPrefix+"/"+svc.Id, string(data))
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to save service '%s' to etcd", svc.Id)
+	}
+
+	p.PersistentConfig.SetService(svc.Id, svc)
+
+	if err := p.Etcd.PublishUpdateService(ctx, svc.Service); err != nil {
+		p.Log.Error(err)
+	}
 
 	return &protos.UpdateServiceResponse{
 		Service: svc.Service,
@@ -113,20 +140,29 @@ func (p *PlumberServer) UpdateService(_ context.Context, req *protos.UpdateServi
 	}, nil
 }
 
-func (p *PlumberServer) DeleteService(_ context.Context, req *protos.DeleteServiceRequest) (*protos.DeleteServiceResponse, error) {
+func (p *PlumberServer) DeleteService(ctx context.Context, req *protos.DeleteServiceRequest) (*protos.DeleteServiceResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	if _, ok := p.PersistentConfig.Services[req.Id]; !ok {
+	svc := p.PersistentConfig.GetService(req.Id)
+	if svc == nil {
 		return nil, CustomError(common.Code_NOT_FOUND, "service does not exist")
 	}
 
-	p.ServicesMutex.Lock()
-	delete(p.PersistentConfig.Services, req.Id)
-	p.ServicesMutex.Unlock()
+	// Delete in etcd
+	_, err := p.Etcd.Delete(ctx, EtcdServicesPrefix+"/"+svc.Id)
+	if err != nil {
+		return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to delete service: "+err.Error()))
+	}
 
-	p.PersistentConfig.Save()
+	// Delete in memory
+	p.PersistentConfig.DeleteService(svc.Id)
+
+	// Publish DeleteService event
+	if err := p.Etcd.PublishDeleteService(ctx, svc.Service); err != nil {
+		p.Log.Error(err)
+	}
 
 	return &protos.DeleteServiceResponse{
 		Status: &common.Status{

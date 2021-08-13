@@ -8,12 +8,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
+
+	"github.com/batchcorp/plumber/config"
+
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.etcd.io/etcd/server/v3/embed"
+
+	"github.com/batchcorp/plumber/cli"
 )
 
 const (
@@ -23,9 +28,40 @@ const (
 
 type HandlerFunc func(context.Context, *clientv3.WatchResponse) error
 
+type IEtcd interface {
+	// Client methods
+
+	Get(ctx context.Context, key string, opts ...clientv3.OpOption) (*clientv3.GetResponse, error)
+	Put(ctx context.Context, key, val string, opts ...clientv3.OpOption) (*clientv3.PutResponse, error)
+	Delete(ctx context.Context, key string, opts ...clientv3.OpOption) (*clientv3.DeleteResponse, error)
+
+	// Server methods
+
+	Broadcast(ctx context.Context, msg *Message) error
+	Direct(ctx context.Context, node string, msg *Message) error
+	Shutdown(force bool) error
+	Start(serviceCtx context.Context) error
+
+	// Message Publish helpers
+
+	PublishCreateService(ctx context.Context, svc *protos.Service) error
+	PublishUpdateService(ctx context.Context, svc *protos.Service) error
+	PublishDeleteService(ctx context.Context, svc *protos.Service) error
+	PublishCreateConnection(ctx context.Context, conn *protos.Connection) error
+	PublishUpdateConnection(ctx context.Context, conn *protos.Connection) error
+	PublishDeleteConnection(ctx context.Context, conn *protos.Connection) error
+	PublishCreateSchema(ctx context.Context, schema *protos.Schema) error
+	PublishUpdateSchema(ctx context.Context, schema *protos.Schema) error
+	PublishDeleteSchema(ctx context.Context, schema *protos.Schema) error
+	PublishCreateRelay(ctx context.Context, relay *protos.Relay) error
+	PublishUpdateRelay(ctx context.Context, relay *protos.Relay) error
+	PublishDeleteRelay(ctx context.Context, relay *protos.Relay) error
+}
+
 type Etcd struct {
 	server             *embed.Etcd
-	client             *clientv3.Client
+	Client             *clientv3.Client
+	PlumberConfig      *config.Config
 	cfg                *cli.ServerOptions
 	started            bool
 	consumerContext    context.Context
@@ -38,14 +74,15 @@ var (
 	ServerAlreadyStartedErr = errors.New("server already started")
 )
 
-func New(cfg *cli.ServerOptions) (*Etcd, error) {
+func New(cfg *cli.ServerOptions, plumberConfig *config.Config) (*Etcd, error) {
 	if err := validateOptions(cfg); err != nil {
 		return nil, errors.Wrap(err, "unable to validate options")
 	}
 
 	return &Etcd{
-		cfg: cfg,
-		log: logrus.WithField("pkg", "etcd"),
+		cfg:           cfg,
+		PlumberConfig: plumberConfig,
+		log:           logrus.WithField("pkg", "etcd"),
 	}, nil
 }
 
@@ -109,15 +146,15 @@ func (e *Etcd) Start(serviceCtx context.Context) error {
 		return errors.Wrap(err, "unable to launch embedded etcd")
 	}
 
-	// Setup etcd client
+	// Setup etcd Client
 	client, err := e.createClient("127.0.0.1:2379")
 	if err != nil {
 		cancelFunc()
-		return errors.Wrap(err, "unable to create etcd client")
+		return errors.Wrap(err, "unable to create etcd Client")
 	}
 
 	e.server = embeddedEtcd
-	e.client = client
+	e.Client = client
 
 	// Start broadcast consumer
 	go func() {
@@ -216,7 +253,7 @@ func (e *Etcd) writeMessage(ctx context.Context, path string, msg *Message) erro
 		return errors.Wrap(err, "unable to marshal msg to JSON")
 	}
 
-	if _, err := e.client.Put(ctx, path, string(msgData)); err != nil {
+	if _, err := e.Client.Put(ctx, path, string(msgData)); err != nil {
 		return fmt.Errorf("unable to put key '%s': %s", path, err)
 	}
 
@@ -279,11 +316,11 @@ func (e *Etcd) runBroadcastConsumer(serviceCtx, consumerCtx context.Context) err
 }
 
 func (e *Etcd) watch(serviceCtx, consumerCtx context.Context, path string, handlerFunc HandlerFunc) error {
-	if e.client == nil {
-		return errors.New("client cannot be nil")
+	if e.Client == nil {
+		return errors.New("Client cannot be nil")
 	}
 
-	watchChan := e.client.Watch(serviceCtx, path, clientv3.WithPrefix())
+	watchChan := e.Client.Watch(serviceCtx, path, clientv3.WithPrefix())
 
 MAIN:
 	for {
@@ -306,4 +343,16 @@ MAIN:
 	}
 
 	return nil
+}
+
+func (e *Etcd) Get(ctx context.Context, key string, opts ...clientv3.OpOption) (*clientv3.GetResponse, error) {
+	return e.Client.Get(ctx, key, opts...)
+}
+
+func (e *Etcd) Put(ctx context.Context, key, val string, opts ...clientv3.OpOption) (*clientv3.PutResponse, error) {
+	return e.Client.Put(ctx, key, val, opts...)
+}
+
+func (e *Etcd) Delete(ctx context.Context, key string, opts ...clientv3.OpOption) (*clientv3.DeleteResponse, error) {
+	return e.Client.Delete(ctx, key, opts...)
 }

@@ -59,7 +59,7 @@ func testConnectionKafka(connCfg *conns.Kafka) error {
 
 // getBackendRead gets the backend message bus needed to read/write from
 func (p *PlumberServer) getBackendRead(read *protos.Read) (*kafka.KafkaReader, error) {
-	connCfg := p.getConn(read.ConnectionId)
+	connCfg := p.PersistentConfig.GetConnection(read.ConnectionId)
 	if connCfg == nil {
 		return nil, errors.New("connection does not exist")
 	}
@@ -155,7 +155,7 @@ func getBackendReadKafka(connCfg *conns.Kafka, readArgs *args.Kafka, sampleOptio
 // getBackendWrite gets the backend message bus needed to read/write from
 // TODO: genericize after backend refactor
 func (p *PlumberServer) getBackendWrite(req *protos.WriteRequest) (*kafka.KafkaWriter, error) {
-	connCfg := p.getConn(req.ConnectionId)
+	connCfg := p.PersistentConfig.GetConnection(req.ConnectionId)
 	if connCfg == nil {
 		return nil, errors.New("connection does not exist")
 	}

@@ -12,12 +12,10 @@ import (
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoparse"
-	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
-	"github.com/batchcorp/plumber/pb"
 )
 
 // getMessageDescriptor returns a message descriptor using either the provided stored schema ID, or
@@ -39,7 +37,7 @@ func (p *PlumberServer) getMessageDescriptor(opts *encoding.Options) (*desc.Mess
 	}
 
 	// Using stored schema
-	schema := p.getSchema(opts.SchemaId)
+	schema := p.PersistentConfig.GetSchema(opts.SchemaId)
 	if schema == nil {
 		return nil, fmt.Errorf("schema '%s' not found", opts.SchemaId)
 	}
@@ -83,17 +81,6 @@ func GetMDFromDescriptorBlob(blob []byte, rootType string) (*desc.MessageDescrip
 	}
 
 	return md, nil
-}
-
-// DecodeProtobuf decodes a protobuf message to json
-func DecodeProtobuf(md *desc.MessageDescriptor, message []byte) ([]byte, error) {
-	// Decode message
-	decoded, err := pb.DecodeProtobufToJSON(dynamic.NewMessage(md), message)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to decode protobuf message")
-	}
-
-	return decoded, nil
 }
 
 // readFileDescriptors takes in a map of protobuf files and their contents, and pulls file descriptors for each

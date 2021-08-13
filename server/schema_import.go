@@ -36,9 +36,6 @@ func (p *PlumberServer) importGithub(ctx context.Context, req *protos.ImportGith
 		return nil, err
 	}
 
-	p.setSchema(schema.Schema.Id, schema)
-	p.PersistentConfig.Save()
-
 	return schema, nil
 }
 
@@ -82,9 +79,6 @@ func (p *PlumberServer) importLocal(req *protos.ImportLocalRequest) (*types.Sche
 	if err != nil {
 		return nil, err
 	}
-
-	p.setSchema(schema.Schema.Id, schema)
-	p.PersistentConfig.Save()
 
 	return schema, nil
 }

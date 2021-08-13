@@ -6,12 +6,13 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/batchcorp/plumber/cli"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	clientv3 "go.etcd.io/etcd/client/v3"
+
+	"github.com/batchcorp/plumber/cli"
 )
 
 var _ = Describe("Etcd", func() {
