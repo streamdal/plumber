@@ -30,7 +30,7 @@ func (p *PlumberServer) Write(ctx context.Context, req *protos.WriteRequest) (*p
 	}
 
 	// We only need/want to do this once, so generate and pass to generateWriteValue
-	md, err := p.getMessageDescriptor(req.EncodeOptions)
+	md, err := p.getMessageDescriptor(req.GetEncodeOptions())
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func (p *PlumberServer) Write(ctx context.Context, req *protos.WriteRequest) (*p
 	for _, v := range req.Records {
 		km := v.GetKafka()
 
-		blob, err := generateWriteValue(md, req.EncodeOptions, km.Value)
+		blob, err := generateWriteValue(md, req.GetEncodeOptions(), km.Value)
 		if err != nil {
 			p.Log.Errorf("Could not generate write value: %s", err)
 			continue
@@ -83,6 +83,11 @@ func (p *PlumberServer) Write(ctx context.Context, req *protos.WriteRequest) (*p
 
 // generateWriteValue encodes the message value using avro/protobuf/etc
 func generateWriteValue(md *desc.MessageDescriptor, encodingOpts *encoding.Options, data []byte) ([]byte, error) {
+	// No encoding options passed
+	if encodingOpts == nil {
+		return data, nil
+	}
+
 	var err error
 
 	switch encodingOpts.Type {

@@ -23,6 +23,11 @@ import (
 // getMessageDescriptor returns a message descriptor using either the provided stored schema ID, or
 // the provided protobuf zip file and root type
 func (p *PlumberServer) getMessageDescriptor(opts *encoding.Options) (*desc.MessageDescriptor, error) {
+	// No decode options passed
+	if opts == nil {
+		return nil, nil
+	}
+
 	if opts.Type != encoding.Type_PROTOBUF {
 		return nil, nil
 	}
@@ -35,7 +40,13 @@ func (p *PlumberServer) getMessageDescriptor(opts *encoding.Options) (*desc.Mess
 			return nil, err
 		}
 
-		return GetMDFromDescriptors(fds, pbOptions.RootType)
+		md, err := GetMDFromDescriptors(fds, pbOptions.RootType)
+		if err != nil {
+			return nil, err
+		}
+		if md == nil {
+			return nil, errors.New("unable to decode message descriptor")
+		}
 	}
 
 	// Using stored schema
@@ -44,8 +55,15 @@ func (p *PlumberServer) getMessageDescriptor(opts *encoding.Options) (*desc.Mess
 		return nil, fmt.Errorf("schema '%s' not found", opts.SchemaId)
 	}
 
-	return GetMDFromDescriptorBlob(schema.MessageDescriptor, schema.RootType)
+	md, err := GetMDFromDescriptorBlob(schema.MessageDescriptor, schema.RootType)
+	if err != nil {
+		return nil, err
+	}
+	if md == nil {
+		return nil, errors.New("unable to decode message descriptor")
+	}
 
+	return md, nil
 }
 
 // GetMDFromDescriptors takes a stored sceham's file descriptorset blob and returns the necessary

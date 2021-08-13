@@ -21,4 +21,15 @@ var _ = Describe("Decoding", func() {
 			Expect(cleaned).To(Equal(expected))
 		})
 	})
+
+	Context("getMessageDescriptor", func() {
+		It("returns nil,nil when no options passed", func() {
+			p := &PlumberServer{}
+
+			md, err := p.getMessageDescriptor(nil)
+
+			Expect(err).ToNot(HaveOccurred())
+			Expect(md).To(BeNil())
+		})
+	})
 })
