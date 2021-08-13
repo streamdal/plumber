@@ -1,19 +1,16 @@
 package nats_streaming
 
 import (
-	"fmt"
+	"context"
 	"time"
 
+	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
 	pb2 "github.com/nats-io/stan.go/pb"
 
-	"github.com/jhump/protoreflect/desc"
+	"github.com/batchcorp/plumber/options"
 	"github.com/nats-io/stan.go"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
-	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/reader"
 )
 
 var (
@@ -21,29 +18,11 @@ var (
 	errInvalidReadOption = errors.New("You may only specify one read option of --last, --all, --seq, --since")
 )
 
-func Read(opts *options.Options, md *desc.MessageDescriptor) error {
-	if err := validateReadOptions(opts); err != nil {
+func (n *NatsStreaming) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {
+	if err := validateReadOptions(n.Options); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	client, err := NewClient(opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to create client")
-	}
-
-	n := &NatsStreaming{
-		Options: opts,
-		msgDesc: md,
-		client:  client,
-		log:     logrus.WithField("pkg", "nats/read.go"),
-		printer: printer.New(),
-	}
-
-	return n.Read()
-}
-
-func (n *NatsStreaming) Read() error {
-	defer n.client.Close()
 	n.log.Info("Listening for message(s) ...")
 
 	count := 1
@@ -52,49 +31,46 @@ func (n *NatsStreaming) Read() error {
 	doneCh := make(chan bool)
 	defer close(doneCh)
 
-	subConn, err := stan.Connect(n.Options.NatsStreaming.ClusterID, n.Options.NatsStreaming.ClientID, stan.NatsConn(n.client))
-	if err != nil {
-		return errors.Wrap(err, "could not create NATS subscription")
-	}
-
-	defer subConn.Close()
-
 	subFunc := func(msg *stan.Msg) {
-		data, err := reader.Decode(n.Options, n.msgDesc, msg.Data)
-		if err != nil {
-			n.log.Error(err)
-			return
+		if n.Options.Read.Verbose {
+			n.log.Infof("- %-24s%-6s", "Timestamp", time.Unix(0, msg.Timestamp).UTC().String())
+			n.log.Infof("- %-24s%d", "Sequence No.", msg.Sequence)
+			n.log.Infof("- %-24s%-6d", "CRC32", msg.CRC32)
+			n.log.Infof("- %-24s%-6t", "Redelivered", msg.Redelivered)
+			n.log.Infof("- %-24s%-6d", "Redelivery Count", msg.RedeliveryCount)
+			n.log.Infof("- %-24s%-6s", "Subject", msg.Subject)
 		}
 
-		if n.Options.Verbose {
-			n.printer.Print("")
-			logrus.Infof("- %-24s%-6s", "Timestamp", time.Unix(0, msg.Timestamp).UTC().String())
-			logrus.Infof("- %-24s%d", "Sequence No.", msg.Sequence)
-			logrus.Infof("- %-24s%-6d", "CRC32", msg.CRC32)
-			logrus.Infof("- %-24s%-6t", "Redelivered", msg.Redelivered)
-			logrus.Infof("- %-24s%-6d", "Redelivery Count", msg.RedeliveryCount)
-			logrus.Infof("- %-24s%-6s", "Subject", msg.Subject)
+		resultsChan <- &types.ReadMessage{
+			Value: msg.Data,
+			Metadata: map[string]interface{}{
+				"subject":          msg.Subject,
+				"reply":            msg.Reply,
+				"crc32":            msg.CRC32,
+				"timestamp":        msg.Timestamp,
+				"redelivered":      msg.Redelivered,
+				"redelivery_count": msg.RedeliveryCount,
+			},
 		}
 
-		str := string(data)
-
-		str = fmt.Sprintf("%d: ", count) + str
 		count++
 
-		n.printer.Print(str)
-
 		// All read options except --last-received will default to follow mode, otherwise we will cause a panic here
-		if !n.Options.ReadFollow && n.Options.NatsStreaming.ReadLastReceived {
+		if !n.Options.Read.Follow && n.Options.NatsStreaming.ReadLastReceived {
 			doneCh <- true
 		}
 	}
 
-	sub, err := subConn.Subscribe(n.Options.NatsStreaming.Channel, subFunc, n.getReadOptions()...)
+	sub, err := n.stanClient.Subscribe(n.Options.NatsStreaming.Channel, subFunc, n.getReadOptions()...)
 	if err != nil {
 		return errors.Wrap(err, "unable to create subscription")
 	}
 
-	defer sub.Unsubscribe()
+	defer func() {
+		if err := sub.Unsubscribe(); err != nil {
+			util.WriteError(n.log, errorChan, errors.Wrap(err, "error unsubscribing"))
+		}
+	}()
 
 	<-doneCh
 

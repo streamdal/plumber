@@ -3,50 +3,18 @@ package rstreams
 import (
 	"context"
 	"fmt"
+	"time"
 
+	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
 	"github.com/go-redis/redis/v8"
-	"github.com/jhump/protoreflect/desc"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
-	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/reader"
 )
 
-func Read(opts *options.Options, md *desc.MessageDescriptor) error {
-	client, err := NewStreamsClient(opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to create client")
-	}
-
-	r := &RedisStreams{
-		Options: opts,
-		client:  client,
-		msgDesc: md,
-		ctx:     context.Background(),
-		log:     logrus.WithField("pkg", "rstreams/read.go"),
-	}
-
+func (r *RedisStreams) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {
 	// Create consumer group (and stream) for each stream
-	if err := CreateConsumerGroups(r.ctx, client, r.Options.RedisStreams); err != nil {
+	if err := createConsumerGroups(ctx, r.client, r.Options.RedisStreams); err != nil {
 		return fmt.Errorf("unable to create consumer group(s): %s", err)
 	}
-
-	return r.Read()
-}
-
-func generateStreams(streams []string) []string {
-	for i := 0; i != len(streams); i++ {
-		streams = append(streams, ">")
-		i++
-	}
-
-	return streams
-}
-
-func (r *RedisStreams) Read() error {
-	defer r.client.Close()
 
 	streams := generateStreams(r.Options.RedisStreams.Streams)
 
@@ -56,7 +24,7 @@ func (r *RedisStreams) Read() error {
 
 	for {
 		// Attempt to consume
-		streamsResult, err := r.client.XReadGroup(r.ctx, &redis.XReadGroupArgs{
+		streamsResult, err := r.client.XReadGroup(ctx, &redis.XReadGroupArgs{
 			Group:    r.Options.RedisStreams.ConsumerGroup,
 			Consumer: r.Options.RedisStreams.ConsumerName,
 			Streams:  streams,
@@ -79,31 +47,43 @@ func (r *RedisStreams) Read() error {
 				for k, v := range message.Values {
 					stringData, ok := v.(string)
 					if !ok {
-						r.log.Errorf("[ID: %s Stream: %s Key: %s] unable to type assert value as string: %s; skipping",
+						assertErr := fmt.Errorf("[ID: %s Stream: %s Key: %s] unable to type assert value as string: %s; skipping",
 							message.ID, streamName, k, err)
+						util.WriteError(r.log, errorChan, assertErr)
 
 						continue
 					}
 
-					decodedData, err := reader.Decode(r.Options, r.msgDesc, []byte(stringData))
-					if err != nil {
-						r.log.Errorf("[ID: %s Stream: %s Key: %s] unable to decode message: %s; skipping",
-							message.ID, streamName, k, err)
-						continue
+					//str := fmt.Sprintf("[ID: %s Stream: %s Key: %s] %s", message.ID, streamName, k, string(decodedData))
+					resultsChan <- &types.ReadMessage{
+						Value: []byte(stringData),
+						Metadata: map[string]interface{}{
+							"key": k,
+						},
+						ReceivedAt: time.Now().UTC(),
+						Num:        count,
 					}
 
-					str := fmt.Sprintf("[ID: %s Stream: %s Key: %s] %s", message.ID, streamName, k, string(decodedData))
-
-					str = fmt.Sprintf("%d: %s", count, str)
 					count++
-
-					printer.Print(str)
 				}
 			}
 		}
 
-		if !r.Options.ReadFollow {
-			return nil
+		if !r.Options.Read.Follow {
+			break
 		}
 	}
+
+	r.log.Debug("read exiting")
+
+	return nil
+}
+
+func generateStreams(streams []string) []string {
+	for i := 0; i != len(streams); i++ {
+		streams = append(streams, ">")
+		i++
+	}
+
+	return streams
 }

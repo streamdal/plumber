@@ -1,16 +1,14 @@
 package mqtt
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
-	"github.com/batchcorp/plumber/types"
-	"github.com/jhump/protoreflect/desc"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/writer"
+	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
+	"github.com/pkg/errors"
 )
 
 // Write is the entry point function for performing write operations in MQTT.
@@ -19,32 +17,14 @@ import (
 // attempt to establish a connection, parse protobuf before finally attempting
 // to perform the write.
 func (m *MQTT) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {
-	if err := writer.ValidateWriteOptions(opts, validateWriteOptions); err != nil {
+	if err := validateWriteOptions(m.Options); err != nil {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	writeValues, err := writer.GenerateWriteMessageFromOptions(md, opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to generate write value")
-	}
-
-	client, err := connect(opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to complete initial connect")
-	}
-
-	r := &MQTT{
-		Options: opts,
-		client:  client,
-		msgDesc: md,
-		log:     logrus.WithField("pkg", "mqtt/write.go"),
-	}
-
-	defer client.Disconnect(0)
-
-	for _, value := range writeValues {
-		if err := r.Write(value); err != nil {
-			r.log.Error(err)
+	// TODO: Make use of ctx
+	for _, msg := range messages {
+		if err := m.write(msg.Value); err != nil {
+			util.WriteError(m.log, errorCh, err)
 		}
 	}
 
@@ -53,7 +33,7 @@ func (m *MQTT) Write(ctx context.Context, errorCh chan *types.ErrorMessage, mess
 
 // Write is a wrapper for amqp Publish method. We wrap it so that we can mock
 // it in tests, add logging etc.
-func (m *MQTT) Write(value []byte) error {
+func (m *MQTT) write(value []byte) error {
 	m.log.Infof("Sending message to broker on topic '%s' as clientId '%s'",
 		m.Options.MQTT.Topic, m.Options.MQTT.ClientID)
 

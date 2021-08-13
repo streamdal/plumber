@@ -1,10 +1,12 @@
 package mqtt
 
 import (
+	"context"
 	"errors"
 	"io/ioutil"
 	"time"
 
+	"github.com/batchcorp/plumber/types"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -24,8 +26,8 @@ var _ = Describe("MQTT Write", func() {
 	var opts *options.Options
 
 	BeforeEach(func() {
-		opts = &opts.Options{
-			MQTT: &opts.MQTTOptions{
+		opts = &options.Options{
+			MQTT: &options.MQTTOptions{
 				Address:           "ssl://localhost",
 				Topic:             "testing",
 				ClientID:          "123",
@@ -81,8 +83,8 @@ var _ = Describe("MQTT Write", func() {
 
 		BeforeEach(func() {
 			m = &MQTT{
-				Options: &opts.Options{
-					MQTT: &opts.MQTTOptions{},
+				Options: &options.Options{
+					MQTT: &options.MQTTOptions{},
 				},
 				log: log,
 			}
@@ -99,7 +101,10 @@ var _ = Describe("MQTT Write", func() {
 
 			m.client = fakeMqtt
 
-			err := m.Write([]byte(`testing`))
+			err := m.Write(context.Background(), nil, &types.WriteMessage{
+				Value: []byte(`testing`),
+			})
+
 			Expect(err).To(HaveOccurred())
 			Expect(fakeMqtt.PublishCallCount()).To(Equal(1))
 		})
@@ -119,7 +124,10 @@ var _ = Describe("MQTT Write", func() {
 
 			m.client = fakeMqtt
 
-			err := m.Write([]byte(`testing`))
+			err := m.Write(context.Background(), nil, &types.WriteMessage{
+				Value: []byte(`testing`),
+			})
+
 			Expect(err).To(HaveOccurred())
 			Expect(fakeMqtt.PublishCallCount()).To(Equal(1))
 		})
@@ -139,7 +147,10 @@ var _ = Describe("MQTT Write", func() {
 
 			m.client = fakeMqtt
 
-			err := m.Write([]byte(`testing`))
+			err := m.Write(context.Background(), nil, &types.WriteMessage{
+				Value: []byte(`testing`),
+			})
+
 			Expect(err).ToNot(HaveOccurred())
 			Expect(fakeMqtt.PublishCallCount()).To(Equal(1))
 		})

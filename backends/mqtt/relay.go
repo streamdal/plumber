@@ -11,16 +11,17 @@ import (
 	"github.com/relistan/go-director"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/backends/mqtt/types"
+	mtypes "github.com/batchcorp/plumber/backends/mqtt/types"
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/stats"
+	"github.com/batchcorp/plumber/types"
 )
 
 type Relayer struct {
 	Client      pahomqtt.Client
 	Options     *options.Options
 	RelayCh     chan interface{}
+	ErrorCh     chan *types.ErrorMessage
 	log         *logrus.Entry
 	Looper      *director.FreeLooper
 	ShutdownCtx context.Context
@@ -28,23 +29,51 @@ type Relayer struct {
 
 // Relay sets up a new MQTT relayer
 func (m *MQTT) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {
-	if err := validateRelayOptions(opts); err != nil {
-		return nil, errors.Wrap(err, "unable to verify options")
+	if err := validateRelayOptions(m.Options); err != nil {
+		return errors.Wrap(err, "unable to verify options")
 	}
 
-	client, err := connect(opts)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to create client")
-	}
-
-	return &Relayer{
-		Client:      client,
-		Options:     opts,
+	r := &Relayer{
+		Client:      m.client,
+		Options:     m.Options,
 		RelayCh:     relayCh,
+		ErrorCh:     errorCh,
 		log:         logrus.WithField("pkg", "mqtt/relay"),
 		Looper:      director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
-		ShutdownCtx: shutdownCtx,
-	}, nil
+		ShutdownCtx: ctx,
+	}
+
+	return r.Relay()
+}
+
+// Relay reads messages from MQTT and sends them to RelayCh which is then read by relay.Run()
+func (r *Relayer) Relay() error {
+	r.log.Infof("Relaying MQTT messages from topic '%s' -> '%s'",
+		r.Options.MQTT.Topic, r.Options.Relay.GRPCAddress)
+
+	r.log.Infof("HTTP server listening on '%s'", r.Options.Relay.HTTPListenAddress)
+
+	r.Client.Subscribe(r.Options.MQTT.Topic, byte(r.Options.MQTT.QoSLevel), func(client mqtt.Client, msg mqtt.Message) {
+		stats.Incr("mqtt-relay-consumer", 1)
+
+		// Generate relay message
+		r.RelayCh <- &mtypes.RelayMessage{
+			Value: msg,
+		}
+
+		r.log.Debugf("Successfully relayed message '%d' from topic '%s'", msg.MessageID(), msg.Topic())
+
+	})
+
+	for {
+		select {
+		case <-r.ShutdownCtx.Done():
+			r.log.Info("Received shutdown signal, existing relayer")
+			return nil
+		default:
+			// noop
+		}
+	}
 }
 
 // validateRelayOptions ensures all required CLI options are present before initializing relay mode
@@ -73,41 +102,6 @@ func validateRelayOptions(opts *options.Options) error {
 
 	if opts.MQTT.QoSLevel > 2 || opts.MQTT.QoSLevel < 0 {
 		return errInvalidQOSLevel
-	}
-
-	return nil
-}
-
-// Relay reads messages from MQTT and sends them to RelayCh which is then read by relay.Run()
-func (r *Relayer) Relay() error {
-	r.log.Infof("Relaying MQTT messages from topic '%s' -> '%s'",
-		r.Options.MQTT.Topic, r.Options.RelayGRPCAddress)
-
-	r.log.Infof("HTTP server listening on '%s'", r.Options.RelayHTTPListenAddress)
-
-	defer r.Client.Disconnect(0)
-
-	r.Client.Subscribe(r.Options.MQTT.Topic, byte(r.Options.MQTT.QoSLevel), func(client mqtt.Client, msg mqtt.Message) {
-
-		stats.Incr("mqtt-relay-consumer", 1)
-
-		// Generate relay message
-		r.RelayCh <- &types.RelayMessage{
-			Value: msg,
-		}
-
-		r.log.Debugf("Successfully relayed message '%d' from topic '%s'", msg.MessageID(), msg.Topic())
-
-	})
-
-	for {
-		select {
-		case <-r.ShutdownCtx.Done():
-			r.log.Info("Received shutdown signal, existing relayer")
-			return nil
-		default:
-			// noop
-		}
 	}
 
 	return nil

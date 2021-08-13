@@ -2,20 +2,13 @@ package mqtt
 
 import (
 	"context"
-	"fmt"
 	"strings"
-	"sync"
 	"time"
 
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/types"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
-	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/reader"
 )
 
 // Read is the entry point function for performing read operations in MQTT.
@@ -48,12 +41,11 @@ func (m *MQTT) Read(ctx context.Context, resultsChan chan *types.ReadMessage, er
 		if !m.Options.Read.Follow {
 			m.log.Debug("--follow NOT specified, stopping listen")
 
-			close(errChan)
-			wg.Done()
+			m.client.Unsubscribe(m.Options.MQTT.Topic)
 		}
 	})
 
-	return err
+	return nil
 }
 
 func validateReadOptions(opts *options.Options) error {

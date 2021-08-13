@@ -1,93 +1,52 @@
 package nsq
 
 import (
+	"context"
 	"sync"
 
-	"github.com/jhump/protoreflect/desc"
+	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/types"
 	"github.com/nsqio/go-nsq"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
-	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/reader"
 )
-
-// Read is the entry point function for performing read operations in NSQ
-func Read(opts *options.Options, md *desc.MessageDescriptor) error {
-	if err := validateReadOptions(opts); err != nil {
-		return errors.Wrap(err, "unable to validate read options")
-	}
-
-	logger := &NSQLogger{}
-	logger.Entry = logrus.WithField("pkg", "nsq")
-
-	n := &NSQ{
-		Options: opts,
-		msgDesc: md,
-		log:     logger,
-	}
-
-	return n.Read()
-}
 
 // Read will attempt to consume one or more messages from a given topic,
 // optionally decode it and/or convert the returned output.
-func (n *NSQ) Read() error {
-	config, err := getNSQConfig(n.Options)
-	if err != nil {
-		return errors.Wrap(err, "unable to create NSQ config")
+func (n *NSQ) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {
+	if err := validateReadOptions(n.Options); err != nil {
+		return errors.Wrap(err, "unable to validate read options")
 	}
-
-	consumer, err := nsq.NewConsumer(n.Options.NSQ.Topic, n.Options.NSQ.Channel, config)
-	if err != nil {
-		return errors.Wrap(err, "Could not start NSQ consumer")
-	}
-
-	logLevel := nsq.LogLevelError
-	if n.Options.Debug {
-		logLevel = nsq.LogLevelDebug
-	}
-
-	// Use logrus for NSQ logs
-	consumer.SetLogger(n.log, logLevel)
 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 
 	count := 1
 
-	consumer.AddHandler(nsq.HandlerFunc(func(msg *nsq.Message) error {
-		data, err := reader.Decode(n.Options, n.msgDesc, msg.Body)
-		if err != nil {
-			return errors.Wrap(err, "unable to decode msg")
+	n.consumer.AddHandler(nsq.HandlerFunc(func(msg *nsq.Message) error {
+		resultsChan <- &types.ReadMessage{
+			Value: msg.Body,
+			Metadata: map[string]interface{}{
+				"id":          msg.ID,
+				"timestamp":   msg.Timestamp,
+				"attempts":    msg.Attempts,
+				"nsq_address": msg.NSQDAddress,
+			},
 		}
 
-		printer.PrintNSQResult(n.Options, count, msg, data)
-
-		if !n.Options.ReadFollow {
+		if !n.Options.Read.Follow {
 			wg.Done()
 		}
+
 		count++
+
 		return nil
 	}))
 
-	// Connect to correct server. Reading can be done directly from an NSQD server
-	// or let lookupd find the correct one.
-	if n.Options.NSQ.NSQLookupDAddress != "" {
-		if err := consumer.ConnectToNSQLookupd(n.Options.NSQ.NSQLookupDAddress); err != nil {
-			return errors.Wrap(err, "could not connect to nsqlookupd")
-		}
-	} else {
-		if err := consumer.ConnectToNSQD(n.Options.NSQ.NSQDAddress); err != nil {
-			return errors.Wrap(err, "could not connect to nsqd")
-		}
-	}
-	defer consumer.Stop()
-
-	n.log.Infof("Waiting for messages...")
+	n.log.Info("Waiting for messages...")
 
 	wg.Wait()
+
+	n.log.Debug("reader exiting")
 
 	return nil
 }

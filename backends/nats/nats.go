@@ -1,12 +1,13 @@
 package nats
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"io/ioutil"
 	"net/url"
 
-	"github.com/jhump/protoreflect/desc"
+	"github.com/batchcorp/plumber/types"
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -21,9 +22,8 @@ var (
 type Nats struct {
 	Options *options.Options
 
-	msgDesc *desc.MessageDescriptor
-	client  *nats.Conn
-	log     *logrus.Entry
+	client *nats.Conn
+	log    *logrus.Entry
 }
 
 func New(opts *options.Options) (*Nats, error) {
@@ -31,19 +31,45 @@ func New(opts *options.Options) (*Nats, error) {
 		return nil, errors.Wrap(err, "unable to validate options")
 	}
 
+	client, err := newClient(opts)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create new nats client")
+	}
+
 	return &Nats{
 		Options: opts,
+		client:  client,
 		log:     logrus.WithField("backend", "nats"),
 	}, nil
 }
 
-// TODO: Implement
-func validateOpts(opts *options.Options) error {
+func (n *Nats) Close(ctx context.Context) error {
+	if n.client == nil {
+		return nil
+	}
+
+	// TODO: Wrap in a context to support timeout
+	n.client.Close()
+
+	n.client = nil
+
 	return nil
 }
 
+func (n *Nats) Test(ctx context.Context) error {
+	return types.NotImplementedErr
+}
+
+func (n *Nats) Lag(ctx context.Context) (*types.LagStats, error) {
+	return nil, types.UnsupportedFeatureErr
+}
+
+func (n *Nats) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {
+	return types.UnsupportedFeatureErr
+}
+
 // NewClient creates a new Nats client connection
-func NewClient(opts *options.Options) (*nats.Conn, error) {
+func newClient(opts *options.Options) (*nats.Conn, error) {
 	uri, err := url.Parse(opts.Nats.Address)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to parse address")
@@ -51,6 +77,7 @@ func NewClient(opts *options.Options) (*nats.Conn, error) {
 
 	// Credentials can be specified by a .creds file if users do not wish to pass in the address
 	var creds nats.Option
+
 	if opts.Nats.CredsFile != "" {
 		creds = nats.UserCredentials(opts.Nats.CredsFile)
 	}
@@ -59,7 +86,7 @@ func NewClient(opts *options.Options) (*nats.Conn, error) {
 		// Insecure connection
 		c, err := nats.Connect(opts.Nats.Address, creds)
 		if err != nil {
-			return nil, errors.Wrap(err, "unable to create new nats client")
+			return nil, errors.Wrap(err, "unable to complete non-tls connection")
 		}
 		return c, nil
 	}
@@ -72,7 +99,7 @@ func NewClient(opts *options.Options) (*nats.Conn, error) {
 
 	c, err := nats.Connect(opts.Nats.Address, nats.Secure(tlsConfig), creds)
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to create new nats client")
+		return nil, errors.Wrap(err, "unable to complete tls connection")
 	}
 
 	return c, nil
@@ -107,4 +134,20 @@ func generateTLSConfig(opts *options.Options) (*tls.Config, error) {
 		Certificates:       []tls.Certificate{cert},
 		MinVersion:         tls.VersionTLS12,
 	}, nil
+}
+
+func validateOpts(opts *options.Options) error {
+	if opts == nil {
+		return errors.New("options cannot be nil")
+	}
+
+	if opts.Nats == nil {
+		return errors.New("NATS options cannot be nil")
+	}
+
+	if opts.Nats.Subject == "" {
+		return errMissingSubject
+	}
+
+	return nil
 }
