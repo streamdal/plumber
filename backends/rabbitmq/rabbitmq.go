@@ -1,10 +1,13 @@
 package rabbitmq
 
 import (
+	"context"
+	"time"
+
 	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/types"
 
 	"github.com/batchcorp/rabbit"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -15,9 +18,7 @@ import (
 type RabbitMQ struct {
 	Options *options.Options
 
-	consumer *rabbit.Rabbit
-	msgDesc  *desc.MessageDescriptor
-	log      *logrus.Entry
+	log *logrus.Entry
 }
 
 func New(opts *options.Options) (*RabbitMQ, error) {
@@ -31,13 +32,21 @@ func New(opts *options.Options) (*RabbitMQ, error) {
 	}, nil
 }
 
-// TODO: Implement
-func validateOpts(opts *options.Options) error {
+func (r *RabbitMQ) Close(ctx context.Context) error {
 	return nil
 }
 
-func NewConnection(opts *options.Options, md *desc.MessageDescriptor) (*RabbitMQ, error) {
+func (r *RabbitMQ) Test(ctx context.Context) error {
+	return types.NotImplementedErr
+}
+
+func (r *RabbitMQ) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
+	return types.UnsupportedFeatureErr
+}
+
+func newConnection(opts *options.Options) (*rabbit.Rabbit, error) {
 	mode := rabbit.Consumer
+
 	if opts.Action == "write" {
 		mode = rabbit.Producer
 	}
@@ -59,15 +68,20 @@ func NewConnection(opts *options.Options, md *desc.MessageDescriptor) (*RabbitMQ
 	})
 
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to initialize rabbitmq consumer")
+		return nil, errors.Wrap(err, "unable to initialize rabbitmq client")
 	}
 
-	r := &RabbitMQ{
-		Options:  opts,
-		consumer: rmq,
-		msgDesc:  md,
-		log:      logrus.WithField("pkg", "rabbitmq.go"),
+	return rmq, nil
+}
+
+func validateOpts(opts *options.Options) error {
+	if opts == nil {
+		return errors.New("options cannot be nil")
 	}
 
-	return r, nil
+	if opts.Rabbit == nil {
+		return errors.New("rabbit options cannot be nil")
+	}
+
+	return nil
 }
