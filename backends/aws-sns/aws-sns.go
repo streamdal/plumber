@@ -62,7 +62,7 @@ func (a *AWSSNS) Test(ctx context.Context) error {
 	return errors.New("not implemented")
 }
 
-func (a *AWSSNS) Lag(ctx context.Context) (*types2.LagStats, error) {
+func (a *AWSSNS) Lag(ctx context.Context) (*types2.Lag, error) {
 	return nil, errors.New("AWSSNS does not support consumer lag lookup functionality")
 }
 

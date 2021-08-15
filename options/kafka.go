@@ -94,7 +94,7 @@ func addSharedKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Envar("PLUMBER_RELAY_KAFKA_ADDRESS").
 		StringsVar(&opts.Kafka.Brokers)
 
-	cmd.Flag("topic", "topic(s) to read message(s) from "+
+	cmd.Flag("topic", "topic(s) to read, write or get lag stats for"+
 		"(NOTE: You may specify this flag multiple times if more than one topic)").
 		Required().
 		Envar("PLUMBER_RELAY_KAFKA_TOPIC").
@@ -185,13 +185,7 @@ func addReadKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 }
 
 func addLagKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
-
-	cmd.Flag("use-consumer-group", "Whether plumber should use a consumer group").
-		Envar("PLUMBER_RELAY_KAFKA_USE_CONSUMER_GROUP").
-		Default("true").
-		BoolVar(&opts.Kafka.UseConsumerGroup)
-	cmd.Flag("group-id", "Specify a specific group-id to use when reading from kafka").
-		Envar("PLUMBER_RELAY_KAFKA_GROUP_ID").
+	cmd.Flag("group-id", "What consumer group to look up lag for (leave blank if 'all')").
 		Default(DefaultKafkaGroupId).
 		StringVar(&opts.Kafka.GroupID)
 }

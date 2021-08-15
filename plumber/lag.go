@@ -45,6 +45,6 @@ func (p *Plumber) HandleLagCmd() error {
 }
 
 // TODO: Implement
-func displayLag(stats *types.LagStats) {
+func displayLag(stats *types.Lag) {
 
 }

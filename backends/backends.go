@@ -56,7 +56,7 @@ type Backend interface {
 	Dynamic(ctx context.Context) error
 
 	// Lag returns consumer lag stats. Only works for _some_ backends.
-	Lag(ctx context.Context) (*types.LagStats, error)
+	Lag(ctx context.Context) ([]*types.Lag, error)
 
 	// Relay will hook into a message bus as a consumer and relay all messages
 	// to the relayCh; if an error channel is provided, any errors will be piped

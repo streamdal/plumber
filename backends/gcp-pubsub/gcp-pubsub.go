@@ -51,7 +51,7 @@ func (g *GCPPubSub) Test(ctx context.Context) error {
 	return types.NotImplementedErr
 }
 
-func (g *GCPPubSub) Lag(ctx context.Context) (*types.LagStats, error) {
+func (g *GCPPubSub) Lag(ctx context.Context) (*types.Lag, error) {
 	return nil, types.UnsupportedFeatureErr
 }
 

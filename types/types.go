@@ -34,5 +34,12 @@ type ErrorMessage struct {
 }
 
 // TODO: Implement
-type LagStats struct {
+type Lag struct {
+	Topic           string
+	ConsumerGroupID string
+}
+
+type PartitionStats struct {
+	PartitionID    string
+	MessagesBehind int
 }

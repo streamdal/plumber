@@ -42,7 +42,7 @@ func (a *EventHub) Test(ctx context.Context) error {
 	return errors.New("not implemented")
 }
 
-func (a *EventHub) Lag(ctx context.Context) (*types.LagStats, error) {
+func (a *EventHub) Lag(ctx context.Context) (*types.Lag, error) {
 	return nil, types.UnsupportedFeatureErr
 }
 
