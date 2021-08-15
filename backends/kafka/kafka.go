@@ -29,21 +29,19 @@ const (
 type Kafka struct {
 	Options *options.Options
 
-	id      string
-	reader  *skafka.Reader
-	writer  *skafka.Writer
-	msgDesc *desc.MessageDescriptor
-	log     *logrus.Entry
+	id     string
+	conns  map[string]*skafka.Conn
+	reader *skafka.Reader
+	writer *skafka.Writer
+	log    *logrus.Entry
 }
 
 type Reader struct {
 	Reader *skafka.Reader
-	Conn   *skafka.Conn
 }
 
 type Writer struct {
 	Writer *skafka.Writer
-	Conn   *skafka.Conn
 }
 
 type Lagger struct {
@@ -55,135 +53,96 @@ func New(opts *options.Options) (*Kafka, error) {
 		return nil, errors.Wrap(err, "unable to validate options")
 	}
 
+	dialer, err := newDialer(opts)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create new dialer")
+	}
+
+	conns, err := connect(dialer, opts)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create new connections")
+	}
+
 	return &Kafka{
 		Options: opts,
+		conns:   conns,
 		log:     logrus.WithField("backend", "kafka"),
 	}, nil
 }
 
-// TODO: Implement
-func validateOpts(opts *options.Options) error {
-	return nil
-}
+//
+//func NewKafkaLagConnection(opts *options.Options) (*Lagger, error) {
+//	dialer := &skafka.Dialer{
+//		DualStack: true,
+//		Timeout:   opts.Kafka.Timeout,
+//	}
+//
+//	if opts.Kafka.InsecureTLS {
+//		dialer.TLS = &tls.Config{
+//			InsecureSkipVerify: true,
+//		}
+//	}
+//
+//	auth, err := getAuthenticationMechanism(opts)
+//	if err != nil {
+//		return nil, errors.Wrap(err, "unable to get authentication mechanism")
+//	}
+//
+//	dialer.SASLMechanism = auth
+//
+//	// The dialer timeout does not get utilized under some conditions (such as
+//	// when kafka is configured to NOT auto create topics) - we need a
+//	// mechanism to bail out early.
+//	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(opts.Kafka.Timeout))
+//
+//	connMap := make(map[string]*skafka.Conn, len(opts.Kafka.Topics))
+//
+//	// Establish connection with leader broker
+//
+//	for _, v := range opts.Kafka.Topics {
+//		conn, err := dialer.DialLeader(ctxDeadline, "tcp", opts.Kafka.Brokers[0], v, 0)
+//		if err != nil {
+//			return nil, errors.Wrap(err, "unable to dial leader")
+//		}
+//
+//		connMap[v] = conn
+//	}
+//
+//	kLag := &Lagger{
+//		partitionDiscoverConn: connMap,
+//	}
+//
+//	return kLag, err
+//
+//}
 
-func NewKafkaLagConnection(opts *options.Options) (*Lagger, error) {
-	dialer := &skafka.Dialer{
-		DualStack: true,
-		Timeout:   opts.Kafka.Timeout,
-	}
-
-	if opts.Kafka.InsecureTLS {
-		dialer.TLS = &tls.Config{
-			InsecureSkipVerify: true,
-		}
-	}
-
-	auth, err := getAuthenticationMechanism(opts)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to get authentication mechanism")
-	}
-
-	dialer.SASLMechanism = auth
-
+func newConnectionPerPartition(dialer *skafka.Dialer, topic string, partition int, opts *options.Options) (*skafka.Conn, error) {
 	// The dialer timeout does not get utilized under some conditions (such as
 	// when kafka is configured to NOT auto create topics) - we need a
 	// mechanism to bail out early.
 	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(opts.Kafka.Timeout))
 
-	connMap := make(map[string]*skafka.Conn, len(opts.Kafka.Topics))
+	var conn *skafka.Conn
+	var err error
 
-	// Establish connection with with leader broker
-
-	for _, v := range opts.Kafka.Topics {
-
-		conn, err := dialer.DialLeader(ctxDeadline, "tcp", opts.Kafka.Brokers[0], v, 0)
-
+	for _, brokerAddress := range opts.Kafka.Brokers {
+		conn, err = dialer.DialLeader(ctxDeadline, "tcp", brokerAddress, topic, partition)
 		if err != nil {
-			return nil, err
+			logrus.Warningf("unable to establish leader connection for topic '%s', partition '%d' "+
+				"via broker '%s' (trying additional brokers)", topic, partition, brokerAddress)
+			continue
 		}
-
-		connMap[v] = conn
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
-			opts.Kafka.Brokers[0], err)
+		return nil, fmt.Errorf("unable to dial leader for topic '%s', partition '%d' - "+
+			"exhausted all brokers", topic, partition)
 	}
 
-	kLag := &Lagger{
-		partitionDiscoverConn: connMap,
-	}
-
-	return kLag, err
-
+	return conn, nil
 }
 
-func newConnectionPerPartition(topic string, partition int, opts *options.Options) (*skafka.Conn, error) {
-	dialer := &skafka.Dialer{
-		DualStack: true,
-		Timeout:   opts.Kafka.Timeout,
-	}
-
-	if opts.Kafka.InsecureTLS {
-		dialer.TLS = &tls.Config{
-			InsecureSkipVerify: true,
-		}
-	}
-
-	auth, err := getAuthenticationMechanism(opts)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to get authentication mechanism")
-	}
-
-	dialer.SASLMechanism = auth
-
-	// The dialer timeout does not get utilized under some conditions (such as
-	// when kafka is configured to NOT auto create topics) - we need a
-	// mechanism to bail out early.
-	ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(opts.Kafka.Timeout))
-
-	// Establish connection with with leader broker
-
-	conn, err := dialer.DialLeader(ctxDeadline, "tcp", opts.Kafka.Brokers[0], topic, partition)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if err != nil {
-		return nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
-			opts.Kafka.Brokers[0], err)
-	}
-
-	return conn, err
-
-}
-
-func NewReader(opts *options.Options) (*Reader, error) {
-	dialer := &skafka.Dialer{
-		DualStack: true,
-		Timeout:   opts.Kafka.Timeout,
-	}
-
-	if opts.Kafka.InsecureTLS {
-		dialer.TLS = &tls.Config{
-			InsecureSkipVerify: true,
-		}
-	}
-
-	auth, err := getAuthenticationMechanism(opts)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to get authentication mechanism")
-	}
-
-	dialer.SASLMechanism = auth
-
-	// Attempt to establish connection on startup
-	conn, err := dialContext(dialer, opts)
-	if err != nil {
-		return nil, err
-	}
-
+func NewReader(dialer *skafka.Dialer, opts *options.Options) (*Reader, error) {
 	rc := skafka.ReaderConfig{
 		Brokers:          opts.Kafka.Brokers,
 		CommitInterval:   opts.Kafka.CommitInterval,
@@ -212,97 +171,64 @@ func NewReader(opts *options.Options) (*Reader, error) {
 
 	return &Reader{
 		Reader: r,
-		Conn:   conn,
 	}, nil
 }
 
+// TODO: This needs to be updated to NOT use NewWriter since it's deprecated
 func NewWriter(opts *options.Options) (*Writer, error) {
-	dialer := &skafka.Dialer{
-		Timeout: opts.Kafka.Timeout,
-	}
-
-	if opts.Kafka.InsecureTLS {
-		dialer.TLS = &tls.Config{
-			InsecureSkipVerify: true,
-		}
-	}
-
-	auth, err := getAuthenticationMechanism(opts)
+	dialer, err := newDialer(opts)
 	if err != nil {
-		return nil, fmt.Errorf("unable to create initial connection to host '%s': %s",
-			opts.Kafka.Brokers[0], err)
+		return nil, errors.Wrap(err, "unable to create new dialer")
 	}
 
-	dialer.SASLMechanism = auth
-
-	conn, err := dialLeader(dialer, opts)
+	conns, err := newConn(dialer, opts)
 	if err != nil {
 		return nil, err
 	}
 
+	// NOTE: We explicitly do NOT set the topic - it will be set in the message
 	w := skafka.NewWriter(skafka.WriterConfig{
 		Brokers:   opts.Kafka.Brokers,
-		Topic:     opts.Kafka.Topics[0],
 		Dialer:    dialer,
 		BatchSize: DefaultBatchSize,
 	})
 
 	return &Writer{
 		Writer: w,
-		Conn:   conn,
+		Conns:  conn,
 	}, nil
 }
 
-// dialContext attempts to kafka.DialLeader() for any of the brokers a user has provided
-func dialContext(dialer *skafka.Dialer, opts *options.Options) (*skafka.Conn, error) {
-	var err error
-	var conn *skafka.Conn
+// connect attempts to kafka.DialLeader() for _all_ provided topics and  returns
+// a map where key is topic and value is connection to the leader.
+func connect(dialer *skafka.Dialer, opts *options.Options) (map[string]*skafka.Conn, error) {
+	conns := make(map[string]*skafka.Conn, 0)
 
-	// Attempt to establish connection on startup
-	for _, address := range opts.Kafka.Brokers {
-		// The dialer timeout does not get utilized under some conditions (such as
-		// when kafka is configured to NOT auto create topics) - we need a
-		// mechanism to bail out early.
-		ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(opts.Kafka.Timeout))
+	for _, topicName := range opts.Kafka.Topics {
+		for _, brokerAddress := range opts.Kafka.Brokers {
+			// The dialer timeout does not get utilized under some conditions (such as
+			// when kafka is configured to NOT auto create topics) - we need a
+			// mechanism to bail out early.
+			ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(opts.Kafka.Timeout))
 
-		conn, err = dialer.DialContext(ctxDeadline, "tcp", address)
-		if err != nil {
-			logrus.Errorf("unable to create initial connection to broker '%s', trying next broker", address)
-			continue
+			conn, err := dialer.DialLeader(ctxDeadline, "tcp", brokerAddress, topicName, 0)
+			if err != nil {
+				logrus.Errorf("unable to create leader connection to broker '%s' for topicName '%s', "+
+					"trying next broker", topicName, brokerAddress)
+				continue
+			}
+
+			logrus.Debugf("found leader for topic '%s' via broker '%s'", topicName, brokerAddress)
+
+			conns[topicName] = conn
 		}
 
-		logrus.Infof("Connected to kafka broker '%s'", address)
-		return conn, nil
-	}
-
-	// Did not succeed connecting to any broker
-	return nil, errors.Wrap(err, "unable to connect to any broker")
-}
-
-// dialLeader attempts to kafka.DialLeader() for any of the brokers a user has provided
-func dialLeader(dialer *skafka.Dialer, opts *options.Options) (*skafka.Conn, error) {
-	var err error
-	var conn *skafka.Conn
-
-	// Attempt to establish connection on startup
-	for _, address := range opts.Kafka.Brokers {
-		// The dialer timeout does not get utilized under some conditions (such as
-		// when kafka is configured to NOT auto create topics) - we need a
-		// mechanism to bail out early.
-		ctxDeadline, _ := context.WithDeadline(context.Background(), time.Now().Add(opts.Kafka.Timeout))
-
-		conn, err = dialer.DialLeader(ctxDeadline, "tcp", address, opts.Kafka.Topics[0], 0)
-		if err != nil {
-			logrus.Errorf("unable to create initial connection to broker '%s', trying next broker", address)
-			continue
+		if _, ok := conns[topicName]; !ok {
+			return nil, fmt.Errorf("unable to get leader connection for topic '%s' - exhausted all brokers", topicName)
 		}
-
-		logrus.Infof("Connected to kafka broker '%s'", address)
-		return conn, nil
 	}
 
-	// Did not succeed connecting to any broker
-	return nil, errors.Wrap(err, "unable to connect to any broker")
+	return conns, nil
 }
 
 // getAuthenticationMechanism returns the correct authentication config for use with kafka.Dialer if a username/password
@@ -316,7 +242,7 @@ func getAuthenticationMechanism(opts *options.Options) (sasl.Mechanism, error) {
 	if opts.Kafka.Password == "" {
 		password, err := readPassword()
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "unable to read password from STDIN")
 		}
 		opts.Kafka.Password = password
 	}
@@ -350,4 +276,37 @@ func readPassword() (string, error) {
 			return sp, nil
 		}
 	}
+}
+
+func validateOpts(opts *options.Options) error {
+	if opts == nil {
+		return errors.New("options cannot be nil")
+	}
+
+	if opts.Kafka == nil {
+		return errors.New("kafka options cannot be nil")
+	}
+
+	return nil
+}
+
+func newDialer(opts *options.Options) (*skafka.Dialer, error) {
+	dialer := &skafka.Dialer{
+		Timeout: opts.Kafka.Timeout,
+	}
+
+	if opts.Kafka.InsecureTLS {
+		dialer.TLS = &tls.Config{
+			InsecureSkipVerify: true,
+		}
+	}
+
+	auth, err := getAuthenticationMechanism(opts)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to get auth mechanism")
+	}
+
+	dialer.SASLMechanism = auth
+
+	return dialer, nil
 }

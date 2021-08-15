@@ -85,7 +85,6 @@ func discoverPartitions(topic string, partDiscoverConn *skafka.Conn, opts *optio
 func (kLag *Lagger) GetLastOffsetPerPartition(topic string, groupId string, part int, opts *options.Options) (int64, error) {
 
 	partitions, err := discoverPartitions(topic, kLag.partitionDiscoverConn[topic], opts)
-
 	if err != nil {
 		return -1, errors.Wrapf(err, "unable to discover partitions")
 	}

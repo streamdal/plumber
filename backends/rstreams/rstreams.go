@@ -52,7 +52,7 @@ func (r *RedisStreams) Test(ctx context.Context) error {
 	return types.NotImplementedErr
 }
 
-func (r *RedisStreams) Lag(ctx context.Context) (*types.LagStats, error) {
+func (r *RedisStreams) Lag(ctx context.Context) (*types.Lag, error) {
 	return nil, types.UnsupportedFeatureErr
 }
 

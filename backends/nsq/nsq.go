@@ -110,7 +110,7 @@ func (n *NSQ) Dynamic(ctx context.Context) error {
 	return types.UnsupportedFeatureErr
 }
 
-func (n *NSQ) Lag(ctx context.Context) (*types.LagStats, error) {
+func (n *NSQ) Lag(ctx context.Context) (*types.Lag, error) {
 	return nil, types.UnsupportedFeatureErr
 }
 

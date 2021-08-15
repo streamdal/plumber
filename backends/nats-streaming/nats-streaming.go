@@ -67,7 +67,7 @@ func (n *NatsStreaming) Test(ctx context.Context) error {
 	return types.NotImplementedErr
 }
 
-func (n *NatsStreaming) Lag(ctx context.Context) (*types.LagStats, error) {
+func (n *NatsStreaming) Lag(ctx context.Context) (*types.Lag, error) {
 	return nil, types.UnsupportedFeatureErr
 }
 

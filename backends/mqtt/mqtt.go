@@ -66,7 +66,7 @@ func (m *MQTT) Test(ctx context.Context) error {
 	return types.NotImplementedErr
 }
 
-func (m *MQTT) Lag(ctx context.Context) (*types.LagStats, error) {
+func (m *MQTT) Lag(ctx context.Context) (*types.Lag, error) {
 	return nil, types.UnsupportedFeatureErr
 }
 
