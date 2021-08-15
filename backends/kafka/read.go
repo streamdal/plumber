@@ -69,7 +69,7 @@ func (k *Kafka) read(ctx context.Context, reader *skafka.Reader, resultsChan cha
 		if k.Options.Read.Lag && msg.Partition != lastPartitionProcessed {
 			lastPartitionProcessed = msg.Partition
 
-			lastOffset, err = lag.GetPartitionLastOffset(msg.Topic, reader.Config().GroupID, msg.Partition)
+			lastOffset, err = lag.getPartitionLastOffset(msg.Topic, msg.Partition)
 			if err != nil {
 				return errors.Wrap(err, "unable to obtain lastOffset for partition")
 			}

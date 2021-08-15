@@ -34,12 +34,12 @@ type ErrorMessage struct {
 }
 
 // TODO: Implement
-type Lag struct {
-	Topic           string
-	ConsumerGroupID string
+type TopicStats struct {
+	TopicName  string
+	GroupID    string
+	Partitions map[int]*PartitionStats
 }
 
 type PartitionStats struct {
-	PartitionID    string
-	MessagesBehind int
+	MessagesBehind int64
 }
