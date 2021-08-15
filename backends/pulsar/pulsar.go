@@ -58,7 +58,7 @@ func (p *Pulsar) Dynamic(ctx context.Context) error {
 	return types.UnsupportedFeatureErr
 }
 
-func (p *Pulsar) Lag(ctx context.Context) (*types.Lag, error) {
+func (p *Pulsar) Lag(ctx context.Context) ([]*types.Lag, error) {
 	return nil, types.UnsupportedFeatureErr
 }
 

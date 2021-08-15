@@ -7,12 +7,40 @@ import (
 
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/types"
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 )
 
+type Lag struct {
+	dialer  *skafka.Dialer
+	conns   map[string]*skafka.Conn
+	options *options.Options
+}
+
+func NewLag(opts *options.Options, dialer *skafka.Dialer) (*Lag, error) {
+	if opts == nil {
+		return nil, errors.New("options cannot be nil")
+	}
+
+	if dialer == nil {
+		return nil, errors.New("dialer cannot be nil")
+	}
+
+	conns, err := ConnectAllTopics(dialer, opts)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create initial connections")
+	}
+
+	return &Lag{
+		dialer:  dialer,
+		conns:   conns,
+		options: opts,
+	}, nil
+}
+
 // validate cli options and init connection
-func Lag(opts *options.Options) error {
+func (k *Kafka) Lag(ctx context.Context) ([]*types.Lag, error) {
 	if err := validateLagOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
@@ -71,20 +99,23 @@ func (kLag *Lagger) LagCalculationForConsumerGroup(groupId string, opts *options
 
 }
 
-func discoverPartitions(topic string, partDiscoverConn *skafka.Conn, opts *options.Options) ([]skafka.Partition, error) {
+func (l *Lag) discoverPartitions(topic string) ([]skafka.Partition, error) {
+	conn, ok := l.Conns[topic]
+	if !ok {
+		return nil, fmt.Errorf("unable to lookup connection for topic '%s'", topic)
+	}
 
-	partitions, err := partDiscoverConn.ReadPartitions(topic)
-
+	partitions, err := conn.ReadPartitions(topic)
 	if err != nil {
-		return nil, errors.Wrap(err, "Failed to get partition list")
+		return nil, errors.Wrap(err, "failed to get partition list")
 	}
 
 	return partitions, nil
 }
 
-func (kLag *Lagger) GetLastOffsetPerPartition(topic string, groupId string, part int, opts *options.Options) (int64, error) {
-
-	partitions, err := discoverPartitions(topic, kLag.partitionDiscoverConn[topic], opts)
+// DONE
+func (l *Lag) GetPartitionLastOffset(topic string, groupId string, part int) (int64, error) {
+	partitions, err := l.discoverPartitions(topic)
 	if err != nil {
 		return -1, errors.Wrapf(err, "unable to discover partitions")
 	}
@@ -93,10 +124,12 @@ func (kLag *Lagger) GetLastOffsetPerPartition(topic string, groupId string, part
 
 	for _, pt := range partitions {
 		if pt.ID == part {
-			partConn, err = newConnectionPerPartition(topic, pt.ID, opts)
+			partConn, err = connect(l.dialer, l.options, topic, pt.ID)
 			if err != nil {
-				return -1, errors.Wrap(err, "Unable establish a connection to the partition")
+				return -1, errors.Wrap(err, "unable establish a connection to the partition")
 			}
+
+			break
 		}
 	}
 
@@ -107,8 +140,11 @@ func (kLag *Lagger) GetLastOffsetPerPartition(topic string, groupId string, part
 	defer partConn.Close()
 
 	_, lastOffet, err := partConn.ReadOffsets()
+	if err != nil {
+		return -1, fmt.Errorf("unable to read offsets for partition '%d': %s", part, err)
+	}
 
-	return lastOffet, err
+	return lastOffet, nil
 }
 
 // create new connection per topic and address

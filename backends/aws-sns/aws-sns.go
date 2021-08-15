@@ -7,19 +7,19 @@ import (
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
-	types2 "github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/types"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/backends/aws-sns/types"
+	atypes "github.com/batchcorp/plumber/backends/aws-sns/types"
 	"github.com/batchcorp/plumber/options"
 )
 
 type AWSSNS struct {
 	Options *options.Options
 
-	service  types.ISNSAPI
+	service  atypes.ISNSAPI
 	queueURL string
 	msgDesc  *desc.MessageDescriptor
 	log      *logrus.Entry
@@ -54,7 +54,7 @@ func (a *AWSSNS) Close(_ context.Context) error {
 	return nil
 }
 
-func (a *AWSSNS) Read(ctx context.Context, resultsChan chan *types2.ReadMessage, errorChan chan *types2.ErrorMessage) error {
+func (a *AWSSNS) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {
 	return errors.New("AWSSNS does not support read functionality")
 }
 
@@ -62,11 +62,11 @@ func (a *AWSSNS) Test(ctx context.Context) error {
 	return errors.New("not implemented")
 }
 
-func (a *AWSSNS) Lag(ctx context.Context) (*types2.Lag, error) {
+func (a *AWSSNS) Lag(ctx context.Context) ([]*types.Lag, error) {
 	return nil, errors.New("AWSSNS does not support consumer lag lookup functionality")
 }
 
-func (a *AWSSNS) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types2.ErrorMessage) error {
+func (a *AWSSNS) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {
 	return errors.New("not implemented")
 }
 

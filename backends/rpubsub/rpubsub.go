@@ -51,7 +51,7 @@ func (r *Redis) Test(ctx context.Context) error {
 	return types.NotImplementedErr
 }
 
-func (r *Redis) Lag(ctx context.Context) (*types.Lag, error) {
+func (r *Redis) Lag(ctx context.Context) ([]*types.Lag, error) {
 	return nil, types.UnsupportedFeatureErr
 }
 

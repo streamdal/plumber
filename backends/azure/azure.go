@@ -82,7 +82,7 @@ func (s *ServiceBus) Test(_ context.Context) error {
 	return errors.New("not implemented")
 }
 
-func (s *ServiceBus) Lag(_ context.Context) (*types.Lag, error) {
+func (s *ServiceBus) Lag(_ context.Context) ([]*types.Lag, error) {
 	return nil, types.UnsupportedFeatureErr
 }
 
