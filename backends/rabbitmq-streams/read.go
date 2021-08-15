@@ -1,39 +1,26 @@
 package rabbitmq_streams
 
 import (
+	"context"
 	"fmt"
 	"strconv"
+	"time"
 
-	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/types"
 
-	"github.com/batchcorp/plumber/reader"
-
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/amqp"
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/stream"
-	"github.com/sirupsen/logrus"
-
-	"github.com/batchcorp/plumber/options"
 )
 
-func Read(opts *options.Options, md *desc.MessageDescriptor) error {
-	client, err := NewClient(opts)
+func (r *RabbitMQStreams) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {
+	client, err := newClient(r.Options)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "unable to create new client")
 	}
 
-	r := &RabbitMQStreams{
-		client:  client,
-		Options: opts,
-		msgDesc: md,
-		log:     logrus.WithField("pkg", "rabbitmq-streams/read.go"),
-	}
+	defer client.Close()
 
-	return r.Read()
-}
-
-func (r *RabbitMQStreams) Read() error {
 	var count int
 
 	offsetOption, err := r.getOffsetOption()
@@ -44,13 +31,21 @@ func (r *RabbitMQStreams) Read() error {
 	handleMessage := func(consumerContext stream.ConsumerContext, message *amqp.Message) {
 		for _, value := range message.Data {
 			count++
-			data, err := reader.Decode(r.Options, r.msgDesc, value)
-			if err != nil {
-				r.log.Error(err)
-				continue
-			}
 
-			printer.PrintRabbitMQStreamsResult(r.Options, count, consumerContext, message, data)
+			resultsChan <- &types.ReadMessage{
+				Value: value,
+				Metadata: map[string]interface{}{
+					"delivery_tag":         message.DeliveryTag,
+					"properties":           *message.Properties,
+					"format":               message.Format,
+					"header":               *message.Header,
+					"delivery_annotations": message.DeliveryAnnotations,
+					"footer":               message.Footer,
+					"send_settled":         message.SendSettled,
+				},
+				ReceivedAt: time.Now().UTC(),
+				Num:        count,
+			}
 		}
 
 		if !r.Options.Read.Follow {
@@ -58,7 +53,7 @@ func (r *RabbitMQStreams) Read() error {
 		}
 	}
 
-	consumer, err := r.client.NewConsumer(r.Options.RabbitMQStreams.Stream,
+	consumer, err := client.NewConsumer(r.Options.RabbitMQStreams.Stream,
 		handleMessage,
 		stream.NewConsumerOptions().
 			SetConsumerName(r.Options.RabbitMQStreams.ClientName).
