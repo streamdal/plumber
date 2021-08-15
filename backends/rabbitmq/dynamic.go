@@ -7,25 +7,22 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/dproxy"
-	"github.com/batchcorp/plumber/options"
 )
 
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
 // which are then written to the message bus.
-func Dynamic(opts *options.Options) error {
-	ctx := context.Background()
+func (r *RabbitMQ) Dynamic(ctx context.Context) error {
 	llog := logrus.WithField("pkg", "rabbitmq/dynamic")
 
-	// Start up writer
-	writer, err := New(opts, nil)
+	client, err := newConnection(r.Options)
 	if err != nil {
-		return errors.Wrap(err, "unable to initialize rabbitmq publisher")
+		return errors.Wrap(err, "unable to create new rabbit client")
 	}
 
-	defer writer.consumer.Close()
+	defer client.Close()
 
 	// Start up dynamic connection
-	grpc, err := dproxy.New(opts, "RabbitMQ")
+	grpc, err := dproxy.New(r.Options, "RabbitMQ")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
@@ -33,15 +30,25 @@ func Dynamic(opts *options.Options) error {
 	go grpc.Start()
 
 	// Continually loop looking for messages on the channel.
+MAIN:
 	for {
 		select {
 		case outbound := <-grpc.OutboundMessageCh:
-			if err := writer.consumer.Publish(ctx, opts.Rabbit.RoutingKey, outbound.Blob); err != nil {
+			if err := client.Publish(ctx, r.Options.Rabbit.RoutingKey, outbound.Blob); err != nil {
 				llog.Errorf("Unable to replay message: %s", err)
 				break
 			}
 
-			llog.Debugf("Replayed message to rabbitmq routing key '%s' for replay '%s'", opts.Rabbit.RoutingKey, outbound.ReplayId)
+			llog.Debugf("Replayed message to rabbitmq routing key '%s' for replay '%s'",
+				r.Options.Rabbit.RoutingKey, outbound.ReplayId)
+
+		case <-ctx.Done():
+			llog.Debug("context cancelled")
+			break MAIN
 		}
 	}
+
+	llog.Debug("exiting")
+
+	return nil
 }

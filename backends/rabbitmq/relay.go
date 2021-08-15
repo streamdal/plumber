@@ -3,15 +3,16 @@ package rabbitmq
 import (
 	"context"
 
+	"github.com/batchcorp/plumber/util"
 	"github.com/pkg/errors"
 	"github.com/relistan/go-director"
 	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 
-	"github.com/batchcorp/plumber/backends/rabbitmq/types"
+	rtypes "github.com/batchcorp/plumber/backends/rabbitmq/types"
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/stats"
+	"github.com/batchcorp/plumber/types"
 	"github.com/batchcorp/rabbit"
 )
 
@@ -24,18 +25,60 @@ type Relayer struct {
 	ShutdownCtx context.Context
 }
 
-func Relay(opts *options.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
-	if err := validateRelayOptions(opts); err != nil {
-		return nil, errors.Wrap(err, "unable to verify options")
+func (r *RabbitMQ) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {
+	if err := validateRelayOptions(r.Options); err != nil {
+		return errors.Wrap(err, "unable to verify options")
 	}
 
-	return &Relayer{
-		Options:     opts,
-		RelayCh:     relayCh,
-		log:         logrus.WithField("pkg", "rabbitmq/relay"),
-		Looper:      director.NewFreeLooper(director.FOREVER, make(chan error, 1)),
-		ShutdownCtx: shutdownCtx,
-	}, nil
+	client, err := newConnection(r.Options)
+	if err != nil {
+		return errors.Wrap(err, "unable to create new rabbit client")
+	}
+
+	defer client.Close()
+
+	errCh := make(chan *rabbit.ConsumeError)
+
+	r.log.Infof("Relaying RabbitMQ messages from '%s' exchange -> '%s'",
+		r.Options.Rabbit.Exchange, r.Options.Relay.GRPCAddress)
+
+	r.log.Infof("HTTP server listening on '%s'", r.Options.Relay.HTTPListenAddress)
+
+	go client.Consume(ctx, errCh, func(msg amqp.Delivery) error {
+		if msg.Body == nil {
+			// Ignore empty messages
+			// this will also prevent log spam if a queue goes missing
+			return nil
+		}
+
+		stats.Incr("rabbit-relay-consumer", 1)
+
+		r.log.Debugf("Writing RabbitMQ message to relay channel: %+v", msg)
+
+		relayCh <- &rtypes.RelayMessage{
+			Value:   &msg,
+			Options: &rtypes.RelayMessageOptions{},
+		}
+
+		return nil
+	})
+
+MAIN:
+	for {
+		select {
+		case errRabbit := <-errCh:
+			util.WriteError(r.log, errorCh, errRabbit.Error)
+			stats.IncrPromCounter("plumber_read_errors", 1)
+		// TODO: This should probably also listen to the shutdown ctx
+		case <-ctx.Done():
+			r.log.Info("context cancelled")
+			break MAIN
+		}
+	}
+
+	r.log.Debug("relayer exiting")
+
+	return nil
 }
 
 func validateRelayOptions(opts *options.Options) error {
@@ -48,67 +91,5 @@ func validateRelayOptions(opts *options.Options) error {
 	if opts.Rabbit.Exchange == "" {
 		return errors.New("You must specify an exchange")
 	}
-	return nil
-}
-
-func (r *Relayer) Relay() error {
-
-	errCh := make(chan *rabbit.ConsumeError)
-
-	r.log.Infof("Relaying RabbitMQ messages from '%s' exchange -> '%s'",
-		r.Options.Rabbit.Exchange, r.Options.RelayGRPCAddress)
-
-	r.log.Infof("HTTP server listening on '%s'", r.Options.RelayHTTPListenAddress)
-
-	rmq, err := rabbit.New(&rabbit.Options{
-		URL:           r.Options.Rabbit.Address,
-		QueueName:     r.Options.Rabbit.ReadQueue,
-		ExchangeName:  r.Options.Rabbit.Exchange,
-		RoutingKey:    r.Options.Rabbit.RoutingKey,
-		AutoAck:       r.Options.Rabbit.ReadAutoAck,
-		QueueDeclare:  r.Options.Rabbit.ReadQueueDeclare,
-		QueueDurable:  r.Options.Rabbit.ReadQueueDurable,
-		ConsumerTag:   r.Options.Rabbit.ReadConsumerTag,
-		UseTLS:        r.Options.Rabbit.UseTLS,
-		SkipVerifyTLS: r.Options.Rabbit.SkipVerifyTLS,
-	})
-	if err != nil {
-		return errors.Wrap(err, "unable to initialize rabbitmq consumer")
-	}
-
-	defer rmq.Close()
-
-	go rmq.Consume(r.ShutdownCtx, errCh, func(msg amqp.Delivery) error {
-		if msg.Body == nil {
-			// Ignore empty messages
-			// this will also prevent log spam if a queue goes missing
-			return nil
-		}
-
-		stats.Incr("rabbit-relay-consumer", 1)
-
-		r.log.Debugf("Writing RabbitMQ message to relay channel: %+v", msg)
-
-		r.RelayCh <- &types.RelayMessage{
-			Value:   &msg,
-			Options: &types.RelayMessageOptions{},
-		}
-		return nil
-	})
-
-	for {
-		select {
-		case errRabbit := <-errCh:
-			r.log.Errorf("runFunc ran into an error: %s", errRabbit.Error.Error())
-
-			stats.IncrPromCounter("plumber_read_errors", 1)
-		case <-r.ShutdownCtx.Done():
-			r.log.Info("Received shutdown signal, existing relayer")
-			return nil
-		default:
-			// noop
-		}
-	}
-
 	return nil
 }

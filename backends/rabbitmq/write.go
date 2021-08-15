@@ -3,10 +3,9 @@ package rabbitmq
 import (
 	"context"
 
-	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/writer"
-
-	"github.com/jhump/protoreflect/desc"
+	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/rabbit"
 	"github.com/pkg/errors"
 )
 
@@ -15,28 +14,17 @@ import (
 // This is where we verify that the passed args and flags combo makes sense,
 // attempt to establish a connection, parse protobuf before finally attempting
 // to perform the write.
-func Write(opts *options.Options, md *desc.MessageDescriptor) error {
-	if err := writer.ValidateWriteOptions(opts, nil); err != nil {
-		return errors.Wrap(err, "unable to validate write options")
-	}
-
-	writeValues, err := writer.GenerateWriteMessageFromOptions(md, opts)
+func (r *RabbitMQ) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {
+	rmq, err := newConnection(r.Options)
 	if err != nil {
-		return errors.Wrap(err, "unable to generate write value")
+		return errors.Wrap(err, "unable to create new producer")
 	}
 
-	r, err := New(opts, md)
-	if err != nil {
-		return errors.Wrap(err, "unable to initialize rabbitmq consumer")
-	}
+	defer rmq.Close()
 
-	defer r.consumer.Close()
-
-	ctx := context.Background()
-
-	for _, value := range writeValues {
-		if err := r.Write(ctx, value); err != nil {
-			r.log.Error(err)
+	for _, msg := range messages {
+		if err := r.write(ctx, rmq, msg.Value); err != nil {
+			util.WriteError(r.log, errorCh, err)
 		}
 	}
 
@@ -45,8 +33,8 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 
 // Write is a wrapper for amqp Publish method. We wrap it so that we can mock
 // it in tests, add logging etc.
-func (r *RabbitMQ) Write(ctx context.Context, value []byte) error {
-	err := r.consumer.Publish(ctx, r.Options.Rabbit.RoutingKey, value)
+func (r *RabbitMQ) write(ctx context.Context, client *rabbit.Rabbit, value []byte) error {
+	err := client.Publish(ctx, r.Options.Rabbit.RoutingKey, value)
 	if err != nil {
 		return errors.Wrap(err, "unable to write data to rabbit")
 	}

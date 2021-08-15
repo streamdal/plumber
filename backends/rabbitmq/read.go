@@ -2,15 +2,14 @@ package rabbitmq
 
 import (
 	"context"
-	"fmt"
+	"time"
 
-	"github.com/jhump/protoreflect/desc"
+	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
 	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
 
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/reader"
 	"github.com/batchcorp/rabbit"
 )
 
@@ -18,60 +17,70 @@ import (
 //
 // This is where we verify that the provided arguments and flag combination
 // makes sense/are valid; this is also where we will perform our initial conn.
-func Read(opts *options.Options, md *desc.MessageDescriptor) error {
-	if err := validateReadOptions(opts); err != nil {
+func (r *RabbitMQ) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {
+	if err := validateReadOptions(r.Options); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	r, err := New(opts, md)
-
+	client, err := newConnection(r.Options)
 	if err != nil {
-		return errors.Wrap(err, "unable to initialize rabbitmq consumer")
+		return errors.Wrap(err, "unable to create new consumer")
 	}
 
-	return r.Read()
-}
-
-// Read will attempt to consume one or more messages from the established rabbit
-// channel.
-func (r *RabbitMQ) Read() error {
-	defer r.consumer.Close()
+	defer client.Close()
 
 	r.log.Info("Listening for message(s) ...")
 
 	errCh := make(chan *rabbit.ConsumeError)
-	ctx, cancel := context.WithCancel(context.Background())
+	ctxWithCancel, cancel := context.WithCancel(ctx)
 
 	count := 1
 
-	go r.consumer.Consume(ctx, errCh, func(msg amqp.Delivery) error {
-
-		data, err := reader.Decode(r.Options, r.msgDesc, msg.Body)
-		if err != nil {
-			return err
+	go client.Consume(ctxWithCancel, errCh, func(msg amqp.Delivery) error {
+		resultsChan <- &types.ReadMessage{
+			Value: msg.Body,
+			Metadata: map[string]interface{}{
+				"headers":          msg.Headers,
+				"content_type":     msg.ContentType,
+				"content_encoding": msg.ContentEncoding,
+				"delivery_mode":    msg.DeliveryMode,
+				"priority":         msg.Priority,
+				"correlation_id":   msg.CorrelationId,
+				"reply_to":         msg.ReplyTo,
+				"expiration":       msg.Expiration,
+				"message_id":       msg.MessageId,
+				"timestamp":        msg.Timestamp,
+				"type":             msg.Type,
+				"user_id":          msg.UserId,
+				"app_id":           msg.AppId,
+				"consumer_tag":     msg.ConsumerTag,
+				"message_count":    msg.MessageCount,
+				"delivery_tag":     msg.DeliveryTag,
+				"redelivered":      msg.Redelivered,
+				"exchange":         msg.Exchange,
+				"routing_key":      msg.RoutingKey,
+			},
+			ReceivedAt: time.Now().UTC(),
+			Num:        count,
 		}
 
-		str := string(data)
-
-		str = fmt.Sprintf("%d: ", count) + str
 		count++
 
-		printer.Print(str)
-
-		if !r.Options.ReadFollow {
+		if !r.Options.Read.Follow {
 			cancel()
 		}
 
 		return nil
 	})
 
+MAIN:
 	for {
 		select {
 		case err := <-errCh:
-			return err.Error
-		case <-ctx.Done():
+			util.WriteError(r.log, errorChan, err.Error)
+		case <-ctxWithCancel.Done():
 			r.log.Debug("reader exiting")
-			return nil
+			break MAIN
 		}
 	}
 
