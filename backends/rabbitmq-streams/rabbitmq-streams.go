@@ -1,8 +1,11 @@
 package rabbitmq_streams
 
 import (
+	"context"
 	"sync"
+	"time"
 
+	"github.com/batchcorp/plumber/types"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/stream"
@@ -37,12 +40,27 @@ func New(opts *options.Options) (*RabbitMQStreams, error) {
 	}, nil
 }
 
-// TODO: Implement
-func validateOpts(opts *options.Options) error {
+func (r *RabbitMQStreams) Close(ctx context.Context) error {
 	return nil
 }
 
-func NewClient(opts *options.Options) (*stream.Environment, error) {
+func (r *RabbitMQStreams) Test(ctx context.Context) error {
+	return types.NotImplementedErr
+}
+
+func (r *RabbitMQStreams) Dynamic(ctx context.Context) error {
+	return types.UnsupportedFeatureErr
+}
+
+func (r *RabbitMQStreams) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
+	return types.UnsupportedFeatureErr
+}
+
+func (r *RabbitMQStreams) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {
+	return types.UnsupportedFeatureErr
+}
+
+func newClient(opts *options.Options) (*stream.Environment, error) {
 	env, err := stream.NewEnvironment(
 		stream.NewEnvironmentOptions().
 			SetUri(opts.RabbitMQStreams.Address).
@@ -63,21 +81,33 @@ func NewClient(opts *options.Options) (*stream.Environment, error) {
 		return nil, errors.Wrap(err, "could not validate rabbitmq streams options")
 	}
 
-	// Declare Stream
-	err = env.DeclareStream(opts.RabbitMQStreams.Stream,
+	// Try to declare Stream
+	if err := env.DeclareStream(opts.RabbitMQStreams.Stream,
 		&stream.StreamOptions{
 			MaxLengthBytes: stream.ByteCapacity{}.From(opts.RabbitMQStreams.DeclareStreamSize),
 		},
-	)
-	if err == stream.StreamAlreadyExists {
-		logrus.Debug("Stream already exists, ignoring --declare-stream")
-		return env, nil
-	}
-	if err != nil {
+	); err != nil {
+		if err == stream.StreamAlreadyExists {
+			logrus.Debug("Stream already exists, ignoring --declare-stream")
+			return env, nil
+		}
+
 		return nil, errors.Wrap(err, "unable to declare rabbitmq stream")
 	}
 
 	return env, nil
+}
+
+func validateOpts(opts *options.Options) error {
+	if opts == nil {
+		return errors.New("options cannot be nil")
+	}
+
+	if opts.RabbitMQStreams == nil {
+		return errors.New("rabbitmq streams options cannot be nil")
+	}
+
+	return nil
 }
 
 func validateDeclareStreamOptions(opts *options.Options) error {

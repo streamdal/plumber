@@ -33,7 +33,6 @@ type ErrorMessage struct {
 	Error      error
 }
 
-// TODO: Implement
 type TopicStats struct {
 	TopicName  string
 	GroupID    string
