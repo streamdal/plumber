@@ -13,7 +13,7 @@ import (
 
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
 // which are then written to the message bus.
-func Dynamic(opts *options.Options) error {
+func (k *Kafka) Dynamic(ctx context.Context) error {
 	ctx := context.Background()
 	llog := logrus.WithField("pkg", "kafka/dynamic")
 

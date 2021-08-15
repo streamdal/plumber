@@ -2,14 +2,12 @@ package kafka
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/jhump/protoreflect/desc"
+	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
-	"github.com/sirupsen/logrus"
-
-	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/writer"
 )
 
 // Write is the entry point function for performing write operations in Kafka.
@@ -17,33 +15,19 @@ import (
 // This is where we verify that the passed args and flags combo makes sense,
 // attempt to establish a connection, parse protobuf before finally attempting
 // to perform the write.
-func Write(opts *options.Options, md *desc.MessageDescriptor) error {
-	if err := writer.ValidateWriteOptions(opts, nil); err != nil {
-		return errors.Wrap(err, "unable to validate write options")
-	}
-
-	writeValues, err := writer.GenerateWriteMessageFromOptions(md, opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to generate write value")
-	}
-
-	kafkaWriter, err := NewWriter(opts)
+func (k *Kafka) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {
+	writer, err := NewWriter(k.Options)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new writer")
 	}
 
-	k := &Kafka{
-		Options: opts,
-		writer:  kafkaWriter.Writer,
-		log:     logrus.WithField("pkg", "kafka/write.go"),
-	}
+	defer writer.Close()
 
-	defer kafkaWriter.Conn.Close()
-	defer kafkaWriter.Writer.Close()
-
-	for _, value := range writeValues {
-		if err := k.Write([]byte(opts.Kafka.WriteKey), value); err != nil {
-			k.log.Error(err)
+	for _, topic := range k.Options.Kafka.Topics {
+		for _, msg := range messages {
+			if err := k.write(ctx, writer, topic, []byte(k.Options.Kafka.WriteKey), msg.Value); err != nil {
+				util.WriteError(k.log, errorCh, fmt.Errorf("unable to write message to topic '%s': %s", topic, err))
+			}
 		}
 	}
 
@@ -51,8 +35,9 @@ func Write(opts *options.Options, md *desc.MessageDescriptor) error {
 }
 
 // Write writes a message to a kafka topic. It is a wrapper for WriteMessages.
-func (k *Kafka) Write(key, value []byte) error {
+func (k *Kafka) write(ctx context.Context, writer *skafka.Writer, topic string, key, value []byte) error {
 	msg := skafka.Message{
+		Topic: topic,
 		Key:   key,
 		Value: value,
 	}
@@ -70,11 +55,11 @@ func (k *Kafka) Write(key, value []byte) error {
 		msg.Headers = headers
 	}
 
-	if err := k.writer.WriteMessages(context.Background(), msg); err != nil {
+	if err := writer.WriteMessages(ctx, msg); err != nil {
 		return errors.Wrap(err, "unable to publish message(s)")
 	}
 
-	k.log.Infof("Successfully wrote message to topic '%s'", k.Options.Kafka.Topics[0])
+	k.log.Infof("Successfully wrote message to topic '%s'", topic)
 
 	return nil
 }

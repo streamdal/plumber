@@ -56,7 +56,7 @@ func (a *AWSSQS) Test(ctx context.Context) error {
 	return errors.New("not implemented")
 }
 
-func (a *AWSSQS) Lag(ctx context.Context) (*types.Lag, error) {
+func (a *AWSSQS) Lag(ctx context.Context) ([]*types.Lag, error) {
 	return nil, types.UnsupportedFeatureErr
 }
 

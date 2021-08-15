@@ -60,7 +60,7 @@ func (n *Nats) Test(ctx context.Context) error {
 	return types.NotImplementedErr
 }
 
-func (n *Nats) Lag(ctx context.Context) (*types.Lag, error) {
+func (n *Nats) Lag(ctx context.Context) ([]*types.Lag, error) {
 	return nil, types.UnsupportedFeatureErr
 }
 

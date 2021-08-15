@@ -2,105 +2,94 @@ package kafka
 
 import (
 	"context"
-	"fmt"
+	"time"
 
-	"github.com/jhump/protoreflect/desc"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
-	"github.com/batchcorp/plumber/backends/kafka/types"
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/reader"
+	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
+	"github.com/pkg/errors"
+	skafka "github.com/segmentio/kafka-go"
 )
 
-// Read is the entry point function for performing read operations in Kafka.
-//
-// This is where we verify that the provided arguments and flag combination
-// makes sense/are valid; this is also where we will perform our initial conn.
-func Read(opts *options.Options, md *desc.MessageDescriptor) error {
-	if err := validateReadOptions(opts); err != nil {
+// DONE
+func (k *Kafka) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {
+	if err := validateReadOptions(k.Options); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	kafkaReader, err := NewReader(opts)
+	reader, err := NewReader(k.dialer, k.Options)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new reader")
 	}
 
-	defer kafkaReader.Conn.Close()
-	defer kafkaReader.Reader.Close()
+	defer reader.Close()
 
-	k := &Kafka{
-		Options: opts,
-		msgDesc: md,
-		reader:  kafkaReader.Reader,
-		log:     logrus.WithField("pkg", "kafka/read.go"),
-	}
-
-	return k.Read()
+	return k.read(ctx, reader, resultsChan, errorChan)
 }
 
-// Read will attempt to consume one or more messages from a given topic,
-// optionally decode it and/or convert the returned output.
-//
-// This method SHOULD be able to recover from network hiccups.
-func (k *Kafka) Read() error {
+func (k *Kafka) read(ctx context.Context, reader *skafka.Reader, resultsChan chan *types.ReadMessage,
+	errorChan chan *types.ErrorMessage) error {
+
+	if reader == nil {
+		return errors.New("reader cannot be nil")
+	}
+
 	k.log.Info("Initializing (could take a minute or two) ...")
 
 	count := 1
 	lastOffset := int64(-1)
 	lastPartitionProcessed := -1
 
-	var lagConn *Lagger
+	var lag *Lag
+
+	if k.Options.Read.Lag {
+		var err error
+
+		lag, err = NewLag(k.Options, k.dialer)
+		if err != nil {
+			return errors.Wrap(err, "unable to create new lag client")
+		}
+	}
 
 	// init only one connection for partition discovery
 	for {
 		// Initial message read can take a while to occur due to how consumer
 		// groups are setup on initial connect.
-		msg, err := k.reader.ReadMessage(context.Background())
+		msg, err := reader.ReadMessage(ctx)
 
 		if err != nil {
-			if !k.Options.ReadFollow {
-				return errors.Wrap(err, "unable to read message")
+			if !k.Options.Read.Follow {
+				return errors.Wrap(err, "unable to read message (exiting)")
 			}
 
-			printer.Error(fmt.Sprintf("Unable to read message: %s", err))
+			util.WriteError(k.log, errorChan, errors.Wrap(err, "unable to read message (continuing)"))
 			continue
 		}
 
-		data, err := reader.Decode(k.Options, k.msgDesc, msg.Value)
-
-		if err != nil {
-			return err
-		}
-
-		if k.Options.ReadLag && msg.Partition != lastPartitionProcessed {
-
+		if k.Options.Read.Lag && msg.Partition != lastPartitionProcessed {
 			lastPartitionProcessed = msg.Partition
 
-			lagConn, err = NewKafkaLagConnection(k.Options)
-
-			if err != nil {
-				k.log.Debugf("Unable to connect establish a kafka lag connection: %s", err)
-				continue
-			}
-
-			lastOffset, err = lagConn.GetLastOffsetPerPartition(msg.Topic, k.reader.Config().GroupID, msg.Partition, k.Options)
-
+			lastOffset, err = lag.GetPartitionLastOffset(msg.Topic, reader.Config().GroupID, msg.Partition)
 			if err != nil {
 				return errors.Wrap(err, "unable to obtain lastOffset for partition")
 			}
 		}
 
-		offsetInfo := &types.OffsetInfo{
-			Count:      count,
-			LastOffset: lastOffset,
+		resultsChan <- &types.ReadMessage{
+			Value: msg.Value,
+			Metadata: map[string]interface{}{
+				"key":           msg.Key,
+				"topic":         msg.Topic,
+				"headers":       msg.Headers,
+				"last_offset":   lastOffset,
+				"partition":     msg.Partition,
+				"creation_time": msg.Time,
+			},
+			ReceivedAt: time.Now().UTC(),
+			Num:        count,
 		}
 
-		printer.PrintKafkaResult(k.Options, offsetInfo, msg, data)
-
-		if !k.Options.ReadFollow {
+		if !k.Options.Read.Follow {
 			break
 		}
 
