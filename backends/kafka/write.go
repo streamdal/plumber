@@ -16,7 +16,7 @@ import (
 // attempt to establish a connection, parse protobuf before finally attempting
 // to perform the write.
 func (k *Kafka) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {
-	writer, err := NewWriter(k.Options)
+	writer, err := NewWriter(k.dialer, k.Options)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new writer")
 	}

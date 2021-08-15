@@ -3,6 +3,7 @@ package backends
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/batchcorp/plumber/backends/activemq"
 	"github.com/batchcorp/plumber/backends/aws-sns"
@@ -42,8 +43,6 @@ type Backend interface {
 	// (that are passed when instantiating the backend). Ie. If you want to
 	// write data to a specific key in Kafka - you'll need to pass
 	// Options.Kafka.WriteKey. This is not great :(
-	//
-	// TODO: Allow Write to accept options (to incl. key, header, etc.)
 	Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error
 
 	// Test performs a "test" to see if the connection to the backend is alive.
@@ -55,8 +54,8 @@ type Backend interface {
 	// This is a blocking call.
 	Dynamic(ctx context.Context) error
 
-	// Lag returns consumer lag stats. Only works for _some_ backends.
-	Lag(ctx context.Context) ([]*types.Lag, error)
+	// Lag returns consumer lag stats. NOTE: Only _some_ backends support this.
+	Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error
 
 	// Relay will hook into a message bus as a consumer and relay all messages
 	// to the relayCh; if an error channel is provided, any errors will be piped

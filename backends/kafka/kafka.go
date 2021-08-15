@@ -104,20 +104,13 @@ func NewReader(dialer *skafka.Dialer, opts *options.Options) (*skafka.Reader, er
 // NOTE: Continuing to use the deprecated NewWriter() func to avoid dealing with
 // TLS issues (since *Writer does not have a Dialer and Transport has TLS
 // defined separate from the dialer).
-func NewWriter(opts *options.Options) (*skafka.Writer, error) {
-	dialer, err := newDialer(opts)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to create new dialer")
-	}
-
+func NewWriter(dialer *skafka.Dialer, opts *options.Options) (*skafka.Writer, error) {
 	// NOTE: We explicitly do NOT set the topic - it will be set in the message
-	w := skafka.NewWriter(skafka.WriterConfig{
+	return skafka.NewWriter(skafka.WriterConfig{
 		Brokers:   opts.Kafka.Brokers,
 		Dialer:    dialer,
 		BatchSize: DefaultBatchSize,
-	})
-
-	return w, nil
+	}), nil
 }
 
 func ConnectAllTopics(dialer *skafka.Dialer, opts *options.Options) (map[string]*skafka.Conn, error) {

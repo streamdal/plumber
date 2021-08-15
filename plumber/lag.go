@@ -2,6 +2,7 @@ package plumber
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/batchcorp/plumber/backends"
@@ -29,22 +30,30 @@ func (p *Plumber) HandleLagCmd() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	t := time.NewTicker(5 * time.Second)
+	resultsCh := make(chan []*types.TopicStats, 100)
 
-	for range t.C {
-		stats, err := backend.Lag(ctx)
-		if err != nil {
-			p.log.Errorf("unable to determine consumer lag: %s", err)
-			continue
+	go func() {
+		if err := backend.Lag(ctx, resultsCh, 5*time.Second); err != nil {
+			p.log.Errorf("unable to get lag stats: %s", err)
+			close(resultsCh)
 		}
+	}()
 
+	for stats := range resultsCh {
 		displayLag(stats)
 	}
+
+	p.log.Debug("lag exiting")
 
 	return nil
 }
 
-// TODO: Implement
-func displayLag(stats *types.Lag) {
-
+// TODO: Improve
+func displayLag(stats []*types.TopicStats) {
+	for _, v := range stats {
+		for partitionID, pstats := range v.Partitions {
+			fmt.Printf("Lag in partition %v is <%v messages> for consumer with group-id '%s'\n",
+				partitionID, pstats.MessagesBehind, v.GroupID)
+		}
+	}
 }

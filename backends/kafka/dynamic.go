@@ -8,26 +8,23 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/dproxy"
-	"github.com/batchcorp/plumber/options"
 )
 
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
 // which are then written to the message bus.
 func (k *Kafka) Dynamic(ctx context.Context) error {
-	ctx := context.Background()
 	llog := logrus.WithField("pkg", "kafka/dynamic")
 
 	// Start up writer
-	writer, err := NewWriter(opts)
+	writer, err := NewWriter(k.dialer, k.Options)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new writer")
 	}
 
-	defer writer.Conn.Close()
-	defer writer.Writer.Close()
+	defer writer.Close()
 
 	// Start up dynamic connection
-	grpc, err := dproxy.New(opts, "Kafka")
+	grpc, err := dproxy.New(k.Options, "Kafka")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
@@ -35,18 +32,28 @@ func (k *Kafka) Dynamic(ctx context.Context) error {
 	go grpc.Start()
 
 	// Continually loop looking for messages on the channel.
+MAIN:
 	for {
 		select {
 		case outbound := <-grpc.OutboundMessageCh:
-			if err := writer.Writer.WriteMessages(ctx, skafka.Message{
-				Key:   []byte(opts.Kafka.WriteKey),
-				Value: outbound.Blob,
-			}); err != nil {
-				llog.Errorf("Unable to replay message: %s", err)
-				break
+			for _, topic := range k.Options.Kafka.Topics {
+				if err := writer.WriteMessages(ctx, skafka.Message{
+					Topic: topic,
+					Key:   []byte(k.Options.Kafka.WriteKey),
+					Value: outbound.Blob,
+				}); err != nil {
+					llog.Errorf("Unable to replay message: %s", err)
+					break MAIN
+				}
 			}
 
-			llog.Debugf("Replayed message to Kafka topic '%s' for replay '%s'", opts.Kafka.Topics[0], outbound.ReplayId)
+		case <-ctx.Done():
+			k.log.Warning("context cancelled")
+			break MAIN
 		}
 	}
+
+	k.log.Debug("dynamic exiting")
+
+	return nil
 }
