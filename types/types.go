@@ -7,9 +7,8 @@ import (
 )
 
 var (
-	BackendNotConnectedErr = errors.New("backend not connected")
-	UnsupportedFeatureErr  = errors.New("backend does not support this feature")
-	NotImplementedErr      = errors.New("not implemeneted")
+	UnsupportedFeatureErr = errors.New("backend does not support this feature")
+	NotImplementedErr     = errors.New("not implemented")
 )
 
 // WriteMessage is a generic message encoding used for writing messages to a backend

@@ -17,6 +17,10 @@ import (
 	"github.com/batchcorp/plumber/options"
 )
 
+const (
+	BackendName = "mqtt"
+)
+
 var (
 	errInvalidAddress  = errors.New("URI scheme must be ssl:// or tcp://")
 	errMissingAddress  = errors.New("--address cannot be empty")
@@ -49,6 +53,10 @@ func New(opts *options.Options) (*MQTT, error) {
 		client:  client,
 		log:     logrus.WithField("backend", "mqtt"),
 	}, nil
+}
+
+func (m *MQTT) Name() string {
+	return BackendName
 }
 
 func (m *MQTT) Close(ctx context.Context) error {

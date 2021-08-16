@@ -17,6 +17,10 @@ import (
 	"github.com/batchcorp/plumber/options"
 )
 
+const (
+	BackendName = "awssns"
+)
+
 type AWSSNS struct {
 	Options *options.Options
 
@@ -44,6 +48,9 @@ func New(opts *options.Options) (*AWSSNS, error) {
 		service: sns.New(sess),
 		log:     logrus.WithField("backend", "awssns"),
 	}, nil
+}
+func (a *AWSSNS) Name() string {
+	return BackendName
 }
 
 // Close is _almost_ a noop - since SNS is accessed via an HTTP API, there is no

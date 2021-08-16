@@ -15,8 +15,8 @@ import (
 	"github.com/batchcorp/plumber/options"
 )
 
-func (m *CDCMongo) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {
-	if err := validateReadOptions(m.Options); err != nil {
+func (c *CDCMongo) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {
+	if err := validateReadOptions(c.Options); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
@@ -24,23 +24,23 @@ func (m *CDCMongo) Read(ctx context.Context, resultsChan chan *types.ReadMessage
 	var cs *mongo.ChangeStream
 	streamOpts := make([]*moptions.ChangeStreamOptions, 0)
 
-	if m.Options.CDCMongo.IncludeFullDocument {
+	if c.Options.CDCMongo.IncludeFullDocument {
 		streamOpts = append(streamOpts, moptions.ChangeStream().SetFullDocument(moptions.UpdateLookup))
 	}
 
-	if m.Options.CDCMongo.Database != "" {
-		database := m.Service.Database(m.Options.CDCMongo.Database)
-		if m.Options.CDCMongo.Collection == "" {
+	if c.Options.CDCMongo.Database != "" {
+		database := c.Service.Database(c.Options.CDCMongo.Database)
+		if c.Options.CDCMongo.Collection == "" {
 			// Watch specific database and all collections under it
 			cs, err = database.Watch(ctx, mongo.Pipeline{}, streamOpts...)
 		} else {
 			// Watch specific database and collection deployment
-			coll := database.Collection(m.Options.CDCMongo.Collection)
+			coll := database.Collection(c.Options.CDCMongo.Collection)
 			cs, err = coll.Watch(ctx, mongo.Pipeline{}, streamOpts...)
 		}
 	} else {
 		// Watch entire deployment
-		cs, err = m.Service.Watch(ctx, mongo.Pipeline{}, streamOpts...)
+		cs, err = c.Service.Watch(ctx, mongo.Pipeline{}, streamOpts...)
 	}
 
 	if err != nil {
@@ -52,7 +52,7 @@ func (m *CDCMongo) Read(ctx context.Context, resultsChan chan *types.ReadMessage
 
 	for {
 		if !cs.Next(ctx) {
-			util.WriteError(m.log, errorChan, errors.Wrap(cs.Err(), "unable to read message from mongo (retrying in 1s)"))
+			util.WriteError(c.log, errorChan, errors.Wrap(cs.Err(), "unable to read message from mongo (retrying in 1s)"))
 			time.Sleep(time.Second * 1)
 			continue
 		}
@@ -75,7 +75,7 @@ func (m *CDCMongo) Read(ctx context.Context, resultsChan chan *types.ReadMessage
 			Num:        count,
 		}
 
-		if !m.Options.Read.Follow {
+		if !c.Options.Read.Follow {
 			return nil
 		}
 	}

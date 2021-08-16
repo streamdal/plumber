@@ -12,6 +12,10 @@ import (
 	"github.com/batchcorp/plumber/options"
 )
 
+const (
+	BackendName = "azure"
+)
+
 var (
 	errTopicOrQueue        = errors.New("You may only specify a topic or a queue, not both")
 	errMissingSubscription = errors.New("You must specify a subscription name when reading from a topic")
@@ -59,6 +63,10 @@ func New(opts *options.Options) (*ServiceBus, error) {
 	}
 
 	return sb, nil
+}
+
+func (s *ServiceBus) Name() string {
+	return BackendName
 }
 
 func (s *ServiceBus) Close(ctx context.Context) error {

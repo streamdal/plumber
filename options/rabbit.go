@@ -70,6 +70,7 @@ func addSharedRabbitFlags(cmd *kingpin.CmdClause, opts *Options) {
 		BoolVar(&opts.Rabbit.SkipVerifyTLS)
 
 	// TODO: This should really NOT be a shared key (for reads - binding key, for writes, routing key)
+	// UPDATE: To update this, we need to update the rabbit lib. ~ds 06.15.21
 	cmd.Flag("routing-key", "Routing key").
 		Envar("PLUMBER_RELAY_RABBIT_ROUTING_KEY").
 		StringVar(&opts.Rabbit.RoutingKey)

@@ -13,6 +13,10 @@ import (
 	"github.com/batchcorp/plumber/options"
 )
 
+const (
+	BackendName = "redis-streams"
+)
+
 type RedisStreams struct {
 	Options *options.Options
 
@@ -35,6 +39,10 @@ func New(opts *options.Options) (*RedisStreams, error) {
 		client:  client,
 		log:     logrus.WithField("backend", "rstreams"),
 	}, nil
+}
+
+func (r *RedisStreams) Name() string {
+	return BackendName
 }
 
 func (r *RedisStreams) Close(ctx context.Context) error {

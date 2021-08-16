@@ -22,13 +22,6 @@ func (p *Plumber) HandleWriteCmd() error {
 		return errors.Wrap(err, "unable to instantiate backend")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	if err := backend.Connect(ctx); err != nil {
-		return errors.Wrap(err, "unable to connect to backend")
-	}
-
 	if err := writer.ValidateWriteOptions(p.Options, nil); err != nil {
 		return errors.Wrap(err, "unable to validate write options")
 	}
@@ -37,6 +30,9 @@ func (p *Plumber) HandleWriteCmd() error {
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	if err := backend.Write(ctx, nil, value...); err != nil {
 		return errors.Wrap(err, "unable to complete write(s)")

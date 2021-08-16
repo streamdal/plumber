@@ -16,6 +16,10 @@ import (
 	"github.com/batchcorp/plumber/options"
 )
 
+const (
+	BackendName = "nsq"
+)
+
 var (
 	ErrMissingAddress = errors.New("you must specify either --nsqd-address or --lookupd-address")
 	ErrChooseAddress  = errors.New("you must specify either --nsqd-address or --lookupd-address, not both")
@@ -84,6 +88,10 @@ func New(opts *options.Options) (*NSQ, error) {
 		producer: producer,
 		log:      logger,
 	}, nil
+}
+
+func (n *NSQ) Name() string {
+	return BackendName
 }
 
 func (n *NSQ) Close(ctx context.Context) error {

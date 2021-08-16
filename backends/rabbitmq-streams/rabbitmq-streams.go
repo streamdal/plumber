@@ -14,6 +14,10 @@ import (
 	"github.com/batchcorp/plumber/options"
 )
 
+const (
+	BackendName = "rabbitmq-streams"
+)
+
 var (
 	ErrMissingDeclareSize = errors.New("You must specify --declare-stream-size if you specify" +
 		" the --declare-stream option")
@@ -38,6 +42,10 @@ func New(opts *options.Options) (*RabbitMQStreams, error) {
 		Options: opts,
 		log:     logrus.WithField("backend", "rabbitmq_streams"),
 	}, nil
+}
+
+func (r *RabbitMQStreams) Name() string {
+	return BackendName
 }
 
 func (r *RabbitMQStreams) Close(ctx context.Context) error {

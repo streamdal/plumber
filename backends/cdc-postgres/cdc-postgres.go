@@ -17,6 +17,10 @@ import (
 	"github.com/batchcorp/plumber/options"
 )
 
+const (
+	BackendName = "cdc-postgres"
+)
+
 /*
 Example output
 
@@ -62,31 +66,35 @@ func New(opts *options.Options) (*CDCPostgres, error) {
 	}, nil
 }
 
-func (p *CDCPostgres) Close(ctx context.Context) error {
-	if p.service == nil {
+func (c *CDCPostgres) Name() string {
+	return BackendName
+}
+
+func (c *CDCPostgres) Close(ctx context.Context) error {
+	if c.service == nil {
 		return nil
 	}
 
-	if err := p.service.Close(); err != nil {
+	if err := c.service.Close(); err != nil {
 		return errors.Wrap(err, "unable to disconnect postgres connection")
 	}
 
 	return nil
 }
 
-func (p *CDCPostgres) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {
+func (c *CDCPostgres) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {
 	return types.UnsupportedFeatureErr
 }
 
-func (p *CDCPostgres) Test(ctx context.Context) error {
+func (c *CDCPostgres) Test(ctx context.Context) error {
 	return types.NotImplementedErr
 }
 
-func (p *CDCPostgres) Dynamic(ctx context.Context) error {
+func (c *CDCPostgres) Dynamic(ctx context.Context) error {
 	return types.UnsupportedFeatureErr
 }
 
-func (p *CDCPostgres) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
+func (c *CDCPostgres) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
 	return types.UnsupportedFeatureErr
 }
 

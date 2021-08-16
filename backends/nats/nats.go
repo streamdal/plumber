@@ -16,6 +16,10 @@ import (
 	"github.com/batchcorp/plumber/options"
 )
 
+const (
+	BackendName = "nats"
+)
+
 var (
 	errMissingSubject = errors.New("you must specify a subject to publish to")
 )
@@ -42,6 +46,10 @@ func New(opts *options.Options) (*Nats, error) {
 		client:  client,
 		log:     logrus.WithField("backend", "nats"),
 	}, nil
+}
+
+func (n *Nats) Name() string {
+	return BackendName
 }
 
 func (n *Nats) Close(ctx context.Context) error {
