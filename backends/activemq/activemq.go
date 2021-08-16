@@ -106,8 +106,8 @@ func (a *ActiveMq) Test(ctx context.Context) error {
 	return errors.New("not implemented")
 }
 
-func (a *ActiveMq) Lag(ctx context.Context) ([]*types.Lag, error) {
-	return nil, types.UnsupportedFeatureErr
+func (a *ActiveMq) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
+	return types.UnsupportedFeatureErr
 }
 
 func (a *ActiveMq) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {

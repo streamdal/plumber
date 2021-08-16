@@ -19,26 +19,20 @@ type Lag struct {
 	log     *logrus.Entry
 }
 
-func NewLag(opts *options.Options, dialer *skafka.Dialer) (*Lag, error) {
-	if opts == nil {
-		return nil, errors.New("options cannot be nil")
-	}
-
-	if dialer == nil {
-		return nil, errors.New("dialer cannot be nil")
-	}
-
-	conns, err := ConnectAllTopics(dialer, opts)
+func (k *Kafka) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
+	conns, err := ConnectAllTopics(k.dialer, k.Options)
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to create initial connections")
+		return errors.Wrap(err, "unable to create initial connections")
 	}
 
-	return &Lag{
-		dialer:  dialer,
+	l := &Lag{
+		dialer:  k.dialer,
 		conns:   conns,
-		options: opts,
+		options: k.Options,
 		log:     logrus.WithField("pkg", "kafka/lag"),
-	}, nil
+	}
+
+	return l.Lag(ctx, resultsCh, interval)
 }
 
 // Lag fetches topic stats on the given interval and returns them over the

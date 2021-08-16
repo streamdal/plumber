@@ -2,6 +2,7 @@ package awssqs
 
 import (
 	"context"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -56,8 +57,8 @@ func (a *AWSSQS) Test(ctx context.Context) error {
 	return errors.New("not implemented")
 }
 
-func (a *AWSSQS) Lag(ctx context.Context) ([]*types.Lag, error) {
-	return nil, types.UnsupportedFeatureErr
+func (a *AWSSQS) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
+	return types.UnsupportedFeatureErr
 }
 
 func newService(opts *options.Options) (*sqs.SQS, string, error) {

@@ -1,18 +1,20 @@
 package cdc_postgres
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
+	"time"
 
 	"github.com/batchcorp/pgoutput"
+	"github.com/batchcorp/plumber/types"
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/pgtype"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/backends/cdc-postgres/types"
+	ptypes "github.com/batchcorp/plumber/backends/cdc-postgres/types"
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/printer"
 )
 
 /*
@@ -39,12 +41,56 @@ Example output
 
 type CDCPostgres struct {
 	Options *options.Options
-	Service *pgx.ReplicationConn
-	Log     *logrus.Entry
-	Printer printer.IPrinter
+	service *pgx.ReplicationConn
+	log     *logrus.Entry
 }
 
-func NewService(opts *options.Options) (*pgx.ReplicationConn, error) {
+func New(opts *options.Options) (*CDCPostgres, error) {
+	if err := validateOptions(opts); err != nil {
+		return nil, errors.Wrap(err, "unable to validate options")
+	}
+
+	service, err := newService(opts)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to setup new service")
+	}
+
+	return &CDCPostgres{
+		Options: nil,
+		service: service,
+		log:     logrus.WithField("pkg", "cdc-postgres"),
+	}, nil
+}
+
+func (p *CDCPostgres) Close(ctx context.Context) error {
+	if p.service == nil {
+		return nil
+	}
+
+	if err := p.service.Close(); err != nil {
+		return errors.Wrap(err, "unable to disconnect postgres connection")
+	}
+
+	return nil
+}
+
+func (p *CDCPostgres) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {
+	return types.UnsupportedFeatureErr
+}
+
+func (p *CDCPostgres) Test(ctx context.Context) error {
+	return types.NotImplementedErr
+}
+
+func (p *CDCPostgres) Dynamic(ctx context.Context) error {
+	return types.UnsupportedFeatureErr
+}
+
+func (p *CDCPostgres) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
+	return types.UnsupportedFeatureErr
+}
+
+func newService(opts *options.Options) (*pgx.ReplicationConn, error) {
 	config := pgx.ConnConfig{
 		Database: opts.CDCPostgres.DatabaseName,
 		User:     opts.CDCPostgres.Username,
@@ -68,7 +114,7 @@ func NewService(opts *options.Options) (*pgx.ReplicationConn, error) {
 	return conn, nil
 }
 
-func handleInsert(set *pgoutput.RelationSet, v *pgoutput.Insert, changeRecord *types.ChangeRecord) (*types.ChangeRecord, error) {
+func handleInsert(set *pgoutput.RelationSet, v *pgoutput.Insert, changeRecord *ptypes.ChangeRecord) (*ptypes.ChangeRecord, error) {
 	changeSet, ok := set.Get(v.RelationID)
 	if !ok {
 		return nil, errors.New("relation not found")
@@ -78,7 +124,7 @@ func handleInsert(set *pgoutput.RelationSet, v *pgoutput.Insert, changeRecord *t
 		return nil, fmt.Errorf("error parsing values: %s", err)
 	}
 
-	record := &types.ChangeRecord{
+	record := &ptypes.ChangeRecord{
 		LSN:       changeRecord.LSN,
 		XID:       changeRecord.XID,
 		Timestamp: changeRecord.Timestamp,
@@ -94,7 +140,7 @@ func handleInsert(set *pgoutput.RelationSet, v *pgoutput.Insert, changeRecord *t
 	return record, nil
 }
 
-func handleUpdate(set *pgoutput.RelationSet, v *pgoutput.Update, changeRecord *types.ChangeRecord) (*types.ChangeRecord, error) {
+func handleUpdate(set *pgoutput.RelationSet, v *pgoutput.Update, changeRecord *ptypes.ChangeRecord) (*ptypes.ChangeRecord, error) {
 	changeSet, ok := set.Get(v.RelationID)
 	if !ok {
 		return nil, errors.New("relation not found")
@@ -104,7 +150,7 @@ func handleUpdate(set *pgoutput.RelationSet, v *pgoutput.Update, changeRecord *t
 		return nil, fmt.Errorf("error parsing values: %s", err)
 	}
 
-	record := &types.ChangeRecord{
+	record := &ptypes.ChangeRecord{
 		LSN:       changeRecord.LSN,
 		XID:       changeRecord.XID,
 		Timestamp: changeRecord.Timestamp,
@@ -128,7 +174,7 @@ func handleUpdate(set *pgoutput.RelationSet, v *pgoutput.Update, changeRecord *t
 	return record, nil
 }
 
-func handleDelete(set *pgoutput.RelationSet, v *pgoutput.Delete, changeRecord *types.ChangeRecord) (*types.ChangeRecord, error) {
+func handleDelete(set *pgoutput.RelationSet, v *pgoutput.Delete, changeRecord *ptypes.ChangeRecord) (*ptypes.ChangeRecord, error) {
 	changeSet, ok := set.Get(v.RelationID)
 	if !ok {
 		err := fmt.Errorf("relation not found for '%s'", changeSet.Name)
@@ -140,7 +186,7 @@ func handleDelete(set *pgoutput.RelationSet, v *pgoutput.Delete, changeRecord *t
 		return nil, err
 	}
 
-	record := &types.ChangeRecord{
+	record := &ptypes.ChangeRecord{
 		LSN:       changeRecord.LSN,
 		XID:       changeRecord.XID,
 		Timestamp: changeRecord.Timestamp,
@@ -161,4 +207,16 @@ func handleDelete(set *pgoutput.RelationSet, v *pgoutput.Delete, changeRecord *t
 	}
 
 	return record, nil
+}
+
+func validateOptions(opts *options.Options) error {
+	if opts == nil {
+		return errors.New("opts cannot be nil")
+	}
+
+	if opts.CDCPostgres == nil {
+		return errors.New("postgres opts cannot be nil")
+	}
+
+	return nil
 }

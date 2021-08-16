@@ -2,6 +2,7 @@ package gcppubsub
 
 import (
 	"context"
+	"time"
 
 	"cloud.google.com/go/pubsub"
 	"github.com/batchcorp/plumber/types"
@@ -51,8 +52,8 @@ func (g *GCPPubSub) Test(ctx context.Context) error {
 	return types.NotImplementedErr
 }
 
-func (g *GCPPubSub) Lag(ctx context.Context) ([]*types.Lag, error) {
-	return nil, types.UnsupportedFeatureErr
+func (g *GCPPubSub) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
+	return types.UnsupportedFeatureErr
 }
 
 func newClient(opts *options.Options) (*pubsub.Client, error) {
