@@ -6,6 +6,8 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/batchcorp/plumber/config"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
@@ -42,7 +44,7 @@ var _ = Describe("Etcd", func() {
 	BeforeSuite(func() {
 		var newErr error
 
-		srv, newErr = New(goodServerOptions)
+		srv, newErr = New(goodServerOptions, &config.Config{})
 		Expect(newErr).ToNot(HaveOccurred())
 		Expect(srv).ToNot(BeNil())
 		Expect(srv.started).To(BeFalse())
