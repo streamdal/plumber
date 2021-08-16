@@ -28,7 +28,7 @@ func (p *PlumberServer) importGithub(ctx context.Context, req *protos.ImportGith
 	case encoding.Type_AVRO:
 	// TODO
 	default:
-		err = errors.New("only protobuf and avro schemas can be imported from github")
+		err = ErrInvalidGithubSchemaType
 	}
 
 	if err != nil {

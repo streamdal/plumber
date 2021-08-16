@@ -19,6 +19,7 @@ var (
 	ErrVerifyTimeout = errors.New("Unable to verify GitHub access after 15 minutes")
 )
 
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . IGithub
 type IGithub interface {
 	GetAccessToken(response *UserCodeResponse) (*AccessTokenResponse, error)
 	GetRepoArchive(ctx context.Context, token, repoURL string) ([]byte, error)

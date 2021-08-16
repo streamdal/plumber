@@ -12,6 +12,7 @@ import (
 
 var (
 	// Server
+
 	ErrMissingAuth  = errors.New("auth cannot be nil")
 	ErrInvalidToken = errors.New("invalid token")
 
@@ -43,6 +44,10 @@ var (
 	ErrMissingService  = errors.New("service cannot be empty")
 	ErrInvalidRepoURL  = errors.New("repo URL must be a valid URL or left blank")
 	ErrServiceNotFound = errors.New("service does not exist")
+
+	// Schemas
+
+	ErrInvalidGithubSchemaType = errors.New("only protobuf and avro schemas can be imported from github")
 )
 
 // validateConnection ensures all required parameters are passed when creating/testing/updating a connection
