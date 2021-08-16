@@ -10,6 +10,8 @@ import (
 	"github.com/batchcorp/plumber/backends/aws-sqs"
 	"github.com/batchcorp/plumber/backends/azure"
 	"github.com/batchcorp/plumber/backends/azure-eventhub"
+	cdc_mongo "github.com/batchcorp/plumber/backends/cdc-mongo"
+	cdc_postgres "github.com/batchcorp/plumber/backends/cdc-postgres"
 	"github.com/batchcorp/plumber/backends/gcp-pubsub"
 	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/backends/mqtt"
@@ -102,6 +104,10 @@ func New(name string, opts *options.Options) (Backend, error) {
 		be, err = rpubsub.New(opts)
 	case "redis-streams":
 		be, err = rstreams.New(opts)
+	case "cdc-mongo":
+		be, err = cdc_mongo.New(opts)
+	case "cdc-postgres":
+		be, err = cdc_postgres.New(opts)
 	default:
 		return nil, fmt.Errorf("unknown backend '%s'", name)
 

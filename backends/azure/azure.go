@@ -2,6 +2,7 @@ package azure
 
 import (
 	"context"
+	"time"
 
 	"github.com/Azure/azure-service-bus-go"
 	"github.com/batchcorp/plumber/types"
@@ -79,11 +80,11 @@ func (s *ServiceBus) Close(ctx context.Context) error {
 }
 
 func (s *ServiceBus) Test(_ context.Context) error {
-	return errors.New("not implemented")
+	return types.NotImplementedErr
 }
 
-func (s *ServiceBus) Lag(_ context.Context) ([]*types.Lag, error) {
-	return nil, types.UnsupportedFeatureErr
+func (s *ServiceBus) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
+	return types.UnsupportedFeatureErr
 }
 
 // NewClient returns a properly configured service bus client

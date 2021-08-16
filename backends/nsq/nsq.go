@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"io/ioutil"
+	"time"
 
 	"github.com/batchcorp/plumber/types"
 	"github.com/jhump/protoreflect/desc"
@@ -110,8 +111,8 @@ func (n *NSQ) Dynamic(ctx context.Context) error {
 	return types.UnsupportedFeatureErr
 }
 
-func (n *NSQ) Lag(ctx context.Context) ([]*types.Lag, error) {
-	return nil, types.UnsupportedFeatureErr
+func (n *NSQ) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
+	return types.UnsupportedFeatureErr
 }
 
 // getNSQConfig returns the config needed for creating a new NSQ consumer or producer

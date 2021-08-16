@@ -3,50 +3,39 @@ package cdc_postgres
 import (
 	"context"
 	"encoding/json"
-
-	"github.com/jackc/pgx"
-	"github.com/jhump/protoreflect/desc"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
+	"fmt"
+	"time"
 
 	"github.com/batchcorp/pgoutput"
-	"github.com/batchcorp/plumber/backends/cdc-postgres/types"
+	ptypes "github.com/batchcorp/plumber/backends/cdc-postgres/types"
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/types"
+	"github.com/jackc/pgx"
+	"github.com/pkg/errors"
 )
 
-func Read(opts *options.Options, _ *desc.MessageDescriptor) error {
-	if err := validateReadOptions(opts); err != nil {
+func (p *CDCPostgres) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {
+	if err := validateReadOptions(p.Options); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	db, err := NewService(opts)
-	if err != nil {
-		return err
-	}
-
-	p := &CDCPostgres{
-		Options: opts,
-		Service: db,
-		Log:     logrus.WithField("pkg", "cdc-postgres/read.go"),
-		Printer: printer.New(),
-	}
-
-	return p.Read()
-}
-
-func (p *CDCPostgres) Read() error {
-	defer p.Service.Close()
 	set := pgoutput.NewRelationSet(nil)
 
-	var changeRecord *types.ChangeRecord
+	var changeRecord *ptypes.ChangeRecord
 
-	sub := pgoutput.NewSubscription(p.Service, p.Options.CDCPostgres.SlotName, p.Options.CDCPostgres.PublisherName, 0, false)
+	sub := pgoutput.NewSubscription(p.service, p.Options.CDCPostgres.SlotName, p.Options.CDCPostgres.PublisherName,
+		0, false)
+
+	var count int
 
 	handler := func(m pgoutput.Message, _ uint64) error {
+		var err error
+		var record *ptypes.ChangeRecord
+		action := "unknown"
+
 		switch v := m.(type) {
 		case pgoutput.Begin:
-			changeRecord = &types.ChangeRecord{
+			changeRecord = &ptypes.ChangeRecord{
 				Timestamp: v.Timestamp.UTC().UnixNano(),
 				XID:       v.XID,
 				LSN:       pgx.FormatLSN(v.LSN),
@@ -57,35 +46,40 @@ func (p *CDCPostgres) Read() error {
 		case pgoutput.Relation:
 			set.Add(v)
 		case pgoutput.Insert:
-			record, err := handleInsert(set, &v, changeRecord)
-			if err != nil {
-				return err
-			}
-
-			p.printRecord(record)
+			action = "insert"
+			record, err = handleInsert(set, &v, changeRecord)
 		case pgoutput.Update:
-			record, err := handleUpdate(set, &v, changeRecord)
-			if err != nil {
-				return err
-			}
-
-			p.printRecord(record)
+			action = "update"
+			record, err = handleUpdate(set, &v, changeRecord)
 		case pgoutput.Delete:
-			record, err := handleDelete(set, &v, changeRecord)
-			if err != nil {
-				return err
-			}
-
-			p.printRecord(record)
+			action = "delete"
+			record, err = handleDelete(set, &v, changeRecord)
 		}
+
+		if err != nil {
+			return fmt.Errorf("unable to handle '%s' record: %s", action, err)
+		}
+
+		output, err := json.MarshalIndent(record, "", "  ")
+		if err != nil {
+			return fmt.Errorf("unable to json marshal + indent '%s' record: %s", action, err)
+		}
+
+		count++
+
+		resultsChan <- &types.ReadMessage{
+			Value: output,
+			Metadata: map[string]interface{}{
+				"action": action,
+			},
+			ReceivedAt: time.Now().UTC(),
+			Num:        count,
+		}
+
 		return nil
 	}
-	return sub.Start(context.Background(), 0, handler)
-}
 
-func (p *CDCPostgres) printRecord(record *types.ChangeRecord) {
-	output, _ := json.MarshalIndent(record, "", "  ")
-	p.Printer.Print(string(output))
+	return sub.Start(ctx, 0, handler)
 }
 
 // validateReadOptions ensures the correct CLI options are specified for the read action

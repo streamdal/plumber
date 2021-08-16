@@ -3,6 +3,7 @@ package awssns
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -55,19 +56,19 @@ func (a *AWSSNS) Close(_ context.Context) error {
 }
 
 func (a *AWSSNS) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {
-	return errors.New("AWSSNS does not support read functionality")
+	return types.UnsupportedFeatureErr
 }
 
 func (a *AWSSNS) Test(ctx context.Context) error {
-	return errors.New("not implemented")
+	return types.NotImplementedErr
 }
 
-func (a *AWSSNS) Lag(ctx context.Context) ([]*types.Lag, error) {
-	return nil, errors.New("AWSSNS does not support consumer lag lookup functionality")
+func (a *AWSSNS) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
+	return types.UnsupportedFeatureErr
 }
 
 func (a *AWSSNS) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {
-	return errors.New("not implemented")
+	return types.UnsupportedFeatureErr
 }
 
 func validateOpts(opts *options.Options) error {

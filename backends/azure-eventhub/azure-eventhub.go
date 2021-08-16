@@ -2,6 +2,7 @@ package azure_eventhub
 
 import (
 	"context"
+	"time"
 
 	"github.com/Azure/azure-event-hubs-go/v3"
 	"github.com/batchcorp/plumber/options"
@@ -35,15 +36,15 @@ func New(opts *options.Options) (*EventHub, error) {
 }
 
 func (a *EventHub) Close(ctx context.Context) error {
-	panic("implement me")
+	return nil
 }
 
 func (a *EventHub) Test(ctx context.Context) error {
-	return errors.New("not implemented")
+	return types.NotImplementedErr
 }
 
-func (a *EventHub) Lag(ctx context.Context) ([]*types.Lag, error) {
-	return nil, types.UnsupportedFeatureErr
+func (a *EventHub) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
+	return types.UnsupportedFeatureErr
 }
 
 func (a *EventHub) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {

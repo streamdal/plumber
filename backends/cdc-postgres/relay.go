@@ -4,14 +4,13 @@ import (
 	"context"
 
 	"github.com/jackc/pgx"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/pgoutput"
-	"github.com/batchcorp/plumber/backends/cdc-postgres/types"
+	ptypes "github.com/batchcorp/plumber/backends/cdc-postgres/types"
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/stats"
+	"github.com/batchcorp/plumber/types"
 )
 
 type Relayer struct {
@@ -22,35 +21,19 @@ type Relayer struct {
 	ShutdownCtx context.Context
 }
 
-func Relay(opts *options.Options, relayCh chan interface{}, shutdownCtx context.Context) (relay.IRelayBackend, error) {
-	// Create new service
-	client, err := NewService(opts)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to create postgres connection")
-	}
-
-	return &Relayer{
-		Options:     opts,
-		RelayCh:     relayCh,
-		Service:     client,
-		ShutdownCtx: shutdownCtx,
-		log:         logrus.WithField("pkg", "cdc-postgres/relay.go"),
-	}, nil
-}
-
-func (r *Relayer) Relay() error {
+func (p *CDCPostgres) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {
 	set := pgoutput.NewRelationSet(nil)
 
-	var changeRecord *types.ChangeRecord
+	var changeRecord *ptypes.ChangeRecord
 
-	sub := pgoutput.NewSubscription(r.Service, r.Options.CDCPostgres.SlotName, r.Options.CDCPostgres.PublisherName, 0, false)
-	defer r.Service.Close()
+	sub := pgoutput.NewSubscription(p.service, p.Options.CDCPostgres.SlotName, p.Options.CDCPostgres.PublisherName,
+		0, false)
 
 	handler := func(m pgoutput.Message, _ uint64) error {
 
 		switch v := m.(type) {
 		case pgoutput.Begin:
-			changeRecord = &types.ChangeRecord{
+			changeRecord = &ptypes.ChangeRecord{
 				Timestamp: v.Timestamp.UTC().UnixNano(),
 				XID:       v.XID,
 				LSN:       pgx.FormatLSN(v.LSN),
@@ -67,7 +50,7 @@ func (r *Relayer) Relay() error {
 			}
 
 			stats.Incr("cdc-postgres-relay-consumer", 1)
-			r.RelayCh <- &types.RelayMessage{
+			relayCh <- &ptypes.RelayMessage{
 				Value: record,
 			}
 		case pgoutput.Update:
@@ -77,7 +60,7 @@ func (r *Relayer) Relay() error {
 			}
 
 			stats.Incr("cdc-postgres-relay-consumer", 1)
-			r.RelayCh <- &types.RelayMessage{
+			relayCh <- &ptypes.RelayMessage{
 				Value: record,
 			}
 		case pgoutput.Delete:
@@ -87,7 +70,7 @@ func (r *Relayer) Relay() error {
 			}
 
 			stats.Incr("cdc-postgres-relay-consumer", 1)
-			r.RelayCh <- &types.RelayMessage{
+			relayCh <- &ptypes.RelayMessage{
 				Value: record,
 			}
 		}
@@ -95,10 +78,11 @@ func (r *Relayer) Relay() error {
 		return nil
 	}
 
+	// TODO: Use shutdown ctx instead of the user provided ctx
 	// Start blocks. ShutdownCtx cancel is handled within the library
-	err := sub.Start(r.ShutdownCtx, 0, handler)
+	err := sub.Start(ctx, 0, handler)
 	if err == context.Canceled {
-		r.log.Info("Received shutdown signal, existing relayer")
+		p.log.Info("Received shutdown signal, existing relayer")
 		return nil
 	}
 
