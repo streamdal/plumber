@@ -346,7 +346,7 @@ func HandleGlobalDynamicFlags(cmd *kingpin.CmdClause, opts *Options) {
 }
 
 func HandleWriteFlags(cmd *kingpin.CmdClause, opts *Options) {
-	cmd.Flag("input-data", "Data to write").
+	cmd.Flag("input-data", "Value to write").
 		StringsVar(&opts.Write.InputData)
 
 	cmd.Flag("input-file", "File containing input data (overrides input-data; 1 file is 1 message)").

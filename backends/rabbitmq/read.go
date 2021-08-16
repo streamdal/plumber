@@ -62,6 +62,7 @@ func (r *RabbitMQ) Read(ctx context.Context, resultsChan chan *types.ReadMessage
 			},
 			ReceivedAt: time.Now().UTC(),
 			Num:        count,
+			Raw:        msg,
 		}
 
 		count++

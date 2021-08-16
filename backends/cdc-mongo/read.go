@@ -61,6 +61,7 @@ func (c *CDCMongo) Read(ctx context.Context, resultsChan chan *types.ReadMessage
 
 		// Comes unformatted from mongo, let's make it nice for the end user
 		tmp := make(map[string]interface{}, 0)
+
 		if err := json.Unmarshal([]byte(next), &tmp); err != nil {
 			return errors.Wrap(err, "unable to unmarshal JSON replication entry")
 		}
@@ -73,6 +74,7 @@ func (c *CDCMongo) Read(ctx context.Context, resultsChan chan *types.ReadMessage
 			Value:      pretty,
 			ReceivedAt: time.Now().UTC(),
 			Num:        count,
+			Raw:        tmp,
 		}
 
 		if !c.Options.Read.Follow {

@@ -26,6 +26,7 @@ func (e *EventHub) Read(ctx context.Context, resultsChan chan *types.ReadMessage
 			Value:      event.Data,
 			ReceivedAt: time.Now().UTC(),
 			Num:        count,
+			Raw:        event,
 		}
 
 		count++

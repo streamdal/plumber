@@ -45,7 +45,7 @@ func (k *Kafka) read(ctx context.Context, reader *skafka.Reader, resultsChan cha
 	if k.Options.Read.Lag {
 		var err error
 
-		lag, err = NewLag(k.Options, k.dialer)
+		lag, err = k.NewLag(ctx)
 		if err != nil {
 			return errors.Wrap(err, "unable to create new lag client")
 		}
@@ -69,7 +69,7 @@ func (k *Kafka) read(ctx context.Context, reader *skafka.Reader, resultsChan cha
 		if k.Options.Read.Lag && msg.Partition != lastPartitionProcessed {
 			lastPartitionProcessed = msg.Partition
 
-			lastOffset, err = lag.getPartitionLastOffset(msg.Topic, msg.Partition)
+			lastOffset, err = lag.GetPartitionLastOffset(msg.Topic, msg.Partition)
 			if err != nil {
 				return errors.Wrap(err, "unable to obtain lastOffset for partition")
 			}
@@ -78,15 +78,11 @@ func (k *Kafka) read(ctx context.Context, reader *skafka.Reader, resultsChan cha
 		resultsChan <- &types.ReadMessage{
 			Value: msg.Value,
 			Metadata: map[string]interface{}{
-				"key":           msg.Key,
-				"topic":         msg.Topic,
-				"headers":       msg.Headers,
-				"last_offset":   lastOffset,
-				"partition":     msg.Partition,
-				"creation_time": msg.Time,
+				"last_offset": lastOffset,
 			},
 			ReceivedAt: time.Now().UTC(),
 			Num:        count,
+			Raw:        msg,
 		}
 
 		if !k.Options.Read.Follow {

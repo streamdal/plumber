@@ -38,6 +38,26 @@ func PrintLogo() {
 	logrus.Info(logo)
 }
 
+func PrintTable(properties [][]string, count int, timestamp time.Time, data []byte) {
+	fmt.Printf("\n------------- [Count: %d Received at: %s] -------------------\n\n",
+		aurora.Cyan(count), aurora.Yellow(timestamp.Format(time.RFC3339)).String())
+
+	tableString := &strings.Builder{}
+
+	table := tablewriter.NewWriter(tableString)
+	table.AppendBulk(properties)
+	table.SetColMinWidth(0, 20)
+	table.SetColMinWidth(1, 40)
+	// First column align left, second column align right
+	table.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_RIGHT})
+	table.Render()
+
+	fmt.Println(tableString.String())
+
+	// Display value
+	Print(string(data))
+}
+
 func PrintRelayOptions(cmd string, opts *options.Options) {
 	if opts == nil {
 		return
@@ -203,24 +223,4 @@ func printNSQOptions(opts *options.Options) {
 	logrus.Infof("- %-24s%-6v", "topic", opts.NSQ.Topic)
 	logrus.Infof("- %-24s%-6v", "OutputChannel", opts.NSQ.Channel)
 	logrus.Info("")
-}
-
-func printTable(properties [][]string, count int, timestamp time.Time, data []byte) {
-	fmt.Printf("\n------------- [Count: %d Received at: %s] -------------------\n\n",
-		aurora.Cyan(count), aurora.Yellow(timestamp.Format(time.RFC3339)).String())
-
-	tableString := &strings.Builder{}
-
-	table := tablewriter.NewWriter(tableString)
-	table.AppendBulk(properties)
-	table.SetColMinWidth(0, 20)
-	table.SetColMinWidth(1, 40)
-	// First column align left, second column align right
-	table.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_RIGHT})
-	table.Render()
-
-	fmt.Println(tableString.String())
-
-	// Display value
-	Print(string(data))
 }

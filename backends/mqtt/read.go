@@ -34,6 +34,7 @@ func (m *MQTT) Read(ctx context.Context, resultsChan chan *types.ReadMessage, er
 			},
 			ReceivedAt: time.Now().UTC(),
 			Num:        count,
+			Raw:        msg,
 		}
 
 		count++
