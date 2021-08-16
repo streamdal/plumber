@@ -11,6 +11,10 @@ import (
 )
 
 var (
+	// Server
+	ErrMissingAuth  = errors.New("auth cannot be nil")
+	ErrInvalidToken = errors.New("invalid token")
+
 	// Connections
 
 	ErrMissingConnection     = errors.New("connection cannot be nil")

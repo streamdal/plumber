@@ -1,7 +1,6 @@
 package server
 
 import (
-	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 
@@ -20,8 +19,6 @@ type PlumberServer struct {
 	Etcd             etcd.IEtcd
 	Log              *logrus.Entry
 }
-
-var ErrInvalidToken = errors.New("invalid token")
 
 type ErrorWrapper struct {
 	Status *common.Status
@@ -43,7 +40,7 @@ func CustomError(c common.Code, msg string) error {
 
 func (p *PlumberServer) validateRequest(auth *common.Auth) error {
 	if auth == nil {
-		return errors.New("auth cannot be nil")
+		return ErrMissingAuth
 	}
 
 	if auth.Token != p.AuthToken {
