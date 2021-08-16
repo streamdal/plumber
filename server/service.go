@@ -21,7 +21,7 @@ func (p *PlumberServer) GetService(_ context.Context, req *protos.GetServiceRequ
 
 	svc := p.PersistentConfig.GetService(req.Id)
 	if svc == nil {
-		return nil, CustomError(common.Code_NOT_FOUND, "service does not exist")
+		return nil, CustomError(common.Code_NOT_FOUND, ErrServiceNotFound.Error())
 	}
 
 	return &protos.GetServiceResponse{
@@ -86,6 +86,10 @@ func (p *PlumberServer) CreateService(ctx context.Context, req *protos.CreateSer
 
 	p.PersistentConfig.SetService(svc.Id, svc)
 
+	if err := p.Etcd.PublishCreateService(ctx, svc); err != nil {
+		p.Log.Error(err)
+	}
+
 	return &protos.CreateServiceResponse{
 		Service: svc,
 		Status: &common.Status{
@@ -103,7 +107,7 @@ func (p *PlumberServer) UpdateService(ctx context.Context, req *protos.UpdateSer
 
 	svc := p.PersistentConfig.GetService(req.Service.Id)
 	if svc == nil {
-		return nil, CustomError(common.Code_NOT_FOUND, "service does not exist")
+		return nil, CustomError(common.Code_NOT_FOUND, ErrServiceNotFound.Error())
 	}
 
 	if err := validateService(req.Service); err != nil {
@@ -146,7 +150,7 @@ func (p *PlumberServer) DeleteService(ctx context.Context, req *protos.DeleteSer
 
 	svc := p.PersistentConfig.GetService(req.Id)
 	if svc == nil {
-		return nil, CustomError(common.Code_NOT_FOUND, "service does not exist")
+		return nil, CustomError(common.Code_NOT_FOUND, ErrServiceNotFound.Error())
 	}
 
 	// Delete in etcd

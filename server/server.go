@@ -21,6 +21,8 @@ type PlumberServer struct {
 	Log              *logrus.Entry
 }
 
+var ErrInvalidToken = errors.New("invalid token")
+
 type ErrorWrapper struct {
 	Status *common.Status
 }
@@ -45,7 +47,7 @@ func (p *PlumberServer) validateRequest(auth *common.Auth) error {
 	}
 
 	if auth.Token != p.AuthToken {
-		return errors.New("invalid token")
+		return ErrInvalidToken
 	}
 
 	return nil

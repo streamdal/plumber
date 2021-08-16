@@ -33,10 +33,11 @@ var (
 
 	// Services
 
-	ErrMissingName    = errors.New("name cannot be empty")
-	ErrMissingOwner   = errors.New("owner cannot be empty")
-	ErrMissingService = errors.New("service cannot be empty")
-	ErrInvalidRepoURL = errors.New("repo URL must be a valid URL or left blank")
+	ErrMissingName     = errors.New("name cannot be empty")
+	ErrMissingOwner    = errors.New("owner cannot be empty")
+	ErrMissingService  = errors.New("service cannot be empty")
+	ErrInvalidRepoURL  = errors.New("repo URL must be a valid URL or left blank")
+	ErrServiceNotFound = errors.New("service does not exist")
 )
 
 // validateConnection ensures all required parameters are passed when creating/testing/updating a connection

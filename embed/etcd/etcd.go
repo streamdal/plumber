@@ -33,6 +33,7 @@ const (
 
 type HandlerFunc func(context.Context, *clientv3.WatchResponse) error
 
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . IEtcd
 type IEtcd interface {
 	// client methods
 
