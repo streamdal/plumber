@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/batchcorp/plumber/embed/etcd"
+
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -67,7 +69,7 @@ func (p *PlumberServer) CreateRelay(ctx context.Context, req *protos.CreateRelay
 	}
 
 	// Save to etcd
-	_, err = p.Etcd.Put(ctx, EtcdRelaysPrefix+"/"+conn.Id, string(data))
+	_, err = p.Etcd.Put(ctx, etcd.CacheRelaysPrefix+"/"+conn.Id, string(data))
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
@@ -134,7 +136,7 @@ func (p *PlumberServer) UpdateRelay(_ context.Context, req *protos.UpdateRelayRe
 	}
 
 	// Save to etcd
-	_, err = p.Etcd.Put(ctx, EtcdRelaysPrefix+"/"+conn.Id, string(data))
+	_, err = p.Etcd.Put(ctx, etcd.CacheRelaysPrefix+"/"+conn.Id, string(data))
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
@@ -243,7 +245,7 @@ func (p *PlumberServer) DeleteRelay(ctx context.Context, req *protos.DeleteRelay
 	relay.CancelFunc()
 
 	// Delete in etcd
-	_, err := p.Etcd.Delete(ctx, EtcdConnectionsPrefix+"/"+relay.Id)
+	_, err := p.Etcd.Delete(ctx, etcd.CacheRelaysPrefix+"/"+relay.Id)
 	if err != nil {
 		return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to delete connection: "+err.Error()))
 	}

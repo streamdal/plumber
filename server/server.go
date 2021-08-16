@@ -12,13 +12,6 @@ import (
 	"github.com/batchcorp/plumber/github"
 )
 
-const (
-	EtcdConnectionsPrefix = "/plumber-server/connections"
-	EtcdSchemasPrefix     = "/plumber-server/schemas"
-	EtcdRelaysPrefix      = "/plumber-server/relay"
-	EtcdServicesPrefix    = "/plumber-server/services"
-)
-
 type PlumberServer struct {
 	AuthToken        string
 	PersistentConfig *config.Config

@@ -45,6 +45,10 @@ func (p *Plumber) startEtcd() error {
 
 	p.Etcd = e
 
+	if err := e.PopulateCache(); err != nil {
+		p.log.Errorf("Unable to load data from etcd: %s", err)
+	}
+
 	return nil
 }
 

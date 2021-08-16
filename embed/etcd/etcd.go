@@ -8,22 +8,27 @@ import (
 	"strings"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos"
-
-	"github.com/batchcorp/plumber/config"
-
+	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.etcd.io/etcd/server/v3/embed"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
+
 	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber/config"
+	"github.com/batchcorp/plumber/server/types"
 )
 
 const (
-	BroadcastPath = "/bus/broadcast"
-	QueuePath     = "/bus/queue"
+	BroadcastPath          = "/bus/broadcast"
+	QueuePath              = "/bus/queue"
+	CacheConnectionsPrefix = "/plumber-server/connections"
+	CacheSchemasPrefix     = "/plumber-server/schemas"
+	CacheRelaysPrefix      = "/plumber-server/relay"
+	CacheServicesPrefix    = "/plumber-server/services"
 )
 
 type HandlerFunc func(context.Context, *clientv3.WatchResponse) error
@@ -355,4 +360,129 @@ func (e *Etcd) Put(ctx context.Context, key, val string, opts ...clientv3.OpOpti
 
 func (e *Etcd) Delete(ctx context.Context, key string, opts ...clientv3.OpOption) (*clientv3.DeleteResponse, error) {
 	return e.Client.Delete(ctx, key, opts...)
+}
+
+// PopulateCache loads config from etcd
+func (e *Etcd) PopulateCache() error {
+	if err := e.populateConnectionCache(); err != nil {
+		return err
+	}
+
+	if err := e.populateServiceCache(); err != nil {
+		return err
+	}
+
+	if err := e.populateSchemaCache(); err != nil {
+		return err
+	}
+
+	if err := e.populateRelayCache(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (e *Etcd) populateConnectionCache() error {
+	resp, err := e.Get(context.Background(), CacheConnectionsPrefix, clientv3.WithPrefix())
+	if err != nil {
+		return errors.Wrap(err, "unable to fetch protos.Connection messages from etcd")
+	}
+
+	var count int
+
+	for _, v := range resp.Kvs {
+		conn := &protos.Connection{}
+		if err := proto.Unmarshal(v.Value, conn); err != nil {
+			e.log.Errorf("unable to unmarshal protos.Connection message: %s", err)
+			continue
+		}
+
+		count++
+
+		e.PlumberConfig.SetConnection(conn.Id, conn)
+	}
+
+	e.log.Debugf("Loaded '%d' connections from etcd", count)
+
+	return nil
+}
+
+func (e *Etcd) populateSchemaCache() error {
+	resp, err := e.Get(context.Background(), CacheSchemasPrefix, clientv3.WithPrefix())
+	if err != nil {
+		return errors.Wrap(err, "unable to fetch protos.Schema messages from etcd")
+	}
+
+	var count int
+
+	for _, v := range resp.Kvs {
+		schema := &protos.Schema{}
+		if err := proto.Unmarshal(v.Value, schema); err != nil {
+			e.log.Errorf("unable to unmarshal protos.Schema message: %s", err)
+			continue
+		}
+
+		count++
+
+		e.PlumberConfig.SetSchema(schema.Id, schema)
+	}
+
+	e.log.Debugf("Loaded '%d' schemas from etcd", count)
+
+	return nil
+}
+
+func (e *Etcd) populateRelayCache() error {
+	resp, err := e.Get(context.Background(), CacheRelaysPrefix, clientv3.WithPrefix())
+	if err != nil {
+		return errors.Wrap(err, "unable to fetch protos.Relay messages from etcd")
+	}
+
+	var count int
+
+	for _, v := range resp.Kvs {
+		relay := &protos.Relay{}
+		if err := proto.Unmarshal(v.Value, relay); err != nil {
+			e.log.Errorf("unable to unmarshal protos.Relay message: %s", err)
+			continue
+		}
+
+		count++
+
+		e.PlumberConfig.SetRelay(relay.RelayId, &types.Relay{
+			Active: false,
+			Id:     relay.RelayId,
+			Config: relay,
+		})
+	}
+
+	e.log.Debugf("Loaded '%d' relays from etcd", count)
+
+	return nil
+}
+
+func (e *Etcd) populateServiceCache() error {
+	resp, err := e.Get(context.Background(), CacheServicesPrefix, clientv3.WithPrefix())
+	if err != nil {
+		return errors.Wrap(err, "unable to fetch protos.Service messages from etcd")
+	}
+
+	var count int
+
+	for _, v := range resp.Kvs {
+		svc := &protos.Service{}
+		if err := proto.Unmarshal(v.Value, svc); err != nil {
+			e.log.Errorf("unable to unmarshal protos.Service message: %s", err)
+			continue
+		}
+
+		count++
+
+		e.PlumberConfig.SetService(svc.Id, svc)
+	}
+
+	e.log.Debugf("Loaded '%d' services from etcd", count)
+
+	return nil
 }

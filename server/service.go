@@ -6,11 +6,12 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
-
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+
+	"github.com/batchcorp/plumber/embed/etcd"
 )
 
 func (p *PlumberServer) GetService(_ context.Context, req *protos.GetServiceRequest) (*protos.GetServiceResponse, error) {
@@ -78,7 +79,7 @@ func (p *PlumberServer) CreateService(ctx context.Context, req *protos.CreateSer
 	}
 
 	// Save to etcd
-	_, err = p.Etcd.Put(ctx, EtcdServicesPrefix+"/"+svc.Id, string(data))
+	_, err = p.Etcd.Put(ctx, etcd.CacheServicesPrefix+"/"+svc.Id, string(data))
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to save schema '%s' to etcd", svc.Id)
 	}
@@ -117,7 +118,7 @@ func (p *PlumberServer) UpdateService(ctx context.Context, req *protos.UpdateSer
 	}
 
 	// Save to etcd
-	_, err = p.Etcd.Put(ctx, EtcdServicesPrefix+"/"+svc.Id, string(data))
+	_, err = p.Etcd.Put(ctx, etcd.CacheServicesPrefix+"/"+svc.Id, string(data))
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to save service '%s' to etcd", svc.Id)
 	}
@@ -149,7 +150,7 @@ func (p *PlumberServer) DeleteService(ctx context.Context, req *protos.DeleteSer
 	}
 
 	// Delete in etcd
-	_, err := p.Etcd.Delete(ctx, EtcdServicesPrefix+"/"+svc.Id)
+	_, err := p.Etcd.Delete(ctx, etcd.CacheServicesPrefix+"/"+svc.Id)
 	if err != nil {
 		return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to delete service: "+err.Error()))
 	}

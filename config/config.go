@@ -10,7 +10,6 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/server/types"
 )
@@ -32,7 +31,7 @@ type Config struct {
 	Schemas          map[string]*protos.Schema     `json:"-"`
 	Services         map[string]*protos.Service    `json:"-"`
 	Reads            map[string]*types.Read        `json:"-"`
-	GitHubToken      string                        `json:"-"`
+	GitHubToken      string                        `json:"github_bearer_token"`
 	ConnectionsMutex *sync.RWMutex                 `json:"-"`
 	ServicesMutex    *sync.RWMutex                 `json:"-"`
 	ReadsMutex       *sync.RWMutex                 `json:"-"`
@@ -70,27 +69,14 @@ func ReadConfig(fileName string) (*Config, error) {
 		ReadsMutex:       &sync.RWMutex{},
 		RelaysMutex:      &sync.RWMutex{},
 		SchemasMutex:     &sync.RWMutex{},
+		Connections:      make(map[string]*protos.Connection),
+		Relays:           make(map[string]*types.Relay),
+		Schemas:          make(map[string]*protos.Schema),
+		Services:         make(map[string]*protos.Service),
 	}
 	if err := json.Unmarshal(data, cfg); err != nil {
 		return nil, errors.Wrapf(err, "could not unmarshal ~/.batchsh/%s", fileName)
 	}
-
-	if cfg.Connections == nil {
-		cfg.Connections = make(map[string]*protos.Connection)
-	}
-	if cfg.Relays == nil {
-		cfg.Relays = make(map[string]*types.Relay)
-	}
-	if cfg.Schemas == nil {
-		cfg.Schemas = make(map[string]*protos.Schema)
-	}
-	if cfg.Services == nil {
-		cfg.Services = make(map[string]*protos.Service)
-	}
-
-	logrus.Infof("Loaded '%d' stored connections", len(cfg.Connections))
-	logrus.Infof("Loaded '%d' stored relays", len(cfg.Relays))
-	logrus.Infof("Loaded '%d' stored services", len(cfg.Services))
 
 	return cfg, nil
 }

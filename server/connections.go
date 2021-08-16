@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/batchcorp/plumber/embed/etcd"
+
 	"github.com/golang/protobuf/proto"
 
 	uuid "github.com/satori/go.uuid"
@@ -63,7 +65,7 @@ func (p *PlumberServer) CreateConnection(ctx context.Context, req *protos.Create
 	}
 
 	// Save to etcd
-	_, err = p.Etcd.Put(ctx, EtcdConnectionsPrefix+"/"+conn.Id, string(data))
+	_, err = p.Etcd.Put(ctx, etcd.CacheConnectionsPrefix+"/"+conn.Id, string(data))
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
@@ -133,7 +135,7 @@ func (p *PlumberServer) UpdateConnection(ctx context.Context, req *protos.Update
 	}
 
 	// Update in etcd
-	_, err = p.Etcd.Put(ctx, EtcdConnectionsPrefix+"/"+conn.Id, string(data))
+	_, err = p.Etcd.Put(ctx, etcd.CacheConnectionsPrefix+"/"+conn.Id, string(data))
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
@@ -170,7 +172,7 @@ func (p *PlumberServer) DeleteConnection(ctx context.Context, req *protos.Delete
 	}
 
 	// Delete in etcd
-	_, err := p.Etcd.Delete(ctx, EtcdConnectionsPrefix+"/"+conn.Id)
+	_, err := p.Etcd.Delete(ctx, etcd.CacheConnectionsPrefix+"/"+conn.Id)
 	if err != nil {
 		return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to delete connection: "+err.Error()))
 	}
