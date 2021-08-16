@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/batchcorp/plumber/embed/etcd"
-
 	"github.com/golang/protobuf/proto"
-
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+
+	"github.com/batchcorp/plumber/embed/etcd"
 )
 
 func (p *PlumberServer) GetAllConnections(_ context.Context, req *protos.GetAllConnectionsRequest) (*protos.GetAllConnectionsResponse, error) {

@@ -92,7 +92,7 @@ func (e *Etcd) publishServiceMessage(ctx context.Context, action Action, svc *pr
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: "plumber", // TODO
+		EmittedBy: e.PlumberConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
@@ -107,7 +107,7 @@ func (e *Etcd) publishConnectionMessage(ctx context.Context, action Action, conn
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: "plumber", // TODO
+		EmittedBy: e.PlumberConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
@@ -122,7 +122,7 @@ func (e *Etcd) publishSchemaMessage(ctx context.Context, action Action, svc *pro
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: "plumber", // TODO
+		EmittedBy: e.PlumberConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
@@ -137,7 +137,7 @@ func (e *Etcd) publishRelayMessage(ctx context.Context, action Action, relay *pr
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: "plumber", // TODO
+		EmittedBy: e.PlumberConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }

@@ -34,7 +34,7 @@ const (
 type HandlerFunc func(context.Context, *clientv3.WatchResponse) error
 
 type IEtcd interface {
-	// Client methods
+	// client methods
 
 	Get(ctx context.Context, key string, opts ...clientv3.OpOption) (*clientv3.GetResponse, error)
 	Put(ctx context.Context, key, val string, opts ...clientv3.OpOption) (*clientv3.PutResponse, error)
@@ -65,7 +65,7 @@ type IEtcd interface {
 
 type Etcd struct {
 	server             *embed.Etcd
-	Client             *clientv3.Client
+	client             *clientv3.Client
 	PlumberConfig      *config.Config
 	cfg                *cli.ServerOptions
 	started            bool
@@ -151,15 +151,15 @@ func (e *Etcd) Start(serviceCtx context.Context) error {
 		return errors.Wrap(err, "unable to launch embedded etcd")
 	}
 
-	// Setup etcd Client
+	// Setup etcd client
 	client, err := e.createClient("127.0.0.1:2379")
 	if err != nil {
 		cancelFunc()
-		return errors.Wrap(err, "unable to create etcd Client")
+		return errors.Wrap(err, "unable to create etcd client")
 	}
 
 	e.server = embeddedEtcd
-	e.Client = client
+	e.client = client
 
 	// Start broadcast consumer
 	go func() {
@@ -258,7 +258,7 @@ func (e *Etcd) writeMessage(ctx context.Context, path string, msg *Message) erro
 		return errors.Wrap(err, "unable to marshal msg to JSON")
 	}
 
-	if _, err := e.Client.Put(ctx, path, string(msgData)); err != nil {
+	if _, err := e.client.Put(ctx, path, string(msgData)); err != nil {
 		return fmt.Errorf("unable to put key '%s': %s", path, err)
 	}
 
@@ -321,11 +321,11 @@ func (e *Etcd) runBroadcastConsumer(serviceCtx, consumerCtx context.Context) err
 }
 
 func (e *Etcd) watch(serviceCtx, consumerCtx context.Context, path string, handlerFunc HandlerFunc) error {
-	if e.Client == nil {
-		return errors.New("Client cannot be nil")
+	if e.client == nil {
+		return errors.New("client cannot be nil")
 	}
 
-	watchChan := e.Client.Watch(serviceCtx, path, clientv3.WithPrefix())
+	watchChan := e.client.Watch(serviceCtx, path, clientv3.WithPrefix())
 
 MAIN:
 	for {
@@ -351,15 +351,15 @@ MAIN:
 }
 
 func (e *Etcd) Get(ctx context.Context, key string, opts ...clientv3.OpOption) (*clientv3.GetResponse, error) {
-	return e.Client.Get(ctx, key, opts...)
+	return e.client.Get(ctx, key, opts...)
 }
 
 func (e *Etcd) Put(ctx context.Context, key, val string, opts ...clientv3.OpOption) (*clientv3.PutResponse, error) {
-	return e.Client.Put(ctx, key, val, opts...)
+	return e.client.Put(ctx, key, val, opts...)
 }
 
 func (e *Etcd) Delete(ctx context.Context, key string, opts ...clientv3.OpOption) (*clientv3.DeleteResponse, error) {
-	return e.Client.Delete(ctx, key, opts...)
+	return e.client.Delete(ctx, key, opts...)
 }
 
 // PopulateCache loads config from etcd
