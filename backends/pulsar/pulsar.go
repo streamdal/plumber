@@ -13,6 +13,10 @@ import (
 	"github.com/batchcorp/plumber/options"
 )
 
+const (
+	BackendName = "pulsar"
+)
+
 type Pulsar struct {
 	Options *options.Options
 
@@ -36,6 +40,10 @@ func New(opts *options.Options) (*Pulsar, error) {
 		client:  client,
 		log:     logrus.WithField("backend", "pulsar"),
 	}, nil
+}
+
+func (p *Pulsar) Name() string {
+	return BackendName
 }
 
 func (p *Pulsar) Close(ctx context.Context) error {

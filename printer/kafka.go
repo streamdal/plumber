@@ -7,11 +7,12 @@ import (
 	"github.com/logrusorgru/aurora"
 	"github.com/segmentio/kafka-go"
 
-	"github.com/batchcorp/plumber/backends/kafka/types"
+	ktypes "github.com/batchcorp/plumber/backends/kafka/types"
 	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/types"
 )
 
-func PrintKafkaResult(opts *options.Options, offsetInfo *types.OffsetInfo, msg kafka.Message, data []byte) {
+func PrintKafkaResult(opts *options.Options, msg *types.ReadMessage) error {
 	key := aurora.Gray(12, "NONE").String()
 
 	if len(msg.Key) != 0 {
@@ -35,6 +36,8 @@ func PrintKafkaResult(opts *options.Options, offsetInfo *types.OffsetInfo, msg k
 	properties = append(properties, generateHeaders(msg.Headers)...)
 
 	printTable(properties, offsetInfo.Count, msg.Time, data)
+
+	return nil
 }
 
 func generateHeaders(headers []kafka.Header) [][]string {

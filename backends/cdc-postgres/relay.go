@@ -21,12 +21,12 @@ type Relayer struct {
 	ShutdownCtx context.Context
 }
 
-func (p *CDCPostgres) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {
+func (c *CDCPostgres) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {
 	set := pgoutput.NewRelationSet(nil)
 
 	var changeRecord *ptypes.ChangeRecord
 
-	sub := pgoutput.NewSubscription(p.service, p.Options.CDCPostgres.SlotName, p.Options.CDCPostgres.PublisherName,
+	sub := pgoutput.NewSubscription(c.service, c.Options.CDCPostgres.SlotName, c.Options.CDCPostgres.PublisherName,
 		0, false)
 
 	handler := func(m pgoutput.Message, _ uint64) error {
@@ -82,7 +82,7 @@ func (p *CDCPostgres) Relay(ctx context.Context, relayCh chan interface{}, error
 	// Start blocks. ShutdownCtx cancel is handled within the library
 	err := sub.Start(ctx, 0, handler)
 	if err == context.Canceled {
-		p.log.Info("Received shutdown signal, existing relayer")
+		c.log.Info("Received shutdown signal, existing relayer")
 		return nil
 	}
 

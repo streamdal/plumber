@@ -16,7 +16,10 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/printer"
+)
+
+const (
+	BackendName = "nats-streaming"
 )
 
 type NatsStreaming struct {
@@ -26,7 +29,6 @@ type NatsStreaming struct {
 	client     *nats.Conn
 	stanClient stan.Conn
 	log        *logrus.Entry
-	printer    printer.IPrinter
 }
 
 func New(opts *options.Options) (*NatsStreaming, error) {
@@ -45,6 +47,10 @@ func New(opts *options.Options) (*NatsStreaming, error) {
 		stanClient: stanClient,
 		log:        logrus.WithField("backend", "nats_streaming"),
 	}, nil
+}
+
+func (n *NatsStreaming) Name() string {
+	return BackendName
 }
 
 func (n *NatsStreaming) Close(ctx context.Context) error {

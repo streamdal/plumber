@@ -12,11 +12,11 @@ import (
 
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
 // which are then written to the message bus.
-func (a *EventHub) Dynamic(ctx context.Context) error {
+func (e *EventHub) Dynamic(ctx context.Context) error {
 	llog := logrus.WithField("pkg", "azure-eventhub/dynamic")
 
 	// Start up dynamic connection
-	grpc, err := dproxy.New(a.Options, "Azure Event Hub")
+	grpc, err := dproxy.New(e.Options, "Azure Event Hub")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
@@ -33,11 +33,11 @@ MAIN:
 
 			event := eventhub.NewEvent(outbound.Blob)
 
-			if a.Options.AzureEventHub.PartitionKey != "" {
-				event.PartitionKey = &a.Options.AzureEventHub.PartitionKey
+			if e.Options.AzureEventHub.PartitionKey != "" {
+				event.PartitionKey = &e.Options.AzureEventHub.PartitionKey
 			}
 
-			if err := a.client.Send(ctx, event, sendOpts...); err != nil {
+			if err := e.client.Send(ctx, event, sendOpts...); err != nil {
 				llog.Errorf("Unable to replay message: %s", err)
 				break
 			}

@@ -9,11 +9,14 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/types"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+)
+
+const (
+	BackendName = "awssqs"
 )
 
 type AWSSQS struct {
@@ -23,7 +26,6 @@ type AWSSQS struct {
 	queueURL string
 	msgDesc  *desc.MessageDescriptor
 	log      *logrus.Entry
-	printer  printer.IPrinter
 }
 
 func New(opts *options.Options) (*AWSSQS, error) {
@@ -44,6 +46,10 @@ func New(opts *options.Options) (*AWSSQS, error) {
 		queueURL: queueURL,
 		log:      logrus.WithField("backend", "awssqs"),
 	}, nil
+}
+
+func (a *AWSSQS) Name() string {
+	return BackendName
 }
 
 // Close sets service to nil. Same as with SNS - there is no "connection" to

@@ -10,12 +10,12 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (a *EventHub) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {
-	if err := validateReadOptions(a.Options); err != nil {
+func (e *EventHub) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {
+	if err := validateReadOptions(e.Options); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	a.log.Info("Listening for message(s) ...")
+	e.log.Info("Listening for message(s) ...")
 
 	count := 1
 
@@ -34,7 +34,7 @@ func (a *EventHub) Read(ctx context.Context, resultsChan chan *types.ReadMessage
 		return nil
 	}
 
-	runtimeInfo, err := a.client.GetRuntimeInformation(ctx)
+	runtimeInfo, err := e.client.GetRuntimeInformation(ctx)
 	if err != nil {
 		return errors.Wrap(err, "unable to get azure eventhub partition list")
 	}
@@ -47,19 +47,19 @@ MAIN:
 			// Receive blocks while attempting to connect to hub, then runs until listenerHandle.Close() is called
 			// <- listenerHandle.Done() signals listener has stopped
 			// listenerHandle.Err() provides the last error the receiver encountered
-			listenerHandle, err := a.client.Receive(ctx, partitionID, handler, eventhub.ReceiveWithLatestOffset())
+			listenerHandle, err := e.client.Receive(ctx, partitionID, handler, eventhub.ReceiveWithLatestOffset())
 			if err != nil {
 				return errors.Wrap(err, "unable to receive message from azure eventhub")
 			}
 
-			if !a.Options.Read.Follow && hasRead {
+			if !e.Options.Read.Follow && hasRead {
 				listenerHandle.Close(ctx)
 				break MAIN
 			}
 		}
 	}
 
-	a.log.Debug("read exiting")
+	e.log.Debug("read exiting")
 
 	return nil
 }

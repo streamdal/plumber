@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/batchcorp/plumber/options"
 	"github.com/golang/protobuf/proto"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoparse"
@@ -72,12 +71,6 @@ func FindMessageDescriptorInFDS(fds []*desc.FileDescriptor, rootMessage string) 
 	}
 
 	return nil, errors.New("message descriptor not found in file descriptor(s)")
-}
-
-// ValidateProtobufOptions ...
-// TODO: Implement
-func ValidateProtobufOptions(opts *options.Options) error {
-	return nil
 }
 
 func readFileDescriptors(files map[string][]string) ([]*desc.FileDescriptor, error) {

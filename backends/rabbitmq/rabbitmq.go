@@ -12,6 +12,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	BackendName = "rabbitmq"
+)
+
 // RabbitMQ holds all attributes required for performing a read/write operations
 // in RabbitMQ. This struct should be instantiated via the rabbitmq.Read(..) or
 // rabbitmq.Write(..) functions.
@@ -30,6 +34,10 @@ func New(opts *options.Options) (*RabbitMQ, error) {
 		Options: opts,
 		log:     logrus.WithField("backend", "rabbitmq"),
 	}, nil
+}
+
+func (r *RabbitMQ) Name() string {
+	return BackendName
 }
 
 func (r *RabbitMQ) Close(ctx context.Context) error {

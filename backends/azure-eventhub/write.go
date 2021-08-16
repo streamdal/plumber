@@ -13,36 +13,36 @@ import (
 )
 
 // Write performs necessary setup and calls AzureServiceBus.Write() to write the actual message
-func (a *EventHub) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {
-	if err := writer.ValidateWriteOptions(a.Options, validateWriteOptions); err != nil {
+func (e *EventHub) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {
+	if err := writer.ValidateWriteOptions(e.Options, validateWriteOptions); err != nil {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
 	for _, msg := range messages {
-		if err := a.write(ctx, msg.Value); err != nil {
-			util.WriteError(a.log, errorCh, errors.Wrap(err, "unable to write message"))
+		if err := e.write(ctx, msg.Value); err != nil {
+			util.WriteError(e.log, errorCh, errors.Wrap(err, "unable to write message"))
 		}
 	}
 
-	a.log.Info("finished writing messages")
+	e.log.Info("finished writing messages")
 
 	return nil
 }
 
 // Write writes a message to a random partition on
-func (a *EventHub) write(ctx context.Context, value []byte) error {
+func (e *EventHub) write(ctx context.Context, value []byte) error {
 	opts := make([]eventhub.SendOption, 0)
 
-	if a.Options.AzureEventHub.MessageID != "" {
-		opts = append(opts, eventhub.SendWithMessageID(a.Options.AzureEventHub.MessageID))
+	if e.Options.AzureEventHub.MessageID != "" {
+		opts = append(opts, eventhub.SendWithMessageID(e.Options.AzureEventHub.MessageID))
 	}
 
 	event := eventhub.NewEvent(value)
-	if a.Options.AzureEventHub.PartitionKey != "" {
-		event.PartitionKey = &a.Options.AzureEventHub.PartitionKey
+	if e.Options.AzureEventHub.PartitionKey != "" {
+		event.PartitionKey = &e.Options.AzureEventHub.PartitionKey
 	}
 
-	return a.client.Send(ctx, event, opts...)
+	return e.client.Send(ctx, event, opts...)
 }
 
 // validateWriteOptions ensures the correct CLI options are specified for the write action

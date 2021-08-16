@@ -12,42 +12,21 @@ import (
 	"github.com/batchcorp/plumber/options"
 )
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . IPrinter
-type IPrinter interface {
-	Error(str string)
-	Print(str string)
-}
-
-type Printer struct {
-	PrintFunc func(format string, a ...interface{}) (n int, err error)
-}
-
-func New() *Printer {
-	return &Printer{
-		PrintFunc: fmt.Printf,
-	}
-}
-
-// Error is a convenience function for printing errors.
-func (p *Printer) Error(str string) {
-	p.PrintFunc("%s: %s\n", aurora.Red(">> ERROR"), str)
-}
-
-// Print is a convenience function for printing regular output.
-func (p *Printer) Print(str string) {
-	p.PrintFunc("%s\n", str)
-}
-
-// TODO: convert backends to use IPrinter methods
-// Error is a convenience function for printing errors.
 func Error(str string) {
 	fmt.Printf("%s: %s\n", aurora.Red(">> ERROR"), str)
 }
 
-// TODO: convert backends to use IPrinter methods
-// Print is a convenience function for printing regular output.
+func Errorf(str string, args ...interface{}) {
+	args = append([]interface{}{aurora.Red(">> ERROR")}, args...)
+	fmt.Printf("%s: "+str+"\n", args...)
+}
+
 func Print(str string) {
 	fmt.Printf("%s\n", str)
+}
+
+func Printf(str string, args ...interface{}) {
+	fmt.Printf(str+"\n", args...)
 }
 
 func PrintLogo() {
@@ -66,7 +45,7 @@ func PrintRelayOptions(cmd string, opts *options.Options) {
 
 	// Because of some funky business with env var handling - we have to do some
 	// silly things like this to get the RelayType
-	relayType := opts.RelayType
+	relayType := opts.Relay.Type
 
 	if relayType == "" {
 		splitCmd := strings.Split(cmd, " ")
@@ -83,10 +62,10 @@ func PrintRelayOptions(cmd string, opts *options.Options) {
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("")
 	logrus.Infof("- %-24s%-6s", "RelayType", relayType)
-	logrus.Infof("- %-24s%-6s", "RelayToken", opts.RelayToken)
-	logrus.Infof("- %-24s%-6s", "RelayGRPCAddress", opts.RelayGRPCAddress)
-	logrus.Infof("- %-24s%-6d", "RelayNumWorkers", opts.RelayNumWorkers)
-	logrus.Infof("- %-24s%-6d", "RelayBatchSize", opts.RelayBatchSize)
+	logrus.Infof("- %-24s%-6s", "RelayToken", opts.Relay.Token)
+	logrus.Infof("- %-24s%-6s", "RelayGRPCAddress", opts.Relay.GRPCAddress)
+	logrus.Infof("- %-24s%-6d", "RelayNumWorkers", opts.Relay.NumWorkers)
+	logrus.Infof("- %-24s%-6d", "RelayBatchSize", opts.Relay.BatchSize)
 	logrus.Infof("- %-24s%-6v", "Stats", opts.Stats)
 	logrus.Infof("- %-24s%-6s", "StatsReportInterval", opts.StatsReportInterval)
 	logrus.Info("")

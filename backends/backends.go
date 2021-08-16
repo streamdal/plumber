@@ -27,15 +27,19 @@ import (
 	"github.com/batchcorp/plumber/types"
 )
 
-// Backend is the interface that all backends implement. CLI, server, etc.
-// should utilize the backends via the interface.
+// Backend is the interface that all backends implement; the interface is used
+// for facilitating all CLI and server functionality in plumber.
+// NOTE: Most backends do not support _some_ part of the interface - in those
+// cases the methods will either return types.NotImplementedErr or
+// types.UnsupportedFeatureErr.
 type Backend interface {
-	// Close closes any connections the backend has open
+	// Close closes any connections the backend has open. Once this is ran, you
+	// should create a new backend instance.
 	Close(ctx context.Context) error
 
-	// Read will read data from the bus and dump them in batches to the results
+	// Read will read data from the bus and dump each message to the results
 	// channel. This method should _not_ decode the message - that is left up
-	// to the upstream user.
+	// to the upstream user. The error channel _should_ be optional.
 	Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error
 
 	// Write will attempt to write the input messages as a batch (if the backend
@@ -44,25 +48,35 @@ type Backend interface {
 	// NOTE: Key, headers and any other metadata is fetched from Options
 	// (that are passed when instantiating the backend). Ie. If you want to
 	// write data to a specific key in Kafka - you'll need to pass
-	// Options.Kafka.WriteKey. This is not great :(
+	// Options.Kafka.WriteKey. This is not great but will suffice for now. :(
 	Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error
 
 	// Test performs a "test" to see if the connection to the backend is alive.
 	// The test varies between backends (ie. in kafka, it might be just attempting
-	// to connect, while in another bus, plumber might try to put/get sample data).
+	// to connect to a broker, while with another backend, plumber might try to
+	// put/get sample data).
 	Test(ctx context.Context) error
 
 	// Dynamic enables plumber to become a "dynamic replay destination".
 	// This is a blocking call.
 	Dynamic(ctx context.Context) error
 
-	// Lag returns consumer lag stats. NOTE: Only _some_ backends support this.
+	// Lag returns consumer lag stats.
 	Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error
 
 	// Relay will hook into a message bus as a consumer and relay all messages
 	// to the relayCh; if an error channel is provided, any errors will be piped
-	// to the channel as well. Blocks.
+	// to the channel as well. This method _usually_ blocks.
 	Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error
+
+	// DisplayMessage will parse ReadMessage and print the output to STDOUT
+	DisplayMessage(msg *types.ReadMessage) error
+
+	// DisplayError will parse ErrorMessage and print the output to STDOUT
+	DisplayError(msg *types.ErrorMessage) error
+
+	// Name returns the name of the backend
+	Name() string
 }
 
 // New is a convenience function to instantiate the appropriate backend based on

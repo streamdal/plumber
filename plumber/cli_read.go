@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/batchcorp/plumber/backends"
+	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/types"
 	"github.com/batchcorp/plumber/util"
 	"github.com/batchcorp/plumber/validate"
@@ -40,26 +41,22 @@ func (p *Plumber) HandleReadCmd() error {
 
 MAIN:
 	for {
+		var err error
+
 		select {
-		case messages := <-resultCh:
-			p.displayRead(messages)
-		case messages := <-errorCh:
-			p.displayErrors(messages)
+		case msg := <-resultCh:
+			err = backend.DisplayMessage(msg)
+		case errorMsg := <-errorCh:
+			err = backend.DisplayError(errorMsg)
 		case <-ctx.Done():
 			p.log.Debug("cancelled via context")
 			break MAIN
 		}
+
+		if err != nil {
+			printer.Errorf("unable to display message with '%s' backend: %s", backend.Name(), err)
+		}
 	}
 
 	return nil
-}
-
-// TODO: Implement
-func (p *Plumber) displayRead(m *types.ReadMessage) {
-
-}
-
-// TODO: implement
-func (p *Plumber) displayErrors(m *types.ErrorMessage) {
-
 }

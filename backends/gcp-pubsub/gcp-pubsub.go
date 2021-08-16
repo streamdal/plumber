@@ -12,6 +12,10 @@ import (
 	"github.com/batchcorp/plumber/options"
 )
 
+const (
+	BackendName = "gcp-pubsub"
+)
+
 type GCPPubSub struct {
 	Options *options.Options
 
@@ -34,6 +38,10 @@ func New(opts *options.Options) (*GCPPubSub, error) {
 		client:  client,
 		log:     logrus.WithField("backend", "gcppubsub"),
 	}, nil
+}
+
+func (g *GCPPubSub) Name() string {
+	return BackendName
 }
 
 func (g *GCPPubSub) Close(ctx context.Context) error {

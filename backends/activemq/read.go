@@ -13,10 +13,6 @@ import (
 )
 
 func (a *ActiveMq) Read(ctx context.Context, resultsCh chan *types.ReadMessage, errorCh chan *types.ErrorMessage) error {
-	if a.client == nil {
-		return types.BackendNotConnectedErr
-	}
-
 	if err := validateReadOptions(a.Options); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}

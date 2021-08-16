@@ -14,6 +14,8 @@ import (
 )
 
 const (
+	BackendName = "cdc-mongo"
+
 	// ConnectionTimeout determines how long before a connection attempt to mongo is timed out
 	ConnectionTimeout = time.Second * 10
 
@@ -52,31 +54,35 @@ func New(opts *options.Options) (*CDCMongo, error) {
 	}, nil
 }
 
-func (m *CDCMongo) Close(ctx context.Context) error {
-	if m.Service == nil {
+func (c *CDCMongo) Name() string {
+	return BackendName
+}
+
+func (c *CDCMongo) Close(ctx context.Context) error {
+	if c.Service == nil {
 		return nil
 	}
 
-	if err := m.Service.Disconnect(ctx); err != nil {
+	if err := c.Service.Disconnect(ctx); err != nil {
 		return errors.Wrap(err, "unable to disconnect from mongo")
 	}
 
 	return nil
 }
 
-func (m *CDCMongo) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {
+func (c *CDCMongo) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {
 	return types.UnsupportedFeatureErr
 }
 
-func (m *CDCMongo) Test(ctx context.Context) error {
+func (c *CDCMongo) Test(ctx context.Context) error {
 	return types.NotImplementedErr
 }
 
-func (m *CDCMongo) Dynamic(ctx context.Context) error {
+func (c *CDCMongo) Dynamic(ctx context.Context) error {
 	return types.UnsupportedFeatureErr
 }
 
-func (m *CDCMongo) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
+func (c *CDCMongo) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
 	return types.UnsupportedFeatureErr
 }
 

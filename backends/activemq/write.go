@@ -9,10 +9,6 @@ import (
 )
 
 func (a *ActiveMq) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {
-	if a.client == nil {
-		return types.BackendNotConnectedErr
-	}
-
 	for _, msg := range messages {
 		if err := a.validateWriteMessage(msg); err != nil {
 			util.WriteError(a.log, errorCh, errors.Wrap(err, "unable to validate message"))

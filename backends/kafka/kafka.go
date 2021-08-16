@@ -21,6 +21,8 @@ import (
 )
 
 const (
+	BackendName = "kafka"
+
 	DefaultBatchSize = 1
 )
 
@@ -58,6 +60,10 @@ func New(opts *options.Options) (*Kafka, error) {
 		dialer:  dialer,
 		log:     logrus.WithField("backend", "kafka"),
 	}, nil
+}
+
+func (k *Kafka) Name() string {
+	return BackendName
 }
 
 // Close is a noop for kafka because read/write/lag/etc. all handle conn setup

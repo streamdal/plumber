@@ -14,8 +14,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (p *CDCPostgres) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {
-	if err := validateReadOptions(p.Options); err != nil {
+func (c *CDCPostgres) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {
+	if err := validateReadOptions(c.Options); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
@@ -23,7 +23,7 @@ func (p *CDCPostgres) Read(ctx context.Context, resultsChan chan *types.ReadMess
 
 	var changeRecord *ptypes.ChangeRecord
 
-	sub := pgoutput.NewSubscription(p.service, p.Options.CDCPostgres.SlotName, p.Options.CDCPostgres.PublisherName,
+	sub := pgoutput.NewSubscription(c.service, c.Options.CDCPostgres.SlotName, c.Options.CDCPostgres.PublisherName,
 		0, false)
 
 	var count int

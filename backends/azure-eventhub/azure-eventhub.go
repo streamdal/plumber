@@ -11,6 +11,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	BackendName = "azure-eventhub"
+)
+
 type EventHub struct {
 	Options *options.Options
 
@@ -35,19 +39,23 @@ func New(opts *options.Options) (*EventHub, error) {
 	}, nil
 }
 
-func (a *EventHub) Close(ctx context.Context) error {
+func (e *EventHub) Name() string {
+	return BackendName
+}
+
+func (e *EventHub) Close(ctx context.Context) error {
 	return nil
 }
 
-func (a *EventHub) Test(ctx context.Context) error {
+func (e *EventHub) Test(ctx context.Context) error {
 	return types.NotImplementedErr
 }
 
-func (a *EventHub) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
+func (e *EventHub) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
 	return types.UnsupportedFeatureErr
 }
 
-func (a *EventHub) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {
+func (e *EventHub) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {
 	return types.UnsupportedFeatureErr
 }
 

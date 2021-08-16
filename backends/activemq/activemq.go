@@ -12,6 +12,10 @@ import (
 	"github.com/batchcorp/plumber/options"
 )
 
+const (
+	BackendName = "activemq"
+)
+
 type ActiveMq struct {
 	Options *options.Options
 
@@ -71,9 +75,13 @@ func newConn(ctx context.Context, opts *options.Options) (*stomp.Conn, error) {
 	return conn, nil
 }
 
+func (a *ActiveMq) Name() string {
+	return BackendName
+}
+
 func (a *ActiveMq) Close(ctx context.Context) error {
 	if a.client == nil {
-		return types.BackendNotConnectedErr
+		return nil
 	}
 
 	doneCh := make(chan struct{}, 1)
