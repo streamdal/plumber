@@ -62,6 +62,7 @@ func (r *RedisStreams) Read(ctx context.Context, resultsChan chan *types.ReadMes
 						},
 						ReceivedAt: time.Now().UTC(),
 						Num:        count,
+						Raw:        message,
 					}
 
 					count++

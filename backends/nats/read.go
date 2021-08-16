@@ -25,6 +25,7 @@ func (n *Nats) Read(ctx context.Context, resultsChan chan *types.ReadMessage, er
 				"subject": msg.Subject,
 				"reply":   msg.Reply,
 			},
+			Raw: msg,
 		}
 
 		count++

@@ -19,7 +19,7 @@ type CDCPostgresOptions struct {
 }
 
 func HandleCDCPostgresFlags(readCmd, _, relayCmd *kingpin.CmdClause, opts *Options) {
-	rc := readCmd.Command("cdc-postgres", "Postgres Change Data Capture")
+	rc := readCmd.Command("cdc-postgres", "Postgres Change Value Capture")
 	addSharedCDCPostgresFlags(rc, opts)
 
 	// If PLUMBER_RELAY_TYPE is set, use env vars, otherwise use CLI flags
@@ -30,7 +30,7 @@ func HandleCDCPostgresFlags(readCmd, _, relayCmd *kingpin.CmdClause, opts *Optio
 	if relayType != "" {
 		rec = relayCmd
 	} else {
-		rec = relayCmd.Command("cdc-postgres", "Postgres Change Data Capture")
+		rec = relayCmd.Command("cdc-postgres", "Postgres Change Value Capture")
 	}
 
 	addSharedCDCPostgresFlags(rec, opts)

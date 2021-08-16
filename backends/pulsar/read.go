@@ -53,6 +53,7 @@ func (p *Pulsar) Read(ctx context.Context, resultsChan chan *types.ReadMessage, 
 			},
 			ReceivedAt: time.Now().UTC(),
 			Num:        count,
+			Raw:        msg,
 		}
 
 		consumer.Ack(msg)

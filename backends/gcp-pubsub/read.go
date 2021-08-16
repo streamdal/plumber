@@ -42,6 +42,7 @@ func (g *GCPPubSub) Read(ctx context.Context, resultsChan chan *types.ReadMessag
 			Value:      msg.Data,
 			ReceivedAt: time.Now().UTC(),
 			Num:        count,
+			Raw:        msg,
 		}
 
 		count++

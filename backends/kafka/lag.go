@@ -19,20 +19,18 @@ type Lag struct {
 	log     *logrus.Entry
 }
 
-func (k *Kafka) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
+func (k *Kafka) NewLag(ctx context.Context) (*Lag, error) {
 	conns, err := ConnectAllTopics(k.dialer, k.Options)
 	if err != nil {
-		return errors.Wrap(err, "unable to create initial connections")
+		return nil, errors.Wrap(err, "unable to create initial connections")
 	}
 
-	l := &Lag{
+	return &Lag{
 		dialer:  k.dialer,
 		conns:   conns,
 		options: k.Options,
 		log:     logrus.WithField("pkg", "kafka/lag"),
-	}
-
-	return l.Lag(ctx, resultsCh, interval)
+	}, nil
 }
 
 // Lag fetches topic stats on the given interval and returns them over the
@@ -65,9 +63,9 @@ MAIN:
 	return nil
 }
 
-// getPartitionLastOffset - gets the last offset for a given partition. It is
+// GetPartitionLastOffset - gets the last offset for a given partition. It is
 // used by both Read() and Lag() to display offset stats and/or calculate lag.
-func (l *Lag) getPartitionLastOffset(topic string, part int) (int64, error) {
+func (l *Lag) GetPartitionLastOffset(topic string, part int) (int64, error) {
 	partitions, err := l.discoverPartitions(topic)
 	if err != nil {
 		return -1, errors.Wrapf(err, "unable to discover partitions")
@@ -165,7 +163,7 @@ func (l *Lag) getPartitionLag(ctx context.Context, topic string, groupId string,
 	remoteAddr := l.conns[topic].RemoteAddr()
 
 	// get last offset per partition
-	lastOffset, err := l.getPartitionLastOffset(topic, part)
+	lastOffset, err := l.GetPartitionLastOffset(topic, part)
 
 	// obtain last committed offset for a given partition and consumer group
 	kafkaClient := &skafka.Client{Addr: remoteAddr}

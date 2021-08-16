@@ -51,6 +51,8 @@ func (n *NatsStreaming) Read(ctx context.Context, resultsChan chan *types.ReadMe
 				"redelivered":      msg.Redelivered,
 				"redelivery_count": msg.RedeliveryCount,
 			},
+			ReceivedAt: time.Now().UTC(),
+			Raw:        msg,
 		}
 
 		count++

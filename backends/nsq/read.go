@@ -3,6 +3,7 @@ package nsq
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/types"
@@ -31,6 +32,8 @@ func (n *NSQ) Read(ctx context.Context, resultsChan chan *types.ReadMessage, err
 				"attempts":    msg.Attempts,
 				"nsq_address": msg.NSQDAddress,
 			},
+			ReceivedAt: time.Now().UTC(),
+			Raw:        msg,
 		}
 
 		if !n.Options.Read.Follow {

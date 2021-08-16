@@ -74,6 +74,7 @@ func (c *CDCPostgres) Read(ctx context.Context, resultsChan chan *types.ReadMess
 			},
 			ReceivedAt: time.Now().UTC(),
 			Num:        count,
+			Raw:        record,
 		}
 
 		return nil

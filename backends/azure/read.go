@@ -25,6 +25,7 @@ func (s *ServiceBus) Read(ctx context.Context, resultCh chan *types.ReadMessage,
 			Value:      msg.Data,
 			ReceivedAt: time.Now().UTC(),
 			Num:        count,
+			Raw:        msg,
 		}
 
 		count++

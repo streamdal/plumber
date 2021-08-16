@@ -82,6 +82,7 @@ func (a *AWSSQS) Read(ctx context.Context, resultsChan chan *types.ReadMessage, 
 				Value:      []byte(*m.Body),
 				ReceivedAt: time.Now().UTC(),
 				Num:        count,
+				Raw:        msgResult,
 			}
 
 			count++
@@ -92,7 +93,8 @@ func (a *AWSSQS) Read(ctx context.Context, resultsChan chan *types.ReadMessage, 
 					QueueUrl:      aws.String(a.queueURL),
 					ReceiptHandle: m.ReceiptHandle,
 				}); err != nil {
-					a.printer.Error(fmt.Sprintf("unable to auto-delete message '%s': %s", *m.MessageId, err))
+					util.WriteError(a.log, errorChan, fmt.Errorf("unable to auto-delete message '%s': %s",
+						*m.MessageId, err))
 					continue
 				}
 			}

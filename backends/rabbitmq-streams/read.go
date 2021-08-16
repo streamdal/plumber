@@ -45,6 +45,7 @@ func (r *RabbitMQStreams) Read(ctx context.Context, resultsChan chan *types.Read
 				},
 				ReceivedAt: time.Now().UTC(),
 				Num:        count,
+				Raw:        message,
 			}
 		}
 
