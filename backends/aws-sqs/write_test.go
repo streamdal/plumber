@@ -1,7 +1,10 @@
 package awssqs
 
 import (
+	"context"
 	"errors"
+
+	ptypes "github.com/batchcorp/plumber/types"
 
 	"github.com/aws/aws-sdk-go/service/sqs"
 	. "github.com/onsi/ginkgo"
@@ -9,16 +12,20 @@ import (
 
 	"github.com/batchcorp/plumber/backends/aws-sqs/types/typesfakes"
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/printer"
 )
 
 var _ = Describe("AWS SQS Backend", func() {
 
 	Context("validateWriteOptions", func() {
 		It("returns an error when delay is out of bounds", func() {
-			opts := &options.Options{AWSSQS: &options.AWSSQSOptions{
-				WriteDelaySeconds: -1,
-			}}
+			opts := &options.Options{
+				AWSSQS: &options.AWSSQSOptions{
+					WriteDelaySeconds: -1,
+				},
+				Write: &options.WriteOptions{
+					InputData: []string{"test"},
+				},
+			}
 
 			err := validateWriteOptions(opts)
 			Expect(err).To(HaveOccurred())
@@ -26,9 +33,14 @@ var _ = Describe("AWS SQS Backend", func() {
 		})
 
 		It("returns nil on valid config", func() {
-			opts := &options.Options{AWSSQS: &options.AWSSQSOptions{
-				WriteDelaySeconds: 10,
-			}}
+			opts := &options.Options{
+				AWSSQS: &options.AWSSQSOptions{
+					WriteDelaySeconds: 10,
+				},
+				Write: &options.WriteOptions{
+					InputData: []string{"test"},
+				},
+			}
 
 			err := validateWriteOptions(opts)
 			Expect(err).ToNot(HaveOccurred())
@@ -43,14 +55,20 @@ var _ = Describe("AWS SQS Backend", func() {
 			}
 
 			a := &AWSSQS{
-				Options: &options.Options{AWSSQS: &options.AWSSQSOptions{}},
+				Options: &options.Options{
+					AWSSQS: &options.AWSSQSOptions{},
+					Write: &options.WriteOptions{
+						InputData: []string{"test"},
+					},
+				},
 				service: sqsFake,
 			}
 
-			err := a.Write([]byte(`test`))
+			errorCh := make(chan *ptypes.ErrorMessage)
 
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring(ErrUnableToSend))
+			a.Write(context.Background(), errorCh, &ptypes.WriteMessage{Value: []byte(`test`)})
+
+			Expect(errorCh).Should(Receive(&ptypes.ErrorMessage{Error: errors.New(ErrUnableToSend)}))
 			Expect(sqsFake.SendMessageCallCount()).To(Equal(1))
 		})
 
@@ -60,19 +78,25 @@ var _ = Describe("AWS SQS Backend", func() {
 				return &sqs.SendMessageOutput{}, nil
 			}
 
-			opts := &options.Options{AWSSQS: &options.AWSSQSOptions{
-				WriteAttributes: map[string]string{
-					"faz": "baz",
+			opts := &options.Options{
+				AWSSQS: &options.AWSSQSOptions{
+					WriteAttributes: map[string]string{
+						"faz": "baz",
+					},
 				},
-			}}
+				Write: &options.WriteOptions{
+					InputData: []string{"test"},
+				},
+			}
 
 			a := &AWSSQS{
 				Options: opts,
 				service: sqsFake,
-				printer: printer.New(),
 			}
 
-			err := a.Write([]byte(`test`))
+			errorCh := make(chan *ptypes.ErrorMessage)
+
+			err := a.Write(context.Background(), errorCh, &ptypes.WriteMessage{Value: []byte(`test`)})
 
 			Expect(err).ToNot(HaveOccurred())
 			Expect(sqsFake.SendMessageCallCount()).To(Equal(1))
