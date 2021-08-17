@@ -24,9 +24,6 @@ const (
 	DefaultStatsReportInterval = "5s"
 	DefaultCount               = "10"
 	DefaultDproxyAddress       = "dproxy.batch.sh:443"
-
-	STDOUT OutputDestination = iota
-	CHANNEL
 )
 
 var (
@@ -196,6 +193,7 @@ func Handle(cliArgs []string) (string, *Options, error) {
 
 	HandleRelayFlags(relayCmd, opts)
 
+	// Env vars take precedence
 	switch os.Getenv("PLUMBER_RELAY_TYPE") {
 	case "kafka":
 		HandleKafkaFlags(readCmd, writeCmd, relayCmd, lagCmd, opts)
@@ -270,8 +268,9 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	opts.Version = version
 
 	cmds := strings.Split(cmd, " ")
-	if len(cmds) > 0 {
+	if len(cmds) >= 2 {
 		opts.Action = cmds[0]
+		opts.Relay.Type = cmds[1]
 	}
 
 	return cmd, opts, err
@@ -394,7 +393,7 @@ func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
 }
 
 func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
-	relayCmd.Flag("type", "Type of collector to use. Ex: rabbit, kafka, aws-sqs, azure, gcp-pubsub, redis-pubsub, redis-streams").
+	relayCmd.Flag("type", "What kind of bus are we relaying? Ex: rabbit, kafka, aws-sqs, azure, gcp-pubsub, redis-pubsub, redis-streams").
 		Envar("PLUMBER_RELAY_TYPE").
 		EnumVar(&opts.Relay.Type, "aws-sqs", "rabbit", "kafka", "azure", "gcp-pubsub", "redis-pubsub",
 			"redis-streams", "cdc-postgres", "cdc-mongo", "mqtt")
