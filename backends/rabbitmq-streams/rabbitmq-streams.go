@@ -5,17 +5,17 @@ import (
 	"sync"
 	"time"
 
-	"github.com/batchcorp/plumber/types"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/stream"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/types"
 )
 
 const (
-	BackendName = "rabbitmq-streams"
+	BackendName = "rabbit-streams"
 )
 
 var (

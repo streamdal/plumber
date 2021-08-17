@@ -6,11 +6,12 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/batchcorp/plumber/types"
-	"github.com/batchcorp/plumber/util"
 	"github.com/pkg/errors"
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/amqp"
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/stream"
+
+	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
 )
 
 func (r *RabbitMQStreams) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {
@@ -76,13 +77,13 @@ func (r *RabbitMQStreams) handleConfirm(confirms stream.ChannelPublishConfirm, w
 			} else {
 				r.log.Errorf("Message failed: %s", msg.Message.GetData())
 			}
-			r.waitGroup.Done()
+			wg.Done()
 		}
 	}
 }
 
 func (r *RabbitMQStreams) write(producer *stream.Producer, value []byte) error {
-	if err := r.producer.Send(amqp.NewMessage(value)); err != nil {
+	if err := producer.Send(amqp.NewMessage(value)); err != nil {
 		return errors.Wrapf(err, "unable to publish message to stream '%s'", r.Options.RabbitMQStreams.Stream)
 	}
 
