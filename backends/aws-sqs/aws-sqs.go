@@ -4,15 +4,18 @@ import (
 	"context"
 	"time"
 
+	sqsTypes "github.com/batchcorp/plumber/backends/aws-sqs/types"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/types"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/types"
 )
 
 const (
@@ -22,7 +25,7 @@ const (
 type AWSSQS struct {
 	Options *options.Options
 
-	service  *sqs.SQS
+	service  sqsTypes.ISQSAPI
 	queueURL string
 	msgDesc  *desc.MessageDescriptor
 	log      *logrus.Entry

@@ -6,10 +6,11 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sns"
-	"github.com/batchcorp/plumber/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber/types"
 
 	"github.com/batchcorp/plumber/backends/aws-sns/types/typesfakes"
 	"github.com/batchcorp/plumber/options"
@@ -27,7 +28,7 @@ var _ = Describe("AWS SNS Backend", func() {
 			err := validateOpts(opts)
 
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(Equal(errMissingTopicARN))
+			Expect(err.Error()).To(Equal(errMissingTopicARN.Error()))
 		})
 
 		It("Returns error on invalid ARN", func() {

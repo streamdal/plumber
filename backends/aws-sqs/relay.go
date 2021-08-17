@@ -6,13 +6,14 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+
 	atypes "github.com/batchcorp/plumber/backends/aws-sqs/types"
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/stats"
 	ptypes "github.com/batchcorp/plumber/types"
 	"github.com/batchcorp/plumber/util"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -21,7 +22,7 @@ const (
 
 type Relayer struct {
 	Options     *options.Options
-	Service     *sqs.SQS
+	Service     atypes.ISQSAPI
 	QueueURL    string
 	RelayCh     chan interface{}
 	ShutdownCtx context.Context

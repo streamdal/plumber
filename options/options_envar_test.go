@@ -42,10 +42,10 @@ func TestHandleRabbitEnvars_relay(t *testing.T) {
 		}
 	}()
 
-	cmd, opts, err := Handle([]string{"relay"})
+	cmd, opts, err := Handle([]string{"relay", "rabbit"})
 
 	g.Expect(err).ToNot(HaveOccurred())
-	g.Expect(cmd).To(Equal("relay"))
+	g.Expect(cmd).To(Equal("relay rabbit"))
 	g.Expect(opts.Relay.Type).To(Equal("rabbit"))
 	g.Expect(opts.Relay.GRPCDisableTLS).To(BeTrue())
 	g.Expect(opts.Relay.GRPCTimeout).To(Equal(time.Second * 4))
@@ -95,10 +95,10 @@ func TestHandleAWSSQSEnvars_relay(t *testing.T) {
 		}
 	}()
 
-	cmd, opts, err := Handle([]string{"relay"})
+	cmd, opts, err := Handle([]string{"relay", "aws-sqs"})
 
 	g.Expect(err).ToNot(HaveOccurred())
-	g.Expect(cmd).To(Equal("relay"))
+	g.Expect(cmd).To(Equal("relay aws-sqs"))
 	g.Expect(opts.Debug).To(BeTrue())
 	g.Expect(opts.Relay.Type).To(Equal("aws-sqs"))
 	g.Expect(opts.Relay.Token).To(Equal("8EDB98ED-0D85-4CFD-BE24-8B1E00A9F7C3"))

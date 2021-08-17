@@ -11,7 +11,7 @@ type RelayMessage struct {
 }
 
 type RelayMessageOptions struct {
-	Service    *sqs.SQS
+	Service    ISQSAPI
 	QueueURL   string
 	AutoDelete bool
 }
