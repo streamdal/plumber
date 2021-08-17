@@ -21,7 +21,7 @@ const (
 	ReconnectSleep = time.Second * 5
 )
 
-type DProxyClient struct {
+type Client struct {
 	Client            services.DProxyClient
 	Conn              *grpc.ClientConn
 	Token             string
@@ -32,19 +32,19 @@ type DProxyClient struct {
 	Options *options.Options
 }
 
-// New validates CLI options and returns a new DProxyClient struct
-func New(opts *options.Options, bus string) (*DProxyClient, error) {
-	ctx, _ := context.WithTimeout(context.Background(), opts.DproxyGRPCTimeout)
+// New validates CLI options and returns a new Client struct
+func New(opts *options.Options, bus string) (*Client, error) {
+	ctx, _ := context.WithTimeout(context.Background(), opts.DProxy.GRPCTimeout)
 
-	conn, err := grpc.DialContext(ctx, opts.DProxyAddress, getDialOptions(opts)...)
+	conn, err := grpc.DialContext(ctx, opts.DProxy.Address, getDialOptions(opts)...)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to open connection to %s", opts.DProxyAddress)
+		return nil, errors.Wrapf(err, "unable to open connection to %s", opts.DProxy.Address)
 	}
 
-	dClient := &DProxyClient{
+	dClient := &Client{
 		Client:            services.NewDProxyClient(conn),
 		Conn:              conn,
-		Token:             opts.DProxyAPIToken,
+		Token:             opts.DProxy.APIToken,
 		log:               logrus.WithField("pkg", "dproxy"),
 		OutboundMessageCh: make(chan *events.Outbound, 1),
 		MessageBus:        bus,
@@ -54,10 +54,10 @@ func New(opts *options.Options, bus string) (*DProxyClient, error) {
 	return dClient, nil
 }
 
-func (d *DProxyClient) reconnect() error {
-	conn, err := grpc.Dial(d.Options.DProxyAddress, getDialOptions(d.Options)...)
+func (d *Client) reconnect() error {
+	conn, err := grpc.Dial(d.Options.DProxy.Address, getDialOptions(d.Options)...)
 	if err != nil {
-		return errors.Wrapf(err, "unable to open connection to %s", d.Options.DProxyAddress)
+		return errors.Wrapf(err, "unable to open connection to %s", d.Options.DProxy.Address)
 	}
 
 	d.Client = services.NewDProxyClient(conn)
@@ -68,7 +68,7 @@ func (d *DProxyClient) reconnect() error {
 func getDialOptions(opts *options.Options) []grpc.DialOption {
 	dialOpts := []grpc.DialOption{grpc.WithBlock()}
 
-	if opts.DProxyInsecure {
+	if opts.DProxy.Insecure {
 		dialOpts = append(dialOpts, grpc.WithInsecure())
 	} else {
 		dialOpts = append(dialOpts, grpc.WithTransportCredentials(credentials.NewTLS(
@@ -83,7 +83,7 @@ func getDialOptions(opts *options.Options) []grpc.DialOption {
 
 // Start is called by a backend's Dynamic() method. It authorizes the connection and begins reading a GRPC stream of
 // responses consisting of DynamicReplay protobuf messages
-func (d *DProxyClient) Start() {
+func (d *Client) Start() {
 	d.log.Debug("Starting new dynamic destination client")
 	var err error
 	var stream services.DProxy_ConnectClient
@@ -125,7 +125,7 @@ func (d *DProxyClient) Start() {
 }
 
 // authorize opens a GRPC connection to dProxy. It is called by Start
-func (d *DProxyClient) authorize() (services.DProxy_ConnectClient, error) {
+func (d *Client) authorize() (services.DProxy_ConnectClient, error) {
 	authRequest := &services.DynamicReplay{
 		Type: services.DynamicReplay_AUTH_REQUEST,
 		Payload: &services.DynamicReplay_AuthRequest{
@@ -140,7 +140,7 @@ func (d *DProxyClient) authorize() (services.DProxy_ConnectClient, error) {
 }
 
 // handleResponse receives a dynamic replay message and determines which method should handle it based on the payload
-func (d *DProxyClient) handleResponse(resp *services.DynamicReplay) {
+func (d *Client) handleResponse(resp *services.DynamicReplay) {
 	switch resp.Type {
 	case services.DynamicReplay_AUTH_RESPONSE:
 		d.handleAuthResponse(resp)
@@ -152,7 +152,7 @@ func (d *DProxyClient) handleResponse(resp *services.DynamicReplay) {
 }
 
 // handleAuthResponse handles a AUTH_RESPONSE payload from a DynamicReplay protobuf message
-func (d *DProxyClient) handleAuthResponse(resp *services.DynamicReplay) {
+func (d *Client) handleAuthResponse(resp *services.DynamicReplay) {
 	authResponse := resp.GetAuthResponse()
 	if authResponse == nil {
 		if err := d.Conn.Close(); err != nil {
@@ -172,7 +172,7 @@ func (d *DProxyClient) handleAuthResponse(resp *services.DynamicReplay) {
 }
 
 // handleOutboundMessage handles a REPLAY_MESSAGE payload from a DynamicReplay protobuf message
-func (d *DProxyClient) handleOutboundMessage(resp *services.DynamicReplay) {
+func (d *Client) handleOutboundMessage(resp *services.DynamicReplay) {
 	d.log.Debugf("received message for replay '%s'", resp.ReplayId)
 
 	outbound := resp.GetOutboundMessage()
@@ -186,7 +186,7 @@ func (d *DProxyClient) handleOutboundMessage(resp *services.DynamicReplay) {
 }
 
 // handleOutboundMessage handles a REPLAY_MESSAGE payload from a DynamicReplay protobuf message
-func (d *DProxyClient) handleReplayEvent(resp *services.DynamicReplay) {
+func (d *Client) handleReplayEvent(resp *services.DynamicReplay) {
 	llog := d.log.WithField("replay_id", resp.ReplayId)
 	event := resp.GetReplayMessage()
 	switch event.Type {

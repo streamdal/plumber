@@ -82,7 +82,7 @@ func (a *AWSSQS) Read(ctx context.Context, resultsChan chan *types.ReadMessage, 
 				Value:      []byte(*m.Body),
 				ReceivedAt: time.Now().UTC(),
 				Num:        count,
-				Raw:        msgResult,
+				Raw:        m,
 			}
 
 			count++

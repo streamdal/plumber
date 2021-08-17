@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/batchcorp/plumber/types"
 	"github.com/logrusorgru/aurora"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
@@ -45,7 +46,11 @@ func PrintTable(properties [][]string, count int, timestamp time.Time, data []by
 	tableString := &strings.Builder{}
 
 	table := tablewriter.NewWriter(tableString)
-	table.AppendBulk(properties)
+
+	if len(properties) > 0 {
+		table.AppendBulk(properties)
+	}
+
 	table.SetColMinWidth(0, 20)
 	table.SetColMinWidth(1, 40)
 	// First column align left, second column align right
@@ -56,6 +61,10 @@ func PrintTable(properties [][]string, count int, timestamp time.Time, data []by
 
 	// Display value
 	Print(string(data))
+}
+
+func DefaultDisplayError(msg *types.ErrorMessage) {
+	Errorf("[%s] %s", msg.OccurredAt, msg.Error)
 }
 
 func PrintRelayOptions(cmd string, opts *options.Options) {
