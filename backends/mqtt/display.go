@@ -1,8 +1,6 @@
 package mqtt
 
 import (
-	"fmt"
-
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/pkg/errors"
 
@@ -21,6 +19,9 @@ func (m *MQTT) DisplayMessage(msg *types.ReadMessage) error {
 		return errors.New("unable to type assert message")
 	}
 
+	// TODO: Remove
+	m.log.Debugf("DisplayMessage received msg. Length: '%d'; Contents: %s\n", len(msg.Value), msg.Value)
+
 	decoded, err := reader.Decode(m.Options, msg.Value)
 	if err != nil {
 		return errors.Wrap(err, "unable to decode data")
@@ -28,7 +29,6 @@ func (m *MQTT) DisplayMessage(msg *types.ReadMessage) error {
 
 	properties := [][]string{
 		{"Topic", rawMsg.Topic()},
-		{"Message ID", fmt.Sprint(rawMsg.MessageID())},
 	}
 
 	printer.PrintTable(properties, msg.Num, msg.ReceivedAt, decoded)
