@@ -1,11 +1,10 @@
 package plumber
 
 import (
-	"context"
+	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/util"
-	"github.com/pkg/errors"
 )
 
 // HandleDynamicCmd handles dynamic replay destination mode commands
@@ -21,7 +20,7 @@ func (p *Plumber) HandleDynamicCmd() error {
 	}
 
 	// Blocks until completion
-	if err := backend.Dynamic(context.Background()); err != nil {
+	if err := backend.Dynamic(p.ServiceShutdownCtx); err != nil {
 		return errors.Wrap(err, "error(s) during dynamic run")
 	}
 

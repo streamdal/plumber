@@ -4,13 +4,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/batchcorp/plumber/types"
-	"github.com/batchcorp/plumber/util"
+	"github.com/nats-io/stan.go"
 	pb2 "github.com/nats-io/stan.go/pb"
+	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber/options"
-	"github.com/nats-io/stan.go"
-	"github.com/pkg/errors"
+	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
 )
 
 var (
