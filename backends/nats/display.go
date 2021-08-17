@@ -25,8 +25,8 @@ func (n *Nats) DisplayMessage(msg *types.ReadMessage) error {
 	}
 
 	properties := [][]string{
-		{"", rawMsg.Subject},
-		{"", rawMsg.Reply},
+		{"Subject", rawMsg.Subject},
+		{"Reply", rawMsg.Reply},
 	}
 
 	if rawMsg.Sub != nil {
