@@ -5,8 +5,7 @@ Environment Variables
 ## Shared
 
 | Environment Variable  | Description |
-| --------------------- | ------------|
-| `PLUMBER_RELAY_TYPE` | Type of collector to use. Ex: rabbit, kafka, aws-sqs | **REQUIRED** | 
+| --------------------- | ------------| 
 | `PLUMBER_RELAY_TOKEN` | Collection token to use when sending data to Batch | **REQUIRED** |
 | `PLUMBER_RELAY_GRPC_ADDRESS` | Alternative gRPC collector address | `grpc-collector.batch.sh:9000` |
 | `PLUMBER_RELAY_GRPC_DISABLE_TLS` | Disable TLS when talking to gRPC collector | `false` |

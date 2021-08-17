@@ -2,7 +2,6 @@ package options
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/google/uuid"
@@ -46,17 +45,7 @@ func HandleMQTTFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Optio
 	addSharedMQTTFlags(wc, opts)
 	addWriteMQTTFlags(wc, opts)
 
-	// If PLUMBER_RELAY_TYPE is set, use env vars, otherwise use CLI flags
-	relayType := os.Getenv("PLUMBER_RELAY_TYPE")
-
-	var rec *kingpin.CmdClause
-
-	if relayType != "" {
-		rec = relayCmd
-	} else {
-		rec = relayCmd.Command("mqtt", "MQTT message system")
-	}
-
+	rec := relayCmd.Command("mqtt", "MQTT message system")
 	addSharedMQTTFlags(rec, opts)
 	addReadMQTTFlags(rec, opts)
 }

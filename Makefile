@@ -93,11 +93,10 @@ docker/run:
 		-e PLUMBER_RELAY_TOKEN=48b30466-e3cb-4a58-9905-45b74284709f \
 		-e PLUMBER_RELAY_GRPC_ADDRESS=localhost:9000 \
 		-e PLUMBER_RELAY_GRPC_DISABLE_TLS=true \
-		-e PLUMBER_RELAY_TYPE=aws-sqs \
 		-e PLUMBER_RELAY_SQS_QUEUE_NAME=PlumberTestQueue \
 		-e PLUMBER_RELAY_SQS_AUTO_DELETE=true \
 		-e PLUMBER_DEBUG=true \
-		-d batchcorp/$(BINARY):local
+		-d batchcorp/$(BINARY):local aws-sqs
 
 ### Test
 

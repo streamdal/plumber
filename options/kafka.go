@@ -1,7 +1,6 @@
 package options
 
 import (
-	"os"
 	"time"
 
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -72,17 +71,7 @@ func HandleKafkaFlags(readCmd, writeCmd, relayCmd, lagCmd *kingpin.CmdClause, op
 	addSharedKafkaFlags(wc, opts)
 	addWriteKafkaFlags(wc, opts)
 
-	// If PLUMBER_RELAY_TYPE is set, use env vars, otherwise use CLI flags
-	relayType := os.Getenv("PLUMBER_RELAY_TYPE")
-
-	var rec *kingpin.CmdClause
-
-	if relayType != "" {
-		rec = relayCmd
-	} else {
-		rec = relayCmd.Command("kafka", "Kafka message system")
-	}
-
+	rec := relayCmd.Command("kafka", "Kafka message system")
 	addSharedKafkaFlags(rec, opts)
 	addReadKafkaFlags(rec, opts)
 }

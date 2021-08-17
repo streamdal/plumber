@@ -1,8 +1,6 @@
 package options
 
 import (
-	"os"
-
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -43,17 +41,7 @@ func HandleAWSSQSFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Opt
 	addSharedAWSSQSFlags(wc, opts)
 	addWriteAWSSQSFlags(wc, opts)
 
-	// If PLUMBER_RELAY_TYPE is set, use env vars, otherwise use CLI flags
-	relayType := os.Getenv("PLUMBER_RELAY_TYPE")
-
-	var rec *kingpin.CmdClause
-
-	if relayType != "" {
-		rec = relayCmd
-	} else {
-		rec = relayCmd.Command("aws-sqs", "AWS Simple queue System")
-	}
-
+	rec := relayCmd.Command("aws-sqs", "AWS Simple queue System")
 	addSharedAWSSQSFlags(rec, opts)
 	addRelayAWSSQSFlags(rec, opts)
 }

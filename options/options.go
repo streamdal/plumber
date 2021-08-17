@@ -7,7 +7,6 @@
 package options
 
 import (
-	"os"
 	"strings"
 	"time"
 
@@ -192,52 +191,26 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	serverCmd := app.Command("server", "Run plumber in server mode")
 
 	HandleRelayFlags(relayCmd, opts)
+	HandleDynamicFlags(dynamicCmd, opts)
 
-	// Env vars take precedence
-	switch os.Getenv("PLUMBER_RELAY_TYPE") {
-	case "kafka":
-		HandleKafkaFlags(readCmd, writeCmd, relayCmd, lagCmd, opts)
-	case "rabbit":
-		HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
-	case "rabbit-streams":
-		HandleRabbitStreamsFlags(readCmd, writeCmd, relayCmd, opts)
-	case "aws-sqs":
-		HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
-	case "azure":
-		HandleAzureFlags(readCmd, writeCmd, relayCmd, opts)
-	case "gcp-pubsup":
-		HandleGCPPubSubFlags(readCmd, writeCmd, relayCmd, opts)
-	case "redis-pubsub":
-		HandleRedisPubSubFlags(readCmd, writeCmd, relayCmd, opts)
-	case "redis-streams":
-		HandleRedisStreamsFlags(readCmd, writeCmd, relayCmd, opts)
-	case "cdc-postgres":
-		HandleCDCPostgresFlags(readCmd, writeCmd, relayCmd, opts)
-	case "cdc-mongo":
-		HandleCDCMongoFlags(readCmd, writeCmd, relayCmd, opts)
-	case "mqtt":
-		HandleMQTTFlags(readCmd, writeCmd, relayCmd, opts)
-	default:
-		HandleKafkaFlags(readCmd, writeCmd, relayCmd, lagCmd, opts)
-		HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleRabbitStreamsFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleGCPPubSubFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleMQTTFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleActiveMqFlags(readCmd, writeCmd, opts)
-		HandleAWSSNSFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleAzureFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleAzureEventHubFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleNatsFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleNatsStreamingFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleRedisPubSubFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleRedisStreamsFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleCDCMongoFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleCDCPostgresFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleDynamicFlags(dynamicCmd, opts)
-		HandlePulsarFlags(readCmd, writeCmd, relayCmd, opts)
-		HandleNSQFlags(readCmd, writeCmd, relayCmd, opts)
-	}
+	HandleKafkaFlags(readCmd, writeCmd, relayCmd, lagCmd, opts)
+	HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
+	HandleRabbitStreamsFlags(readCmd, writeCmd, relayCmd, opts)
+	HandleGCPPubSubFlags(readCmd, writeCmd, relayCmd, opts)
+	HandleMQTTFlags(readCmd, writeCmd, relayCmd, opts)
+	HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
+	HandleActiveMqFlags(readCmd, writeCmd, opts)
+	HandleAWSSNSFlags(readCmd, writeCmd, relayCmd, opts)
+	HandleAzureFlags(readCmd, writeCmd, relayCmd, opts)
+	HandleAzureEventHubFlags(readCmd, writeCmd, relayCmd, opts)
+	HandleNatsFlags(readCmd, writeCmd, relayCmd, opts)
+	HandleNatsStreamingFlags(readCmd, writeCmd, relayCmd, opts)
+	HandleRedisPubSubFlags(readCmd, writeCmd, relayCmd, opts)
+	HandleRedisStreamsFlags(readCmd, writeCmd, relayCmd, opts)
+	HandleCDCMongoFlags(readCmd, writeCmd, relayCmd, opts)
+	HandleCDCPostgresFlags(readCmd, writeCmd, relayCmd, opts)
+	HandlePulsarFlags(readCmd, writeCmd, relayCmd, opts)
+	HandleNSQFlags(readCmd, writeCmd, relayCmd, opts)
 
 	HandleGlobalFlags(readCmd, opts)
 	HandleReadFlags(readCmd, opts)
@@ -270,7 +243,10 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	cmds := strings.Split(cmd, " ")
 	if len(cmds) >= 2 {
 		opts.Action = cmds[0]
-		opts.Relay.Type = cmds[1]
+
+		if opts.Action == "relay" {
+			opts.Relay.Type = cmds[1]
+		}
 	}
 
 	return cmd, opts, err
@@ -393,11 +369,6 @@ func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
 }
 
 func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
-	relayCmd.Flag("type", "What kind of bus are we relaying? Ex: rabbit, kafka, aws-sqs, azure, gcp-pubsub, redis-pubsub, redis-streams").
-		Envar("PLUMBER_RELAY_TYPE").
-		EnumVar(&opts.Relay.Type, "aws-sqs", "rabbit", "kafka", "azure", "gcp-pubsub", "redis-pubsub",
-			"redis-streams", "cdc-postgres", "cdc-mongo", "mqtt")
-
 	relayCmd.Flag("token", "Collection token to use when sending data to Batch").
 		Required().
 		Envar("PLUMBER_RELAY_TOKEN").
