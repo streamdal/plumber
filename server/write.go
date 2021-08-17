@@ -35,7 +35,6 @@ func (p *PlumberServer) Write(ctx context.Context, req *protos.WriteRequest) (*p
 		return nil, err
 	}
 
-	defer backend.Conn.Close()
 	defer backend.Writer.Close()
 
 	messages := make([]skafka.Message, 0)

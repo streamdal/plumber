@@ -24,12 +24,8 @@ func (p *Plumber) HandleDynamicCmd() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := backend.Connect(ctx); err != nil {
-		return errors.Wrap(err, "unable to connect to backend")
-	}
-
 	// Blocks until completion
-	if err := backend.Dynamic(context.Background()); err != nil {
+	if err := backend.Dynamic(ctx); err != nil {
 		return errors.Wrap(err, "error(s) during dynamic run")
 	}
 

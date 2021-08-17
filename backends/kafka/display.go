@@ -58,8 +58,7 @@ func (k *Kafka) DisplayMessage(msg *types.ReadMessage) error {
 }
 
 func (k *Kafka) DisplayError(msg *types.ErrorMessage) error {
-	printer.Errorf("[%s] %s", msg.OccurredAt, msg.Error)
-
+	printer.DefaultDisplayError(msg)
 	return nil
 }
 

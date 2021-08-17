@@ -19,6 +19,16 @@ type Lag struct {
 	log     *logrus.Entry
 }
 
+func (k *Kafka) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
+	lag, err := k.NewLag(ctx)
+	if err != nil {
+		return errors.Wrap(err, "unable to create new lag instance")
+	}
+
+	return lag.Lag(ctx, resultsCh, interval)
+}
+
+// NewLag creates a lag instance but does not perform any lag operations
 func (k *Kafka) NewLag(ctx context.Context) (*Lag, error) {
 	conns, err := ConnectAllTopics(k.dialer, k.Options)
 	if err != nil {

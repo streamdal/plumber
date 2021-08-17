@@ -42,6 +42,7 @@ func (r *RabbitMQStreams) Read(ctx context.Context, resultsChan chan *types.Read
 					"delivery_annotations": message.DeliveryAnnotations,
 					"footer":               message.Footer,
 					"send_settled":         message.SendSettled,
+					"consumer_context":     consumerContext,
 				},
 				ReceivedAt: time.Now().UTC(),
 				Num:        count,

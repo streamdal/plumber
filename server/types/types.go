@@ -6,16 +6,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang/protobuf/jsonpb"
-
-	"github.com/batchcorp/plumber/backends/kafka"
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/options"
-
+	"github.com/golang/protobuf/jsonpb"
 	"github.com/pkg/errors"
-
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber/relay"
 )
 
@@ -90,13 +87,13 @@ func (r *Relay) StartRelay(conn *protos.Connection) error {
 
 	relayCh := make(chan interface{})
 
-	// Needed to satisfy relay.Config{}, not used
-	_, stubCancelFunc := context.WithCancel(context.Background())
-
 	rr, relayType, err := getRelayBackend(r.Config, conn, relayCh, r.CancelCtx)
 	if err != nil {
 		return err
 	}
+
+	// Needed to satisfy relay.Config{}, not used
+	_, stubCancelFunc := context.WithCancel(context.Background())
 
 	relayCfg := &relay.Config{
 		Token:              r.Config.BatchCollectionToken,
@@ -169,8 +166,9 @@ func getRelayBackend(
 		}
 
 		// TODO: I think all relays should take their own unique struct instead of passing cli.Options
-		opts := &cfg.Options{
-			Kafka: &cfg.KafkaOptions{
+		// ^ I agree - it'll have to be done in a future refactor ~ds 06.15.2021
+		opts := &options.Options{
+			Kafka: &options.KafkaOptions{
 				Brokers:            cfg.Address,
 				Topics:             args.Topics,
 				Timeout:            connectTimeout,
@@ -191,7 +189,13 @@ func getRelayBackend(
 				WriteHeader:        nil,
 			},
 		}
-		rr, err = kafka.Relay(opts, relayCh, shutdownCtx)
+
+		backend, err := backends.New("kafka", opts)
+		if err != nil {
+			return nil, "", errors.Wrap(err, "unable to create backend")
+		}
+
+		err = backend.Relay(shutdownCtx, relayCh, nil)
 		if err != nil {
 			return rr, "kafka", err
 		}
