@@ -1,8 +1,6 @@
 package options
 
 import (
-	"os"
-
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -34,17 +32,7 @@ func HandleNSQFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Option
 	addSharedNSQFlags(wc, opts)
 	addWriteNSQFlags(wc, opts)
 
-	// If PLUMBER_RELAY_TYPE is set, use env vars, otherwise use CLI flags
-	relayType := os.Getenv("PLUMBER_RELAY_TYPE")
-
-	var rec *kingpin.CmdClause
-
-	if relayType != "" {
-		rec = relayCmd
-	} else {
-		rec = relayCmd.Command("nsq", "NSQ Messaging System")
-	}
-
+	rec := relayCmd.Command("nsq", "NSQ Messaging System")
 	addSharedNSQFlags(rec, opts)
 	addReadNSQFlags(rec, opts)
 }

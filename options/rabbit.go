@@ -1,8 +1,6 @@
 package options
 
 import (
-	"os"
-
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -40,17 +38,7 @@ func HandleRabbitFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *Opt
 	addSharedRabbitFlags(wc, opts)
 	addWriteRabbitFlags(wc, opts)
 
-	// If PLUMBER_RELAY_TYPE is set, use env vars, otherwise use CLI flags
-	relayType := os.Getenv("PLUMBER_RELAY_TYPE")
-
-	var rec *kingpin.CmdClause
-
-	if relayType != "" {
-		rec = relayCmd
-	} else {
-		rec = relayCmd.Command("rabbit", "RabbitMQ")
-	}
-
+	rec := relayCmd.Command("rabbit", "RabbitMQ")
 	addReadRabbitFlags(rec, opts)
 	addSharedRabbitFlags(rec, opts)
 }

@@ -1,8 +1,6 @@
 package options
 
 import (
-	"os"
-
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -23,17 +21,7 @@ func HandleAzureEventHubFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, op
 	addSharedAzureEventhubFlags(wc, opts)
 	addWriteAzureEventhubFlags(wc, opts)
 
-	// If PLUMBER_RELAY_TYPE is set, use env vars, otherwise use CLI flags
-	relayType := os.Getenv("PLUMBER_RELAY_TYPE")
-
-	var rec *kingpin.CmdClause
-
-	if relayType != "" {
-		rec = relayCmd
-	} else {
-		rec = relayCmd.Command("azure-eventhub", "Azure Event Hub")
-	}
-
+	rec := relayCmd.Command("azure-eventhub", "Azure Event Hub")
 	addSharedAzureEventhubFlags(rec, opts)
 }
 

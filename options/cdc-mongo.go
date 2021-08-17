@@ -1,8 +1,6 @@
 package options
 
 import (
-	"os"
-
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -20,17 +18,7 @@ func HandleCDCMongoFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *O
 	wc := writeCmd.Command("cdc-mongo", "Mongo CDC")
 	addSharedMongoFlags(wc, opts)
 
-	// If PLUMBER_RELAY_TYPE is set, use env vars, otherwise use CLI flags
-	relayType := os.Getenv("PLUMBER_RELAY_TYPE")
-
-	var rec *kingpin.CmdClause
-
-	if relayType != "" {
-		rec = relayCmd
-	} else {
-		rec = relayCmd.Command("cdc-mongo", "Mongo CDC")
-	}
-
+	rec := relayCmd.Command("cdc-mongo", "Mongo CDC")
 	addSharedMongoFlags(rec, opts)
 }
 

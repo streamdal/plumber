@@ -17,8 +17,6 @@ func (p *Plumber) HandleRelayCmd() error {
 		p.Cmd = "relay " + p.Options.Relay.Type
 	}
 
-	p.log.Warnf("Relay type: %s", p.Options.Relay.Type)
-
 	backendName, err := util.GetBackendName(p.Cmd)
 	if err != nil {
 		return errors.Wrap(err, "unable to get backend")

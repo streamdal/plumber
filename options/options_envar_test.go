@@ -14,7 +14,6 @@ func TestHandleRabbitEnvars_relay(t *testing.T) {
 
 	envars := map[string]string{
 		"PLUMBER_DEBUG":                          "true",
-		"PLUMBER_RELAY_TYPE":                     "rabbit",
 		"PLUMBER_RELAY_TOKEN":                    "8EDB98ED-0D85-4CFD-BE24-8B1E00A9F7C3",
 		"PLUMBER_RELAY_GRPC_ADDRESS":             "localhost:9000",
 		"PLUMBER_RELAY_GRPC_DISABLE_TLS":         "true",
@@ -71,7 +70,6 @@ func TestHandleAWSSQSEnvars_relay(t *testing.T) {
 
 	envars := map[string]string{
 		"PLUMBER_DEBUG":                                "true",
-		"PLUMBER_RELAY_TYPE":                           "aws-sqs",
 		"PLUMBER_RELAY_TOKEN":                          "8EDB98ED-0D85-4CFD-BE24-8B1E00A9F7C3",
 		"PLUMBER_RELAY_GRPC_ADDRESS":                   "localhost:9000",
 		"PLUMBER_RELAY_GRPC_DISABLE_TLS":               "true",

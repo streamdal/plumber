@@ -1,8 +1,6 @@
 package options
 
 import (
-	"os"
-
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -22,17 +20,7 @@ func HandleCDCPostgresFlags(readCmd, _, relayCmd *kingpin.CmdClause, opts *Optio
 	rc := readCmd.Command("cdc-postgres", "Postgres Change Value Capture")
 	addSharedCDCPostgresFlags(rc, opts)
 
-	// If PLUMBER_RELAY_TYPE is set, use env vars, otherwise use CLI flags
-	relayType := os.Getenv("PLUMBER_RELAY_TYPE")
-
-	var rec *kingpin.CmdClause
-
-	if relayType != "" {
-		rec = relayCmd
-	} else {
-		rec = relayCmd.Command("cdc-postgres", "Postgres Change Value Capture")
-	}
-
+	rec := relayCmd.Command("cdc-postgres", "Postgres Change Value Capture")
 	addSharedCDCPostgresFlags(rec, opts)
 }
 

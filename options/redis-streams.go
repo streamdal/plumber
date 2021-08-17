@@ -1,8 +1,6 @@
 package options
 
 import (
-	"os"
-
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -36,17 +34,7 @@ func HandleRedisStreamsFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opt
 	addSharedRedisStreamsFlags(wc, opts)
 	addWriteRedisStreamsFlags(wc, opts)
 
-	// If PLUMBER_RELAY_TYPE is set, use env vars, otherwise use CLI flags
-	relayType := os.Getenv("PLUMBER_RELAY_TYPE")
-
-	var rec *kingpin.CmdClause
-
-	if relayType != "" {
-		rec = relayCmd
-	} else {
-		rec = relayCmd.Command("redis-streams", "RedisPubSub Streams")
-	}
-
+	rec := relayCmd.Command("redis-streams", "RedisPubSub Streams")
 	addSharedRedisStreamsFlags(rec, opts)
 	addReadRedisStreamsFlags(rec, opts)
 }
