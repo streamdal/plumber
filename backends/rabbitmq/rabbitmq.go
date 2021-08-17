@@ -6,14 +6,14 @@ import (
 
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/types"
-
 	"github.com/batchcorp/rabbit"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
 const (
-	BackendName = "rabbitmq"
+	BackendName = "rabbit"
 )
 
 // RabbitMQ holds all attributes required for performing a read/write operations
@@ -55,7 +55,7 @@ func (r *RabbitMQ) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, 
 func newConnection(opts *options.Options) (*rabbit.Rabbit, error) {
 	mode := rabbit.Consumer
 
-	if opts.Action == "write" {
+	if opts.Action == "write" || opts.Action == "dynamic" {
 		mode = rabbit.Producer
 	}
 

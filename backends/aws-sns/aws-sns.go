@@ -8,13 +8,13 @@ import (
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
-	"github.com/batchcorp/plumber/types"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	atypes "github.com/batchcorp/plumber/backends/aws-sns/types"
 	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/types"
 )
 
 const (
@@ -88,7 +88,7 @@ func validateOpts(opts *options.Options) error {
 	}
 
 	if opts.AWSSNS.TopicArn == "" {
-		return errors.New("AWSSNS TopicArn cannot be empty")
+		return errors.New("--topic cannot be empty")
 	}
 
 	if !arn.IsARN(opts.AWSSNS.TopicArn) {

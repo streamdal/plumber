@@ -4,9 +4,10 @@ import (
 	"context"
 
 	"github.com/apache/pulsar-client-go/pulsar"
+	"github.com/pkg/errors"
+
 	"github.com/batchcorp/plumber/types"
 	"github.com/batchcorp/plumber/util"
-	"github.com/pkg/errors"
 )
 
 func (p *Pulsar) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {
@@ -18,6 +19,8 @@ func (p *Pulsar) Write(ctx context.Context, errorCh chan *types.ErrorMessage, me
 	}
 
 	defer producer.Close()
+
+	p.producer = producer
 
 	for _, msg := range messages {
 		if err := p.write(ctx, msg.Value); err != nil {

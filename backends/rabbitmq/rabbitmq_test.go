@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/batchcorp/rabbit"
-	"github.com/sirupsen/logrus"
 	"io"
 	"math/rand"
 	"os"
@@ -14,9 +12,12 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"github.com/streadway/amqp"
 
 	"github.com/batchcorp/plumber/options"
+	ptypes "github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/rabbit"
 )
 
 var (
@@ -80,22 +81,24 @@ var _ = Describe("RabbitMQ", func() {
 			Expect(rmq).ToNot(BeNil())
 
 			r := &RabbitMQ{
-				Options:  opts,
-				consumer: rmq,
-				msgDesc:  nil,
-				log:      logrus.WithField("pkg", "rabbitmq_test.go"),
+				Options: opts,
+				log:     logrus.WithField("pkg", "rabbitmq_test.go"),
 			}
 
+			errorCh := make(chan *ptypes.ErrorMessage)
+
 			// Write something to the exchange
-			err = r.Write(context.Background(), testBody)
+			err = r.Write(context.Background(), errorCh, &ptypes.WriteMessage{Value: testBody})
 
 			Expect(err).ToNot(HaveOccurred())
 
 			// Wait a little for rabbit to copy the message to the queue
 			time.Sleep(50 * time.Millisecond)
 
+			msgCh := make(chan *ptypes.ReadMessage)
+
 			// Expect to receive it
-			err = r.Read()
+			err = r.Read(context.Background(), msgCh, errorCh)
 
 			// End capturing stdout and assert that it contains our expected message
 			out := endCapture(wf, oldStdout, outC)

@@ -166,6 +166,7 @@ func (d *Client) handleAuthResponse(resp *services.DynamicReplay) {
 			d.log.Error("could not cleanly disconnect from server")
 		}
 		d.log.Fatalf("Could not authenticate: %s", authResponse.Message)
+		return
 	}
 
 	d.log.Info("Connection authorized. Waiting for replay messages...")
