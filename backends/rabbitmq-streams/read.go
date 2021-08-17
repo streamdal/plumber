@@ -36,9 +36,9 @@ func (r *RabbitMQStreams) Read(ctx context.Context, resultsChan chan *types.Read
 				Value: value,
 				Metadata: map[string]interface{}{
 					"delivery_tag":         message.DeliveryTag,
-					"properties":           *message.Properties,
+					"properties":           message.Properties,
 					"format":               message.Format,
-					"header":               *message.Header,
+					"header":               message.Header,
 					"delivery_annotations": message.DeliveryAnnotations,
 					"footer":               message.Footer,
 					"send_settled":         message.SendSettled,

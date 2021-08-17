@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/batchcorp/plumber/types"
 	"github.com/go-redis/redis/v8"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/types"
 )
 
 const (
@@ -97,7 +97,7 @@ func createConsumerGroups(ctx context.Context, client *redis.Client, opts *optio
 
 		if err != nil {
 			// No problem if consumer group already exists
-			if err.Error() != "BUSYGROUP consumer Group name already exists" {
+			if err.Error() != "BUSYGROUP Consumer Group name already exists" {
 				return fmt.Errorf("error creating consumer group for stream '%s': %s", stream, err)
 			}
 		}

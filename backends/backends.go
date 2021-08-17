@@ -6,21 +6,21 @@ import (
 	"time"
 
 	"github.com/batchcorp/plumber/backends/activemq"
-	"github.com/batchcorp/plumber/backends/aws-sns"
-	"github.com/batchcorp/plumber/backends/aws-sqs"
+	awssns "github.com/batchcorp/plumber/backends/aws-sns"
+	awssqs "github.com/batchcorp/plumber/backends/aws-sqs"
 	"github.com/batchcorp/plumber/backends/azure"
-	"github.com/batchcorp/plumber/backends/azure-eventhub"
+	azure_eventhub "github.com/batchcorp/plumber/backends/azure-eventhub"
 	cdc_mongo "github.com/batchcorp/plumber/backends/cdc-mongo"
 	cdc_postgres "github.com/batchcorp/plumber/backends/cdc-postgres"
-	"github.com/batchcorp/plumber/backends/gcp-pubsub"
+	gcppubsub "github.com/batchcorp/plumber/backends/gcp-pubsub"
 	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/backends/mqtt"
 	"github.com/batchcorp/plumber/backends/nats"
-	"github.com/batchcorp/plumber/backends/nats-streaming"
+	nats_streaming "github.com/batchcorp/plumber/backends/nats-streaming"
 	"github.com/batchcorp/plumber/backends/nsq"
 	"github.com/batchcorp/plumber/backends/pulsar"
 	"github.com/batchcorp/plumber/backends/rabbitmq"
-	"github.com/batchcorp/plumber/backends/rabbitmq-streams"
+	rabbitmq_streams "github.com/batchcorp/plumber/backends/rabbitmq-streams"
 	"github.com/batchcorp/plumber/backends/rpubsub"
 	"github.com/batchcorp/plumber/backends/rstreams"
 	"github.com/batchcorp/plumber/options"
@@ -110,9 +110,9 @@ func New(name string, opts *options.Options) (Backend, error) {
 		be, err = nsq.New(opts)
 	case "pulsar":
 		be, err = pulsar.New(opts)
-	case "rabbitmq":
+	case "rabbit":
 		be, err = rabbitmq.New(opts)
-	case "rabbitmq-streams":
+	case "rabbit-streams":
 		be, err = rabbitmq_streams.New(opts)
 	case "redis-pubsub":
 		be, err = rpubsub.New(opts)
