@@ -1,7 +1,8 @@
 package stomp
 
 import (
-	"github.com/go-stomp/stomp/frame"
+	"io"
+	"github.com/go-stomp/stomp/v3/frame"
 )
 
 // A Message represents a message received from the STOMP server.
@@ -46,4 +47,22 @@ func (msg *Message) ShouldAck() bool {
 	}
 
 	return msg.Subscription.AckMode() != AckAuto
+}
+
+func (msg *Message) Read(p []byte) (int, error) {
+	if len(msg.Body) == 0 {
+		return 0, io.EOF
+	}
+	n := copy(p, msg.Body)
+	msg.Body = msg.Body[n:]
+	return n, nil
+}
+
+func (msg *Message) ReadByte() (byte, error) {
+	if len(msg.Body) == 0 {
+		return 0, io.EOF
+	}
+	n := msg.Body[0]
+	msg.Body = msg.Body[1:]
+	return n, nil
 }

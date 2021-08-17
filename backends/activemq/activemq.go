@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/batchcorp/plumber/types"
-	"github.com/go-stomp/stomp"
+	"github.com/go-stomp/stomp/v3"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -18,9 +18,7 @@ const (
 
 type ActiveMq struct {
 	Options *options.Options
-
-	client *stomp.Conn
-	log    *logrus.Entry
+	log     *logrus.Entry
 }
 
 func New(opts *options.Options) (*ActiveMq, error) {
@@ -28,17 +26,8 @@ func New(opts *options.Options) (*ActiveMq, error) {
 		return nil, errors.Wrap(err, "unable to validate options")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	conn, err := newConn(ctx, opts)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to create connection")
-	}
-
 	return &ActiveMq{
 		Options: opts,
-		client:  conn,
 		log:     logrus.WithField("backend", "activemq"),
 	}, nil
 }
@@ -55,7 +44,10 @@ func newConn(ctx context.Context, opts *options.Options) (*stomp.Conn, error) {
 	var err error
 
 	go func() {
-		conn, err = stomp.Dial("tcp", opts.ActiveMq.Address, o)
+		// We are using an aggressive heartbeat because either the library or
+		// the activemq server tends to drop connections frequently.
+		conn, err = stomp.Dial("tcp", opts.ActiveMq.Address, o,
+			stomp.ConnOpt.HeartBeat(5*time.Second, time.Second))
 		if err != nil {
 			errCh <- errors.Wrap(err, "unable to connect to backend")
 		}
@@ -80,33 +72,6 @@ func (a *ActiveMq) Name() string {
 }
 
 func (a *ActiveMq) Close(ctx context.Context) error {
-	if a.client == nil {
-		return nil
-	}
-
-	doneCh := make(chan struct{}, 1)
-	errCh := make(chan error, 1)
-
-	go func() {
-		if err := a.client.Disconnect(); err != nil {
-			errCh <- err
-		}
-
-		doneCh <- struct{}{}
-	}()
-
-	select {
-	case <-doneCh:
-		break
-	case <-ctx.Done():
-		return errors.New("context cancelled before disconnect completed")
-	case err := <-errCh:
-		return err
-	}
-
-	// Reset client
-	a.client = nil
-
 	return nil
 }
 

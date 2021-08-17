@@ -1740,8 +1740,6 @@ func newKafkaWriter(address, topic string) (*Kafka, error) {
 		Timeout: 5 * time.Second,
 	}
 
-	fmt.Println("Creating a new writer for topic: ", topic)
-
 	// The dialer timeout does not get utilized under some conditions (such as
 	// when kafka is configured to NOT auto create topics) - we need a
 	// mechanism to bail out early.

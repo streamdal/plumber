@@ -5,7 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-stomp/stomp/frame"
+	"github.com/go-stomp/stomp/v3/frame"
+	"github.com/go-stomp/stomp/v3/internal/log"
 )
 
 // ConnOptions is an opaque structure used to collection options
@@ -17,12 +18,15 @@ type connOptions struct {
 	WriteTimeout                              time.Duration
 	HeartBeatError                            time.Duration
 	MsgSendTimeout                            time.Duration
+	RcvReceiptTimeout                         time.Duration
 	HeartBeatGracePeriodMultiplier            float64
 	Login, Passcode                           string
 	AcceptVersions                            []string
 	Header                                    *frame.Header
 	ReadChannelCapacity, WriteChannelCapacity int
 	ReadBufferSize, WriteBufferSize           int
+	ResponseHeadersCallback                   func(*frame.Header)
+	Logger                                    Logger
 }
 
 func newConnOptions(conn *Conn, opts []func(*Conn) error) (*connOptions, error) {
@@ -33,6 +37,8 @@ func newConnOptions(conn *Conn, opts []func(*Conn) error) (*connOptions, error) 
 		HeartBeatGracePeriodMultiplier: 1.0,
 		HeartBeatError:                 DefaultHeartBeatError,
 		MsgSendTimeout:                 DefaultMsgSendTimeout,
+		RcvReceiptTimeout:              DefaultRcvReceiptTimeout,
+		Logger:                         log.StdLogger{},
 	}
 
 	// This is a slight of hand, attach the options to the Conn long
@@ -138,6 +144,11 @@ var ConnOpt struct {
 	// Less than or equal to zero means infinite
 	MsgSendTimeout func(msgSendTimeout time.Duration) func(*Conn) error
 
+	// RcvReceiptTimeout is a connect option that allows the client to specify
+	// how long to wait for a receipt in the Conn.Send function. This helps
+	// avoid deadlocks. If this is not specified, the default is 10 seconds.
+	RcvReceiptTimeout func(rcvReceiptTimeout time.Duration) func(*Conn) error
+
 	// HeartBeatGracePeriodMultiplier is used to calculate the effective read heart-beat timeout
 	// the broker will enforce for each client’s connection. The multiplier is applied to
 	// the read-timeout interval the client specifies in its CONNECT frame
@@ -167,6 +178,12 @@ var ConnOpt struct {
 	// A high number may affect memory usage while a too low number may lock the
 	// system up. Default is set to 4096.
 	WriteBufferSize func(size int) func(*Conn) error
+
+	// ResponseHeaders lets you provide a callback function to get the headers from the CONNECT response
+	ResponseHeaders func(func(*frame.Header)) func(*Conn) error
+
+	// Logger lets you provide a callback function that sets the logger used by a connection
+	Logger func(logger Logger) func(*Conn) error
 }
 
 func init() {
@@ -224,6 +241,13 @@ func init() {
 		}
 	}
 
+	ConnOpt.RcvReceiptTimeout = func(rcvReceiptTimeout time.Duration) func(*Conn) error {
+		return func(c *Conn) error {
+			c.options.RcvReceiptTimeout = rcvReceiptTimeout
+			return nil
+		}
+	}
+
 	ConnOpt.HeartBeatGracePeriodMultiplier = func(multiplier float64) func(*Conn) error {
 		return func(c *Conn) error {
 			c.options.HeartBeatGracePeriodMultiplier = multiplier
@@ -266,6 +290,23 @@ func init() {
 	ConnOpt.WriteBufferSize = func(size int) func(*Conn) error {
 		return func(c *Conn) error {
 			c.options.WriteBufferSize = size
+			return nil
+		}
+	}
+
+	ConnOpt.ResponseHeaders = func(callback func(*frame.Header)) func(*Conn) error {
+		return func(c *Conn) error {
+			c.options.ResponseHeadersCallback = callback
+			return nil
+		}
+	}
+
+	ConnOpt.Logger = func(log Logger) func(*Conn) error {
+		return func(c *Conn) error {
+			if log != nil {
+				c.log = log
+			}
+
 			return nil
 		}
 	}

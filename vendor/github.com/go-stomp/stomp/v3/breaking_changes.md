@@ -3,7 +3,25 @@
 This document provides a list of breaking changes since the V1 release
 of the stomp client library.
 
-## 1. No longer using gopkg.in
+## v2 and v3
+
+### Module support
+
+Version 2 was released before module support was present in golang, and changes were tagged wit that version.
+Therefore we had to update again the import path. 
+
+The API it's stable the only breaking change is the import path.
+
+Version 3:
+```go
+import (
+    "github.com/go-stomp/stomp/v3"
+)
+```
+
+## v1 and v2
+
+### 1. No longer using gopkg.in
 
 Version 1 of the library used Gustavo Niemeyer's `gopkg.in` facility for versioning Go libraries.
 For a number of reasons, the `stomp` library no longer uses this facility. For this reason the
@@ -23,7 +41,7 @@ import (
 )
 ```
 
-## 2. Frame types moved to frame package
+### 2. Frame types moved to frame package
 
 Version 1 of the library included a number of types to do with STOMP frames in the `stomp`
 package, and the `frame` package consisted of just a few constant definitions.
@@ -41,7 +59,7 @@ This change was considered worthwhile for the following reasons:
 * Ideally, users of the `stomp` package do not need to directly reference the items in the `frame`
 package, and the types moved are not needed in normal usage of the `stomp` package.
 
-## 3. Use of functional options
+### 3. Use of functional options
 
 Version 2 of the stomp library makes use of functional options to provide a clean, flexible way
 of specifying options in the following API calls:

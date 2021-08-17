@@ -15,6 +15,11 @@ import (
 func (a *ActiveMq) Dynamic(ctx context.Context) error {
 	llog := logrus.WithField("pkg", "activemq/dynamic")
 
+	conn, err := newConn(ctx, a.Options)
+	if err != nil {
+		return errors.Wrap(err, "unable to create new connection")
+	}
+
 	// Start up dynamic connection
 	grpc, err := dproxy.New(a.Options, "ActiveMQ")
 	if err != nil {
@@ -30,7 +35,7 @@ MAIN:
 	for {
 		select {
 		case outbound := <-grpc.OutboundMessageCh:
-			if err := a.client.Send(destination, "", outbound.Blob, nil); err != nil {
+			if err := conn.Send(destination, "", outbound.Blob, nil); err != nil {
 				llog.Errorf("Unable to replay message: %s", err)
 				break
 			}

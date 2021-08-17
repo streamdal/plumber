@@ -2,7 +2,8 @@
 
 Go language implementation of a STOMP client library.
 
-[![Build Status](https://travis-ci.org/go-stomp/stomp.svg?branch=master)](https://travis-ci.org/go-stomp/stomp)
+![Build Status](https://github.com/go-stomp/stomp/actions/workflows/test.yml/badge.svg?branch=master)
+[![Go Reference](https://pkg.go.dev/badge/github.com/go-stomp/stomp/v3.svg)](https://pkg.go.dev/github.com/go-stomp/stomp/v3)
 
 Features:
 
@@ -14,25 +15,14 @@ Features:
 ## Usage Instructions
 
 ```
-go get github.com/go-stomp/stomp
+go get github.com/go-stomp/stomp/v3
 ```
 
-For API documentation, see http://godoc.org/github.com/go-stomp/stomp
+For API documentation, see https://pkg.go.dev/github.com/go-stomp/stomp/v3
 
-## Previous Version
-
-An earlier version of this package made use of Gustavo Niemeyer's gopkg.in facility
-for versioning Go libraries. This earlier version of the library is still available:
-
-```
-go get gopkg.in/stomp.v1
-```
-
-API documentation for this earlier version can be found at http://gopkg.in/stomp.v1
 
 Breaking changes between this previous version and the current version are 
 documented in [breaking_changes.md](breaking_changes.md).
-
 
 
 ## License

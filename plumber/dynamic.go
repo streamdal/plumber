@@ -2,7 +2,6 @@ package plumber
 
 import (
 	"context"
-	"time"
 
 	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/util"
@@ -21,11 +20,8 @@ func (p *Plumber) HandleDynamicCmd() error {
 		return errors.Wrap(err, "unable to instantiate backend")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
 	// Blocks until completion
-	if err := backend.Dynamic(ctx); err != nil {
+	if err := backend.Dynamic(context.Background()); err != nil {
 		return errors.Wrap(err, "error(s) during dynamic run")
 	}
 

@@ -16,7 +16,8 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fatih/color v1.12.0 // indirect
 	github.com/go-redis/redis/v8 v8.11.1
-	github.com/go-stomp/stomp v2.0.6+incompatible
+	github.com/go-stomp/stomp v2.1.4+incompatible // indirect
+	github.com/go-stomp/stomp/v3 v3.0.2
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.2.0
 	github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
@@ -53,6 +54,7 @@ require (
 	github.com/v2pro/plz v0.0.0-20200805122259-422184e41b6e // indirect
 	github.com/v2pro/quokka v0.0.0-20171201153428-382cb39c6ee6 // indirect
 	github.com/v2pro/wombat v0.0.0-20180402055224-a56dbdcddef2 // indirect
+	go.etcd.io/etcd/client/v3 v3.5.0
 	go.etcd.io/etcd/server/v3 v3.5.0
 	go.mongodb.org/mongo-driver v1.5.1
 	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0

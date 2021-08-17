@@ -11,10 +11,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Read is the entry point function for performing read operations in MQTT.
-//
-// This is where we verify that the provided arguments and flag combination
-// makes sense/are valid; this is also where we will perform our initial conn.
 func (m *MQTT) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {
 	if err := validateReadOptions(m.Options); err != nil {
 		return errors.Wrap(err, "unable to validate read options")

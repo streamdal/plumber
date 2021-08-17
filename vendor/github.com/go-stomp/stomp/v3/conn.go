@@ -3,21 +3,23 @@ package stomp
 import (
 	"errors"
 	"io"
-	"log"
 	"net"
 	"strconv"
 	"sync"
 	"time"
 
-	"github.com/go-stomp/stomp/frame"
+	"github.com/go-stomp/stomp/v3/frame"
 )
 
 // Default time span to add to read/write heart-beat timeouts
 // to avoid premature disconnections due to network latency.
 const DefaultHeartBeatError = 5 * time.Second
 
-// Default timeout of calling Conn.Send function
+// Default send timeout in Conn.Send function
 const DefaultMsgSendTimeout = 10 * time.Second
+
+// Default receipt timeout in Conn.Send function
+const DefaultRcvReceiptTimeout = 30 * time.Second
 
 // A Conn is a connection to a STOMP server. Create a Conn using either
 // the Dial or Connect function.
@@ -31,10 +33,12 @@ type Conn struct {
 	readTimeout             time.Duration
 	writeTimeout            time.Duration
 	msgSendTimeout          time.Duration
+	rcvReceiptTimeout       time.Duration
 	hbGracePeriodMultiplier float64
 	closed                  bool
 	closeMutex              *sync.Mutex
 	options                 *connOptions
+	log                     Logger
 }
 
 type writeRequest struct {
@@ -60,7 +64,7 @@ func Dial(network, addr string, opts ...func(*Conn) error) (*Conn, error) {
 
 	// Add option to set host and make it the first option in list,
 	// so that if host has been explicitly specified it will override.
-	opts = append([](func(*Conn) error){ConnOpt.Host(host)}, opts...)
+	opts = append([]func(*Conn) error{ConnOpt.Host(host)}, opts...)
 
 	return Connect(c, opts...)
 }
@@ -82,6 +86,8 @@ func Connect(conn io.ReadWriteCloser, opts ...func(*Conn) error) (*Conn, error) 
 	if err != nil {
 		return nil, err
 	}
+
+	c.log = options.Logger
 
 	if options.ReadBufferSize > 0 {
 		reader = frame.NewReaderSize(conn, options.ReadBufferSize)
@@ -185,13 +191,11 @@ func Connect(conn io.ReadWriteCloser, opts ...func(*Conn) error) (*Conn, error) 
 	}
 
 	c.msgSendTimeout = options.MsgSendTimeout
+	c.rcvReceiptTimeout = options.RcvReceiptTimeout
 
-	// TODO(jpj): make any non-standard headers in the CONNECTED
-	// frame available. This could be implemented as:
-	// (a) a callback function supplied as an option; or
-	// (b) a property of the Conn structure (eg CustomHeaders)
-	// Neither options are particularly elegant, so wait until
-	// there is a real need for this.
+	if options.ResponseHeadersCallback != nil {
+		options.ResponseHeadersCallback(response.Header)
+	}
 
 	go readLoop(c, reader)
 	go processLoop(c, writer)
@@ -309,7 +313,7 @@ func processLoop(c *Conn, writer *frame.Writer) {
 				}
 
 			case frame.ERROR:
-				log.Println("received ERROR; Closing underlying connection")
+				c.log.Error("received ERROR; Closing underlying connection")
 				for _, ch := range channels {
 					ch <- f
 					close(ch)
@@ -327,7 +331,7 @@ func processLoop(c *Conn, writer *frame.Writer) {
 					if ch, ok := channels[id]; ok {
 						ch <- f
 					} else {
-						log.Println("ignored MESSAGE for subscription", id)
+						c.log.Infof("ignored MESSAGE for subscription: %s", id)
 					}
 				}
 			}
@@ -457,9 +461,10 @@ func (c *Conn) Send(destination, contentType string, body []byte, opts ...func(*
 		if err != nil {
 			return err
 		}
-		response := <-request.C
-		if response.Command != frame.RECEIPT {
-			return newError(response)
+
+		err = readReceiptWithTimeout(request, c.rcvReceiptTimeout)
+		if err != nil {
+			return err
 		}
 	} else {
 		// no receipt required
@@ -472,6 +477,23 @@ func (c *Conn) Send(destination, contentType string, body []byte, opts ...func(*
 	}
 
 	return nil
+}
+
+func readReceiptWithTimeout(request writeRequest, timeout time.Duration) error {
+	var timeoutChan <-chan time.Time
+	if timeout > 0 {
+		timeoutChan = time.After(timeout)
+	}
+
+	select {
+	case <-timeoutChan:
+		return ErrMsgReceiptTimeout
+	case response := <-request.C:
+		if response.Command != frame.RECEIPT {
+			return newError(response)
+		}
+		return nil
+	}
 }
 
 func sendDataToWriteChWithTimeout(ch chan writeRequest, request writeRequest, timeout time.Duration) error {
