@@ -17,7 +17,7 @@ func (k *Kafka) DisplayMessage(msg *types.ReadMessage) error {
 		return errors.New("msg cannot be nil")
 	}
 
-	rawMsg, ok := msg.Raw.(*kafka.Message)
+	rawMsg, ok := msg.Raw.(kafka.Message)
 	if !ok {
 		return errors.New("unable to type assert message")
 	}

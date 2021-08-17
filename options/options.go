@@ -291,7 +291,8 @@ func HandleReadFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("verbose", "Display message metadata if available").
 		BoolVar(&opts.Read.Verbose)
 
-	cmd.Flag("lag", "Display amount of messages with un-commited offset, if different from the previous message").
+	// TODO: This should _probably_ be under kafka (since no other backend supports this functionality)
+	cmd.Flag("lag", "Display amount of messages with uncommitted offset (if different from the previous message)").
 		Default("false").
 		BoolVar(&opts.Read.Lag)
 
