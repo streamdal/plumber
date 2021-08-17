@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"os/signal"
@@ -29,6 +30,8 @@ func main() {
 	if err != nil {
 		logrus.Fatalf("Unable to handle CLI input: %s", err)
 	}
+
+	fmt.Println("Our relay type: ", opts.Relay.Type)
 
 	readFromStdin(opts)
 
