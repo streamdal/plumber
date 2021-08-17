@@ -6,7 +6,7 @@ import (
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 	"github.com/batchcorp/plumber/types"
-	"github.com/go-stomp/stomp"
+	"github.com/go-stomp/stomp/v3"
 	"github.com/pkg/errors"
 )
 

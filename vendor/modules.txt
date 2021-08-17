@@ -192,10 +192,13 @@ github.com/go-redis/redis/v8/internal/rand
 github.com/go-redis/redis/v8/internal/util
 # github.com/go-stack/stack v1.8.0
 github.com/go-stack/stack
-# github.com/go-stomp/stomp v2.0.6+incompatible
+# github.com/go-stomp/stomp v2.1.4+incompatible
 ## explicit
-github.com/go-stomp/stomp
-github.com/go-stomp/stomp/frame
+# github.com/go-stomp/stomp/v3 v3.0.2
+## explicit
+github.com/go-stomp/stomp/v3
+github.com/go-stomp/stomp/v3/frame
+github.com/go-stomp/stomp/v3/internal/log
 # github.com/godbus/dbus v0.0.0-20190726142602-4481cbc300e2
 github.com/godbus/dbus
 # github.com/gogo/protobuf v1.3.2

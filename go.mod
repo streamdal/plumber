@@ -16,7 +16,8 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fatih/color v1.12.0 // indirect
 	github.com/go-redis/redis/v8 v8.11.1
-	github.com/go-stomp/stomp v2.0.6+incompatible
+	github.com/go-stomp/stomp v2.1.4+incompatible // indirect
+	github.com/go-stomp/stomp/v3 v3.0.2
 	github.com/golang/protobuf v1.5.2
 	github.com/google/go-github/v37 v37.0.0
 	github.com/google/uuid v1.2.0

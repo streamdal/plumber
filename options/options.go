@@ -306,6 +306,7 @@ func HandleReadFlags(cmd *kingpin.CmdClause, opts *Options) {
 
 func HandleGlobalDynamicFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("api-token", "Batch.SH API Token").
+		Required().
 		StringVar(&opts.DProxy.APIToken)
 
 	cmd.Flag("dproxy-address", "Address of Batch.sh's Dynamic Destination server").

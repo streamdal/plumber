@@ -6,8 +6,7 @@ import (
 
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/types"
-	"github.com/batchcorp/plumber/util"
-	"github.com/go-stomp/stomp"
+	"github.com/go-stomp/stomp/v3"
 	"github.com/pkg/errors"
 )
 
@@ -16,19 +15,24 @@ func (a *ActiveMq) Read(ctx context.Context, resultsCh chan *types.ReadMessage, 
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	if err := a.read(ctx, resultsCh, errorCh); err != nil {
+	client, err := newConn(ctx, a.Options)
+	if err != nil {
+		return errors.Wrap(err, "unable to establish new connection")
+	}
+
+	if err := a.read(ctx, client, resultsCh, errorCh); err != nil {
 		return errors.Wrap(err, "error(s) performing read")
 	}
 
 	return nil
 }
 
-func (a *ActiveMq) read(ctx context.Context, resultsCh chan *types.ReadMessage, errorCh chan *types.ErrorMessage) error {
+func (a *ActiveMq) read(ctx context.Context, conn *stomp.Conn, resultsCh chan *types.ReadMessage, errorCh chan *types.ErrorMessage) error {
 	a.log.Info("Listening for message(s) ...")
 
 	count := 1
 
-	sub, err := a.client.Subscribe(a.getDestination(), stomp.AckClient)
+	sub, err := conn.Subscribe(a.getDestination(), stomp.AckAuto)
 	if err != nil {
 		return errors.Wrap(err, "unable to create subscription")
 	}
@@ -39,15 +43,16 @@ MAIN:
 	for {
 		select {
 		case msg := <-sub.C:
+			// Avoid a potential panic when we're unable to ack
+			if msg == nil {
+				continue MAIN
+			}
+
 			resultsCh <- &types.ReadMessage{
 				ReceivedAt: time.Now().UTC(),
 				Num:        count,
 				Value:      msg.Body,
 				Raw:        msg,
-			}
-
-			if err := a.client.Ack(msg); err != nil {
-				util.WriteError(a.log, errorCh, errors.Wrap(err, "unable to ack message"))
 			}
 		case <-ctx.Done():
 			a.log.Debug("read cancelled via context")

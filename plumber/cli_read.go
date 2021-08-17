@@ -27,13 +27,15 @@ func (p *Plumber) HandleReadCmd() error {
 		return errors.Wrap(err, "unable to create new backend")
 	}
 
-	resultCh := make(chan *types.ReadMessage, 1000)
-	errorCh := make(chan *types.ErrorMessage, 100)
+	resultCh := make(chan *types.ReadMessage, 1)
+	errorCh := make(chan *types.ErrorMessage, 1)
 
-	// Non-blocking call
-	if err := backend.Read(context.Background(), resultCh, errorCh); err != nil {
-		return errors.Wrap(err, "unable to read data")
-	}
+	// .Read() might be a blocking
+	go func() {
+		if err := backend.Read(context.Background(), resultCh, errorCh); err != nil {
+			p.log.Errorf("unable to complete read for backend '%s': %s", backend.Name(), err)
+		}
+	}()
 
 MAIN:
 	for {
@@ -41,6 +43,8 @@ MAIN:
 
 		select {
 		case msg := <-resultCh:
+			p.log.Debug("HandleReadCmd: received message on resultCh")
+
 			err = backend.DisplayMessage(msg)
 		case errorMsg := <-errorCh:
 			err = backend.DisplayError(errorMsg)

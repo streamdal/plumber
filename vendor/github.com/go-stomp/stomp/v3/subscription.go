@@ -2,11 +2,10 @@ package stomp
 
 import (
 	"fmt"
-	"log"
 	"sync"
 	"sync/atomic"
 
-	"github.com/go-stomp/stomp/frame"
+	"github.com/go-stomp/stomp/v3/frame"
 )
 
 const (
@@ -155,7 +154,7 @@ func (s *Subscription) readLoop(ch chan *frame.Frame) {
 					s.id,
 					s.destination,
 					message)
-				log.Println(text)
+				s.conn.log.Info(text)
 				contentType := f.Header.Get(frame.ContentType)
 				msg := &Message{
 					Err: &Error{
@@ -178,7 +177,7 @@ func (s *Subscription) readLoop(ch chan *frame.Frame) {
 			}
 			return
 		} else {
-			log.Printf("Subscription %s: %s: unsupported frame type: %+v\n", s.id, s.destination, f)
+			s.conn.log.Infof("Subscription %s: %s: unsupported frame type: %+v", s.id, s.destination, f)
 		}
 	}
 }
