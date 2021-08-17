@@ -27,11 +27,7 @@ func (m *MQTT) Read(ctx context.Context, resultsChan chan *types.ReadMessage, er
 
 	m.client.Subscribe(m.Options.MQTT.Topic, byte(m.Options.MQTT.QoSLevel), func(client mqtt.Client, msg mqtt.Message) {
 		resultsChan <- &types.ReadMessage{
-			Value: nil,
-			Metadata: map[string]interface{}{
-				"topic":      msg.Topic(),
-				"message_id": msg.MessageID(),
-			},
+			Value:      msg.Payload(),
 			ReceivedAt: time.Now().UTC(),
 			Num:        count,
 			Raw:        msg,
