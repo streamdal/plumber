@@ -3,6 +3,7 @@ package awssns
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sns"
@@ -77,13 +78,16 @@ var _ = Describe("AWS SNS Backend", func() {
 				service: fakeSNS,
 			}
 
-			err := a.Write(context.Background(), nil, &types.WriteMessage{
+			errorCh := make(chan *types.ErrorMessage, 1)
+
+			a.Write(context.Background(), errorCh, &types.WriteMessage{
 				Value: []byte(`fake message`),
 			})
 
-			Expect(err).To(HaveOccurred())
+			time.Sleep(time.Second) // error gets set in goroutine
+
+			Expect(errorCh).Should(Receive())
 			Expect(fakeSNS.PublishCallCount()).To(Equal(1))
-			Expect(err.Error()).To(Equal("could not publish message to SNS: " + expectedErr.Error()))
 		})
 
 		It("Succeeds", func() {

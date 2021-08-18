@@ -5,14 +5,14 @@ import (
 	"io/ioutil"
 	"sync"
 
-	"github.com/batchcorp/plumber/types"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
 
+	"github.com/batchcorp/plumber/types"
+
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/printer/printerfakes"
 	"github.com/batchcorp/plumber/tools/mqttfakes"
 )
 
@@ -101,43 +101,41 @@ var _ = Describe("MQTT Read", func() {
 	})
 
 	Context("Read", func() {
-		fakeMQTT := &mqttfakes.FakeClient{}
+		It("reads a message", func() {
+			fakeMQTT := &mqttfakes.FakeClient{}
 
-		fakeMQTT.SubscribeStub = func(topic string, qos byte, handler mqtt.MessageHandler) mqtt.Token {
-			msg := &mqttfakes.FakeMessage{}
-			msg.PayloadStub = func() []byte {
-				return []byte(`testing`)
+			fakeMQTT.SubscribeStub = func(topic string, qos byte, handler mqtt.MessageHandler) mqtt.Token {
+				msg := &mqttfakes.FakeMessage{}
+				msg.PayloadStub = func() []byte {
+					return []byte(`testing`)
+				}
+
+				handler(fakeMQTT, msg)
+
+				return &mqttfakes.FakeToken{}
 			}
 
-			handler(fakeMQTT, msg)
-
-			return &mqttfakes.FakeToken{}
-		}
-
-		var readMessage string
-
-		fakePrinter := &printerfakes.FakeIPrinter{}
-		fakePrinter.PrintStub = func(str string) {
-			readMessage = str
-		}
-
-		m := &MQTT{
-			log:    log,
-			client: fakeMQTT,
-			Options: &options.Options{
-				Read: &options.ReadOptions{
-					Follow: false,
+			m := &MQTT{
+				log:    log,
+				client: fakeMQTT,
+				Options: &options.Options{
+					Read: &options.ReadOptions{
+						Follow: false,
+					},
+					MQTT: &options.MQTTOptions{
+						Address: "127.0.0.1",
+						Topic:   "test",
+					},
 				},
-				MQTT: &options.MQTTOptions{},
-			},
-		}
+			}
 
-		resultsChan := make(chan *types.ReadMessage, 1)
+			resultsChan := make(chan *types.ReadMessage, 1)
 
-		// TODO: This needs some test work
-		err := m.Read(context.Background(), resultsChan, nil)
+			err := m.Read(context.Background(), resultsChan, nil)
+			Expect(err).ToNot(HaveOccurred())
 
-		Expect(err).ToNot(HaveOccurred())
-		Expect(readMessage).To(Equal("1: testing"))
+			Expect(fakeMQTT.SubscribeCallCount()).To(Equal(1))
+			Expect(resultsChan).Should(Receive())
+		})
 	})
 })

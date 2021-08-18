@@ -24,6 +24,7 @@ var _ = Describe("MQTT Backend", func() {
 			opts := &options.Options{
 				MQTT: &options.MQTTOptions{
 					ClientID: "123",
+					Topic:    "asdf",
 				},
 			}
 

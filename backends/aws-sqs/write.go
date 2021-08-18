@@ -6,11 +6,12 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/pkg/errors"
+
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/types"
 	"github.com/batchcorp/plumber/util"
 	"github.com/batchcorp/plumber/writer"
-	"github.com/pkg/errors"
 )
 
 const (
