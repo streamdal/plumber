@@ -4,13 +4,12 @@ import (
 	"context"
 	"time"
 
-	"github.com/batchcorp/plumber/types"
-
 	"github.com/apache/pulsar-client-go/pulsar"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/types"
 )
 
 const (

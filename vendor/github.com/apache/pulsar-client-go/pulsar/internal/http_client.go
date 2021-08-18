@@ -52,7 +52,7 @@ func (c *httpClient) Close() {
 }
 
 type HTTPClient interface {
-	Get(endpoint string, obj interface{}) error
+	Get(endpoint string, obj interface{}, params map[string]string) error
 	Closable
 }
 
@@ -143,8 +143,8 @@ func (c *httpClient) MakeRequest(method, endpoint string) (*http.Response, error
 	return resp, nil
 }
 
-func (c *httpClient) Get(endpoint string, obj interface{}) error {
-	_, err := c.GetWithQueryParams(endpoint, obj, nil, true)
+func (c *httpClient) Get(endpoint string, obj interface{}, params map[string]string) error {
+	_, err := c.GetWithQueryParams(endpoint, obj, params, true)
 	if _, ok := err.(*url.Error); ok {
 		// We can retry this kind of requests over a connection error because they're
 		// not specific to a particular broker.
@@ -156,7 +156,7 @@ func (c *httpClient) Get(endpoint string, obj interface{}) error {
 			retryTime = backoff.Next()
 			c.log.Debugf("Retrying httpRequest in {%v} with timeout in {%v}", retryTime, c.requestTimeout)
 			time.Sleep(retryTime)
-			_, err = c.GetWithQueryParams(endpoint, obj, nil, true)
+			_, err = c.GetWithQueryParams(endpoint, obj, params, true)
 			if _, ok := err.(*url.Error); ok {
 				continue
 			} else {

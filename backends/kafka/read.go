@@ -4,11 +4,12 @@ import (
 	"context"
 	"time"
 
+	"github.com/pkg/errors"
+	skafka "github.com/segmentio/kafka-go"
+
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/types"
 	"github.com/batchcorp/plumber/util"
-	"github.com/pkg/errors"
-	skafka "github.com/segmentio/kafka-go"
 )
 
 // DONE

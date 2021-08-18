@@ -28,8 +28,23 @@ func (n *NatsStreaming) DisplayMessage(msg *types.ReadMessage) error {
 
 	properties := [][]string{
 		{"Subject", rawMsg.Subject},
-		{"Reply", rawMsg.Reply},
 		{"Redelivered", fmt.Sprint(rawMsg.Redelivered)},
+	}
+
+	if n.Options.Read.Verbose {
+		properties = append(properties,
+			[]string{
+				"Reply", rawMsg.Reply,
+			},
+			[]string{
+				"CRC32", fmt.Sprint(rawMsg.CRC32),
+			},
+			[]string{
+				"Timestamp", fmt.Sprint(rawMsg.Timestamp),
+			},
+			[]string{
+				"Redelivery Count", fmt.Sprint(rawMsg.RedeliveryCount),
+			})
 	}
 
 	printer.PrintTable(properties, msg.Num, msg.ReceivedAt, decoded)

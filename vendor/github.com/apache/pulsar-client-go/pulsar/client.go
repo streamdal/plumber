@@ -25,18 +25,20 @@ import (
 	"github.com/apache/pulsar-client-go/pulsar/log"
 )
 
+// NewClient Creates a pulsar client instance
 func NewClient(options ClientOptions) (Client, error) {
 	return newClient(options)
 }
 
-// Opaque interface that represents the authentication credentials
+// Authentication Opaque interface that represents the authentication credentials
 type Authentication interface{}
 
+// NewAuthentication Creates an authentication by name and params
 func NewAuthentication(name string, params string) (Authentication, error) {
 	return auth.NewProvider(name, params)
 }
 
-// Create new Authentication provider with specified auth token
+// NewAuthenticationToken Creates new Authentication provider with specified auth token
 func NewAuthenticationToken(token string) Authentication {
 	return auth.NewAuthenticationToken(token)
 }
@@ -49,32 +51,34 @@ func NewAuthenticationTokenFromSupplier(tokenSupplier func() (string, error)) Au
 	return auth.NewAuthenticationTokenFromSupplier(tokenSupplier)
 }
 
-// Create new Authentication provider with specified auth token from a file
+// NewAuthenticationTokenFromFile Creates new Authentication provider with specified auth token from a file
 func NewAuthenticationTokenFromFile(tokenFilePath string) Authentication {
 	return auth.NewAuthenticationTokenFromFile(tokenFilePath)
 }
 
-// Create new Authentication provider with specified TLS certificate and private key
+// NewAuthenticationTLS Creates new Authentication provider with specified TLS certificate and private key
 func NewAuthenticationTLS(certificatePath string, privateKeyPath string) Authentication {
 	return auth.NewAuthenticationTLS(certificatePath, privateKeyPath)
 }
 
-// Create new Authentication provider with specified TLS certificate supplier
+// NewAuthenticationFromTLSCertSupplier Create new Authentication provider with specified TLS certificate supplier
 func NewAuthenticationFromTLSCertSupplier(tlsCertSupplier func() (*tls.Certificate, error)) Authentication {
 	return auth.NewAuthenticationFromTLSCertSupplier(tlsCertSupplier)
 }
 
+// NewAuthenticationAthenz Creates Athenz Authentication provider
 func NewAuthenticationAthenz(authParams map[string]string) Authentication {
 	athenz, _ := auth.NewAuthenticationAthenzWithParams(authParams)
 	return athenz
 }
 
+// NewAuthenticationOAuth2 Creates OAuth2 Authentication provider
 func NewAuthenticationOAuth2(authParams map[string]string) Authentication {
 	oauth, _ := auth.NewAuthenticationOAuth2WithParams(authParams)
 	return oauth
 }
 
-// Builder interface that is used to construct a Pulsar Client instance.
+// ClientOptions is used to construct a Pulsar Client instance.
 type ClientOptions struct {
 	// Configure the service URL for the Pulsar service.
 	// This parameter is required
@@ -117,22 +121,23 @@ type ClientOptions struct {
 	CustomMetricsLabels map[string]string
 }
 
+// Client represents a pulsar client
 type Client interface {
-	// Create the producer instance
+	// CreateProducer Creates the producer instance
 	// This method will block until the producer is created successfully
 	CreateProducer(ProducerOptions) (Producer, error)
 
-	// Create a `Consumer` by subscribing to a topic.
+	// Subscribe Creates a `Consumer` by subscribing to a topic.
 	//
 	// If the subscription does not exist, a new subscription will be created and all messages published after the
 	// creation will be retained until acknowledged, even if the consumer is not connected
 	Subscribe(ConsumerOptions) (Consumer, error)
 
-	// Create a Reader instance.
+	// CreateReader Creates a Reader instance.
 	// This method will block until the reader is created successfully.
 	CreateReader(ReaderOptions) (Reader, error)
 
-	// Fetch the list of partitions for a given topic
+	// TopicPartitions Fetches the list of partitions for a given topic
 	//
 	// If the topic is partitioned, this will return a list of partition names.
 	// If the topic is not partitioned, the returned list will contain the topic
@@ -142,6 +147,6 @@ type Client interface {
 	// {@link Consumer} or {@link Producer} instances directly on a particular partition.
 	TopicPartitions(topic string) ([]string, error)
 
-	// Close the Client and free associated resources
+	// Close Closes the Client and free associated resources
 	Close()
 }

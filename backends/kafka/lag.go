@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/types"
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/types"
 )
 
 type Lag struct {

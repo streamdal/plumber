@@ -24,7 +24,6 @@ import (
 
 	pb "github.com/apache/pulsar-client-go/pulsar/internal/pulsar_proto"
 	"github.com/gogo/protobuf/proto"
-	"github.com/pkg/errors"
 )
 
 type connectionReader struct {
@@ -45,8 +44,10 @@ func (r *connectionReader) readFromConnection() {
 	for {
 		cmd, headersAndPayload, err := r.readSingleCommand()
 		if err != nil {
-			r.cnx.log.WithError(err).Info("Error reading from connection")
-			r.cnx.TriggerClose()
+			if !r.cnx.closed() {
+				r.cnx.log.WithError(err).Infof("Error reading from connection")
+				r.cnx.Close()
+			}
 			break
 		}
 
@@ -68,7 +69,7 @@ func (r *connectionReader) readSingleCommand() (cmd *pb.BaseCommand, headersAndP
 			r.buffer.Clear()
 		}
 		if err := r.readAtLeast(4); err != nil {
-			return nil, nil, errors.Errorf("Short read when reading frame size: %s", err)
+			return nil, nil, fmt.Errorf("unable to read frame size: %+v", err)
 		}
 	}
 
@@ -78,7 +79,7 @@ func (r *connectionReader) readSingleCommand() (cmd *pb.BaseCommand, headersAndP
 	if r.cnx.maxMessageSize != 0 && int32(frameSize) > maxFrameSize {
 		frameSizeError := fmt.Errorf("received too big frame size=%d maxFrameSize=%d", frameSize, maxFrameSize)
 		r.cnx.log.Error(frameSizeError)
-		r.cnx.TriggerClose()
+		r.cnx.Close()
 		return nil, nil, frameSizeError
 	}
 
@@ -86,7 +87,8 @@ func (r *connectionReader) readSingleCommand() (cmd *pb.BaseCommand, headersAndP
 	if r.buffer.ReadableBytes() < frameSize {
 		remainingBytes := frameSize - r.buffer.ReadableBytes()
 		if err := r.readAtLeast(remainingBytes); err != nil {
-			return nil, nil, errors.Errorf("Short read when reading frame: %s", err)
+			return nil, nil,
+				fmt.Errorf("unable to read frame: %+v", err)
 		}
 	}
 
@@ -122,7 +124,11 @@ func (r *connectionReader) readAtLeast(size uint32) error {
 
 	n, err := io.ReadAtLeast(r.cnx.cnx, r.buffer.WritableSlice(), int(size))
 	if err != nil {
-		r.cnx.TriggerClose()
+		// has the connection been closed?
+		if r.cnx.closed() {
+			return errConnectionClosed
+		}
+		r.cnx.Close()
 		return err
 	}
 
@@ -135,7 +141,7 @@ func (r *connectionReader) deserializeCmd(data []byte) (*pb.BaseCommand, error) 
 	err := proto.Unmarshal(data, cmd)
 	if err != nil {
 		r.cnx.log.WithError(err).Warn("Failed to parse protobuf command")
-		r.cnx.TriggerClose()
+		r.cnx.Close()
 		return nil, err
 	}
 	return cmd, nil

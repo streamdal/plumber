@@ -3,9 +3,10 @@ package nats_streaming
 import (
 	"context"
 
+	"github.com/pkg/errors"
+
 	"github.com/batchcorp/plumber/types"
 	"github.com/batchcorp/plumber/util"
-	"github.com/pkg/errors"
 )
 
 func (n *NatsStreaming) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {

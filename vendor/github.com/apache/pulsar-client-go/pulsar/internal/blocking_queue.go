@@ -32,6 +32,9 @@ type BlockingQueue interface {
 	// Poll dequeue one item, return nil if queue is empty
 	Poll() interface{}
 
+	// CompareAndPoll compare the first item and poll it if meet the conditions
+	CompareAndPoll(compare func(item interface{}) bool) interface{}
+
 	// Peek return the first item without dequeing, return nil if queue is empty
 	Peek() interface{}
 
@@ -115,6 +118,20 @@ func (bq *blockingQueue) Poll() interface{} {
 	}
 
 	return bq.dequeue()
+}
+
+func (bq *blockingQueue) CompareAndPoll(compare func(interface{}) bool) interface{} {
+	bq.mutex.Lock()
+	defer bq.mutex.Unlock()
+
+	if bq.size == 0 {
+		return nil
+	}
+
+	if compare(bq.items[bq.headIdx]) {
+		return bq.dequeue()
+	}
+	return nil
 }
 
 func (bq *blockingQueue) Peek() interface{} {

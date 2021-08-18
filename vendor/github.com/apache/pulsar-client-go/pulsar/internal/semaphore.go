@@ -18,6 +18,7 @@
 package internal
 
 import (
+	"context"
 	"sync/atomic"
 
 	log "github.com/sirupsen/logrus"
@@ -26,7 +27,7 @@ import (
 type Semaphore interface {
 	// Acquire a permit, if one is available and returns immediately,
 	// reducing the number of available permits by one.
-	Acquire()
+	Acquire(ctx context.Context) bool
 
 	// Try to acquire a permit. The method will return immediately
 	// with a `true` if it was possible to acquire a permit and
@@ -63,14 +64,21 @@ func NewSemaphore(maxPermits int32) Semaphore {
 	}
 }
 
-func (s *semaphore) Acquire() {
+func (s *semaphore) Acquire(ctx context.Context) bool {
 	permits := atomic.AddInt32(&s.permits, 1)
 	if permits <= s.maxPermits {
-		return
+		return true
 	}
 
 	// Block on the channel until a new permit is available
-	<-s.ch
+	// or the context expires
+	select {
+	case <-s.ch:
+		return true
+	case <-ctx.Done():
+		atomic.AddInt32(&s.permits, -1)
+		return false
+	}
 }
 
 func (s *semaphore) TryAcquire() bool {

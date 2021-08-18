@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pkg/errors"
+
 	ktypes "github.com/batchcorp/plumber/backends/kafka/types"
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/stats"
 	"github.com/batchcorp/plumber/types"
 	"github.com/batchcorp/plumber/util"
-	"github.com/pkg/errors"
 )
 
 const (

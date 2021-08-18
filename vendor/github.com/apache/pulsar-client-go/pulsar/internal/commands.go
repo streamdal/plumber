@@ -176,6 +176,8 @@ func baseCommand(cmdType pb.BaseCommand_Type, msg proto.Message) *pb.BaseCommand
 		cmd.Pong = msg.(*pb.CommandPong)
 	case pb.BaseCommand_SEND:
 		cmd.Send = msg.(*pb.CommandSend)
+	case pb.BaseCommand_SEND_ERROR:
+		cmd.SendError = msg.(*pb.CommandSendError)
 	case pb.BaseCommand_CLOSE_PRODUCER:
 		cmd.CloseProducer = msg.(*pb.CommandCloseProducer)
 	case pb.BaseCommand_CLOSE_CONSUMER:

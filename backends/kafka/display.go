@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/reader"
-	"github.com/batchcorp/plumber/types"
 	"github.com/logrusorgru/aurora"
 	"github.com/pkg/errors"
 	"github.com/segmentio/kafka-go"
+
+	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/reader"
+	"github.com/batchcorp/plumber/types"
 )
 
 func (k *Kafka) DisplayMessage(msg *types.ReadMessage) error {

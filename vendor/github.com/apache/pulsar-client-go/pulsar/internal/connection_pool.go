@@ -38,7 +38,8 @@ type ConnectionPool interface {
 }
 
 type connectionPool struct {
-	pool                  sync.Map
+	sync.Mutex
+	connections           map[string]*connection
 	connectionTimeout     time.Duration
 	tlsOptions            *TLSOptions
 	auth                  auth.Provider
@@ -58,6 +59,7 @@ func NewConnectionPool(
 	logger log.Logger,
 	metrics *Metrics) ConnectionPool {
 	return &connectionPool{
+		connections:           make(map[string]*connection),
 		tlsOptions:            tlsOptions,
 		auth:                  auth,
 		connectionTimeout:     connectionTimeout,
@@ -69,54 +71,51 @@ func NewConnectionPool(
 
 func (p *connectionPool) GetConnection(logicalAddr *url.URL, physicalAddr *url.URL) (Connection, error) {
 	key := p.getMapKey(logicalAddr)
-	cachedCnx, found := p.pool.Load(key)
-	if found {
-		cnx := cachedCnx.(*connection)
-		p.log.Debug("Found connection in cache:", cnx.logicalAddr, cnx.physicalAddr)
 
-		if err := cnx.waitUntilReady(); err == nil {
-			// Connection is ready to be used
-			return cnx, nil
+	p.Lock()
+	conn, ok := p.connections[key]
+	if ok {
+		p.log.Debugf("Found connection in pool key=%s logical_addr=%+v physical_addr=%+v",
+			key, conn.logicalAddr, conn.physicalAddr)
+
+		// remove stale/failed connection
+		if conn.closed() {
+			delete(p.connections, key)
+			p.log.Debugf("Removed connection from pool key=%s logical_addr=%+v physical_addr=%+v",
+				key, conn.logicalAddr, conn.physicalAddr)
+			conn = nil // set to nil so we create a new one
 		}
-		// The cached connection is failed
-		p.pool.Delete(key)
-		p.log.Debug("Removed failed connection from pool:", cnx.logicalAddr, cnx.physicalAddr)
 	}
 
-	// Try to create a new connection
-	newConnection := newConnection(connectionOptions{
-		logicalAddr:       logicalAddr,
-		physicalAddr:      physicalAddr,
-		tls:               p.tlsOptions,
-		connectionTimeout: p.connectionTimeout,
-		auth:              p.auth,
-		logger:            p.log,
-		metrics:           p.metrics,
-	})
-	newCnx, wasCached := p.pool.LoadOrStore(key, newConnection)
-	cnx := newCnx.(*connection)
-
-	if !wasCached {
-		cnx.start()
+	if conn == nil {
+		conn = newConnection(connectionOptions{
+			logicalAddr:       logicalAddr,
+			physicalAddr:      physicalAddr,
+			tls:               p.tlsOptions,
+			connectionTimeout: p.connectionTimeout,
+			auth:              p.auth,
+			logger:            p.log,
+			metrics:           p.metrics,
+		})
+		p.connections[key] = conn
+		p.Unlock()
+		conn.start()
 	} else {
-		newConnection.Close()
+		// we already have a connection
+		p.Unlock()
 	}
 
-	if err := cnx.waitUntilReady(); err != nil {
-		if !wasCached {
-			p.pool.Delete(key)
-			p.log.Debug("Removed failed connection from pool:", cnx.logicalAddr, cnx.physicalAddr)
-		}
-		return nil, err
-	}
-	return cnx, nil
+	err := conn.waitUntilReady()
+	return conn, err
 }
 
 func (p *connectionPool) Close() {
-	p.pool.Range(func(key, value interface{}) bool {
-		value.(Connection).Close()
-		return true
-	})
+	p.Lock()
+	for k, c := range p.connections {
+		delete(p.connections, k)
+		c.Close()
+	}
+	p.Unlock()
 }
 
 func (p *connectionPool) getMapKey(addr *url.URL) string {

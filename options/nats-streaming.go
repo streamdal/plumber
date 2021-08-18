@@ -1,8 +1,9 @@
 package options
 
 import (
-	"gopkg.in/alecthomas/kingpin.v2"
 	"time"
+
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 type NatsStreamingOptions struct {
@@ -57,6 +58,7 @@ func addReadNatsStreamingFlags(cmd *kingpin.CmdClause, opts *Options) {
 
 func addSharedNatsStreamingFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("address", "Dial string for NATS server. Ex: nats://localhost:4222").
+		Default("nats://localhost:4222").
 		StringVar(&opts.NatsStreaming.Address)
 
 	cmd.Flag("cluster-id", "Cluster ID of the Nats server").
@@ -64,10 +66,11 @@ func addSharedNatsStreamingFlags(cmd *kingpin.CmdClause, opts *Options) {
 		StringVar(&opts.NatsStreaming.ClusterID)
 
 	cmd.Flag("client-id", "User specified client ID to connect with").
-		Required().
+		Default("plumber").
 		StringVar(&opts.NatsStreaming.ClientID)
 
 	cmd.Flag("channel", "NATS stream channel. Ex: \"orders\"").
+		Required().
 		StringVar(&opts.NatsStreaming.Channel)
 
 	cmd.Flag("tls-ca-file", "CA file (only needed if addr is tls://").ExistingFileVar(&opts.NatsStreaming.TLSCAFile)

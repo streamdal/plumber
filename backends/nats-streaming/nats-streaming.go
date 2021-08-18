@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/batchcorp/plumber/types"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/stan.go"
@@ -16,6 +15,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/types"
 )
 
 const (

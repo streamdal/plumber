@@ -8,7 +8,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/batchcorp/plumber/types"
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/sasl"
@@ -18,6 +17,7 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/types"
 )
 
 const (

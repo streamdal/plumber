@@ -27,8 +27,8 @@ import (
 	"strings"
 	"time"
 
-	zms "github.com/yahoo/athenz/libs/go/zmssvctoken"
-	zts "github.com/yahoo/athenz/libs/go/ztsroletoken"
+	zms "github.com/AthenZ/athenz/libs/go/zmssvctoken"
+	zts "github.com/AthenZ/athenz/libs/go/ztsroletoken"
 )
 
 const (

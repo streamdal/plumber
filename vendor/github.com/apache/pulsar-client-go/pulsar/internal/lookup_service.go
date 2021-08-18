@@ -34,6 +34,15 @@ type LookupResult struct {
 	PhysicalAddr *url.URL
 }
 
+// GetTopicsOfNamespaceMode for CommandGetTopicsOfNamespace_Mode
+type GetTopicsOfNamespaceMode string
+
+const (
+	Persistent    GetTopicsOfNamespaceMode = "PERSISTENT"
+	NonPersistent                          = "NON_PERSISTENT"
+	All                                    = "ALL"
+)
+
 // PartitionedTopicMetadata encapsulates a struct for metadata of a partitioned topic
 type PartitionedTopicMetadata struct {
 	Partitions int `json:"partitions"` // Number of partitions for the topic
@@ -49,7 +58,10 @@ type LookupService interface {
 	// the given topic, returns the CommandPartitionedTopicMetadataResponse as the result.
 	GetPartitionedTopicMetadata(topic string) (*PartitionedTopicMetadata, error)
 
-	// Allow Lookup Service's internal client to be able to closed
+	// GetTopicsOfNamespace returns all the topics name for a given namespace.
+	GetTopicsOfNamespace(namespace string, mode GetTopicsOfNamespaceMode) ([]string, error)
+
+	// Closable Allow Lookup Service's internal client to be able to closed
 	Closable
 }
 
@@ -190,11 +202,42 @@ func (ls *lookupService) GetPartitionedTopicMetadata(topic string) (*Partitioned
 	}
 	ls.log.Debugf("Got topic{%s} partitioned metadata response: %+v", topic, res)
 
-	if res.Response.PartitionMetadataResponse.Error != nil {
-		return nil, errors.New(res.Response.PartitionMetadataResponse.GetError().String())
+	var partitionedTopicMetadata PartitionedTopicMetadata
+
+	if res.Response.Error != nil {
+		return nil, errors.New(res.Response.GetError().String())
 	}
 
-	return &PartitionedTopicMetadata{Partitions: int(res.Response.PartitionMetadataResponse.GetPartitions())}, nil
+	if res.Response.PartitionMetadataResponse != nil {
+		if res.Response.PartitionMetadataResponse.Error != nil {
+			return nil, errors.New(res.Response.PartitionMetadataResponse.GetError().String())
+		}
+
+		partitionedTopicMetadata.Partitions = int(res.Response.PartitionMetadataResponse.GetPartitions())
+	} else {
+		return nil, fmt.Errorf("no partitioned metadata for topic{%s} in lookup response", topic)
+	}
+
+	return &partitionedTopicMetadata, nil
+}
+
+func (ls *lookupService) GetTopicsOfNamespace(namespace string, mode GetTopicsOfNamespaceMode) ([]string, error) {
+	id := ls.rpcClient.NewRequestID()
+	pbMode := pb.CommandGetTopicsOfNamespace_Mode(pb.CommandGetTopicsOfNamespace_Mode_value[string(mode)])
+	req := &pb.CommandGetTopicsOfNamespace{
+		RequestId: proto.Uint64(id),
+		Namespace: proto.String(namespace),
+		Mode:      &pbMode,
+	}
+	res, err := ls.rpcClient.RequestToAnyBroker(id, pb.BaseCommand_GET_TOPICS_OF_NAMESPACE, req)
+	if err != nil {
+		return nil, err
+	}
+	if res.Response.Error != nil {
+		return []string{}, errors.New(res.Response.GetError().String())
+	}
+
+	return res.Response.GetTopicsOfNamespaceResponse.GetTopics(), nil
 }
 
 func (ls *lookupService) Close() {}
@@ -203,6 +246,8 @@ const HTTPLookupServiceBasePathV1 string = "/lookup/v2/destination/"
 const HTTPLookupServiceBasePathV2 string = "/lookup/v2/topic/"
 const HTTPAdminServiceV1Format string = "/admin/%s/partitions"
 const HTTPAdminServiceV2Format string = "/admin/v2/%s/partitions"
+const HTTPTopicUnderNamespaceV1 string = "/admin/namespaces/%s/destinations?mode=%s"
+const HTTPTopicUnderNamespaceV2 string = "/admin/v2/namespaces/%s/topics?mode=%s"
 
 type httpLookupData struct {
 	BrokerURL    string `json:"brokerUrl"`
@@ -246,7 +291,7 @@ func (h *httpLookupService) Lookup(topic string) (*LookupResult, error) {
 	}
 
 	lookupData := &httpLookupData{}
-	err = h.httpClient.Get(basePath+GetTopicRestPath(topicName), lookupData)
+	err = h.httpClient.Get(basePath+GetTopicRestPath(topicName), lookupData, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -282,7 +327,7 @@ func (h *httpLookupService) GetPartitionedTopicMetadata(topic string) (*Partitio
 
 	tMetadata := &PartitionedTopicMetadata{}
 
-	err = h.httpClient.Get(path, tMetadata)
+	err = h.httpClient.Get(path, tMetadata, map[string]string{"checkAllowAutoCreation": "true"})
 	if err != nil {
 		return nil, err
 	}
@@ -290,6 +335,27 @@ func (h *httpLookupService) GetPartitionedTopicMetadata(topic string) (*Partitio
 	h.log.Debugf("Got topic{%s} partitioned metadata response: %+v", topic, tMetadata)
 
 	return tMetadata, nil
+}
+
+func (h *httpLookupService) GetTopicsOfNamespace(namespace string, mode GetTopicsOfNamespaceMode) ([]string, error) {
+
+	format := HTTPTopicUnderNamespaceV2
+	if !IsV2Namespace(namespace) {
+		format = HTTPTopicUnderNamespaceV1
+	}
+
+	path := fmt.Sprintf(format, namespace, string(mode))
+
+	topics := []string{}
+
+	err := h.httpClient.Get(path, &topics, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	h.log.Debugf("Got namespace{%s} mode{%s} topics response: %+v", namespace, mode, topics)
+
+	return topics, nil
 }
 
 func (h *httpLookupService) Close() {

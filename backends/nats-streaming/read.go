@@ -32,15 +32,6 @@ func (n *NatsStreaming) Read(ctx context.Context, resultsChan chan *types.ReadMe
 	defer close(doneCh)
 
 	subFunc := func(msg *stan.Msg) {
-		if n.Options.Read.Verbose {
-			n.log.Infof("- %-24s%-6s", "Timestamp", time.Unix(0, msg.Timestamp).UTC().String())
-			n.log.Infof("- %-24s%d", "Sequence No.", msg.Sequence)
-			n.log.Infof("- %-24s%-6d", "CRC32", msg.CRC32)
-			n.log.Infof("- %-24s%-6t", "Redelivered", msg.Redelivered)
-			n.log.Infof("- %-24s%-6d", "Redelivery Count", msg.RedeliveryCount)
-			n.log.Infof("- %-24s%-6s", "Subject", msg.Subject)
-		}
-
 		resultsChan <- &types.ReadMessage{
 			Value: msg.Data,
 			Metadata: map[string]interface{}{
@@ -53,6 +44,7 @@ func (n *NatsStreaming) Read(ctx context.Context, resultsChan chan *types.ReadMe
 			},
 			ReceivedAt: time.Now().UTC(),
 			Raw:        msg,
+			Num:        count,
 		}
 
 		count++

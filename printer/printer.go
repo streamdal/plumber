@@ -40,15 +40,33 @@ func PrintLogo() {
 }
 
 func PrintTable(properties [][]string, count int, timestamp time.Time, data []byte) {
-	fmt.Printf("\n------------- [Count: %d Received at: %s] -------------------\n\n",
+	fullHeader := fmt.Sprintf("\n------------- [Count: %d Received at: %s] -------------------\n\n",
 		aurora.Cyan(count), aurora.Yellow(timestamp.Format(time.RFC3339)).String())
+
+	minimalHeader := fmt.Sprintf("\n------------- [Received at: %s] -------------------\n\n",
+		aurora.Yellow(timestamp.Format(time.RFC3339)).String())
+
+	if count == 0 && data == nil {
+		fmt.Print(minimalHeader)
+	} else {
+		fmt.Print(fullHeader)
+	}
 
 	tableString := &strings.Builder{}
 
 	table := tablewriter.NewWriter(tableString)
 
 	if len(properties) > 0 {
-		table.AppendBulk(properties)
+		for _, row := range properties {
+			if len(row) == 2 {
+				if row[1] == "" {
+					table.Append([]string{row[0], aurora.Gray(12, "NONE").String()})
+					continue
+				}
+			}
+
+			table.Append(row)
+		}
 	}
 
 	table.SetColMinWidth(0, 20)
@@ -67,24 +85,7 @@ func PrintTable(properties [][]string, count int, timestamp time.Time, data []by
 
 // PrintTableProperties prints only properties (no data or count)
 func PrintTableProperties(properties [][]string, timestamp time.Time) {
-	fmt.Printf("\n------------- [Received at: %s] -------------------\n\n",
-		aurora.Yellow(timestamp.Format(time.RFC3339)).String())
-
-	tableString := &strings.Builder{}
-
-	table := tablewriter.NewWriter(tableString)
-
-	if len(properties) > 0 {
-		table.AppendBulk(properties)
-	}
-
-	table.SetColMinWidth(0, 20)
-	table.SetColMinWidth(1, 40)
-	// First column align left, second column align right
-	table.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_RIGHT})
-	table.Render()
-
-	fmt.Println(tableString.String())
+	PrintTable(properties, 0, timestamp, nil)
 }
 
 func DefaultDisplayError(msg *types.ErrorMessage) {

@@ -5,9 +5,10 @@ import (
 	"time"
 
 	"github.com/apache/pulsar-client-go/pulsar"
+	"github.com/pkg/errors"
+
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/types"
-	"github.com/pkg/errors"
 )
 
 func (p *Pulsar) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {

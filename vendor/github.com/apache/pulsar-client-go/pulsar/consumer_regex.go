@@ -343,7 +343,7 @@ func (c *regexConsumer) unsubscribe(topics []string) {
 }
 
 func (c *regexConsumer) topics() ([]string, error) {
-	topics, err := c.client.namespaceTopics(c.namespace)
+	topics, err := c.client.lookupService.GetTopicsOfNamespace(c.namespace, internal.Persistent)
 	if err != nil {
 		return nil, err
 	}

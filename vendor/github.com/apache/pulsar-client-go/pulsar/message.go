@@ -18,7 +18,6 @@
 package pulsar
 
 import (
-	"math"
 	"time"
 )
 
@@ -48,6 +47,9 @@ type ProducerMessage struct {
 
 	// ReplicationClusters override the replication clusters for this message.
 	ReplicationClusters []string
+
+	// Disable the replication for this message
+	DisableReplication bool
 
 	// SequenceID set the sequence id to assign to the current message
 	SequenceID *int64
@@ -120,6 +122,18 @@ type Message interface {
 type MessageID interface {
 	// Serialize the message id into a sequence of bytes that can be stored somewhere else
 	Serialize() []byte
+
+	// Get the message ledgerID
+	LedgerID() int64
+
+	// Get the message entryID
+	EntryID() int64
+
+	// Get the message batchIdx
+	BatchIdx() int32
+
+	// Get the message partitionIdx
+	PartitionIdx() int32
 }
 
 // DeserializeMessageID reconstruct a MessageID object from its serialized representation
@@ -129,10 +143,10 @@ func DeserializeMessageID(data []byte) (MessageID, error) {
 
 // EarliestMessageID returns a messageID that points to the earliest message available in a topic
 func EarliestMessageID() MessageID {
-	return newMessageID(-1, -1, -1, -1)
+	return earliestMessageID
 }
 
 // LatestMessage returns a messageID that points to the latest message
 func LatestMessageID() MessageID {
-	return newMessageID(math.MaxInt64, math.MaxInt64, -1, -1)
+	return latestMessageID
 }

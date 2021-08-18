@@ -159,6 +159,10 @@ type ProducerOptions struct {
 	// - DefaultBatchBuilder
 	// - KeyBasedBatchBuilder
 	BatcherBuilderType
+
+	// PartitionsAutoDiscoveryInterval is the time interval for the background process to discover new partitions
+	// Default is 1 minute
+	PartitionsAutoDiscoveryInterval time.Duration
 }
 
 // Producer is used to publish messages on a topic

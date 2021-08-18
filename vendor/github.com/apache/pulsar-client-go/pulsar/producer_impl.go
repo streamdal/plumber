@@ -40,6 +40,9 @@ const (
 
 	// defaultMaxMessagesPerBatch init default num of entries in per batch.
 	defaultMaxMessagesPerBatch = 1000
+
+	// defaultPartitionsAutoDiscoveryInterval init default time interval for partitions auto discovery
+	defaultPartitionsAutoDiscoveryInterval = 1 * time.Minute
 )
 
 type producer struct {
@@ -56,8 +59,6 @@ type producer struct {
 	log           log.Logger
 	metrics       *internal.TopicMetrics
 }
-
-var partitionsAutoDiscoveryInterval = 1 * time.Minute
 
 func getHashingFunction(s HashingScheme) func(string) uint32 {
 	switch s {
@@ -86,6 +87,9 @@ func newProducer(client *client, options *ProducerOptions) (*producer, error) {
 	}
 	if options.BatchingMaxPublishDelay <= 0 {
 		options.BatchingMaxPublishDelay = defaultBatchingMaxPublishDelay
+	}
+	if options.PartitionsAutoDiscoveryInterval <= 0 {
+		options.PartitionsAutoDiscoveryInterval = defaultPartitionsAutoDiscoveryInterval
 	}
 
 	p := &producer{
@@ -125,7 +129,7 @@ func newProducer(client *client, options *ProducerOptions) (*producer, error) {
 		return nil, err
 	}
 
-	p.stopDiscovery = p.runBackgroundPartitionDiscovery(partitionsAutoDiscoveryInterval)
+	p.stopDiscovery = p.runBackgroundPartitionDiscovery(options.PartitionsAutoDiscoveryInterval)
 
 	p.metrics.ProducersOpened.Inc()
 	return p, nil

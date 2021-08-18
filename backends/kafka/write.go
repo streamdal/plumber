@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/batchcorp/plumber/types"
-	"github.com/batchcorp/plumber/util"
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
+
+	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
 )
 
 // Write is the entry point function for performing write operations in Kafka.

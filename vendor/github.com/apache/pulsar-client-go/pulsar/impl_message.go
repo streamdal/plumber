@@ -19,6 +19,7 @@ package pulsar
 
 import (
 	"fmt"
+	"math"
 	"math/big"
 	"strings"
 	"sync"
@@ -34,6 +35,20 @@ type messageID struct {
 	entryID      int64
 	batchIdx     int32
 	partitionIdx int32
+}
+
+var latestMessageID = messageID{
+	ledgerID:     math.MaxInt64,
+	entryID:      math.MaxInt64,
+	batchIdx:     -1,
+	partitionIdx: -1,
+}
+
+var earliestMessageID = messageID{
+	ledgerID:     -1,
+	entryID:      -1,
+	batchIdx:     -1,
+	partitionIdx: -1,
 }
 
 type trackingMessageID struct {
@@ -106,6 +121,22 @@ func (id messageID) Serialize() []byte {
 	}
 	data, _ := proto.Marshal(msgID)
 	return data
+}
+
+func (id messageID) LedgerID() int64 {
+	return id.ledgerID
+}
+
+func (id messageID) EntryID() int64 {
+	return id.entryID
+}
+
+func (id messageID) BatchIdx() int32 {
+	return id.batchIdx
+}
+
+func (id messageID) PartitionIdx() int32 {
+	return id.partitionIdx
 }
 
 func (id messageID) String() string {
