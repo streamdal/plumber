@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/batchcorp/plumber/types"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/tools/mqttfakes"
+	"github.com/batchcorp/plumber/types"
 )
 
 var _ = Describe("MQTT Write", func() {
@@ -42,6 +42,7 @@ var _ = Describe("MQTT Write", func() {
 		It("returns error for invalid QOS", func() {
 			opts.MQTT.Address = "tcp://localhost"
 			opts.MQTT.QoSLevel = -1
+			opts.MQTT.Topic = "asdf"
 
 			err := validateWriteOptions(opts)
 			Expect(err).To(HaveOccurred())
@@ -101,11 +102,15 @@ var _ = Describe("MQTT Write", func() {
 
 			m.client = fakeMqtt
 
-			err := m.Write(context.Background(), nil, &types.WriteMessage{
+			errorCh := make(chan *types.ErrorMessage, 1)
+
+			m.Write(context.Background(), errorCh, &types.WriteMessage{
 				Value: []byte(`testing`),
 			})
 
-			Expect(err).To(HaveOccurred())
+			time.Sleep(time.Second) // error is written in a goroutine
+
+			Expect(errorCh).Should(Receive())
 			Expect(fakeMqtt.PublishCallCount()).To(Equal(1))
 		})
 
@@ -124,11 +129,15 @@ var _ = Describe("MQTT Write", func() {
 
 			m.client = fakeMqtt
 
-			err := m.Write(context.Background(), nil, &types.WriteMessage{
+			errorCh := make(chan *types.ErrorMessage, 1)
+
+			m.Write(context.Background(), errorCh, &types.WriteMessage{
 				Value: []byte(`testing`),
 			})
 
-			Expect(err).To(HaveOccurred())
+			time.Sleep(time.Second)
+
+			Expect(errorCh).Should(Receive())
 			Expect(fakeMqtt.PublishCallCount()).To(Equal(1))
 		})
 

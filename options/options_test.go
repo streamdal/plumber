@@ -53,7 +53,6 @@ func TestHandleRabbitFlags_relay(t *testing.T) {
 	args := []string{
 		"relay", "rabbit",
 		"--address", "amqp://testing.tld:6379",
-		"--type", "rabbit",
 		"--token", "8EDB98ED-0D85-4CFD-BE24-8B1E00A9F7C3",
 		"--grpc-disable-tls",
 		"--grpc-timeout", "4s",

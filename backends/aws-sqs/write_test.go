@@ -3,6 +3,7 @@ package awssqs
 import (
 	"context"
 	"errors"
+	"time"
 
 	ptypes "github.com/batchcorp/plumber/types"
 
@@ -64,15 +65,15 @@ var _ = Describe("AWS SQS Backend", func() {
 				service: sqsFake,
 			}
 
-			errorCh := make(chan *ptypes.ErrorMessage)
+			errorCh := make(chan *ptypes.ErrorMessage, 1)
 
 			a.Write(context.Background(), errorCh, &ptypes.WriteMessage{Value: []byte(`test`)})
-
-			Expect(errorCh).Should(Receive(&ptypes.ErrorMessage{Error: errors.New(ErrUnableToSend)}))
+			time.Sleep(time.Second) // Error is written in goroutine
+			Expect(errorCh).Should(Receive())
 			Expect(sqsFake.SendMessageCallCount()).To(Equal(1))
 		})
 
-		It("returns an error on failure to publish message to SQS", func() {
+		It("successfully publishes a message to SQS", func() {
 			sqsFake := &typesfakes.FakeISQSAPI{}
 			sqsFake.SendMessageStub = func(*sqs.SendMessageInput) (*sqs.SendMessageOutput, error) {
 				return &sqs.SendMessageOutput{}, nil
@@ -96,9 +97,9 @@ var _ = Describe("AWS SQS Backend", func() {
 
 			errorCh := make(chan *ptypes.ErrorMessage)
 
-			err := a.Write(context.Background(), errorCh, &ptypes.WriteMessage{Value: []byte(`test`)})
+			a.Write(context.Background(), errorCh, &ptypes.WriteMessage{Value: []byte(`test`)})
 
-			Expect(err).ToNot(HaveOccurred())
+			Expect(errorCh).ShouldNot(Receive())
 			Expect(sqsFake.SendMessageCallCount()).To(Equal(1))
 		})
 	})
