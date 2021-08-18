@@ -1,19 +1,19 @@
 package nsq
 
 import (
-	context "context"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"io/ioutil"
 	"time"
 
-	"github.com/batchcorp/plumber/types"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/nsqio/go-nsq"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/types"
 )
 
 const (
@@ -43,51 +43,46 @@ func New(opts *options.Options) (*NSQ, error) {
 		return nil, errors.Wrap(err, "unable to validate options")
 	}
 
-	cfg, err := getNSQConfig(opts)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to generate nsq config")
-	}
-
 	logger := &NSQLogger{
 		Entry: logrus.WithField("backend", "nsq"),
 	}
 
-	logLevel := nsq.LogLevelError
-	if opts.Debug {
-		logLevel = nsq.LogLevelDebug
-	}
+	return &NSQ{
+		Options: opts,
+		log:     logger,
+	}, nil
+}
 
-	consumer, err := nsq.NewConsumer(opts.NSQ.Topic, opts.NSQ.Channel, cfg)
+func (n *NSQ) createProducer() (*nsq.Producer, error) {
+	cfg, err := getNSQConfig(n.Options)
 	if err != nil {
-		return nil, errors.Wrap(err, "Could not start NSQ consumer")
+		return nil, errors.Wrap(err, "unable to generate nsq config")
 	}
 
-	// Connect to correct server. Reading can be done directly from an NSQD server
-	// or let lookupd find the correct one.
-	if opts.NSQ.NSQLookupDAddress != "" {
-		if err := consumer.ConnectToNSQLookupd(opts.NSQ.NSQLookupDAddress); err != nil {
-			return nil, errors.Wrap(err, "could not connect to nsqlookupd")
-		}
-	} else {
-		if err := consumer.ConnectToNSQD(opts.NSQ.NSQDAddress); err != nil {
-			return nil, errors.Wrap(err, "could not connect to nsqd")
-		}
-	}
-
-	producer, err := nsq.NewProducer(opts.NSQ.NSQDAddress, cfg)
+	producer, err := nsq.NewProducer(n.Options.NSQ.NSQDAddress, cfg)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to start NSQ producer")
 	}
 
-	consumer.SetLogger(logger, logLevel)
-	producer.SetLogger(logger, logLevel)
+	producer.SetLogger(n.log, nsq.LogLevelError)
 
-	return &NSQ{
-		Options:  opts,
-		consumer: consumer,
-		producer: producer,
-		log:      logger,
-	}, nil
+	return producer, nil
+}
+
+func (n *NSQ) createConsumer() (*nsq.Consumer, error) {
+	cfg, err := getNSQConfig(n.Options)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to generate nsq config")
+	}
+
+	consumer, err := nsq.NewConsumer(n.Options.NSQ.Topic, n.Options.NSQ.Channel, cfg)
+	if err != nil {
+		return nil, errors.Wrap(err, "Could not start NSQ consumer")
+	}
+
+	consumer.SetLogger(n.log, nsq.LogLevelError)
+
+	return consumer, nil
 }
 
 func (n *NSQ) Name() string {
