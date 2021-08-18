@@ -4,10 +4,11 @@ import (
 	"context"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/util"
 	"github.com/batchcorp/plumber/writer"
-	"github.com/pkg/errors"
 )
 
 // HandleWriteCmd handles write mode
@@ -37,6 +38,8 @@ func (p *Plumber) HandleWriteCmd() error {
 	if err := backend.Write(ctx, nil, value...); err != nil {
 		return errors.Wrap(err, "unable to complete write(s)")
 	}
+
+	p.log.Infof("Successfully wrote '%d' message(s) to '%s'", len(value), backendName)
 
 	return nil
 }

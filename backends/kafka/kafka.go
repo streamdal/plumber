@@ -8,7 +8,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/batchcorp/plumber/types"
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/sasl"
@@ -18,6 +17,7 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/types"
 )
 
 const (
@@ -111,6 +111,14 @@ func NewReader(dialer *skafka.Dialer, opts *options.Options) (*skafka.Reader, er
 // TLS issues (since *Writer does not have a Dialer and Transport has TLS
 // defined separate from the dialer).
 func NewWriter(dialer *skafka.Dialer, opts *options.Options) (*skafka.Writer, error) {
+
+	// Necessary for auto-creating topics on writes, if enabled on the server
+	conn, err := connect(dialer, opts, opts.Kafka.Topics[0], 0)
+	if err != nil {
+		return nil, err
+	}
+	conn.Close()
+
 	// NOTE: We explicitly do NOT set the topic - it will be set in the message
 	return skafka.NewWriter(skafka.WriterConfig{
 		Brokers:   opts.Kafka.Brokers,
