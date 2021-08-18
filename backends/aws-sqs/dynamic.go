@@ -6,16 +6,17 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
-	"github.com/batchcorp/plumber/dproxy"
-	"github.com/batchcorp/plumber/writer"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber/dproxy"
 )
 
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
 // which are then written to the message bus.
 func (a *AWSSQS) Dynamic(ctx context.Context) error {
-	if err := writer.ValidateWriteOptions(a.Options, validateWriteOptions); err != nil {
+	// Do not use writer.validateWriteOptions() in dynamic mode
+	if err := validateWriteOptions(a.Options); err != nil {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 

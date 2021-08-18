@@ -8,13 +8,13 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/dproxy"
-	"github.com/batchcorp/plumber/writer"
 )
 
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
 // which are then written to the message bus.
 func (s *ServiceBus) Dynamic(ctx context.Context) error {
-	if err := writer.ValidateWriteOptions(s.Options, validateWriteOptions); err != nil {
+	// Do not use writer.validateWriteOptions() in dynamic mode
+	if err := validateWriteOptions(s.Options); err != nil {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
