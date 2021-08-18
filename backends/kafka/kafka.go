@@ -8,8 +8,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/reader"
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/sasl"
@@ -33,6 +31,7 @@ const (
 type Kafka struct {
 	Options *options.Options
 
+	id     string
 	dialer *skafka.Dialer
 	log    *logrus.Entry
 }
@@ -77,44 +76,6 @@ func (k *Kafka) Test(ctx context.Context) error {
 	return types.NotImplementedErr
 }
 
-// TODO: If read message contains record - there's no need for this func; each
-// backend would fill out the necessary record bits
-func (k *Kafka) ConvertReadToRecord(msgID, plumberID string, readMsg *types.ReadMessage) (*records.Message, error) {
-	if readMsg == nil {
-		return nil, errors.New("read message cannot be nil")
-	}
-
-	rawMsg, ok := readMsg.Raw.(skafka.Message)
-	if !ok {
-		return nil, errors.New("unable to assert raw message")
-	}
-
-	// Try to decode the value
-	// TODO: Make sure that opts.MessageDesc is set so Decode can work
-	decoded, err := reader.Decode(k.Options, rawMsg.Value)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to decode value")
-	}
-
-	return &records.Message{
-		MessageId:        msgID,
-		PlumberId:        plumberID,
-		UnixTimestampUtc: readMsg.ReceivedAt.UnixNano(),
-		Decoded:          decoded,
-		Message: &records.Message_Kafka{
-			Kafka: &records.Kafka{
-				Topic:     rawMsg.Topic,
-				Key:       rawMsg.Key,
-				Value:     rawMsg.Value, // original payload
-				Timestamp: rawMsg.Time.UnixNano(),
-				Offset:    rawMsg.Offset,
-				Partition: int32(rawMsg.Partition),
-				Headers:   convertKafkaHeadersToProto(rawMsg.Headers),
-			},
-		},
-	}, nil
-}
-
 func NewReader(dialer *skafka.Dialer, opts *options.Options) (*skafka.Reader, error) {
 	rc := skafka.ReaderConfig{
 		Brokers:          opts.Kafka.Brokers,
@@ -150,6 +111,14 @@ func NewReader(dialer *skafka.Dialer, opts *options.Options) (*skafka.Reader, er
 // TLS issues (since *Writer does not have a Dialer and Transport has TLS
 // defined separate from the dialer).
 func NewWriter(dialer *skafka.Dialer, opts *options.Options) (*skafka.Writer, error) {
+
+	// Necessary for auto-creating topics on writes, if enabled on the server
+	conn, err := connect(dialer, opts, opts.Kafka.Topics[0], 0)
+	if err != nil {
+		return nil, err
+	}
+	conn.Close()
+
 	// NOTE: We explicitly do NOT set the topic - it will be set in the message
 	return skafka.NewWriter(skafka.WriterConfig{
 		Brokers:   opts.Kafka.Brokers,
@@ -241,20 +210,6 @@ func readPassword() (string, error) {
 			return sp, nil
 		}
 	}
-}
-
-// convertKafkaHeadersToProto converts type of header slice from segmentio's to our protobuf type
-func convertKafkaHeadersToProto(original []skafka.Header) []*records.KafkaHeader {
-	converted := make([]*records.KafkaHeader, 0)
-
-	for _, o := range original {
-		converted = append(converted, &records.KafkaHeader{
-			Key:   o.Key,
-			Value: string(o.Value),
-		})
-	}
-
-	return converted
 }
 
 func newDialer(opts *options.Options) (*skafka.Dialer, error) {

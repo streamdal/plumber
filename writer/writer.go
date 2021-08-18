@@ -7,11 +7,12 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/batchcorp/plumber/types"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
+
+	"github.com/batchcorp/plumber/types"
 
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/serializers"
@@ -57,8 +58,8 @@ func GenerateWriteMessageFromOptions(opts *options.Options) ([]*types.WriteMessa
 // generateWriteValue will transform input data into the required format for transmission
 func generateWriteValue(data []byte, opts *options.Options) ([]byte, error) {
 	// Handle AVRO
-	if opts.Encoding.AvroSchemaFile != "" {
-		data, err := serializers.AvroEncodeWithSchemaFile(opts.Encoding.AvroSchemaFile, data)
+	if opts.Decoding.AvroSchemaFile != "" {
+		data, err := serializers.AvroEncodeWithSchemaFile(opts.Decoding.AvroSchemaFile, data)
 		if err != nil {
 			return nil, err
 		}
