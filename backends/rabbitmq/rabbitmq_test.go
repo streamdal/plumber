@@ -17,7 +17,6 @@ import (
 
 	"github.com/batchcorp/plumber/options"
 	ptypes "github.com/batchcorp/plumber/types"
-	"github.com/batchcorp/rabbit"
 )
 
 var (
@@ -39,7 +38,7 @@ var _ = Describe("RabbitMQ", func() {
 		)
 
 		BeforeEach(func() {
-			testQueueName = fmt.Sprintf("plumber-queue-%d", rand.Int())
+			testQueueName = fmt.Sprintf("plumber-queue-%d", time.Now().UnixNano())
 
 			var setupErr error
 
@@ -50,61 +49,50 @@ var _ = Describe("RabbitMQ", func() {
 		})
 
 		It("happy path: writes to, and reads from a queue", func() {
-			outC := make(chan string)
-			wf, oldStdout := startCapture(outC)
-
 			// This test doesn't need to use the separate rabbit channel
 			testBody := []byte(fmt.Sprintf("test-body-contents-%d", rand.Int()))
 
 			opts := &options.Options{
-				Action: "read",
+				Action: "write",
+				Read:   &options.ReadOptions{},
 				Rabbit: &options.RabbitOptions{
 					Address:             amqpAddress,
 					Exchange:            testExchangeName,
 					RoutingKey:          testRoutingKey,
 					ReadQueue:           testQueueName,
-					ReadQueueDurable:    false,
-					ReadQueueAutoDelete: true,
-					ReadQueueExclusive:  true,
+					ReadQueueDurable:    true,
+					ReadQueueAutoDelete: false,
+					ReadQueueExclusive:  false,
 				},
 			}
-
-			rmq, err := rabbit.New(&rabbit.Options{
-				URL:            amqpAddress,
-				QueueName:      testQueueName,
-				ExchangeName:   testExchangeName,
-				RoutingKey:     testRoutingKey,
-				QueueExclusive: opts.Rabbit.ReadQueueExclusive,
-			})
-
-			Expect(err).ToNot(HaveOccurred())
-			Expect(rmq).ToNot(BeNil())
 
 			r := &RabbitMQ{
 				Options: opts,
 				log:     logrus.WithField("pkg", "rabbitmq_test.go"),
 			}
 
-			errorCh := make(chan *ptypes.ErrorMessage)
+			errorCh := make(chan *ptypes.ErrorMessage, 1)
 
 			// Write something to the exchange
-			err = r.Write(context.Background(), errorCh, &ptypes.WriteMessage{Value: testBody})
+			err := r.Write(context.Background(), errorCh, &ptypes.WriteMessage{Value: testBody})
 
 			Expect(err).ToNot(HaveOccurred())
+			Expect(errorCh).ShouldNot(Receive())
 
 			// Wait a little for rabbit to copy the message to the queue
 			time.Sleep(50 * time.Millisecond)
 
-			msgCh := make(chan *ptypes.ReadMessage)
+			// New connection with consumer mode
+			r.Options.Action = "read"
+
+			msgCh := make(chan *ptypes.ReadMessage, 1)
 
 			// Expect to receive it
 			err = r.Read(context.Background(), msgCh, errorCh)
-
-			// End capturing stdout and assert that it contains our expected message
-			out := endCapture(wf, oldStdout, outC)
-
+			//time.Sleep(time.Second)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(out).To(ContainSubstring(string(testBody)))
+			Expect(errorCh).ShouldNot(Receive())
+			Expect(msgCh).Should(Receive())
 		})
 	})
 })
