@@ -2,10 +2,11 @@ package azure_eventhub
 
 import (
 	eventhub "github.com/Azure/azure-event-hubs-go/v3"
+	"github.com/pkg/errors"
+
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 	"github.com/batchcorp/plumber/types"
-	"github.com/pkg/errors"
 )
 
 func (e *EventHub) DisplayMessage(msg *types.ReadMessage) error {
@@ -25,7 +26,7 @@ func (e *EventHub) DisplayMessage(msg *types.ReadMessage) error {
 
 	properties := [][]string{
 		{"ID", rawMsg.ID},
-		{"Partition Key", *rawMsg.PartitionKey},
+		{"Partition Key", derefString(rawMsg.PartitionKey)},
 	}
 
 	printer.PrintTable(properties, msg.Num, msg.ReceivedAt, decoded)
@@ -36,4 +37,12 @@ func (e *EventHub) DisplayMessage(msg *types.ReadMessage) error {
 func (e *EventHub) DisplayError(msg *types.ErrorMessage) error {
 	printer.DefaultDisplayError(msg)
 	return nil
+}
+
+func derefString(s *string) string {
+	if s != nil {
+		return *s
+	}
+
+	return ""
 }
