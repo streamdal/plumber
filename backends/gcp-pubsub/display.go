@@ -29,7 +29,7 @@ func (g *GCPPubSub) DisplayMessage(msg *types.ReadMessage) error {
 	properties := [][]string{
 		{"ID", rawMsg.ID},
 		{"Ordering Key", rawMsg.OrderingKey},
-		{"Delivery Attempt", fmt.Sprint(*rawMsg.DeliveryAttempt)},
+		{"Delivery Attempt", fmt.Sprint(derefIntToInt32(rawMsg.DeliveryAttempt))},
 	}
 
 	printer.PrintTable(properties, msg.Num, msg.ReceivedAt, decoded)
@@ -40,4 +40,14 @@ func (g *GCPPubSub) DisplayMessage(msg *types.ReadMessage) error {
 func (g *GCPPubSub) DisplayError(msg *types.ErrorMessage) error {
 	printer.DefaultDisplayError(msg)
 	return nil
+}
+
+// derefIntToInt32 dereferences a pointer that is possibly nil.
+// Returns 0 if nil, otherwise the int32 value of the data
+func derefIntToInt32(i *int) int32 {
+	if i != nil {
+		return int32(*i)
+	}
+
+	return 0
 }
