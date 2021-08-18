@@ -60,7 +60,31 @@ func PrintTable(properties [][]string, count int, timestamp time.Time, data []by
 	fmt.Println(tableString.String())
 
 	// Display value
-	Print(string(data))
+	if len(data) != 0 {
+		Print(string(data))
+	}
+}
+
+// PrintTableProperties prints only properties (no data or count)
+func PrintTableProperties(properties [][]string, timestamp time.Time) {
+	fmt.Printf("\n------------- [Received at: %s] -------------------\n\n",
+		aurora.Yellow(timestamp.Format(time.RFC3339)).String())
+
+	tableString := &strings.Builder{}
+
+	table := tablewriter.NewWriter(tableString)
+
+	if len(properties) > 0 {
+		table.AppendBulk(properties)
+	}
+
+	table.SetColMinWidth(0, 20)
+	table.SetColMinWidth(1, 40)
+	// First column align left, second column align right
+	table.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_RIGHT})
+	table.Render()
+
+	fmt.Println(tableString.String())
 }
 
 func DefaultDisplayError(msg *types.ErrorMessage) {

@@ -56,7 +56,7 @@ MAIN:
 	for {
 		select {
 		case <-ctx.Done():
-			l.log.Debug("context cancelled")
+			l.log.Warn("context cancelled")
 			break MAIN
 		case <-t.C:
 			topicStats, err := l.getConsumerGroupLag(ctx)
