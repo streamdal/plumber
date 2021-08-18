@@ -5,10 +5,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/types"
 	"github.com/nsqio/go-nsq"
 	"github.com/pkg/errors"
+
+	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/types"
 )
 
 // Read will attempt to consume one or more messages from a given topic,
@@ -18,12 +19,17 @@ func (n *NSQ) Read(ctx context.Context, resultsChan chan *types.ReadMessage, err
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
+	consumer, err := n.createConsumer()
+	if err != nil {
+		return errors.Wrap(err, "unable to instantiate NSQ consumer")
+	}
+
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 
 	count := 1
 
-	n.consumer.AddHandler(nsq.HandlerFunc(func(msg *nsq.Message) error {
+	consumer.AddHandler(nsq.HandlerFunc(func(msg *nsq.Message) error {
 		resultsChan <- &types.ReadMessage{
 			Value: msg.Body,
 			Metadata: map[string]interface{}{
@@ -44,6 +50,19 @@ func (n *NSQ) Read(ctx context.Context, resultsChan chan *types.ReadMessage, err
 
 		return nil
 	}))
+
+	// Connect to correct server. Reading can be done directly from an NSQD server
+	// or let lookupd find the correct one.
+	// This needs to happen AFTER a consumer handler is set
+	if n.Options.NSQ.NSQLookupDAddress != "" {
+		if err := consumer.ConnectToNSQLookupd(n.Options.NSQ.NSQLookupDAddress); err != nil {
+			return errors.Wrap(err, "could not connect to nsqlookupd")
+		}
+	} else {
+		if err := consumer.ConnectToNSQD(n.Options.NSQ.NSQDAddress); err != nil {
+			return errors.Wrap(err, "could not connect to nsqd")
+		}
+	}
 
 	n.log.Info("Waiting for messages...")
 
