@@ -38,7 +38,6 @@ func (k *Kafka) read(ctx context.Context, reader *skafka.Reader, resultsChan cha
 
 	count := 1
 	lastOffset := int64(-1)
-	lastPartitionProcessed := -1
 
 	var lag *Lag
 
@@ -66,20 +65,20 @@ func (k *Kafka) read(ctx context.Context, reader *skafka.Reader, resultsChan cha
 			continue
 		}
 
-		if k.Options.Read.Lag && msg.Partition != lastPartitionProcessed {
-			lastPartitionProcessed = msg.Partition
+		metadata := make(map[string]interface{}, 0)
 
+		if k.Options.Read.Lag {
 			lastOffset, err = lag.GetPartitionLastOffset(msg.Topic, msg.Partition)
 			if err != nil {
 				return errors.Wrap(err, "unable to obtain lastOffset for partition")
 			}
+
+			metadata["last_offset"] = lastOffset
 		}
 
 		resultsChan <- &types.ReadMessage{
-			Value: msg.Value,
-			Metadata: map[string]interface{}{
-				"last_offset": lastOffset,
-			},
+			Value:      msg.Value,
+			Metadata:   metadata,
 			ReceivedAt: time.Now().UTC(),
 			Num:        count,
 			Raw:        msg,
