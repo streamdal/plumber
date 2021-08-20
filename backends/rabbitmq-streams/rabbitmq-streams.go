@@ -2,6 +2,7 @@ package rabbitmq_streams
 
 import (
 	"context"
+	"crypto/tls"
 	"sync"
 	"time"
 
@@ -68,14 +69,28 @@ func (r *RabbitMQStreams) Relay(ctx context.Context, relayCh chan interface{}, e
 	return types.UnsupportedFeatureErr
 }
 
+func getStreamConfig(opts *options.Options) *stream.EnvironmentOptions {
+	streamCfg := stream.NewEnvironmentOptions().
+		SetUri(opts.RabbitMQStreams.Address).
+		SetUser(opts.RabbitMQStreams.Username).
+		SetPassword(opts.RabbitMQStreams.Password).
+		SetMaxConsumersPerClient(1).
+		SetMaxProducersPerClient(1)
+
+	if opts.RabbitMQStreams.UseTLS {
+		streamCfg.SetTLSConfig(&tls.Config{})
+	}
+
+	if opts.RabbitMQStreams.SkipVerifyTLS {
+		streamCfg.SetTLSConfig(&tls.Config{InsecureSkipVerify: true})
+	}
+
+	return streamCfg
+}
+
 func newClient(opts *options.Options) (*stream.Environment, error) {
-	env, err := stream.NewEnvironment(
-		stream.NewEnvironmentOptions().
-			SetUri(opts.RabbitMQStreams.Address).
-			SetUser(opts.RabbitMQStreams.Username).
-			SetPassword(opts.RabbitMQStreams.Password).
-			SetMaxConsumersPerClient(1).
-			SetMaxProducersPerClient(1))
+
+	env, err := stream.NewEnvironment(getStreamConfig(opts))
 
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create rabbitmq streams environment")
