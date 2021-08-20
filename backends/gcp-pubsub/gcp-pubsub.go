@@ -5,15 +5,23 @@ import (
 	"time"
 
 	"cloud.google.com/go/pubsub"
-	"github.com/batchcorp/plumber/types"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/api/option"
+
+	"github.com/batchcorp/plumber/types"
 
 	"github.com/batchcorp/plumber/options"
 )
 
 const (
 	BackendName = "gcp-pubsub"
+)
+
+var (
+	ErrMissingOptions     = errors.New("options cannot be nil")
+	ErrMissingGCPOptions  = errors.New("GCP PubSub options cannot be nil")
+	ErrMissingCredentials = errors.New("Either --credentials-file or --credentials-json must be specified")
 )
 
 type GCPPubSub struct {
@@ -65,7 +73,19 @@ func (g *GCPPubSub) Lag(ctx context.Context, resultsCh chan []*types.TopicStats,
 }
 
 func newClient(opts *options.Options) (*pubsub.Client, error) {
-	c, err := pubsub.NewClient(context.Background(), opts.GCPPubSub.ProjectId)
+
+	clientOpts := make([]option.ClientOption, 0)
+
+	// Determine how we are authenticating
+	if opts.GCPPubSub.CredentialsJSON != "" {
+		// User passed in JSON data
+		clientOpts = append(clientOpts, option.WithCredentialsJSON([]byte(opts.GCPPubSub.CredentialsJSON)))
+	} else if opts.GCPPubSub.CredentialsFile != "" {
+		// User wants to pull credentials from a JSON file
+		clientOpts = append(clientOpts, option.WithCredentialsFile(opts.GCPPubSub.CredentialsFile))
+	}
+
+	c, err := pubsub.NewClient(context.Background(), opts.GCPPubSub.ProjectId, clientOpts...)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create new pubsub client")
 	}
@@ -75,11 +95,15 @@ func newClient(opts *options.Options) (*pubsub.Client, error) {
 
 func validateOpts(opts *options.Options) error {
 	if opts == nil {
-		return errors.New("options cannot be nil")
+		return ErrMissingOptions
 	}
 
 	if opts.GCPPubSub == nil {
-		return errors.New("GCP PubSub options cannot be nil")
+		return ErrMissingGCPOptions
+	}
+
+	if opts.GCPPubSub.CredentialsJSON == "" && opts.GCPPubSub.CredentialsFile == "" {
+		return ErrMissingCredentials
 	}
 
 	return nil
