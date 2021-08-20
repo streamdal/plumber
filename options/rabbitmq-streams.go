@@ -64,6 +64,14 @@ func addSharedRabbitMQStreamsFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("password", "Password to authenticate to RabbitMQ With").
 		Default("guest").
 		StringVar(&opts.RabbitMQStreams.Password)
+
+	cmd.Flag("use-tls", "Force TLS usage (regardless of DSN) (default: false)").
+		Envar("PLUMBER_RELAY_RABBIT_STREAMS_USE_TLS").
+		BoolVar(&opts.RabbitMQStreams.UseTLS)
+
+	cmd.Flag("skip-verify-tls", "Skip server cert verification (default: false)").
+		Envar("PLUMBER_RELAY_RABBIT_STREAMS_SKIP_VERIFY_TLS").
+		BoolVar(&opts.RabbitMQStreams.SkipVerifyTLS)
 }
 
 func addReadRabbitMQStreamsFlags(cmd *kingpin.CmdClause, opts *Options) {
