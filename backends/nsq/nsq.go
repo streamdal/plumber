@@ -142,7 +142,7 @@ func getNSQConfig(opts *options.Options) (*nsq.Config, error) {
 // generateTLSConfig generates necessary TLS config for Dialing to an NSQ server
 func generateTLSConfig(opts *options.Options) (*tls.Config, error) {
 	// No client certs
-	if opts.NSQ.TLSClientCertFile == "" {
+	if opts.NSQ.TLSClientCertFile == "" && opts.NSQ.TLSClientCertData == "" {
 		return &tls.Config{
 			InsecureSkipVerify: opts.NSQ.InsecureTLS,
 		}, nil
@@ -150,15 +150,27 @@ func generateTLSConfig(opts *options.Options) (*tls.Config, error) {
 
 	certpool := x509.NewCertPool()
 
-	pemCerts, err := ioutil.ReadFile(opts.NSQ.TLSCAFile)
-	if err == nil {
-		certpool.AppendCertsFromPEM(pemCerts)
-	}
+	var cert tls.Certificate
+	var err error
 
-	// Import client certificate/key pair
-	cert, err := tls.LoadX509KeyPair(opts.NSQ.TLSClientCertFile, opts.NSQ.TLSClientKeyFile)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to load ssl keypair")
+	if opts.NSQ.TLSClientCertFile != "" {
+		pemCerts, err := ioutil.ReadFile(opts.NSQ.TLSCAFile)
+		if err == nil {
+			certpool.AppendCertsFromPEM(pemCerts)
+		}
+
+		// Import client certificate/key pair
+		cert, err = tls.LoadX509KeyPair(opts.NSQ.TLSClientCertFile, opts.NSQ.TLSClientKeyFile)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to load ssl keypair")
+		}
+	} else if opts.NSQ.TLSClientCertData != "" {
+		certpool.AppendCertsFromPEM([]byte(opts.NSQ.TLSClientCertData))
+
+		cert, err = tls.X509KeyPair([]byte(opts.NSQ.TLSClientCertData), []byte(opts.NSQ.TLSClientKeyFile))
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to load ssl keypair")
+		}
 	}
 
 	// Just to print out the client certificate..

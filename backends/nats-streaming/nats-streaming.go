@@ -126,15 +126,27 @@ func newClient(opts *options.Options) (*nats.Conn, stan.Conn, error) {
 func generateTLSConfig(opts *options.Options) (*tls.Config, error) {
 	certpool := x509.NewCertPool()
 
-	pemCerts, err := ioutil.ReadFile(opts.Nats.TLSCAFile)
-	if err == nil {
-		certpool.AppendCertsFromPEM(pemCerts)
-	}
+	var cert tls.Certificate
+	var err error
 
-	// Import client certificate/key pair
-	cert, err := tls.LoadX509KeyPair(opts.Nats.TLSClientCertFile, opts.Nats.TLSClientKeyFile)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to load ssl keypair")
+	if opts.NSQ.TLSClientCertFile != "" {
+		pemCerts, err := ioutil.ReadFile(opts.NSQ.TLSCAFile)
+		if err == nil {
+			certpool.AppendCertsFromPEM(pemCerts)
+		}
+
+		// Import client certificate/key pair
+		cert, err = tls.LoadX509KeyPair(opts.NSQ.TLSClientCertFile, opts.NSQ.TLSClientKeyFile)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to load ssl keypair")
+		}
+	} else if opts.NSQ.TLSClientCertData != "" {
+		certpool.AppendCertsFromPEM([]byte(opts.NSQ.TLSClientCertData))
+
+		cert, err = tls.X509KeyPair([]byte(opts.NSQ.TLSClientCertData), []byte(opts.NSQ.TLSClientKeyFile))
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to load ssl keypair")
+		}
 	}
 
 	// Just to print out the client certificate..
