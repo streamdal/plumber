@@ -14,8 +14,11 @@ type NSQOptions struct {
 	UseTLS            bool
 	InsecureTLS       bool
 	TLSClientKeyFile  string
+	TLSClientKeyData  string
 	TLSClientCertFile string
+	TLSClientCertData string
 	TLSCAFile         string
+	TLSCAData         string
 
 	// Read
 	NSQLookupDAddress string

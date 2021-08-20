@@ -8,9 +8,12 @@ type NatsOptions struct {
 	Address string
 
 	// TLS-related pieces
-	TLSCAFile         string
-	TLSClientCertFile string
 	TLSClientKeyFile  string
+	TLSClientKeyData  string
+	TLSClientCertFile string
+	TLSClientCertData string
+	TLSCAFile         string
+	TLSCAData         string
 	InsecureTLS       bool
 
 	// Authentication
