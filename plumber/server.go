@@ -69,9 +69,12 @@ func (p *Plumber) runServer() error {
 		p.PersistentConfig.Save()
 	}
 
-	gh, _ := github.New()
+	gh, err := github.New()
+	if err != nil {
+		return errors.Wrap(err, "unable to create GitHub service instance")
+	}
 
-	plumberServer := &server.PlumberServer{
+	plumberServer := &server.Server{
 		PersistentConfig: p.PersistentConfig,
 		AuthToken:        p.Options.Server.AuthToken,
 		GithubService:    gh,

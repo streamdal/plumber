@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/backends/activemq"
 	awssns "github.com/batchcorp/plumber/backends/aws-sns"
 	awssqs "github.com/batchcorp/plumber/backends/aws-sqs"
@@ -74,6 +75,10 @@ type Backend interface {
 
 	// DisplayError will parse ErrorMessage and print the output to STDOUT
 	DisplayError(msg *types.ErrorMessage) error
+
+	// ConvertReadToRecord converts a message that is received on the result
+	// channel to a protobuf Record (that is used when plumber is in server mode)
+	ConvertReadToRecord(msgID, plumberID string, readMsg *types.ReadMessage) (*records.Message, error)
 
 	// Name returns the name of the backend
 	Name() string

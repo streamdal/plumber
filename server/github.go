@@ -12,7 +12,7 @@ import (
 
 // StartGithubAuth returns a user code and authorization URL that users need to go to and enter in the code in
 // order to authorize API access for Plumber
-func (p *PlumberServer) StartGithubAuth(_ context.Context, req *protos.StartGithubAuthRequest) (*protos.StartGithubAuthResponse, error) {
+func (p *Server) StartGithubAuth(_ context.Context, req *protos.StartGithubAuthRequest) (*protos.StartGithubAuthResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -32,7 +32,7 @@ func (p *PlumberServer) StartGithubAuth(_ context.Context, req *protos.StartGith
 }
 
 // PollGithubAuth starts a poll of the github authorization status
-func (p *PlumberServer) PollGithubAuth(req *protos.PollGithubAuthRequest, srv protos.PlumberServer_PollGithubAuthServer) error {
+func (p *Server) PollGithubAuth(req *protos.PollGithubAuthRequest, srv protos.PlumberServer_PollGithubAuthServer) error {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -81,7 +81,7 @@ func (p *PlumberServer) PollGithubAuth(req *protos.PollGithubAuthRequest, srv pr
 }
 
 // IsGithubAuth determines if we have authorized plumber with github
-func (p *PlumberServer) IsGithubAuth(_ context.Context, req *protos.IsGithubAuthRequest) (*protos.IsGithubAuthResponse, error) {
+func (p *Server) IsGithubAuth(_ context.Context, req *protos.IsGithubAuthRequest) (*protos.IsGithubAuthResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}

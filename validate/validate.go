@@ -26,7 +26,7 @@ func ProtobufOptions(dirs []string, rootMessage string) error {
 	return nil
 }
 
-func ReadOptions(opts *options.Options) error {
+func BaseReadOptions(opts *options.Options) error {
 	if opts == nil {
 		return errors.New("options cannot be nil")
 	}

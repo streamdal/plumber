@@ -19,7 +19,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
-func (p *PlumberServer) Write(ctx context.Context, req *protos.WriteRequest) (*protos.WriteResponse, error) {
+func (p *Server) Write(ctx context.Context, req *protos.WriteRequest) (*protos.WriteResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}

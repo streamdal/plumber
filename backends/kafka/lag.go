@@ -109,6 +109,38 @@ func (l *Lag) GetPartitionLastOffset(topic string, part int) (int64, error) {
 	return lastOffset, nil
 }
 
+// GetAllPartitionsLastOffset finds the MAX lastOffset across given partitions
+// and topic.
+func (l *Lag) GetAllPartitionsLastOffset(topic string, partitions []skafka.Partition) (int64, error) {
+	lastOffsets := make([]int64, 0)
+
+	for _, v := range partitions {
+		conn, err := connect(l.dialer, l.options, topic, v.ID)
+		if err != nil {
+			return 0, fmt.Errorf("unable to create leader connection for topic '%s', partition ID '%d': %s",
+				topic, v.ID, err)
+		}
+
+		_, lastOffset, err := conn.ReadOffsets()
+		if err != nil {
+			return 0, fmt.Errorf("unable to read offset for topic '%s', partition ID '%d': %s",
+				topic, v.ID, err)
+		}
+
+		lastOffsets = append(lastOffsets, lastOffset)
+	}
+
+	var maxOffset int64
+
+	for _, offset := range lastOffsets {
+		if offset > maxOffset {
+			maxOffset = offset
+		}
+	}
+
+	return maxOffset, nil
+}
+
 func (l *Lag) getConsumerGroupLag(ctx context.Context) ([]*types.TopicStats, error) {
 	topicPartitionMap := make(map[string][]skafka.Partition)
 

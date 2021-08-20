@@ -8,6 +8,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+	"github.com/batchcorp/plumber/reader"
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/sasl"
@@ -31,7 +33,6 @@ const (
 type Kafka struct {
 	Options *options.Options
 
-	id     string
 	dialer *skafka.Dialer
 	log    *logrus.Entry
 }
@@ -74,6 +75,42 @@ func (k *Kafka) Close(ctx context.Context) error {
 
 func (k *Kafka) Test(ctx context.Context) error {
 	return types.NotImplementedErr
+}
+
+func (k *Kafka) ConvertReadToRecord(msgID, plumberID string, readMsg *types.ReadMessage) (*records.Message, error) {
+	if readMsg == nil {
+		return nil, errors.New("read message cannot be nil")
+	}
+
+	rawMsg, ok := readMsg.Raw.(skafka.Message)
+	if !ok {
+		return nil, errors.New("unable to assert raw message")
+	}
+
+	// Try to decode the value
+	// TODO: Make sure that opts.MessageDesc is set so Decode can work
+	decoded, err := reader.Decode(k.Options, rawMsg.Value)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to decode value")
+	}
+
+	return &records.Message{
+		MessageId:        msgID,
+		PlumberId:        plumberID,
+		UnixTimestampUtc: readMsg.ReceivedAt.UnixNano(),
+		Message: &records.Message_Kafka{
+			Kafka: &records.Kafka{
+				Topic:     rawMsg.Topic,
+				Key:       rawMsg.Key,
+				Value:     rawMsg.Value, // original payload
+				Decoded:   decoded,
+				Timestamp: rawMsg.Time.UnixNano(),
+				Offset:    rawMsg.Offset,
+				Partition: int32(rawMsg.Partition),
+				Headers:   convertKafkaHeadersToProto(rawMsg.Headers),
+			},
+		},
+	}, nil
 }
 
 func NewReader(dialer *skafka.Dialer, opts *options.Options) (*skafka.Reader, error) {
@@ -202,6 +239,20 @@ func readPassword() (string, error) {
 			return sp, nil
 		}
 	}
+}
+
+// convertKafkaHeadersToProto converts type of header slice from segmentio's to our protobuf type
+func convertKafkaHeadersToProto(original []skafka.Header) []*records.KafkaHeader {
+	converted := make([]*records.KafkaHeader, 0)
+
+	for _, o := range original {
+		converted = append(converted, &records.KafkaHeader{
+			Key:   o.Key,
+			Value: string(o.Value),
+		})
+	}
+
+	return converted
 }
 
 func newDialer(opts *options.Options) (*skafka.Dialer, error) {

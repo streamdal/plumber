@@ -18,7 +18,7 @@ func (p *Plumber) HandleReadCmd() error {
 		return errors.Wrap(err, "unable to get backend name")
 	}
 
-	if err := validate.ReadOptions(p.Options); err != nil {
+	if err := validate.BaseReadOptions(p.Options); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 

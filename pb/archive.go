@@ -1,4 +1,4 @@
-package server
+package pb
 
 import (
 	"archive/zip"
@@ -225,7 +225,6 @@ func truncateProtoDirectories(files map[string]string, rootDir string) map[strin
 // getProtoFilesFromZip reads all proto files from a zip archive
 // TODO: make output compatible with pb.readFileDescriptors's map[string][]string
 func getProtoFilesFromZip(archive []byte) (map[string]string, error) {
-
 	files := make(map[string]string)
 
 	zipReader, err := zip.NewReader(bytes.NewReader(archive), int64(len(archive)))
@@ -235,7 +234,6 @@ func getProtoFilesFromZip(archive []byte) (map[string]string, error) {
 
 	// Read all the files from zip archive
 	for _, zipFile := range zipReader.File {
-
 		if zipFile.FileInfo().IsDir() {
 			continue
 		}
@@ -262,5 +260,6 @@ func readZipFile(zf *zip.File) ([]byte, error) {
 		return nil, errors.Wrap(err, "failed to open zip file")
 	}
 	defer f.Close()
+
 	return ioutil.ReadAll(f)
 }

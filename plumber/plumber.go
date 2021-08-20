@@ -45,7 +45,7 @@ func New(cfg *Config) (*Plumber, error) {
 		return nil, errors.Wrap(err, "unable to validate config")
 	}
 
-	if err := maybePopulateMDs(cfg.Cmd, cfg.Options); err != nil {
+	if err := MaybePopulateMDs(cfg.Cmd, cfg.Options); err != nil {
 		return nil, errors.Wrap(err, "unable to populate protobuf message descriptors")
 	}
 
@@ -87,7 +87,7 @@ func (p *Plumber) Run() {
 	}
 }
 
-func maybePopulateMDs(cmd string, opts *options.Options) error {
+func MaybePopulateMDs(cmd string, opts *options.Options) error {
 	if !strings.HasPrefix(cmd, "read") &&
 		!strings.HasPrefix(cmd, "write") &&
 		!strings.HasPrefix(cmd, "relay") {

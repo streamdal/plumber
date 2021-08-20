@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -86,10 +87,18 @@ type Options struct {
 type OutputDestination int
 
 type ReadOptions struct {
-	Follow  bool
+	Follow  bool // AKA "continuous" in server-mode
 	Lag     bool
 	Convert string
 	Verbose bool
+
+	Sampling *SamplingOptions
+}
+
+type SamplingOptions struct {
+	Enable   bool
+	Rate     int64
+	Interval time.Duration
 }
 
 type WriteOptions struct {
@@ -129,7 +138,7 @@ type EncodingOptions struct {
 type DecodingOptions struct {
 	ProtobufRootMessage string
 	ProtobufDirs        []string
-	JSONOutput          bool
+	JSONOutput          bool // This will indent + colorize output
 	ThriftOutput        bool
 	AvroSchemaFile      string
 
@@ -140,7 +149,9 @@ type DecodingOptions struct {
 func Handle(cliArgs []string) (string, *Options, error) {
 	opts := &Options{
 		// Instantiate main configs
-		Read:     &ReadOptions{},
+		Read: &ReadOptions{
+			Sampling: &SamplingOptions{},
+		},
 		Write:    &WriteOptions{},
 		Encoding: &EncodingOptions{},
 		Decoding: &DecodingOptions{},
@@ -252,6 +263,11 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	return cmd, opts, err
 }
 
+// TODO: Implement
+func GenerateFromReadReq(md *desc.MessageDescriptor, read *protos.Read) (*Options, error) {
+	return nil, nil
+}
+
 // convertSliceArgs splits up comma delimited flags into a slice. We do this because slice argument
 // environment variables in kingpin are newline delimited for some odd reason
 // See https://github.com/alecthomas/kingpin/issues/257
@@ -296,9 +312,16 @@ func HandleReadFlags(cmd *kingpin.CmdClause, opts *Options) {
 		Default("false").
 		BoolVar(&opts.Read.Lag)
 
-	cmd.Flag("json", "Read data should be treated as JSON").
-		Default("false").
-		BoolVar(&opts.Decoding.JSONOutput)
+	cmd.Flag("enable-sampling", "Whether to utilize sampling (advanced usage)").
+		BoolVar(&opts.Read.Sampling.Enable)
+
+	cmd.Flag("sample-interval", "Over what duration should a sample rate be applied").
+		Default("1m").
+		DurationVar(&opts.Read.Sampling.Interval)
+
+	cmd.Flag("sample-rate", "How many messages to read during a 'sample-interval'").
+		Default("100").
+		Int64Var(&opts.Read.Sampling.Rate)
 
 	cmd.Flag("thrift", "Read data as a thrift encoded message").
 		Default("false").
