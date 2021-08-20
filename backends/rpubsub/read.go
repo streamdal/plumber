@@ -5,8 +5,6 @@ import (
 	"time"
 
 	"github.com/batchcorp/plumber/types"
-	"github.com/batchcorp/plumber/util"
-	"github.com/pkg/errors"
 )
 
 func (r *Redis) Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error {
@@ -17,28 +15,31 @@ func (r *Redis) Read(ctx context.Context, resultsChan chan *types.ReadMessage, e
 
 	count := 1
 
+	msgCh := ps.Channel()
+
 	for {
-		msg, err := ps.ReceiveMessage(ctx)
-		if err != nil {
-			util.WriteError(r.log, errorChan, errors.Wrap(err, "error receiving message"))
-			return err
-		}
+		select {
+		case msg := <-msgCh:
+			resultsChan <- &types.ReadMessage{
+				Value: []byte(msg.Payload),
+				Metadata: map[string]interface{}{
+					"pattern": msg.Pattern,
+					"channel": msg.Channel,
+				},
+				ReceivedAt: time.Now().UTC(),
+				Num:        count,
+				Raw:        msg,
+			}
 
-		resultsChan <- &types.ReadMessage{
-			Value: []byte(msg.Payload),
-			Metadata: map[string]interface{}{
-				"pattern": msg.Pattern,
-				"channel": msg.Channel,
-			},
-			ReceivedAt: time.Now().UTC(),
-			Num:        count,
-			Raw:        msg,
-		}
+			count++
 
-		count++
-
-		if !r.Options.Read.Follow {
-			break
+			if !r.Options.Read.Follow {
+				return nil
+			}
+		case <-ctx.Done():
+			return nil
+		default:
+			// NOOP
 		}
 	}
 
