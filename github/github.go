@@ -52,7 +52,7 @@ func New() (*Github, error) {
 	return &Github{
 		Client:        &http.Client{},
 		oAuthClientID: "ea7ea641fb2ac352455f", // Static value, won't change
-		log:           logrus.WithField("pkg", "github/github.go"),
+		log:           logrus.WithField("pkg", "github/github_handlers.go"),
 	}, nil
 }
 

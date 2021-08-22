@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -39,84 +40,28 @@ type Options struct {
 	Action              string
 	Version             string
 
-	// Read options include settings for reading data
-	Read *ReadOptions
+	// Connection config contains settings for connecting to a backend
+	Connection *protos.ConnectionConfig
+
+	// Read config contains settings for reading data
+	Read *protos.ReadConfig
 
 	// Write options include settings for writing data
-	Write *WriteOptions
+	Write *protos.WriteConfig
 
 	// Server options include settings for running plumber in server-mode
-	Server *ServerOptions
+	Server *protos.ServerConfig
 
 	// Relay options include settings for running plumber in relay-mode
-	Relay *RelayOptions
+	Relay *protos.RelayConfig
 
+	// TODO: Leave dproxy until read, write and relay are done
 	// DProxy options include settings for running plumber in dproxy-mode
-	DProxy *DProxyOptions
+	// DProxy *protos.DProxyConfig
 
-	// Encoding options include settings that will affect how Write will write data
-	Encoding *EncodingOptions
-
-	// Decoding options include settings that will affect how Read will read data
-	Decoding *DecodingOptions
-
+	// TODO: Batch options not supported (yet)
 	// Batch options include settings for working with the Batch API
-	Batch *BatchOptions
-
-	// Backends
-	Kafka           *KafkaOptions
-	Rabbit          *RabbitOptions
-	RabbitMQStreams *RabbitMQStreamsOptions
-	GCPPubSub       *GCPPubSubOptions
-	MQTT            *MQTTOptions
-	AWSSQS          *AWSSQSOptions
-	AWSSNS          *AWSSNSOptions
-	ActiveMq        *ActiveMqOptions
-	RedisPubSub     *RedisPubSubOptions
-	RedisStreams    *RedisStreamsOptions
-	Azure           *AzureServiceBusOptions
-	AzureEventHub   *AzureEventHubOptions
-	Nats            *NatsOptions
-	NatsStreaming   *NatsStreamingOptions
-	CDCMongo        *CDCMongoOptions
-	CDCPostgres     *CDCPostgresOptions
-	Pulsar          *PulsarOptions
-	NSQ             *NSQOptions
-}
-
-type OutputDestination int
-
-type ReadOptions struct {
-	Follow  bool // AKA "continuous" in server-mode
-	Lag     bool
-	Convert string
-	Verbose bool
-
-	Sampling *SamplingOptions
-}
-
-type SamplingOptions struct {
-	Enable   bool
-	Rate     int64
-	Interval time.Duration
-}
-
-type WriteOptions struct {
-	InputData        []string
-	InputFile        string
-	InputType        string
-	InputIsJsonArray bool
-}
-
-type RelayOptions struct {
-	Token             string
-	GRPCAddress       string
-	Type              string
-	HTTPListenAddress string
-	NumWorkers        int
-	GRPCTimeout       time.Duration
-	GRPCDisableTLS    bool
-	BatchSize         int
+	// Batch *BatchOptions
 }
 
 type DProxyOptions struct {
@@ -139,7 +84,6 @@ type DecodingOptions struct {
 	ProtobufRootMessage string
 	ProtobufDirs        []string
 	JSONOutput          bool // This will indent + colorize output
-	ThriftOutput        bool
 	AvroSchemaFile      string
 
 	// Set _after_ plumber instantiation
@@ -148,45 +92,20 @@ type DecodingOptions struct {
 
 func Handle(cliArgs []string) (string, *Options, error) {
 	opts := &Options{
+		Connection: &protos.ConnectionConfig{}, // TODO: Kingpin should instantiate the correct thing
 		// Instantiate main configs
-		Read: &ReadOptions{
-			Sampling: &SamplingOptions{},
-		},
-		Write:    &WriteOptions{},
-		Encoding: &EncodingOptions{},
-		Decoding: &DecodingOptions{},
-		Server:   &ServerOptions{},
-		DProxy:   &DProxyOptions{},
-		Relay:    &RelayOptions{},
-		Batch: &BatchOptions{
-			DestinationMetadata: &DestinationMetadata{
-				HTTPHeaders: make(map[string]string, 0),
+		Read: &protos.ReadConfig{
+			ReadOptions: &protos.ReadOptions{
+				SampleOptions: &protos.SampleOptions{},
 			},
+			DecodeOptions: &encoding.Options{}, // TODO: Kingpin should instantiate
 		},
-
-		// Instantiate backend configs
-		Kafka: &KafkaOptions{
-			WriteHeader: make(map[string]string, 0),
+		Write: &protos.WriteRequest{
+			Records:       nil,
+			EncodeOptions: nil,
 		},
-		Rabbit:          &RabbitOptions{},
-		RabbitMQStreams: &RabbitMQStreamsOptions{},
-		GCPPubSub:       &GCPPubSubOptions{},
-		MQTT:            &MQTTOptions{},
-		AWSSQS: &AWSSQSOptions{
-			WriteAttributes: make(map[string]string, 0),
-		},
-		AWSSNS:        &AWSSNSOptions{},
-		ActiveMq:      &ActiveMqOptions{},
-		RedisPubSub:   &RedisPubSubOptions{},
-		RedisStreams:  &RedisStreamsOptions{},
-		Azure:         &AzureServiceBusOptions{},
-		AzureEventHub: &AzureEventHubOptions{},
-		Nats:          &NatsOptions{},
-		NatsStreaming: &NatsStreamingOptions{},
-		CDCMongo:      &CDCMongoOptions{},
-		CDCPostgres:   &CDCPostgresOptions{},
-		Pulsar:        &PulsarOptions{},
-		NSQ:           &NSQOptions{},
+		Server: &protos.ServerConfig{},
+		Relay:  &protos.RelayConfig{},
 	}
 
 	app := kingpin.New("plumber", "`curl` for messaging systems. See: https://github.com/batchcorp/plumber")
@@ -265,6 +184,15 @@ func Handle(cliArgs []string) (string, *Options, error) {
 
 // TODO: Implement
 func GenerateFromReadReq(md *desc.MessageDescriptor, read *protos.Read) (*Options, error) {
+	// md could be nil if there were no decoding options
+
+	return nil, nil
+}
+
+// TODO: Implement
+func GenerateFromWriteReq(md *desc.MessageDescriptor, req *protos.WriteRequest) (*Options, error) {
+	// md could be nil, if there are no encoding options
+
 	return nil, nil
 }
 

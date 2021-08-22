@@ -73,7 +73,6 @@ func (k *Kafka) read(ctx context.Context, reader *skafka.Reader, resultsChan cha
 	return nil
 }
 
-// TODO: Implement
 func (k *Kafka) performSampledRead(ctx context.Context, reader *skafka.Reader, lag *Lag,
 	resultsChan chan *types.ReadMessage,
 	errorChan chan *types.ErrorMessage,
@@ -151,11 +150,23 @@ func (k *Kafka) performSampledRead(ctx context.Context, reader *skafka.Reader, l
 				continue
 			}
 
+			metadata := make(map[string]interface{}, 0)
+
+			if k.Options.Read.Lag {
+				lastOffset, err := lag.GetPartitionLastOffset(msg.Topic, msg.Partition)
+				if err != nil {
+					return errors.Wrap(err, "unable to obtain lastOffset for partition")
+				}
+
+				metadata["last_offset"] = lastOffset
+			}
+
 			count++
 
 			resultsChan <- &types.ReadMessage{
 				Value:      msg.Value,
 				Raw:        msg,
+				Metadata:   metadata,
 				ReceivedAt: time.Now().UTC(),
 				Num:        count,
 			}
@@ -177,7 +188,7 @@ func (k *Kafka) performFullRead(ctx context.Context, reader *skafka.Reader, lag 
 ) error {
 	llog := k.log.WithField("method", "performFullRead")
 
-	count := 1
+	var count int
 
 	// init only one connection for partition discovery
 	for {
@@ -205,6 +216,8 @@ func (k *Kafka) performFullRead(ctx context.Context, reader *skafka.Reader, lag 
 			metadata["last_offset"] = lastOffset
 		}
 
+		count++
+
 		resultsChan <- &types.ReadMessage{
 			Value:      msg.Value,
 			Metadata:   metadata,
@@ -216,8 +229,6 @@ func (k *Kafka) performFullRead(ctx context.Context, reader *skafka.Reader, lag 
 		if !k.Options.Read.Follow {
 			break
 		}
-
-		count++
 	}
 
 	llog.Debug("performSampledRead exiting")

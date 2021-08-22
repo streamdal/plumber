@@ -29,7 +29,7 @@ func (s *ServiceBus) Relay(ctx context.Context, relayCh chan interface{}, errorC
 		ShutdownCtx: ctx,
 		Queue:       s.queue,
 		Topic:       s.topic,
-		log:         logrus.WithField("pkg", "azure/relay.go"),
+		log:         logrus.WithField("pkg", "azure/relay_handlers.go"),
 	}
 
 	return r.Relay()

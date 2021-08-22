@@ -171,6 +171,11 @@ func (m *Avro) GetSchema() []byte {
 	return nil
 }
 
+// Encoding options will cause plumber to encode (or decode) the _value_ of a
+// message. Either the schema_id must be specified OR a oneof Encoding.
+// If schema_id is specified, oneof Encoding will be ignored. schema_id takes
+// precedence over oneof Encoding. oneof Encoding is to be used for one-off
+// operations.
 type Options struct {
 	Type Type `protobuf:"varint,1,opt,name=type,proto3,enum=protos.encoding.Type" json:"type,omitempty"`
 	// Specify an existing stored schema to use instead of specifying a Encoding payload

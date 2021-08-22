@@ -5,7 +5,7 @@ package protos
 
 import (
 	fmt "fmt"
-	args "github.com/batchcorp/plumber-schemas/build/go/protos/args"
+	backends "github.com/batchcorp/plumber-schemas/build/go/protos/backends"
 	common "github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	encoding "github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	records "github.com/batchcorp/plumber-schemas/build/go/protos/records"
@@ -23,31 +23,6 @@ var _ = math.Inf
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
-
-type ReadOptions_Type int32
-
-const (
-	ReadOptions_ONE_TIME   ReadOptions_Type = 0
-	ReadOptions_CONTINUOUS ReadOptions_Type = 1
-)
-
-var ReadOptions_Type_name = map[int32]string{
-	0: "ONE_TIME",
-	1: "CONTINUOUS",
-}
-
-var ReadOptions_Type_value = map[string]int32{
-	"ONE_TIME":   0,
-	"CONTINUOUS": 1,
-}
-
-func (x ReadOptions_Type) String() string {
-	return proto.EnumName(ReadOptions_Type_name, int32(x))
-}
-
-func (ReadOptions_Type) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_7b10ec61df6818dd, []int{0, 0}
-}
 
 type SampleOptions_Interval int32
 
@@ -71,39 +46,33 @@ func (x SampleOptions_Interval) String() string {
 }
 
 func (SampleOptions_Interval) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_7b10ec61df6818dd, []int{0, 0}
+}
+
+type ReadOptions_Type int32
+
+const (
+	ReadOptions_ONE_TIME   ReadOptions_Type = 0
+	ReadOptions_CONTINUOUS ReadOptions_Type = 1
+)
+
+var ReadOptions_Type_name = map[int32]string{
+	0: "ONE_TIME",
+	1: "CONTINUOUS",
+}
+
+var ReadOptions_Type_value = map[string]int32{
+	"ONE_TIME":   0,
+	"CONTINUOUS": 1,
+}
+
+func (x ReadOptions_Type) String() string {
+	return proto.EnumName(ReadOptions_Type_name, int32(x))
+}
+
+func (ReadOptions_Type) EnumDescriptor() ([]byte, []int) {
 	return fileDescriptor_7b10ec61df6818dd, []int{1, 0}
 }
-
-type ReadOptions struct {
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *ReadOptions) Reset()         { *m = ReadOptions{} }
-func (m *ReadOptions) String() string { return proto.CompactTextString(m) }
-func (*ReadOptions) ProtoMessage()    {}
-func (*ReadOptions) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7b10ec61df6818dd, []int{0}
-}
-
-func (m *ReadOptions) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ReadOptions.Unmarshal(m, b)
-}
-func (m *ReadOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ReadOptions.Marshal(b, m, deterministic)
-}
-func (m *ReadOptions) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ReadOptions.Merge(m, src)
-}
-func (m *ReadOptions) XXX_Size() int {
-	return xxx_messageInfo_ReadOptions.Size(m)
-}
-func (m *ReadOptions) XXX_DiscardUnknown() {
-	xxx_messageInfo_ReadOptions.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ReadOptions proto.InternalMessageInfo
 
 type SampleOptions struct {
 	SampleRate           uint32                 `protobuf:"varint,1,opt,name=sample_rate,json=sampleRate,proto3" json:"sample_rate,omitempty"`
@@ -117,7 +86,7 @@ func (m *SampleOptions) Reset()         { *m = SampleOptions{} }
 func (m *SampleOptions) String() string { return proto.CompactTextString(m) }
 func (*SampleOptions) ProtoMessage()    {}
 func (*SampleOptions) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7b10ec61df6818dd, []int{1}
+	return fileDescriptor_7b10ec61df6818dd, []int{0}
 }
 
 func (m *SampleOptions) XXX_Unmarshal(b []byte) error {
@@ -152,131 +121,406 @@ func (m *SampleOptions) GetSampleInterval() SampleOptions_Interval {
 	return SampleOptions_SECOND
 }
 
-type Read struct {
-	Id            string            `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Active        bool              `protobuf:"varint,2,opt,name=active,proto3" json:"active,omitempty"`
-	Name          string            `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	ConnectionId  string            `protobuf:"bytes,4,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
-	ReadOptions   *ReadOptions      `protobuf:"bytes,5,opt,name=read_options,json=readOptions,proto3" json:"read_options,omitempty"`
-	SampleOptions *SampleOptions    `protobuf:"bytes,6,opt,name=sample_options,json=sampleOptions,proto3" json:"sample_options,omitempty"`
-	DecodeOptions *encoding.Options `protobuf:"bytes,7,opt,name=decode_options,json=decodeOptions,proto3" json:"decode_options,omitempty"`
-	// Types that are valid to be assigned to Args:
-	//	*Read_Kafka
-	Args                 isRead_Args `protobuf_oneof:"Args"`
-	XXX_NoUnkeyedLiteral struct{}    `json:"-"`
-	XXX_unrecognized     []byte      `json:"-"`
-	XXX_sizecache        int32       `json:"-"`
+type ReadOptions struct {
+	SampleOptions        *SampleOptions `protobuf:"bytes,1,opt,name=sample_options,json=sampleOptions,proto3" json:"sample_options,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
 }
 
-func (m *Read) Reset()         { *m = Read{} }
-func (m *Read) String() string { return proto.CompactTextString(m) }
-func (*Read) ProtoMessage()    {}
-func (*Read) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7b10ec61df6818dd, []int{2}
+func (m *ReadOptions) Reset()         { *m = ReadOptions{} }
+func (m *ReadOptions) String() string { return proto.CompactTextString(m) }
+func (*ReadOptions) ProtoMessage()    {}
+func (*ReadOptions) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7b10ec61df6818dd, []int{1}
 }
 
-func (m *Read) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Read.Unmarshal(m, b)
+func (m *ReadOptions) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ReadOptions.Unmarshal(m, b)
 }
-func (m *Read) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Read.Marshal(b, m, deterministic)
+func (m *ReadOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ReadOptions.Marshal(b, m, deterministic)
 }
-func (m *Read) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Read.Merge(m, src)
+func (m *ReadOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ReadOptions.Merge(m, src)
 }
-func (m *Read) XXX_Size() int {
-	return xxx_messageInfo_Read.Size(m)
+func (m *ReadOptions) XXX_Size() int {
+	return xxx_messageInfo_ReadOptions.Size(m)
 }
-func (m *Read) XXX_DiscardUnknown() {
-	xxx_messageInfo_Read.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Read proto.InternalMessageInfo
-
-func (m *Read) GetId() string {
-	if m != nil {
-		return m.Id
-	}
-	return ""
+func (m *ReadOptions) XXX_DiscardUnknown() {
+	xxx_messageInfo_ReadOptions.DiscardUnknown(m)
 }
 
-func (m *Read) GetActive() bool {
-	if m != nil {
-		return m.Active
-	}
-	return false
-}
+var xxx_messageInfo_ReadOptions proto.InternalMessageInfo
 
-func (m *Read) GetName() string {
-	if m != nil {
-		return m.Name
-	}
-	return ""
-}
-
-func (m *Read) GetConnectionId() string {
-	if m != nil {
-		return m.ConnectionId
-	}
-	return ""
-}
-
-func (m *Read) GetReadOptions() *ReadOptions {
-	if m != nil {
-		return m.ReadOptions
-	}
-	return nil
-}
-
-func (m *Read) GetSampleOptions() *SampleOptions {
+func (m *ReadOptions) GetSampleOptions() *SampleOptions {
 	if m != nil {
 		return m.SampleOptions
 	}
 	return nil
 }
 
-func (m *Read) GetDecodeOptions() *encoding.Options {
+type ReadConfig struct {
+	// Automatically set by plumber when a new read is created
+	XId string `protobuf:"bytes,1,opt,name=_id,json=Id,proto3" json:"_id,omitempty"`
+	// Used by plumber to set read state
+	XActive bool `protobuf:"varint,2,opt,name=_active,json=Active,proto3" json:"_active,omitempty"`
+	// Required; friendly name for the read
+	Name string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	// Semi-required; either set this or connection_config. If set, connection_config
+	// will be ignored.
+	ConnectionId string `protobuf:"bytes,4,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
+	// Semi-required; either set this or connection_id. This is generally used
+	// for creating ephemeral connections (ie. via CLI).
+	ConnectionConfig *ConnectionConfig `protobuf:"bytes,5,opt,name=connection_config,json=connectionConfig,proto3" json:"connection_config,omitempty"`
+	// Required; options specifying how to read data
+	ReadOptions *ReadOptions `protobuf:"bytes,6,opt,name=read_options,json=readOptions,proto3" json:"read_options,omitempty"`
+	// Optional; options specify how to decode the _value_ in a message.
+	// If left unset, plumber will still populate records.ReadRecord.Decoded
+	// with the (untouched) value.
+	DecodeOptions *encoding.Options `protobuf:"bytes,7,opt,name=decode_options,json=decodeOptions,proto3" json:"decode_options,omitempty"`
+	// Types that are valid to be assigned to Backends:
+	//	*ReadConfig_Kafka
+	//	*ReadConfig_ActiveMq
+	//	*ReadConfig_Awssqs
+	//	*ReadConfig_Awssns
+	//	*ReadConfig_Mongo
+	//	*ReadConfig_Nats
+	//	*ReadConfig_NatsStreaming
+	//	*ReadConfig_Nsq
+	//	*ReadConfig_Postgres
+	//	*ReadConfig_Pulsar
+	//	*ReadConfig_Rabbit
+	//	*ReadConfig_RabbitStreams
+	//	*ReadConfig_RedisPubsub
+	//	*ReadConfig_RedisStreams
+	//	*ReadConfig_AzureEventHub
+	//	*ReadConfig_AzureServiceBus
+	Backends             isReadConfig_Backends `protobuf_oneof:"Backends"`
+	XXX_NoUnkeyedLiteral struct{}              `json:"-"`
+	XXX_unrecognized     []byte                `json:"-"`
+	XXX_sizecache        int32                 `json:"-"`
+}
+
+func (m *ReadConfig) Reset()         { *m = ReadConfig{} }
+func (m *ReadConfig) String() string { return proto.CompactTextString(m) }
+func (*ReadConfig) ProtoMessage()    {}
+func (*ReadConfig) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7b10ec61df6818dd, []int{2}
+}
+
+func (m *ReadConfig) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ReadConfig.Unmarshal(m, b)
+}
+func (m *ReadConfig) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ReadConfig.Marshal(b, m, deterministic)
+}
+func (m *ReadConfig) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ReadConfig.Merge(m, src)
+}
+func (m *ReadConfig) XXX_Size() int {
+	return xxx_messageInfo_ReadConfig.Size(m)
+}
+func (m *ReadConfig) XXX_DiscardUnknown() {
+	xxx_messageInfo_ReadConfig.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ReadConfig proto.InternalMessageInfo
+
+func (m *ReadConfig) GetXId() string {
+	if m != nil {
+		return m.XId
+	}
+	return ""
+}
+
+func (m *ReadConfig) GetXActive() bool {
+	if m != nil {
+		return m.XActive
+	}
+	return false
+}
+
+func (m *ReadConfig) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *ReadConfig) GetConnectionId() string {
+	if m != nil {
+		return m.ConnectionId
+	}
+	return ""
+}
+
+func (m *ReadConfig) GetConnectionConfig() *ConnectionConfig {
+	if m != nil {
+		return m.ConnectionConfig
+	}
+	return nil
+}
+
+func (m *ReadConfig) GetReadOptions() *ReadOptions {
+	if m != nil {
+		return m.ReadOptions
+	}
+	return nil
+}
+
+func (m *ReadConfig) GetDecodeOptions() *encoding.Options {
 	if m != nil {
 		return m.DecodeOptions
 	}
 	return nil
 }
 
-type isRead_Args interface {
-	isRead_Args()
+type isReadConfig_Backends interface {
+	isReadConfig_Backends()
 }
 
-type Read_Kafka struct {
-	Kafka *args.Kafka `protobuf:"bytes,100,opt,name=kafka,proto3,oneof"`
+type ReadConfig_Kafka struct {
+	Kafka *backends.Kafka `protobuf:"bytes,100,opt,name=kafka,proto3,oneof"`
 }
 
-func (*Read_Kafka) isRead_Args() {}
+type ReadConfig_ActiveMq struct {
+	ActiveMq *backends.ActiveMQ `protobuf:"bytes,101,opt,name=active_mq,json=activeMq,proto3,oneof"`
+}
 
-func (m *Read) GetArgs() isRead_Args {
+type ReadConfig_Awssqs struct {
+	Awssqs *backends.AWSSQS `protobuf:"bytes,102,opt,name=awssqs,proto3,oneof"`
+}
+
+type ReadConfig_Awssns struct {
+	Awssns *backends.AWSSNS `protobuf:"bytes,103,opt,name=awssns,proto3,oneof"`
+}
+
+type ReadConfig_Mongo struct {
+	Mongo *backends.Mongo `protobuf:"bytes,104,opt,name=mongo,proto3,oneof"`
+}
+
+type ReadConfig_Nats struct {
+	Nats *backends.Nats `protobuf:"bytes,105,opt,name=nats,proto3,oneof"`
+}
+
+type ReadConfig_NatsStreaming struct {
+	NatsStreaming *backends.NatsStreaming `protobuf:"bytes,106,opt,name=nats_streaming,json=natsStreaming,proto3,oneof"`
+}
+
+type ReadConfig_Nsq struct {
+	Nsq *backends.NSQ `protobuf:"bytes,107,opt,name=nsq,proto3,oneof"`
+}
+
+type ReadConfig_Postgres struct {
+	Postgres *backends.Postgres `protobuf:"bytes,108,opt,name=postgres,proto3,oneof"`
+}
+
+type ReadConfig_Pulsar struct {
+	Pulsar *backends.Pulsar `protobuf:"bytes,109,opt,name=pulsar,proto3,oneof"`
+}
+
+type ReadConfig_Rabbit struct {
+	Rabbit *backends.Rabbit `protobuf:"bytes,110,opt,name=rabbit,proto3,oneof"`
+}
+
+type ReadConfig_RabbitStreams struct {
+	RabbitStreams *backends.RabbitStreams `protobuf:"bytes,111,opt,name=rabbit_streams,json=rabbitStreams,proto3,oneof"`
+}
+
+type ReadConfig_RedisPubsub struct {
+	RedisPubsub *backends.RedisPubsub `protobuf:"bytes,112,opt,name=redis_pubsub,json=redisPubsub,proto3,oneof"`
+}
+
+type ReadConfig_RedisStreams struct {
+	RedisStreams *backends.RedisStreams `protobuf:"bytes,113,opt,name=redis_streams,json=redisStreams,proto3,oneof"`
+}
+
+type ReadConfig_AzureEventHub struct {
+	AzureEventHub *backends.AzureEventHub `protobuf:"bytes,114,opt,name=azure_event_hub,json=azureEventHub,proto3,oneof"`
+}
+
+type ReadConfig_AzureServiceBus struct {
+	AzureServiceBus *backends.AzureServiceBus `protobuf:"bytes,115,opt,name=azure_service_bus,json=azureServiceBus,proto3,oneof"`
+}
+
+func (*ReadConfig_Kafka) isReadConfig_Backends() {}
+
+func (*ReadConfig_ActiveMq) isReadConfig_Backends() {}
+
+func (*ReadConfig_Awssqs) isReadConfig_Backends() {}
+
+func (*ReadConfig_Awssns) isReadConfig_Backends() {}
+
+func (*ReadConfig_Mongo) isReadConfig_Backends() {}
+
+func (*ReadConfig_Nats) isReadConfig_Backends() {}
+
+func (*ReadConfig_NatsStreaming) isReadConfig_Backends() {}
+
+func (*ReadConfig_Nsq) isReadConfig_Backends() {}
+
+func (*ReadConfig_Postgres) isReadConfig_Backends() {}
+
+func (*ReadConfig_Pulsar) isReadConfig_Backends() {}
+
+func (*ReadConfig_Rabbit) isReadConfig_Backends() {}
+
+func (*ReadConfig_RabbitStreams) isReadConfig_Backends() {}
+
+func (*ReadConfig_RedisPubsub) isReadConfig_Backends() {}
+
+func (*ReadConfig_RedisStreams) isReadConfig_Backends() {}
+
+func (*ReadConfig_AzureEventHub) isReadConfig_Backends() {}
+
+func (*ReadConfig_AzureServiceBus) isReadConfig_Backends() {}
+
+func (m *ReadConfig) GetBackends() isReadConfig_Backends {
 	if m != nil {
-		return m.Args
+		return m.Backends
 	}
 	return nil
 }
 
-func (m *Read) GetKafka() *args.Kafka {
-	if x, ok := m.GetArgs().(*Read_Kafka); ok {
+func (m *ReadConfig) GetKafka() *backends.Kafka {
+	if x, ok := m.GetBackends().(*ReadConfig_Kafka); ok {
 		return x.Kafka
 	}
 	return nil
 }
 
+func (m *ReadConfig) GetActiveMq() *backends.ActiveMQ {
+	if x, ok := m.GetBackends().(*ReadConfig_ActiveMq); ok {
+		return x.ActiveMq
+	}
+	return nil
+}
+
+func (m *ReadConfig) GetAwssqs() *backends.AWSSQS {
+	if x, ok := m.GetBackends().(*ReadConfig_Awssqs); ok {
+		return x.Awssqs
+	}
+	return nil
+}
+
+func (m *ReadConfig) GetAwssns() *backends.AWSSNS {
+	if x, ok := m.GetBackends().(*ReadConfig_Awssns); ok {
+		return x.Awssns
+	}
+	return nil
+}
+
+func (m *ReadConfig) GetMongo() *backends.Mongo {
+	if x, ok := m.GetBackends().(*ReadConfig_Mongo); ok {
+		return x.Mongo
+	}
+	return nil
+}
+
+func (m *ReadConfig) GetNats() *backends.Nats {
+	if x, ok := m.GetBackends().(*ReadConfig_Nats); ok {
+		return x.Nats
+	}
+	return nil
+}
+
+func (m *ReadConfig) GetNatsStreaming() *backends.NatsStreaming {
+	if x, ok := m.GetBackends().(*ReadConfig_NatsStreaming); ok {
+		return x.NatsStreaming
+	}
+	return nil
+}
+
+func (m *ReadConfig) GetNsq() *backends.NSQ {
+	if x, ok := m.GetBackends().(*ReadConfig_Nsq); ok {
+		return x.Nsq
+	}
+	return nil
+}
+
+func (m *ReadConfig) GetPostgres() *backends.Postgres {
+	if x, ok := m.GetBackends().(*ReadConfig_Postgres); ok {
+		return x.Postgres
+	}
+	return nil
+}
+
+func (m *ReadConfig) GetPulsar() *backends.Pulsar {
+	if x, ok := m.GetBackends().(*ReadConfig_Pulsar); ok {
+		return x.Pulsar
+	}
+	return nil
+}
+
+func (m *ReadConfig) GetRabbit() *backends.Rabbit {
+	if x, ok := m.GetBackends().(*ReadConfig_Rabbit); ok {
+		return x.Rabbit
+	}
+	return nil
+}
+
+func (m *ReadConfig) GetRabbitStreams() *backends.RabbitStreams {
+	if x, ok := m.GetBackends().(*ReadConfig_RabbitStreams); ok {
+		return x.RabbitStreams
+	}
+	return nil
+}
+
+func (m *ReadConfig) GetRedisPubsub() *backends.RedisPubsub {
+	if x, ok := m.GetBackends().(*ReadConfig_RedisPubsub); ok {
+		return x.RedisPubsub
+	}
+	return nil
+}
+
+func (m *ReadConfig) GetRedisStreams() *backends.RedisStreams {
+	if x, ok := m.GetBackends().(*ReadConfig_RedisStreams); ok {
+		return x.RedisStreams
+	}
+	return nil
+}
+
+func (m *ReadConfig) GetAzureEventHub() *backends.AzureEventHub {
+	if x, ok := m.GetBackends().(*ReadConfig_AzureEventHub); ok {
+		return x.AzureEventHub
+	}
+	return nil
+}
+
+func (m *ReadConfig) GetAzureServiceBus() *backends.AzureServiceBus {
+	if x, ok := m.GetBackends().(*ReadConfig_AzureServiceBus); ok {
+		return x.AzureServiceBus
+	}
+	return nil
+}
+
 // XXX_OneofWrappers is for the internal use of the proto package.
-func (*Read) XXX_OneofWrappers() []interface{} {
+func (*ReadConfig) XXX_OneofWrappers() []interface{} {
 	return []interface{}{
-		(*Read_Kafka)(nil),
+		(*ReadConfig_Kafka)(nil),
+		(*ReadConfig_ActiveMq)(nil),
+		(*ReadConfig_Awssqs)(nil),
+		(*ReadConfig_Awssns)(nil),
+		(*ReadConfig_Mongo)(nil),
+		(*ReadConfig_Nats)(nil),
+		(*ReadConfig_NatsStreaming)(nil),
+		(*ReadConfig_Nsq)(nil),
+		(*ReadConfig_Postgres)(nil),
+		(*ReadConfig_Pulsar)(nil),
+		(*ReadConfig_Rabbit)(nil),
+		(*ReadConfig_RabbitStreams)(nil),
+		(*ReadConfig_RedisPubsub)(nil),
+		(*ReadConfig_RedisStreams)(nil),
+		(*ReadConfig_AzureEventHub)(nil),
+		(*ReadConfig_AzureServiceBus)(nil),
 	}
 }
 
 type CreateReadRequest struct {
 	// Every gRPC request must have a valid auth config
 	Auth                 *common.Auth `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
-	Read                 *Read        `protobuf:"bytes,1,opt,name=read,proto3" json:"read,omitempty"`
+	Config               *ReadConfig  `protobuf:"bytes,1,opt,name=config,proto3" json:"config,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
 	XXX_unrecognized     []byte       `json:"-"`
 	XXX_sizecache        int32        `json:"-"`
@@ -314,9 +558,9 @@ func (m *CreateReadRequest) GetAuth() *common.Auth {
 	return nil
 }
 
-func (m *CreateReadRequest) GetRead() *Read {
+func (m *CreateReadRequest) GetConfig() *ReadConfig {
 	if m != nil {
-		return m.Read
+		return m.Config
 	}
 	return nil
 }
@@ -679,11 +923,11 @@ func (m *StartReadRequest) GetReadId() string {
 }
 
 type StartReadResponse struct {
-	Messages             []*records.Message `protobuf:"bytes,1,rep,name=messages,proto3" json:"messages,omitempty"`
-	Status               *common.Status     `protobuf:"bytes,1000,opt,name=status,proto3" json:"status,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
-	XXX_unrecognized     []byte             `json:"-"`
-	XXX_sizecache        int32              `json:"-"`
+	Records              []*records.ReadRecord `protobuf:"bytes,1,rep,name=records,proto3" json:"records,omitempty"`
+	Status               *common.Status        `protobuf:"bytes,1000,opt,name=status,proto3" json:"status,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}              `json:"-"`
+	XXX_unrecognized     []byte                `json:"-"`
+	XXX_sizecache        int32                 `json:"-"`
 }
 
 func (m *StartReadResponse) Reset()         { *m = StartReadResponse{} }
@@ -711,109 +955,14 @@ func (m *StartReadResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_StartReadResponse proto.InternalMessageInfo
 
-func (m *StartReadResponse) GetMessages() []*records.Message {
+func (m *StartReadResponse) GetRecords() []*records.ReadRecord {
 	if m != nil {
-		return m.Messages
+		return m.Records
 	}
 	return nil
 }
 
 func (m *StartReadResponse) GetStatus() *common.Status {
-	if m != nil {
-		return m.Status
-	}
-	return nil
-}
-
-type StreamReadRequest struct {
-	// Every gRPC request must have a valid auth config
-	Auth                 *common.Auth `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
-	ReadId               string       `protobuf:"bytes,1,opt,name=read_id,json=readId,proto3" json:"read_id,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
-	XXX_unrecognized     []byte       `json:"-"`
-	XXX_sizecache        int32        `json:"-"`
-}
-
-func (m *StreamReadRequest) Reset()         { *m = StreamReadRequest{} }
-func (m *StreamReadRequest) String() string { return proto.CompactTextString(m) }
-func (*StreamReadRequest) ProtoMessage()    {}
-func (*StreamReadRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7b10ec61df6818dd, []int{13}
-}
-
-func (m *StreamReadRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_StreamReadRequest.Unmarshal(m, b)
-}
-func (m *StreamReadRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_StreamReadRequest.Marshal(b, m, deterministic)
-}
-func (m *StreamReadRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_StreamReadRequest.Merge(m, src)
-}
-func (m *StreamReadRequest) XXX_Size() int {
-	return xxx_messageInfo_StreamReadRequest.Size(m)
-}
-func (m *StreamReadRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_StreamReadRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_StreamReadRequest proto.InternalMessageInfo
-
-func (m *StreamReadRequest) GetAuth() *common.Auth {
-	if m != nil {
-		return m.Auth
-	}
-	return nil
-}
-
-func (m *StreamReadRequest) GetReadId() string {
-	if m != nil {
-		return m.ReadId
-	}
-	return ""
-}
-
-type StreamReadResponse struct {
-	Messages             []*records.Message `protobuf:"bytes,1,rep,name=messages,proto3" json:"messages,omitempty"`
-	Status               *common.Status     `protobuf:"bytes,1000,opt,name=status,proto3" json:"status,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
-	XXX_unrecognized     []byte             `json:"-"`
-	XXX_sizecache        int32              `json:"-"`
-}
-
-func (m *StreamReadResponse) Reset()         { *m = StreamReadResponse{} }
-func (m *StreamReadResponse) String() string { return proto.CompactTextString(m) }
-func (*StreamReadResponse) ProtoMessage()    {}
-func (*StreamReadResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7b10ec61df6818dd, []int{14}
-}
-
-func (m *StreamReadResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_StreamReadResponse.Unmarshal(m, b)
-}
-func (m *StreamReadResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_StreamReadResponse.Marshal(b, m, deterministic)
-}
-func (m *StreamReadResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_StreamReadResponse.Merge(m, src)
-}
-func (m *StreamReadResponse) XXX_Size() int {
-	return xxx_messageInfo_StreamReadResponse.Size(m)
-}
-func (m *StreamReadResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_StreamReadResponse.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_StreamReadResponse proto.InternalMessageInfo
-
-func (m *StreamReadResponse) GetMessages() []*records.Message {
-	if m != nil {
-		return m.Messages
-	}
-	return nil
-}
-
-func (m *StreamReadResponse) GetStatus() *common.Status {
 	if m != nil {
 		return m.Status
 	}
@@ -832,7 +981,7 @@ func (m *GetAllReadsRequest) Reset()         { *m = GetAllReadsRequest{} }
 func (m *GetAllReadsRequest) String() string { return proto.CompactTextString(m) }
 func (*GetAllReadsRequest) ProtoMessage()    {}
 func (*GetAllReadsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7b10ec61df6818dd, []int{15}
+	return fileDescriptor_7b10ec61df6818dd, []int{13}
 }
 
 func (m *GetAllReadsRequest) XXX_Unmarshal(b []byte) error {
@@ -861,7 +1010,7 @@ func (m *GetAllReadsRequest) GetAuth() *common.Auth {
 }
 
 type GetAllReadsResponse struct {
-	Read                 []*Read        `protobuf:"bytes,1,rep,name=read,proto3" json:"read,omitempty"`
+	Read                 []*ReadConfig  `protobuf:"bytes,1,rep,name=read,proto3" json:"read,omitempty"`
 	Status               *common.Status `protobuf:"bytes,1000,opt,name=status,proto3" json:"status,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
 	XXX_unrecognized     []byte         `json:"-"`
@@ -872,7 +1021,7 @@ func (m *GetAllReadsResponse) Reset()         { *m = GetAllReadsResponse{} }
 func (m *GetAllReadsResponse) String() string { return proto.CompactTextString(m) }
 func (*GetAllReadsResponse) ProtoMessage()    {}
 func (*GetAllReadsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7b10ec61df6818dd, []int{16}
+	return fileDescriptor_7b10ec61df6818dd, []int{14}
 }
 
 func (m *GetAllReadsResponse) XXX_Unmarshal(b []byte) error {
@@ -893,7 +1042,7 @@ func (m *GetAllReadsResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GetAllReadsResponse proto.InternalMessageInfo
 
-func (m *GetAllReadsResponse) GetRead() []*Read {
+func (m *GetAllReadsResponse) GetRead() []*ReadConfig {
 	if m != nil {
 		return m.Read
 	}
@@ -908,11 +1057,11 @@ func (m *GetAllReadsResponse) GetStatus() *common.Status {
 }
 
 func init() {
-	proto.RegisterEnum("protos.ReadOptions_Type", ReadOptions_Type_name, ReadOptions_Type_value)
 	proto.RegisterEnum("protos.SampleOptions_Interval", SampleOptions_Interval_name, SampleOptions_Interval_value)
-	proto.RegisterType((*ReadOptions)(nil), "protos.ReadOptions")
+	proto.RegisterEnum("protos.ReadOptions_Type", ReadOptions_Type_name, ReadOptions_Type_value)
 	proto.RegisterType((*SampleOptions)(nil), "protos.SampleOptions")
-	proto.RegisterType((*Read)(nil), "protos.Read")
+	proto.RegisterType((*ReadOptions)(nil), "protos.ReadOptions")
+	proto.RegisterType((*ReadConfig)(nil), "protos.ReadConfig")
 	proto.RegisterType((*CreateReadRequest)(nil), "protos.CreateReadRequest")
 	proto.RegisterType((*CreateReadResponse)(nil), "protos.CreateReadResponse")
 	proto.RegisterType((*StopReadRequest)(nil), "protos.StopReadRequest")
@@ -923,8 +1072,6 @@ func init() {
 	proto.RegisterType((*DeleteReadResponse)(nil), "protos.DeleteReadResponse")
 	proto.RegisterType((*StartReadRequest)(nil), "protos.StartReadRequest")
 	proto.RegisterType((*StartReadResponse)(nil), "protos.StartReadResponse")
-	proto.RegisterType((*StreamReadRequest)(nil), "protos.StreamReadRequest")
-	proto.RegisterType((*StreamReadResponse)(nil), "protos.StreamReadResponse")
 	proto.RegisterType((*GetAllReadsRequest)(nil), "protos.GetAllReadsRequest")
 	proto.RegisterType((*GetAllReadsResponse)(nil), "protos.GetAllReadsResponse")
 }
@@ -932,49 +1079,76 @@ func init() {
 func init() { proto.RegisterFile("read.proto", fileDescriptor_7b10ec61df6818dd) }
 
 var fileDescriptor_7b10ec61df6818dd = []byte{
-	// 689 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x55, 0xdb, 0x6a, 0xdb, 0x4a,
-	0x14, 0x8d, 0x1c, 0xc7, 0xf1, 0xd9, 0xbe, 0xc4, 0x9e, 0x70, 0x12, 0x91, 0x87, 0x73, 0x8c, 0xda,
-	0x07, 0x53, 0xa8, 0x04, 0x4e, 0xc9, 0x53, 0x69, 0xc9, 0xc5, 0xa4, 0xa6, 0xc4, 0x86, 0xb1, 0xdd,
-	0x87, 0x42, 0x31, 0x63, 0x69, 0xd7, 0x16, 0xb1, 0x2e, 0x9d, 0x19, 0x85, 0xe6, 0x2b, 0xfa, 0x05,
-	0xfd, 0xa9, 0x7e, 0x45, 0x3f, 0xa3, 0x68, 0x34, 0xf2, 0x05, 0xd2, 0x87, 0x98, 0xb4, 0x4f, 0x9a,
-	0xd9, 0x7b, 0xad, 0x35, 0x6b, 0xef, 0xd9, 0x8c, 0x00, 0x38, 0x32, 0xcf, 0x8e, 0x79, 0x24, 0x23,
-	0x52, 0x52, 0x1f, 0x71, 0xd2, 0x74, 0xa3, 0x20, 0x88, 0x42, 0x87, 0x25, 0x72, 0x9e, 0xa5, 0x4e,
-	0x0e, 0x75, 0x48, 0x48, 0x26, 0x13, 0xa1, 0x83, 0x0d, 0xc6, 0x67, 0xc2, 0xb9, 0x65, 0x9f, 0x6f,
-	0x99, 0x8e, 0x1c, 0x61, 0xe8, 0x46, 0x9e, 0x1f, 0xce, 0x9c, 0x28, 0x96, 0x7e, 0x14, 0xe6, 0x48,
-	0xc2, 0xd1, 0x8d, 0xb8, 0x27, 0x9c, 0x29, 0x13, 0x98, 0xc5, 0xac, 0x53, 0xa8, 0x50, 0x64, 0xde,
-	0x20, 0x03, 0x5a, 0xcf, 0xa1, 0x38, 0xba, 0x8f, 0x91, 0x54, 0xa1, 0x3c, 0xe8, 0x77, 0x27, 0xa3,
-	0xde, 0x4d, 0xb7, 0xb1, 0x43, 0xea, 0x00, 0x97, 0x83, 0xfe, 0xa8, 0xd7, 0x1f, 0x0f, 0xc6, 0xc3,
-	0x86, 0x61, 0x7d, 0x37, 0xa0, 0x36, 0x64, 0x41, 0xbc, 0x40, 0xcd, 0x23, 0xff, 0x43, 0x45, 0xa8,
-	0xc0, 0x84, 0x33, 0x89, 0xa6, 0xd1, 0x32, 0xda, 0x35, 0x0a, 0x59, 0x88, 0x32, 0x89, 0xe4, 0x1a,
-	0x0e, 0x34, 0xc0, 0x0f, 0x25, 0xf2, 0x3b, 0xb6, 0x30, 0x0b, 0x2d, 0xa3, 0x5d, 0xef, 0xfc, 0x97,
-	0x19, 0x11, 0xf6, 0x86, 0xa0, 0xdd, 0xd3, 0x28, 0x5a, 0xcf, 0x68, 0xf9, 0xde, 0xb2, 0xa0, 0x9c,
-	0xaf, 0x09, 0x40, 0x69, 0xd8, 0xbd, 0x1c, 0xf4, 0xaf, 0x1a, 0x3b, 0xe9, 0xfa, 0xa6, 0xd7, 0x1f,
-	0x8f, 0xba, 0x0d, 0xc3, 0xfa, 0x51, 0x80, 0x62, 0x5a, 0x15, 0xa9, 0x43, 0xc1, 0xf7, 0x94, 0x9b,
-	0x7f, 0x68, 0xc1, 0xf7, 0xc8, 0x11, 0x94, 0x98, 0x2b, 0xfd, 0x3b, 0x54, 0x87, 0x97, 0xa9, 0xde,
-	0x11, 0x02, 0xc5, 0x90, 0x05, 0x68, 0xee, 0x2a, 0xa4, 0x5a, 0x93, 0x67, 0x50, 0x73, 0xa3, 0x30,
-	0x44, 0x37, 0x35, 0x34, 0xf1, 0x3d, 0xb3, 0xa8, 0x92, 0xd5, 0x55, 0xb0, 0xe7, 0x91, 0x33, 0xa8,
-	0xa6, 0x57, 0x37, 0xd1, 0x8d, 0x36, 0xf7, 0x5a, 0x46, 0xbb, 0xd2, 0x39, 0xcc, 0x6b, 0x5a, 0x6b,
-	0x2d, 0xad, 0xf0, 0xd5, 0x86, 0xbc, 0x06, 0x5d, 0xd7, 0x92, 0x59, 0x52, 0xcc, 0x7f, 0x1f, 0xec,
-	0x06, 0xad, 0x89, 0x8d, 0x6e, 0xbf, 0x85, 0xba, 0x87, 0x6e, 0xe4, 0xad, 0xd8, 0xfb, 0x8a, 0x6d,
-	0xe6, 0xec, 0x7c, 0x00, 0xec, 0xa5, 0x40, 0x86, 0xcf, 0x05, 0x5e, 0xc0, 0x9e, 0x1a, 0x18, 0xd3,
-	0x53, 0x3c, 0x92, 0xf3, 0xd2, 0x51, 0xb2, 0xdf, 0xa7, 0x99, 0x77, 0x3b, 0x34, 0x83, 0x5c, 0x94,
-	0xa0, 0x78, 0xce, 0x67, 0xc2, 0x9a, 0x40, 0xf3, 0x92, 0x23, 0x93, 0x98, 0x16, 0x45, 0xf1, 0x4b,
-	0x82, 0x42, 0x92, 0x36, 0x14, 0xd3, 0xf9, 0x34, 0xbf, 0xf5, 0x37, 0x0b, 0xcf, 0x06, 0xd5, 0x3e,
-	0x4f, 0xe4, 0x9c, 0x2a, 0x04, 0x69, 0x41, 0x31, 0x6d, 0x80, 0xba, 0x8c, 0x4a, 0xa7, 0xba, 0xde,
-	0x21, 0xaa, 0x32, 0xd6, 0x27, 0x20, 0xeb, 0x07, 0x88, 0x38, 0x0a, 0x05, 0x12, 0x1b, 0x4a, 0xd9,
-	0xb8, 0x9b, 0x3f, 0xf7, 0x37, 0x5b, 0xa4, 0xcf, 0x18, 0xaa, 0x2c, 0xd5, 0x28, 0x72, 0x0c, 0xfb,
-	0xea, 0x46, 0x96, 0xf7, 0x5e, 0x4a, 0xb7, 0x3d, 0xcf, 0x1a, 0xc1, 0xc1, 0x50, 0x46, 0xf1, 0x76,
-	0xee, 0x7f, 0xab, 0x7a, 0x01, 0x8d, 0x95, 0xea, 0x76, 0x96, 0xad, 0x0f, 0xd0, 0xa4, 0x28, 0x92,
-	0x00, 0x9f, 0xd8, 0xdb, 0x15, 0x90, 0x75, 0xdd, 0xed, 0xdd, 0x5d, 0xe1, 0x02, 0xe5, 0x1f, 0x70,
-	0xb7, 0xae, 0xbb, 0xa5, 0xbb, 0x71, 0xda, 0x7f, 0xc6, 0xe5, 0x13, 0x9b, 0xfb, 0x0a, 0xcd, 0x35,
-	0x59, 0xed, 0xed, 0x14, 0xca, 0x01, 0x0a, 0xc1, 0x66, 0x28, 0x4c, 0xa3, 0xb5, 0xdb, 0xae, 0x74,
-	0x8e, 0x73, 0x69, 0xfd, 0xb2, 0xda, 0x37, 0x59, 0x9e, 0x2e, 0x81, 0xdb, 0xb4, 0x7b, 0x28, 0x39,
-	0xb2, 0xe0, 0x89, 0x2b, 0xba, 0x07, 0xb2, 0xae, 0xfb, 0x37, 0x4b, 0x7a, 0x03, 0xe4, 0x1a, 0xe5,
-	0xf9, 0x62, 0x91, 0x1e, 0x2d, 0x1e, 0x5d, 0x93, 0x35, 0x83, 0xc3, 0x0d, 0xbe, 0xf6, 0xbe, 0x7a,
-	0x51, 0x76, 0x1f, 0x7e, 0x51, 0x1e, 0x6b, 0xf4, 0xe2, 0xec, 0xe3, 0xab, 0x99, 0x2f, 0xe7, 0xc9,
-	0x34, 0xcd, 0x3b, 0x53, 0x26, 0xdd, 0xb9, 0x1b, 0xf1, 0xd8, 0x89, 0x17, 0x49, 0x30, 0x45, 0xfe,
-	0x52, 0xb8, 0x73, 0x0c, 0x98, 0x70, 0xa6, 0x89, 0xbf, 0xf0, 0x9c, 0x59, 0xe4, 0x64, 0x6a, 0xd3,
-	0xec, 0x97, 0x7d, 0xfa, 0x2b, 0x00, 0x00, 0xff, 0xff, 0x4f, 0xde, 0x6a, 0x28, 0xc7, 0x07, 0x00,
-	0x00,
+	// 1125 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x57, 0xed, 0x4e, 0xe3, 0x46,
+	0x14, 0x4d, 0x16, 0x36, 0x84, 0x0b, 0x81, 0x64, 0xd8, 0x5d, 0xa6, 0x74, 0x97, 0xa2, 0xb4, 0xaa,
+	0x50, 0xab, 0x24, 0x2a, 0x5d, 0x6d, 0xfb, 0xa3, 0x6a, 0xc5, 0x47, 0x44, 0xa2, 0x8a, 0xc0, 0xda,
+	0xd0, 0x4a, 0x95, 0x2a, 0x6b, 0x6c, 0x0f, 0x89, 0x4b, 0xfc, 0x11, 0xcf, 0x98, 0xd5, 0xf6, 0x25,
+	0xfa, 0x04, 0x7d, 0xbd, 0xaa, 0x8f, 0x51, 0xcd, 0x97, 0xe3, 0x10, 0x52, 0x09, 0xb4, 0xfb, 0x2b,
+	0xf6, 0xb9, 0xe7, 0x9e, 0x7b, 0xee, 0xb5, 0xe7, 0x62, 0x00, 0x52, 0x4a, 0xfc, 0x76, 0x92, 0xc6,
+	0x3c, 0x46, 0x15, 0xf9, 0xc3, 0x76, 0x6a, 0x5e, 0x1c, 0x45, 0xd4, 0xe3, 0x0a, 0xde, 0x69, 0x78,
+	0x71, 0x18, 0xc6, 0x51, 0x87, 0x64, 0x7c, 0xa4, 0xa1, 0x2d, 0x0d, 0x31, 0x4e, 0x78, 0xc6, 0x34,
+	0xf8, 0x82, 0x46, 0x5e, 0xec, 0x07, 0xd1, 0xb0, 0x13, 0x27, 0x3c, 0x88, 0x23, 0x83, 0xa3, 0x94,
+	0x7a, 0x71, 0xea, 0xb3, 0x8e, 0x4b, 0x18, 0xd5, 0xd8, 0x33, 0x97, 0x78, 0x37, 0x34, 0xf2, 0x59,
+	0xe7, 0x86, 0x5c, 0xdf, 0x10, 0x8d, 0x6e, 0xe7, 0x28, 0xf1, 0x78, 0x70, 0x4b, 0xc3, 0x89, 0x91,
+	0x9e, 0x06, 0xde, 0xb1, 0x16, 0xcb, 0xa5, 0xef, 0xe0, 0x13, 0x36, 0x27, 0x1f, 0xc6, 0xd1, 0x30,
+	0x36, 0xae, 0x73, 0x34, 0x22, 0xdc, 0x50, 0x5f, 0xcd, 0x80, 0x2d, 0xc6, 0x53, 0x4a, 0xc2, 0x20,
+	0x1a, 0x1a, 0xf3, 0xd3, 0x30, 0x9b, 0xcc, 0xd9, 0x4c, 0x62, 0xc6, 0x87, 0x29, 0x35, 0x5a, 0xcf,
+	0xa7, 0x81, 0x6c, 0xcc, 0x48, 0x3a, 0x07, 0xa7, 0xc4, 0x75, 0x03, 0x3e, 0x57, 0x59, 0xc1, 0xba,
+	0xb6, 0x11, 0xfb, 0x74, 0x1a, 0xa6, 0x7e, 0xc0, 0x5a, 0x49, 0xe6, 0xb2, 0xcc, 0xd5, 0xc1, 0x97,
+	0x77, 0x82, 0xb3, 0xa9, 0x7b, 0xd3, 0xb1, 0xfc, 0x99, 0xa5, 0xb4, 0xc5, 0x68, 0x7a, 0x1b, 0x78,
+	0xb4, 0xe5, 0xe6, 0xcf, 0x6a, 0xf7, 0x0e, 0x83, 0xde, 0xd2, 0x88, 0xb7, 0x46, 0x46, 0xbf, 0xf9,
+	0x77, 0x19, 0x6a, 0x36, 0x09, 0x93, 0x31, 0x3d, 0x57, 0xcf, 0x12, 0x7d, 0x06, 0x6b, 0x4c, 0x02,
+	0x4e, 0x4a, 0x38, 0xc5, 0xe5, 0xbd, 0xf2, 0x7e, 0xcd, 0x02, 0x05, 0x59, 0x84, 0x53, 0x74, 0x0a,
+	0x9b, 0x9a, 0x10, 0x44, 0x9c, 0xa6, 0xb7, 0x64, 0x8c, 0x9f, 0xec, 0x95, 0xf7, 0x37, 0x0e, 0x76,
+	0x95, 0x26, 0x6b, 0xcf, 0x08, 0xb6, 0xfb, 0x9a, 0x65, 0x6d, 0xa8, 0x34, 0x73, 0xdf, 0x6c, 0x42,
+	0xd5, 0x5c, 0x23, 0x80, 0x8a, 0xdd, 0x3d, 0x3e, 0x1f, 0x9c, 0xd4, 0x4b, 0xe2, 0xfa, 0xac, 0x3f,
+	0xb8, 0xba, 0xec, 0xd6, 0xcb, 0xcd, 0x09, 0xac, 0x59, 0x94, 0xf8, 0xc6, 0xdc, 0x0f, 0xa0, 0x45,
+	0x1c, 0xfd, 0xea, 0x49, 0x7f, 0x6b, 0x07, 0xcf, 0xef, 0x2d, 0x6d, 0xd5, 0x58, 0xf1, 0xb6, 0xf9,
+	0x05, 0x2c, 0x5f, 0xbe, 0x4f, 0x28, 0x5a, 0x87, 0xea, 0xf9, 0xa0, 0xeb, 0x5c, 0xf6, 0xcf, 0xba,
+	0xf5, 0x12, 0xda, 0x00, 0x38, 0x3e, 0x1f, 0x5c, 0xf6, 0x07, 0x57, 0xe7, 0x57, 0x76, 0xbd, 0xdc,
+	0xfc, 0x67, 0x15, 0x40, 0xd4, 0x3c, 0x8e, 0xa3, 0xeb, 0x60, 0x88, 0x36, 0x61, 0xc9, 0x09, 0x7c,
+	0x59, 0x67, 0xd5, 0x7a, 0xd2, 0xf7, 0xd1, 0x36, 0xac, 0x38, 0xea, 0xb5, 0x95, 0x7d, 0x57, 0xad,
+	0xca, 0xa1, 0xbc, 0x43, 0x08, 0x96, 0x23, 0x12, 0x52, 0xbc, 0x24, 0xa9, 0xf2, 0x1a, 0x7d, 0x0e,
+	0xe6, 0x90, 0x05, 0x71, 0x24, 0x74, 0x96, 0x65, 0x70, 0x7d, 0x0a, 0xf6, 0x7d, 0xd4, 0x85, 0x46,
+	0x81, 0xe4, 0xc9, 0xba, 0xf8, 0xa9, 0x6c, 0x0c, 0x9b, 0xc6, 0x8e, 0x73, 0x82, 0xf2, 0x65, 0xd5,
+	0xbd, 0x3b, 0x08, 0x7a, 0x03, 0xeb, 0xe2, 0x90, 0xe7, 0xa3, 0xa9, 0x48, 0x85, 0x2d, 0xa3, 0x50,
+	0x98, 0xa3, 0xb5, 0x96, 0x16, 0x86, 0xfa, 0x13, 0x6c, 0xf8, 0xd4, 0x8b, 0xfd, 0xe9, 0x50, 0x57,
+	0x66, 0x6b, 0x9b, 0xf3, 0xde, 0xce, 0xe7, 0xaa, 0xf8, 0x46, 0xa0, 0x0d, 0x4f, 0xe5, 0xe9, 0xc6,
+	0xbe, 0xcc, 0x7b, 0x61, 0xf2, 0xcc, 0xbb, 0xd7, 0xfe, 0x59, 0x44, 0x7b, 0x25, 0x4b, 0xd1, 0xd0,
+	0xf7, 0xb0, 0xaa, 0x06, 0xe8, 0x84, 0x13, 0x4c, 0x65, 0xce, 0x27, 0x73, 0x39, 0x6a, 0xa8, 0x67,
+	0x6f, 0x7b, 0x25, 0xab, 0xaa, 0xd8, 0x67, 0x13, 0xf4, 0x0d, 0x54, 0xc8, 0x3b, 0xc6, 0x26, 0x0c,
+	0x5f, 0xcb, 0xb4, 0xed, 0xf9, 0xb4, 0x5f, 0x6d, 0xfb, 0xad, 0xdd, 0x2b, 0x59, 0x9a, 0x68, 0x52,
+	0x22, 0x86, 0x87, 0xff, 0x93, 0x32, 0xc8, 0x53, 0x54, 0x3f, 0x72, 0x9d, 0xe0, 0xd1, 0x82, 0x7e,
+	0xce, 0x44, 0x54, 0xf4, 0x23, 0x69, 0xe8, 0x6b, 0xf1, 0xe0, 0x39, 0xc3, 0xc1, 0xec, 0xbb, 0x98,
+	0xd3, 0x07, 0x84, 0xb3, 0x5e, 0xc9, 0x92, 0x24, 0x74, 0x0a, 0x1b, 0xe2, 0xd7, 0xc9, 0x17, 0x10,
+	0xfe, 0x43, 0xa6, 0xed, 0xde, 0x9b, 0x66, 0x1b, 0x56, 0xaf, 0x64, 0xd5, 0xa2, 0x22, 0x80, 0xf6,
+	0x61, 0x29, 0x62, 0x13, 0x7c, 0x23, 0xb3, 0x9f, 0xcd, 0x67, 0xdb, 0x62, 0x74, 0x82, 0x82, 0xbe,
+	0x83, 0xaa, 0x59, 0x60, 0x78, 0xbc, 0x60, 0xdc, 0x17, 0x9a, 0x20, 0xc6, 0x6d, 0xc8, 0x62, 0x76,
+	0x6a, 0xc1, 0xe1, 0x70, 0xc1, 0xec, 0x2e, 0x64, 0x58, 0xcc, 0x4e, 0x11, 0x45, 0x8a, 0xda, 0x72,
+	0x38, 0x5a, 0x90, 0x62, 0xc9, 0xb0, 0x48, 0x51, 0x44, 0x31, 0x11, 0x75, 0xa5, 0x67, 0xc2, 0x70,
+	0xbc, 0x60, 0x22, 0x2a, 0x55, 0x8d, 0x40, 0x38, 0xad, 0xa5, 0x45, 0x00, 0x1d, 0x8a, 0x03, 0xe0,
+	0x07, 0xcc, 0x51, 0x2b, 0x14, 0x27, 0x52, 0xe6, 0xe5, 0xbc, 0x8c, 0x20, 0x5d, 0x48, 0x4e, 0xaf,
+	0x24, 0xce, 0x42, 0x7e, 0x8b, 0x4e, 0xa0, 0xa6, 0x24, 0x8c, 0x95, 0x89, 0xd4, 0x78, 0x75, 0xbf,
+	0xc6, 0xd4, 0x89, 0x2a, 0x6c, 0x8c, 0xf4, 0x60, 0x53, 0xae, 0x5b, 0x47, 0xae, 0x5b, 0x67, 0x94,
+	0xb9, 0x38, 0x5d, 0xd0, 0xd2, 0xa1, 0xe0, 0x75, 0x05, 0xad, 0x27, 0xdd, 0xd4, 0x48, 0x11, 0x40,
+	0x03, 0x68, 0x28, 0x25, 0xbd, 0xda, 0x1d, 0x37, 0x63, 0x98, 0x49, 0xad, 0xbd, 0xfb, 0xb5, 0x6c,
+	0x45, 0x3c, 0xca, 0x84, 0x2d, 0x65, 0x63, 0x0a, 0x1d, 0x01, 0x54, 0x8f, 0x34, 0xbd, 0x19, 0x40,
+	0xe3, 0x38, 0xa5, 0x84, 0x53, 0xb1, 0x19, 0x2c, 0x3a, 0xc9, 0x28, 0xe3, 0x68, 0x1f, 0x96, 0xc5,
+	0xdf, 0x7f, 0xfc, 0xd7, 0x60, 0x76, 0x7b, 0xa8, 0x0f, 0x81, 0xf6, 0x61, 0xc6, 0x47, 0x96, 0x64,
+	0xa0, 0xaf, 0xa0, 0xa2, 0x57, 0x95, 0xda, 0xc1, 0xa8, 0xb8, 0x68, 0xf4, 0x92, 0xd2, 0x8c, 0xe6,
+	0xef, 0x80, 0x8a, 0xa5, 0x58, 0x12, 0x47, 0x8c, 0xa2, 0x36, 0x54, 0xd4, 0x87, 0x05, 0xfe, 0x77,
+	0x65, 0xf6, 0xe8, 0xe8, 0x6a, 0xb6, 0x8c, 0x5a, 0x9a, 0x25, 0x36, 0xaf, 0x5c, 0x70, 0xf9, 0x3a,
+	0xae, 0x88, 0xdb, 0xbe, 0xdf, 0xbc, 0x84, 0x4d, 0x9b, 0xc7, 0xc9, 0xe3, 0xfa, 0x58, 0xa8, 0x7a,
+	0x04, 0xf5, 0xa9, 0xea, 0xe3, 0x2c, 0x37, 0x7f, 0x81, 0x86, 0x45, 0x59, 0x16, 0xd2, 0x0f, 0xec,
+	0xed, 0x04, 0x50, 0x51, 0xf7, 0xf1, 0xee, 0x4e, 0xe8, 0x98, 0xf2, 0x8f, 0xe0, 0xae, 0xa8, 0xfb,
+	0x48, 0x77, 0x57, 0x62, 0xfe, 0x24, 0xe5, 0x1f, 0xd8, 0xdc, 0x7b, 0x68, 0x14, 0x64, 0xb5, 0xb7,
+	0xd7, 0x82, 0x2d, 0xbf, 0x5e, 0x71, 0x79, 0x6f, 0x69, 0x7f, 0xed, 0x60, 0xc7, 0x28, 0x6b, 0xb8,
+	0xad, 0xe8, 0xe2, 0xda, 0x32, 0xd4, 0x07, 0x77, 0xf4, 0x23, 0xa0, 0x53, 0xca, 0x0f, 0xc7, 0x63,
+	0x21, 0xc6, 0x1e, 0xdc, 0x53, 0x33, 0x84, 0xad, 0x99, 0x7c, 0x6d, 0xfe, 0x4b, 0x58, 0x16, 0xbd,
+	0x69, 0xe7, 0xf7, 0x9d, 0x43, 0x19, 0x7f, 0xa8, 0xdd, 0xa3, 0x37, 0xbf, 0xbd, 0x1e, 0x06, 0x5c,
+	0x7c, 0x2c, 0x7a, 0x71, 0xd8, 0x71, 0x09, 0xf7, 0x46, 0x5e, 0x9c, 0x26, 0x9d, 0x64, 0x9c, 0x85,
+	0x2e, 0x4d, 0x5b, 0xcc, 0x1b, 0xd1, 0x90, 0xb0, 0x8e, 0x9b, 0x05, 0x63, 0xbf, 0x33, 0x8c, 0x3b,
+	0x4a, 0xcd, 0x55, 0xff, 0x5f, 0x7c, 0xfb, 0x5f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x3a, 0xfb, 0x3d,
+	0x32, 0x74, 0x0c, 0x00, 0x00,
 }

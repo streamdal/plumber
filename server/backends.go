@@ -1,11 +1,9 @@
 package server
 
 import (
-	"context"
-	"crypto/tls"
 	"fmt"
-	"time"
 
+	"github.com/batchcorp/plumber/backends"
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/sasl"
@@ -17,15 +15,24 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/conns"
 
 	"github.com/batchcorp/plumber/backends/kafka"
+	"github.com/batchcorp/plumber/options"
 )
 
-// TODO: code in this package is duplicated from kafka backend. Clean this up after backend refactor
+func (p *Server) getBackendByConnectionID(connectionID string, opts *options.Options) (backends.Backend, error) {
+	conn := p.getConn(connectionID)
+	if conn == nil {
+		return nil, fmt.Errorf("unable to fetch connection for connection id '%s'", connectionID)
+	}
 
 // testConnection is called by PlumberServer.TestConnection and determines if we are able to
 // successfully connect to the target message bus
 func testConnection(conn *protos.Connection) error {
 	switch {
 	case conn.GetKafka() != nil:
+		return backends.New(kafka.BackendName, opts)
+	default:
+		return nil, fmt.Errorf("unrecognized backend for connection id '%s'", connectionID)
+	}
 		return testConnectionKafka(conn.GetKafka())
 	}
 

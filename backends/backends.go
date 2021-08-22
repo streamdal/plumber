@@ -41,7 +41,7 @@ type Backend interface {
 	// Read will read data from the bus and dump each message to the results
 	// channel. This method should _not_ decode the message - that is left up
 	// to the upstream user. The error channel _should_ be optional.
-	Read(ctx context.Context, resultsChan chan *types.ReadMessage, errorChan chan *types.ErrorMessage) error
+	Read(ctx context.Context, resultsChan chan *records.ReadRecord, errorChan chan *records.ErrorRecord) error
 
 	// Write will attempt to write the input messages as a batch (if the backend
 	// supports batch writing). This call will block until success/error.
@@ -50,7 +50,7 @@ type Backend interface {
 	// (that are passed when instantiating the backend). Ie. If you want to
 	// write data to a specific key in Kafka - you'll need to pass
 	// Options.Kafka.WriteKey. This is not great but will suffice for now. :(
-	Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error
+	Write(ctx context.Context, errorCh chan *records.ErrorRecord, messages ...*records.WriteRecord) error
 
 	// Test performs a "test" to see if the connection to the backend is alive.
 	// The test varies between backends (ie. in kafka, it might be just attempting
@@ -62,23 +62,24 @@ type Backend interface {
 	// This is a blocking call.
 	Dynamic(ctx context.Context) error
 
-	// Lag returns consumer lag stats.
+	// Lag returns consumer lag stats. Not supported by all backends.
 	Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error
 
 	// Relay will hook into a message bus as a consumer and relay all messages
 	// to the relayCh; if an error channel is provided, any errors will be piped
 	// to the channel as well. This method _usually_ blocks.
-	Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error
+	Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error
 
 	// DisplayMessage will parse ReadMessage and print the output to STDOUT
-	DisplayMessage(msg *types.ReadMessage) error
+	DisplayMessage(msg *records.ReadRecord) error
 
 	// DisplayError will parse ErrorMessage and print the output to STDOUT
-	DisplayError(msg *types.ErrorMessage) error
+	DisplayError(msg *records.ErrorRecord) error
 
-	// ConvertReadToRecord converts a message that is received on the result
-	// channel to a protobuf Record (that is used when plumber is in server mode)
-	ConvertReadToRecord(msgID, plumberID string, readMsg *types.ReadMessage) (*records.Message, error)
+	// Value returns the value from either a *records.ReadRecord or
+	// *records.WriteRecord. The backend should type assert the message type
+	// and return the value (if present).
+	Value(msg interface{}) ([]byte, error)
 
 	// Name returns the name of the backend
 	Name() string

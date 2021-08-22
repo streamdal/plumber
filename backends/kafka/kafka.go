@@ -77,6 +77,8 @@ func (k *Kafka) Test(ctx context.Context) error {
 	return types.NotImplementedErr
 }
 
+// TODO: If read message contains record - there's no need for this func; each
+// backend would fill out the necessary record bits
 func (k *Kafka) ConvertReadToRecord(msgID, plumberID string, readMsg *types.ReadMessage) (*records.Message, error) {
 	if readMsg == nil {
 		return nil, errors.New("read message cannot be nil")
@@ -98,12 +100,12 @@ func (k *Kafka) ConvertReadToRecord(msgID, plumberID string, readMsg *types.Read
 		MessageId:        msgID,
 		PlumberId:        plumberID,
 		UnixTimestampUtc: readMsg.ReceivedAt.UnixNano(),
+		Decoded:          decoded,
 		Message: &records.Message_Kafka{
 			Kafka: &records.Kafka{
 				Topic:     rawMsg.Topic,
 				Key:       rawMsg.Key,
 				Value:     rawMsg.Value, // original payload
-				Decoded:   decoded,
 				Timestamp: rawMsg.Time.UnixNano(),
 				Offset:    rawMsg.Offset,
 				Partition: int32(rawMsg.Partition),
