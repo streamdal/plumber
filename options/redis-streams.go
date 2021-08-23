@@ -52,7 +52,7 @@ func addReadRedisStreamsFlags(cmd *kingpin.CmdClause, opts *Options) {
 
 	cmd.Flag("count", "Number of records to read from stream(s) per read").
 		Envar("PLUMBER_RELAY_REDIS_STREAMS_COUNT").
-		Default(DefaultCount).
+		Default(DefaultBatchSize).
 		Int64Var(&opts.RedisStreams.Count)
 
 	cmd.Flag("start-id", "What id a new consumer group should start consuming messages at "+

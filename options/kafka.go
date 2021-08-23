@@ -81,7 +81,7 @@ func addSharedKafkaFlags(cmd *kingpin.CmdClause, opts *Options) {
 		"(NOTE: You may specify this flag multiple times)").
 		Default("localhost:9092").
 		Envar("PLUMBER_RELAY_KAFKA_ADDRESS").
-		StringsVar(&opts.Kafka.Brokers)
+		PreAction()
 
 	cmd.Flag("topic", "topic(s) to read, write or get lag stats for"+
 		"(NOTE: You may specify this flag multiple times if more than one topic)").

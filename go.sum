@@ -36,8 +36,6 @@ cloud.google.com/go/storage v1.10.0/go.mod h1:FLPqc6j+Ki4BU591ie1oL6qBQGu2Bl/tZ9
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 github.com/99designs/keyring v1.1.5 h1:wLv7QyzYpFIyMSwOADq1CLTF9KbjbBfcnfmOGJ64aO4=
 github.com/99designs/keyring v1.1.5/go.mod h1:7hsVvt2qXgtadGevGJ4ujg+u8m6SpJ5TpHqTozIPqf0=
-github.com/99designs/keyring v1.1.6 h1:kVDC2uCgVwecxCk+9zoCt2uEL6dt+dfVzMvGgnVcIuM=
-github.com/99designs/keyring v1.1.6/go.mod h1:16e0ds7LGQQcT59QqkTg72Hh5ShM51Byv5PEmW6uoRU=
 github.com/AthenZ/athenz v1.10.15 h1:8Bc2W313k/ev/SGokuthNbzpwfg9W3frg3PKq1r943I=
 github.com/AthenZ/athenz v1.10.15/go.mod h1:7KMpEuJ9E4+vMCMI3UQJxwWs0RZtQq7YXZ1IteUjdsc=
 github.com/Azure/azure-amqp-common-go/v3 v3.0.1 h1:mXh+eyOxGLBfqDtfmbtby0l7XfG/6b2NkuZ3B7i6zHA=
@@ -125,12 +123,8 @@ github.com/aws/aws-sdk-go v1.34.28 h1:sscPpn/Ns3i0F4HPEWAVcwdIRaZZCuL7llJ2/60yPI
 github.com/aws/aws-sdk-go v1.34.28/go.mod h1:H7NKnBqNVzoTJpGfLrQkkD+ytBA93eiDYi/+8rV9s48=
 github.com/batchcorp/pgoutput v0.3.2 h1:Jck/nJLwXWmsNHF2iEfjFWrsds5LLGtqu6y6TjjU8Aw=
 github.com/batchcorp/pgoutput v0.3.2/go.mod h1:xzkr73rAlqUdvt2oMAQav1lIt6xnG8bqYYXt4GrXM/I=
-github.com/batchcorp/plumber-schemas v0.0.25 h1:CM5hkCAE1IlwdMRlOmvgTnhAk9N3UXpck2CO9BJ+AUo=
-github.com/batchcorp/plumber-schemas v0.0.25/go.mod h1:NnAGQqxelKbYws+Y8F9H3yqHZpu3NWUn45+FryCYBHA=
-github.com/batchcorp/plumber-schemas v0.0.33 h1:VLaDuw7CZSvP5oxXEA8wNZMfyMU+4aQBsORysGIf1qI=
-github.com/batchcorp/plumber-schemas v0.0.33/go.mod h1:NnAGQqxelKbYws+Y8F9H3yqHZpu3NWUn45+FryCYBHA=
-github.com/batchcorp/plumber-schemas v0.0.36 h1:zrXbbLzsbAmYObMv8LmXZGtp2ARHoyVL0zBZyZQxPMo=
-github.com/batchcorp/plumber-schemas v0.0.36/go.mod h1:NnAGQqxelKbYws+Y8F9H3yqHZpu3NWUn45+FryCYBHA=
+github.com/batchcorp/plumber-schemas v0.0.38 h1:O6E4mGoMKxaEwWzAwllgSow2BI//1dxrcfB+64U1K0E=
+github.com/batchcorp/plumber-schemas v0.0.38/go.mod h1:NnAGQqxelKbYws+Y8F9H3yqHZpu3NWUn45+FryCYBHA=
 github.com/batchcorp/rabbit v0.1.9 h1:BzQStzeo0WuvC7+PKYaEBYtn9qqramlaZCN1CxmNM6U=
 github.com/batchcorp/rabbit v0.1.9/go.mod h1:LaAQ6FCNkir0/SbJ9jX3JNNP1ULAU2M3QZN/IwFRwXw=
 github.com/batchcorp/schemas v0.1.8/go.mod h1:OS0jIg50R8wrMJAVwOEirnvpyPKnJlVadifqH4LJlD4=
@@ -203,8 +197,6 @@ github.com/dustin/go-humanize v1.0.0 h1:VSnTsYCnlFHaM2/igO1h6X3HA71jcobQuxemgkq4
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
 github.com/dvsekhvalnov/jose2go v0.0.0-20180829124132-7f401d37b68a h1:mq+R6XEM6lJX5VlLyZIrUSP8tSuJp82xTK89hvBwJbU=
 github.com/dvsekhvalnov/jose2go v0.0.0-20180829124132-7f401d37b68a/go.mod h1:7BvyPhdbLxMXIYTFPLsyJRFMsKmOZnQmzh6Gb+uquuM=
-github.com/dvsekhvalnov/jose2go v0.0.0-20200901110807-248326c1351b h1:HBah4D48ypg3J7Np4N+HY/ZR76fx3HEUGxDU6Uk39oQ=
-github.com/dvsekhvalnov/jose2go v0.0.0-20200901110807-248326c1351b/go.mod h1:7BvyPhdbLxMXIYTFPLsyJRFMsKmOZnQmzh6Gb+uquuM=
 github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21 h1:YEetp8/yCZMuEPMUDHG0CW/brkkEp8mzqk2+ODEitlw=
 github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21/go.mod h1:+020luEh2TKB4/GOp8oxxtq0Daoen/Cii55CzbTV6DU=
 github.com/eclipse/paho.mqtt.golang v1.2.0 h1:1F8mhG9+aO5/xpdtFkW4SxOJB67ukuDC3t2y2qayIX0=

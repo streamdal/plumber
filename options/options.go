@@ -18,13 +18,14 @@ import (
 )
 
 const (
-	DefaultGRPCAddress         = "grpc-collector.batch.sh:9000"
-	DefaultHTTPListenAddress   = ":8080"
-	DefaultGRPCTimeout         = "10s"
-	DefaultNumWorkers          = "10"
-	DefaultStatsReportInterval = "5s"
-	DefaultCount               = "10"
-	DefaultDproxyAddress       = "dproxy.batch.sh:443"
+	DefaultGRPCAddress                = "grpc-collector.batch.sh:9000"
+	DefaultHTTPListenAddress          = ":8080"
+	DefaultGRPCTimeout                = "10"
+	DefaultNumWorkers                 = "10"
+	DefaultStatsReportIntervalSeconds = "10"
+	DefaultBatchSize                  = "10"
+	DefaultDproxyAddress              = "dproxy.batch.sh:443"
+	DefaultBatchMaxRetry              = "3"
 )
 
 var (
@@ -64,49 +65,34 @@ type Options struct {
 	// Batch *BatchOptions
 }
 
-type DProxyOptions struct {
-	APIToken    string
-	Address     string
-	Insecure    bool
-	GRPCTimeout time.Duration
-}
+//type DProxyOptions struct {
+//	APIToken    string
+//	Address     string
+//	Insecure    bool
+//	GRPCTimeout time.Duration
+//}
 
-type EncodingOptions struct {
-	ProtobufRootMessage string
-	ProtobufDirs        []string
-	AvroSchemaFile      string
+//type EncodingOptions struct {
+//	ProtobufRootMessage string
+//	ProtobufDirs        []string
+//	AvroSchemaFile      string
+//
+//	// Set _after_ plumber instantiation
+//	MsgDesc *desc.MessageDescriptor
+//}
 
-	// Set _after_ plumber instantiation
-	MsgDesc *desc.MessageDescriptor
-}
-
-type DecodingOptions struct {
-	ProtobufRootMessage string
-	ProtobufDirs        []string
-	JSONOutput          bool // This will indent + colorize output
-	AvroSchemaFile      string
-
-	// Set _after_ plumber instantiation
-	MsgDesc *desc.MessageDescriptor
-}
+//type DecodingOptions struct {
+//	ProtobufRootMessage string
+//	ProtobufDirs        []string
+//	JSONOutput          bool // This will indent + colorize output
+//	AvroSchemaFile      string
+//
+//	// Set _after_ plumber instantiation
+//	MsgDesc *desc.MessageDescriptor
+//}
 
 func Handle(cliArgs []string) (string, *Options, error) {
-	opts := &Options{
-		Connection: &protos.ConnectionConfig{}, // TODO: Kingpin should instantiate the correct thing
-		// Instantiate main configs
-		Read: &protos.ReadConfig{
-			ReadOptions: &protos.ReadOptions{
-				SampleOptions: &protos.SampleOptions{},
-			},
-			DecodeOptions: &encoding.Options{}, // TODO: Kingpin should instantiate
-		},
-		Write: &protos.WriteRequest{
-			Records:       nil,
-			EncodeOptions: nil,
-		},
-		Server: &protos.ServerConfig{},
-		Relay:  &protos.RelayConfig{},
-	}
+	opts := &Options{}
 
 	app := kingpin.New("plumber", "`curl` for messaging systems. See: https://github.com/batchcorp/plumber")
 
@@ -114,14 +100,14 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	readCmd := app.Command("read", "Read message(s) from messaging system")
 	writeCmd := app.Command("write", "Write message(s) to messaging system")
 	relayCmd := app.Command("relay", "Relay message(s) from messaging system to Batch")
-	batchCmd := app.Command("batch", "Access your Batch.sh account information")
+	//batchCmd := app.Command("batch", "Access your Batch.sh account information")
 	lagCmd := app.Command("lag", "Monitor lag in the messaging system")
-	dynamicCmd := app.Command("dynamic", "Act as a batch.sh replay destination")
-	githubCmd := app.Command("github", "Authorize plumber to access your github repos")
+	//dynamicCmd := app.Command("dynamic", "Act as a batch.sh replay destination")
+	//githubCmd := app.Command("github", "Authorize plumber to access your github repos")
 	serverCmd := app.Command("server", "Run plumber in server mode")
 
-	HandleRelayFlags(relayCmd, opts)
-	HandleDynamicFlags(dynamicCmd, opts)
+	HandleRelayFlags(relayCmd, opts) // DONE
+	//HandleDynamicFlags(dynamicCmd, opts)
 
 	HandleKafkaFlags(readCmd, writeCmd, relayCmd, lagCmd, opts)
 	HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
@@ -142,17 +128,19 @@ func Handle(cliArgs []string) (string, *Options, error) {
 	HandlePulsarFlags(readCmd, writeCmd, relayCmd, opts)
 	HandleNSQFlags(readCmd, writeCmd, relayCmd, opts)
 
-	HandleGlobalFlags(readCmd, opts)
+	HandleGlobalFlags(readCmd, opts) // DONE
 	HandleReadFlags(readCmd, opts)
 	HandleWriteFlags(writeCmd, opts)
 	HandleReadFlags(relayCmd, opts)
 	HandleServerFlags(serverCmd, opts)
 	HandleGlobalFlags(writeCmd, opts)
 	HandleGlobalFlags(relayCmd, opts)
-	HandleGlobalFlags(dynamicCmd, opts)
-	HandleBatchFlags(batchCmd, opts)
-	HandleGlobalDynamicFlags(dynamicCmd, opts)
-	HandleGithubFlags(githubCmd, opts)
+
+	// TODO: Handle last
+	//HandleGlobalFlags(dynamicCmd, opts)
+	//HandleBatchFlags(batchCmd, opts)
+	//HandleGlobalDynamicFlags(dynamicCmd, opts)
+	//HandleGithubFlags(githubCmd, opts)
 
 	app.Version(version)
 	app.HelpFlag.Short('h')
@@ -218,6 +206,23 @@ func convertSliceArgs(opts *Options) {
 }
 
 func HandleReadFlags(cmd *kingpin.CmdClause, opts *Options) {
+	opts.Read = &protos.ReadConfig{
+		ReadOptions: &protos.ReadOptions{
+			SampleOptions: nil,
+		},
+		DecodeOptions: &encoding.Options{
+			Type:     0,
+			Encoding: ,
+		},
+		XCliConfig: &protos.ReadCLIConfig{
+			DisplayLagStats: false,
+			ConvertOutput:   "",
+			VerboseOutput:   false,
+		},
+	}
+
+	// plumber read ... --decode
+
 	cmd.Flag("protobuf-root-message", "Specifies the root message in a protobuf descriptor "+
 		"set (required if protobuf-dir set)").
 		StringVar(&opts.Decoding.ProtobufRootMessage)
@@ -235,7 +240,6 @@ func HandleReadFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("verbose", "Display message metadata if available").
 		BoolVar(&opts.Read.Verbose)
 
-	// TODO: This should _probably_ be under kafka (since no other backend supports this functionality)
 	cmd.Flag("lag", "Display amount of messages with uncommitted offset (if different from the previous message)").
 		Default("false").
 		BoolVar(&opts.Read.Lag)
@@ -314,46 +318,55 @@ func HandleGlobalFlags(cmd *kingpin.CmdClause, opts *Options) {
 
 	cmd.Flag("stats-report-interval", "Interval at which periodic stats are displayed").
 		Envar("PLUMBER_STATS_REPORT_INTERVAL").
-		Default(DefaultStatsReportInterval).
+		Default(DefaultStatsReportIntervalSeconds).
 		DurationVar(&opts.StatsReportInterval)
-
-	cmd.Flag("avro-schema", "Path to AVRO schema .avsc file").
-		StringVar(&opts.Decoding.AvroSchemaFile) // TODO: This is both, encoding and decoding, not global
 }
 
 func HandleRelayFlags(relayCmd *kingpin.CmdClause, opts *Options) {
+	opts.Relay = &protos.RelayConfig{
+		BatchCollectionToken: "",
+		BatchSize:            0,
+		BatchMaxRetry:        0,
+		Backends:             nil,
+	}
+
 	relayCmd.Flag("token", "Collection token to use when sending data to Batch").
 		Required().
 		Envar("PLUMBER_RELAY_TOKEN").
-		StringVar(&opts.Relay.Token)
+		StringVar(&opts.Relay.CollectionToken)
 
 	relayCmd.Flag("grpc-address", "Alternative gRPC collector address").
 		Default(DefaultGRPCAddress).
 		Envar("PLUMBER_RELAY_GRPC_ADDRESS").
-		StringVar(&opts.Relay.GRPCAddress)
+		StringVar(&opts.Relay.XBatchshGrpcAddress)
 
 	relayCmd.Flag("grpc-disable-tls", "Disable TLS when talking to gRPC collector").
 		Default("false").
 		Envar("PLUMBER_RELAY_GRPC_DISABLE_TLS").
-		BoolVar(&opts.Relay.GRPCDisableTLS)
+		BoolVar(&opts.Relay.XBatchshGrpcDisableTls)
 
 	relayCmd.Flag("grpc-timeout", "gRPC collector timeout").
 		Default(DefaultGRPCTimeout).
-		Envar("PLUMBER_RELAY_GRPC_TIMEOUT").
-		DurationVar(&opts.Relay.GRPCTimeout)
+		Envar("PLUMBER_RELAY_GRPC_TIMEOUT_SECONDS"). // TODO: Update docs, env var change
+		Uint32Var(&opts.Relay.XBatchshGrpcTimeoutSeconds)
 
 	relayCmd.Flag("num-workers", "Number of relay workers").
 		Default(DefaultNumWorkers).
 		Envar("PLUMBER_RELAY_NUM_WORKERS").
-		IntVar(&opts.Relay.NumWorkers)
+		Int32Var(&opts.Relay.NumWorkers)
 
 	relayCmd.Flag("listen-address", "Alternative listen address for local HTTP server").
 		Default(DefaultHTTPListenAddress).
 		Envar("PLUMBER_RELAY_HTTP_LISTEN_ADDRESS").
-		StringVar(&opts.Relay.HTTPListenAddress)
+		StringVar(&opts.Relay.XCLIConfig.HTTPListenAddress)
 
 	relayCmd.Flag("batch-size", "How many messages to batch before sending them to grpc-collector").
-		Default(DefaultCount).
+		Default(DefaultBatchSize).
 		Envar("PLUMBER_RELAY_BATCH_SIZE").
-		IntVar(&opts.Relay.BatchSize)
+		Int32Var(&opts.Relay.BatchSize)
+
+	relayCmd.Flag("batch-max-retry", "How many times to retry relaying a failed batch").
+		Default(DefaultGRPCTimeout).
+		Envar("PLUMBER_RELAY_BATCH_MAX_RETRY"). // TODO: Update docs, new env var
+		Int32Var(&opts.Relay.BatchMaxRetry)
 }

@@ -126,7 +126,7 @@ github.com/aws/aws-sdk-go/service/sts/stsiface
 # github.com/batchcorp/pgoutput v0.3.2
 ## explicit
 github.com/batchcorp/pgoutput
-# github.com/batchcorp/plumber-schemas v0.0.36
+# github.com/batchcorp/plumber-schemas v0.0.38
 ## explicit
 github.com/batchcorp/plumber-schemas/build/go/protos
 github.com/batchcorp/plumber-schemas/build/go/protos/backends
@@ -499,6 +499,8 @@ github.com/tidwall/match
 github.com/tidwall/pretty
 # github.com/tmc/grpc-websocket-proxy v0.0.0-20201229170055-e5319fda7802
 github.com/tmc/grpc-websocket-proxy/wsproxy
+# github.com/urfave/cli/v2 v2.3.0
+## explicit
 # github.com/v2pro/plz v0.0.0-20200805122259-422184e41b6e
 ## explicit
 github.com/v2pro/plz/concurrent
