@@ -79,7 +79,7 @@ func (m *Schema) GetType() encoding.Type {
 	if m != nil {
 		return m.Type
 	}
-	return encoding.Type_NONE
+	return encoding.Type_None
 }
 
 func (m *Schema) GetFiles() map[string]string {
@@ -327,7 +327,7 @@ func (m *ImportGithubRequest) GetType() encoding.Type {
 	if m != nil {
 		return m.Type
 	}
-	return encoding.Type_NONE
+	return encoding.Type_None
 }
 
 func (m *ImportGithubRequest) GetGithubUrl() string {
@@ -454,7 +454,7 @@ func (m *ImportLocalRequest) GetType() encoding.Type {
 	if m != nil {
 		return m.Type
 	}
-	return encoding.Type_NONE
+	return encoding.Type_None
 }
 
 func (m *ImportLocalRequest) GetZipArchive() []byte {

@@ -20,47 +20,143 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-type Postgres struct {
-	ReplicationSlotName  string   `protobuf:"bytes,2,opt,name=replication_slot_name,json=replicationSlotName,proto3" json:"replication_slot_name,omitempty"`
-	PublisherName        string   `protobuf:"bytes,3,opt,name=publisher_name,json=publisherName,proto3" json:"publisher_name,omitempty"`
+type PostgresConn struct {
+	// @gotags: kong:"help='Postgres server hostname',env='PLUMBER_RELAY_CDCPOSTGRES_HOSTNAME',required"
+	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty" kong:"help='Postgres server hostname',env='PLUMBER_RELAY_CDCPOSTGRES_HOSTNAME',required"`
+	// @gotags: kong:"help='Postgres port',env='PLUMBER_RELAY_CDCPOSTGRES_USERNAME',default=5432,required"
+	Port uint32 `protobuf:"varint,2,opt,name=port,proto3" json:"port,omitempty" kong:"help='Postgres port',env='PLUMBER_RELAY_CDCPOSTGRES_USERNAME',default=5432,required"`
+	// @gotags: kong:"help='Postgres username',env='PLUMBER_RELAY_CDCPOSTGRES_USERNAME',required"
+	Username string `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty" kong:"help='Postgres username',env='PLUMBER_RELAY_CDCPOSTGRES_USERNAME',required"`
+	// @gotags: kong:"help='Postgres server password',env='PLUMBER_RELAY_CDCPOSTGRES_PASSWORD'"
+	Password string `protobuf:"bytes,4,opt,name=password,proto3" json:"password,omitempty" kong:"help='Postgres server password',env='PLUMBER_RELAY_CDCPOSTGRES_PASSWORD'"`
+	// @gotags: kong:"help='Postgres server database name',env='PLUMBER_RELAY_CDCPOSTGRES_DATABASE',required"
+	Database string `protobuf:"bytes,5,opt,name=database,proto3" json:"database,omitempty" kong:"help='Postgres server database name',env='PLUMBER_RELAY_CDCPOSTGRES_DATABASE',required"`
+	// @gotags: kong:"help='Enable TLS usage',env='PLUMBER_RELAY_CDCPOSTGRES_USE_TLS'"
+	UseTls bool `protobuf:"varint,6,opt,name=use_tls,json=useTls,proto3" json:"use_tls,omitempty" kong:"help='Enable TLS usage',env='PLUMBER_RELAY_CDCPOSTGRES_USE_TLS'"`
+	// @gotags: kong:"help='Whether to verify server certificate',env='PLUMBER_RELAY_CDCPOSTGRES_SKIP_VERIFY_TLS'"
+	InsecureTls          bool     `protobuf:"varint,7,opt,name=insecure_tls,json=insecureTls,proto3" json:"insecure_tls,omitempty" kong:"help='Whether to verify server certificate',env='PLUMBER_RELAY_CDCPOSTGRES_SKIP_VERIFY_TLS'"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *Postgres) Reset()         { *m = Postgres{} }
-func (m *Postgres) String() string { return proto.CompactTextString(m) }
-func (*Postgres) ProtoMessage()    {}
-func (*Postgres) Descriptor() ([]byte, []int) {
+func (m *PostgresConn) Reset()         { *m = PostgresConn{} }
+func (m *PostgresConn) String() string { return proto.CompactTextString(m) }
+func (*PostgresConn) ProtoMessage()    {}
+func (*PostgresConn) Descriptor() ([]byte, []int) {
 	return fileDescriptor_a62b40fab176d0d3, []int{0}
 }
 
-func (m *Postgres) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Postgres.Unmarshal(m, b)
+func (m *PostgresConn) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_PostgresConn.Unmarshal(m, b)
 }
-func (m *Postgres) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Postgres.Marshal(b, m, deterministic)
+func (m *PostgresConn) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_PostgresConn.Marshal(b, m, deterministic)
 }
-func (m *Postgres) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Postgres.Merge(m, src)
+func (m *PostgresConn) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PostgresConn.Merge(m, src)
 }
-func (m *Postgres) XXX_Size() int {
-	return xxx_messageInfo_Postgres.Size(m)
+func (m *PostgresConn) XXX_Size() int {
+	return xxx_messageInfo_PostgresConn.Size(m)
 }
-func (m *Postgres) XXX_DiscardUnknown() {
-	xxx_messageInfo_Postgres.DiscardUnknown(m)
+func (m *PostgresConn) XXX_DiscardUnknown() {
+	xxx_messageInfo_PostgresConn.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Postgres proto.InternalMessageInfo
+var xxx_messageInfo_PostgresConn proto.InternalMessageInfo
 
-func (m *Postgres) GetReplicationSlotName() string {
+func (m *PostgresConn) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+func (m *PostgresConn) GetPort() uint32 {
+	if m != nil {
+		return m.Port
+	}
+	return 0
+}
+
+func (m *PostgresConn) GetUsername() string {
+	if m != nil {
+		return m.Username
+	}
+	return ""
+}
+
+func (m *PostgresConn) GetPassword() string {
+	if m != nil {
+		return m.Password
+	}
+	return ""
+}
+
+func (m *PostgresConn) GetDatabase() string {
+	if m != nil {
+		return m.Database
+	}
+	return ""
+}
+
+func (m *PostgresConn) GetUseTls() bool {
+	if m != nil {
+		return m.UseTls
+	}
+	return false
+}
+
+func (m *PostgresConn) GetInsecureTls() bool {
+	if m != nil {
+		return m.InsecureTls
+	}
+	return false
+}
+
+type PostgresReadArgs struct {
+	// @gotags: kong:"help='CDC replication slot name',env='PLUMBER_RELAY_CDCPOSTGRES_SLOT',required"
+	ReplicationSlotName string `protobuf:"bytes,2,opt,name=replication_slot_name,json=replicationSlotName,proto3" json:"replication_slot_name,omitempty" kong:"help='CDC replication slot name',env='PLUMBER_RELAY_CDCPOSTGRES_SLOT',required"`
+	// @gotags: kong:"help='CDC publisher name',env='PLUMBER_RELAY_CDCPOSTGRES_PUBLISHER',required"
+	PublisherName        string   `protobuf:"bytes,3,opt,name=publisher_name,json=publisherName,proto3" json:"publisher_name,omitempty" kong:"help='CDC publisher name',env='PLUMBER_RELAY_CDCPOSTGRES_PUBLISHER',required"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *PostgresReadArgs) Reset()         { *m = PostgresReadArgs{} }
+func (m *PostgresReadArgs) String() string { return proto.CompactTextString(m) }
+func (*PostgresReadArgs) ProtoMessage()    {}
+func (*PostgresReadArgs) Descriptor() ([]byte, []int) {
+	return fileDescriptor_a62b40fab176d0d3, []int{1}
+}
+
+func (m *PostgresReadArgs) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_PostgresReadArgs.Unmarshal(m, b)
+}
+func (m *PostgresReadArgs) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_PostgresReadArgs.Marshal(b, m, deterministic)
+}
+func (m *PostgresReadArgs) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PostgresReadArgs.Merge(m, src)
+}
+func (m *PostgresReadArgs) XXX_Size() int {
+	return xxx_messageInfo_PostgresReadArgs.Size(m)
+}
+func (m *PostgresReadArgs) XXX_DiscardUnknown() {
+	xxx_messageInfo_PostgresReadArgs.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PostgresReadArgs proto.InternalMessageInfo
+
+func (m *PostgresReadArgs) GetReplicationSlotName() string {
 	if m != nil {
 		return m.ReplicationSlotName
 	}
 	return ""
 }
 
-func (m *Postgres) GetPublisherName() string {
+func (m *PostgresReadArgs) GetPublisherName() string {
 	if m != nil {
 		return m.PublisherName
 	}
@@ -68,23 +164,31 @@ func (m *Postgres) GetPublisherName() string {
 }
 
 func init() {
-	proto.RegisterType((*Postgres)(nil), "protos.backends.Postgres")
+	proto.RegisterType((*PostgresConn)(nil), "protos.backends.PostgresConn")
+	proto.RegisterType((*PostgresReadArgs)(nil), "protos.backends.PostgresReadArgs")
 }
 
 func init() { proto.RegisterFile("postgres.proto", fileDescriptor_a62b40fab176d0d3) }
 
 var fileDescriptor_a62b40fab176d0d3 = []byte{
-	// 183 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x4c, 0xce, 0xc1, 0x8a, 0xc2, 0x30,
-	0x10, 0xc6, 0x71, 0x76, 0x17, 0x96, 0xdd, 0x80, 0x15, 0x2a, 0x82, 0x47, 0x11, 0x04, 0x2f, 0x36,
-	0xa0, 0x67, 0x11, 0x7c, 0x00, 0x11, 0xbd, 0x79, 0x29, 0x49, 0x3a, 0x34, 0xc1, 0xa4, 0x13, 0x32,
-	0x93, 0xf7, 0x17, 0x5b, 0x15, 0x4f, 0x03, 0xdf, 0xfc, 0x0e, 0x7f, 0x51, 0x44, 0x24, 0x6e, 0x13,
-	0x50, 0x15, 0x13, 0x32, 0x96, 0xe3, 0xfe, 0x50, 0xa5, 0x95, 0xb9, 0x41, 0xd7, 0xd0, 0x02, 0xc4,
-	0xdf, 0xe9, 0x49, 0xca, 0x8d, 0x98, 0x26, 0x88, 0xde, 0x19, 0xc5, 0x0e, 0xbb, 0x9a, 0x3c, 0x72,
-	0xdd, 0xa9, 0x00, 0xb3, 0xef, 0xf9, 0xd7, 0xea, 0xff, 0x3c, 0xf9, 0x78, 0x5e, 0x3c, 0xf2, 0x51,
-	0x05, 0x28, 0x97, 0xa2, 0x88, 0x59, 0x7b, 0x47, 0x16, 0xd2, 0x80, 0x7f, 0x7a, 0x3c, 0x7a, 0xaf,
-	0x0f, 0x76, 0xd8, 0x5f, 0x77, 0xad, 0x63, 0x9b, 0x75, 0x65, 0x30, 0x48, 0xad, 0xd8, 0x58, 0x83,
-	0x29, 0xca, 0xe8, 0x73, 0xd0, 0x90, 0xd6, 0x64, 0x2c, 0x04, 0x45, 0x52, 0x67, 0xe7, 0x1b, 0xd9,
-	0xa2, 0x1c, 0x3a, 0xe5, 0xab, 0x53, 0xff, 0xf6, 0xc3, 0xf6, 0x1e, 0x00, 0x00, 0xff, 0xff, 0x73,
-	0xf2, 0x60, 0xd1, 0xd1, 0x00, 0x00, 0x00,
+	// 298 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x4c, 0x90, 0xcf, 0x4a, 0x33, 0x31,
+	0x14, 0xc5, 0x99, 0x7e, 0xfd, 0xda, 0x1a, 0xdb, 0x2a, 0x11, 0x31, 0xb8, 0xaa, 0x05, 0xa1, 0x1b,
+	0x67, 0x40, 0xd7, 0x22, 0xea, 0x5e, 0x64, 0xec, 0xca, 0xcd, 0x90, 0x3f, 0x97, 0x99, 0xc1, 0xcc,
+	0x24, 0xe4, 0x26, 0xf8, 0x92, 0x3e, 0x94, 0x4c, 0xc6, 0x94, 0xae, 0x92, 0x73, 0x7e, 0x07, 0xee,
+	0xbd, 0x87, 0xac, 0xad, 0x41, 0x5f, 0x3b, 0xc0, 0xdc, 0x3a, 0xe3, 0x0d, 0x3d, 0x8b, 0x0f, 0xe6,
+	0x82, 0xcb, 0x2f, 0xe8, 0x15, 0x6e, 0x7f, 0x32, 0xb2, 0x7c, 0xff, 0xcb, 0xbc, 0x9a, 0xbe, 0xa7,
+	0x8c, 0xcc, 0xb9, 0x52, 0x0e, 0x10, 0x59, 0xb6, 0xc9, 0x76, 0x27, 0x65, 0x92, 0x94, 0x92, 0xa9,
+	0x35, 0xce, 0xb3, 0xc9, 0x26, 0xdb, 0xad, 0xca, 0xf8, 0xa7, 0xd7, 0x64, 0x11, 0x10, 0x5c, 0xcf,
+	0x3b, 0x60, 0xff, 0x62, 0xfc, 0xa0, 0x07, 0x66, 0x39, 0xe2, 0xb7, 0x71, 0x8a, 0x4d, 0x47, 0x96,
+	0xf4, 0xc0, 0x14, 0xf7, 0x5c, 0x70, 0x04, 0xf6, 0x7f, 0x64, 0x49, 0xd3, 0x2b, 0x32, 0x0f, 0x08,
+	0x95, 0xd7, 0xc8, 0x66, 0x9b, 0x6c, 0xb7, 0x28, 0x67, 0x01, 0x61, 0xaf, 0x91, 0xde, 0x90, 0x65,
+	0xdb, 0x23, 0xc8, 0xe0, 0x46, 0x3a, 0x8f, 0xf4, 0x34, 0x79, 0x7b, 0x8d, 0xdb, 0x8e, 0x9c, 0xa7,
+	0x6b, 0x4a, 0xe0, 0xea, 0xd9, 0xd5, 0x48, 0xef, 0xc9, 0xa5, 0x03, 0xab, 0x5b, 0xc9, 0x7d, 0x6b,
+	0xfa, 0x0a, 0xb5, 0xf1, 0x55, 0x5c, 0x78, 0x12, 0x07, 0x5f, 0x1c, 0xc1, 0x0f, 0x6d, 0xfc, 0xdb,
+	0xb0, 0xfb, 0x2d, 0x59, 0xdb, 0x20, 0x74, 0x8b, 0x0d, 0xb8, 0xea, 0xe8, 0xba, 0xd5, 0xc1, 0x1d,
+	0x62, 0x2f, 0x4f, 0x9f, 0x8f, 0x75, 0xeb, 0x9b, 0x20, 0x72, 0x69, 0xba, 0x42, 0x70, 0x2f, 0x1b,
+	0x69, 0x9c, 0x2d, 0xac, 0x0e, 0x9d, 0x00, 0x77, 0x87, 0xb2, 0x81, 0x8e, 0x63, 0x21, 0x42, 0xab,
+	0x55, 0x51, 0x9b, 0x62, 0xac, 0xbf, 0x48, 0xf5, 0x8b, 0x59, 0x34, 0x1e, 0x7e, 0x03, 0x00, 0x00,
+	0xff, 0xff, 0x01, 0x86, 0x6e, 0x07, 0xa8, 0x01, 0x00, 0x00,
 }

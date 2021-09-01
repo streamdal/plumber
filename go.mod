@@ -6,10 +6,11 @@ require (
 	cloud.google.com/go/pubsub v1.6.1
 	github.com/Azure/azure-event-hubs-go/v3 v3.3.7
 	github.com/Azure/azure-service-bus-go v0.10.8
+	github.com/alecthomas/kong v0.2.18-0.20210830204702-74cb5130e341
 	github.com/apache/pulsar-client-go v0.6.0
 	github.com/aws/aws-sdk-go v1.34.28
 	github.com/batchcorp/pgoutput v0.3.2
-	github.com/batchcorp/plumber-schemas v0.0.38
+	github.com/batchcorp/plumber-schemas v0.0.43
 	github.com/batchcorp/rabbit v0.1.9
 	github.com/batchcorp/schemas v0.2.157
 	github.com/eclipse/paho.mqtt.golang v1.2.0
@@ -55,7 +56,7 @@ require (
 	go.etcd.io/etcd/server/v3 v3.5.0
 	go.mongodb.org/mongo-driver v1.5.1
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
-	google.golang.org/grpc v1.38.0
-	google.golang.org/protobuf v1.26.1-0.20210525005349-febffdd88e85 // indirect
+	google.golang.org/api v0.29.0
+	google.golang.org/grpc v1.40.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )

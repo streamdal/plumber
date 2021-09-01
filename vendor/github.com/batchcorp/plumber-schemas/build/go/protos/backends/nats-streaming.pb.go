@@ -20,309 +20,270 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-type NatsStreaming struct {
-	// Required
-	// Channel name to read from/write to
-	Channel string `protobuf:"bytes,1,opt,name=channel,proto3" json:"channel,omitempty"`
-	// Optional
-	// Create a durable subscription with this name for the given channel
-	DurableName string `protobuf:"bytes,2,opt,name=durable_name,json=durableName,proto3" json:"durable_name,omitempty"`
-	// Types that are valid to be assigned to ReadOption:
-	//	*NatsStreaming_LastAvailable
-	//	*NatsStreaming_ReadSequenceNumber
-	//	*NatsStreaming_ReadSince
-	//	*NatsStreaming_All
-	ReadOption           isNatsStreaming_ReadOption `protobuf_oneof:"read_option"`
-	XXX_NoUnkeyedLiteral struct{}                   `json:"-"`
-	XXX_unrecognized     []byte                     `json:"-"`
-	XXX_sizecache        int32                      `json:"-"`
+type NatsStreamingConn struct {
+	// @gotags: kong:"help='Dial string for NATS server. Ex: nats://localhost:4222',default='nats://localhost:4222'"
+	Dsn string `protobuf:"bytes,1,opt,name=dsn,proto3" json:"dsn,omitempty" kong:"help='Dial string for NATS server. Ex: nats://localhost:4222',default='nats://localhost:4222'"`
+	// @gotags: kong:"help='Whether to verify server certificate'"
+	InsecureTls bool `protobuf:"varint,2,opt,name=insecure_tls,json=insecureTls,proto3" json:"insecure_tls,omitempty" kong:"help='Whether to verify server certificate'"`
+	// @gotags: kong:"help='CA file (only needed if addr is tls://)*',type=existingfile"
+	TlsCaCert []byte `protobuf:"bytes,3,opt,name=tls_ca_cert,json=tlsCaCert,proto3" json:"tls_ca_cert,omitempty" kong:"help='CA file (only needed if addr is tls://)*',type=existingfile"`
+	// @gotags: kong:"help='Cient cert file (only needed if addr is tls://*)',type=existingfile"
+	TlsClientCert []byte `protobuf:"bytes,4,opt,name=tls_client_cert,json=tlsClientCert,proto3" json:"tls_client_cert,omitempty" kong:"help='Cient cert file (only needed if addr is tls://*)',type=existingfile"`
+	// @gotags: kong:"help='Client key file (only needed if addr is tls://*)',type=existingfile"
+	TlsClientKey []byte `protobuf:"bytes,5,opt,name=tls_client_key,json=tlsClientKey,proto3" json:"tls_client_key,omitempty" kong:"help='Client key file (only needed if addr is tls://*)',type=existingfile"`
+	// @gotags: kong:"help='NATS .creds file containing authentication credentials'"
+	UserCredentials []byte `protobuf:"bytes,6,opt,name=user_credentials,json=userCredentials,proto3" json:"user_credentials,omitempty" kong:"help='NATS .creds file containing authentication credentials'"`
+	// @gotags: kong:"help='Cluster ID of the Nats server',required"
+	ClusterId string `protobuf:"bytes,7,opt,name=cluster_id,json=clusterId,proto3" json:"cluster_id,omitempty" kong:"help='Cluster ID of the Nats server',required"`
+	// @gotags: kong:"help='User specified client ID to connect with',default=plumber"
+	ClientId             string   `protobuf:"bytes,8,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty" kong:"help='User specified client ID to connect with',default=plumber"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *NatsStreaming) Reset()         { *m = NatsStreaming{} }
-func (m *NatsStreaming) String() string { return proto.CompactTextString(m) }
-func (*NatsStreaming) ProtoMessage()    {}
-func (*NatsStreaming) Descriptor() ([]byte, []int) {
+func (m *NatsStreamingConn) Reset()         { *m = NatsStreamingConn{} }
+func (m *NatsStreamingConn) String() string { return proto.CompactTextString(m) }
+func (*NatsStreamingConn) ProtoMessage()    {}
+func (*NatsStreamingConn) Descriptor() ([]byte, []int) {
 	return fileDescriptor_9ee022785668eb1d, []int{0}
 }
 
-func (m *NatsStreaming) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_NatsStreaming.Unmarshal(m, b)
+func (m *NatsStreamingConn) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_NatsStreamingConn.Unmarshal(m, b)
 }
-func (m *NatsStreaming) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_NatsStreaming.Marshal(b, m, deterministic)
+func (m *NatsStreamingConn) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_NatsStreamingConn.Marshal(b, m, deterministic)
 }
-func (m *NatsStreaming) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_NatsStreaming.Merge(m, src)
+func (m *NatsStreamingConn) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NatsStreamingConn.Merge(m, src)
 }
-func (m *NatsStreaming) XXX_Size() int {
-	return xxx_messageInfo_NatsStreaming.Size(m)
+func (m *NatsStreamingConn) XXX_Size() int {
+	return xxx_messageInfo_NatsStreamingConn.Size(m)
 }
-func (m *NatsStreaming) XXX_DiscardUnknown() {
-	xxx_messageInfo_NatsStreaming.DiscardUnknown(m)
+func (m *NatsStreamingConn) XXX_DiscardUnknown() {
+	xxx_messageInfo_NatsStreamingConn.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_NatsStreaming proto.InternalMessageInfo
+var xxx_messageInfo_NatsStreamingConn proto.InternalMessageInfo
 
-func (m *NatsStreaming) GetChannel() string {
+func (m *NatsStreamingConn) GetDsn() string {
+	if m != nil {
+		return m.Dsn
+	}
+	return ""
+}
+
+func (m *NatsStreamingConn) GetInsecureTls() bool {
+	if m != nil {
+		return m.InsecureTls
+	}
+	return false
+}
+
+func (m *NatsStreamingConn) GetTlsCaCert() []byte {
+	if m != nil {
+		return m.TlsCaCert
+	}
+	return nil
+}
+
+func (m *NatsStreamingConn) GetTlsClientCert() []byte {
+	if m != nil {
+		return m.TlsClientCert
+	}
+	return nil
+}
+
+func (m *NatsStreamingConn) GetTlsClientKey() []byte {
+	if m != nil {
+		return m.TlsClientKey
+	}
+	return nil
+}
+
+func (m *NatsStreamingConn) GetUserCredentials() []byte {
+	if m != nil {
+		return m.UserCredentials
+	}
+	return nil
+}
+
+func (m *NatsStreamingConn) GetClusterId() string {
+	if m != nil {
+		return m.ClusterId
+	}
+	return ""
+}
+
+func (m *NatsStreamingConn) GetClientId() string {
+	if m != nil {
+		return m.ClientId
+	}
+	return ""
+}
+
+type NatsStreamingReadArgs struct {
+	// @gotags: kong:"help='NATS stream channel. Ex: "orders"'"
+	Channel string `protobuf:"bytes,1,opt,name=channel,proto3" json:"channel,omitempty" kong:"help='NATS stream channel. Ex: "`
+	// @gotags: kong:"help='Create a durable subscription with this name for the given channel'"
+	DurableName string `protobuf:"bytes,2,opt,name=durable_name,json=durableName,proto3" json:"durable_name,omitempty" kong:"help='Create a durable subscription with this name for the given channel'"`
+	// @gotags: kong:"help='Deliver starting with last published message',xor=nats_delivery_option"
+	ReadLastAvailable bool `protobuf:"varint,3,opt,name=read_last_available,json=readLastAvailable,proto3" json:"read_last_available,omitempty" kong:"help='Deliver starting with last published message',xor=nats_delivery_option"`
+	// @gotags: kong:"help='Deliver messages starting at sequence number',xor=nats_delivery_option"
+	ReadSequenceNumber uint32 `protobuf:"varint,4,opt,name=read_sequence_number,json=readSequenceNumber,proto3" json:"read_sequence_number,omitempty" kong:"help='Deliver messages starting at sequence number',xor=nats_delivery_option"`
+	// @gotags: kong:"help='Deliver messages in last interval (e.g. 1s, 1h)',xor=nats_delivery_option"
+	ReadSince string `protobuf:"bytes,5,opt,name=read_since,json=readSince,proto3" json:"read_since,omitempty" kong:"help='Deliver messages in last interval (e.g. 1s, 1h)',xor=nats_delivery_option"`
+	// @gotags: kong:"help='Deliver all available messages',xor=nats_delivery_option"
+	ReadAll              bool     `protobuf:"varint,6,opt,name=read_all,json=readAll,proto3" json:"read_all,omitempty" kong:"help='Deliver all available messages',xor=nats_delivery_option"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *NatsStreamingReadArgs) Reset()         { *m = NatsStreamingReadArgs{} }
+func (m *NatsStreamingReadArgs) String() string { return proto.CompactTextString(m) }
+func (*NatsStreamingReadArgs) ProtoMessage()    {}
+func (*NatsStreamingReadArgs) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9ee022785668eb1d, []int{1}
+}
+
+func (m *NatsStreamingReadArgs) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_NatsStreamingReadArgs.Unmarshal(m, b)
+}
+func (m *NatsStreamingReadArgs) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_NatsStreamingReadArgs.Marshal(b, m, deterministic)
+}
+func (m *NatsStreamingReadArgs) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NatsStreamingReadArgs.Merge(m, src)
+}
+func (m *NatsStreamingReadArgs) XXX_Size() int {
+	return xxx_messageInfo_NatsStreamingReadArgs.Size(m)
+}
+func (m *NatsStreamingReadArgs) XXX_DiscardUnknown() {
+	xxx_messageInfo_NatsStreamingReadArgs.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_NatsStreamingReadArgs proto.InternalMessageInfo
+
+func (m *NatsStreamingReadArgs) GetChannel() string {
 	if m != nil {
 		return m.Channel
 	}
 	return ""
 }
 
-func (m *NatsStreaming) GetDurableName() string {
+func (m *NatsStreamingReadArgs) GetDurableName() string {
 	if m != nil {
 		return m.DurableName
 	}
 	return ""
 }
 
-type isNatsStreaming_ReadOption interface {
-	isNatsStreaming_ReadOption()
-}
-
-type NatsStreaming_LastAvailable struct {
-	LastAvailable *ReadLastAvailable `protobuf:"bytes,100,opt,name=last_available,json=lastAvailable,proto3,oneof"`
-}
-
-type NatsStreaming_ReadSequenceNumber struct {
-	ReadSequenceNumber *ReadSequenceNumber `protobuf:"bytes,101,opt,name=read_sequence_number,json=readSequenceNumber,proto3,oneof"`
-}
-
-type NatsStreaming_ReadSince struct {
-	ReadSince *ReadSince `protobuf:"bytes,102,opt,name=read_since,json=readSince,proto3,oneof"`
-}
-
-type NatsStreaming_All struct {
-	All *ReadAll `protobuf:"bytes,103,opt,name=all,proto3,oneof"`
-}
-
-func (*NatsStreaming_LastAvailable) isNatsStreaming_ReadOption() {}
-
-func (*NatsStreaming_ReadSequenceNumber) isNatsStreaming_ReadOption() {}
-
-func (*NatsStreaming_ReadSince) isNatsStreaming_ReadOption() {}
-
-func (*NatsStreaming_All) isNatsStreaming_ReadOption() {}
-
-func (m *NatsStreaming) GetReadOption() isNatsStreaming_ReadOption {
+func (m *NatsStreamingReadArgs) GetReadLastAvailable() bool {
 	if m != nil {
-		return m.ReadOption
+		return m.ReadLastAvailable
 	}
-	return nil
+	return false
 }
 
-func (m *NatsStreaming) GetLastAvailable() *ReadLastAvailable {
-	if x, ok := m.GetReadOption().(*NatsStreaming_LastAvailable); ok {
-		return x.LastAvailable
-	}
-	return nil
-}
-
-func (m *NatsStreaming) GetReadSequenceNumber() *ReadSequenceNumber {
-	if x, ok := m.GetReadOption().(*NatsStreaming_ReadSequenceNumber); ok {
-		return x.ReadSequenceNumber
-	}
-	return nil
-}
-
-func (m *NatsStreaming) GetReadSince() *ReadSince {
-	if x, ok := m.GetReadOption().(*NatsStreaming_ReadSince); ok {
-		return x.ReadSince
-	}
-	return nil
-}
-
-func (m *NatsStreaming) GetAll() *ReadAll {
-	if x, ok := m.GetReadOption().(*NatsStreaming_All); ok {
-		return x.All
-	}
-	return nil
-}
-
-// XXX_OneofWrappers is for the internal use of the proto package.
-func (*NatsStreaming) XXX_OneofWrappers() []interface{} {
-	return []interface{}{
-		(*NatsStreaming_LastAvailable)(nil),
-		(*NatsStreaming_ReadSequenceNumber)(nil),
-		(*NatsStreaming_ReadSince)(nil),
-		(*NatsStreaming_All)(nil),
-	}
-}
-
-type ReadLastAvailable struct {
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *ReadLastAvailable) Reset()         { *m = ReadLastAvailable{} }
-func (m *ReadLastAvailable) String() string { return proto.CompactTextString(m) }
-func (*ReadLastAvailable) ProtoMessage()    {}
-func (*ReadLastAvailable) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9ee022785668eb1d, []int{1}
-}
-
-func (m *ReadLastAvailable) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ReadLastAvailable.Unmarshal(m, b)
-}
-func (m *ReadLastAvailable) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ReadLastAvailable.Marshal(b, m, deterministic)
-}
-func (m *ReadLastAvailable) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ReadLastAvailable.Merge(m, src)
-}
-func (m *ReadLastAvailable) XXX_Size() int {
-	return xxx_messageInfo_ReadLastAvailable.Size(m)
-}
-func (m *ReadLastAvailable) XXX_DiscardUnknown() {
-	xxx_messageInfo_ReadLastAvailable.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ReadLastAvailable proto.InternalMessageInfo
-
-type ReadSequenceNumber struct {
-	SequenceNumber       uint32   `protobuf:"varint,1,opt,name=sequence_number,json=sequenceNumber,proto3" json:"sequence_number,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *ReadSequenceNumber) Reset()         { *m = ReadSequenceNumber{} }
-func (m *ReadSequenceNumber) String() string { return proto.CompactTextString(m) }
-func (*ReadSequenceNumber) ProtoMessage()    {}
-func (*ReadSequenceNumber) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9ee022785668eb1d, []int{2}
-}
-
-func (m *ReadSequenceNumber) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ReadSequenceNumber.Unmarshal(m, b)
-}
-func (m *ReadSequenceNumber) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ReadSequenceNumber.Marshal(b, m, deterministic)
-}
-func (m *ReadSequenceNumber) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ReadSequenceNumber.Merge(m, src)
-}
-func (m *ReadSequenceNumber) XXX_Size() int {
-	return xxx_messageInfo_ReadSequenceNumber.Size(m)
-}
-func (m *ReadSequenceNumber) XXX_DiscardUnknown() {
-	xxx_messageInfo_ReadSequenceNumber.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ReadSequenceNumber proto.InternalMessageInfo
-
-func (m *ReadSequenceNumber) GetSequenceNumber() uint32 {
+func (m *NatsStreamingReadArgs) GetReadSequenceNumber() uint32 {
 	if m != nil {
-		return m.SequenceNumber
+		return m.ReadSequenceNumber
 	}
 	return 0
 }
 
-type ReadSince struct {
-	// Ex: 1s, 15m, 3h, 10h
-	Since                string   `protobuf:"bytes,1,opt,name=since,proto3" json:"since,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *ReadSince) Reset()         { *m = ReadSince{} }
-func (m *ReadSince) String() string { return proto.CompactTextString(m) }
-func (*ReadSince) ProtoMessage()    {}
-func (*ReadSince) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9ee022785668eb1d, []int{3}
-}
-
-func (m *ReadSince) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ReadSince.Unmarshal(m, b)
-}
-func (m *ReadSince) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ReadSince.Marshal(b, m, deterministic)
-}
-func (m *ReadSince) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ReadSince.Merge(m, src)
-}
-func (m *ReadSince) XXX_Size() int {
-	return xxx_messageInfo_ReadSince.Size(m)
-}
-func (m *ReadSince) XXX_DiscardUnknown() {
-	xxx_messageInfo_ReadSince.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ReadSince proto.InternalMessageInfo
-
-func (m *ReadSince) GetSince() string {
+func (m *NatsStreamingReadArgs) GetReadSince() string {
 	if m != nil {
-		return m.Since
+		return m.ReadSince
 	}
 	return ""
 }
 
-type ReadAll struct {
+func (m *NatsStreamingReadArgs) GetReadAll() bool {
+	if m != nil {
+		return m.ReadAll
+	}
+	return false
+}
+
+type NatsStreamingWriteArgs struct {
+	// @gotags: kong:"help='NATS stream channel. Ex: "orders"'"
+	Channel              string   `protobuf:"bytes,1,opt,name=channel,proto3" json:"channel,omitempty" kong:"help='NATS stream channel. Ex: "`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *ReadAll) Reset()         { *m = ReadAll{} }
-func (m *ReadAll) String() string { return proto.CompactTextString(m) }
-func (*ReadAll) ProtoMessage()    {}
-func (*ReadAll) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9ee022785668eb1d, []int{4}
+func (m *NatsStreamingWriteArgs) Reset()         { *m = NatsStreamingWriteArgs{} }
+func (m *NatsStreamingWriteArgs) String() string { return proto.CompactTextString(m) }
+func (*NatsStreamingWriteArgs) ProtoMessage()    {}
+func (*NatsStreamingWriteArgs) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9ee022785668eb1d, []int{2}
 }
 
-func (m *ReadAll) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ReadAll.Unmarshal(m, b)
+func (m *NatsStreamingWriteArgs) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_NatsStreamingWriteArgs.Unmarshal(m, b)
 }
-func (m *ReadAll) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ReadAll.Marshal(b, m, deterministic)
+func (m *NatsStreamingWriteArgs) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_NatsStreamingWriteArgs.Marshal(b, m, deterministic)
 }
-func (m *ReadAll) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ReadAll.Merge(m, src)
+func (m *NatsStreamingWriteArgs) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NatsStreamingWriteArgs.Merge(m, src)
 }
-func (m *ReadAll) XXX_Size() int {
-	return xxx_messageInfo_ReadAll.Size(m)
+func (m *NatsStreamingWriteArgs) XXX_Size() int {
+	return xxx_messageInfo_NatsStreamingWriteArgs.Size(m)
 }
-func (m *ReadAll) XXX_DiscardUnknown() {
-	xxx_messageInfo_ReadAll.DiscardUnknown(m)
+func (m *NatsStreamingWriteArgs) XXX_DiscardUnknown() {
+	xxx_messageInfo_NatsStreamingWriteArgs.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_ReadAll proto.InternalMessageInfo
+var xxx_messageInfo_NatsStreamingWriteArgs proto.InternalMessageInfo
+
+func (m *NatsStreamingWriteArgs) GetChannel() string {
+	if m != nil {
+		return m.Channel
+	}
+	return ""
+}
 
 func init() {
-	proto.RegisterType((*NatsStreaming)(nil), "protos.backends.NatsStreaming")
-	proto.RegisterType((*ReadLastAvailable)(nil), "protos.backends.ReadLastAvailable")
-	proto.RegisterType((*ReadSequenceNumber)(nil), "protos.backends.ReadSequenceNumber")
-	proto.RegisterType((*ReadSince)(nil), "protos.backends.ReadSince")
-	proto.RegisterType((*ReadAll)(nil), "protos.backends.ReadAll")
+	proto.RegisterType((*NatsStreamingConn)(nil), "protos.backends.NatsStreamingConn")
+	proto.RegisterType((*NatsStreamingReadArgs)(nil), "protos.backends.NatsStreamingReadArgs")
+	proto.RegisterType((*NatsStreamingWriteArgs)(nil), "protos.backends.NatsStreamingWriteArgs")
 }
 
 func init() { proto.RegisterFile("nats-streaming.proto", fileDescriptor_9ee022785668eb1d) }
 
 var fileDescriptor_9ee022785668eb1d = []byte{
-	// 351 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x91, 0x31, 0x6f, 0xdb, 0x30,
-	0x10, 0x85, 0x65, 0x17, 0xad, 0xa1, 0x73, 0x65, 0xa3, 0xac, 0x07, 0xa2, 0x93, 0xad, 0x0e, 0xf5,
-	0x50, 0x4b, 0x40, 0x3b, 0x16, 0x46, 0x61, 0x4f, 0x02, 0x12, 0x78, 0x90, 0x87, 0x00, 0x59, 0x84,
-	0x13, 0xc5, 0x48, 0x42, 0x28, 0x4a, 0x21, 0xa9, 0xfc, 0xea, 0xfc, 0x88, 0x40, 0x94, 0x15, 0x24,
-	0xb6, 0x27, 0xe2, 0x1e, 0xbf, 0x7b, 0x77, 0x0f, 0x07, 0x0b, 0x89, 0x46, 0x6f, 0xb4, 0x51, 0x1c,
-	0xab, 0x52, 0xe6, 0x41, 0xa3, 0x6a, 0x53, 0x93, 0xb9, 0x7d, 0x74, 0x90, 0x22, 0x7b, 0xe4, 0x32,
-	0xd3, 0xfe, 0xcb, 0x18, 0xbc, 0x03, 0x1a, 0x7d, 0x1c, 0x40, 0x42, 0x61, 0xc2, 0x0a, 0x94, 0x92,
-	0x0b, 0x3a, 0x5a, 0x8e, 0xd6, 0x6e, 0x3c, 0x94, 0x64, 0x05, 0x5f, 0xb3, 0x56, 0x61, 0x2a, 0x78,
-	0x22, 0xb1, 0xe2, 0x74, 0x6c, 0xbf, 0xa7, 0x27, 0xed, 0x80, 0x15, 0x27, 0x37, 0x30, 0x13, 0xa8,
-	0x4d, 0x82, 0xcf, 0x58, 0x8a, 0x4e, 0xa5, 0xd9, 0x72, 0xb4, 0x9e, 0xfe, 0xf1, 0x83, 0xb3, 0xc1,
-	0x41, 0xcc, 0x31, 0xbb, 0x45, 0x6d, 0x76, 0x03, 0x19, 0x39, 0xb1, 0x27, 0xde, 0x0b, 0xe4, 0x0e,
-	0x16, 0x8a, 0x63, 0x96, 0x68, 0xfe, 0xd4, 0x72, 0xc9, 0x78, 0x22, 0xdb, 0x2a, 0xe5, 0x8a, 0x72,
-	0x6b, 0xf9, 0xf3, 0xaa, 0xe5, 0xf1, 0xc4, 0x1e, 0x2c, 0x1a, 0x39, 0x31, 0x51, 0x17, 0x2a, 0xf9,
-	0x07, 0xd0, 0x1b, 0x97, 0x92, 0x71, 0xfa, 0x60, 0xed, 0x7e, 0x5c, 0xb7, 0xeb, 0x88, 0xc8, 0x89,
-	0x5d, 0x35, 0x14, 0xe4, 0x37, 0x7c, 0x42, 0x21, 0x68, 0x6e, 0xbb, 0xe8, 0xd5, 0xae, 0x9d, 0x10,
-	0x91, 0x13, 0x77, 0xd8, 0xde, 0x83, 0xa9, 0x1d, 0x55, 0x37, 0xa6, 0xac, 0xa5, 0xff, 0x1d, 0xbe,
-	0x5d, 0x04, 0xf7, 0xb7, 0x40, 0x2e, 0x57, 0x27, 0xbf, 0x60, 0x7e, 0x1e, 0xbc, 0xbb, 0x87, 0x17,
-	0xcf, 0xf4, 0x07, 0xd0, 0x5f, 0x81, 0xfb, 0xb6, 0x2a, 0x59, 0xc0, 0xe7, 0x3e, 0x55, 0x7f, 0xbb,
-	0xbe, 0xf0, 0x5d, 0x98, 0x9c, 0xf6, 0xda, 0xff, 0xbf, 0xdf, 0xe6, 0xa5, 0x29, 0xda, 0x34, 0x60,
-	0x75, 0x15, 0xa6, 0x68, 0x58, 0xc1, 0x6a, 0xd5, 0x84, 0x8d, 0xb0, 0x6e, 0x1b, 0xcd, 0x0a, 0x5e,
-	0xa1, 0x0e, 0xd3, 0xb6, 0x14, 0x59, 0x98, 0xd7, 0x61, 0x1f, 0x30, 0x1c, 0x02, 0xa6, 0x5f, 0xac,
-	0xf0, 0xf7, 0x35, 0x00, 0x00, 0xff, 0xff, 0x7b, 0x46, 0x1a, 0x70, 0x61, 0x02, 0x00, 0x00,
+	// 438 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x92, 0xc1, 0x6e, 0xd3, 0x40,
+	0x10, 0x86, 0xe5, 0x16, 0x1a, 0x7b, 0x93, 0x92, 0x76, 0x29, 0xc8, 0x08, 0x81, 0x42, 0x84, 0x50,
+	0x38, 0x34, 0x46, 0x70, 0x46, 0x28, 0xe4, 0x54, 0x81, 0x72, 0x70, 0x91, 0x90, 0xb8, 0x58, 0xe3,
+	0xdd, 0x51, 0xb2, 0xea, 0x7a, 0x1d, 0x76, 0xd6, 0x48, 0x7d, 0x18, 0xde, 0x91, 0x47, 0x40, 0x3b,
+	0xb1, 0x81, 0x5e, 0x38, 0xd9, 0xfb, 0x7f, 0x9f, 0xe5, 0x9d, 0x5f, 0x23, 0x2e, 0x1c, 0x04, 0xba,
+	0xa4, 0xe0, 0x11, 0x1a, 0xe3, 0xb6, 0xcb, 0xbd, 0x6f, 0x43, 0x2b, 0xa7, 0xfc, 0xa0, 0x65, 0x0d,
+	0xea, 0x06, 0x9d, 0xa6, 0xf9, 0xcf, 0x23, 0x71, 0xbe, 0x81, 0x40, 0xd7, 0x83, 0xb8, 0x6e, 0x9d,
+	0x93, 0x67, 0xe2, 0x58, 0x93, 0xcb, 0x93, 0x59, 0xb2, 0xc8, 0xca, 0xf8, 0x2a, 0x5f, 0x88, 0x89,
+	0x71, 0x84, 0xaa, 0xf3, 0x58, 0x05, 0x4b, 0xf9, 0xd1, 0x2c, 0x59, 0xa4, 0xe5, 0x78, 0xc8, 0xbe,
+	0x58, 0x92, 0xcf, 0xc5, 0x38, 0x58, 0xaa, 0x14, 0x54, 0x0a, 0x7d, 0xc8, 0x8f, 0x67, 0xc9, 0x62,
+	0x52, 0x66, 0xc1, 0xd2, 0x1a, 0xd6, 0xe8, 0x83, 0x7c, 0x25, 0xa6, 0xcc, 0xad, 0x41, 0x17, 0x0e,
+	0xce, 0x3d, 0x76, 0x4e, 0xa3, 0xc3, 0x29, 0x7b, 0x2f, 0xc5, 0x83, 0x7f, 0xbc, 0x1b, 0xbc, 0xcd,
+	0xef, 0xb3, 0x36, 0xf9, 0xa3, 0x7d, 0xc2, 0x5b, 0xf9, 0x5a, 0x9c, 0x75, 0x84, 0xbe, 0x52, 0x1e,
+	0x35, 0xba, 0x60, 0xc0, 0x52, 0x7e, 0xc2, 0xde, 0x34, 0xe6, 0xeb, 0xbf, 0xb1, 0x7c, 0x26, 0x84,
+	0xb2, 0x1d, 0x05, 0xf4, 0x95, 0xd1, 0xf9, 0x88, 0x87, 0xca, 0xfa, 0xe4, 0x4a, 0xcb, 0xa7, 0x22,
+	0xeb, 0xff, 0x65, 0x74, 0x9e, 0x32, 0x4d, 0x0f, 0xc1, 0x95, 0x9e, 0xff, 0x4a, 0xc4, 0xa3, 0x3b,
+	0xfd, 0x94, 0x08, 0x7a, 0xe5, 0xb7, 0x24, 0x73, 0x31, 0x52, 0x3b, 0x70, 0x0e, 0x6d, 0xdf, 0xd3,
+	0x70, 0x8c, 0x5d, 0xe9, 0xce, 0x43, 0x6d, 0xb1, 0x72, 0xd0, 0x20, 0x77, 0x95, 0x95, 0xe3, 0x3e,
+	0xdb, 0x40, 0x83, 0x72, 0x29, 0x1e, 0x7a, 0x04, 0x5d, 0x59, 0xa0, 0x50, 0xc1, 0x0f, 0x30, 0x36,
+	0x22, 0xee, 0x2c, 0x2d, 0xcf, 0x23, 0xfa, 0x0c, 0x14, 0x56, 0x03, 0x90, 0x6f, 0xc4, 0x05, 0xfb,
+	0x84, 0xdf, 0x3b, 0x74, 0x0a, 0x2b, 0xd7, 0x35, 0x35, 0x7a, 0x2e, 0xf0, 0xb4, 0x94, 0x91, 0x5d,
+	0xf7, 0x68, 0xc3, 0x24, 0x0e, 0x7d, 0xf8, 0xc2, 0x38, 0x85, 0xdc, 0x60, 0x56, 0x66, 0xec, 0xc5,
+	0x40, 0x3e, 0x11, 0x29, 0x63, 0xb0, 0x96, 0x6b, 0x4b, 0xcb, 0x51, 0x3c, 0xaf, 0xac, 0x9d, 0xbf,
+	0x15, 0x8f, 0xef, 0x4c, 0xfc, 0xd5, 0x9b, 0x80, 0xff, 0x1f, 0xf9, 0xe3, 0x87, 0x6f, 0xef, 0xb7,
+	0x26, 0xec, 0xba, 0x7a, 0xa9, 0xda, 0xa6, 0xa8, 0x21, 0xa8, 0x9d, 0x6a, 0xfd, 0xbe, 0xd8, 0x5b,
+	0xbe, 0xcd, 0x25, 0xa9, 0x1d, 0x36, 0x40, 0x45, 0xdd, 0x19, 0xab, 0x8b, 0x6d, 0x5b, 0x1c, 0xf6,
+	0xb0, 0x18, 0xf6, 0xb0, 0x3e, 0xe1, 0xe0, 0xdd, 0xef, 0x00, 0x00, 0x00, 0xff, 0xff, 0x08, 0xb8,
+	0x8d, 0xa9, 0xb7, 0x02, 0x00, 0x00,
 }

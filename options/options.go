@@ -14,6 +14,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
+	"github.com/alecthomas/kong"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -31,39 +32,6 @@ const (
 var (
 	version = "UNSET"
 )
-
-type Options struct {
-	// Global options
-	Debug               bool
-	Quiet               bool
-	Stats               bool
-	StatsReportInterval time.Duration
-	Action              string
-	Version             string
-
-	// Connection config contains settings for connecting to a backend
-	Connection *protos.ConnectionConfig
-
-	// Read config contains settings for reading data
-	Read *protos.ReadConfig
-
-	// Write options include settings for writing data
-	Write *protos.WriteConfig
-
-	// Server options include settings for running plumber in server-mode
-	Server *protos.ServerConfig
-
-	// Relay options include settings for running plumber in relay-mode
-	Relay *protos.RelayConfig
-
-	// TODO: Leave dproxy until read, write and relay are done
-	// DProxy options include settings for running plumber in dproxy-mode
-	// DProxy *protos.DProxyConfig
-
-	// TODO: Batch options not supported (yet)
-	// Batch options include settings for working with the Batch API
-	// Batch *BatchOptions
-}
 
 //type DProxyOptions struct {
 //	APIToken    string
@@ -92,49 +60,9 @@ type Options struct {
 //}
 
 func Handle(cliArgs []string) (string, *Options, error) {
-	opts := &Options{}
+	opts := NewOpts()
 
-	app := kingpin.New("plumber", "`curl` for messaging systems. See: https://github.com/batchcorp/plumber")
-
-	// Specific actions
-	readCmd := app.Command("read", "Read message(s) from messaging system")
-	writeCmd := app.Command("write", "Write message(s) to messaging system")
-	relayCmd := app.Command("relay", "Relay message(s) from messaging system to Batch")
-	//batchCmd := app.Command("batch", "Access your Batch.sh account information")
-	lagCmd := app.Command("lag", "Monitor lag in the messaging system")
-	//dynamicCmd := app.Command("dynamic", "Act as a batch.sh replay destination")
-	//githubCmd := app.Command("github", "Authorize plumber to access your github repos")
-	serverCmd := app.Command("server", "Run plumber in server mode")
-
-	HandleRelayFlags(relayCmd, opts) // DONE
-	//HandleDynamicFlags(dynamicCmd, opts)
-
-	HandleKafkaFlags(readCmd, writeCmd, relayCmd, lagCmd, opts)
-	HandleRabbitFlags(readCmd, writeCmd, relayCmd, opts)
-	HandleRabbitStreamsFlags(readCmd, writeCmd, relayCmd, opts)
-	HandleGCPPubSubFlags(readCmd, writeCmd, relayCmd, opts)
-	HandleMQTTFlags(readCmd, writeCmd, relayCmd, opts)
-	HandleAWSSQSFlags(readCmd, writeCmd, relayCmd, opts)
-	HandleActiveMqFlags(readCmd, writeCmd, opts)
-	HandleAWSSNSFlags(readCmd, writeCmd, relayCmd, opts)
-	HandleAzureFlags(readCmd, writeCmd, relayCmd, opts)
-	HandleAzureEventHubFlags(readCmd, writeCmd, relayCmd, opts)
-	HandleNatsFlags(readCmd, writeCmd, relayCmd, opts)
-	HandleNatsStreamingFlags(readCmd, writeCmd, relayCmd, opts)
-	HandleRedisPubSubFlags(readCmd, writeCmd, relayCmd, opts)
-	HandleRedisStreamsFlags(readCmd, writeCmd, relayCmd, opts)
-	HandleCDCMongoFlags(readCmd, writeCmd, relayCmd, opts)
-	HandleCDCPostgresFlags(readCmd, writeCmd, relayCmd, opts)
-	HandlePulsarFlags(readCmd, writeCmd, relayCmd, opts)
-	HandleNSQFlags(readCmd, writeCmd, relayCmd, opts)
-
-	HandleGlobalFlags(readCmd, opts) // DONE
-	HandleReadFlags(readCmd, opts)
-	HandleWriteFlags(writeCmd, opts)
-	HandleReadFlags(relayCmd, opts)
-	HandleServerFlags(serverCmd, opts)
-	HandleGlobalFlags(writeCmd, opts)
-	HandleGlobalFlags(relayCmd, opts)
+	kongCtx, err := kong.New()
 
 	// TODO: Handle last
 	//HandleGlobalFlags(dynamicCmd, opts)

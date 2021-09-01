@@ -20,49 +20,138 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-type ActiveMQ struct {
-	// Required if queue not specified
-	Topic string `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
-	// Required if topic not specified
+type ActiveMQConn struct {
+	// @gotags: kong:"help='Destination host address',required,default=localhost:61613"
+	Address              string   `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty" kong:"help='Destination host address',required,default=localhost:61613"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ActiveMQConn) Reset()         { *m = ActiveMQConn{} }
+func (m *ActiveMQConn) String() string { return proto.CompactTextString(m) }
+func (*ActiveMQConn) ProtoMessage()    {}
+func (*ActiveMQConn) Descriptor() ([]byte, []int) {
+	return fileDescriptor_8d8e05b468c86515, []int{0}
+}
+
+func (m *ActiveMQConn) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ActiveMQConn.Unmarshal(m, b)
+}
+func (m *ActiveMQConn) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ActiveMQConn.Marshal(b, m, deterministic)
+}
+func (m *ActiveMQConn) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ActiveMQConn.Merge(m, src)
+}
+func (m *ActiveMQConn) XXX_Size() int {
+	return xxx_messageInfo_ActiveMQConn.Size(m)
+}
+func (m *ActiveMQConn) XXX_DiscardUnknown() {
+	xxx_messageInfo_ActiveMQConn.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ActiveMQConn proto.InternalMessageInfo
+
+func (m *ActiveMQConn) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+type ActiveMQReadArgs struct {
+	// @gotags: kong:"help='Topic to read message(s) from',xor=activemq_read"
+	Topic string `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty" kong:"help='Topic to read message(s) from',xor=activemq_read"`
+	// @gotags: kong:'help='Queue to read message(s) from',xor=activemq_read"
 	Queue                string   `protobuf:"bytes,2,opt,name=queue,proto3" json:"queue,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *ActiveMQ) Reset()         { *m = ActiveMQ{} }
-func (m *ActiveMQ) String() string { return proto.CompactTextString(m) }
-func (*ActiveMQ) ProtoMessage()    {}
-func (*ActiveMQ) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8d8e05b468c86515, []int{0}
+func (m *ActiveMQReadArgs) Reset()         { *m = ActiveMQReadArgs{} }
+func (m *ActiveMQReadArgs) String() string { return proto.CompactTextString(m) }
+func (*ActiveMQReadArgs) ProtoMessage()    {}
+func (*ActiveMQReadArgs) Descriptor() ([]byte, []int) {
+	return fileDescriptor_8d8e05b468c86515, []int{1}
 }
 
-func (m *ActiveMQ) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ActiveMQ.Unmarshal(m, b)
+func (m *ActiveMQReadArgs) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ActiveMQReadArgs.Unmarshal(m, b)
 }
-func (m *ActiveMQ) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ActiveMQ.Marshal(b, m, deterministic)
+func (m *ActiveMQReadArgs) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ActiveMQReadArgs.Marshal(b, m, deterministic)
 }
-func (m *ActiveMQ) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ActiveMQ.Merge(m, src)
+func (m *ActiveMQReadArgs) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ActiveMQReadArgs.Merge(m, src)
 }
-func (m *ActiveMQ) XXX_Size() int {
-	return xxx_messageInfo_ActiveMQ.Size(m)
+func (m *ActiveMQReadArgs) XXX_Size() int {
+	return xxx_messageInfo_ActiveMQReadArgs.Size(m)
 }
-func (m *ActiveMQ) XXX_DiscardUnknown() {
-	xxx_messageInfo_ActiveMQ.DiscardUnknown(m)
+func (m *ActiveMQReadArgs) XXX_DiscardUnknown() {
+	xxx_messageInfo_ActiveMQReadArgs.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_ActiveMQ proto.InternalMessageInfo
+var xxx_messageInfo_ActiveMQReadArgs proto.InternalMessageInfo
 
-func (m *ActiveMQ) GetTopic() string {
+func (m *ActiveMQReadArgs) GetTopic() string {
 	if m != nil {
 		return m.Topic
 	}
 	return ""
 }
 
-func (m *ActiveMQ) GetQueue() string {
+func (m *ActiveMQReadArgs) GetQueue() string {
+	if m != nil {
+		return m.Queue
+	}
+	return ""
+}
+
+type ActiveMQWriteArgs struct {
+	// @gotags: kong:"help='Topic to write message(s) to',xor=activemq_write"
+	Topic string `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty" kong:"help='Topic to write message(s) to',xor=activemq_write"`
+	// @gotags: kong:'help='Queue to write message(s) to',xor=activemq_write"
+	Queue                string   `protobuf:"bytes,2,opt,name=queue,proto3" json:"queue,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ActiveMQWriteArgs) Reset()         { *m = ActiveMQWriteArgs{} }
+func (m *ActiveMQWriteArgs) String() string { return proto.CompactTextString(m) }
+func (*ActiveMQWriteArgs) ProtoMessage()    {}
+func (*ActiveMQWriteArgs) Descriptor() ([]byte, []int) {
+	return fileDescriptor_8d8e05b468c86515, []int{2}
+}
+
+func (m *ActiveMQWriteArgs) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ActiveMQWriteArgs.Unmarshal(m, b)
+}
+func (m *ActiveMQWriteArgs) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ActiveMQWriteArgs.Marshal(b, m, deterministic)
+}
+func (m *ActiveMQWriteArgs) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ActiveMQWriteArgs.Merge(m, src)
+}
+func (m *ActiveMQWriteArgs) XXX_Size() int {
+	return xxx_messageInfo_ActiveMQWriteArgs.Size(m)
+}
+func (m *ActiveMQWriteArgs) XXX_DiscardUnknown() {
+	xxx_messageInfo_ActiveMQWriteArgs.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ActiveMQWriteArgs proto.InternalMessageInfo
+
+func (m *ActiveMQWriteArgs) GetTopic() string {
+	if m != nil {
+		return m.Topic
+	}
+	return ""
+}
+
+func (m *ActiveMQWriteArgs) GetQueue() string {
 	if m != nil {
 		return m.Queue
 	}
@@ -70,21 +159,26 @@ func (m *ActiveMQ) GetQueue() string {
 }
 
 func init() {
-	proto.RegisterType((*ActiveMQ)(nil), "protos.backends.ActiveMQ")
+	proto.RegisterType((*ActiveMQConn)(nil), "protos.backends.ActiveMQConn")
+	proto.RegisterType((*ActiveMQReadArgs)(nil), "protos.backends.ActiveMQReadArgs")
+	proto.RegisterType((*ActiveMQWriteArgs)(nil), "protos.backends.ActiveMQWriteArgs")
 }
 
 func init() { proto.RegisterFile("activemq.proto", fileDescriptor_8d8e05b468c86515) }
 
 var fileDescriptor_8d8e05b468c86515 = []byte{
-	// 153 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x4b, 0x4c, 0x2e, 0xc9,
-	0x2c, 0x4b, 0xcd, 0x2d, 0xd4, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x07, 0x53, 0xc5, 0x7a,
-	0x49, 0x89, 0xc9, 0xd9, 0xa9, 0x79, 0x29, 0xc5, 0x4a, 0x66, 0x5c, 0x1c, 0x8e, 0x60, 0x25, 0xbe,
-	0x81, 0x42, 0x22, 0x5c, 0xac, 0x25, 0xf9, 0x05, 0x99, 0xc9, 0x12, 0x8c, 0x0a, 0x8c, 0x1a, 0x9c,
-	0x41, 0x10, 0x0e, 0x48, 0xb4, 0xb0, 0x34, 0xb5, 0x34, 0x55, 0x82, 0x09, 0x22, 0x0a, 0xe6, 0x38,
-	0xd9, 0x47, 0xd9, 0xa6, 0x67, 0x96, 0x64, 0x94, 0x26, 0xe9, 0x25, 0xe7, 0xe7, 0xea, 0x27, 0x25,
-	0x96, 0x24, 0x67, 0x24, 0xe7, 0x17, 0x15, 0xe8, 0x17, 0xe4, 0x94, 0xe6, 0x26, 0xa5, 0x16, 0xe9,
-	0x16, 0x27, 0x67, 0xa4, 0xe6, 0x26, 0x16, 0xeb, 0x27, 0x95, 0x66, 0xe6, 0xa4, 0xe8, 0xa7, 0xe7,
-	0xeb, 0x43, 0x2c, 0xd6, 0x87, 0x59, 0x9c, 0xc4, 0x06, 0x16, 0x30, 0x06, 0x04, 0x00, 0x00, 0xff,
-	0xff, 0x43, 0xaa, 0x94, 0x4d, 0xa2, 0x00, 0x00, 0x00,
+	// 196 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x8f, 0x3b, 0xab, 0xc2, 0x30,
+	0x1c, 0x47, 0xe9, 0x85, 0x7b, 0x2f, 0x06, 0xf1, 0x51, 0x1c, 0x3a, 0x4a, 0xa7, 0x2e, 0x36, 0x83,
+	0xb3, 0x96, 0xea, 0xec, 0x60, 0x17, 0xc1, 0x2d, 0x8f, 0x3f, 0x6d, 0xb0, 0x69, 0xd2, 0x3c, 0xfc,
+	0xfc, 0x62, 0x6a, 0x3e, 0x80, 0x53, 0x38, 0x87, 0x93, 0x3f, 0xfc, 0xd0, 0x82, 0x30, 0x27, 0x9e,
+	0x20, 0xc7, 0x52, 0x1b, 0xe5, 0x54, 0xba, 0x0c, 0x8f, 0x2d, 0x29, 0x61, 0x0f, 0x18, 0xb8, 0xcd,
+	0x0b, 0x34, 0xaf, 0x43, 0x72, 0xb9, 0x9e, 0xd5, 0x30, 0xa4, 0x19, 0xfa, 0x27, 0x9c, 0x1b, 0xb0,
+	0x36, 0x4b, 0xb6, 0x49, 0x31, 0x6b, 0x22, 0xe6, 0x47, 0xb4, 0x8a, 0x65, 0x03, 0x84, 0xd7, 0xa6,
+	0xb5, 0xe9, 0x06, 0xfd, 0x3a, 0xa5, 0x05, 0xfb, 0xb4, 0x13, 0xbc, 0xed, 0xe8, 0xc1, 0x43, 0xf6,
+	0x33, 0xd9, 0x00, 0x79, 0x85, 0xd6, 0xf1, 0xff, 0xcd, 0x08, 0x07, 0xdf, 0x1e, 0x38, 0x55, 0xf7,
+	0x43, 0x2b, 0x5c, 0xe7, 0x69, 0xc9, 0x94, 0xc4, 0x94, 0x38, 0xd6, 0x31, 0x65, 0x34, 0xd6, 0xbd,
+	0x97, 0x14, 0xcc, 0xce, 0xb2, 0x0e, 0x24, 0xb1, 0x98, 0x7a, 0xd1, 0x73, 0xdc, 0x2a, 0x3c, 0x6d,
+	0xc5, 0x71, 0x2b, 0xfd, 0x0b, 0x62, 0xff, 0x0a, 0x00, 0x00, 0xff, 0xff, 0x02, 0x80, 0x68, 0x27,
+	0x15, 0x01, 0x00, 0x00,
 }

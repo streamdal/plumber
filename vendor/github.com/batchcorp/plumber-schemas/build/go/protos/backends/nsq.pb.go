@@ -20,72 +20,237 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-type NSQ struct {
-	// Required
-	Topic string `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty"`
-	// Required for reads
-	// Ignored for writes
-	Channel              string   `protobuf:"bytes,2,opt,name=channel,proto3" json:"channel,omitempty"`
+type NSQConn struct {
+	// @gotags: kong:"help='Address of NSQ server (Ex: localhost:4150)',env='PLUMBER_RELAY_NSQ_NSQD_ADDRESS',default='localhost:4150',xor=nsq_addressZ"
+	NsqdAddress string `protobuf:"bytes,1,opt,name=nsqd_address,json=nsqdAddress,proto3" json:"nsqd_address,omitempty" kong:"help='Address of NSQ server (Ex: localhost:4150)',env='PLUMBER_RELAY_NSQ_NSQD_ADDRESS',default='localhost:4150',xor=nsq_addressZ"`
+	// @gotags: kong:"help='Address of LookupD server (Ex: localhost:4161)',env='PLUMBER_RELAY_NSQ_LOOKUPD_ADDRESS',xor=nsq_address"
+	LookupdAddress string `protobuf:"bytes,2,opt,name=lookupd_address,json=lookupdAddress,proto3" json:"lookupd_address,omitempty" kong:"help='Address of LookupD server (Ex: localhost:4161)',env='PLUMBER_RELAY_NSQ_LOOKUPD_ADDRESS',xor=nsq_address"`
+	// @gotags: kong:"help='Enable TLS usage',env='PLUMBER_RELAY_NSQ_USE_TLS'"
+	UseTls bool `protobuf:"varint,3,opt,name=use_tls,json=useTls,proto3" json:"use_tls,omitempty" kong:"help='Enable TLS usage',env='PLUMBER_RELAY_NSQ_USE_TLS'"`
+	// @gotags: kong:"help='Whether to verify server certificate',env='PLUMBER_RELAY_NSQ_SKIP_VERIFY_TLS'"
+	InsecureTls bool `protobuf:"varint,4,opt,name=insecure_tls,json=insecureTls,proto3" json:"insecure_tls,omitempty" kong:"help='Whether to verify server certificate',env='PLUMBER_RELAY_NSQ_SKIP_VERIFY_TLS'"`
+	// @gotags: kong:"help='CA file',env='PLUMBER_RELAY_NSQ_TLS_CA_FILE',type=existingfile"
+	TlsCaCert []byte `protobuf:"bytes,5,opt,name=tls_ca_cert,json=tlsCaCert,proto3" json:"tls_ca_cert,omitempty" kong:"help='CA file',env='PLUMBER_RELAY_NSQ_TLS_CA_FILE',type=existingfile"`
+	// @gotags: kong:"help='',env='PLUMBER_RELAY_NSQ_TLS_CERT_FILE',type=existingfile"
+	TlsClientCert []byte `protobuf:"bytes,6,opt,name=tls_client_cert,json=tlsClientCert,proto3" json:"tls_client_cert,omitempty" kong:"help='',env='PLUMBER_RELAY_NSQ_TLS_CERT_FILE',type=existingfile"`
+	// @gotags: kong:"help='',env='PLUMBER_RELAY_NSQ_TLS_KEY_FILE',type=existingfile"
+	TlsClientKey []byte `protobuf:"bytes,7,opt,name=tls_client_key,json=tlsClientKey,proto3" json:"tls_client_key,omitempty" kong:"help='',env='PLUMBER_RELAY_NSQ_TLS_KEY_FILE',type=existingfile"`
+	// @gotags: kong:"help='Authentication secret',env='PLUMBER_RELAY_NSQ_AUTH_SECRET'"
+	AuthSecret string `protobuf:"bytes,8,opt,name=auth_secret,json=authSecret,proto3" json:"auth_secret,omitempty" kong:"help='Authentication secret',env='PLUMBER_RELAY_NSQ_AUTH_SECRET'"`
+	// @gotags: kong:"help='Client ID to identify as',env='PLUMBER_RELAY_NSQ_CLIENT_ID',default=plumber"
+	ClientId             string   `protobuf:"bytes,9,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty" kong:"help='Client ID to identify as',env='PLUMBER_RELAY_NSQ_CLIENT_ID',default=plumber"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *NSQ) Reset()         { *m = NSQ{} }
-func (m *NSQ) String() string { return proto.CompactTextString(m) }
-func (*NSQ) ProtoMessage()    {}
-func (*NSQ) Descriptor() ([]byte, []int) {
+func (m *NSQConn) Reset()         { *m = NSQConn{} }
+func (m *NSQConn) String() string { return proto.CompactTextString(m) }
+func (*NSQConn) ProtoMessage()    {}
+func (*NSQConn) Descriptor() ([]byte, []int) {
 	return fileDescriptor_f83e7c7ac3c992fd, []int{0}
 }
 
-func (m *NSQ) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_NSQ.Unmarshal(m, b)
+func (m *NSQConn) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_NSQConn.Unmarshal(m, b)
 }
-func (m *NSQ) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_NSQ.Marshal(b, m, deterministic)
+func (m *NSQConn) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_NSQConn.Marshal(b, m, deterministic)
 }
-func (m *NSQ) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_NSQ.Merge(m, src)
+func (m *NSQConn) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NSQConn.Merge(m, src)
 }
-func (m *NSQ) XXX_Size() int {
-	return xxx_messageInfo_NSQ.Size(m)
+func (m *NSQConn) XXX_Size() int {
+	return xxx_messageInfo_NSQConn.Size(m)
 }
-func (m *NSQ) XXX_DiscardUnknown() {
-	xxx_messageInfo_NSQ.DiscardUnknown(m)
+func (m *NSQConn) XXX_DiscardUnknown() {
+	xxx_messageInfo_NSQConn.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_NSQ proto.InternalMessageInfo
+var xxx_messageInfo_NSQConn proto.InternalMessageInfo
 
-func (m *NSQ) GetTopic() string {
+func (m *NSQConn) GetNsqdAddress() string {
+	if m != nil {
+		return m.NsqdAddress
+	}
+	return ""
+}
+
+func (m *NSQConn) GetLookupdAddress() string {
+	if m != nil {
+		return m.LookupdAddress
+	}
+	return ""
+}
+
+func (m *NSQConn) GetUseTls() bool {
+	if m != nil {
+		return m.UseTls
+	}
+	return false
+}
+
+func (m *NSQConn) GetInsecureTls() bool {
+	if m != nil {
+		return m.InsecureTls
+	}
+	return false
+}
+
+func (m *NSQConn) GetTlsCaCert() []byte {
+	if m != nil {
+		return m.TlsCaCert
+	}
+	return nil
+}
+
+func (m *NSQConn) GetTlsClientCert() []byte {
+	if m != nil {
+		return m.TlsClientCert
+	}
+	return nil
+}
+
+func (m *NSQConn) GetTlsClientKey() []byte {
+	if m != nil {
+		return m.TlsClientKey
+	}
+	return nil
+}
+
+func (m *NSQConn) GetAuthSecret() string {
+	if m != nil {
+		return m.AuthSecret
+	}
+	return ""
+}
+
+func (m *NSQConn) GetClientId() string {
+	if m != nil {
+		return m.ClientId
+	}
+	return ""
+}
+
+type NSQReadArgs struct {
+	// @gotags: kong:"help='NSQ topic to read from',env='PLUMBER_RELAY_NSQ_TOPIC',required"
+	Topic string `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty" kong:"help='NSQ topic to read from',env='PLUMBER_RELAY_NSQ_TOPIC',required"`
+	// @gotags: kong:"help='Output channel',env='PLUMBER_RELAY_NSQ_CHANNEL',required"
+	Channel              string   `protobuf:"bytes,2,opt,name=channel,proto3" json:"channel,omitempty" kong:"help='Output channel',env='PLUMBER_RELAY_NSQ_CHANNEL',required"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *NSQReadArgs) Reset()         { *m = NSQReadArgs{} }
+func (m *NSQReadArgs) String() string { return proto.CompactTextString(m) }
+func (*NSQReadArgs) ProtoMessage()    {}
+func (*NSQReadArgs) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f83e7c7ac3c992fd, []int{1}
+}
+
+func (m *NSQReadArgs) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_NSQReadArgs.Unmarshal(m, b)
+}
+func (m *NSQReadArgs) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_NSQReadArgs.Marshal(b, m, deterministic)
+}
+func (m *NSQReadArgs) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NSQReadArgs.Merge(m, src)
+}
+func (m *NSQReadArgs) XXX_Size() int {
+	return xxx_messageInfo_NSQReadArgs.Size(m)
+}
+func (m *NSQReadArgs) XXX_DiscardUnknown() {
+	xxx_messageInfo_NSQReadArgs.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_NSQReadArgs proto.InternalMessageInfo
+
+func (m *NSQReadArgs) GetTopic() string {
 	if m != nil {
 		return m.Topic
 	}
 	return ""
 }
 
-func (m *NSQ) GetChannel() string {
+func (m *NSQReadArgs) GetChannel() string {
 	if m != nil {
 		return m.Channel
 	}
 	return ""
 }
 
+type NSQWriteArgs struct {
+	// @gotags: kong:"help='NSQ topic to write to',required"
+	Topic                string   `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty" kong:"help='NSQ topic to write to',required"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *NSQWriteArgs) Reset()         { *m = NSQWriteArgs{} }
+func (m *NSQWriteArgs) String() string { return proto.CompactTextString(m) }
+func (*NSQWriteArgs) ProtoMessage()    {}
+func (*NSQWriteArgs) Descriptor() ([]byte, []int) {
+	return fileDescriptor_f83e7c7ac3c992fd, []int{2}
+}
+
+func (m *NSQWriteArgs) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_NSQWriteArgs.Unmarshal(m, b)
+}
+func (m *NSQWriteArgs) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_NSQWriteArgs.Marshal(b, m, deterministic)
+}
+func (m *NSQWriteArgs) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NSQWriteArgs.Merge(m, src)
+}
+func (m *NSQWriteArgs) XXX_Size() int {
+	return xxx_messageInfo_NSQWriteArgs.Size(m)
+}
+func (m *NSQWriteArgs) XXX_DiscardUnknown() {
+	xxx_messageInfo_NSQWriteArgs.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_NSQWriteArgs proto.InternalMessageInfo
+
+func (m *NSQWriteArgs) GetTopic() string {
+	if m != nil {
+		return m.Topic
+	}
+	return ""
+}
+
 func init() {
-	proto.RegisterType((*NSQ)(nil), "protos.backends.NSQ")
+	proto.RegisterType((*NSQConn)(nil), "protos.backends.NSQConn")
+	proto.RegisterType((*NSQReadArgs)(nil), "protos.backends.NSQReadArgs")
+	proto.RegisterType((*NSQWriteArgs)(nil), "protos.backends.NSQWriteArgs")
 }
 
 func init() { proto.RegisterFile("nsq.proto", fileDescriptor_f83e7c7ac3c992fd) }
 
 var fileDescriptor_f83e7c7ac3c992fd = []byte{
-	// 150 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0xcc, 0x2b, 0x2e, 0xd4,
-	0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x07, 0x53, 0xc5, 0x7a, 0x49, 0x89, 0xc9, 0xd9, 0xa9,
-	0x79, 0x29, 0xc5, 0x4a, 0xa6, 0x5c, 0xcc, 0x7e, 0xc1, 0x81, 0x42, 0x22, 0x5c, 0xac, 0x25, 0xf9,
-	0x05, 0x99, 0xc9, 0x12, 0x8c, 0x0a, 0x8c, 0x1a, 0x9c, 0x41, 0x10, 0x8e, 0x90, 0x04, 0x17, 0x7b,
-	0x72, 0x46, 0x62, 0x5e, 0x5e, 0x6a, 0x8e, 0x04, 0x13, 0x58, 0x1c, 0xc6, 0x75, 0xb2, 0x8f, 0xb2,
-	0x4d, 0xcf, 0x2c, 0xc9, 0x28, 0x4d, 0xd2, 0x4b, 0xce, 0xcf, 0xd5, 0x4f, 0x4a, 0x2c, 0x49, 0xce,
-	0x48, 0xce, 0x2f, 0x2a, 0xd0, 0x2f, 0xc8, 0x29, 0xcd, 0x4d, 0x4a, 0x2d, 0xd2, 0x2d, 0x4e, 0xce,
-	0x48, 0xcd, 0x4d, 0x2c, 0xd6, 0x4f, 0x2a, 0xcd, 0xcc, 0x49, 0xd1, 0x4f, 0xcf, 0xd7, 0x87, 0xd8,
-	0xab, 0x0f, 0xb3, 0x37, 0x89, 0x0d, 0x2c, 0x60, 0x0c, 0x08, 0x00, 0x00, 0xff, 0xff, 0x66, 0xb0,
-	0xb4, 0x28, 0x9c, 0x00, 0x00, 0x00,
+	// 351 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x91, 0xc1, 0xeb, 0xd3, 0x30,
+	0x14, 0xc7, 0xe9, 0x74, 0xeb, 0x9a, 0xd6, 0x0d, 0x82, 0x60, 0x41, 0xd0, 0x39, 0x86, 0xee, 0xe2,
+	0x7a, 0xf0, 0x3c, 0x64, 0xee, 0x24, 0xc2, 0x60, 0xad, 0x20, 0x78, 0x29, 0x69, 0xf2, 0x58, 0xcb,
+	0xb2, 0xa4, 0xcb, 0x4b, 0x0e, 0xfb, 0xe3, 0xfc, 0xdf, 0xa4, 0x69, 0xab, 0xbf, 0xcb, 0xef, 0x14,
+	0xde, 0xe7, 0xfb, 0x49, 0xc2, 0x7b, 0x8f, 0x44, 0x0a, 0xef, 0xbb, 0xd6, 0x68, 0xab, 0xe9, 0xd2,
+	0x1f, 0xb8, 0xab, 0x18, 0xbf, 0x82, 0x12, 0xb8, 0xfe, 0x33, 0x21, 0xe1, 0xa9, 0x38, 0x1f, 0xb5,
+	0x52, 0xf4, 0x03, 0x49, 0x14, 0xde, 0x45, 0xc9, 0x84, 0x30, 0x80, 0x98, 0x06, 0xab, 0x60, 0x1b,
+	0xe5, 0x71, 0xc7, 0x0e, 0x3d, 0xa2, 0x9f, 0xc8, 0x52, 0x6a, 0x7d, 0x75, 0xed, 0x7f, 0x6b, 0xe2,
+	0xad, 0xc5, 0x80, 0x47, 0xf1, 0x0d, 0x09, 0x1d, 0x42, 0x69, 0x25, 0xa6, 0x2f, 0x56, 0xc1, 0x76,
+	0x9e, 0xcf, 0x1c, 0xc2, 0x4f, 0x89, 0xdd, 0x27, 0x8d, 0x42, 0xe0, 0xce, 0xf4, 0xe9, 0x4b, 0x9f,
+	0xc6, 0x23, 0xeb, 0x94, 0x77, 0x24, 0xb6, 0x12, 0x4b, 0xce, 0x4a, 0x0e, 0xc6, 0xa6, 0xd3, 0x55,
+	0xb0, 0x4d, 0xf2, 0xc8, 0x4a, 0x3c, 0xb2, 0x23, 0x18, 0x4b, 0x3f, 0x92, 0xa5, 0xcf, 0x65, 0x03,
+	0xca, 0xf6, 0xce, 0xcc, 0x3b, 0xaf, 0x3a, 0xc7, 0x53, 0xef, 0x6d, 0xc8, 0xe2, 0x89, 0x77, 0x85,
+	0x47, 0x1a, 0x7a, 0x2d, 0xf9, 0xa7, 0xfd, 0x80, 0x07, 0x7d, 0x4f, 0x62, 0xe6, 0x6c, 0x5d, 0x22,
+	0x70, 0x03, 0x36, 0x9d, 0xfb, 0x76, 0x48, 0x87, 0x0a, 0x4f, 0xe8, 0x5b, 0x12, 0x0d, 0x4f, 0x34,
+	0x22, 0x8d, 0x7c, 0x3c, 0xef, 0xc1, 0x77, 0xb1, 0xde, 0x93, 0xf8, 0x54, 0x9c, 0x73, 0x60, 0xe2,
+	0x60, 0x2e, 0x48, 0x5f, 0x93, 0xa9, 0xd5, 0x6d, 0xc3, 0x87, 0xd9, 0xf5, 0x05, 0x4d, 0x49, 0xc8,
+	0x6b, 0xa6, 0x14, 0xc8, 0x61, 0x5a, 0x63, 0xb9, 0xde, 0x90, 0xe4, 0x54, 0x9c, 0x7f, 0x99, 0xc6,
+	0xc2, 0xf3, 0xf7, 0xbf, 0x7d, 0xfd, 0xbd, 0xbf, 0x34, 0xb6, 0x76, 0xd5, 0x8e, 0xeb, 0x5b, 0x56,
+	0x31, 0xcb, 0x6b, 0xae, 0x4d, 0x9b, 0xb5, 0xd2, 0xdd, 0x2a, 0x30, 0x9f, 0x91, 0xd7, 0x70, 0x63,
+	0x98, 0x55, 0xae, 0x91, 0x22, 0xbb, 0xe8, 0xac, 0xdf, 0x72, 0x36, 0x6e, 0xb9, 0x9a, 0x79, 0xf0,
+	0xe5, 0x6f, 0x00, 0x00, 0x00, 0xff, 0xff, 0xec, 0x81, 0xd5, 0x94, 0x0a, 0x02, 0x00, 0x00,
 }

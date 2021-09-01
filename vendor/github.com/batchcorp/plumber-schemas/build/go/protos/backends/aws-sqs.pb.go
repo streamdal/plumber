@@ -20,72 +20,364 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-type AWSSQS struct {
-	QueueName string `protobuf:"bytes,1,opt,name=queue_name,json=queueName,proto3" json:"queue_name,omitempty"`
-	// Required if the queue is located in a different account
-	RemoteAccountId      string   `protobuf:"bytes,2,opt,name=remote_account_id,json=remoteAccountId,proto3" json:"remote_account_id,omitempty"`
+type AWSSQSConn struct {
+	// @gotags: kong:"en=AWS_DEFAULT_REGION,hidden,required"
+	AwsRegion string `protobuf:"bytes,1,opt,name=aws_region,json=awsRegion,proto3" json:"aws_region,omitempty" kong:"en=AWS_DEFAULT_REGION,hidden,required"`
+	// @gotags: kong:"env=AWS_ACCESS_KEY_ID,hidden,required"
+	AwsAccessKeyId string `protobuf:"bytes,2,opt,name=aws_access_key_id,json=awsAccessKeyId,proto3" json:"aws_access_key_id,omitempty" kong:"env=AWS_ACCESS_KEY_ID,hidden,required"`
+	// @gotags: kong:"env=AWS_SECRET_ACCESS_KEY,hidden,required"
+	AwsSecretAccessKey   string   `protobuf:"bytes,3,opt,name=aws_secret_access_key,json=awsSecretAccessKey,proto3" json:"aws_secret_access_key,omitempty" kong:"env=AWS_SECRET_ACCESS_KEY,hidden,required"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *AWSSQS) Reset()         { *m = AWSSQS{} }
-func (m *AWSSQS) String() string { return proto.CompactTextString(m) }
-func (*AWSSQS) ProtoMessage()    {}
-func (*AWSSQS) Descriptor() ([]byte, []int) {
+func (m *AWSSQSConn) Reset()         { *m = AWSSQSConn{} }
+func (m *AWSSQSConn) String() string { return proto.CompactTextString(m) }
+func (*AWSSQSConn) ProtoMessage()    {}
+func (*AWSSQSConn) Descriptor() ([]byte, []int) {
 	return fileDescriptor_07517116f22c3664, []int{0}
 }
 
-func (m *AWSSQS) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_AWSSQS.Unmarshal(m, b)
+func (m *AWSSQSConn) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AWSSQSConn.Unmarshal(m, b)
 }
-func (m *AWSSQS) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_AWSSQS.Marshal(b, m, deterministic)
+func (m *AWSSQSConn) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AWSSQSConn.Marshal(b, m, deterministic)
 }
-func (m *AWSSQS) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_AWSSQS.Merge(m, src)
+func (m *AWSSQSConn) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AWSSQSConn.Merge(m, src)
 }
-func (m *AWSSQS) XXX_Size() int {
-	return xxx_messageInfo_AWSSQS.Size(m)
+func (m *AWSSQSConn) XXX_Size() int {
+	return xxx_messageInfo_AWSSQSConn.Size(m)
 }
-func (m *AWSSQS) XXX_DiscardUnknown() {
-	xxx_messageInfo_AWSSQS.DiscardUnknown(m)
+func (m *AWSSQSConn) XXX_DiscardUnknown() {
+	xxx_messageInfo_AWSSQSConn.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_AWSSQS proto.InternalMessageInfo
+var xxx_messageInfo_AWSSQSConn proto.InternalMessageInfo
 
-func (m *AWSSQS) GetQueueName() string {
+func (m *AWSSQSConn) GetAwsRegion() string {
+	if m != nil {
+		return m.AwsRegion
+	}
+	return ""
+}
+
+func (m *AWSSQSConn) GetAwsAccessKeyId() string {
+	if m != nil {
+		return m.AwsAccessKeyId
+	}
+	return ""
+}
+
+func (m *AWSSQSConn) GetAwsSecretAccessKey() string {
+	if m != nil {
+		return m.AwsSecretAccessKey
+	}
+	return ""
+}
+
+type AWSSQSReadArgs struct {
+	// @gotags: kong:"help='Queue name'"
+	QueueName string `protobuf:"bytes,1,opt,name=queue_name,json=queueName,proto3" json:"queue_name,omitempty" kong:"help='Queue name'"`
+	// @gotags: kong:"help='Remote AWS account ID',optional"
+	RemoteAccountId string `protobuf:"bytes,2,opt,name=remote_account_id,json=remoteAccountId,proto3" json:"remote_account_id,omitempty" kong:"help='Remote AWS account ID',optional"`
+	// @gotags: kong:"help='Max number of messages to read',default=1"
+	MaxNumMessages uint32 `protobuf:"varint,3,opt,name=max_num_messages,json=maxNumMessages,proto3" json:"max_num_messages,omitempty" kong:"help='Max number of messages to read',default=1"`
+	// @gotags: kong:"help='"An id to identify this read request by',default='plumber/relay"
+	ReceiveRequestAttemptId string `protobuf:"bytes,4,opt,name=receive_request_attempt_id,json=receiveRequestAttemptId,proto3" json:"receive_request_attempt_id,omitempty" kong:"help='"`
+	// @gotags: kong:"help='Auto-delete read/received message(s)'"
+	AutoDelete bool `protobuf:"varint,5,opt,name=auto_delete,json=autoDelete,proto3" json:"auto_delete,omitempty" kong:"help='Auto-delete read/received message(s)'"`
+	// @gotags: kong:"help='Number of seconds to wait for messages (not used when using 'follow')',default=5"
+	WaitTimeSeconds      uint32   `protobuf:"varint,6,opt,name=wait_time_seconds,json=waitTimeSeconds,proto3" json:"wait_time_seconds,omitempty" kong:"help='Number of seconds to wait for messages (not used when using 'follow')',default=5"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *AWSSQSReadArgs) Reset()         { *m = AWSSQSReadArgs{} }
+func (m *AWSSQSReadArgs) String() string { return proto.CompactTextString(m) }
+func (*AWSSQSReadArgs) ProtoMessage()    {}
+func (*AWSSQSReadArgs) Descriptor() ([]byte, []int) {
+	return fileDescriptor_07517116f22c3664, []int{1}
+}
+
+func (m *AWSSQSReadArgs) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AWSSQSReadArgs.Unmarshal(m, b)
+}
+func (m *AWSSQSReadArgs) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AWSSQSReadArgs.Marshal(b, m, deterministic)
+}
+func (m *AWSSQSReadArgs) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AWSSQSReadArgs.Merge(m, src)
+}
+func (m *AWSSQSReadArgs) XXX_Size() int {
+	return xxx_messageInfo_AWSSQSReadArgs.Size(m)
+}
+func (m *AWSSQSReadArgs) XXX_DiscardUnknown() {
+	xxx_messageInfo_AWSSQSReadArgs.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AWSSQSReadArgs proto.InternalMessageInfo
+
+func (m *AWSSQSReadArgs) GetQueueName() string {
 	if m != nil {
 		return m.QueueName
 	}
 	return ""
 }
 
-func (m *AWSSQS) GetRemoteAccountId() string {
+func (m *AWSSQSReadArgs) GetRemoteAccountId() string {
 	if m != nil {
 		return m.RemoteAccountId
 	}
 	return ""
 }
 
+func (m *AWSSQSReadArgs) GetMaxNumMessages() uint32 {
+	if m != nil {
+		return m.MaxNumMessages
+	}
+	return 0
+}
+
+func (m *AWSSQSReadArgs) GetReceiveRequestAttemptId() string {
+	if m != nil {
+		return m.ReceiveRequestAttemptId
+	}
+	return ""
+}
+
+func (m *AWSSQSReadArgs) GetAutoDelete() bool {
+	if m != nil {
+		return m.AutoDelete
+	}
+	return false
+}
+
+func (m *AWSSQSReadArgs) GetWaitTimeSeconds() uint32 {
+	if m != nil {
+		return m.WaitTimeSeconds
+	}
+	return 0
+}
+
+type AWSSQSWriteArgs struct {
+	// @gotags: kong:"help='Queue name'"
+	QueueName string `protobuf:"bytes,1,opt,name=queue_name,json=queueName,proto3" json:"queue_name,omitempty" kong:"help='Queue name'"`
+	// @gotags: kong:"help='Remote AWS account ID',optional"
+	RemoteAccountId string `protobuf:"bytes,2,opt,name=remote_account_id,json=remoteAccountId,proto3" json:"remote_account_id,omitempty" kong:"help='Remote AWS account ID',optional"`
+	// @gotags: kong:"help='How many seconds to delay message delivery by',default=0"
+	DelaySeconds uint32 `protobuf:"varint,3,opt,name=delay_seconds,json=delaySeconds,proto3" json:"delay_seconds,omitempty" kong:"help='How many seconds to delay message delivery by',default=0"`
+	// @gotags: kong:"help='Add optional attributes to outgoing message (k=v, delimited by ;)'"
+	Attributes map[string]string `protobuf:"bytes,4,rep,name=attributes,proto3" json:"attributes,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3" kong:"help='Add optional attributes to outgoing message (k=v, delimited by ;)'"`
+	// @gotags: kong:"help='Message Group ID. For FIFO queues only'"
+	MessageGroupId string `protobuf:"bytes,5,opt,name=message_group_id,json=messageGroupId,proto3" json:"message_group_id,omitempty" kong:"help='Message Group ID. For FIFO queues only'"`
+	// @gotags: kong:"help='Required when publishing to a FIFO queue that does not have content based deduplication enabled'"
+	MessageDeduplicationId string   `protobuf:"bytes,6,opt,name=message_deduplication_id,json=messageDeduplicationId,proto3" json:"message_deduplication_id,omitempty" kong:"help='Required when publishing to a FIFO queue that does not have content based deduplication enabled'"`
+	XXX_NoUnkeyedLiteral   struct{} `json:"-"`
+	XXX_unrecognized       []byte   `json:"-"`
+	XXX_sizecache          int32    `json:"-"`
+}
+
+func (m *AWSSQSWriteArgs) Reset()         { *m = AWSSQSWriteArgs{} }
+func (m *AWSSQSWriteArgs) String() string { return proto.CompactTextString(m) }
+func (*AWSSQSWriteArgs) ProtoMessage()    {}
+func (*AWSSQSWriteArgs) Descriptor() ([]byte, []int) {
+	return fileDescriptor_07517116f22c3664, []int{2}
+}
+
+func (m *AWSSQSWriteArgs) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AWSSQSWriteArgs.Unmarshal(m, b)
+}
+func (m *AWSSQSWriteArgs) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AWSSQSWriteArgs.Marshal(b, m, deterministic)
+}
+func (m *AWSSQSWriteArgs) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AWSSQSWriteArgs.Merge(m, src)
+}
+func (m *AWSSQSWriteArgs) XXX_Size() int {
+	return xxx_messageInfo_AWSSQSWriteArgs.Size(m)
+}
+func (m *AWSSQSWriteArgs) XXX_DiscardUnknown() {
+	xxx_messageInfo_AWSSQSWriteArgs.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AWSSQSWriteArgs proto.InternalMessageInfo
+
+func (m *AWSSQSWriteArgs) GetQueueName() string {
+	if m != nil {
+		return m.QueueName
+	}
+	return ""
+}
+
+func (m *AWSSQSWriteArgs) GetRemoteAccountId() string {
+	if m != nil {
+		return m.RemoteAccountId
+	}
+	return ""
+}
+
+func (m *AWSSQSWriteArgs) GetDelaySeconds() uint32 {
+	if m != nil {
+		return m.DelaySeconds
+	}
+	return 0
+}
+
+func (m *AWSSQSWriteArgs) GetAttributes() map[string]string {
+	if m != nil {
+		return m.Attributes
+	}
+	return nil
+}
+
+func (m *AWSSQSWriteArgs) GetMessageGroupId() string {
+	if m != nil {
+		return m.MessageGroupId
+	}
+	return ""
+}
+
+func (m *AWSSQSWriteArgs) GetMessageDeduplicationId() string {
+	if m != nil {
+		return m.MessageDeduplicationId
+	}
+	return ""
+}
+
+// SQS has a dedicated RelayArgs struct as relay has different defaults than read
+type AWSSQSRelayArgs struct {
+	// @gotags: kong:"help='Queue name',env=PLUMBER_RELAY_SQS_QUEUE_NAME"
+	QueueName string `protobuf:"bytes,1,opt,name=queue_name,json=queueName,proto3" json:"queue_name,omitempty" kong:"help='Queue name',env=PLUMBER_RELAY_SQS_QUEUE_NAME"`
+	// @gotags: kong:"help='Remote AWS account ID',env=PLUMBER_RELAY_SQS_REMOTE_ACCOUNT_ID,optional"
+	RemoteAccountId string `protobuf:"bytes,2,opt,name=remote_account_id,json=remoteAccountId,proto3" json:"remote_account_id,omitempty" kong:"help='Remote AWS account ID',env=PLUMBER_RELAY_SQS_REMOTE_ACCOUNT_ID,optional"`
+	// @gotags: kong:"help='Max number of messages to read',env=PLUMBER_RELAY_SQS_MAX_NUM_MESSAGES,default=1"
+	MaxNumMessages uint32 `protobuf:"varint,3,opt,name=max_num_messages,json=maxNumMessages,proto3" json:"max_num_messages,omitempty" kong:"help='Max number of messages to read',env=PLUMBER_RELAY_SQS_MAX_NUM_MESSAGES,default=1"`
+	// @gotags: kong:"help='"An id to identify this read request by',env=PLUMBER_RELAY_SQS_RECEIVE_REQUEST_ATTEMPT_ID,default='plumber/relay"
+	ReceiveRequestAttemptId string `protobuf:"bytes,4,opt,name=receive_request_attempt_id,json=receiveRequestAttemptId,proto3" json:"receive_request_attempt_id,omitempty" kong:"help='"`
+	// @gotags: kong:"help='Auto-delete read/received message(s)',env=PLUMBER_RELAY_SQS_AUTO_DELETE"
+	AutoDelete bool `protobuf:"varint,5,opt,name=auto_delete,json=autoDelete,proto3" json:"auto_delete,omitempty" kong:"help='Auto-delete read/received message(s)',env=PLUMBER_RELAY_SQS_AUTO_DELETE"`
+	// @gotags: kong:"help='Number of seconds to wait for messages (not used when using 'follow')',env=PLUMBER_RELAY_SQS_WAIT_TIME_SECONDS,default=5"
+	WaitTimeSeconds      int32    `protobuf:"varint,6,opt,name=wait_time_seconds,json=waitTimeSeconds,proto3" json:"wait_time_seconds,omitempty" kong:"help='Number of seconds to wait for messages (not used when using 'follow')',env=PLUMBER_RELAY_SQS_WAIT_TIME_SECONDS,default=5"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *AWSSQSRelayArgs) Reset()         { *m = AWSSQSRelayArgs{} }
+func (m *AWSSQSRelayArgs) String() string { return proto.CompactTextString(m) }
+func (*AWSSQSRelayArgs) ProtoMessage()    {}
+func (*AWSSQSRelayArgs) Descriptor() ([]byte, []int) {
+	return fileDescriptor_07517116f22c3664, []int{3}
+}
+
+func (m *AWSSQSRelayArgs) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AWSSQSRelayArgs.Unmarshal(m, b)
+}
+func (m *AWSSQSRelayArgs) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AWSSQSRelayArgs.Marshal(b, m, deterministic)
+}
+func (m *AWSSQSRelayArgs) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AWSSQSRelayArgs.Merge(m, src)
+}
+func (m *AWSSQSRelayArgs) XXX_Size() int {
+	return xxx_messageInfo_AWSSQSRelayArgs.Size(m)
+}
+func (m *AWSSQSRelayArgs) XXX_DiscardUnknown() {
+	xxx_messageInfo_AWSSQSRelayArgs.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AWSSQSRelayArgs proto.InternalMessageInfo
+
+func (m *AWSSQSRelayArgs) GetQueueName() string {
+	if m != nil {
+		return m.QueueName
+	}
+	return ""
+}
+
+func (m *AWSSQSRelayArgs) GetRemoteAccountId() string {
+	if m != nil {
+		return m.RemoteAccountId
+	}
+	return ""
+}
+
+func (m *AWSSQSRelayArgs) GetMaxNumMessages() uint32 {
+	if m != nil {
+		return m.MaxNumMessages
+	}
+	return 0
+}
+
+func (m *AWSSQSRelayArgs) GetReceiveRequestAttemptId() string {
+	if m != nil {
+		return m.ReceiveRequestAttemptId
+	}
+	return ""
+}
+
+func (m *AWSSQSRelayArgs) GetAutoDelete() bool {
+	if m != nil {
+		return m.AutoDelete
+	}
+	return false
+}
+
+func (m *AWSSQSRelayArgs) GetWaitTimeSeconds() int32 {
+	if m != nil {
+		return m.WaitTimeSeconds
+	}
+	return 0
+}
+
 func init() {
-	proto.RegisterType((*AWSSQS)(nil), "protos.backends.AWSSQS")
+	proto.RegisterType((*AWSSQSConn)(nil), "protos.backends.AWSSQSConn")
+	proto.RegisterType((*AWSSQSReadArgs)(nil), "protos.backends.AWSSQSReadArgs")
+	proto.RegisterType((*AWSSQSWriteArgs)(nil), "protos.backends.AWSSQSWriteArgs")
+	proto.RegisterMapType((map[string]string)(nil), "protos.backends.AWSSQSWriteArgs.AttributesEntry")
+	proto.RegisterType((*AWSSQSRelayArgs)(nil), "protos.backends.AWSSQSRelayArgs")
 }
 
 func init() { proto.RegisterFile("aws-sqs.proto", fileDescriptor_07517116f22c3664) }
 
 var fileDescriptor_07517116f22c3664 = []byte{
-	// 183 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x34, 0xce, 0x3d, 0xab, 0xc2, 0x30,
-	0x14, 0xc6, 0x71, 0x7a, 0x87, 0x42, 0x03, 0x97, 0x72, 0x3b, 0x75, 0xb9, 0x20, 0x4e, 0x22, 0xb4,
-	0x19, 0x9c, 0x45, 0xea, 0xe6, 0x22, 0x68, 0x06, 0xc1, 0xa5, 0xe4, 0xe5, 0xd0, 0x16, 0x9b, 0x9e,
-	0x36, 0x27, 0xc1, 0xaf, 0x2f, 0xa4, 0x38, 0x1d, 0xf8, 0x9d, 0x67, 0xf8, 0xb3, 0x5f, 0xf9, 0xa6,
-	0x8a, 0x16, 0xaa, 0x67, 0x87, 0x1e, 0x8b, 0x3c, 0x1e, 0xaa, 0x95, 0xd4, 0x2f, 0x98, 0x0c, 0x6d,
-	0x05, 0x4b, 0x9b, 0x87, 0x10, 0x37, 0x51, 0xfc, 0x33, 0xb6, 0x04, 0x08, 0xd0, 0x4e, 0xd2, 0x42,
-	0x99, 0x6c, 0x92, 0x5d, 0x76, 0xcf, 0xa2, 0x5c, 0xa5, 0x85, 0x62, 0xcf, 0xfe, 0x1c, 0x58, 0xf4,
-	0xd0, 0x4a, 0xad, 0x31, 0x4c, 0xbe, 0x1d, 0x4c, 0xf9, 0x13, 0x57, 0xf9, 0xfa, 0x68, 0x56, 0xbf,
-	0x98, 0xf3, 0xe9, 0x79, 0xec, 0x06, 0xdf, 0x07, 0x55, 0x6b, 0xb4, 0x5c, 0x49, 0xaf, 0x7b, 0x8d,
-	0x6e, 0xe6, 0xf3, 0x18, 0xac, 0x02, 0x57, 0x91, 0xee, 0xc1, 0x4a, 0xe2, 0x2a, 0x0c, 0xa3, 0xe1,
-	0x1d, 0xf2, 0xb5, 0x8a, 0x7f, 0xab, 0x54, 0x1a, 0xe1, 0xf0, 0x09, 0x00, 0x00, 0xff, 0xff, 0xb3,
-	0x03, 0xa1, 0x93, 0xbe, 0x00, 0x00, 0x00,
+	// 532 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe4, 0x92, 0x4b, 0x6f, 0xd3, 0x4e,
+	0x14, 0xc5, 0x95, 0xb4, 0x89, 0xfe, 0x9d, 0xfe, 0x93, 0xb4, 0x23, 0x1e, 0x56, 0x25, 0x44, 0x14,
+	0x36, 0x01, 0xa9, 0x36, 0x8f, 0x4d, 0x05, 0xaa, 0x90, 0xa1, 0x08, 0x45, 0x88, 0x0a, 0x1c, 0xa4,
+	0x4a, 0x6c, 0xac, 0xb1, 0xe7, 0xca, 0x19, 0xd5, 0xe3, 0x71, 0xe6, 0x51, 0x37, 0x1f, 0x81, 0x15,
+	0x7c, 0x5a, 0xd6, 0x68, 0x66, 0x9c, 0x10, 0x85, 0x2d, 0x3b, 0x56, 0x89, 0xcf, 0xb9, 0xf7, 0xfa,
+	0xa7, 0xe3, 0x83, 0x06, 0xa4, 0x51, 0xa7, 0x6a, 0xa9, 0xc2, 0x5a, 0x0a, 0x2d, 0xf0, 0xc8, 0xfd,
+	0xa8, 0x30, 0x23, 0xf9, 0x35, 0x54, 0x54, 0x4d, 0xbe, 0x75, 0x10, 0x8a, 0xaf, 0xe6, 0xf3, 0xcf,
+	0xf3, 0xb7, 0xa2, 0xaa, 0xf0, 0x03, 0x84, 0x48, 0xa3, 0x52, 0x09, 0x05, 0x13, 0x55, 0xd0, 0x19,
+	0x77, 0xa6, 0x07, 0xc9, 0x01, 0x69, 0x54, 0xe2, 0x04, 0xfc, 0x18, 0x1d, 0x5b, 0x9b, 0xe4, 0x39,
+	0x28, 0x95, 0x5e, 0xc3, 0x2a, 0x65, 0x34, 0xe8, 0xba, 0xa9, 0x21, 0x69, 0x54, 0xec, 0xf4, 0x0f,
+	0xb0, 0x9a, 0x51, 0xfc, 0x0c, 0xdd, 0xb5, 0xa3, 0x0a, 0x72, 0x09, 0x7a, 0x6b, 0x23, 0xd8, 0x73,
+	0xe3, 0x98, 0x34, 0x6a, 0xee, 0xbc, 0xcd, 0xd2, 0xe4, 0x7b, 0x17, 0x0d, 0x3d, 0x4b, 0x02, 0x84,
+	0xc6, 0xb2, 0x50, 0x96, 0x67, 0x69, 0xc0, 0x40, 0x5a, 0x11, 0x0e, 0x6b, 0x1e, 0xa7, 0x5c, 0x12,
+	0x0e, 0xf8, 0x09, 0x3a, 0x96, 0xc0, 0x85, 0x06, 0xfb, 0x02, 0x61, 0x2a, 0xfd, 0x9b, 0x67, 0xe4,
+	0x8d, 0xd8, 0xeb, 0x33, 0x8a, 0xa7, 0xe8, 0x88, 0x93, 0xdb, 0xb4, 0x32, 0x3c, 0xe5, 0xa0, 0x14,
+	0x29, 0x40, 0x39, 0x96, 0x41, 0x32, 0xe4, 0xe4, 0xf6, 0xd2, 0xf0, 0x8f, 0xad, 0x8a, 0x5f, 0xa1,
+	0x13, 0x09, 0x39, 0xb0, 0x1b, 0x48, 0x25, 0x2c, 0x0d, 0x28, 0x9d, 0x12, 0xad, 0x81, 0xd7, 0xee,
+	0xfc, 0xbe, 0x3b, 0x7f, 0xbf, 0x9d, 0x48, 0xfc, 0x40, 0xec, 0xfd, 0x19, 0xc5, 0x0f, 0xd1, 0x21,
+	0x31, 0x5a, 0xa4, 0x14, 0x4a, 0xd0, 0x10, 0xf4, 0xc6, 0x9d, 0xe9, 0x7f, 0x09, 0xb2, 0xd2, 0x85,
+	0x53, 0x2c, 0x73, 0x43, 0x98, 0x4e, 0x35, 0xe3, 0x60, 0xe3, 0x11, 0x15, 0x55, 0x41, 0xdf, 0x81,
+	0x8c, 0xac, 0xf1, 0x85, 0x71, 0x98, 0x7b, 0x79, 0xf2, 0xb3, 0x8b, 0x46, 0x3e, 0x91, 0x2b, 0xc9,
+	0x34, 0xfc, 0xed, 0x48, 0x1e, 0xa1, 0x01, 0x85, 0x92, 0xac, 0x36, 0x18, 0x3e, 0x8f, 0xff, 0x9d,
+	0xd8, 0x32, 0xe0, 0x4f, 0x08, 0x11, 0xad, 0x25, 0xcb, 0x8c, 0x06, 0x15, 0xec, 0x8f, 0xf7, 0xa6,
+	0x87, 0xcf, 0x9f, 0x86, 0x3b, 0x3d, 0x0a, 0x77, 0x28, 0xc3, 0x78, 0xb3, 0xf2, 0xae, 0xd2, 0x72,
+	0x95, 0x6c, 0xdd, 0x70, 0x5f, 0xc2, 0x67, 0x9d, 0x16, 0x52, 0x98, 0xda, 0x12, 0xf6, 0x7c, 0x89,
+	0x5a, 0xfd, 0xbd, 0x95, 0x67, 0x14, 0x9f, 0xa1, 0x60, 0x3d, 0x49, 0x81, 0x9a, 0xba, 0x64, 0x39,
+	0xd1, 0x4c, 0x54, 0x76, 0xa3, 0xef, 0x36, 0xee, 0xb5, 0xfe, 0xc5, 0xb6, 0x3d, 0xa3, 0x27, 0xe7,
+	0x68, 0xb4, 0x83, 0x80, 0x8f, 0xd0, 0x9e, 0xed, 0x9f, 0x4f, 0xcc, 0xfe, 0xc5, 0x77, 0x50, 0xef,
+	0x86, 0x94, 0x06, 0xda, 0x7c, 0xfc, 0xc3, 0xcb, 0xee, 0x59, 0x67, 0xf2, 0x63, 0x13, 0x7c, 0x62,
+	0xb3, 0xf8, 0xe7, 0xba, 0xd8, 0xfb, 0xa3, 0x8b, 0x6f, 0x5e, 0x7f, 0x3d, 0x2f, 0x98, 0x5e, 0x98,
+	0x2c, 0xcc, 0x05, 0x8f, 0x32, 0xa2, 0xf3, 0x45, 0x2e, 0x64, 0x1d, 0xd5, 0xa5, 0xe1, 0x19, 0xc8,
+	0x53, 0x95, 0x2f, 0x80, 0x13, 0x15, 0x65, 0x86, 0x95, 0x34, 0x2a, 0x44, 0xe4, 0x2b, 0x12, 0xad,
+	0x2b, 0x92, 0xf5, 0x9d, 0xf0, 0xe2, 0x57, 0x00, 0x00, 0x00, 0xff, 0xff, 0x8a, 0xc8, 0x67, 0xef,
+	0x93, 0x04, 0x00, 0x00,
 }
