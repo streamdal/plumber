@@ -9,6 +9,8 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
+
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/ssh/terminal"
@@ -148,10 +150,10 @@ func getConfig() *config.Config {
 
 	if cfg == nil {
 		cfg = &config.Config{
-			Connections: make(map[string]*types.Connection),
+			Connections: make(map[string]*protos.Connection),
 			Relays:      make(map[string]*types.Relay),
-			Schemas:     make(map[string]*types.Schema),
-			Services:    make(map[string]*types.Service),
+			Schemas:     make(map[string]*protos.Schema),
+			Services:    make(map[string]*protos.Service),
 		}
 	}
 

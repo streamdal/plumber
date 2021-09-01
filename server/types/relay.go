@@ -1,37 +1,18 @@
 package types
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"time"
 
-	"github.com/golang/protobuf/jsonpb"
-
-	"github.com/batchcorp/plumber/backends/kafka"
-	"github.com/batchcorp/plumber/cli"
-
 	"github.com/pkg/errors"
-
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber/backends/kafka"
+	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
 )
-
-// Connection is a wrapper around protos.Connect so that we can implement Marshaler interface
-type Connection struct {
-	*protos.Connection
-}
-
-type Schema struct {
-	*protos.Schema
-}
-
-// Service is a wrapper around protos.Service so that we can implement Marshaler interface
-type Service struct {
-	*protos.Service
-}
 
 type Relay struct {
 	Active     bool                `json:"-"`
@@ -42,81 +23,6 @@ type Relay struct {
 	Backend    relay.IRelayBackend `json:"-"`
 	Config     *protos.Relay       `json:"config"`
 	log        *logrus.Entry       `json:"-"`
-}
-
-// MarshalJSON marshals a connection to JSON
-func (c *Connection) MarshalJSON() ([]byte, error) {
-	m := jsonpb.Marshaler{}
-
-	buf := bytes.NewBuffer([]byte(``))
-
-	if err := m.Marshal(buf, c.Connection); err != nil {
-		return nil, errors.Wrap(err, "could not marshal protos.Connection")
-	}
-	return buf.Bytes(), nil
-}
-
-// UnmarshalJSON unmarshals JSON into a connection struct
-func (c *Connection) UnmarshalJSON(v []byte) error {
-	conn := &protos.Connection{}
-
-	if err := jsonpb.Unmarshal(bytes.NewBuffer(v), conn); err != nil {
-		return errors.Wrap(err, "unable to unmarshal stored connection")
-	}
-
-	c.Connection = conn
-
-	return nil
-}
-
-// MarshalJSON marshals a relay proto message into JSON
-func (r *Relay) MarshalJSON() ([]byte, error) {
-	m := jsonpb.Marshaler{}
-
-	buf := bytes.NewBuffer([]byte(``))
-
-	if err := m.Marshal(buf, r.Config); err != nil {
-		return nil, errors.Wrap(err, "could not marshal protos.Relay")
-	}
-	return buf.Bytes(), nil
-}
-
-// UnmarshalJSON unmarshals JSON into a relay proto message
-func (r *Relay) UnmarshalJSON(v []byte) error {
-	cfg := &protos.Relay{}
-
-	if err := jsonpb.Unmarshal(bytes.NewBuffer(v), cfg); err != nil {
-		return errors.Wrap(err, "unable to unmarshal stored relay")
-	}
-
-	r.Config = cfg
-
-	return nil
-}
-
-// MarshalJSON marshals a service proto message into JSON
-func (r *Service) MarshalJSON() ([]byte, error) {
-	m := jsonpb.Marshaler{}
-
-	buf := bytes.NewBuffer([]byte(``))
-
-	if err := m.Marshal(buf, r.Service); err != nil {
-		return nil, errors.Wrap(err, "could not marshal protos.Service")
-	}
-	return buf.Bytes(), nil
-}
-
-// UnmarshalJSON unmarshals JSON into a service proto message
-func (r *Service) UnmarshalJSON(v []byte) error {
-	cfg := &protos.Service{}
-
-	if err := jsonpb.Unmarshal(bytes.NewBuffer(v), cfg); err != nil {
-		return errors.Wrap(err, "unable to unmarshal stored relay")
-	}
-
-	r.Service = cfg
-
-	return nil
 }
 
 // StartRelay starts a configured relay, it's workers, and the GRPC workers

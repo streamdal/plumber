@@ -30,8 +30,6 @@ func (e *Etcd) handleDirectWatchResponse(ctx context.Context, resp *clientv3.Wat
 
 		// Add actions here that the consumer should respond to
 		switch msg.Action {
-		case DoFoobarAction:
-			err = e.doFoobar(ctx, msg)
 		default:
 			e.log.Debugf("unrecognized action '%s' for key '%s' - skipping", msg.Action, string(v.Kv.Key))
 		}
@@ -42,10 +40,5 @@ func (e *Etcd) handleDirectWatchResponse(ctx context.Context, resp *clientv3.Wat
 		}
 	}
 
-	return nil
-}
-
-func (e *Etcd) doFoobar(ctx context.Context, msg *Message) error {
-	e.log.Debugf("running doFoobar handler for msg emitted by %s", msg.EmittedBy)
 	return nil
 }

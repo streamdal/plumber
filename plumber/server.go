@@ -3,7 +3,6 @@ package plumber
 import (
 	"fmt"
 	"net"
-	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -35,7 +34,7 @@ func (p *Plumber) RunServer() error {
 }
 
 func (p *Plumber) startEtcd() error {
-	e, err := etcd.New(p.Config.Options.Server)
+	e, err := etcd.New(p.Config.Options.Server, p.PersistentConfig)
 	if err != nil {
 		return errors.Wrap(err, "unable to instantiate etcd")
 	}
@@ -45,6 +44,10 @@ func (p *Plumber) startEtcd() error {
 	}
 
 	p.Etcd = e
+
+	if err := e.PopulateCache(); err != nil {
+		p.log.Errorf("Unable to load data from etcd: %s", err)
+	}
 
 	return nil
 }
@@ -70,13 +73,8 @@ func (p *Plumber) runServer() error {
 	plumberServer := &server.PlumberServer{
 		PersistentConfig: p.PersistentConfig,
 		AuthToken:        p.Options.Server.AuthToken,
-		ConnectionsMutex: &sync.RWMutex{},
-		Reads:            make(map[string]*server.Read),
-		ReadsMutex:       &sync.RWMutex{},
-		RelaysMutex:      &sync.RWMutex{},
-		SchemasMutex:     &sync.RWMutex{},
-		ServicesMutex:    &sync.RWMutex{},
 		GithubService:    gh,
+		Etcd:             p.Etcd,
 		Log:              logrus.WithField("pkg", "plumber/server.go"),
 	}
 

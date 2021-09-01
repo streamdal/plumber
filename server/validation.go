@@ -11,6 +11,11 @@ import (
 )
 
 var (
+	// Server
+
+	ErrMissingAuth  = errors.New("auth cannot be nil")
+	ErrInvalidToken = errors.New("invalid token")
+
 	// Connections
 
 	ErrMissingConnection     = errors.New("connection cannot be nil")
@@ -30,13 +35,19 @@ var (
 	ErrMissingRootType          = errors.New("root message cannot be empty")
 	ErrMissingZipArchive        = errors.New("zip archive is empty")
 	ErrMissingAVROSchema        = errors.New("AVRO schema cannot be empty")
+	ErrMissingKafkaArgs         = errors.New("you must provide at least one arguments of: kafka")
 
 	// Services
 
-	ErrMissingName    = errors.New("name cannot be empty")
-	ErrMissingOwner   = errors.New("owner cannot be empty")
-	ErrMissingService = errors.New("service cannot be empty")
-	ErrInvalidRepoURL = errors.New("repo URL must be a valid URL or left blank")
+	ErrMissingName     = errors.New("name cannot be empty")
+	ErrMissingOwner    = errors.New("owner cannot be empty")
+	ErrMissingService  = errors.New("service cannot be empty")
+	ErrInvalidRepoURL  = errors.New("repo URL must be a valid URL or left blank")
+	ErrServiceNotFound = errors.New("service does not exist")
+
+	// Schemas
+
+	ErrInvalidGithubSchemaType = errors.New("only protobuf and avro schemas can be imported from github")
 )
 
 // validateConnection ensures all required parameters are passed when creating/testing/updating a connection
@@ -97,6 +108,10 @@ func validateRead(req *protos.Read) error {
 
 // validateArgsKafka ensures all mandatory arguments are present for a kafka read
 func validateArgsKafka(cfg *args.Kafka) error {
+	if cfg == nil {
+		return ErrMissingKafkaArgs
+	}
+
 	if len(cfg.Topics) == 0 {
 		return ErrMissingTopic
 	}
@@ -161,9 +176,9 @@ func validateService(s *protos.Service) error {
 		return ErrMissingName
 	}
 
-	if s.OwnerId == "" {
-		return ErrMissingOwner
-	}
+	//if s.OwnerId == "" {
+	//	return ErrMissingOwner
+	//}
 
 	if s.RepoUrl != "" {
 		_, err := url.ParseRequestURI(s.RepoUrl)

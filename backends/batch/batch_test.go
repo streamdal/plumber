@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber/config"
-	"github.com/batchcorp/plumber/server/types"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -46,7 +46,7 @@ func BatchWithMockResponse(httpCode int, responseBody string) *Batch {
 			Batch: &cli.BatchOptions{},
 		},
 		PersistentConfig: &config.Config{
-			Connections: make(map[string]*types.Connection),
+			Connections: make(map[string]*protos.Connection),
 		},
 	}
 }

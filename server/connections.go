@@ -4,30 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/golang/protobuf/proto"
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
-	"github.com/batchcorp/plumber/server/types"
+
+	"github.com/batchcorp/plumber/embed/etcd"
 )
-
-// setConn sets in-memory connection
-func (p *PlumberServer) setConn(conn *types.Connection) {
-	p.ConnectionsMutex.Lock()
-	p.PersistentConfig.Connections[conn.Id] = conn
-	p.ConnectionsMutex.Unlock()
-
-	if err := p.PersistentConfig.Save(); err != nil {
-		p.Log.Error(err)
-	}
-}
-
-// getConn retrieves in memory connection
-func (p *PlumberServer) getConn(connID string) *types.Connection {
-	p.ConnectionsMutex.RLock()
-	defer p.ConnectionsMutex.RUnlock()
-	return p.PersistentConfig.Connections[connID]
-}
 
 func (p *PlumberServer) GetAllConnections(_ context.Context, req *protos.GetAllConnectionsRequest) (*protos.GetAllConnectionsResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
@@ -36,7 +20,7 @@ func (p *PlumberServer) GetAllConnections(_ context.Context, req *protos.GetAllC
 
 	conns := make([]*protos.Connection, 0)
 	for _, v := range p.PersistentConfig.Connections {
-		conns = append(conns, v.Connection)
+		conns = append(conns, v)
 	}
 
 	return &protos.GetAllConnectionsResponse{
@@ -49,17 +33,17 @@ func (p *PlumberServer) GetConnection(_ context.Context, req *protos.GetConnecti
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	conn := p.getConn(req.ConnectionId)
+	conn := p.PersistentConfig.GetConnection(req.ConnectionId)
 	if conn == nil {
 		return nil, CustomError(common.Code_NOT_FOUND, "no such connection id")
 	}
 
 	return &protos.GetConnectionResponse{
-		Connection: conn.Connection,
+		Connection: conn,
 	}, nil
 }
 
-func (p *PlumberServer) CreateConnection(_ context.Context, req *protos.CreateConnectionRequest) (*protos.CreateConnectionResponse, error) {
+func (p *PlumberServer) CreateConnection(ctx context.Context, req *protos.CreateConnectionRequest) (*protos.CreateConnectionResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -74,7 +58,22 @@ func (p *PlumberServer) CreateConnection(_ context.Context, req *protos.CreateCo
 		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
 	}
 
-	p.setConn(&types.Connection{Connection: req.Connection})
+	data, err := proto.Marshal(conn)
+	if err != nil {
+		return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
+	}
+
+	// Save to etcd
+	_, err = p.Etcd.Put(ctx, etcd.CacheConnectionsPrefix+"/"+conn.Id, string(data))
+	if err != nil {
+		return nil, CustomError(common.Code_ABORTED, err.Error())
+	}
+
+	p.PersistentConfig.SetConnection(conn.Id, conn)
+
+	if err := p.Etcd.PublishCreateConnection(ctx, conn); err != nil {
+		p.Log.Error(err)
+	}
 
 	p.Log.Infof("Connection '%s' created", conn.Id)
 
@@ -111,14 +110,14 @@ func (p *PlumberServer) TestConnection(_ context.Context, req *protos.TestConnec
 	}, nil
 }
 
-func (p *PlumberServer) UpdateConnection(_ context.Context, req *protos.UpdateConnectionRequest) (*protos.UpdateConnectionResponse, error) {
+func (p *PlumberServer) UpdateConnection(ctx context.Context, req *protos.UpdateConnectionRequest) (*protos.UpdateConnectionResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
 	requestID := uuid.NewV4().String()
 
-	conn := p.getConn(req.ConnectionId)
+	conn := p.PersistentConfig.GetConnection(req.ConnectionId)
 	if conn == nil {
 		return nil, CustomError(common.Code_NOT_FOUND, "no such connection id")
 	}
@@ -127,7 +126,26 @@ func (p *PlumberServer) UpdateConnection(_ context.Context, req *protos.UpdateCo
 		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
 	}
 
-	p.setConn(&types.Connection{Connection: req.Connection})
+	conn = req.Connection
+
+	data, err := proto.Marshal(conn)
+	if err != nil {
+		return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
+	}
+
+	// Update in etcd
+	_, err = p.Etcd.Put(ctx, etcd.CacheConnectionsPrefix+"/"+conn.Id, string(data))
+	if err != nil {
+		return nil, CustomError(common.Code_ABORTED, err.Error())
+	}
+
+	// Update in memory
+	p.PersistentConfig.SetConnection(req.Connection.Id, conn)
+
+	// Publish UpdateConnection event
+	if err := p.Etcd.PublishUpdateConnection(ctx, conn); err != nil {
+		p.Log.Error(err)
+	}
 
 	p.Log.WithField("request_id", requestID).Infof("Connection '%s' updated", req.ConnectionId)
 
@@ -140,24 +158,30 @@ func (p *PlumberServer) UpdateConnection(_ context.Context, req *protos.UpdateCo
 	}, nil
 }
 
-func (p *PlumberServer) DeleteConnection(_ context.Context, req *protos.DeleteConnectionRequest) (*protos.DeleteConnectionResponse, error) {
+func (p *PlumberServer) DeleteConnection(ctx context.Context, req *protos.DeleteConnectionRequest) (*protos.DeleteConnectionResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
 	requestID := uuid.NewV4().String()
 
-	p.ConnectionsMutex.Lock()
-	defer p.ConnectionsMutex.Unlock()
-	_, ok := p.PersistentConfig.Connections[req.ConnectionId]
-	if !ok {
+	conn := p.PersistentConfig.GetConnection(req.ConnectionId)
+	if conn == nil {
 		return nil, CustomError(common.Code_NOT_FOUND, "no such connection id")
 	}
 
-	delete(p.PersistentConfig.Connections, req.ConnectionId)
+	// Delete in etcd
+	_, err := p.Etcd.Delete(ctx, etcd.CacheConnectionsPrefix+"/"+conn.Id)
+	if err != nil {
+		return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to delete connection: "+err.Error()))
+	}
 
-	if err := p.PersistentConfig.Save(); err != nil {
-		p.Log.Errorf("unable to save updated connections list: %s", err)
+	// Delete in memory
+	p.PersistentConfig.DeleteConnection(conn.Id)
+
+	// Publish DeleteConnection event
+	if err := p.Etcd.PublishDeleteConnection(ctx, conn); err != nil {
+		p.Log.Error(err)
 	}
 
 	p.Log.WithField("request_id", requestID).Infof("Connection '%s' deleted", req.ConnectionId)

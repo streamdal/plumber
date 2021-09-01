@@ -8,12 +8,25 @@ import (
 )
 
 const (
-	DoFoobarAction = "DoFoobar"
-	DoFoobazAction = "DoFoobaz"
+	CreateConnection = "CreateConnection"
+	UpdateConnection = "UpdateConnection"
+	DeleteConnection = "DeleteConnection"
+
+	CreateService = "CreateService"
+	UpdateService = "UpdateService"
+	DeleteService = "DeleteService"
+
+	CreateSchema = "CreateSchema"
+	UpdateSchema = "UpdateSchema"
+	DeleteSchema = "DeleteSchema"
+
+	CreateRelay = "CreateRelay"
+	UpdateRelay = "UpdateRelay"
+	DeleteRelay = "DeleteRelay"
 )
 
 var (
-	ValidActions = []Action{DoFoobarAction, DoFoobazAction}
+	ValidActions = []Action{CreateConnection, UpdateConnection, DeleteConnection}
 )
 
 type Action string
@@ -24,6 +37,15 @@ type Message struct {
 	Metadata  map[string]string
 	EmittedBy string
 	EmittedAt time.Time // UTC
+}
+
+// MessageDeleteConnection is emitted and consumed during DeleteConnection actions
+type MessageDeleteConnection struct {
+	ConnectionID string `json:"connection_id"`
+}
+
+type MessageDeleteService struct {
+	ServiceID string `json:"service_id"`
 }
 
 func (m *Message) Validate() error {
