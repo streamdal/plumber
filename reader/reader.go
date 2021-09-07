@@ -45,7 +45,7 @@ func Decode(opts *options.Options, message []byte) ([]byte, error) {
 		message = decoded
 	}
 
-	// Handle AVRO
+	// New AVRO
 	if opts.Decoding.AvroSchemaFile != "" {
 		// SQS doesn't like binary
 		if opts.AWSSQS.QueueName != "" {

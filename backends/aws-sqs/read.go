@@ -76,7 +76,7 @@ func (a *AWSSQS) Read(ctx context.Context, resultsChan chan *types.ReadMessage, 
 			}
 		}
 
-		// Handle decode + output conversion
+		// New decode + output conversion
 		for _, m := range msgResult.Messages {
 			resultsChan <- &types.ReadMessage{
 				Value:      []byte(*m.Body),

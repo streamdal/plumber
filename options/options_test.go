@@ -28,7 +28,7 @@ func TestHandleRabbitFlags_read(t *testing.T) {
 		"--avro-schema", "../test-assets/avro/test.avsc",
 	}
 
-	cmd, opts, err := Handle(args)
+	cmd, opts, err := New(args)
 
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(cmd).To(Equal("read rabbit"))
@@ -72,7 +72,7 @@ func TestHandleRabbitFlags_relay(t *testing.T) {
 		"--avro-schema", "../test-assets/avro/test.avsc",
 	}
 
-	cmd, opts, err := Handle(args)
+	cmd, opts, err := New(args)
 
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(cmd).To(Equal("relay rabbit"))
@@ -114,7 +114,7 @@ func TestHandleRabbitFlags_write(t *testing.T) {
 		"--avro-schema", "../test-assets/avro/test.avsc",
 	}
 
-	cmd, opts, err := Handle(args)
+	cmd, opts, err := New(args)
 
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(cmd).To(Equal("write rabbit"))
@@ -150,7 +150,7 @@ func TestHandleMQTTFlags_read(t *testing.T) {
 		"--avro-schema", "../test-assets/avro/test.avsc",
 	}
 
-	cmd, opts, err := Handle(args)
+	cmd, opts, err := New(args)
 
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(cmd).To(Equal("read mqtt"))
@@ -190,7 +190,7 @@ func TestHandleMQTTFlags_write(t *testing.T) {
 		"--avro-schema", "../test-assets/avro/test.avsc",
 	}
 
-	cmd, opts, err := Handle(args)
+	cmd, opts, err := New(args)
 
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(cmd).To(Equal("write mqtt"))
@@ -221,7 +221,7 @@ func TestHandleKafkaFlags_lag(t *testing.T) {
 		"--group-id", "plumber_test_group",
 	}
 
-	cmd, opts, err := Handle(args)
+	cmd, opts, err := New(args)
 
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(cmd).To(Equal("lag kafka"))
@@ -247,7 +247,7 @@ func TestHandleKafkaFlags_read(t *testing.T) {
 		"--lag",
 	}
 
-	cmd, opts, err := Handle(args)
+	cmd, opts, err := New(args)
 
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(cmd).To(Equal("read kafka"))
@@ -281,7 +281,7 @@ func TestHandleKafkaFlags_write(t *testing.T) {
 		"--avro-schema", "../test-assets/avro/test.avsc",
 	}
 
-	cmd, opts, err := Handle(args)
+	cmd, opts, err := New(args)
 
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(cmd).To(Equal("write kafka"))
@@ -312,7 +312,7 @@ func TestHandleAWSSQSFlags_read(t *testing.T) {
 		"--avro-schema", "../test-assets/avro/test.avsc",
 	}
 
-	cmd, opts, err := Handle(args)
+	cmd, opts, err := New(args)
 
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(cmd).To(Equal("read aws-sqs"))
@@ -343,7 +343,7 @@ func TestHandleAWSSQSFlags_write(t *testing.T) {
 		"--avro-schema", "../test-assets/avro/test.avsc",
 	}
 
-	cmd, opts, err := Handle(args)
+	cmd, opts, err := New(args)
 
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(cmd).To(Equal("write aws-sqs"))
@@ -374,7 +374,7 @@ func TestHandleGCPPubSubFlags_read(t *testing.T) {
 		"--avro-schema", "../test-assets/avro/test.avsc",
 	}
 
-	cmd, opts, err := Handle(args)
+	cmd, opts, err := New(args)
 
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(cmd).To(Equal("read gcp-pubsub"))
@@ -402,7 +402,7 @@ func TestHandleGCPPubSubFlags_write(t *testing.T) {
 		"--avro-schema", "../test-assets/avro/test.avsc",
 	}
 
-	cmd, opts, err := Handle(args)
+	cmd, opts, err := New(args)
 
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(cmd).To(Equal("write gcp-pubsub"))

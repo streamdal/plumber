@@ -195,8 +195,8 @@ type RabbitWriteArgs struct {
 	ExchangeName string `protobuf:"bytes,1,opt,name=exchange_name,json=exchangeName,proto3" json:"exchange_name,omitempty" kong:"help='Exchange to write message(s) to',required"`
 	// @gotags: kong:"help='Routing key to write message(s) to',required"
 	RoutingKey string `protobuf:"bytes,2,opt,name=routing_key,json=routingKey,proto3" json:"routing_key,omitempty" kong:"help='Routing key to write message(s) to',required"`
-	// @gotags: kong:"help='Fills message properties 'app_id' with this value',default=plumber"
-	AppId                string   `protobuf:"bytes,3,opt,name=app_id,json=appId,proto3" json:"app_id,omitempty" kong:"help='Fills message properties 'app_id' with this value',default=plumber"`
+	// @gotags: kong:"help='Fills message properties $app_id with this value',default=plumber"
+	AppId                string   `protobuf:"bytes,3,opt,name=app_id,json=appId,proto3" json:"app_id,omitempty" kong:"help='Fills message properties  with this value',default=plumber"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`

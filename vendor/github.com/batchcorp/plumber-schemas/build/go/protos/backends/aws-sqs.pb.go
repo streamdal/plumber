@@ -85,12 +85,12 @@ type AWSSQSReadArgs struct {
 	RemoteAccountId string `protobuf:"bytes,2,opt,name=remote_account_id,json=remoteAccountId,proto3" json:"remote_account_id,omitempty" kong:"help='Remote AWS account ID',optional"`
 	// @gotags: kong:"help='Max number of messages to read',default=1"
 	MaxNumMessages uint32 `protobuf:"varint,3,opt,name=max_num_messages,json=maxNumMessages,proto3" json:"max_num_messages,omitempty" kong:"help='Max number of messages to read',default=1"`
-	// @gotags: kong:"help='"An id to identify this read request by',default='plumber/relay"
-	ReceiveRequestAttemptId string `protobuf:"bytes,4,opt,name=receive_request_attempt_id,json=receiveRequestAttemptId,proto3" json:"receive_request_attempt_id,omitempty" kong:"help='"`
+	// @gotags: kong:"help='An id to identify this read request by',default='plumber/relay'"
+	ReceiveRequestAttemptId string `protobuf:"bytes,4,opt,name=receive_request_attempt_id,json=receiveRequestAttemptId,proto3" json:"receive_request_attempt_id,omitempty" kong:"help='An id to identify this read request by',default='plumber/relay'"`
 	// @gotags: kong:"help='Auto-delete read/received message(s)'"
 	AutoDelete bool `protobuf:"varint,5,opt,name=auto_delete,json=autoDelete,proto3" json:"auto_delete,omitempty" kong:"help='Auto-delete read/received message(s)'"`
-	// @gotags: kong:"help='Number of seconds to wait for messages (not used when using 'follow')',default=5"
-	WaitTimeSeconds      uint32   `protobuf:"varint,6,opt,name=wait_time_seconds,json=waitTimeSeconds,proto3" json:"wait_time_seconds,omitempty" kong:"help='Number of seconds to wait for messages (not used when using 'follow')',default=5"`
+	// @gotags: kong:"help='Number of seconds to wait for messages (not used when using --continuous)',default=5"
+	WaitTimeSeconds      uint32   `protobuf:"varint,6,opt,name=wait_time_seconds,json=waitTimeSeconds,proto3" json:"wait_time_seconds,omitempty" kong:"help='Number of seconds to wait for messages (not used when using --continuous)',default=5"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -256,12 +256,12 @@ type AWSSQSRelayArgs struct {
 	RemoteAccountId string `protobuf:"bytes,2,opt,name=remote_account_id,json=remoteAccountId,proto3" json:"remote_account_id,omitempty" kong:"help='Remote AWS account ID',env=PLUMBER_RELAY_SQS_REMOTE_ACCOUNT_ID,optional"`
 	// @gotags: kong:"help='Max number of messages to read',env=PLUMBER_RELAY_SQS_MAX_NUM_MESSAGES,default=1"
 	MaxNumMessages uint32 `protobuf:"varint,3,opt,name=max_num_messages,json=maxNumMessages,proto3" json:"max_num_messages,omitempty" kong:"help='Max number of messages to read',env=PLUMBER_RELAY_SQS_MAX_NUM_MESSAGES,default=1"`
-	// @gotags: kong:"help='"An id to identify this read request by',env=PLUMBER_RELAY_SQS_RECEIVE_REQUEST_ATTEMPT_ID,default='plumber/relay"
-	ReceiveRequestAttemptId string `protobuf:"bytes,4,opt,name=receive_request_attempt_id,json=receiveRequestAttemptId,proto3" json:"receive_request_attempt_id,omitempty" kong:"help='"`
+	// @gotags: kong:"help='An id to identify this read request by',env=PLUMBER_RELAY_SQS_RECEIVE_REQUEST_ATTEMPT_ID,default='plumber/relay'"
+	ReceiveRequestAttemptId string `protobuf:"bytes,4,opt,name=receive_request_attempt_id,json=receiveRequestAttemptId,proto3" json:"receive_request_attempt_id,omitempty" kong:"help='An id to identify this read request by',env=PLUMBER_RELAY_SQS_RECEIVE_REQUEST_ATTEMPT_ID,default='plumber/relay'"`
 	// @gotags: kong:"help='Auto-delete read/received message(s)',env=PLUMBER_RELAY_SQS_AUTO_DELETE"
 	AutoDelete bool `protobuf:"varint,5,opt,name=auto_delete,json=autoDelete,proto3" json:"auto_delete,omitempty" kong:"help='Auto-delete read/received message(s)',env=PLUMBER_RELAY_SQS_AUTO_DELETE"`
-	// @gotags: kong:"help='Number of seconds to wait for messages (not used when using 'follow')',env=PLUMBER_RELAY_SQS_WAIT_TIME_SECONDS,default=5"
-	WaitTimeSeconds      int32    `protobuf:"varint,6,opt,name=wait_time_seconds,json=waitTimeSeconds,proto3" json:"wait_time_seconds,omitempty" kong:"help='Number of seconds to wait for messages (not used when using 'follow')',env=PLUMBER_RELAY_SQS_WAIT_TIME_SECONDS,default=5"`
+	// @gotags: kong:"help='Number of seconds to wait for messages (not used when using --continuous)',env=PLUMBER_RELAY_SQS_WAIT_TIME_SECONDS,default=5"
+	WaitTimeSeconds      int32    `protobuf:"varint,6,opt,name=wait_time_seconds,json=waitTimeSeconds,proto3" json:"wait_time_seconds,omitempty" kong:"help='Number of seconds to wait for messages (not used when using --continuous)',env=PLUMBER_RELAY_SQS_WAIT_TIME_SECONDS,default=5"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`

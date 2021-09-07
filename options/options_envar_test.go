@@ -42,7 +42,7 @@ func TestHandleRabbitEnvars_relay(t *testing.T) {
 		}
 	}()
 
-	cmd, opts, err := Handle([]string{"relay", "rabbit"})
+	cmd, opts, err := New([]string{"relay", "rabbit"})
 
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(cmd).To(Equal("relay rabbit"))
@@ -95,7 +95,7 @@ func TestHandleAWSSQSEnvars_relay(t *testing.T) {
 		}
 	}()
 
-	cmd, opts, err := Handle([]string{"relay", "aws-sqs"})
+	cmd, opts, err := New([]string{"relay", "aws-sqs"})
 
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(cmd).To(Equal("relay aws-sqs"))

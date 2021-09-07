@@ -25,7 +25,7 @@ import (
 )
 
 func main() {
-	cmd, opts, err := options.Handle(os.Args[1:])
+	cmd, opts, err := options.New(os.Args[1:])
 	if err != nil {
 		logrus.Fatalf("Unable to handle CLI input: %s", err)
 	}

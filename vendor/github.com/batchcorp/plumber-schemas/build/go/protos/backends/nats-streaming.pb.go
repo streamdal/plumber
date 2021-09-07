@@ -124,8 +124,8 @@ func (m *NatsStreamingConn) GetClientId() string {
 }
 
 type NatsStreamingReadArgs struct {
-	// @gotags: kong:"help='NATS stream channel. Ex: "orders"'"
-	Channel string `protobuf:"bytes,1,opt,name=channel,proto3" json:"channel,omitempty" kong:"help='NATS stream channel. Ex: "`
+	// @gotags: kong:"help='NATS stream channel. Ex: orders'"
+	Channel string `protobuf:"bytes,1,opt,name=channel,proto3" json:"channel,omitempty" kong:"help='NATS stream channel. Ex: orders'"`
 	// @gotags: kong:"help='Create a durable subscription with this name for the given channel'"
 	DurableName string `protobuf:"bytes,2,opt,name=durable_name,json=durableName,proto3" json:"durable_name,omitempty" kong:"help='Create a durable subscription with this name for the given channel'"`
 	// @gotags: kong:"help='Deliver starting with last published message',xor=nats_delivery_option"
@@ -209,8 +209,8 @@ func (m *NatsStreamingReadArgs) GetReadAll() bool {
 }
 
 type NatsStreamingWriteArgs struct {
-	// @gotags: kong:"help='NATS stream channel. Ex: "orders"'"
-	Channel              string   `protobuf:"bytes,1,opt,name=channel,proto3" json:"channel,omitempty" kong:"help='NATS stream channel. Ex: "`
+	// @gotags: kong:"help='NATS stream channel. Ex: orders'"
+	Channel              string   `protobuf:"bytes,1,opt,name=channel,proto3" json:"channel,omitempty" kong:"help='NATS stream channel. Ex: orders'"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`

@@ -137,9 +137,9 @@ func (m *EncodeOptions) GetMetadata() map[string]string {
 type DecodeOptions struct {
 	// The type of decoder selected determines which Encoding should be used (if any)
 	// NOTE: This type will also determine which metadata k:v's need to be set.
-	// @gotags: kong:"name=decoder,help='How to decode output (valid TYPE's: 1 = JSON, 2 = JSON_SCHEMA, 3 = PROTOBUF, 4 = AVRO, 5 = THRIFT, 6 = FLATBUFFER)'"
+	// @gotags: kong:"name=decoder,help='How to decode output (valid TYPEs: 1 = JSON, 2 = JSON_SCHEMA, 3 = PROTOBUF, 4 = AVRO, 5 = THRIFT, 6 = FLATBUFFER)'"
 	// TODO: ^ This sucks and needs to be improved. Not sure how yet.
-	Type Type `protobuf:"varint,1,opt,name=type,proto3,enum=protos.encoding.Type" json:"type,omitempty" kong:"name=decoder,help='How to decode output (valid TYPE's: 1 = JSON, 2 = JSON_SCHEMA, 3 = PROTOBUF, 4 = AVRO, 5 = THRIFT, 6 = FLATBUFFER)'"`
+	Type Type `protobuf:"varint,1,opt,name=type,proto3,enum=protos.encoding.Type" json:"type,omitempty" kong:"name=decoder,help='How to decode output (valid TYPEs: 1 = JSON, 2 = JSON_SCHEMA, 3 = PROTOBUF, 4 = AVRO, 5 = THRIFT, 6 = FLATBUFFER)'"`
 	// Specify an existing stored schema to use instead of specifying a Encoding payload
 	// @gotags: kong:"-"
 	SchemaId string `protobuf:"bytes,2,opt,name=schema_id,json=schemaId,proto3" json:"schema_id,omitempty" kong:"-"`

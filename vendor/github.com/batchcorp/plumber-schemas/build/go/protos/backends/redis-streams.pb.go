@@ -50,8 +50,8 @@ type RedisStreamsConn struct {
 	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty" kong:"help='Address of redis server',default=localhost:6379,required,env='PLUMBER_RELAY_REDIS_STREAMS_ADDRESS'"`
 	// @gotags: kong:"help='Username (redis >= v6.0.0)',env='PLUMBER_RELAY_REDIS_STREAMS_USERNAME'"
 	Username string `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty" kong:"help='Username (redis >= v6.0.0)',env='PLUMBER_RELAY_REDIS_STREAMS_USERNAME'"`
-	// @gotags: kong:"help='Oasswird (redis >= v6.0.0)',env='PLUMBER_RELAY_REDIS_STREAMS_PASSWORD'"
-	Password             string   `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty" kong:"help='Oasswird (redis >= v6.0.0)',env='PLUMBER_RELAY_REDIS_STREAMS_PASSWORD'"`
+	// @gotags: kong:"help='Password (redis >= v6.0.0)',env='PLUMBER_RELAY_REDIS_STREAMS_PASSWORD'"
+	Password             string   `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty" kong:"help='Password (redis >= v6.0.0)',env='PLUMBER_RELAY_REDIS_STREAMS_PASSWORD'"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -106,8 +106,8 @@ func (m *RedisStreamsConn) GetPassword() string {
 type CreateConsumerConfig struct {
 	// @gotags: kong:"help='Create the streams if creating a new consumer group',env='PLUMBER_RELAY_REDIS_STREAMS_CREATE_STREAMS'"
 	CreateStreams bool `protobuf:"varint,1,opt,name=create_streams,json=createStreams,proto3" json:"create_streams,omitempty" kong:"help='Create the streams if creating a new consumer group',env='PLUMBER_RELAY_REDIS_STREAMS_CREATE_STREAMS'"`
-	// @gotags: kong:"help='Recreate this consumer group if it doesn't exist',env='PLUMBER_RELAY_REDIS_STREAMS_RECREATE_CONSUMER_GROUP'"
-	RecreateConsumerGroup bool `protobuf:"varint,2,opt,name=recreate_consumer_group,json=recreateConsumerGroup,proto3" json:"recreate_consumer_group,omitempty" kong:"help='Recreate this consumer group if it doesn't exist',env='PLUMBER_RELAY_REDIS_STREAMS_RECREATE_CONSUMER_GROUP'"`
+	// @gotags: kong:"help='Recreate this consumer group if it does not exist',env='PLUMBER_RELAY_REDIS_STREAMS_RECREATE_CONSUMER_GROUP'"
+	RecreateConsumerGroup bool `protobuf:"varint,2,opt,name=recreate_consumer_group,json=recreateConsumerGroup,proto3" json:"recreate_consumer_group,omitempty" kong:"help='Recreate this consumer group if it does not exist',env='PLUMBER_RELAY_REDIS_STREAMS_RECREATE_CONSUMER_GROUP'"`
 	// @gotags: kong:"help='What offset to start reading at (0: latest, 1: oldest)',default=0,required,env='PLUMBER_RELAY_REDIS_STREAMS_START_ID'"
 	OffsetStart          CreateConsumerConfig_OffsetStart `protobuf:"varint,3,opt,name=offset_start,json=offsetStart,proto3,enum=protos.backends.CreateConsumerConfig_OffsetStart" json:"offset_start,omitempty" kong:"help='What offset to start reading at (0: latest, 1: oldest)',default=0,required,env='PLUMBER_RELAY_REDIS_STREAMS_START_ID'"`
 	XXX_NoUnkeyedLiteral struct{}                         `json:"-"`
@@ -247,8 +247,8 @@ func (m *RedisStreamsReadArgs) GetCreateConsumerConfig() *CreateConsumerConfig {
 }
 
 type RedisStreamsWriteArgs struct {
-	// @gotags: kong:"help='What redis ID to use for input data ("*" = auto-generate)',default='*'"
-	WriteId string `protobuf:"bytes,1,opt,name=write_id,json=writeId,proto3" json:"write_id,omitempty" kong:"help='What redis ID to use for input data ("`
+	// @gotags: kong:"help='What redis ID to use for input data (* = auto-generate)',default='*'"
+	WriteId string `protobuf:"bytes,1,opt,name=write_id,json=writeId,proto3" json:"write_id,omitempty" kong:"help='What redis ID to use for input data (* = auto-generate)',default='*'"`
 	// @gotags: kong:"help='Streams to write to'"
 	Streams []string `protobuf:"bytes,2,rep,name=streams,proto3" json:"streams,omitempty" kong:"help='Streams to write to'"`
 	// @gotags: kong:"help='Key name to write input data to'"

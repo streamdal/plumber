@@ -189,8 +189,8 @@ type RabbitStreamsReadArgs struct {
 	// @gotags: kong:"help='Stream capacity to declare (required if declare_stream is true; ex: 1024k, 10mb, 3gb'"
 	DeclareStreamSize string `protobuf:"bytes,3,opt,name=declare_stream_size,json=declareStreamSize,proto3" json:"declare_stream_size,omitempty" kong:"help='Stream capacity to declare (required if declare_stream is true; ex: 1024k, 10mb, 3gb'"`
 	// TODO: Will this break? Might just need to be a string.
-	// @gotags: kong:"help='Offset to start reading at'"
-	OffsetOptions        *RabbitStreamsOffsetOptions `protobuf:"bytes,4,opt,name=offset_options,json=offsetOptions,proto3" json:"offset_options,omitempty" kong:"help='Offset to start reading at'"`
+	// @gotags: kong:"help='Offset to start reading at',embed"
+	OffsetOptions        *RabbitStreamsOffsetOptions `protobuf:"bytes,4,opt,name=offset_options,json=offsetOptions,proto3" json:"offset_options,omitempty" kong:"help='Offset to start reading at',embed"`
 	XXX_NoUnkeyedLiteral struct{}                    `json:"-"`
 	XXX_unrecognized     []byte                      `json:"-"`
 	XXX_sizecache        int32                       `json:"-"`
