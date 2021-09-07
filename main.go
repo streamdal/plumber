@@ -7,11 +7,9 @@ import (
 	"os"
 	"os/signal"
 	"strings"
-	"sync"
 	"syscall"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
-
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/ssh/terminal"
@@ -25,27 +23,27 @@ import (
 )
 
 func main() {
-	cmd, opts, err := options.New(os.Args[1:])
+	kongCtx, opts, err := options.New(os.Args[1:])
 	if err != nil {
 		logrus.Fatalf("Unable to handle CLI input: %s", err)
 	}
 
 	readFromStdin(opts)
 
-	if opts.Debug {
+	switch {
+	case opts.Global.Debug:
 		logrus.SetLevel(logrus.DebugLevel)
-	}
-
-	if opts.Quiet {
+	case opts.Global.Quiet:
 		logrus.SetLevel(logrus.ErrorLevel)
 	}
 
 	serviceCtx, serviceShutdownFunc := context.WithCancel(context.Background())
 	mainCtx, mainShutdownFunc := context.WithCancel(context.Background())
 
-	// We only want to intercept these in relay or serve mode
-	if strings.HasPrefix(cmd, "relay") || strings.HasPrefix(cmd, "serve") {
+	// We only want to intercept these in relay or server mode
+	if opts.Global.XAction == "relay" || opts.Global.XAction == "server" {
 		logrus.Debug("Intercepting signals")
+
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)
 		signal.Notify(c, syscall.SIGTERM)
@@ -61,12 +59,15 @@ func main() {
 		stats.InitPrometheusMetrics()
 	}
 
-	if opts.Stats {
-		stats.Start(opts.StatsReportInterval)
+	// Launch a dedicated goroutine if stats display is enabled
+	if opts.Read != nil {
+		if opts.Read.XCliConfig.StatsEnable {
+			stats.Start(opts.Read.XCliConfig.StatsReportIntervalSec)
+		}
 	}
 
-	// In container mode, force JSON and don't print logo
-	if !terminal.IsTerminal(int(os.Stderr.Fd())) || opts.Batch.OutputType == "json" {
+	// Force JSON and don't print logo when NOT in terminal (ie. in container, detached)
+	if !terminal.IsTerminal(int(os.Stderr.Fd())) {
 		logrus.SetFormatter(&logrus.JSONFormatter{})
 	} else {
 		printer.PrintLogo()
@@ -77,7 +78,7 @@ func main() {
 		ServiceShutdownCtx: serviceCtx,
 		MainShutdownFunc:   mainShutdownFunc,
 		MainShutdownCtx:    mainCtx,
-		Cmd:                cmd,
+		KongCtx:            kongCtx,
 		Options:            opts,
 	})
 
@@ -89,7 +90,7 @@ func main() {
 }
 
 // readFromStdin reads data piped into stdin
-func readFromStdin(opts *options.Options) {
+func readFromStdin(opts *protos.CLIOptions) {
 	info, err := os.Stdin.Stat()
 	if err != nil {
 		logrus.Fatal(err)
@@ -110,8 +111,10 @@ func readFromStdin(opts *options.Options) {
 		inputData = append(inputData, strings.Trim(string(line), "\n"))
 	}
 
+	// TODO: How are we writing data again?
+	//
 	// Treat input as a JSON array
-	if opts.Write.InputIsJsonArray {
+	if opts.Write.XCliConfig.InputIsJsonArray {
 		opts.Write.InputData = convertJSONInput(inputData[0])
 		return
 	}

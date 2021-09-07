@@ -33,9 +33,9 @@ func (p *Plumber) githubLogin() error {
 
 func (p *Plumber) HandleGithubCmd() error {
 	switch {
-	case p.Cmd == "github login":
+	case p.KongCtx == "github login":
 		return p.githubLogin()
 	default:
-		return fmt.Errorf("unrecognized command: %s", p.Cmd)
+		return fmt.Errorf("unrecognized command: %s", p.KongCtx)
 	}
 }

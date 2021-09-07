@@ -14,11 +14,11 @@ import (
 
 // HandleLagCmd handles viewing lag in CLI mode
 func (p *Plumber) HandleLagCmd() error {
-	if p.Cmd != "lag kafka" {
+	if p.KongCtx != "lag kafka" {
 		return errors.New("fetching consumer lag is only supported with kafka backend")
 	}
 
-	backendName, err := util.GetBackendName(p.Cmd)
+	backendName, err := util.GetBackendName(p.KongCtx)
 	if err != nil {
 		return errors.Wrap(err, "unable to get backend")
 	}

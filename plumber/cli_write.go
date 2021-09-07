@@ -13,7 +13,7 @@ import (
 
 // HandleWriteCmd handles write mode
 func (p *Plumber) HandleWriteCmd() error {
-	backendName, err := util.GetBackendName(p.Cmd)
+	backendName, err := util.GetBackendName(p.KongCtx)
 	if err != nil {
 		return errors.Wrap(err, "unable to get backend")
 	}

@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 
+	"github.com/alecthomas/kong"
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/embed/etcd"
 	"github.com/batchcorp/plumber/pb"
@@ -28,8 +30,8 @@ type Config struct {
 	ServiceShutdownCtx context.Context
 	MainShutdownFunc   context.CancelFunc
 	MainShutdownCtx    context.Context
-	Options            *options.Options
-	Cmd                string
+	Options            *protos.CLIOptions
+	KongCtx            *kong.Context
 }
 
 type Plumber struct {
@@ -45,7 +47,7 @@ func New(cfg *Config) (*Plumber, error) {
 		return nil, errors.Wrap(err, "unable to validate config")
 	}
 
-	if err := MaybePopulateMDs(cfg.Cmd, cfg.Options); err != nil {
+	if err := MaybePopulateMDs(cfg.KongCtx, cfg.Options); err != nil {
 		return nil, errors.Wrap(err, "unable to populate protobuf message descriptors")
 	}
 
@@ -61,25 +63,25 @@ func (p *Plumber) Run() {
 	var err error
 
 	switch {
-	case p.Cmd == "server":
+	case p.KongCtx == "server":
 		err = p.RunServer()
-	case strings.HasPrefix(p.Cmd, "batch"): // DONE
+	case strings.HasPrefix(p.KongCtx, "batch"):
 		err = p.HandleBatchCmd()
-	case strings.HasPrefix(p.Cmd, "read"): // TODO: Finish display*
+	case strings.HasPrefix(p.KongCtx, "read"):
 		err = p.HandleReadCmd()
-	case strings.HasPrefix(p.Cmd, "write"): // DONE
+	case strings.HasPrefix(p.KongCtx, "write"):
 		err = p.HandleWriteCmd()
-	case strings.HasPrefix(p.Cmd, "relay"): // TODO: Update to use backends
-		printer.PrintRelayOptions(p.Cmd, p.Options)
+	case strings.HasPrefix(p.KongCtx, "relay"):
+		printer.PrintRelayOptions(p.KongCtx, p.Options)
 		err = p.HandleRelayCmd()
-	case strings.HasPrefix(p.Cmd, "dynamic"): // DONE
+	case strings.HasPrefix(p.KongCtx, "dynamic"):
 		err = p.HandleDynamicCmd()
-	case strings.HasPrefix(p.Cmd, "lag"): // TODO: Update lag display
+	case strings.HasPrefix(p.KongCtx, "lag"):
 		err = p.HandleLagCmd()
-	case strings.HasPrefix(p.Cmd, "github"): // DONE
+	case strings.HasPrefix(p.KongCtx, "github"):
 		err = p.HandleGithubCmd()
 	default:
-		logrus.Fatalf("unrecognized command: %s", p.Cmd)
+		logrus.Fatalf("unrecognized command: %s", p.KongCtx)
 	}
 
 	if err != nil {

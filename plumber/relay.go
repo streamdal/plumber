@@ -12,12 +12,12 @@ import (
 
 // HandleRelayCmd handles CLI relay mode. Container/envar mode is handled by processEnvRelayFlags
 func (p *Plumber) HandleRelayCmd() error {
-	if p.Cmd == "relay" {
+	if p.KongCtx == "relay" {
 		// Using env vars
-		p.Cmd = "relay " + p.Options.Relay.Type
+		p.KongCtx = "relay " + p.Options.Relay.Type
 	}
 
-	backendName, err := util.GetBackendName(p.Cmd)
+	backendName, err := util.GetBackendName(p.KongCtx)
 	if err != nil {
 		return errors.Wrap(err, "unable to get backend")
 	}

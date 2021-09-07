@@ -9,7 +9,7 @@ import (
 
 // HandleDynamicCmd handles dynamic replay destination mode commands
 func (p *Plumber) HandleDynamicCmd() error {
-	backendName, err := util.GetBackendName(p.Cmd)
+	backendName, err := util.GetBackendName(p.KongCtx)
 	if err != nil {
 		return errors.Wrap(err, "unable to get backend")
 	}
