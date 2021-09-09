@@ -18,11 +18,11 @@ func (p *Plumber) HandleReadCmd() error {
 		return errors.Wrap(err, "unable to get backend name")
 	}
 
-	if err := validate.BaseReadOptions(p.Options); err != nil {
+	if err := validate.BaseReadOptions(p.CLIOptions); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	backend, err := backends.New(backendName, p.Options)
+	backend, err := backends.New(backendName, p.CLIOptions)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new backend")
 	}
@@ -54,7 +54,7 @@ MAIN:
 			printer.Errorf("unable to display message with '%s' backend: %s", backend.Name(), err)
 		}
 
-		if !p.Options.Read.Follow {
+		if !p.CLIOptions.Read.Follow {
 			break MAIN
 		}
 	}

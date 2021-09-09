@@ -18,16 +18,16 @@ func (p *Plumber) HandleWriteCmd() error {
 		return errors.Wrap(err, "unable to get backend")
 	}
 
-	backend, err := backends.New(backendName, p.Options)
+	backend, err := backends.New(backendName, p.CLIOptions)
 	if err != nil {
 		return errors.Wrap(err, "unable to instantiate backend")
 	}
 
-	if err := writer.ValidateWriteOptions(p.Options, nil); err != nil {
+	if err := writer.ValidateWriteOptions(p.CLIOptions, nil); err != nil {
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	value, err := writer.GenerateWriteMessageFromOptions(p.Options)
+	value, err := writer.GenerateWriteMessageFromOptions(p.CLIOptions)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}

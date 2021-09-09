@@ -23,7 +23,7 @@ func (p *Plumber) HandleLagCmd() error {
 		return errors.Wrap(err, "unable to get backend")
 	}
 
-	backend, err := backends.New(backendName, p.Options)
+	backend, err := backends.New(backendName, p.CLIOptions)
 	if err != nil {
 		return errors.Wrap(err, "unable to instantiate backend")
 	}

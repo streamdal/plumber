@@ -129,12 +129,13 @@ github.com/aws/aws-sdk-go/service/sts/stsiface
 # github.com/batchcorp/pgoutput v0.3.2
 ## explicit
 github.com/batchcorp/pgoutput
-# github.com/batchcorp/plumber-schemas v0.0.45
+# github.com/batchcorp/plumber-schemas v0.0.48
 ## explicit
 github.com/batchcorp/plumber-schemas/build/go/protos
-github.com/batchcorp/plumber-schemas/build/go/protos/backends
+github.com/batchcorp/plumber-schemas/build/go/protos/args
 github.com/batchcorp/plumber-schemas/build/go/protos/common
 github.com/batchcorp/plumber-schemas/build/go/protos/encoding
+github.com/batchcorp/plumber-schemas/build/go/protos/opts
 github.com/batchcorp/plumber-schemas/build/go/protos/records
 # github.com/batchcorp/rabbit v0.1.9
 ## explicit

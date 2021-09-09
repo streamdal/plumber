@@ -5,8 +5,8 @@ package protos
 
 import (
 	fmt "fmt"
-	backends "github.com/batchcorp/plumber-schemas/build/go/protos/backends"
 	common "github.com/batchcorp/plumber-schemas/build/go/protos/common"
+	opts "github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	proto "github.com/golang/protobuf/proto"
 	math "math"
 )
@@ -24,16 +24,10 @@ const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type CLIRelayConfig struct {
 	// @gotags: kong:"help='What address to bind the built-in HTTP server to',default='http://localhost:9191'"
-	HttpListenAddress string `protobuf:"bytes,1,opt,name=http_listen_address,json=httpListenAddress,proto3" json:"http_listen_address,omitempty" kong:"help='What address to bind the built-in HTTP server to',default='http://localhost:9191'"`
-	// Used by CLI to inform components, which backend to use; server uses
-	// ReadConfig.connection_id.
-	// @gotags: kong:"-"
-	XBackendType backends.Type `protobuf:"varint,2,opt,name=_backend_type,json=BackendType,proto3,enum=protos.backends.Type" json:"_backend_type,omitempty" kong:"-"`
-	// @gotags: kong:"embed,group=relay"
-	XRelayBackend        *CLIRelayConfig_RelayBackend `protobuf:"bytes,3,opt,name=_relay_backend,json=RelayBackend,proto3" json:"_relay_backend,omitempty" kong:"embed,group=relay"`
-	XXX_NoUnkeyedLiteral struct{}                     `json:"-"`
-	XXX_unrecognized     []byte                       `json:"-"`
-	XXX_sizecache        int32                        `json:"-"`
+	HttpListenAddress    string   `protobuf:"bytes,1,opt,name=http_listen_address,json=httpListenAddress,proto3" json:"http_listen_address,omitempty" kong:"help='What address to bind the built-in HTTP server to',default='http://localhost:9191'"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
 func (m *CLIRelayConfig) Reset()         { *m = CLIRelayConfig{} }
@@ -68,757 +62,6 @@ func (m *CLIRelayConfig) GetHttpListenAddress() string {
 	return ""
 }
 
-func (m *CLIRelayConfig) GetXBackendType() backends.Type {
-	if m != nil {
-		return m.XBackendType
-	}
-	return backends.Type_UNSET
-}
-
-func (m *CLIRelayConfig) GetXRelayBackend() *CLIRelayConfig_RelayBackend {
-	if m != nil {
-		return m.XRelayBackend
-	}
-	return nil
-}
-
-type CLIRelayConfig_RelayBackend struct {
-	// @gotags: kong:"cmd,help='Apache Kafka'"
-	Kafka *CLIRelayConfig_RelayBackend_Kafka `protobuf:"bytes,1,opt,name=kafka,proto3" json:"kafka,omitempty" kong:"cmd,help='Apache Kafka'"`
-	// @gotags: kong:"cmd,help='AWS Simple Queue System'"
-	Awssqs *CLIRelayConfig_RelayBackend_AWSSQS `protobuf:"bytes,2,opt,name=awssqs,proto3" json:"awssqs,omitempty" kong:"cmd,help='AWS Simple Queue System'"`
-	// @gotags: kong:"cmd,help='MongoDB (CDC)'"
-	Mongo *CLIRelayConfig_RelayBackend_Mongo `protobuf:"bytes,3,opt,name=mongo,proto3" json:"mongo,omitempty" kong:"cmd,help='MongoDB (CDC)'"`
-	// @gotags: kong:"cmd,help='NSQ'"
-	Nsq *CLIRelayConfig_RelayBackend_NSQ `protobuf:"bytes,4,opt,name=nsq,proto3" json:"nsq,omitempty" kong:"cmd,help='NSQ'"`
-	// @gotags: kong:"cmd,help='MQTT'"
-	Rabbit *CLIRelayConfig_RelayBackend_Rabbit `protobuf:"bytes,5,opt,name=rabbit,proto3" json:"rabbit,omitempty" kong:"cmd,help='MQTT'"`
-	// @gotags: kong:"cmd,help='MQTT'"
-	Mqtt *CLIRelayConfig_RelayBackend_MQTT `protobuf:"bytes,6,opt,name=mqtt,proto3" json:"mqtt,omitempty" kong:"cmd,help='MQTT'"`
-	// @gotags: kong:"cmd,help='Azure Service Bus'"
-	AzureServiceBus *CLIRelayConfig_RelayBackend_AzureServiceBus `protobuf:"bytes,7,opt,name=azure_service_bus,json=azureServiceBus,proto3" json:"azure_service_bus,omitempty" kong:"cmd,help='Azure Service Bus'"`
-	// @gotags: kong:"cmd,help='Google Cloud Platform Pub/Sub'"
-	GcpPubsub *CLIRelayConfig_RelayBackend_GCPPubSub `protobuf:"bytes,8,opt,name=gcp_pubsub,json=gcpPubsub,proto3" json:"gcp_pubsub,omitempty" kong:"cmd,help='Google Cloud Platform Pub/Sub'"`
-	// @gotags: kong:"cmd,help='KubeMQ Queue'"
-	KubemqQueue *CLIRelayConfig_RelayBackend_KubeMQQueue `protobuf:"bytes,9,opt,name=kubemq_queue,json=kubemqQueue,proto3" json:"kubemq_queue,omitempty" kong:"cmd,help='KubeMQ Queue'"`
-	// @gotags: kong:"cmd,help='Redis PubSub'"
-	RedisPubsub *CLIRelayConfig_RelayBackend_RedisPubSub `protobuf:"bytes,10,opt,name=redis_pubsub,json=redisPubsub,proto3" json:"redis_pubsub,omitempty" kong:"cmd,help='Redis PubSub'"`
-	// @gotags: kong:"cmd,help='Redis Streams'"
-	RedisStreams *CLIRelayConfig_RelayBackend_RedisStreams `protobuf:"bytes,11,opt,name=redis_streams,json=redisStreams,proto3" json:"redis_streams,omitempty" kong:"cmd,help='Redis Streams'"`
-	// @gotags: kong:"cmd,help='PostgreSQL (CDC)'"
-	Postgres             *CLIRelayConfig_RelayBackend_Postgres `protobuf:"bytes,12,opt,name=postgres,proto3" json:"postgres,omitempty" kong:"cmd,help='PostgreSQL (CDC)'"`
-	XXX_NoUnkeyedLiteral struct{}                              `json:"-"`
-	XXX_unrecognized     []byte                                `json:"-"`
-	XXX_sizecache        int32                                 `json:"-"`
-}
-
-func (m *CLIRelayConfig_RelayBackend) Reset()         { *m = CLIRelayConfig_RelayBackend{} }
-func (m *CLIRelayConfig_RelayBackend) String() string { return proto.CompactTextString(m) }
-func (*CLIRelayConfig_RelayBackend) ProtoMessage()    {}
-func (*CLIRelayConfig_RelayBackend) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{0, 0}
-}
-
-func (m *CLIRelayConfig_RelayBackend) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend.Unmarshal(m, b)
-}
-func (m *CLIRelayConfig_RelayBackend) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend.Marshal(b, m, deterministic)
-}
-func (m *CLIRelayConfig_RelayBackend) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend.Merge(m, src)
-}
-func (m *CLIRelayConfig_RelayBackend) XXX_Size() int {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend.Size(m)
-}
-func (m *CLIRelayConfig_RelayBackend) XXX_DiscardUnknown() {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CLIRelayConfig_RelayBackend proto.InternalMessageInfo
-
-func (m *CLIRelayConfig_RelayBackend) GetKafka() *CLIRelayConfig_RelayBackend_Kafka {
-	if m != nil {
-		return m.Kafka
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend) GetAwssqs() *CLIRelayConfig_RelayBackend_AWSSQS {
-	if m != nil {
-		return m.Awssqs
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend) GetMongo() *CLIRelayConfig_RelayBackend_Mongo {
-	if m != nil {
-		return m.Mongo
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend) GetNsq() *CLIRelayConfig_RelayBackend_NSQ {
-	if m != nil {
-		return m.Nsq
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend) GetRabbit() *CLIRelayConfig_RelayBackend_Rabbit {
-	if m != nil {
-		return m.Rabbit
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend) GetMqtt() *CLIRelayConfig_RelayBackend_MQTT {
-	if m != nil {
-		return m.Mqtt
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend) GetAzureServiceBus() *CLIRelayConfig_RelayBackend_AzureServiceBus {
-	if m != nil {
-		return m.AzureServiceBus
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend) GetGcpPubsub() *CLIRelayConfig_RelayBackend_GCPPubSub {
-	if m != nil {
-		return m.GcpPubsub
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend) GetKubemqQueue() *CLIRelayConfig_RelayBackend_KubeMQQueue {
-	if m != nil {
-		return m.KubemqQueue
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend) GetRedisPubsub() *CLIRelayConfig_RelayBackend_RedisPubSub {
-	if m != nil {
-		return m.RedisPubsub
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend) GetRedisStreams() *CLIRelayConfig_RelayBackend_RedisStreams {
-	if m != nil {
-		return m.RedisStreams
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend) GetPostgres() *CLIRelayConfig_RelayBackend_Postgres {
-	if m != nil {
-		return m.Postgres
-	}
-	return nil
-}
-
-type CLIRelayConfig_RelayBackend_Kafka struct {
-	// @gotags: kong:"embed"
-	Conn *backends.KafkaConn `protobuf:"bytes,1,opt,name=conn,proto3" json:"conn,omitempty" kong:"embed"`
-	// @gotags: kong:"embed"
-	Args                 *backends.KafkaRelayArgs `protobuf:"bytes,2,opt,name=args,proto3" json:"args,omitempty" kong:"embed"`
-	XXX_NoUnkeyedLiteral struct{}                 `json:"-"`
-	XXX_unrecognized     []byte                   `json:"-"`
-	XXX_sizecache        int32                    `json:"-"`
-}
-
-func (m *CLIRelayConfig_RelayBackend_Kafka) Reset()         { *m = CLIRelayConfig_RelayBackend_Kafka{} }
-func (m *CLIRelayConfig_RelayBackend_Kafka) String() string { return proto.CompactTextString(m) }
-func (*CLIRelayConfig_RelayBackend_Kafka) ProtoMessage()    {}
-func (*CLIRelayConfig_RelayBackend_Kafka) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{0, 0, 0}
-}
-
-func (m *CLIRelayConfig_RelayBackend_Kafka) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_Kafka.Unmarshal(m, b)
-}
-func (m *CLIRelayConfig_RelayBackend_Kafka) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_Kafka.Marshal(b, m, deterministic)
-}
-func (m *CLIRelayConfig_RelayBackend_Kafka) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_Kafka.Merge(m, src)
-}
-func (m *CLIRelayConfig_RelayBackend_Kafka) XXX_Size() int {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_Kafka.Size(m)
-}
-func (m *CLIRelayConfig_RelayBackend_Kafka) XXX_DiscardUnknown() {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_Kafka.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CLIRelayConfig_RelayBackend_Kafka proto.InternalMessageInfo
-
-func (m *CLIRelayConfig_RelayBackend_Kafka) GetConn() *backends.KafkaConn {
-	if m != nil {
-		return m.Conn
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend_Kafka) GetArgs() *backends.KafkaRelayArgs {
-	if m != nil {
-		return m.Args
-	}
-	return nil
-}
-
-type CLIRelayConfig_RelayBackend_AWSSQS struct {
-	// @gotags: kong:"embed"
-	Conn *backends.AWSSQSConn `protobuf:"bytes,1,opt,name=conn,proto3" json:"conn,omitempty" kong:"embed"`
-	// @gotags: kong:"embed"
-	Args                 *backends.AWSSQSRelayArgs `protobuf:"bytes,2,opt,name=args,proto3" json:"args,omitempty" kong:"embed"`
-	XXX_NoUnkeyedLiteral struct{}                  `json:"-"`
-	XXX_unrecognized     []byte                    `json:"-"`
-	XXX_sizecache        int32                     `json:"-"`
-}
-
-func (m *CLIRelayConfig_RelayBackend_AWSSQS) Reset()         { *m = CLIRelayConfig_RelayBackend_AWSSQS{} }
-func (m *CLIRelayConfig_RelayBackend_AWSSQS) String() string { return proto.CompactTextString(m) }
-func (*CLIRelayConfig_RelayBackend_AWSSQS) ProtoMessage()    {}
-func (*CLIRelayConfig_RelayBackend_AWSSQS) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{0, 0, 1}
-}
-
-func (m *CLIRelayConfig_RelayBackend_AWSSQS) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_AWSSQS.Unmarshal(m, b)
-}
-func (m *CLIRelayConfig_RelayBackend_AWSSQS) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_AWSSQS.Marshal(b, m, deterministic)
-}
-func (m *CLIRelayConfig_RelayBackend_AWSSQS) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_AWSSQS.Merge(m, src)
-}
-func (m *CLIRelayConfig_RelayBackend_AWSSQS) XXX_Size() int {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_AWSSQS.Size(m)
-}
-func (m *CLIRelayConfig_RelayBackend_AWSSQS) XXX_DiscardUnknown() {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_AWSSQS.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CLIRelayConfig_RelayBackend_AWSSQS proto.InternalMessageInfo
-
-func (m *CLIRelayConfig_RelayBackend_AWSSQS) GetConn() *backends.AWSSQSConn {
-	if m != nil {
-		return m.Conn
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend_AWSSQS) GetArgs() *backends.AWSSQSRelayArgs {
-	if m != nil {
-		return m.Args
-	}
-	return nil
-}
-
-type CLIRelayConfig_RelayBackend_Mongo struct {
-	// @gotags: kong:"embed"
-	Conn *backends.MongoConn `protobuf:"bytes,1,opt,name=conn,proto3" json:"conn,omitempty" kong:"embed"`
-	// @gotags: kong:"embed"
-	Args                 *backends.MongoReadArgs `protobuf:"bytes,2,opt,name=args,proto3" json:"args,omitempty" kong:"embed"`
-	XXX_NoUnkeyedLiteral struct{}                `json:"-"`
-	XXX_unrecognized     []byte                  `json:"-"`
-	XXX_sizecache        int32                   `json:"-"`
-}
-
-func (m *CLIRelayConfig_RelayBackend_Mongo) Reset()         { *m = CLIRelayConfig_RelayBackend_Mongo{} }
-func (m *CLIRelayConfig_RelayBackend_Mongo) String() string { return proto.CompactTextString(m) }
-func (*CLIRelayConfig_RelayBackend_Mongo) ProtoMessage()    {}
-func (*CLIRelayConfig_RelayBackend_Mongo) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{0, 0, 2}
-}
-
-func (m *CLIRelayConfig_RelayBackend_Mongo) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_Mongo.Unmarshal(m, b)
-}
-func (m *CLIRelayConfig_RelayBackend_Mongo) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_Mongo.Marshal(b, m, deterministic)
-}
-func (m *CLIRelayConfig_RelayBackend_Mongo) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_Mongo.Merge(m, src)
-}
-func (m *CLIRelayConfig_RelayBackend_Mongo) XXX_Size() int {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_Mongo.Size(m)
-}
-func (m *CLIRelayConfig_RelayBackend_Mongo) XXX_DiscardUnknown() {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_Mongo.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CLIRelayConfig_RelayBackend_Mongo proto.InternalMessageInfo
-
-func (m *CLIRelayConfig_RelayBackend_Mongo) GetConn() *backends.MongoConn {
-	if m != nil {
-		return m.Conn
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend_Mongo) GetArgs() *backends.MongoReadArgs {
-	if m != nil {
-		return m.Args
-	}
-	return nil
-}
-
-type CLIRelayConfig_RelayBackend_NSQ struct {
-	// @gotags: kong:"embed"
-	Conn *backends.NSQConn `protobuf:"bytes,1,opt,name=conn,proto3" json:"conn,omitempty" kong:"embed"`
-	// @gotags: kong:"embed"
-	Args                 *backends.NSQReadArgs `protobuf:"bytes,2,opt,name=args,proto3" json:"args,omitempty" kong:"embed"`
-	XXX_NoUnkeyedLiteral struct{}              `json:"-"`
-	XXX_unrecognized     []byte                `json:"-"`
-	XXX_sizecache        int32                 `json:"-"`
-}
-
-func (m *CLIRelayConfig_RelayBackend_NSQ) Reset()         { *m = CLIRelayConfig_RelayBackend_NSQ{} }
-func (m *CLIRelayConfig_RelayBackend_NSQ) String() string { return proto.CompactTextString(m) }
-func (*CLIRelayConfig_RelayBackend_NSQ) ProtoMessage()    {}
-func (*CLIRelayConfig_RelayBackend_NSQ) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{0, 0, 3}
-}
-
-func (m *CLIRelayConfig_RelayBackend_NSQ) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_NSQ.Unmarshal(m, b)
-}
-func (m *CLIRelayConfig_RelayBackend_NSQ) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_NSQ.Marshal(b, m, deterministic)
-}
-func (m *CLIRelayConfig_RelayBackend_NSQ) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_NSQ.Merge(m, src)
-}
-func (m *CLIRelayConfig_RelayBackend_NSQ) XXX_Size() int {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_NSQ.Size(m)
-}
-func (m *CLIRelayConfig_RelayBackend_NSQ) XXX_DiscardUnknown() {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_NSQ.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CLIRelayConfig_RelayBackend_NSQ proto.InternalMessageInfo
-
-func (m *CLIRelayConfig_RelayBackend_NSQ) GetConn() *backends.NSQConn {
-	if m != nil {
-		return m.Conn
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend_NSQ) GetArgs() *backends.NSQReadArgs {
-	if m != nil {
-		return m.Args
-	}
-	return nil
-}
-
-type CLIRelayConfig_RelayBackend_Postgres struct {
-	// @gotags: kong:"embed"
-	Conn *backends.PostgresConn `protobuf:"bytes,1,opt,name=conn,proto3" json:"conn,omitempty" kong:"embed"`
-	// @gotags: kong:"embed"
-	Args                 *backends.PostgresReadArgs `protobuf:"bytes,2,opt,name=args,proto3" json:"args,omitempty" kong:"embed"`
-	XXX_NoUnkeyedLiteral struct{}                   `json:"-"`
-	XXX_unrecognized     []byte                     `json:"-"`
-	XXX_sizecache        int32                      `json:"-"`
-}
-
-func (m *CLIRelayConfig_RelayBackend_Postgres) Reset()         { *m = CLIRelayConfig_RelayBackend_Postgres{} }
-func (m *CLIRelayConfig_RelayBackend_Postgres) String() string { return proto.CompactTextString(m) }
-func (*CLIRelayConfig_RelayBackend_Postgres) ProtoMessage()    {}
-func (*CLIRelayConfig_RelayBackend_Postgres) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{0, 0, 4}
-}
-
-func (m *CLIRelayConfig_RelayBackend_Postgres) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_Postgres.Unmarshal(m, b)
-}
-func (m *CLIRelayConfig_RelayBackend_Postgres) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_Postgres.Marshal(b, m, deterministic)
-}
-func (m *CLIRelayConfig_RelayBackend_Postgres) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_Postgres.Merge(m, src)
-}
-func (m *CLIRelayConfig_RelayBackend_Postgres) XXX_Size() int {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_Postgres.Size(m)
-}
-func (m *CLIRelayConfig_RelayBackend_Postgres) XXX_DiscardUnknown() {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_Postgres.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CLIRelayConfig_RelayBackend_Postgres proto.InternalMessageInfo
-
-func (m *CLIRelayConfig_RelayBackend_Postgres) GetConn() *backends.PostgresConn {
-	if m != nil {
-		return m.Conn
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend_Postgres) GetArgs() *backends.PostgresReadArgs {
-	if m != nil {
-		return m.Args
-	}
-	return nil
-}
-
-type CLIRelayConfig_RelayBackend_Rabbit struct {
-	// @gotags: kong:"embed"
-	Conn *backends.RabbitConn `protobuf:"bytes,1,opt,name=conn,proto3" json:"conn,omitempty" kong:"embed"`
-	// @gotags: kong:"embed"
-	Args                 *backends.RabbitReadArgs `protobuf:"bytes,2,opt,name=args,proto3" json:"args,omitempty" kong:"embed"`
-	XXX_NoUnkeyedLiteral struct{}                 `json:"-"`
-	XXX_unrecognized     []byte                   `json:"-"`
-	XXX_sizecache        int32                    `json:"-"`
-}
-
-func (m *CLIRelayConfig_RelayBackend_Rabbit) Reset()         { *m = CLIRelayConfig_RelayBackend_Rabbit{} }
-func (m *CLIRelayConfig_RelayBackend_Rabbit) String() string { return proto.CompactTextString(m) }
-func (*CLIRelayConfig_RelayBackend_Rabbit) ProtoMessage()    {}
-func (*CLIRelayConfig_RelayBackend_Rabbit) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{0, 0, 5}
-}
-
-func (m *CLIRelayConfig_RelayBackend_Rabbit) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_Rabbit.Unmarshal(m, b)
-}
-func (m *CLIRelayConfig_RelayBackend_Rabbit) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_Rabbit.Marshal(b, m, deterministic)
-}
-func (m *CLIRelayConfig_RelayBackend_Rabbit) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_Rabbit.Merge(m, src)
-}
-func (m *CLIRelayConfig_RelayBackend_Rabbit) XXX_Size() int {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_Rabbit.Size(m)
-}
-func (m *CLIRelayConfig_RelayBackend_Rabbit) XXX_DiscardUnknown() {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_Rabbit.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CLIRelayConfig_RelayBackend_Rabbit proto.InternalMessageInfo
-
-func (m *CLIRelayConfig_RelayBackend_Rabbit) GetConn() *backends.RabbitConn {
-	if m != nil {
-		return m.Conn
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend_Rabbit) GetArgs() *backends.RabbitReadArgs {
-	if m != nil {
-		return m.Args
-	}
-	return nil
-}
-
-type CLIRelayConfig_RelayBackend_RedisPubSub struct {
-	// @gotags: kong:"embed"
-	Conn *backends.RedisPubSubConn `protobuf:"bytes,1,opt,name=conn,proto3" json:"conn,omitempty" kong:"embed"`
-	// @gotags: kong:"embed"
-	Args                 *backends.RedisPubSubReadArgs `protobuf:"bytes,2,opt,name=args,proto3" json:"args,omitempty" kong:"embed"`
-	XXX_NoUnkeyedLiteral struct{}                      `json:"-"`
-	XXX_unrecognized     []byte                        `json:"-"`
-	XXX_sizecache        int32                         `json:"-"`
-}
-
-func (m *CLIRelayConfig_RelayBackend_RedisPubSub) Reset() {
-	*m = CLIRelayConfig_RelayBackend_RedisPubSub{}
-}
-func (m *CLIRelayConfig_RelayBackend_RedisPubSub) String() string { return proto.CompactTextString(m) }
-func (*CLIRelayConfig_RelayBackend_RedisPubSub) ProtoMessage()    {}
-func (*CLIRelayConfig_RelayBackend_RedisPubSub) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{0, 0, 6}
-}
-
-func (m *CLIRelayConfig_RelayBackend_RedisPubSub) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_RedisPubSub.Unmarshal(m, b)
-}
-func (m *CLIRelayConfig_RelayBackend_RedisPubSub) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_RedisPubSub.Marshal(b, m, deterministic)
-}
-func (m *CLIRelayConfig_RelayBackend_RedisPubSub) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_RedisPubSub.Merge(m, src)
-}
-func (m *CLIRelayConfig_RelayBackend_RedisPubSub) XXX_Size() int {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_RedisPubSub.Size(m)
-}
-func (m *CLIRelayConfig_RelayBackend_RedisPubSub) XXX_DiscardUnknown() {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_RedisPubSub.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CLIRelayConfig_RelayBackend_RedisPubSub proto.InternalMessageInfo
-
-func (m *CLIRelayConfig_RelayBackend_RedisPubSub) GetConn() *backends.RedisPubSubConn {
-	if m != nil {
-		return m.Conn
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend_RedisPubSub) GetArgs() *backends.RedisPubSubReadArgs {
-	if m != nil {
-		return m.Args
-	}
-	return nil
-}
-
-type CLIRelayConfig_RelayBackend_RedisStreams struct {
-	// @gotags: kong:"embed"
-	Conn *backends.RedisStreamsConn `protobuf:"bytes,1,opt,name=conn,proto3" json:"conn,omitempty" kong:"embed"`
-	// @gotags: kong:"embed"
-	Args                 *backends.RedisStreamsReadArgs `protobuf:"bytes,2,opt,name=args,proto3" json:"args,omitempty" kong:"embed"`
-	XXX_NoUnkeyedLiteral struct{}                       `json:"-"`
-	XXX_unrecognized     []byte                         `json:"-"`
-	XXX_sizecache        int32                          `json:"-"`
-}
-
-func (m *CLIRelayConfig_RelayBackend_RedisStreams) Reset() {
-	*m = CLIRelayConfig_RelayBackend_RedisStreams{}
-}
-func (m *CLIRelayConfig_RelayBackend_RedisStreams) String() string { return proto.CompactTextString(m) }
-func (*CLIRelayConfig_RelayBackend_RedisStreams) ProtoMessage()    {}
-func (*CLIRelayConfig_RelayBackend_RedisStreams) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{0, 0, 7}
-}
-
-func (m *CLIRelayConfig_RelayBackend_RedisStreams) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_RedisStreams.Unmarshal(m, b)
-}
-func (m *CLIRelayConfig_RelayBackend_RedisStreams) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_RedisStreams.Marshal(b, m, deterministic)
-}
-func (m *CLIRelayConfig_RelayBackend_RedisStreams) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_RedisStreams.Merge(m, src)
-}
-func (m *CLIRelayConfig_RelayBackend_RedisStreams) XXX_Size() int {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_RedisStreams.Size(m)
-}
-func (m *CLIRelayConfig_RelayBackend_RedisStreams) XXX_DiscardUnknown() {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_RedisStreams.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CLIRelayConfig_RelayBackend_RedisStreams proto.InternalMessageInfo
-
-func (m *CLIRelayConfig_RelayBackend_RedisStreams) GetConn() *backends.RedisStreamsConn {
-	if m != nil {
-		return m.Conn
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend_RedisStreams) GetArgs() *backends.RedisStreamsReadArgs {
-	if m != nil {
-		return m.Args
-	}
-	return nil
-}
-
-type CLIRelayConfig_RelayBackend_AzureServiceBus struct {
-	// @gotags: kong:"embed"
-	Conn *backends.AzureServiceBusConn `protobuf:"bytes,1,opt,name=conn,proto3" json:"conn,omitempty" kong:"embed"`
-	// @gotags: kong:"embed"
-	Args                 *backends.AzureServiceBusReadArgs `protobuf:"bytes,2,opt,name=args,proto3" json:"args,omitempty" kong:"embed"`
-	XXX_NoUnkeyedLiteral struct{}                          `json:"-"`
-	XXX_unrecognized     []byte                            `json:"-"`
-	XXX_sizecache        int32                             `json:"-"`
-}
-
-func (m *CLIRelayConfig_RelayBackend_AzureServiceBus) Reset() {
-	*m = CLIRelayConfig_RelayBackend_AzureServiceBus{}
-}
-func (m *CLIRelayConfig_RelayBackend_AzureServiceBus) String() string {
-	return proto.CompactTextString(m)
-}
-func (*CLIRelayConfig_RelayBackend_AzureServiceBus) ProtoMessage() {}
-func (*CLIRelayConfig_RelayBackend_AzureServiceBus) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{0, 0, 8}
-}
-
-func (m *CLIRelayConfig_RelayBackend_AzureServiceBus) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_AzureServiceBus.Unmarshal(m, b)
-}
-func (m *CLIRelayConfig_RelayBackend_AzureServiceBus) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_AzureServiceBus.Marshal(b, m, deterministic)
-}
-func (m *CLIRelayConfig_RelayBackend_AzureServiceBus) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_AzureServiceBus.Merge(m, src)
-}
-func (m *CLIRelayConfig_RelayBackend_AzureServiceBus) XXX_Size() int {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_AzureServiceBus.Size(m)
-}
-func (m *CLIRelayConfig_RelayBackend_AzureServiceBus) XXX_DiscardUnknown() {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_AzureServiceBus.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CLIRelayConfig_RelayBackend_AzureServiceBus proto.InternalMessageInfo
-
-func (m *CLIRelayConfig_RelayBackend_AzureServiceBus) GetConn() *backends.AzureServiceBusConn {
-	if m != nil {
-		return m.Conn
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend_AzureServiceBus) GetArgs() *backends.AzureServiceBusReadArgs {
-	if m != nil {
-		return m.Args
-	}
-	return nil
-}
-
-type CLIRelayConfig_RelayBackend_MQTT struct {
-	// @gotags: kong:"embed"
-	Conn *backends.MQTTConn `protobuf:"bytes,1,opt,name=conn,proto3" json:"conn,omitempty" kong:"embed"`
-	// @gotags: kong:"embed"
-	Args                 *backends.MQTTReadArgs `protobuf:"bytes,2,opt,name=args,proto3" json:"args,omitempty" kong:"embed"`
-	XXX_NoUnkeyedLiteral struct{}               `json:"-"`
-	XXX_unrecognized     []byte                 `json:"-"`
-	XXX_sizecache        int32                  `json:"-"`
-}
-
-func (m *CLIRelayConfig_RelayBackend_MQTT) Reset()         { *m = CLIRelayConfig_RelayBackend_MQTT{} }
-func (m *CLIRelayConfig_RelayBackend_MQTT) String() string { return proto.CompactTextString(m) }
-func (*CLIRelayConfig_RelayBackend_MQTT) ProtoMessage()    {}
-func (*CLIRelayConfig_RelayBackend_MQTT) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{0, 0, 9}
-}
-
-func (m *CLIRelayConfig_RelayBackend_MQTT) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_MQTT.Unmarshal(m, b)
-}
-func (m *CLIRelayConfig_RelayBackend_MQTT) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_MQTT.Marshal(b, m, deterministic)
-}
-func (m *CLIRelayConfig_RelayBackend_MQTT) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_MQTT.Merge(m, src)
-}
-func (m *CLIRelayConfig_RelayBackend_MQTT) XXX_Size() int {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_MQTT.Size(m)
-}
-func (m *CLIRelayConfig_RelayBackend_MQTT) XXX_DiscardUnknown() {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_MQTT.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CLIRelayConfig_RelayBackend_MQTT proto.InternalMessageInfo
-
-func (m *CLIRelayConfig_RelayBackend_MQTT) GetConn() *backends.MQTTConn {
-	if m != nil {
-		return m.Conn
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend_MQTT) GetArgs() *backends.MQTTReadArgs {
-	if m != nil {
-		return m.Args
-	}
-	return nil
-}
-
-type CLIRelayConfig_RelayBackend_GCPPubSub struct {
-	// @gotags: kong:"embed"
-	Conn *backends.GCPPubSubConn `protobuf:"bytes,1,opt,name=conn,proto3" json:"conn,omitempty" kong:"embed"`
-	// @gotags: kong:"embed"
-	Args                 *backends.GCPPubSubReadArgs `protobuf:"bytes,2,opt,name=args,proto3" json:"args,omitempty" kong:"embed"`
-	XXX_NoUnkeyedLiteral struct{}                    `json:"-"`
-	XXX_unrecognized     []byte                      `json:"-"`
-	XXX_sizecache        int32                       `json:"-"`
-}
-
-func (m *CLIRelayConfig_RelayBackend_GCPPubSub) Reset()         { *m = CLIRelayConfig_RelayBackend_GCPPubSub{} }
-func (m *CLIRelayConfig_RelayBackend_GCPPubSub) String() string { return proto.CompactTextString(m) }
-func (*CLIRelayConfig_RelayBackend_GCPPubSub) ProtoMessage()    {}
-func (*CLIRelayConfig_RelayBackend_GCPPubSub) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{0, 0, 10}
-}
-
-func (m *CLIRelayConfig_RelayBackend_GCPPubSub) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_GCPPubSub.Unmarshal(m, b)
-}
-func (m *CLIRelayConfig_RelayBackend_GCPPubSub) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_GCPPubSub.Marshal(b, m, deterministic)
-}
-func (m *CLIRelayConfig_RelayBackend_GCPPubSub) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_GCPPubSub.Merge(m, src)
-}
-func (m *CLIRelayConfig_RelayBackend_GCPPubSub) XXX_Size() int {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_GCPPubSub.Size(m)
-}
-func (m *CLIRelayConfig_RelayBackend_GCPPubSub) XXX_DiscardUnknown() {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_GCPPubSub.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CLIRelayConfig_RelayBackend_GCPPubSub proto.InternalMessageInfo
-
-func (m *CLIRelayConfig_RelayBackend_GCPPubSub) GetConn() *backends.GCPPubSubConn {
-	if m != nil {
-		return m.Conn
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend_GCPPubSub) GetArgs() *backends.GCPPubSubReadArgs {
-	if m != nil {
-		return m.Args
-	}
-	return nil
-}
-
-type CLIRelayConfig_RelayBackend_KubeMQQueue struct {
-	// @gotags: kong:"embed"
-	Conn *backends.KubeMQQueueConn `protobuf:"bytes,1,opt,name=conn,proto3" json:"conn,omitempty" kong:"embed"`
-	// @gotags: kong:"embed"
-	Args                 *backends.KubeMQQueueReadArgs `protobuf:"bytes,2,opt,name=args,proto3" json:"args,omitempty" kong:"embed"`
-	XXX_NoUnkeyedLiteral struct{}                      `json:"-"`
-	XXX_unrecognized     []byte                        `json:"-"`
-	XXX_sizecache        int32                         `json:"-"`
-}
-
-func (m *CLIRelayConfig_RelayBackend_KubeMQQueue) Reset() {
-	*m = CLIRelayConfig_RelayBackend_KubeMQQueue{}
-}
-func (m *CLIRelayConfig_RelayBackend_KubeMQQueue) String() string { return proto.CompactTextString(m) }
-func (*CLIRelayConfig_RelayBackend_KubeMQQueue) ProtoMessage()    {}
-func (*CLIRelayConfig_RelayBackend_KubeMQQueue) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{0, 0, 11}
-}
-
-func (m *CLIRelayConfig_RelayBackend_KubeMQQueue) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_KubeMQQueue.Unmarshal(m, b)
-}
-func (m *CLIRelayConfig_RelayBackend_KubeMQQueue) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_KubeMQQueue.Marshal(b, m, deterministic)
-}
-func (m *CLIRelayConfig_RelayBackend_KubeMQQueue) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_KubeMQQueue.Merge(m, src)
-}
-func (m *CLIRelayConfig_RelayBackend_KubeMQQueue) XXX_Size() int {
-	return xxx_messageInfo_CLIRelayConfig_RelayBackend_KubeMQQueue.Size(m)
-}
-func (m *CLIRelayConfig_RelayBackend_KubeMQQueue) XXX_DiscardUnknown() {
-	xxx_messageInfo_CLIRelayConfig_RelayBackend_KubeMQQueue.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CLIRelayConfig_RelayBackend_KubeMQQueue proto.InternalMessageInfo
-
-func (m *CLIRelayConfig_RelayBackend_KubeMQQueue) GetConn() *backends.KubeMQQueueConn {
-	if m != nil {
-		return m.Conn
-	}
-	return nil
-}
-
-func (m *CLIRelayConfig_RelayBackend_KubeMQQueue) GetArgs() *backends.KubeMQQueueReadArgs {
-	if m != nil {
-		return m.Args
-	}
-	return nil
-}
-
 type RelayConfig struct {
 	// @gotags: kong:"help='Secret collection token',name=token,required"
 	CollectionToken string `protobuf:"bytes,1,opt,name=collection_token,json=collectionToken,proto3" json:"collection_token,omitempty" kong:"help='Secret collection token',name=token,required"`
@@ -826,7 +69,7 @@ type RelayConfig struct {
 	BatchSize int32 `protobuf:"varint,2,opt,name=batch_size,json=batchSize,proto3" json:"batch_size,omitempty" kong:"help='How many messages to send in a single batch',default=1000"`
 	// @gotags: kong:"help='How many times plumber will try re-sending a batch',default=3"
 	BatchMaxRetry int32 `protobuf:"varint,3,opt,name=batch_max_retry,json=batchMaxRetry,proto3" json:"batch_max_retry,omitempty" kong:"help='How many times plumber will try re-sending a batch',default=3"`
-	// Required for server mode; ignored in CLI mode.
+	// Required for desktop; ignored in CLI.
 	// @gotags: kong:"-"
 	ConnectionId string `protobuf:"bytes,4,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty" kong:"-"`
 	// @gotags: kong:"name='How many workers to launch per relay',default=10"
@@ -837,11 +80,16 @@ type RelayConfig struct {
 	XBatchshGrpcDisableTls bool `protobuf:"varint,7,opt,name=_batchsh_grpc_disable_tls,json=BatchshGrpcDisableTls,proto3" json:"_batchsh_grpc_disable_tls,omitempty" kong:"help='Whether to use TLS with collector',name=grpc-disable-tls,default=true"`
 	// @gotags: kong:"help='How long to wait before giving up talking to the gRPC collector',name='grpc-timeout-seconds'"
 	XBatchshGrpcTimeoutSeconds int32 `protobuf:"varint,8,opt,name=_batchsh_grpc_timeout_seconds,json=BatchshGrpcTimeoutSeconds,proto3" json:"_batchsh_grpc_timeout_seconds,omitempty" kong:"help='How long to wait before giving up talking to the gRPC collector',name='grpc-timeout-seconds'"`
+	// Any extra opts that can differ between relays (same as reads).
+	// NOTE: Desktop can leave conn unset - an existing connection will be used
+	// by looking up connection_id.
+	// @gotags: kong:"embed"
+	RelayOpts *opts.Relay `protobuf:"bytes,9,opt,name=relay_opts,json=relayOpts,proto3" json:"relay_opts,omitempty" kong:"embed"`
 	// ID of the created relay entry; populated by plumber.
 	// @gotags: kong:"-"
-	XRelayId string `protobuf:"bytes,9,opt,name=_relay_id,json=RelayId,proto3" json:"_relay_id,omitempty" kong:"-"`
+	XRelayId string `protobuf:"bytes,10,opt,name=_relay_id,json=RelayId,proto3" json:"_relay_id,omitempty" kong:"-"`
 	// @gotags: kong:"embed"
-	XCliConfig           *CLIRelayConfig `protobuf:"bytes,10,opt,name=_cli_config,json=CliConfig,proto3" json:"_cli_config,omitempty" kong:"embed"`
+	XCliConfig           *CLIRelayConfig `protobuf:"bytes,11,opt,name=_cli_config,json=CliConfig,proto3" json:"_cli_config,omitempty" kong:"embed"`
 	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
 	XXX_unrecognized     []byte          `json:"-"`
 	XXX_sizecache        int32           `json:"-"`
@@ -926,6 +174,13 @@ func (m *RelayConfig) GetXBatchshGrpcTimeoutSeconds() int32 {
 		return m.XBatchshGrpcTimeoutSeconds
 	}
 	return 0
+}
+
+func (m *RelayConfig) GetRelayOpts() *opts.Relay {
+	if m != nil {
+		return m.RelayOpts
+	}
+	return nil
 }
 
 func (m *RelayConfig) GetXRelayId() string {
@@ -1128,24 +383,11 @@ func (m *GetRelayResponse) GetConfig() *RelayConfig {
 
 type CreateRelayRequest struct {
 	// Every gRPC request must have a valid auth config
-	Auth   *common.Auth `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
-	Config *RelayConfig `protobuf:"bytes,1,opt,name=config,proto3" json:"config,omitempty"`
-	// Types that are valid to be assigned to Backends:
-	//	*CreateRelayRequest_Kafka
-	//	*CreateRelayRequest_Mqtt
-	//	*CreateRelayRequest_Awssqs
-	//	*CreateRelayRequest_Mongo
-	//	*CreateRelayRequest_GcpPubsub
-	//	*CreateRelayRequest_AzureServiceBus
-	//	*CreateRelayRequest_Nsq
-	//	*CreateRelayRequest_Postgres
-	//	*CreateRelayRequest_Rabbit
-	//	*CreateRelayRequest_RedisPubsub
-	//	*CreateRelayRequest_RedisStreams
-	Backends             isCreateRelayRequest_Backends `protobuf_oneof:"Backends"`
-	XXX_NoUnkeyedLiteral struct{}                      `json:"-"`
-	XXX_unrecognized     []byte                        `json:"-"`
-	XXX_sizecache        int32                         `json:"-"`
+	Auth                 *common.Auth `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
+	Config               *RelayConfig `protobuf:"bytes,1,opt,name=config,proto3" json:"config,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
+	XXX_unrecognized     []byte       `json:"-"`
+	XXX_sizecache        int32        `json:"-"`
 }
 
 func (m *CreateRelayRequest) Reset()         { *m = CreateRelayRequest{} }
@@ -1185,177 +427,6 @@ func (m *CreateRelayRequest) GetConfig() *RelayConfig {
 		return m.Config
 	}
 	return nil
-}
-
-type isCreateRelayRequest_Backends interface {
-	isCreateRelayRequest_Backends()
-}
-
-type CreateRelayRequest_Kafka struct {
-	Kafka *backends.KafkaReadArgs `protobuf:"bytes,100,opt,name=kafka,proto3,oneof"`
-}
-
-type CreateRelayRequest_Mqtt struct {
-	Mqtt *backends.MQTTReadArgs `protobuf:"bytes,101,opt,name=mqtt,proto3,oneof"`
-}
-
-type CreateRelayRequest_Awssqs struct {
-	Awssqs *backends.AWSSQSReadArgs `protobuf:"bytes,102,opt,name=awssqs,proto3,oneof"`
-}
-
-type CreateRelayRequest_Mongo struct {
-	Mongo *backends.MongoReadArgs `protobuf:"bytes,104,opt,name=mongo,proto3,oneof"`
-}
-
-type CreateRelayRequest_GcpPubsub struct {
-	GcpPubsub *backends.GCPPubSubReadArgs `protobuf:"bytes,105,opt,name=gcp_pubsub,json=gcpPubsub,proto3,oneof"`
-}
-
-type CreateRelayRequest_AzureServiceBus struct {
-	AzureServiceBus *backends.AzureServiceBusReadArgs `protobuf:"bytes,106,opt,name=azure_service_bus,json=azureServiceBus,proto3,oneof"`
-}
-
-type CreateRelayRequest_Nsq struct {
-	Nsq *backends.NSQReadArgs `protobuf:"bytes,107,opt,name=nsq,proto3,oneof"`
-}
-
-type CreateRelayRequest_Postgres struct {
-	Postgres *backends.PostgresReadArgs `protobuf:"bytes,108,opt,name=postgres,proto3,oneof"`
-}
-
-type CreateRelayRequest_Rabbit struct {
-	Rabbit *backends.RabbitReadArgs `protobuf:"bytes,109,opt,name=rabbit,proto3,oneof"`
-}
-
-type CreateRelayRequest_RedisPubsub struct {
-	RedisPubsub *backends.RedisPubSubReadArgs `protobuf:"bytes,111,opt,name=redis_pubsub,json=redisPubsub,proto3,oneof"`
-}
-
-type CreateRelayRequest_RedisStreams struct {
-	RedisStreams *backends.RedisStreamsReadArgs `protobuf:"bytes,112,opt,name=redis_streams,json=redisStreams,proto3,oneof"`
-}
-
-func (*CreateRelayRequest_Kafka) isCreateRelayRequest_Backends() {}
-
-func (*CreateRelayRequest_Mqtt) isCreateRelayRequest_Backends() {}
-
-func (*CreateRelayRequest_Awssqs) isCreateRelayRequest_Backends() {}
-
-func (*CreateRelayRequest_Mongo) isCreateRelayRequest_Backends() {}
-
-func (*CreateRelayRequest_GcpPubsub) isCreateRelayRequest_Backends() {}
-
-func (*CreateRelayRequest_AzureServiceBus) isCreateRelayRequest_Backends() {}
-
-func (*CreateRelayRequest_Nsq) isCreateRelayRequest_Backends() {}
-
-func (*CreateRelayRequest_Postgres) isCreateRelayRequest_Backends() {}
-
-func (*CreateRelayRequest_Rabbit) isCreateRelayRequest_Backends() {}
-
-func (*CreateRelayRequest_RedisPubsub) isCreateRelayRequest_Backends() {}
-
-func (*CreateRelayRequest_RedisStreams) isCreateRelayRequest_Backends() {}
-
-func (m *CreateRelayRequest) GetBackends() isCreateRelayRequest_Backends {
-	if m != nil {
-		return m.Backends
-	}
-	return nil
-}
-
-func (m *CreateRelayRequest) GetKafka() *backends.KafkaReadArgs {
-	if x, ok := m.GetBackends().(*CreateRelayRequest_Kafka); ok {
-		return x.Kafka
-	}
-	return nil
-}
-
-func (m *CreateRelayRequest) GetMqtt() *backends.MQTTReadArgs {
-	if x, ok := m.GetBackends().(*CreateRelayRequest_Mqtt); ok {
-		return x.Mqtt
-	}
-	return nil
-}
-
-func (m *CreateRelayRequest) GetAwssqs() *backends.AWSSQSReadArgs {
-	if x, ok := m.GetBackends().(*CreateRelayRequest_Awssqs); ok {
-		return x.Awssqs
-	}
-	return nil
-}
-
-func (m *CreateRelayRequest) GetMongo() *backends.MongoReadArgs {
-	if x, ok := m.GetBackends().(*CreateRelayRequest_Mongo); ok {
-		return x.Mongo
-	}
-	return nil
-}
-
-func (m *CreateRelayRequest) GetGcpPubsub() *backends.GCPPubSubReadArgs {
-	if x, ok := m.GetBackends().(*CreateRelayRequest_GcpPubsub); ok {
-		return x.GcpPubsub
-	}
-	return nil
-}
-
-func (m *CreateRelayRequest) GetAzureServiceBus() *backends.AzureServiceBusReadArgs {
-	if x, ok := m.GetBackends().(*CreateRelayRequest_AzureServiceBus); ok {
-		return x.AzureServiceBus
-	}
-	return nil
-}
-
-func (m *CreateRelayRequest) GetNsq() *backends.NSQReadArgs {
-	if x, ok := m.GetBackends().(*CreateRelayRequest_Nsq); ok {
-		return x.Nsq
-	}
-	return nil
-}
-
-func (m *CreateRelayRequest) GetPostgres() *backends.PostgresReadArgs {
-	if x, ok := m.GetBackends().(*CreateRelayRequest_Postgres); ok {
-		return x.Postgres
-	}
-	return nil
-}
-
-func (m *CreateRelayRequest) GetRabbit() *backends.RabbitReadArgs {
-	if x, ok := m.GetBackends().(*CreateRelayRequest_Rabbit); ok {
-		return x.Rabbit
-	}
-	return nil
-}
-
-func (m *CreateRelayRequest) GetRedisPubsub() *backends.RedisPubSubReadArgs {
-	if x, ok := m.GetBackends().(*CreateRelayRequest_RedisPubsub); ok {
-		return x.RedisPubsub
-	}
-	return nil
-}
-
-func (m *CreateRelayRequest) GetRedisStreams() *backends.RedisStreamsReadArgs {
-	if x, ok := m.GetBackends().(*CreateRelayRequest_RedisStreams); ok {
-		return x.RedisStreams
-	}
-	return nil
-}
-
-// XXX_OneofWrappers is for the internal use of the proto package.
-func (*CreateRelayRequest) XXX_OneofWrappers() []interface{} {
-	return []interface{}{
-		(*CreateRelayRequest_Kafka)(nil),
-		(*CreateRelayRequest_Mqtt)(nil),
-		(*CreateRelayRequest_Awssqs)(nil),
-		(*CreateRelayRequest_Mongo)(nil),
-		(*CreateRelayRequest_GcpPubsub)(nil),
-		(*CreateRelayRequest_AzureServiceBus)(nil),
-		(*CreateRelayRequest_Nsq)(nil),
-		(*CreateRelayRequest_Postgres)(nil),
-		(*CreateRelayRequest_Rabbit)(nil),
-		(*CreateRelayRequest_RedisPubsub)(nil),
-		(*CreateRelayRequest_RedisStreams)(nil),
-	}
 }
 
 type CreateRelayResponse struct {
@@ -1767,19 +838,6 @@ func (m *DeleteRelayResponse) GetStatus() *common.Status {
 
 func init() {
 	proto.RegisterType((*CLIRelayConfig)(nil), "protos.CLIRelayConfig")
-	proto.RegisterType((*CLIRelayConfig_RelayBackend)(nil), "protos.CLIRelayConfig.RelayBackend")
-	proto.RegisterType((*CLIRelayConfig_RelayBackend_Kafka)(nil), "protos.CLIRelayConfig.RelayBackend.Kafka")
-	proto.RegisterType((*CLIRelayConfig_RelayBackend_AWSSQS)(nil), "protos.CLIRelayConfig.RelayBackend.AWSSQS")
-	proto.RegisterType((*CLIRelayConfig_RelayBackend_Mongo)(nil), "protos.CLIRelayConfig.RelayBackend.Mongo")
-	proto.RegisterType((*CLIRelayConfig_RelayBackend_NSQ)(nil), "protos.CLIRelayConfig.RelayBackend.NSQ")
-	proto.RegisterType((*CLIRelayConfig_RelayBackend_Postgres)(nil), "protos.CLIRelayConfig.RelayBackend.Postgres")
-	proto.RegisterType((*CLIRelayConfig_RelayBackend_Rabbit)(nil), "protos.CLIRelayConfig.RelayBackend.Rabbit")
-	proto.RegisterType((*CLIRelayConfig_RelayBackend_RedisPubSub)(nil), "protos.CLIRelayConfig.RelayBackend.RedisPubSub")
-	proto.RegisterType((*CLIRelayConfig_RelayBackend_RedisStreams)(nil), "protos.CLIRelayConfig.RelayBackend.RedisStreams")
-	proto.RegisterType((*CLIRelayConfig_RelayBackend_AzureServiceBus)(nil), "protos.CLIRelayConfig.RelayBackend.AzureServiceBus")
-	proto.RegisterType((*CLIRelayConfig_RelayBackend_MQTT)(nil), "protos.CLIRelayConfig.RelayBackend.MQTT")
-	proto.RegisterType((*CLIRelayConfig_RelayBackend_GCPPubSub)(nil), "protos.CLIRelayConfig.RelayBackend.GCPPubSub")
-	proto.RegisterType((*CLIRelayConfig_RelayBackend_KubeMQQueue)(nil), "protos.CLIRelayConfig.RelayBackend.KubeMQQueue")
 	proto.RegisterType((*RelayConfig)(nil), "protos.RelayConfig")
 	proto.RegisterType((*GetAllRelaysRequest)(nil), "protos.GetAllRelaysRequest")
 	proto.RegisterType((*GetAllRelaysResponse)(nil), "protos.GetAllRelaysResponse")
@@ -1800,101 +858,47 @@ func init() {
 func init() { proto.RegisterFile("relay.proto", fileDescriptor_9f69a7d5a802d584) }
 
 var fileDescriptor_9f69a7d5a802d584 = []byte{
-	// 1530 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x58, 0xdf, 0x4e, 0x1b, 0x47,
-	0x17, 0xb7, 0x03, 0x36, 0xf8, 0x18, 0x42, 0x18, 0x42, 0x3e, 0x43, 0xc2, 0x17, 0xe2, 0x7c, 0x5f,
-	0x4b, 0xda, 0xd8, 0x4e, 0x20, 0x41, 0x41, 0x8a, 0x94, 0x82, 0x53, 0x61, 0x54, 0x82, 0xf0, 0xd8,
-	0x49, 0xd4, 0xde, 0x6c, 0x77, 0xd7, 0x13, 0x7b, 0xeb, 0xf5, 0xee, 0x7a, 0x67, 0xb7, 0x84, 0x48,
-	0x95, 0x7a, 0x55, 0xa9, 0x57, 0x95, 0xfa, 0x3a, 0x7d, 0x81, 0xbe, 0x43, 0x5f, 0xa0, 0x8f, 0x51,
-	0xcd, 0x9f, 0xb5, 0x77, 0x6c, 0x13, 0x16, 0x2b, 0xbd, 0xc2, 0x3b, 0x73, 0x7e, 0x7f, 0x66, 0x67,
-	0xce, 0xec, 0x39, 0x40, 0xde, 0x27, 0xb6, 0x7e, 0x5e, 0xf6, 0x7c, 0x37, 0x70, 0x51, 0x96, 0xff,
-	0xa1, 0xeb, 0xff, 0x31, 0x74, 0xb3, 0x4b, 0x9c, 0x16, 0xad, 0x44, 0x3f, 0x44, 0xc0, 0xfa, 0xcd,
-	0xc1, 0x44, 0x57, 0x7f, 0xd7, 0xd5, 0xe5, 0xe8, 0xad, 0xc1, 0xa8, 0x7e, 0x46, 0x4b, 0xb4, 0x3f,
-	0x1e, 0xdd, 0x73, 0x9d, 0xb6, 0x2b, 0x47, 0xd1, 0x60, 0xd4, 0xa1, 0x7d, 0x39, 0x36, 0x14, 0xf4,
-	0x5c, 0x1a, 0xb4, 0x7d, 0x12, 0x51, 0xac, 0x0e, 0x26, 0x7c, 0xdd, 0x30, 0xac, 0x40, 0x0e, 0xdf,
-	0x1e, 0x0e, 0x93, 0x96, 0x45, 0x4b, 0x5e, 0x68, 0xd0, 0xd0, 0x90, 0x93, 0x77, 0x46, 0x26, 0x69,
-	0xe0, 0x13, 0xbd, 0x17, 0x31, 0x6e, 0x0e, 0xcd, 0x7e, 0x08, 0x7d, 0x52, 0xa2, 0xc4, 0xff, 0xd1,
-	0x32, 0x49, 0xc9, 0x08, 0xa3, 0x88, 0x95, 0xa1, 0xed, 0x7e, 0x10, 0x29, 0xae, 0x0d, 0x06, 0xdb,
-	0xa6, 0xa7, 0xea, 0x0d, 0xcd, 0x74, 0x43, 0x83, 0xf4, 0xfa, 0xa5, 0x7e, 0x48, 0x42, 0x22, 0x27,
-	0x97, 0x4d, 0xb7, 0xd7, 0x73, 0x9d, 0x8a, 0x1e, 0x06, 0x9d, 0x88, 0x5f, 0x0e, 0xd1, 0x40, 0x0f,
-	0x22, 0xd1, 0xe2, 0x5f, 0x2b, 0x70, 0xbd, 0x7a, 0x7c, 0x84, 0xd9, 0x6e, 0x54, 0x5d, 0xe7, 0x9d,
-	0xd5, 0x46, 0x65, 0x58, 0xe9, 0x04, 0x81, 0xa7, 0xd9, 0x16, 0x0d, 0x88, 0xa3, 0xe9, 0xad, 0x96,
-	0x4f, 0x28, 0x2d, 0xa4, 0x37, 0xd3, 0x5b, 0x39, 0xbc, 0xcc, 0xa6, 0x8e, 0xf9, 0xcc, 0xbe, 0x98,
-	0x40, 0x7b, 0xb0, 0xa8, 0x49, 0x2b, 0x5a, 0x70, 0xee, 0x91, 0xc2, 0xb5, 0xcd, 0xf4, 0xd6, 0xf5,
-	0xed, 0x55, 0xa1, 0x40, 0xcb, 0x83, 0xbd, 0x6c, 0x9e, 0x7b, 0x04, 0xe7, 0x0f, 0xc4, 0x23, 0x7b,
-	0x40, 0x47, 0x70, 0x5d, 0xe3, 0x07, 0x21, 0x22, 0x28, 0xcc, 0x6c, 0xa6, 0xb7, 0xf2, 0xdb, 0xf7,
-	0x23, 0xac, 0x6a, 0xad, 0xcc, 0x7f, 0x4b, 0x02, 0xbc, 0x10, 0x7f, 0x5a, 0xff, 0x1d, 0x81, 0x32,
-	0x80, 0x5e, 0x40, 0x86, 0x1f, 0x16, 0x6e, 0x3c, 0xbf, 0xfd, 0x20, 0x01, 0x65, 0xf9, 0x1b, 0x06,
-	0xc0, 0x02, 0x87, 0x0e, 0x20, 0xab, 0x9f, 0x51, 0xda, 0xa7, 0x7c, 0x41, 0xf9, 0xed, 0x2f, 0x92,
-	0x30, 0xec, 0xbf, 0x6d, 0x34, 0xea, 0x0d, 0x2c, 0x91, 0xcc, 0x04, 0x3f, 0x83, 0x72, 0x5d, 0x89,
-	0x4c, 0xbc, 0x62, 0x00, 0x2c, 0x70, 0x68, 0x0f, 0x66, 0x1c, 0xda, 0x2f, 0xcc, 0x72, 0xf8, 0xe7,
-	0x49, 0xe0, 0x27, 0x8d, 0x3a, 0x66, 0x18, 0xe6, 0x5f, 0x1c, 0xde, 0x42, 0x26, 0xb9, 0x7f, 0xcc,
-	0x11, 0x58, 0x22, 0xd1, 0x73, 0x98, 0x65, 0x87, 0xb1, 0x90, 0xe5, 0x0c, 0x5b, 0x89, 0xec, 0xd7,
-	0x9b, 0x4d, 0xcc, 0x51, 0x48, 0x83, 0x65, 0x7e, 0xd8, 0x35, 0x79, 0xd8, 0x35, 0x23, 0xa4, 0x85,
-	0x39, 0x4e, 0xb5, 0x93, 0xe8, 0x65, 0x32, 0x70, 0x43, 0x60, 0x0f, 0x42, 0x8a, 0x97, 0x74, 0x75,
-	0x00, 0x1d, 0x03, 0xb4, 0x4d, 0x4f, 0x13, 0x69, 0x51, 0x98, 0xe7, 0xcc, 0xa5, 0x24, 0xcc, 0x87,
-	0xd5, 0xd3, 0xd3, 0xd0, 0x68, 0x84, 0x06, 0xce, 0xb5, 0x4d, 0xef, 0x94, 0xe3, 0x11, 0x86, 0x05,
-	0x91, 0x49, 0x1a, 0xcf, 0xa4, 0x42, 0x8e, 0xf3, 0x55, 0x12, 0x1d, 0x9c, 0xd0, 0x20, 0xaf, 0xea,
-	0x75, 0x06, 0xc3, 0x79, 0x41, 0xc2, 0x1f, 0x18, 0x27, 0xbf, 0x0d, 0x22, 0x8f, 0x90, 0x9c, 0x13,
-	0x33, 0x9c, 0x74, 0x99, 0xf7, 0xe5, 0x03, 0xf3, 0xf9, 0x1a, 0x16, 0x05, 0xa7, 0xbc, 0x61, 0x0a,
-	0x79, 0x4e, 0xfa, 0x28, 0x31, 0x69, 0x43, 0xe0, 0xb0, 0xb0, 0x26, 0x9f, 0x50, 0x0d, 0xe6, 0xa3,
-	0x5b, 0xb0, 0xb0, 0xc0, 0x19, 0x1f, 0x26, 0x61, 0x3c, 0x95, 0x18, 0x3c, 0x40, 0xaf, 0xdb, 0x90,
-	0xe1, 0x99, 0x84, 0xca, 0x30, 0x6b, 0xba, 0x8e, 0x23, 0x53, 0x70, 0x7d, 0xec, 0x46, 0xe0, 0x51,
-	0x55, 0xd7, 0x71, 0x30, 0x8f, 0x43, 0x3b, 0x30, 0xab, 0xfb, 0xed, 0x28, 0xe1, 0xee, 0x4e, 0x8e,
-	0xe7, 0xea, 0xfb, 0x7e, 0x9b, 0x62, 0x1e, 0xbc, 0xee, 0x42, 0x56, 0x64, 0x1d, 0xaa, 0x28, 0x72,
-	0xb7, 0xc7, 0xe0, 0x22, 0x2c, 0xa6, 0xf7, 0x44, 0xd1, 0xdb, 0xbc, 0x00, 0x30, 0x2a, 0xd8, 0x85,
-	0x0c, 0xcf, 0xd1, 0x4b, 0x97, 0xc7, 0xa3, 0x62, 0x72, 0xdb, 0x8a, 0xdc, 0x7f, 0x27, 0xc7, 0x63,
-	0xa2, 0xb7, 0x62, 0x62, 0x04, 0x66, 0x4e, 0x1a, 0x75, 0xf4, 0x50, 0x91, 0x2a, 0x8c, 0x41, 0x4f,
-	0x1a, 0xf5, 0x98, 0xd0, 0x23, 0x45, 0xe8, 0xce, 0xa4, 0xe8, 0x11, 0x99, 0x00, 0xe6, 0xa3, 0x8d,
-	0x44, 0x8f, 0x15, 0xad, 0x8d, 0x31, 0x74, 0x14, 0x18, 0x13, 0x7c, 0xaa, 0x08, 0xde, 0xbb, 0x10,
-	0x32, 0xa2, 0xea, 0x40, 0x56, 0x5c, 0x38, 0x97, 0x6e, 0x9d, 0x08, 0xbb, 0xc2, 0x51, 0x91, 0x17,
-	0x99, 0xaa, 0xf7, 0x13, 0xe4, 0x63, 0x59, 0xc5, 0xb6, 0x3f, 0x26, 0x3a, 0xbe, 0xfd, 0xb1, 0xd8,
-	0x98, 0xf2, 0x33, 0x45, 0xf9, 0x7f, 0x1f, 0x43, 0x8d, 0xc8, 0xff, 0x9c, 0x66, 0xdf, 0xa8, 0x58,
-	0xca, 0x3d, 0x55, 0x0c, 0xdc, 0x9b, 0x4c, 0x25, 0x83, 0x63, 0x0e, 0xf6, 0x14, 0x07, 0xff, 0xff,
-	0x28, 0x6c, 0xc4, 0xc2, 0xaf, 0x69, 0x58, 0x1a, 0xb9, 0x56, 0xd9, 0x82, 0x62, 0x2e, 0xc6, 0x17,
-	0x34, 0x12, 0x1f, 0x33, 0xf2, 0x5c, 0x31, 0xb2, 0x75, 0x19, 0x72, 0xc4, 0x4b, 0x07, 0x66, 0xd9,
-	0xc7, 0x02, 0x95, 0x14, 0xfd, 0xb5, 0xf1, 0xb4, 0xa8, 0x37, 0x9b, 0x31, 0xd1, 0xc7, 0x8a, 0xe8,
-	0xc6, 0xc4, 0xf0, 0x11, 0xa5, 0x33, 0xc8, 0x0d, 0x6e, 0x7c, 0x96, 0x85, 0x31, 0xb9, 0xf1, 0x2c,
-	0x1c, 0x44, 0xc6, 0x34, 0x77, 0x15, 0xcd, 0xe2, 0xc5, 0x98, 0xf1, 0x03, 0x17, 0xfb, 0x34, 0x5c,
-	0x7a, 0xe0, 0x62, 0xb1, 0x57, 0x38, 0x70, 0xf1, 0x8f, 0x8f, 0x22, 0x5f, 0xfc, 0x73, 0x86, 0x1d,
-	0xf8, 0x61, 0x69, 0xf7, 0x00, 0x6e, 0x98, 0xae, 0x6d, 0x13, 0x33, 0xb0, 0x5c, 0x47, 0x0b, 0xdc,
-	0x2e, 0x71, 0x64, 0x5d, 0xb7, 0x34, 0x1c, 0x6f, 0xb2, 0x61, 0xb4, 0x01, 0x60, 0xe8, 0x81, 0xd9,
-	0xd1, 0xa8, 0xf5, 0x41, 0x94, 0x74, 0x19, 0x9c, 0xe3, 0x23, 0x0d, 0xeb, 0x03, 0x41, 0x9f, 0xc1,
-	0x92, 0x98, 0xee, 0xe9, 0xef, 0x35, 0x9f, 0x04, 0xfe, 0x39, 0x2f, 0x71, 0x32, 0x78, 0x91, 0x0f,
-	0xbf, 0xd2, 0xdf, 0x63, 0x36, 0x88, 0xee, 0xc3, 0x22, 0x5b, 0x83, 0x54, 0xb4, 0x5a, 0xbc, 0x92,
-	0xc9, 0xe1, 0x85, 0xe1, 0xe0, 0x51, 0x0b, 0xdd, 0x85, 0xbc, 0x13, 0xf6, 0xb4, 0x33, 0xd7, 0xef,
-	0x12, 0x9f, 0xf2, 0x72, 0x25, 0x83, 0xc1, 0x09, 0x7b, 0x6f, 0xc5, 0x08, 0x7a, 0x0c, 0xab, 0x1a,
-	0xe7, 0xa5, 0x1d, 0xad, 0xed, 0x7b, 0xe6, 0xa0, 0x28, 0xcd, 0x72, 0x36, 0x74, 0x20, 0xe6, 0x0e,
-	0x7d, 0xcf, 0x8c, 0xaa, 0xd2, 0x67, 0xb0, 0xa6, 0x42, 0x5a, 0x16, 0xd5, 0x0d, 0x9b, 0x68, 0x81,
-	0x2d, 0x6a, 0x90, 0x79, 0xbc, 0x1a, 0x83, 0xbd, 0x14, 0xb3, 0x4d, 0x9b, 0xa2, 0xaf, 0x60, 0x43,
-	0x45, 0x06, 0x56, 0x8f, 0xb8, 0x61, 0xa0, 0x51, 0x62, 0xba, 0x4e, 0x8b, 0xf2, 0x3a, 0x23, 0x83,
-	0xd7, 0x62, 0xe8, 0xa6, 0x88, 0x68, 0x88, 0x00, 0xb4, 0x0e, 0x39, 0x59, 0xd6, 0x5a, 0x2d, 0x5e,
-	0x45, 0xe4, 0xf0, 0x1c, 0xdf, 0x86, 0xa3, 0x16, 0xda, 0x85, 0xbc, 0x66, 0xda, 0x96, 0x66, 0xf2,
-	0x1d, 0x91, 0xf5, 0xc0, 0xad, 0xc9, 0x1f, 0x5a, 0x9c, 0xab, 0xda, 0x96, 0xf8, 0x59, 0x7c, 0x01,
-	0x2b, 0x87, 0x24, 0xd8, 0xb7, 0x6d, 0x3e, 0x4f, 0x31, 0xe9, 0x87, 0x84, 0x06, 0x68, 0x0b, 0x66,
-	0x59, 0x89, 0x5f, 0xf8, 0xed, 0x84, 0x13, 0xad, 0x44, 0x44, 0xa2, 0xd6, 0x2f, 0xef, 0x87, 0x41,
-	0x07, 0xf3, 0x88, 0x62, 0x08, 0x37, 0x55, 0x02, 0xea, 0xb9, 0x0e, 0x25, 0xa8, 0x0c, 0x59, 0xd1,
-	0x11, 0x14, 0xfe, 0x16, 0xa5, 0xd9, 0xea, 0x08, 0x47, 0x83, 0xcf, 0x62, 0x19, 0x85, 0x4a, 0x30,
-	0x27, 0xbc, 0xb3, 0x96, 0x60, 0x26, 0xae, 0x19, 0x77, 0x1e, 0xc5, 0x14, 0xdf, 0xc0, 0xd2, 0x21,
-	0x09, 0xf8, 0xd4, 0x95, 0x3d, 0xa3, 0x35, 0x98, 0x1f, 0xbc, 0x47, 0x71, 0x4e, 0xe7, 0x7c, 0xf1,
-	0x1e, 0x8b, 0x2e, 0xdc, 0x18, 0xf2, 0x4e, 0xb9, 0x94, 0x2f, 0x21, 0x2b, 0xb7, 0x21, 0xad, 0x3a,
-	0x89, 0xaf, 0x44, 0x86, 0x14, 0xff, 0xc8, 0x02, 0xaa, 0xfa, 0x44, 0x0f, 0xc8, 0x94, 0x8b, 0xb9,
-	0x8a, 0x1a, 0xda, 0x8d, 0xba, 0x97, 0xd6, 0x05, 0xb7, 0x94, 0x2c, 0x85, 0x44, 0xba, 0xd7, 0x52,
-	0x51, 0xd3, 0xb2, 0x23, 0x0b, 0x76, 0x92, 0xe0, 0x72, 0xac, 0xa5, 0x64, 0x9d, 0xbe, 0x37, 0xe8,
-	0x74, 0xde, 0x5d, 0xf0, 0x35, 0x8d, 0x0a, 0xa1, 0x01, 0x30, 0x6a, 0x70, 0x76, 0xa3, 0x06, 0xa7,
-	0x93, 0xa4, 0xa6, 0x61, 0x3e, 0x45, 0x5f, 0x53, 0x55, 0x2a, 0x77, 0x2b, 0xe9, 0xb5, 0x5a, 0x4b,
-	0xc5, 0x0b, 0xf6, 0x37, 0x93, 0xfa, 0x8b, 0x1f, 0xae, 0xf6, 0x2d, 0xaa, 0xa5, 0xc6, 0xdb, 0x8a,
-	0x47, 0xa2, 0xe9, 0xea, 0x5e, 0x5e, 0x3d, 0xd5, 0x52, 0xa2, 0xd7, 0x7a, 0x11, 0xab, 0x9d, 0xed,
-	0x84, 0x35, 0x50, 0x2d, 0x35, 0x2c, 0x99, 0xd9, 0x16, 0xc8, 0x66, 0xad, 0x97, 0xa8, 0xa0, 0x61,
-	0x5b, 0x20, 0x7b, 0xb4, 0xa3, 0x91, 0x16, 0xc3, 0x4d, 0x5e, 0x97, 0xd4, 0x52, 0x6a, 0x67, 0x71,
-	0x3c, 0xda, 0x59, 0x78, 0x57, 0xa8, 0x30, 0x6a, 0x29, 0xb5, 0xa1, 0x38, 0x00, 0x98, 0x97, 0x4d,
-	0x02, 0x2d, 0x7e, 0x0f, 0x2b, 0x4a, 0xf2, 0x4c, 0x99, 0xb1, 0x1f, 0xb9, 0x10, 0x7e, 0x49, 0x03,
-	0x7a, 0xed, 0xb5, 0xa6, 0xcf, 0xcf, 0x8b, 0xb9, 0x63, 0xa9, 0x7b, 0xed, 0xf2, 0x8b, 0xe2, 0x6b,
-	0x58, 0x51, 0x7c, 0x4c, 0xb7, 0xd4, 0xe2, 0xb7, 0x80, 0x30, 0xa1, 0x61, 0xef, 0xd3, 0x2f, 0x87,
-	0x39, 0x54, 0xa8, 0xa7, 0x74, 0xf8, 0x16, 0x6e, 0x34, 0x02, 0xd7, 0xfb, 0xf4, 0xfe, 0xaa, 0xb0,
-	0x1c, 0x23, 0x9e, 0xfe, 0xfd, 0xbd, 0x24, 0x36, 0x09, 0xfe, 0x9d, 0xf7, 0xa7, 0x50, 0x4f, 0xe7,
-	0xf0, 0x60, 0xf7, 0xbb, 0x27, 0x6d, 0x2b, 0xe8, 0x84, 0x06, 0x9b, 0xaf, 0xf0, 0x92, 0xc3, 0x74,
-	0x7d, 0xaf, 0xe2, 0xd9, 0x61, 0xcf, 0x20, 0x7e, 0x89, 0x9a, 0x1d, 0xd2, 0xd3, 0x69, 0xc5, 0x08,
-	0x2d, 0xbb, 0x55, 0x69, 0xbb, 0x15, 0xc1, 0x66, 0x88, 0x7f, 0x97, 0xee, 0xfc, 0x13, 0x00, 0x00,
-	0xff, 0xff, 0xbc, 0x08, 0xdb, 0xf3, 0x44, 0x15, 0x00, 0x00,
+	// 668 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x55, 0x5d, 0x6b, 0x13, 0x41,
+	0x14, 0x65, 0xfb, 0x91, 0x34, 0x37, 0xd6, 0xa6, 0x13, 0x2b, 0xdb, 0x42, 0x31, 0xac, 0x20, 0x11,
+	0x69, 0x96, 0xaa, 0x14, 0xdf, 0x6c, 0x9b, 0x4a, 0x29, 0x54, 0x85, 0x4d, 0xb5, 0xe8, 0xcb, 0xb8,
+	0x1f, 0x63, 0x76, 0xe8, 0xec, 0xce, 0x3a, 0x33, 0x8b, 0x6d, 0x7f, 0x80, 0xaf, 0xfe, 0x4d, 0xff,
+	0x83, 0x2f, 0xb2, 0x33, 0xdb, 0x66, 0x57, 0x50, 0xe9, 0x52, 0x9f, 0x12, 0xce, 0xb9, 0xf7, 0xcc,
+	0x39, 0xf7, 0x5e, 0x12, 0xe8, 0x0a, 0xc2, 0xfc, 0x8b, 0x51, 0x26, 0xb8, 0xe2, 0xa8, 0xa5, 0x3f,
+	0xe4, 0xc6, 0x6a, 0xc8, 0x93, 0x84, 0xa7, 0xae, 0x9f, 0xab, 0xd8, 0x50, 0x1b, 0xfd, 0x12, 0x92,
+	0xca, 0x57, 0xb9, 0x2c, 0xc1, 0x1e, 0xcf, 0x94, 0x74, 0x2b, 0x0a, 0xce, 0x2e, 0xdc, 0x1d, 0x1f,
+	0x1f, 0x79, 0x05, 0x32, 0xe6, 0xe9, 0x67, 0x3a, 0x45, 0x23, 0xe8, 0xc7, 0x4a, 0x65, 0x98, 0x51,
+	0xa9, 0x48, 0x8a, 0xfd, 0x28, 0x12, 0x44, 0x4a, 0xdb, 0x1a, 0x58, 0xc3, 0x8e, 0xb7, 0x5a, 0x50,
+	0xc7, 0x9a, 0xd9, 0x33, 0x84, 0xf3, 0x73, 0x1e, 0xba, 0xd5, 0xfe, 0xc7, 0xd0, 0x0b, 0x39, 0x63,
+	0x24, 0x54, 0x94, 0xa7, 0x58, 0xf1, 0x33, 0x92, 0x96, 0xcd, 0x2b, 0x33, 0xfc, 0xa4, 0x80, 0xd1,
+	0x26, 0x40, 0xe0, 0xab, 0x30, 0xc6, 0x92, 0x5e, 0x12, 0x7b, 0x6e, 0x60, 0x0d, 0x17, 0xbd, 0x8e,
+	0x46, 0x26, 0xf4, 0x92, 0xa0, 0x47, 0xb0, 0x62, 0xe8, 0xc4, 0x3f, 0xc7, 0x82, 0x28, 0x71, 0x61,
+	0xcf, 0xeb, 0x9a, 0x65, 0x0d, 0xbf, 0xf6, 0xcf, 0xbd, 0x02, 0x44, 0x0f, 0x61, 0x39, 0xe4, 0x69,
+	0x5a, 0xbe, 0x48, 0x23, 0x7b, 0x41, 0x3f, 0x77, 0x67, 0x06, 0x1e, 0x45, 0xe8, 0x01, 0x74, 0xd3,
+	0x3c, 0xc1, 0x5f, 0xb9, 0x38, 0x23, 0x42, 0xda, 0x8b, 0x5a, 0x08, 0xd2, 0x3c, 0x39, 0x35, 0x08,
+	0xda, 0x86, 0x35, 0xac, 0x75, 0x65, 0x8c, 0xa7, 0x22, 0x0b, 0xaf, 0x93, 0xb7, 0xb4, 0x1a, 0xda,
+	0x37, 0xdc, 0xa1, 0xc8, 0xc2, 0x32, 0x3a, 0x7a, 0x01, 0xeb, 0xf5, 0x96, 0x88, 0x4a, 0x3f, 0x60,
+	0x04, 0x2b, 0x26, 0xed, 0xf6, 0xc0, 0x1a, 0x2e, 0x79, 0x6b, 0x95, 0xb6, 0x03, 0xc3, 0x9e, 0x30,
+	0x89, 0x76, 0x61, 0xb3, 0xde, 0xa9, 0x68, 0x42, 0x78, 0xae, 0xb0, 0x24, 0x21, 0x4f, 0x23, 0x69,
+	0x2f, 0x69, 0x7f, 0xeb, 0x95, 0xee, 0x13, 0x53, 0x31, 0x31, 0x05, 0x68, 0x1b, 0x40, 0xef, 0x11,
+	0x17, 0x2b, 0xb5, 0x3b, 0x03, 0x6b, 0xd8, 0x7d, 0x8a, 0xcc, 0x52, 0xe5, 0xa8, 0xc0, 0x46, 0x7a,
+	0x29, 0x5e, 0x47, 0x57, 0xbd, 0xcd, 0x94, 0x44, 0x1b, 0xd0, 0xc1, 0xa6, 0x87, 0x46, 0x36, 0xe8,
+	0x54, 0x6d, 0x5d, 0x74, 0x14, 0xa1, 0x1d, 0xe8, 0xe2, 0x90, 0x51, 0x1c, 0xea, 0x25, 0xda, 0x5d,
+	0xad, 0x77, 0xff, 0x4a, 0xaf, 0x7e, 0x22, 0x5e, 0x67, 0xcc, 0xa8, 0xf9, 0xea, 0xbc, 0x84, 0xfe,
+	0x21, 0x51, 0x7b, 0x8c, 0x69, 0x5e, 0x7a, 0xe4, 0x4b, 0x4e, 0xa4, 0x42, 0x43, 0x58, 0x28, 0x6e,
+	0xd1, 0xfe, 0xfe, 0x46, 0x0b, 0xf5, 0xaf, 0x84, 0xcc, 0x51, 0x8e, 0xf6, 0x72, 0x15, 0x7b, 0xba,
+	0xc2, 0xc9, 0xe1, 0x5e, 0x5d, 0x40, 0x66, 0x3c, 0x95, 0x04, 0x8d, 0xa0, 0x65, 0x4e, 0xd7, 0xfe,
+	0xd1, 0xd6, 0x1a, 0x6b, 0xbf, 0x69, 0x4c, 0x34, 0xeb, 0x95, 0x55, 0x68, 0x0b, 0xda, 0xc6, 0x7b,
+	0x71, 0xaa, 0xf3, 0xd5, 0x37, 0xab, 0xce, 0xaf, 0x6a, 0x9c, 0xf7, 0xb0, 0x72, 0x48, 0x94, 0x19,
+	0xd1, 0x4d, 0x3d, 0xa3, 0x75, 0x58, 0xba, 0x9e, 0xa3, 0x39, 0xed, 0xb6, 0x30, 0x73, 0x74, 0x38,
+	0xf4, 0x66, 0xba, 0x0d, 0xa3, 0x3c, 0x81, 0x56, 0xb9, 0x06, 0xab, 0xee, 0xa4, 0x9a, 0xa4, 0x2c,
+	0x71, 0xce, 0x00, 0x8d, 0x05, 0xf1, 0x15, 0x69, 0x98, 0xe5, 0x46, 0x8f, 0x7d, 0x82, 0x7e, 0xed,
+	0xb1, 0x86, 0x01, 0xff, 0x32, 0xbf, 0x6f, 0x16, 0xa0, 0x77, 0x59, 0xd4, 0x3c, 0xcf, 0x9f, 0xb5,
+	0x2b, 0x51, 0xe7, 0xfe, 0x1d, 0xf5, 0x15, 0xf4, 0x6b, 0x3e, 0x9a, 0x45, 0x75, 0x3e, 0x00, 0xf2,
+	0x88, 0xcc, 0x93, 0xdb, 0x8f, 0x53, 0x38, 0xac, 0x49, 0x37, 0x74, 0x78, 0x0a, 0xbd, 0x89, 0xe2,
+	0xd9, 0xed, 0xfb, 0x1b, 0xc3, 0x6a, 0x45, 0xb8, 0xf9, 0xfc, 0x0e, 0x08, 0x23, 0xea, 0xff, 0xcc,
+	0xaf, 0x26, 0xdd, 0xcc, 0xe1, 0xfe, 0xce, 0xc7, 0xe7, 0x53, 0xaa, 0xe2, 0x3c, 0x28, 0x78, 0x57,
+	0xff, 0xa8, 0x87, 0x5c, 0x64, 0x6e, 0xc6, 0xf2, 0x24, 0x20, 0x62, 0x4b, 0x86, 0x31, 0x49, 0x7c,
+	0xe9, 0x06, 0x39, 0x65, 0x91, 0x3b, 0xe5, 0xae, 0x51, 0x0b, 0xcc, 0x7f, 0xf7, 0xb3, 0x5f, 0x01,
+	0x00, 0x00, 0xff, 0xff, 0x28, 0x2e, 0x72, 0xfe, 0xd1, 0x07, 0x00, 0x00,
 }

@@ -67,7 +67,7 @@ func (a *AWSSQS) write(value []byte) error {
 	}
 
 	// TODO: Where should this go?
-	// a.printer.Print(fmt.Sprintf("Successfully wrote message to AWS queue '%s'", a.Options.AWSSQS.QueueName))
+	// a.printer.Print(fmt.Sprintf("Successfully wrote message to AWS queue '%s'", a.CLIOptions.AWSSQS.QueueName))
 
 	return nil
 }

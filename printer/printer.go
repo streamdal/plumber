@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber/types"
 	"github.com/logrusorgru/aurora"
 	"github.com/olekukonko/tablewriter"
@@ -92,7 +93,7 @@ func DefaultDisplayError(msg *types.ErrorMessage) {
 	Errorf("[%s] %s", msg.OccurredAt, msg.Error)
 }
 
-func PrintRelayOptions(cmd string, opts *options.Options) {
+func PrintRelayOptions(opts *protos.CLIOptions) {
 	if opts == nil {
 		return
 	}
@@ -116,12 +117,12 @@ func PrintRelayOptions(cmd string, opts *options.Options) {
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("")
 	logrus.Infof("- %-24s%-6s", "RelayType", relayType)
-	logrus.Infof("- %-24s%-6s", "RelayToken", opts.Relay.Token)
-	logrus.Infof("- %-24s%-6s", "RelayGRPCAddress", opts.Relay.GRPCAddress)
-	logrus.Infof("- %-24s%-6d", "RelayNumWorkers", opts.Relay.NumWorkers)
-	logrus.Infof("- %-24s%-6d", "RelayBatchSize", opts.Relay.BatchSize)
-	logrus.Infof("- %-24s%-6v", "Stats", opts.Stats)
-	logrus.Infof("- %-24s%-6s", "StatsReportInterval", opts.StatsReportInterval)
+	logrus.Infof("- %-24s%-6s", "Collection token", opts.Relay.CollectionToken)
+	logrus.Infof("- %-24s%-6s", "Batch collector address", opts.Relay.XBatchshGrpcAddress)
+	logrus.Infof("- %-24s%-6d", "Num workers", opts.Relay.NumWorkers)
+	logrus.Infof("- %-24s%-6d", "Batch size", opts.Relay.BatchSize)
+	logrus.Infof("- %-24s%-6v", "Stats enabled", opts.Read.XCliConfig.StatsEnable)
+	logrus.Infof("- %-24s%-6s", "Stats report interval (seconds)", opts.Read.XCliConfig.StatsReportIntervalSec)
 	logrus.Info("")
 
 	switch relayType {

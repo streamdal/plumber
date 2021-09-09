@@ -35,7 +35,7 @@ func (p *Plumber) RunServer() error {
 }
 
 func (p *Plumber) startEtcd() error {
-	e, err := etcd.New(p.Config.Options.Server, p.PersistentConfig)
+	e, err := etcd.New(p.Config.CLIOptions.Server, p.PersistentConfig)
 	if err != nil {
 		return errors.Wrap(err, "unable to instantiate etcd")
 	}
@@ -54,9 +54,9 @@ func (p *Plumber) startEtcd() error {
 }
 
 func (p *Plumber) runServer() error {
-	lis, err := net.Listen("tcp", p.Options.Server.ListenAddress)
+	lis, err := net.Listen("tcp", p.CLIOptions.Server.GrpcListenAddress)
 	if err != nil {
-		return fmt.Errorf("unable to listen on '%s': %s", p.Options.Server.ListenAddress, err)
+		return fmt.Errorf("unable to listen on '%s': %s", p.CLIOptions.Server.GrpcListenAddress, err)
 	}
 
 	var opts []grpc.ServerOption
@@ -66,7 +66,9 @@ func (p *Plumber) runServer() error {
 	// Each plumber instance needs an ID. Set one and save
 	if p.PersistentConfig.PlumberID == "" {
 		p.PersistentConfig.PlumberID = uuid.NewV4().String()
-		p.PersistentConfig.Save()
+		if err := p.PersistentConfig.Save(); err != nil {
+			p.log.Fatalf("unable to save persistent config: %s", err)
+		}
 	}
 
 	gh, err := github.New()
@@ -76,7 +78,11 @@ func (p *Plumber) runServer() error {
 
 	plumberServer := &server.Server{
 		PersistentConfig: p.PersistentConfig,
-		AuthToken:        p.Options.Server.AuthToken,
+		AuthToken:        p.CLIOptions.Server.AuthToken,
+		ConnectionsMutex: &sync.RWMutex{},
+		Reads:            make(map[string]*server.Read),
+		ReadsMutex:       &sync.RWMutex{},
+		RelaysMutex:      &sync.RWMutex{},
 		GithubService:    gh,
 		Etcd:             p.Etcd,
 		Log:              logrus.WithField("pkg", "plumber/server.go"),
@@ -86,7 +92,7 @@ func (p *Plumber) runServer() error {
 
 	go p.watchServiceShutdown(grpcServer)
 
-	p.log.Infof("gRPC server listening on: %s", p.Options.Server.ListenAddress)
+	p.log.Infof("gRPC server listening on: %s", p.CLIOptions.Server.GrpcListenAddress)
 	p.log.Infof("Plumber Instance ID: %s", p.PersistentConfig.PlumberID)
 
 	if err := grpcServer.Serve(lis); err != nil {

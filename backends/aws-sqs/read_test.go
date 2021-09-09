@@ -53,13 +53,13 @@ var _ = Describe("AWS SQS Backend", func() {
 	//			return nil, errors.New("test error")
 	//		}
 	//
-	//		opts := &options.Options{
+	//		opts := &options.CLIOptions{
 	//			Read: &ReadOp
 	//			AWSSQS:     &options.AWSSQSOptions{},
 	//		}
 	//
 	//		a := &AWSSQS{
-	//			Options: opts,
+	//			CLIOptions: opts,
 	//			service: sqsFake,
 	//			log:     log,
 	//		}
@@ -77,13 +77,13 @@ var _ = Describe("AWS SQS Backend", func() {
 	//			return &sqs.ReceiveMessageOutput{}, nil
 	//		}
 	//
-	//		opts := &options.Options{
+	//		opts := &options.CLIOptions{
 	//			ReadFollow: false,
 	//			AWSSQS:     &options.AWSSQSOptions{},
 	//		}
 	//
 	//		a := &AWSSQS{
-	//			Options: opts,
+	//			CLIOptions: opts,
 	//			service: sqsFake,
 	//			log:     log,
 	//			printer: printer.New(),
@@ -112,13 +112,13 @@ var _ = Describe("AWS SQS Backend", func() {
 	//			readMessage = str
 	//		}
 	//
-	//		opts := &options.Options{
+	//		opts := &options.CLIOptions{
 	//			ReadFollow: false,
 	//			AWSSQS:     &options.AWSSQSOptions{},
 	//		}
 	//
 	//		a := &AWSSQS{
-	//			Options: opts,
+	//			CLIOptions: opts,
 	//			service: sqsFake,
 	//			log:     log,
 	//			printer: printerFake,
@@ -153,7 +153,7 @@ var _ = Describe("AWS SQS Backend", func() {
 	//			readMessage = str
 	//		}
 	//
-	//		opts := &options.Options{
+	//		opts := &options.CLIOptions{
 	//			ReadFollow: false,
 	//			AWSSQS: &options.AWSSQSOptions{
 	//				ReadAutoDelete: true,
@@ -161,7 +161,7 @@ var _ = Describe("AWS SQS Backend", func() {
 	//		}
 	//
 	//		a := &AWSSQS{
-	//			Options: opts,
+	//			CLIOptions: opts,
 	//			service: sqsFake,
 	//			log:     log,
 	//			printer: printerFake,

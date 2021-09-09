@@ -34,10 +34,6 @@ import (
 // cases the methods will either return types.NotImplementedErr or
 // types.UnsupportedFeatureErr.
 type Backend interface {
-	// Close closes any connections the backend has open. Once this is ran, you
-	// should create a new backend instance.
-	Close(ctx context.Context) error
-
 	// Read will read data from the bus and dump each message to the results
 	// channel. This method should _not_ decode the message - that is left up
 	// to the upstream user. The error channel _should_ be optional.
@@ -46,10 +42,8 @@ type Backend interface {
 	// Write will attempt to write the input messages as a batch (if the backend
 	// supports batch writing). This call will block until success/error.
 	//
-	// NOTE: Key, headers and any other metadata is fetched from Options
-	// (that are passed when instantiating the backend). Ie. If you want to
-	// write data to a specific key in Kafka - you'll need to pass
-	// Options.Kafka.WriteKey. This is not great but will suffice for now. :(
+	// NOTE: Key, headers and any other metadata is fetched from CLIOptions
+	// (that are passed when instantiating the backend).
 	Write(ctx context.Context, errorCh chan *records.ErrorRecord, messages ...*records.WriteRecord) error
 
 	// Test performs a "test" to see if the connection to the backend is alive.
@@ -79,7 +73,15 @@ type Backend interface {
 	// Value returns the value from either a *records.ReadRecord or
 	// *records.WriteRecord. The backend should type assert the message type
 	// and return the value (if present).
+	// TODO: What functionality uses this?
+	// UPDATE: If we have a WriteRecord - we do not know the actual value because
+	// it's deep inside the oneof. Performing a Value() will give us the contents.
+	// But why do we need this?
 	Value(msg interface{}) ([]byte, error)
+
+	// Close closes any connections the backend has open. Once this is ran, you
+	// should create a new backend instance.
+	Close(ctx context.Context) error
 
 	// Name returns the name of the backend
 	Name() string

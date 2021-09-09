@@ -9,31 +9,31 @@ import (
 
 // HandleBatchCmd handles all commands related to Batch.sh API
 func (p *Plumber) HandleBatchCmd() error {
-	b := batch.New(p.Options, p.PersistentConfig)
+	b := batch.New(p.CLIOptions, p.PersistentConfig)
 
 	switch {
-	case p.KongCtx == "batch login":
+	case p.CLIOptions.Global.XFullCommand == "batch login":
 		return b.Login()
-	case p.KongCtx == "batch logout":
+	case p.CLIOptions.Global.XFullCommand == "batch logout":
 		return b.Logout()
-	case p.KongCtx == "batch list collection":
+	case p.CLIOptions.Global.XFullCommand == "batch list collection":
 		return b.ListCollections()
-	case p.KongCtx == "batch create collection":
+	case p.CLIOptions.Global.XFullCommand == "batch create collection":
 		return b.CreateCollection()
-	case p.KongCtx == "batch list destination":
+	case p.CLIOptions.Global.XFullCommand == "batch list destination":
 		return b.ListDestinations()
-	case strings.HasPrefix(p.KongCtx, "batch create destination"):
-		commands := strings.Split(p.KongCtx, " ")
+	case strings.HasPrefix(p.CLIOptions.Global.XFullCommand, "batch create destination"):
+		commands := strings.Split(p.CLIOptions.Global.XFullCommand, " ")
 		return b.CreateDestination(commands[3])
-	case p.KongCtx == "batch list schema":
+	case p.CLIOptions.Global.XFullCommand == "batch list schema":
 		return b.ListSchemas()
-	case p.KongCtx == "batch list replay":
+	case p.CLIOptions.Global.XFullCommand == "batch list replay":
 		return b.ListReplays()
-	case p.KongCtx == "batch create replay":
+	case p.CLIOptions.Global.XFullCommand == "batch create replay":
 		return b.CreateReplay()
-	case p.KongCtx == "batch archive replay":
+	case p.CLIOptions.Global.XFullCommand == "batch archive replay":
 		return b.ArchiveReplay()
-	case p.KongCtx == "batch search":
+	case p.CLIOptions.Global.XFullCommand == "batch search":
 		return b.SearchCollection()
 	default:
 		return fmt.Errorf("unrecognized command: %s", p.KongCtx)

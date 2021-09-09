@@ -61,15 +61,15 @@ func (r *Relay) validateSQSRelayMessage(msg *types.RelayMessage) error {
 	}
 
 	if msg.Options == nil {
-		return errors.New("msg.Options cannot be nil")
+		return errors.New("msg.CLIOptions cannot be nil")
 	}
 
 	if msg.Options.Service == nil {
-		return errors.New("msg.Options.Service cannot be nil")
+		return errors.New("msg.CLIOptions.Service cannot be nil")
 	}
 
 	if msg.Options.QueueURL == "" {
-		return errors.New("msg.Options.queueURL cannot be empty")
+		return errors.New("msg.CLIOptions.queueURL cannot be empty")
 	}
 
 	return nil

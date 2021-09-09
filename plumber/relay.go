@@ -14,7 +14,7 @@ import (
 func (p *Plumber) HandleRelayCmd() error {
 	if p.KongCtx == "relay" {
 		// Using env vars
-		p.KongCtx = "relay " + p.Options.Relay.Type
+		p.KongCtx = "relay " + p.CLIOptions.Relay.Type
 	}
 
 	backendName, err := util.GetBackendName(p.KongCtx)
@@ -22,7 +22,7 @@ func (p *Plumber) HandleRelayCmd() error {
 		return errors.Wrap(err, "unable to get backend")
 	}
 
-	backend, err := backends.New(backendName, p.Options)
+	backend, err := backends.New(backendName, p.CLIOptions)
 	if err != nil {
 		return errors.Wrap(err, "unable to instantiate backend")
 	}
@@ -44,14 +44,14 @@ func (p *Plumber) HandleRelayCmd() error {
 // startRelayService starts relay workers which send relay messages to grpc-collector
 func (p *Plumber) startRelayService() error {
 	relayCfg := &relay.Config{
-		Token:              p.Options.Relay.Token,
-		GRPCAddress:        p.Options.Relay.GRPCAddress,
-		NumWorkers:         p.Options.Relay.NumWorkers,
-		Timeout:            p.Options.Relay.GRPCTimeout,
+		Token:              p.CLIOptions.Relay.Token,
+		GRPCAddress:        p.CLIOptions.Relay.GRPCAddress,
+		NumWorkers:         p.CLIOptions.Relay.NumWorkers,
+		Timeout:            p.CLIOptions.Relay.GRPCTimeout,
 		RelayCh:            p.RelayCh,
-		DisableTLS:         p.Options.Relay.GRPCDisableTLS,
-		BatchSize:          p.Options.Relay.BatchSize,
-		Type:               p.Options.Relay.Type,
+		DisableTLS:         p.CLIOptions.Relay.GRPCDisableTLS,
+		BatchSize:          p.CLIOptions.Relay.BatchSize,
+		Type:               p.CLIOptions.Relay.Type,
 		MainShutdownFunc:   p.MainShutdownFunc,
 		ServiceShutdownCtx: p.ServiceShutdownCtx,
 	}
@@ -63,7 +63,7 @@ func (p *Plumber) startRelayService() error {
 
 	// Launch HTTP server
 	go func() {
-		if err := api.Start(p.Options.Relay.HTTPListenAddress, p.Options.Version); err != nil {
+		if err := api.Start(p.CLIOptions.Relay.HTTPListenAddress, p.CLIOptions.Version); err != nil {
 			logrus.Fatalf("unable to start API server: %s", err)
 		}
 	}()
