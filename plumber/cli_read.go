@@ -3,9 +3,9 @@ package plumber
 import (
 	"context"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/types"
 	"github.com/batchcorp/plumber/util"
 	"github.com/batchcorp/plumber/validate"
 	"github.com/pkg/errors"
@@ -13,24 +13,24 @@ import (
 
 // HandleReadCmd handles CLI read mode
 func (p *Plumber) HandleReadCmd() error {
-	backendName, err := util.GetBackendName(p.KongCtx)
+	backendName, err := util.GetBackendName(p.CLIOptions.Global.XFullCommand)
 	if err != nil {
 		return errors.Wrap(err, "unable to get backend name")
 	}
 
-	if err := validate.BaseReadOptions(p.CLIOptions); err != nil {
+	if err := validate.ReadConfig(p.CLIOptions.Read); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	backend, err := backends.New(backendName, p.CLIOptions)
+	backend, err := backends.New(backendName, connCfg)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new backend")
 	}
 
-	resultCh := make(chan *types.ReadMessage, 1)
-	errorCh := make(chan *types.ErrorMessage, 1)
+	resultCh := make(chan *records.ReadRecord, 1)
+	errorCh := make(chan *records.ErrorRecord, 1)
 
-	// .Read() might be a blocking
+	// backend.Read() blocks
 	go func() {
 		if err := backend.Read(context.Background(), resultCh, errorCh); err != nil {
 			p.log.Errorf("unable to complete read for backend '%s': %s", backend.Name(), err)

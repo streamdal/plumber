@@ -18,7 +18,7 @@ func TestGetDestination_topic(t *testing.T) {
 	}
 
 	a := &ActiveMq{
-		Options: opts,
+		ConnectionConfig: opts,
 	}
 
 	got := a.getDestination()
@@ -35,7 +35,7 @@ func TestGetDestination_queue(t *testing.T) {
 	}
 
 	a := &ActiveMq{
-		Options: opts,
+		ConnectionConfig: opts,
 	}
 
 	got := a.getDestination()

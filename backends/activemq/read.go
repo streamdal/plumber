@@ -11,11 +11,11 @@ import (
 )
 
 func (a *ActiveMq) Read(ctx context.Context, resultsCh chan *types.ReadMessage, errorCh chan *types.ErrorMessage) error {
-	if err := validateReadOptions(a.Options); err != nil {
+	if err := validateReadOptions(a.ConnectionConfig); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	client, err := newConn(ctx, a.Options)
+	client, err := newConn(ctx, a.ConnectionConfig)
 	if err != nil {
 		return errors.Wrap(err, "unable to establish new connection")
 	}
@@ -59,7 +59,7 @@ MAIN:
 			break MAIN
 		}
 
-		if !a.Options.Read.Follow {
+		if !a.ConnectionConfig.Read.Follow {
 			return nil
 		}
 

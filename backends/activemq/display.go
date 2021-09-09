@@ -20,7 +20,7 @@ func (a *ActiveMq) DisplayMessage(msg *types.ReadMessage) error {
 		return errors.New("unable to type assert message")
 	}
 
-	decoded, err := reader.Decode(a.Options, msg.Value)
+	decoded, err := reader.Decode(a.ConnectionConfig, msg.Value)
 	if err != nil {
 		return errors.Wrap(err, "unable to decode data")
 	}

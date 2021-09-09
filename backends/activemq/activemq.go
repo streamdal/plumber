@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber/types"
 	"github.com/go-stomp/stomp/v3"
 	"github.com/pkg/errors"
@@ -17,18 +18,18 @@ const (
 )
 
 type ActiveMq struct {
-	Options *options.Options
-	log     *logrus.Entry
+	ConnectionConfig *options.Options
+	log              *logrus.Entry
 }
 
-func New(opts *options.Options) (*ActiveMq, error) {
-	if err := validateOpts(opts); err != nil {
+func New(cfg *protos.ConnectionConfig) (*ActiveMq, error) {
+	if err := validateCfg(cfg); err != nil {
 		return nil, errors.Wrap(err, "unable to validate options")
 	}
 
 	return &ActiveMq{
-		Options: opts,
-		log:     logrus.WithField("backend", "activemq"),
+		ConnectionConfig: opts,
+		log:              logrus.WithField("backend", "activemq"),
 	}, nil
 }
 
@@ -89,14 +90,14 @@ func (a *ActiveMq) Relay(ctx context.Context, relayCh chan interface{}, errorCh 
 
 // getDestination determines the correct string to pass to stomp.Subscribe()
 func (a *ActiveMq) getDestination() string {
-	if a.Options.ActiveMq.Topic != "" {
-		return "/topic/" + a.Options.ActiveMq.Topic
+	if a.ConnectionConfig.ActiveMq.Topic != "" {
+		return "/topic/" + a.ConnectionConfig.ActiveMq.Topic
 	}
 
-	return a.Options.ActiveMq.Queue
+	return a.ConnectionConfig.ActiveMq.Queue
 }
 
-func validateOpts(opts *options.Options) error {
+func validateCfg(opts *options.Options) error {
 	if opts == nil {
 		return errors.New("options cannot be nil")
 	}

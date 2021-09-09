@@ -2,7 +2,7 @@
 package validate
 
 import (
-	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber/util"
 	"github.com/pkg/errors"
 )
@@ -26,13 +26,17 @@ func ProtobufOptions(dirs []string, rootMessage string) error {
 	return nil
 }
 
-func BaseReadOptions(opts *options.Options) error {
-	if opts == nil {
-		return errors.New("options cannot be nil")
+func ReadConfig(cfg *protos.ReadConfig) error {
+	if cfg == nil {
+		return errors.New("read config cannot be nil")
 	}
 
-	if opts.Read == nil {
+	if cfg.ReadOpts == nil {
 		return errors.New("read options cannot be nil")
+	}
+
+	if cfg.XCliConfig == nil {
+		return errors.New("CLI config cannot be nil")
 	}
 
 	return nil
