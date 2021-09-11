@@ -34,7 +34,7 @@ func (r *Redis) DisplayMessage(msg *types.ReadMessage) error {
 	return nil
 }
 
-func (r *Redis) DisplayError(msg *types.ErrorMessage) error {
+func (r *Redis) DisplayError(msg *records.ErrorRecord) error {
 	printer.DefaultDisplayError(msg)
 	return nil
 }

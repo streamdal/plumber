@@ -16,7 +16,7 @@ func (c *CDCMongo) DisplayMessage(msg *types.ReadMessage) error {
 	return nil
 }
 
-func (c *CDCMongo) DisplayError(msg *types.ErrorMessage) error {
+func (c *CDCMongo) DisplayError(msg *records.ErrorRecord) error {
 	printer.DefaultDisplayError(msg)
 	return nil
 }

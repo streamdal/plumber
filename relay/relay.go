@@ -64,7 +64,7 @@ type IRelayBackend interface {
 
 type Relay struct {
 	*Config
-	Workers      map[int]struct{}
+	Workers      map[int32]struct{}
 	WorkersMutex *sync.RWMutex
 	log          *logrus.Entry
 }
@@ -72,8 +72,8 @@ type Relay struct {
 type Config struct {
 	Token              string
 	GRPCAddress        string
-	NumWorkers         int
-	BatchSize          int
+	NumWorkers         int32
+	BatchSize          int32
 	RelayCh            chan interface{}
 	DisableTLS         bool
 	Timeout            time.Duration // general grpc timeout (used for all grpc calls)
@@ -95,7 +95,7 @@ func New(relayCfg *Config) (*Relay, error) {
 
 	return &Relay{
 		Config:       relayCfg,
-		Workers:      make(map[int]struct{}),
+		Workers:      make(map[int32]struct{}),
 		WorkersMutex: &sync.RWMutex{},
 		log:          logrus.WithField("pkg", "relay"),
 	}, nil
@@ -212,21 +212,21 @@ func (r *Relay) WaitForShutdown() {
 }
 
 // removeWorker removes a worker from the workers map so we can track when all workers have shut down
-func (r *Relay) removeWorker(id int) {
+func (r *Relay) removeWorker(id int32) {
 	r.WorkersMutex.Lock()
 	defer r.WorkersMutex.Unlock()
 	delete(r.Workers, id)
 }
 
 // addWorker adds a worker ID to the workers map
-func (r *Relay) addWorker(id int) {
+func (r *Relay) addWorker(id int32) {
 	r.WorkersMutex.Lock()
 	defer r.WorkersMutex.Unlock()
 	r.Workers[id] = struct{}{}
 }
 
 func (r *Relay) StartWorkers(shutdownCtx context.Context) error {
-	for i := 0; i != r.Config.NumWorkers; i++ {
+	for i := int32(0); i != r.Config.NumWorkers; i++ {
 		r.log.WithField("workerId", i).Debug("starting worker")
 
 		conn, outboundCtx, err := NewConnection(r.Config.GRPCAddress, r.Config.Token, r.Config.Timeout, r.Config.DisableTLS, true)
@@ -242,7 +242,7 @@ func (r *Relay) StartWorkers(shutdownCtx context.Context) error {
 
 // Run is a GRPC worker that runs as a goroutine. outboundCtx is used for sending GRPC requests as it will contain
 // metadata, specifically "batch-token". shutdownCtx is passed from the main plumber app to shut down workers
-func (r *Relay) Run(id int, conn *grpc.ClientConn, outboundCtx, shutdownCtx context.Context) {
+func (r *Relay) Run(id int32, conn *grpc.ClientConn, outboundCtx, shutdownCtx context.Context) {
 	llog := r.log.WithField("relayId", id)
 	r.addWorker(id)
 
@@ -267,7 +267,7 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, outboundCtx, shutdownCtx cont
 			queue = append(queue, msg)
 
 			// Max queue size reached
-			if len(queue) >= r.Config.BatchSize {
+			if len(queue) >= int(r.Config.BatchSize) {
 				llog.Debugf("%d: max queue size reached - flushing!", id)
 
 				r.flush(outboundCtx, conn, queue...)
@@ -332,6 +332,8 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	// one message bus type at a time
 
 	var err error
+
+	// TODO: Need to get away from the switch type flow ~ds 09.11.21
 
 	switch v := messages[0].(type) {
 	case *sqsTypes.RelayMessage:

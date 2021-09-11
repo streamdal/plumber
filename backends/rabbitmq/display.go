@@ -45,7 +45,7 @@ func (r *RabbitMQ) DisplayMessage(msg *types.ReadMessage) error {
 	return nil
 }
 
-func (r *RabbitMQ) DisplayError(msg *types.ErrorMessage) error {
+func (r *RabbitMQ) DisplayError(msg *records.ErrorRecord) error {
 	printer.DefaultDisplayError(msg)
 	return nil
 }

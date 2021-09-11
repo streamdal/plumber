@@ -128,9 +128,9 @@ func (p *Plumber) Run() {
 	case "read":
 		err = p.HandleReadCmd() // DONE
 	case "write":
-		err = p.HandleWriteCmd() // TODO: Am here
+		err = p.HandleWriteCmd() // DONE
 	case "relay":
-		printer.PrintRelayOptions(p.CLIOptions)
+		printer.PrintRelayOptions(p.CLIOptions) // TODO: AM HERE
 		err = p.HandleRelayCmd()
 	case "dynamic":
 		err = p.HandleDynamicCmd()

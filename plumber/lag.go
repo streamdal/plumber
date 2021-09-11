@@ -12,6 +12,8 @@ import (
 	"github.com/batchcorp/plumber/util"
 )
 
+// TODO: Move this into kafka
+
 // HandleLagCmd handles viewing lag in CLI mode
 func (p *Plumber) HandleLagCmd() error {
 	if p.KongCtx != "lag kafka" {

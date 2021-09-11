@@ -40,7 +40,7 @@ func (n *Nats) DisplayMessage(msg *types.ReadMessage) error {
 	return nil
 }
 
-func (n *Nats) DisplayError(msg *types.ErrorMessage) error {
+func (n *Nats) DisplayError(msg *records.ErrorRecord) error {
 	printer.DefaultDisplayError(msg)
 	return nil
 }

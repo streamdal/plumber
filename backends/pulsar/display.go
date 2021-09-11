@@ -42,7 +42,7 @@ func (p *Pulsar) DisplayMessage(msg *types.ReadMessage) error {
 	return nil
 }
 
-func (p *Pulsar) DisplayError(msg *types.ErrorMessage) error {
+func (p *Pulsar) DisplayError(msg *records.ErrorRecord) error {
 	printer.DefaultDisplayError(msg)
 	return nil
 }

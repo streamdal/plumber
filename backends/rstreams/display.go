@@ -33,7 +33,7 @@ func (r *RedisStreams) DisplayMessage(msg *types.ReadMessage) error {
 	return nil
 }
 
-func (r *RedisStreams) DisplayError(msg *types.ErrorMessage) error {
+func (r *RedisStreams) DisplayError(msg *records.ErrorRecord) error {
 	printer.DefaultDisplayError(msg)
 	return nil
 }

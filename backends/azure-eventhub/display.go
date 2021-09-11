@@ -34,7 +34,7 @@ func (e *EventHub) DisplayMessage(msg *types.ReadMessage) error {
 	return nil
 }
 
-func (e *EventHub) DisplayError(msg *types.ErrorMessage) error {
+func (e *EventHub) DisplayError(msg *records.ErrorRecord) error {
 	printer.DefaultDisplayError(msg)
 	return nil
 }

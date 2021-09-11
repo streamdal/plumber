@@ -31,7 +31,7 @@ func (c *CDCPostgres) DisplayMessage(msg *types.ReadMessage) error {
 	return nil
 }
 
-func (c *CDCPostgres) DisplayError(msg *types.ErrorMessage) error {
+func (c *CDCPostgres) DisplayError(msg *records.ErrorRecord) error {
 	printer.DefaultDisplayError(msg)
 	return nil
 }

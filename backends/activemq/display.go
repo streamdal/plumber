@@ -6,7 +6,6 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
-	"github.com/batchcorp/plumber/types"
 	"github.com/go-stomp/stomp/v3"
 	"github.com/pkg/errors"
 )
@@ -44,7 +43,7 @@ func (a *ActiveMq) DisplayMessage(msg *records.Read) error {
 	return nil
 }
 
-func (a *ActiveMq) DisplayError(msg *types.ErrorMessage) error {
+func (a *ActiveMq) DisplayError(msg *records.ErrorRecord) error {
 	printer.DefaultDisplayError(msg)
 	return nil
 }

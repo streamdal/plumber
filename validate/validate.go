@@ -27,13 +27,25 @@ func ProtobufOptions(dirs []string, rootMessage string) error {
 	return nil
 }
 
+func RelayOptions(relayOpts *opts.RelayOptions) error {
+	if relayOpts == nil {
+		return errors.New("relay options cannot be nil")
+	}
+
+	if relayOpts.XCliOptions == nil {
+		return errors.New("cli options cannot be nil")
+	}
+
+	return nil
+}
+
 func ReadOptions(readOpts *opts.ReadOptions) error {
 	if readOpts == nil {
 		return errors.New("read options cannot be nil")
 	}
 
 	if readOpts.XCliOptions == nil {
-		return errors.New("CLI options cannot be nil")
+		return errors.New("cli options cannot be nil")
 	}
 
 	return nil

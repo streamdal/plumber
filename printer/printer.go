@@ -5,13 +5,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos"
-	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/logrusorgru/aurora"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
-
-	"github.com/batchcorp/plumber/options"
 )
 
 func Error(str string) {
@@ -89,173 +87,175 @@ func PrintTableProperties(properties [][]string, timestamp time.Time) {
 	PrintTable(properties, 0, timestamp, nil)
 }
 
-func DefaultDisplayError(msg *types.ErrorMessage) {
-	Errorf("[%s] %s", msg.OccurredAt, msg.Error)
+func DefaultDisplayError(msg *records.ErrorRecord) {
+	humanReadable := time.Unix(msg.OccurredAtUnixTsUtc, 0)
+	Errorf("[%s] %s", humanReadable, msg.Error)
 }
 
-func PrintRelayOptions(opts *protos.CLIOptions) {
-	if opts == nil {
+func PrintRelayOptions(cliOpts *opts.CLIOptions) {
+	if cliOpts == nil {
 		return
 	}
 
-	// Because of some funky business with env var handling - we have to do some
-	// silly things like this to get the RelayType
-	relayType := opts.Relay.Type
-
-	if relayType == "" {
-		splitCmd := strings.Split(cmd, " ")
-
-		if len(splitCmd) >= 2 {
-			relayType = splitCmd[1]
-		} else {
-			relayType = "N/A"
-		}
-	}
+	// TODO: Don't think this is needed since moving to kong ~ds 09.11.21
+	//// Because of some funky business with env var handling - we have to do some
+	//// silly things like this to get the RelayType
+	//relayType := cliOpts.Relay.Type
+	//
+	//if relayType == "" {
+	//	splitCmd := strings.Split(cmd, " ")
+	//
+	//	if len(splitCmd) >= 2 {
+	//		relayType = splitCmd[1]
+	//	} else {
+	//		relayType = "N/A"
+	//	}
+	//}
 
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("> Relay Settings")
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("")
-	logrus.Infof("- %-24s%-6s", "RelayType", relayType)
-	logrus.Infof("- %-24s%-6s", "Collection token", opts.Relay.CollectionToken)
-	logrus.Infof("- %-24s%-6s", "Batch collector address", opts.Relay.XBatchshGrpcAddress)
-	logrus.Infof("- %-24s%-6d", "Num workers", opts.Relay.NumWorkers)
-	logrus.Infof("- %-24s%-6d", "Batch size", opts.Relay.BatchSize)
-	logrus.Infof("- %-24s%-6v", "Stats enabled", opts.Read.XCliConfig.StatsEnable)
-	logrus.Infof("- %-24s%-6s", "Stats report interval (seconds)", opts.Read.XCliConfig.StatsReportIntervalSec)
+	logrus.Infof("- %-24s%-6s", "RelayType", cliOpts.Global.XBackend)
+	logrus.Infof("- %-24s%-6s", "Collection token", cliOpts.Relay.CollectionToken)
+	logrus.Infof("- %-24s%-6s", "Batch collector address", cliOpts.Relay.XBatchshGrpcAddress)
+	logrus.Infof("- %-24s%-6d", "Num workers", cliOpts.Relay.NumWorkers)
+	logrus.Infof("- %-24s%-6d", "Batch size", cliOpts.Relay.BatchSize)
+	logrus.Infof("- %-24s%-6v", "Stats enabled", cliOpts.Read.XCliOptions.StatsEnable)
+	logrus.Infof("- %-24s%-6s", "Stats report interval (seconds)", cliOpts.Read.XCliOptions.StatsReportIntervalSec)
 	logrus.Info("")
 
-	switch relayType {
+	switch cliOpts.Global.XBackend {
 	case "kafka":
-		printKafkaOptions(opts)
+		printKafkaOptions(cliOpts)
 	case "rabbit":
-		printRabbitOptions(opts)
+		printRabbitOptions(cliOpts)
 	case "aws-sqs":
-		printSQSOptions(opts)
+		printSQSOptions(cliOpts)
 	case "azure":
-		printAzureOptions(opts)
+		printAzureOptions(cliOpts)
 	case "gcp-pubsub":
-		printGCPOptions(opts)
+		printGCPOptions(cliOpts)
 	case "redis-pubsub":
-		printRedisPubSubOptions(opts)
+		printRedisPubSubOptions(cliOpts)
 	case "redis-streams":
-		printRedisStreamsOptions(opts)
+		printRedisStreamsOptions(cliOpts)
 	case "nsq":
-		printNSQOptions(opts)
+		printNSQOptions(cliOpts)
 	}
 }
 
-func printKafkaOptions(opts *options.Options) {
+func printKafkaOptions(cliOpts *opts.CLIOptions) {
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("> Kafka Settings")
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("")
-	logrus.Infof("- %-24s%-6v", "Brokers", strings.Join(opts.Kafka.Brokers, ", "))
-	logrus.Infof("- %-24s%-6v", "Topics", strings.Join(opts.Kafka.Topics, ", "))
-	logrus.Infof("- %-24s%-6v", "consumer Group", opts.Kafka.GroupID)
-	logrus.Infof("- %-24s%-6v", "CommitInterval", opts.Kafka.CommitInterval)
-	logrus.Infof("- %-24s%-6v", "MaxWait", opts.Kafka.MaxWait)
-	logrus.Infof("- %-24s%-6v", "MinBytes", opts.Kafka.MinBytes)
-	logrus.Infof("- %-24s%-6v", "MaxBytes", opts.Kafka.MaxBytes)
+	logrus.Infof("- %-24s%-6v", "Brokers", strings.Join(cliOpts.Relay.Kafka.XConn.Address, ", "))
+	logrus.Infof("- %-24s%-6v", "Topics", strings.Join(cliOpts.Relay.Kafka.Args.Topics, ", "))
+	logrus.Infof("- %-24s%-6v", "ConsumerGroup", cliOpts.Relay.Kafka.Args.ConsumerGroupName)
+	logrus.Infof("- %-24s%-6v", "CommitInterval (seconds)", cliOpts.Relay.Kafka.Args.CommitIntervalSeconds)
+	logrus.Infof("- %-24s%-6v", "MaxWait (seconds)", cliOpts.Relay.Kafka.Args.MaxWaitSeconds)
+	logrus.Infof("- %-24s%-6v", "MinBytes", cliOpts.Relay.Kafka.Args.MinBytes)
+	logrus.Infof("- %-24s%-6v", "MaxBytes", cliOpts.Relay.Kafka.Args.MaxBytes)
 	logrus.Info("")
 }
 
-func printRabbitOptions(opts *options.Options) {
+func printRabbitOptions(cliOpts *opts.CLIOptions) {
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("> Rabbit Settings")
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("")
-	logrus.Infof("- %-24s%-6v", "Address", opts.Rabbit.Address)
-	logrus.Infof("- %-24s%-6v", "Exchange", opts.Rabbit.Exchange)
-	logrus.Infof("- %-24s%-6v", "RoutingKey", opts.Rabbit.RoutingKey)
-	logrus.Infof("- %-24s%-6v", "RoutingKey", opts.Rabbit.ReadQueue)
-	logrus.Infof("- %-24s%-6v", "ReadQueueDurable", opts.Rabbit.ReadQueueDurable)
-	logrus.Infof("- %-24s%-6v", "ReadQueueAutoDelete", opts.Rabbit.ReadQueueAutoDelete)
-	logrus.Infof("- %-24s%-6v", "ReadQueueDeclare", opts.Rabbit.ReadQueueDeclare)
-	logrus.Infof("- %-24s%-6v", "ReadQueueExclusive", opts.Rabbit.ReadQueueExclusive)
-	logrus.Infof("- %-24s%-6v", "ReadAutoAck", opts.Rabbit.ReadAutoAck)
-	logrus.Infof("- %-24s%-6v", "ReadConsumerTag", opts.Rabbit.ReadConsumerTag)
-	logrus.Infof("- %-24s%-6v", "UseTLS", opts.Rabbit.UseTLS)
-	logrus.Infof("- %-24s%-6v", "SkipVerifyTLS", opts.Rabbit.SkipVerifyTLS)
+	logrus.Infof("- %-24s%-6v", "Address", cliOpts.Relay.Rabbit.XConn.Address)
+	logrus.Infof("- %-24s%-6v", "Exchange", cliOpts.Relay.Rabbit.Args.ExchangeName)
+	logrus.Infof("- %-24s%-6v", "BindingKey", cliOpts.Relay.Rabbit.Args.BindingKey)
+	logrus.Infof("- %-24s%-6v", "ReadQueue", cliOpts.Relay.Rabbit.Args.QueueName)
+	logrus.Infof("- %-24s%-6v", "ReadQueueDurable", cliOpts.Relay.Rabbit.Args.QueueDurable)
+	logrus.Infof("- %-24s%-6v", "ReadQueueAutoDelete", cliOpts.Relay.Rabbit.Args.QueueDelete)
+	logrus.Infof("- %-24s%-6v", "ReadQueueDeclare", cliOpts.Relay.Rabbit.Args.QueueDeclare)
+	logrus.Infof("- %-24s%-6v", "ReadQueueExclusive", cliOpts.Relay.Rabbit.Args.QueueExclusive)
+	logrus.Infof("- %-24s%-6v", "ReadAutoAck", cliOpts.Relay.Rabbit.Args.AutoAck)
+	logrus.Infof("- %-24s%-6v", "ReadConsumerTag", cliOpts.Relay.Rabbit.Args.ConsumerTag)
+	logrus.Infof("- %-24s%-6v", "UseTLS", cliOpts.Relay.Rabbit.XConn.UseTls)
+	logrus.Infof("- %-24s%-6v", "SkipVerifyTLS", cliOpts.Relay.Rabbit.XConn.InsecureTls)
 	logrus.Info("")
 }
 
-func printAzureOptions(opts *options.Options) {
+func printAzureOptions(cliOpts *opts.CLIOptions) {
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("> Azure Settings")
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("")
-	logrus.Infof("- %-24s%-6v", "Subscription", opts.Azure.Subscription)
-	logrus.Infof("- %-24s%-6v", "queue", opts.Azure.Queue)
-	logrus.Infof("- %-24s%-6v", "topic", opts.Azure.Topic)
-	logrus.Infof("- %-24s%-6v", "ConnectionString", opts.Azure.ConnectionString)
+	logrus.Infof("- %-24s%-6v", "Subscription", cliOpts.Relay.AzureServiceBus.Args.SubscriptionName)
+	logrus.Infof("- %-24s%-6v", "queue", cliOpts.Relay.AzureServiceBus.Args.Queue)
+	logrus.Infof("- %-24s%-6v", "topic", cliOpts.Relay.AzureServiceBus.Args.Topic)
+	logrus.Infof("- %-24s%-6v", "ConnectionString", cliOpts.Relay.AzureServiceBus.XConn.ConnectionString)
 	logrus.Info("")
 }
 
-func printSQSOptions(opts *options.Options) {
+func printSQSOptions(cliOpts *opts.CLIOptions) {
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("> SQS Settings")
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("")
-	logrus.Infof("- %-24s%-6v", "QueueName", opts.AWSSQS.QueueName)
-	logrus.Infof("- %-24s%-6v", "RemoteAccountID", opts.AWSSQS.RemoteAccountID)
-	logrus.Infof("- %-24s%-6v", "RelayMaxNumMessages", opts.AWSSQS.RelayMaxNumMessages)
-	logrus.Infof("- %-24s%-6v", "ReceiveRequestAttemptID", opts.AWSSQS.RelayReceiveRequestAttemptId)
-	logrus.Infof("- %-24s%-6v", "AutoDelete", opts.AWSSQS.RelayAutoDelete)
-	logrus.Infof("- %-24s%-6v", "WaitTimeSeconds", opts.AWSSQS.RelayWaitTimeSeconds)
+	logrus.Infof("- %-24s%-6v", "QueueName", cliOpts.Relay.Awssqs.Args.QueueName)
+	logrus.Infof("- %-24s%-6v", "RemoteAccountID", cliOpts.Relay.Awssqs.Args.RemoteAccountId)
+	logrus.Infof("- %-24s%-6v", "RelayMaxNumMessages", cliOpts.Relay.Awssqs.Args.MaxNumMessages)
+	logrus.Infof("- %-24s%-6v", "ReceiveRequestAttemptID", cliOpts.Relay.Awssqs.Args.ReceiveRequestAttemptId)
+	logrus.Infof("- %-24s%-6v", "AutoDelete", cliOpts.Relay.Awssqs.Args.AutoDelete)
+	logrus.Infof("- %-24s%-6v", "WaitTimeSeconds", cliOpts.Relay.Awssqs.Args.WaitTimeSeconds)
 	logrus.Info("")
 }
 
-func printGCPOptions(opts *options.Options) {
+func printGCPOptions(cliOpts *opts.CLIOptions) {
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("> GCP Settings")
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("")
-	logrus.Infof("- %-24s%-6v", "ProjectID", opts.GCPPubSub.ProjectId)
-	logrus.Infof("- %-24s%-6v", "SubscriptionID", opts.GCPPubSub.ReadSubscriptionId)
-	logrus.Infof("- %-24s%-6v", "ReadAck", opts.GCPPubSub.ReadAck)
+	logrus.Infof("- %-24s%-6v", "ProjectID", cliOpts.Relay.GcpPubsub.XConn.ProjectId)
+	logrus.Infof("- %-24s%-6v", "SubscriptionID", cliOpts.Relay.GcpPubsub.Args.SubscriptionId)
+	logrus.Infof("- %-24s%-6v", "ReadAck", cliOpts.Relay.GcpPubsub.Args.AckMessages)
 	logrus.Info("")
 }
 
-func printRedisPubSubOptions(opts *options.Options) {
+func printRedisPubSubOptions(cliOpts *opts.CLIOptions) {
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("> Redis PubSub Settings")
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("")
-	logrus.Infof("- %-24s%-6v", "Address", opts.RedisPubSub.Address)
-	logrus.Infof("- %-24s%-6v", "Channels", opts.RedisPubSub.Channels)
-	logrus.Infof("- %-24s%-6v", "Username", opts.RedisPubSub.Username)
-	logrus.Infof("- %-24s%-6v", "Database", opts.RedisPubSub.Database)
+	logrus.Infof("- %-24s%-6v", "Address", cliOpts.Relay.RedisPubsub.XConn.Address)
+	logrus.Infof("- %-24s%-6v", "Channels", cliOpts.Relay.RedisPubsub.Args.Channel)
+	logrus.Infof("- %-24s%-6v", "Username", cliOpts.Relay.RedisPubsub.XConn.Username)
+	logrus.Infof("- %-24s%-6v", "Database", cliOpts.Relay.RedisPubsub.Args.Database)
 	logrus.Info("")
 }
 
-func printRedisStreamsOptions(opts *options.Options) {
+func printRedisStreamsOptions(cliOpts *opts.CLIOptions) {
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("> Redis Streams Settings")
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("")
-	logrus.Infof("- %-28s%-6v", "Address", opts.RedisStreams.Address)
-	logrus.Infof("- %-28s%-6v", "Streams", opts.RedisStreams.Streams)
-	logrus.Infof("- %-28s%-6v", "Username", opts.RedisStreams.Username)
-	logrus.Infof("- %-28s%-6v", "Database", opts.RedisStreams.Database)
-	logrus.Infof("- %-28s%-6v", "Create Streams", opts.RedisStreams.CreateStreams)
-	logrus.Infof("- %-28s%-6v", "consumer Name", opts.RedisStreams.ConsumerName)
-	logrus.Infof("- %-28s%-6v", "consumer Group", opts.RedisStreams.ConsumerGroup)
-	logrus.Infof("- %-28s%-6v", "Recreate consumer Group", opts.RedisStreams.RecreateConsumerGroup)
+	logrus.Infof("- %-28s%-6v", "Address", cliOpts.Relay.RedisStreams.XConn.Address)
+	logrus.Infof("- %-28s%-6v", "Streams", cliOpts.Relay.RedisStreams.Args.Stream)
+	logrus.Infof("- %-28s%-6v", "Username", cliOpts.Relay.RedisStreams.XConn.Username)
+	logrus.Infof("- %-28s%-6v", "Database", cliOpts.Relay.RedisStreams.Args.Database)
+	logrus.Infof("- %-28s%-6v", "Create Streams", cliOpts.Relay.RedisStreams.Args.CreateConsumerConfig.CreateStreams)
+	logrus.Infof("- %-28s%-6v", "consumer Name", cliOpts.Relay.RedisStreams.Args.ConsumerName)
+	logrus.Infof("- %-28s%-6v", "consumer Group", cliOpts.Relay.RedisStreams.Args.ConsumerGroup)
+	logrus.Infof("- %-28s%-6v", "Recreate consumer Group", cliOpts.Relay.RedisStreams.Args.CreateConsumerConfig.RecreateConsumerGroup)
 	logrus.Info("")
 }
 
-func printNSQOptions(opts *options.Options) {
+func printNSQOptions(cliOpts *opts.CLIOptions) {
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("> NSQ Settings")
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("")
-	if opts.NSQ.NSQLookupDAddress != "" {
-		logrus.Infof("- %-24s%-6v", "Address", opts.NSQ.NSQLookupDAddress)
+	if cliOpts.Relay.Nsq.XConn.LookupdAddress != "" {
+		logrus.Infof("- %-24s%-6v", "Address", cliOpts.Relay.Nsq.XConn.LookupdAddress)
 	} else {
-		logrus.Infof("- %-24s%-6v", "Address", opts.NSQ.NSQDAddress)
+		logrus.Infof("- %-24s%-6v", "Address", cliOpts.Relay.Nsq.XConn.NsqdAddress)
 	}
-	logrus.Infof("- %-24s%-6v", "topic", opts.NSQ.Topic)
-	logrus.Infof("- %-24s%-6v", "OutputChannel", opts.NSQ.Channel)
+	logrus.Infof("- %-24s%-6v", "topic", cliOpts.Relay.Nsq.Args.Topic)
+	logrus.Infof("- %-24s%-6v", "OutputChannel", cliOpts.Relay.Nsq.Args.Channel)
 	logrus.Info("")
 }

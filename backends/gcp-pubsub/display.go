@@ -37,7 +37,7 @@ func (g *GCPPubSub) DisplayMessage(msg *types.ReadMessage) error {
 	return nil
 }
 
-func (g *GCPPubSub) DisplayError(msg *types.ErrorMessage) error {
+func (g *GCPPubSub) DisplayError(msg *records.ErrorRecord) error {
 	printer.DefaultDisplayError(msg)
 	return nil
 }

@@ -37,7 +37,7 @@ func (n *NSQ) DisplayMessage(msg *types.ReadMessage) error {
 	return nil
 }
 
-func (n *NSQ) DisplayError(msg *types.ErrorMessage) error {
+func (n *NSQ) DisplayError(msg *records.ErrorRecord) error {
 	printer.DefaultDisplayError(msg)
 	return nil
 }

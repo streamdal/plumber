@@ -52,7 +52,7 @@ func (n *NatsStreaming) DisplayMessage(msg *types.ReadMessage) error {
 	return nil
 }
 
-func (n *NatsStreaming) DisplayError(msg *types.ErrorMessage) error {
+func (n *NatsStreaming) DisplayError(msg *records.ErrorRecord) error {
 	printer.DefaultDisplayError(msg)
 	return nil
 }

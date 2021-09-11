@@ -36,7 +36,7 @@ func (m *MQTT) DisplayMessage(msg *types.ReadMessage) error {
 	return nil
 }
 
-func (m *MQTT) DisplayError(msg *types.ErrorMessage) error {
+func (m *MQTT) DisplayError(msg *records.ErrorRecord) error {
 	printer.DefaultDisplayError(msg)
 	return nil
 }

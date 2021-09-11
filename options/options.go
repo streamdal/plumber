@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	version = "UNSET"
+	VERSION = "UNSET"
 )
 
 func New(args []string) (*kong.Context, *opts.CLIOptions, error) {
@@ -114,7 +114,7 @@ func ActionUsesBackend(action string) bool {
 func maybeDisplayVersion(args []string) {
 	for _, f := range args {
 		if f == "--version" {
-			fmt.Println(version)
+			fmt.Println(VERSION)
 			os.Exit(0)
 		}
 	}

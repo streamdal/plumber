@@ -8,7 +8,7 @@ func (a *AWSSNS) DisplayMessage(msg *types.ReadMessage) error {
 	return types.UnsupportedFeatureErr
 }
 
-func (a *AWSSNS) DisplayError(msg *types.ErrorMessage) error {
+func (a *AWSSNS) DisplayError(msg *records.ErrorRecord) error {
 	return types.UnsupportedFeatureErr
 
 }

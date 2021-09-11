@@ -37,7 +37,7 @@ func (s *ServiceBus) DisplayMessage(msg *types.ReadMessage) error {
 	return nil
 }
 
-func (s *ServiceBus) DisplayError(msg *types.ErrorMessage) error {
+func (s *ServiceBus) DisplayError(msg *records.ErrorRecord) error {
 	printer.DefaultDisplayError(msg)
 	return nil
 }
