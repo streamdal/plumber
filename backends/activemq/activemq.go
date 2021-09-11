@@ -5,12 +5,11 @@ import (
 	"time"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber/types"
 	"github.com/go-stomp/stomp/v3"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-
-	"github.com/batchcorp/plumber/options"
 )
 
 const (
@@ -18,22 +17,24 @@ const (
 )
 
 type ActiveMq struct {
-	ConnectionConfig *options.Options
-	log              *logrus.Entry
+	connCfg  *protos.ConnectionConfig
+	connArgs *args.ActiveMQConn
+	log      *logrus.Entry
 }
 
-func New(cfg *protos.ConnectionConfig) (*ActiveMq, error) {
-	if err := validateCfg(cfg); err != nil {
+func New(connCfg *protos.ConnectionConfig) (*ActiveMq, error) {
+	if err := validateConnCfg(connCfg); err != nil {
 		return nil, errors.Wrap(err, "unable to validate options")
 	}
 
 	return &ActiveMq{
-		ConnectionConfig: opts,
-		log:              logrus.WithField("backend", "activemq"),
+		connCfg:  connCfg,
+		connArgs: connCfg.GetActiveMq(),
+		log:      logrus.WithField("backend", "activemq"),
 	}, nil
 }
 
-func newConn(ctx context.Context, opts *options.Options) (*stomp.Conn, error) {
+func newConn(ctx context.Context, connArgs *args.ActiveMQConn) (*stomp.Conn, error) {
 	o := func(*stomp.Conn) error {
 		return nil
 	}
@@ -47,7 +48,7 @@ func newConn(ctx context.Context, opts *options.Options) (*stomp.Conn, error) {
 	go func() {
 		// We are using an aggressive heartbeat because either the library or
 		// the activemq server tends to drop connections frequently.
-		conn, err = stomp.Dial("tcp", opts.ActiveMq.Address, o,
+		conn, err = stomp.Dial("tcp", connArgs.Address, o,
 			stomp.ConnOpt.HeartBeat(5*time.Second, time.Second))
 		if err != nil {
 			errCh <- errors.Wrap(err, "unable to connect to backend")
@@ -80,30 +81,30 @@ func (a *ActiveMq) Test(ctx context.Context) error {
 	return errors.New("not implemented")
 }
 
-func (a *ActiveMq) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
-	return types.UnsupportedFeatureErr
-}
-
 func (a *ActiveMq) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {
 	return types.UnsupportedFeatureErr
 }
 
 // getDestination determines the correct string to pass to stomp.Subscribe()
 func (a *ActiveMq) getDestination() string {
-	if a.ConnectionConfig.ActiveMq.Topic != "" {
-		return "/topic/" + a.ConnectionConfig.ActiveMq.Topic
+	if a.baseConnConfig.ActiveMq.Topic != "" {
+		return "/topic/" + a.baseConnConfig.ActiveMq.Topic
 	}
 
-	return a.ConnectionConfig.ActiveMq.Queue
+	return a.baseConnConfig.ActiveMq.Queue
 }
 
-func validateCfg(opts *options.Options) error {
-	if opts == nil {
-		return errors.New("options cannot be nil")
+func validateConnCfg(cfg *protos.ConnectionConfig) error {
+	if cfg == nil {
+		return errors.New("connection config cannot be nil")
 	}
 
-	if opts.ActiveMq == nil {
-		return errors.New("ActiveMQ options cannot be nil")
+	if cfg.Conn == nil {
+		return errors.New("conn in connection config cannot be nil")
+	}
+
+	if cfg.GetActiveMq() == nil {
+		return errors.New("connection args cannot be nil")
 	}
 
 	return nil

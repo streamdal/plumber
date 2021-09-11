@@ -31,6 +31,7 @@ require (
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/mattn/go-runewidth v0.0.10 // indirect
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.3.0
+	github.com/mcuadros/go-lookup v0.0.0-20200831155250-80f87a4fa5ee
 	github.com/nats-io/nats-streaming-server v0.22.1 // indirect
 	github.com/nats-io/nats.go v1.11.1-0.20210623165838-4b75fc59ae30
 	github.com/nats-io/stan.go v0.10.0
@@ -48,7 +49,7 @@ require (
 	github.com/sirupsen/logrus v1.7.0
 	github.com/streadway/amqp v1.0.0
 	github.com/thrift-iterator/go v0.0.0-20190402154806-9b5a67519118
-	github.com/tidwall/gjson v1.8.0
+	github.com/tidwall/gjson v1.8.0 // indirect
 	github.com/v2pro/plz v0.0.0-20200805122259-422184e41b6e // indirect
 	github.com/v2pro/quokka v0.0.0-20171201153428-382cb39c6ee6 // indirect
 	github.com/v2pro/wombat v0.0.0-20180402055224-a56dbdcddef2 // indirect

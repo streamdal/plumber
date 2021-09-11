@@ -2,7 +2,6 @@ package awssqs
 
 import (
 	"context"
-	"time"
 
 	sqsTypes "github.com/batchcorp/plumber/backends/aws-sqs/types"
 
@@ -15,7 +14,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/types"
 )
 
 const (
@@ -64,10 +62,6 @@ func (a *AWSSQS) Close(ctx context.Context) error {
 
 func (a *AWSSQS) Test(ctx context.Context) error {
 	return errors.New("not implemented")
-}
-
-func (a *AWSSQS) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
-	return types.UnsupportedFeatureErr
 }
 
 func newService(opts *options.Options) (*sqs.SQS, string, error) {

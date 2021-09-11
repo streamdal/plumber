@@ -3,6 +3,7 @@ package activemq
 import (
 	"fmt"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 	"github.com/batchcorp/plumber/types"
@@ -10,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (a *ActiveMq) DisplayMessage(msg *types.ReadMessage) error {
+func (a *ActiveMq) DisplayMessage(msg *records.Read) error {
 	if msg == nil {
 		return errors.New("msg cannot be nil")
 	}
@@ -20,7 +21,7 @@ func (a *ActiveMq) DisplayMessage(msg *types.ReadMessage) error {
 		return errors.New("unable to type assert message")
 	}
 
-	decoded, err := reader.Decode(a.ConnectionConfig, msg.Value)
+	decoded, err := reader.Decode(a.baseConnConfig, msg.Value)
 	if err != nil {
 		return errors.Wrap(err, "unable to decode data")
 	}

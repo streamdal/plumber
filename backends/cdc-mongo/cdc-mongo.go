@@ -82,10 +82,6 @@ func (c *CDCMongo) Dynamic(ctx context.Context) error {
 	return types.UnsupportedFeatureErr
 }
 
-func (c *CDCMongo) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
-	return types.UnsupportedFeatureErr
-}
-
 func newService(opts *options.Options) (*mongo.Client, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), ConnectionTimeout)
 	defer cancel()

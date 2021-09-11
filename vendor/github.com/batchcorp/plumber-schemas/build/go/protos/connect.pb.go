@@ -5,8 +5,8 @@ package protos
 
 import (
 	fmt "fmt"
-	args "github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	common "github.com/batchcorp/plumber-schemas/build/go/protos/common"
+	opts "github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	proto "github.com/golang/protobuf/proto"
 	math "math"
 )
@@ -22,370 +22,6 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-// ConnectionConfig is used for creating a new backend. CLI creates an instance
-// of this structure by injecting the conn struct it receives via *Args.
-type ConnectionConfig struct {
-	// Friendly name to identify this connection by (used in plumber-server logs)
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	// Any notes associated with this connection (stored plumber-server side)
-	Notes string `protobuf:"bytes,2,opt,name=notes,proto3" json:"notes,omitempty"`
-	// Used internally by plumber
-	XId string `protobuf:"bytes,3,opt,name=_id,json=Id,proto3" json:"_id,omitempty"`
-	// Types that are valid to be assigned to Conn:
-	//	*ConnectionConfig_Kafka
-	//	*ConnectionConfig_ActiveMq
-	//	*ConnectionConfig_Awssqs
-	//	*ConnectionConfig_Awssns
-	//	*ConnectionConfig_Mongo
-	//	*ConnectionConfig_Nats
-	//	*ConnectionConfig_NatsStreaming
-	//	*ConnectionConfig_Nsq
-	//	*ConnectionConfig_Postgres
-	//	*ConnectionConfig_Pulsar
-	//	*ConnectionConfig_Rabbit
-	//	*ConnectionConfig_RabbitStreams
-	//	*ConnectionConfig_RedisPubsub
-	//	*ConnectionConfig_RedisStreams
-	//	*ConnectionConfig_AzureEventHub
-	//	*ConnectionConfig_AzureServiceBus
-	//	*ConnectionConfig_Mqtt
-	//	*ConnectionConfig_KubemqQueue
-	//	*ConnectionConfig_GcpPubsub
-	Conn                 isConnectionConfig_Conn `protobuf_oneof:"conn"`
-	XXX_NoUnkeyedLiteral struct{}                `json:"-"`
-	XXX_unrecognized     []byte                  `json:"-"`
-	XXX_sizecache        int32                   `json:"-"`
-}
-
-func (m *ConnectionConfig) Reset()         { *m = ConnectionConfig{} }
-func (m *ConnectionConfig) String() string { return proto.CompactTextString(m) }
-func (*ConnectionConfig) ProtoMessage()    {}
-func (*ConnectionConfig) Descriptor() ([]byte, []int) {
-	return fileDescriptor_778b7e3040344da6, []int{0}
-}
-
-func (m *ConnectionConfig) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ConnectionConfig.Unmarshal(m, b)
-}
-func (m *ConnectionConfig) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ConnectionConfig.Marshal(b, m, deterministic)
-}
-func (m *ConnectionConfig) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ConnectionConfig.Merge(m, src)
-}
-func (m *ConnectionConfig) XXX_Size() int {
-	return xxx_messageInfo_ConnectionConfig.Size(m)
-}
-func (m *ConnectionConfig) XXX_DiscardUnknown() {
-	xxx_messageInfo_ConnectionConfig.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ConnectionConfig proto.InternalMessageInfo
-
-func (m *ConnectionConfig) GetName() string {
-	if m != nil {
-		return m.Name
-	}
-	return ""
-}
-
-func (m *ConnectionConfig) GetNotes() string {
-	if m != nil {
-		return m.Notes
-	}
-	return ""
-}
-
-func (m *ConnectionConfig) GetXId() string {
-	if m != nil {
-		return m.XId
-	}
-	return ""
-}
-
-type isConnectionConfig_Conn interface {
-	isConnectionConfig_Conn()
-}
-
-type ConnectionConfig_Kafka struct {
-	Kafka *args.KafkaConn `protobuf:"bytes,100,opt,name=kafka,proto3,oneof"`
-}
-
-type ConnectionConfig_ActiveMq struct {
-	ActiveMq *args.ActiveMQConn `protobuf:"bytes,101,opt,name=active_mq,json=activeMq,proto3,oneof"`
-}
-
-type ConnectionConfig_Awssqs struct {
-	Awssqs *args.AWSSQSConn `protobuf:"bytes,102,opt,name=awssqs,proto3,oneof"`
-}
-
-type ConnectionConfig_Awssns struct {
-	Awssns *args.AWSSNSConn `protobuf:"bytes,103,opt,name=awssns,proto3,oneof"`
-}
-
-type ConnectionConfig_Mongo struct {
-	Mongo *args.MongoConn `protobuf:"bytes,104,opt,name=mongo,proto3,oneof"`
-}
-
-type ConnectionConfig_Nats struct {
-	Nats *args.NatsConn `protobuf:"bytes,105,opt,name=nats,proto3,oneof"`
-}
-
-type ConnectionConfig_NatsStreaming struct {
-	NatsStreaming *args.NatsStreamingConn `protobuf:"bytes,106,opt,name=nats_streaming,json=natsStreaming,proto3,oneof"`
-}
-
-type ConnectionConfig_Nsq struct {
-	Nsq *args.NSQConn `protobuf:"bytes,107,opt,name=nsq,proto3,oneof"`
-}
-
-type ConnectionConfig_Postgres struct {
-	Postgres *args.PostgresConn `protobuf:"bytes,108,opt,name=postgres,proto3,oneof"`
-}
-
-type ConnectionConfig_Pulsar struct {
-	Pulsar *args.PulsarConn `protobuf:"bytes,109,opt,name=pulsar,proto3,oneof"`
-}
-
-type ConnectionConfig_Rabbit struct {
-	Rabbit *args.RabbitConn `protobuf:"bytes,110,opt,name=rabbit,proto3,oneof"`
-}
-
-type ConnectionConfig_RabbitStreams struct {
-	RabbitStreams *args.RabbitStreamsConn `protobuf:"bytes,111,opt,name=rabbit_streams,json=rabbitStreams,proto3,oneof"`
-}
-
-type ConnectionConfig_RedisPubsub struct {
-	RedisPubsub *args.RedisPubSubConn `protobuf:"bytes,112,opt,name=redis_pubsub,json=redisPubsub,proto3,oneof"`
-}
-
-type ConnectionConfig_RedisStreams struct {
-	RedisStreams *args.RedisStreamsConn `protobuf:"bytes,113,opt,name=redis_streams,json=redisStreams,proto3,oneof"`
-}
-
-type ConnectionConfig_AzureEventHub struct {
-	AzureEventHub *args.AzureEventHubConn `protobuf:"bytes,114,opt,name=azure_event_hub,json=azureEventHub,proto3,oneof"`
-}
-
-type ConnectionConfig_AzureServiceBus struct {
-	AzureServiceBus *args.AzureServiceBusConn `protobuf:"bytes,115,opt,name=azure_service_bus,json=azureServiceBus,proto3,oneof"`
-}
-
-type ConnectionConfig_Mqtt struct {
-	Mqtt *args.MQTTConn `protobuf:"bytes,116,opt,name=mqtt,proto3,oneof"`
-}
-
-type ConnectionConfig_KubemqQueue struct {
-	KubemqQueue *args.KubeMQQueueConn `protobuf:"bytes,117,opt,name=kubemq_queue,json=kubemqQueue,proto3,oneof"`
-}
-
-type ConnectionConfig_GcpPubsub struct {
-	GcpPubsub *args.GCPPubSubConn `protobuf:"bytes,118,opt,name=gcp_pubsub,json=gcpPubsub,proto3,oneof"`
-}
-
-func (*ConnectionConfig_Kafka) isConnectionConfig_Conn() {}
-
-func (*ConnectionConfig_ActiveMq) isConnectionConfig_Conn() {}
-
-func (*ConnectionConfig_Awssqs) isConnectionConfig_Conn() {}
-
-func (*ConnectionConfig_Awssns) isConnectionConfig_Conn() {}
-
-func (*ConnectionConfig_Mongo) isConnectionConfig_Conn() {}
-
-func (*ConnectionConfig_Nats) isConnectionConfig_Conn() {}
-
-func (*ConnectionConfig_NatsStreaming) isConnectionConfig_Conn() {}
-
-func (*ConnectionConfig_Nsq) isConnectionConfig_Conn() {}
-
-func (*ConnectionConfig_Postgres) isConnectionConfig_Conn() {}
-
-func (*ConnectionConfig_Pulsar) isConnectionConfig_Conn() {}
-
-func (*ConnectionConfig_Rabbit) isConnectionConfig_Conn() {}
-
-func (*ConnectionConfig_RabbitStreams) isConnectionConfig_Conn() {}
-
-func (*ConnectionConfig_RedisPubsub) isConnectionConfig_Conn() {}
-
-func (*ConnectionConfig_RedisStreams) isConnectionConfig_Conn() {}
-
-func (*ConnectionConfig_AzureEventHub) isConnectionConfig_Conn() {}
-
-func (*ConnectionConfig_AzureServiceBus) isConnectionConfig_Conn() {}
-
-func (*ConnectionConfig_Mqtt) isConnectionConfig_Conn() {}
-
-func (*ConnectionConfig_KubemqQueue) isConnectionConfig_Conn() {}
-
-func (*ConnectionConfig_GcpPubsub) isConnectionConfig_Conn() {}
-
-func (m *ConnectionConfig) GetConn() isConnectionConfig_Conn {
-	if m != nil {
-		return m.Conn
-	}
-	return nil
-}
-
-func (m *ConnectionConfig) GetKafka() *args.KafkaConn {
-	if x, ok := m.GetConn().(*ConnectionConfig_Kafka); ok {
-		return x.Kafka
-	}
-	return nil
-}
-
-func (m *ConnectionConfig) GetActiveMq() *args.ActiveMQConn {
-	if x, ok := m.GetConn().(*ConnectionConfig_ActiveMq); ok {
-		return x.ActiveMq
-	}
-	return nil
-}
-
-func (m *ConnectionConfig) GetAwssqs() *args.AWSSQSConn {
-	if x, ok := m.GetConn().(*ConnectionConfig_Awssqs); ok {
-		return x.Awssqs
-	}
-	return nil
-}
-
-func (m *ConnectionConfig) GetAwssns() *args.AWSSNSConn {
-	if x, ok := m.GetConn().(*ConnectionConfig_Awssns); ok {
-		return x.Awssns
-	}
-	return nil
-}
-
-func (m *ConnectionConfig) GetMongo() *args.MongoConn {
-	if x, ok := m.GetConn().(*ConnectionConfig_Mongo); ok {
-		return x.Mongo
-	}
-	return nil
-}
-
-func (m *ConnectionConfig) GetNats() *args.NatsConn {
-	if x, ok := m.GetConn().(*ConnectionConfig_Nats); ok {
-		return x.Nats
-	}
-	return nil
-}
-
-func (m *ConnectionConfig) GetNatsStreaming() *args.NatsStreamingConn {
-	if x, ok := m.GetConn().(*ConnectionConfig_NatsStreaming); ok {
-		return x.NatsStreaming
-	}
-	return nil
-}
-
-func (m *ConnectionConfig) GetNsq() *args.NSQConn {
-	if x, ok := m.GetConn().(*ConnectionConfig_Nsq); ok {
-		return x.Nsq
-	}
-	return nil
-}
-
-func (m *ConnectionConfig) GetPostgres() *args.PostgresConn {
-	if x, ok := m.GetConn().(*ConnectionConfig_Postgres); ok {
-		return x.Postgres
-	}
-	return nil
-}
-
-func (m *ConnectionConfig) GetPulsar() *args.PulsarConn {
-	if x, ok := m.GetConn().(*ConnectionConfig_Pulsar); ok {
-		return x.Pulsar
-	}
-	return nil
-}
-
-func (m *ConnectionConfig) GetRabbit() *args.RabbitConn {
-	if x, ok := m.GetConn().(*ConnectionConfig_Rabbit); ok {
-		return x.Rabbit
-	}
-	return nil
-}
-
-func (m *ConnectionConfig) GetRabbitStreams() *args.RabbitStreamsConn {
-	if x, ok := m.GetConn().(*ConnectionConfig_RabbitStreams); ok {
-		return x.RabbitStreams
-	}
-	return nil
-}
-
-func (m *ConnectionConfig) GetRedisPubsub() *args.RedisPubSubConn {
-	if x, ok := m.GetConn().(*ConnectionConfig_RedisPubsub); ok {
-		return x.RedisPubsub
-	}
-	return nil
-}
-
-func (m *ConnectionConfig) GetRedisStreams() *args.RedisStreamsConn {
-	if x, ok := m.GetConn().(*ConnectionConfig_RedisStreams); ok {
-		return x.RedisStreams
-	}
-	return nil
-}
-
-func (m *ConnectionConfig) GetAzureEventHub() *args.AzureEventHubConn {
-	if x, ok := m.GetConn().(*ConnectionConfig_AzureEventHub); ok {
-		return x.AzureEventHub
-	}
-	return nil
-}
-
-func (m *ConnectionConfig) GetAzureServiceBus() *args.AzureServiceBusConn {
-	if x, ok := m.GetConn().(*ConnectionConfig_AzureServiceBus); ok {
-		return x.AzureServiceBus
-	}
-	return nil
-}
-
-func (m *ConnectionConfig) GetMqtt() *args.MQTTConn {
-	if x, ok := m.GetConn().(*ConnectionConfig_Mqtt); ok {
-		return x.Mqtt
-	}
-	return nil
-}
-
-func (m *ConnectionConfig) GetKubemqQueue() *args.KubeMQQueueConn {
-	if x, ok := m.GetConn().(*ConnectionConfig_KubemqQueue); ok {
-		return x.KubemqQueue
-	}
-	return nil
-}
-
-func (m *ConnectionConfig) GetGcpPubsub() *args.GCPPubSubConn {
-	if x, ok := m.GetConn().(*ConnectionConfig_GcpPubsub); ok {
-		return x.GcpPubsub
-	}
-	return nil
-}
-
-// XXX_OneofWrappers is for the internal use of the proto package.
-func (*ConnectionConfig) XXX_OneofWrappers() []interface{} {
-	return []interface{}{
-		(*ConnectionConfig_Kafka)(nil),
-		(*ConnectionConfig_ActiveMq)(nil),
-		(*ConnectionConfig_Awssqs)(nil),
-		(*ConnectionConfig_Awssns)(nil),
-		(*ConnectionConfig_Mongo)(nil),
-		(*ConnectionConfig_Nats)(nil),
-		(*ConnectionConfig_NatsStreaming)(nil),
-		(*ConnectionConfig_Nsq)(nil),
-		(*ConnectionConfig_Postgres)(nil),
-		(*ConnectionConfig_Pulsar)(nil),
-		(*ConnectionConfig_Rabbit)(nil),
-		(*ConnectionConfig_RabbitStreams)(nil),
-		(*ConnectionConfig_RedisPubsub)(nil),
-		(*ConnectionConfig_RedisStreams)(nil),
-		(*ConnectionConfig_AzureEventHub)(nil),
-		(*ConnectionConfig_AzureServiceBus)(nil),
-		(*ConnectionConfig_Mqtt)(nil),
-		(*ConnectionConfig_KubemqQueue)(nil),
-		(*ConnectionConfig_GcpPubsub)(nil),
-	}
-}
-
 type GetAllConnectionsRequest struct {
 	// Every gRPC request must have a valid auth config
 	Auth                 *common.Auth `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
@@ -398,7 +34,7 @@ func (m *GetAllConnectionsRequest) Reset()         { *m = GetAllConnectionsReque
 func (m *GetAllConnectionsRequest) String() string { return proto.CompactTextString(m) }
 func (*GetAllConnectionsRequest) ProtoMessage()    {}
 func (*GetAllConnectionsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_778b7e3040344da6, []int{1}
+	return fileDescriptor_778b7e3040344da6, []int{0}
 }
 
 func (m *GetAllConnectionsRequest) XXX_Unmarshal(b []byte) error {
@@ -427,17 +63,17 @@ func (m *GetAllConnectionsRequest) GetAuth() *common.Auth {
 }
 
 type GetAllConnectionsResponse struct {
-	Configs              []*ConnectionConfig `protobuf:"bytes,1,rep,name=configs,proto3" json:"configs,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
-	XXX_unrecognized     []byte              `json:"-"`
-	XXX_sizecache        int32               `json:"-"`
+	Options              []*opts.ConnectionOptions `protobuf:"bytes,1,rep,name=options,proto3" json:"options,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                  `json:"-"`
+	XXX_unrecognized     []byte                    `json:"-"`
+	XXX_sizecache        int32                     `json:"-"`
 }
 
 func (m *GetAllConnectionsResponse) Reset()         { *m = GetAllConnectionsResponse{} }
 func (m *GetAllConnectionsResponse) String() string { return proto.CompactTextString(m) }
 func (*GetAllConnectionsResponse) ProtoMessage()    {}
 func (*GetAllConnectionsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_778b7e3040344da6, []int{2}
+	return fileDescriptor_778b7e3040344da6, []int{1}
 }
 
 func (m *GetAllConnectionsResponse) XXX_Unmarshal(b []byte) error {
@@ -458,9 +94,9 @@ func (m *GetAllConnectionsResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GetAllConnectionsResponse proto.InternalMessageInfo
 
-func (m *GetAllConnectionsResponse) GetConfigs() []*ConnectionConfig {
+func (m *GetAllConnectionsResponse) GetOptions() []*opts.ConnectionOptions {
 	if m != nil {
-		return m.Configs
+		return m.Options
 	}
 	return nil
 }
@@ -478,7 +114,7 @@ func (m *GetConnectionRequest) Reset()         { *m = GetConnectionRequest{} }
 func (m *GetConnectionRequest) String() string { return proto.CompactTextString(m) }
 func (*GetConnectionRequest) ProtoMessage()    {}
 func (*GetConnectionRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_778b7e3040344da6, []int{3}
+	return fileDescriptor_778b7e3040344da6, []int{2}
 }
 
 func (m *GetConnectionRequest) XXX_Unmarshal(b []byte) error {
@@ -514,17 +150,17 @@ func (m *GetConnectionRequest) GetConnectionId() string {
 }
 
 type GetConnectionResponse struct {
-	Connection           *ConnectionConfig `protobuf:"bytes,1,opt,name=connection,proto3" json:"connection,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
-	XXX_unrecognized     []byte            `json:"-"`
-	XXX_sizecache        int32             `json:"-"`
+	Options              *opts.ConnectionOptions `protobuf:"bytes,1,opt,name=options,proto3" json:"options,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                `json:"-"`
+	XXX_unrecognized     []byte                  `json:"-"`
+	XXX_sizecache        int32                   `json:"-"`
 }
 
 func (m *GetConnectionResponse) Reset()         { *m = GetConnectionResponse{} }
 func (m *GetConnectionResponse) String() string { return proto.CompactTextString(m) }
 func (*GetConnectionResponse) ProtoMessage()    {}
 func (*GetConnectionResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_778b7e3040344da6, []int{4}
+	return fileDescriptor_778b7e3040344da6, []int{3}
 }
 
 func (m *GetConnectionResponse) XXX_Unmarshal(b []byte) error {
@@ -545,27 +181,27 @@ func (m *GetConnectionResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GetConnectionResponse proto.InternalMessageInfo
 
-func (m *GetConnectionResponse) GetConnection() *ConnectionConfig {
+func (m *GetConnectionResponse) GetOptions() *opts.ConnectionOptions {
 	if m != nil {
-		return m.Connection
+		return m.Options
 	}
 	return nil
 }
 
 type CreateConnectionRequest struct {
 	// Every gRPC request must have a valid auth config
-	Auth                 *common.Auth      `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
-	Config               *ConnectionConfig `protobuf:"bytes,1,opt,name=config,proto3" json:"config,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
-	XXX_unrecognized     []byte            `json:"-"`
-	XXX_sizecache        int32             `json:"-"`
+	Auth                 *common.Auth            `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
+	Options              *opts.ConnectionOptions `protobuf:"bytes,1,opt,name=options,proto3" json:"options,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                `json:"-"`
+	XXX_unrecognized     []byte                  `json:"-"`
+	XXX_sizecache        int32                   `json:"-"`
 }
 
 func (m *CreateConnectionRequest) Reset()         { *m = CreateConnectionRequest{} }
 func (m *CreateConnectionRequest) String() string { return proto.CompactTextString(m) }
 func (*CreateConnectionRequest) ProtoMessage()    {}
 func (*CreateConnectionRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_778b7e3040344da6, []int{5}
+	return fileDescriptor_778b7e3040344da6, []int{4}
 }
 
 func (m *CreateConnectionRequest) XXX_Unmarshal(b []byte) error {
@@ -593,9 +229,9 @@ func (m *CreateConnectionRequest) GetAuth() *common.Auth {
 	return nil
 }
 
-func (m *CreateConnectionRequest) GetConfig() *ConnectionConfig {
+func (m *CreateConnectionRequest) GetOptions() *opts.ConnectionOptions {
 	if m != nil {
-		return m.Config
+		return m.Options
 	}
 	return nil
 }
@@ -612,7 +248,7 @@ func (m *CreateConnectionResponse) Reset()         { *m = CreateConnectionRespon
 func (m *CreateConnectionResponse) String() string { return proto.CompactTextString(m) }
 func (*CreateConnectionResponse) ProtoMessage()    {}
 func (*CreateConnectionResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_778b7e3040344da6, []int{6}
+	return fileDescriptor_778b7e3040344da6, []int{5}
 }
 
 func (m *CreateConnectionResponse) XXX_Unmarshal(b []byte) error {
@@ -642,18 +278,18 @@ func (m *CreateConnectionResponse) GetConnectionId() string {
 
 type TestConnectionRequest struct {
 	// Every gRPC request must have a valid auth config
-	Auth                 *common.Auth      `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
-	Config               *ConnectionConfig `protobuf:"bytes,1,opt,name=config,proto3" json:"config,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
-	XXX_unrecognized     []byte            `json:"-"`
-	XXX_sizecache        int32             `json:"-"`
+	Auth                 *common.Auth            `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
+	Options              *opts.ConnectionOptions `protobuf:"bytes,1,opt,name=options,proto3" json:"options,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                `json:"-"`
+	XXX_unrecognized     []byte                  `json:"-"`
+	XXX_sizecache        int32                   `json:"-"`
 }
 
 func (m *TestConnectionRequest) Reset()         { *m = TestConnectionRequest{} }
 func (m *TestConnectionRequest) String() string { return proto.CompactTextString(m) }
 func (*TestConnectionRequest) ProtoMessage()    {}
 func (*TestConnectionRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_778b7e3040344da6, []int{7}
+	return fileDescriptor_778b7e3040344da6, []int{6}
 }
 
 func (m *TestConnectionRequest) XXX_Unmarshal(b []byte) error {
@@ -681,9 +317,9 @@ func (m *TestConnectionRequest) GetAuth() *common.Auth {
 	return nil
 }
 
-func (m *TestConnectionRequest) GetConfig() *ConnectionConfig {
+func (m *TestConnectionRequest) GetOptions() *opts.ConnectionOptions {
 	if m != nil {
-		return m.Config
+		return m.Options
 	}
 	return nil
 }
@@ -699,7 +335,7 @@ func (m *TestConnectionResponse) Reset()         { *m = TestConnectionResponse{}
 func (m *TestConnectionResponse) String() string { return proto.CompactTextString(m) }
 func (*TestConnectionResponse) ProtoMessage()    {}
 func (*TestConnectionResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_778b7e3040344da6, []int{8}
+	return fileDescriptor_778b7e3040344da6, []int{7}
 }
 
 func (m *TestConnectionResponse) XXX_Unmarshal(b []byte) error {
@@ -729,19 +365,19 @@ func (m *TestConnectionResponse) GetStatus() *common.Status {
 
 type UpdateConnectionRequest struct {
 	// Every gRPC request must have a valid auth config
-	Auth                 *common.Auth      `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
-	ConnectionId         string            `protobuf:"bytes,1,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
-	Config               *ConnectionConfig `protobuf:"bytes,2,opt,name=config,proto3" json:"config,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
-	XXX_unrecognized     []byte            `json:"-"`
-	XXX_sizecache        int32             `json:"-"`
+	Auth                 *common.Auth            `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
+	ConnectionId         string                  `protobuf:"bytes,1,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty"`
+	Options              *opts.ConnectionOptions `protobuf:"bytes,2,opt,name=options,proto3" json:"options,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                `json:"-"`
+	XXX_unrecognized     []byte                  `json:"-"`
+	XXX_sizecache        int32                   `json:"-"`
 }
 
 func (m *UpdateConnectionRequest) Reset()         { *m = UpdateConnectionRequest{} }
 func (m *UpdateConnectionRequest) String() string { return proto.CompactTextString(m) }
 func (*UpdateConnectionRequest) ProtoMessage()    {}
 func (*UpdateConnectionRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_778b7e3040344da6, []int{9}
+	return fileDescriptor_778b7e3040344da6, []int{8}
 }
 
 func (m *UpdateConnectionRequest) XXX_Unmarshal(b []byte) error {
@@ -776,9 +412,9 @@ func (m *UpdateConnectionRequest) GetConnectionId() string {
 	return ""
 }
 
-func (m *UpdateConnectionRequest) GetConfig() *ConnectionConfig {
+func (m *UpdateConnectionRequest) GetOptions() *opts.ConnectionOptions {
 	if m != nil {
-		return m.Config
+		return m.Options
 	}
 	return nil
 }
@@ -794,7 +430,7 @@ func (m *UpdateConnectionResponse) Reset()         { *m = UpdateConnectionRespon
 func (m *UpdateConnectionResponse) String() string { return proto.CompactTextString(m) }
 func (*UpdateConnectionResponse) ProtoMessage()    {}
 func (*UpdateConnectionResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_778b7e3040344da6, []int{10}
+	return fileDescriptor_778b7e3040344da6, []int{9}
 }
 
 func (m *UpdateConnectionResponse) XXX_Unmarshal(b []byte) error {
@@ -835,7 +471,7 @@ func (m *DeleteConnectionRequest) Reset()         { *m = DeleteConnectionRequest
 func (m *DeleteConnectionRequest) String() string { return proto.CompactTextString(m) }
 func (*DeleteConnectionRequest) ProtoMessage()    {}
 func (*DeleteConnectionRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_778b7e3040344da6, []int{11}
+	return fileDescriptor_778b7e3040344da6, []int{10}
 }
 
 func (m *DeleteConnectionRequest) XXX_Unmarshal(b []byte) error {
@@ -881,7 +517,7 @@ func (m *DeleteConnectionResponse) Reset()         { *m = DeleteConnectionRespon
 func (m *DeleteConnectionResponse) String() string { return proto.CompactTextString(m) }
 func (*DeleteConnectionResponse) ProtoMessage()    {}
 func (*DeleteConnectionResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_778b7e3040344da6, []int{12}
+	return fileDescriptor_778b7e3040344da6, []int{11}
 }
 
 func (m *DeleteConnectionResponse) XXX_Unmarshal(b []byte) error {
@@ -910,7 +546,6 @@ func (m *DeleteConnectionResponse) GetStatus() *common.Status {
 }
 
 func init() {
-	proto.RegisterType((*ConnectionConfig)(nil), "protos.ConnectionConfig")
 	proto.RegisterType((*GetAllConnectionsRequest)(nil), "protos.GetAllConnectionsRequest")
 	proto.RegisterType((*GetAllConnectionsResponse)(nil), "protos.GetAllConnectionsResponse")
 	proto.RegisterType((*GetConnectionRequest)(nil), "protos.GetConnectionRequest")
@@ -928,66 +563,29 @@ func init() {
 func init() { proto.RegisterFile("connect.proto", fileDescriptor_778b7e3040344da6) }
 
 var fileDescriptor_778b7e3040344da6 = []byte{
-	// 968 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x56, 0xdd, 0x6e, 0x1b, 0x45,
-	0x14, 0xc6, 0x49, 0xea, 0x36, 0x93, 0xba, 0x69, 0xa6, 0x49, 0x3d, 0xb1, 0x0a, 0x8a, 0xcc, 0x8d,
-	0x25, 0x64, 0x1b, 0x02, 0x82, 0x4a, 0x5c, 0x20, 0x27, 0x41, 0x49, 0xa9, 0x1c, 0x62, 0x3b, 0x08,
-	0x89, 0x1b, 0x6b, 0x77, 0x3d, 0x59, 0x2f, 0xf1, 0xce, 0xfe, 0x9c, 0x19, 0x57, 0xe2, 0x25, 0xb8,
-	0xe7, 0x1d, 0x78, 0x2f, 0x1e, 0x03, 0xcd, 0x9c, 0x19, 0xdb, 0x1b, 0x2f, 0x10, 0x1a, 0xc1, 0x95,
-	0xed, 0xef, 0x7c, 0xdf, 0x39, 0xdf, 0x39, 0x3b, 0x73, 0xd6, 0xa4, 0x16, 0x24, 0x42, 0xf0, 0x40,
-	0x76, 0xd2, 0x3c, 0x91, 0x09, 0xad, 0x9a, 0x0f, 0x68, 0x3c, 0xf7, 0xf2, 0x10, 0xba, 0xb7, 0xde,
-	0xcd, 0xad, 0x87, 0x91, 0xc6, 0x0b, 0x83, 0x78, 0x81, 0x8c, 0xe6, 0x3c, 0xce, 0x2c, 0x48, 0x11,
-	0x7c, 0x07, 0x6d, 0x10, 0xb0, 0x8e, 0x65, 0x0e, 0xc3, 0x74, 0x71, 0x22, 0xc2, 0xc4, 0x22, 0xbb,
-	0x06, 0x11, 0x9e, 0x74, 0x94, 0xc3, 0x05, 0xd0, 0x06, 0x99, 0x73, 0x2f, 0x8e, 0x44, 0x68, 0x43,
-	0xcf, 0x30, 0x04, 0x59, 0x41, 0x1b, 0x67, 0xd2, 0xba, 0x6e, 0x1c, 0x18, 0x20, 0x0c, 0xd2, 0x76,
-	0xaa, 0x7c, 0x50, 0xbe, 0x85, 0xeb, 0xd8, 0x84, 0xf2, 0x79, 0x9c, 0xb5, 0x33, 0xc5, 0x15, 0x2f,
-	0xf4, 0x92, 0x26, 0x20, 0xc3, 0x9c, 0x3b, 0x03, 0x7b, 0x08, 0xaa, 0x19, 0x78, 0x79, 0x01, 0xca,
-	0x3d, 0xdf, 0x8f, 0x64, 0xc1, 0x26, 0x42, 0xd6, 0x28, 0x14, 0xca, 0xe5, 0x7c, 0x12, 0x41, 0xd1,
-	0x07, 0x5b, 0x09, 0x14, 0x25, 0xaf, 0x70, 0x56, 0xbf, 0xa8, 0x9c, 0xb7, 0x81, 0xe7, 0xf3, 0x28,
-	0xe0, 0x6d, 0x5f, 0xb9, 0x68, 0x63, 0x25, 0xca, 0xe7, 0x5c, 0xc8, 0xf6, 0x74, 0x91, 0x73, 0x2f,
-	0x48, 0xe2, 0x38, 0x11, 0x5d, 0x4f, 0xc9, 0xa9, 0xeb, 0xca, 0x42, 0x20, 0x3d, 0xe9, 0x72, 0x34,
-	0x7f, 0xdf, 0x26, 0xcf, 0x4f, 0xf1, 0x11, 0x47, 0x89, 0x38, 0x4d, 0xc4, 0x4d, 0x14, 0x52, 0x4a,
-	0xb6, 0x84, 0x17, 0x73, 0x56, 0x39, 0xaa, 0xb4, 0xb6, 0x87, 0xe6, 0x3b, 0xdd, 0x27, 0x8f, 0x44,
-	0x22, 0x39, 0xb0, 0x0d, 0x03, 0xe2, 0x0f, 0xba, 0x4b, 0x36, 0xc7, 0xd1, 0x84, 0x6d, 0x1a, 0x6c,
-	0xe3, 0xcd, 0x84, 0x76, 0xc8, 0x23, 0x73, 0x2a, 0xd8, 0xe4, 0xa8, 0xd2, 0xda, 0x39, 0x7e, 0x89,
-	0x65, 0xa0, 0xa3, 0xad, 0x76, 0xde, 0xea, 0x88, 0xae, 0x76, 0xf1, 0xc1, 0x10, 0x69, 0xf4, 0x35,
-	0xd9, 0xc6, 0x33, 0x33, 0x8e, 0x33, 0xc6, 0x8d, 0xe6, 0xb0, 0xa0, 0xe9, 0x99, 0x68, 0x7f, 0x60,
-	0x65, 0x4f, 0x90, 0xdd, 0xcf, 0xe8, 0x67, 0xa4, 0xea, 0xbd, 0x03, 0xc8, 0x80, 0xdd, 0x18, 0x59,
-	0xbd, 0x28, 0xfb, 0x71, 0x34, 0x1a, 0x8c, 0xac, 0xc8, 0x12, 0x9d, 0x44, 0x00, 0x0b, 0xff, 0x42,
-	0x72, 0x59, 0x90, 0x08, 0xd0, 0xfd, 0x98, 0x63, 0xc9, 0xa6, 0x25, 0xfd, 0xf4, 0x75, 0xc4, 0xf5,
-	0x63, 0x68, 0xf4, 0x13, 0x3d, 0x3a, 0x09, 0x2c, 0x32, 0xf4, 0x83, 0x02, 0xfd, 0xd2, 0x93, 0x60,
-	0xd9, 0x86, 0x44, 0xcf, 0xc9, 0x33, 0xfd, 0x39, 0x5e, 0x1c, 0x68, 0xf6, 0xb3, 0x91, 0x7d, 0xb4,
-	0x26, 0x1b, 0x39, 0x86, 0xd5, 0xd7, 0xc4, 0x2a, 0x48, 0x5b, 0x64, 0x53, 0x40, 0xc6, 0x6e, 0x8d,
-	0x7a, 0xbf, 0xa8, 0x1e, 0xb9, 0xd1, 0x69, 0x0a, 0xfd, 0x8a, 0x3c, 0x71, 0xe7, 0x9a, 0xcd, 0x4a,
-	0xc6, 0x7d, 0x65, 0x83, 0x6e, 0xdc, 0x8e, 0xac, 0x67, 0x87, 0x67, 0x9f, 0xc5, 0x25, 0xb3, 0xbb,
-	0x32, 0x21, 0x37, 0x3b, 0x24, 0x6a, 0x09, 0x5e, 0x04, 0x26, 0x4a, 0x24, 0x43, 0x13, 0x72, 0x12,
-	0x24, 0xea, 0x89, 0xe0, 0x37, 0x3b, 0x13, 0x60, 0x49, 0xc9, 0x44, 0x50, 0x8a, 0xed, 0x3b, 0xa7,
-	0xb5, 0x7c, 0x15, 0xa4, 0x3d, 0xf2, 0xd4, 0x5c, 0xa8, 0x31, 0xde, 0x34, 0x96, 0x9a, 0x34, 0xaf,
-	0x8a, 0x69, 0x34, 0xe1, 0x4a, 0xf9, 0x23, 0xe5, 0xdb, 0x24, 0x3b, 0xb9, 0x85, 0x40, 0xf9, 0xf4,
-	0x8c, 0xd4, 0x30, 0x85, 0xb3, 0x92, 0x99, 0x1c, 0x1f, 0xae, 0xe7, 0x28, 0x3a, 0xc1, 0xc2, 0xce,
-	0xc8, 0x05, 0xd9, 0x35, 0x37, 0x74, 0x6c, 0x6e, 0xe8, 0x78, 0xaa, 0x7c, 0x96, 0x97, 0xb4, 0xd4,
-	0xd3, 0x9c, 0x6f, 0x35, 0xe5, 0x62, 0xe1, 0xa6, 0xe6, 0xad, 0x82, 0xf4, 0x92, 0xec, 0x61, 0x26,
-	0xbb, 0x09, 0xc6, 0xbe, 0x02, 0x06, 0x26, 0xd7, 0xd1, 0x7a, 0xae, 0x11, 0x92, 0x4e, 0x94, 0xb3,
-	0x85, 0x36, 0x96, 0xb0, 0x3e, 0xaa, 0x7a, 0x47, 0x32, 0x59, 0x72, 0x54, 0xfb, 0x83, 0xeb, 0x6b,
-	0x77, 0x54, 0x35, 0x49, 0xcf, 0x13, 0x17, 0xe5, 0xd8, 0x2c, 0x4a, 0xa6, 0x4a, 0xe6, 0xf9, 0x56,
-	0xf9, 0xbc, 0x3f, 0x18, 0xe8, 0xb8, 0x9b, 0x27, 0x6a, 0x0c, 0x44, 0xbf, 0x26, 0x24, 0x0c, 0x52,
-	0xf7, 0x40, 0xe6, 0x26, 0x41, 0xa3, 0x90, 0xe0, 0xfc, 0xf4, 0xaa, 0xf0, 0x38, 0xb6, 0xc3, 0x20,
-	0xc5, 0x87, 0x71, 0x52, 0x25, 0x5b, 0xfa, 0x4d, 0xd4, 0x3c, 0x23, 0xec, 0x9c, 0xcb, 0xde, 0x6c,
-	0xb6, 0x5c, 0x5a, 0x30, 0xe4, 0x99, 0xe2, 0x20, 0x69, 0x8b, 0x6c, 0xe9, 0x75, 0xc7, 0x7e, 0xbd,
-	0x34, 0xb9, 0x5f, 0xb8, 0xdc, 0xb8, 0xf7, 0x3a, 0x3d, 0x25, 0xa7, 0x43, 0xc3, 0x68, 0x7e, 0x4f,
-	0x0e, 0x4b, 0xb2, 0x40, 0x9a, 0x08, 0xe0, 0xf4, 0x98, 0x3c, 0x0e, 0xcc, 0x1e, 0x04, 0x56, 0x39,
-	0xda, 0x6c, 0xed, 0x1c, 0x33, 0x97, 0xe8, 0xee, 0xa2, 0x1c, 0x3a, 0x62, 0x93, 0x93, 0xfd, 0x73,
-	0x2e, 0x97, 0xf1, 0x7f, 0x6d, 0x89, 0x7e, 0xbc, 0x78, 0xd5, 0x46, 0x89, 0xd0, 0x3b, 0x15, 0x97,
-	0xef, 0xd3, 0x25, 0xf8, 0x66, 0xd2, 0x1c, 0x90, 0x83, 0x3b, 0x65, 0xac, 0xe7, 0xd7, 0x84, 0x2c,
-	0x89, 0x46, 0xfa, 0x77, 0xb6, 0x57, 0xb8, 0x4d, 0x45, 0xea, 0xa7, 0x39, 0xf7, 0x24, 0x7f, 0x88,
-	0xf9, 0x4f, 0x49, 0x15, 0x27, 0xf1, 0x8f, 0xa5, 0x2d, 0xaf, 0xf9, 0x0d, 0x61, 0xeb, 0x65, 0x6d,
-	0x33, 0xf7, 0x1a, 0x05, 0x90, 0x83, 0x6b, 0x0e, 0xf2, 0xff, 0x75, 0x7d, 0x41, 0x5e, 0xde, 0x2d,
-	0x6a, 0x3d, 0x77, 0x48, 0x15, 0xdf, 0xab, 0xec, 0x8f, 0xc7, 0xc5, 0xfb, 0x64, 0xeb, 0x8e, 0x4c,
-	0x74, 0x68, 0x59, 0xcd, 0xdf, 0x2a, 0xa4, 0xfe, 0x43, 0x3a, 0x79, 0xe0, 0xdc, 0xef, 0x33, 0xa9,
-	0x95, 0x36, 0x37, 0xee, 0xd9, 0xe6, 0x77, 0x84, 0xad, 0x7b, 0x7b, 0xcf, 0x46, 0xa7, 0xa4, 0x7e,
-	0xc6, 0x67, 0xfc, 0xbf, 0xef, 0x53, 0xbb, 0x5e, 0xaf, 0xf4, 0x7e, 0xae, 0x4f, 0xbe, 0xfc, 0xe9,
-	0x8b, 0x30, 0x92, 0xfa, 0xef, 0x54, 0x90, 0xc4, 0x5d, 0xdf, 0x93, 0xc1, 0x34, 0x48, 0xf2, 0xb4,
-	0x9b, 0xce, 0x54, 0xec, 0xf3, 0xbc, 0x0d, 0xc1, 0x94, 0xc7, 0x1e, 0x74, 0x7d, 0x15, 0xcd, 0x26,
-	0xdd, 0x30, 0xe9, 0x62, 0x36, 0x1f, 0xff, 0x1f, 0x7f, 0xfe, 0x67, 0x00, 0x00, 0x00, 0xff, 0xff,
-	0x44, 0xaf, 0x93, 0xba, 0x37, 0x0b, 0x00, 0x00,
+	// 377 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x94, 0xcd, 0x4a, 0xeb, 0x50,
+	0x14, 0x85, 0xc9, 0xbd, 0x97, 0x96, 0xbb, 0x7b, 0xef, 0xc0, 0xd4, 0xd8, 0xd8, 0x81, 0x94, 0x38,
+	0xc9, 0xc4, 0x04, 0xaa, 0x88, 0x33, 0xa9, 0x2d, 0x54, 0x1d, 0x28, 0x46, 0x3b, 0x71, 0x22, 0xf9,
+	0xd9, 0x34, 0x81, 0x24, 0x27, 0xe6, 0xec, 0x33, 0x12, 0x9f, 0xc1, 0x77, 0xf0, 0xe9, 0x7c, 0x0c,
+	0x49, 0x4e, 0xda, 0x4a, 0xdb, 0x41, 0x7f, 0x10, 0x47, 0x81, 0xbd, 0xd7, 0x59, 0xeb, 0x5b, 0x27,
+	0x21, 0xf0, 0xdf, 0x67, 0x69, 0x8a, 0x3e, 0x59, 0x59, 0xce, 0x88, 0xa9, 0xb5, 0xf2, 0xc1, 0xdb,
+	0x3b, 0x3e, 0x4b, 0x12, 0x96, 0xda, 0xae, 0xa0, 0x50, 0xae, 0xda, 0xcd, 0x6a, 0xc4, 0xc9, 0x25,
+	0xc1, 0xab, 0xa1, 0xc6, 0x32, 0xe2, 0x76, 0xe5, 0x11, 0xb1, 0x54, 0x8e, 0x8d, 0x01, 0xe8, 0x43,
+	0xa4, 0x5e, 0x1c, 0xf7, 0xa7, 0x1b, 0xee, 0xe0, 0xb3, 0x40, 0x4e, 0xaa, 0x09, 0x7f, 0x0a, 0x57,
+	0xfd, 0xed, 0xa6, 0xa3, 0x98, 0x8d, 0x6e, 0x53, 0x1e, 0xe1, 0x96, 0xb4, 0xb7, 0x7a, 0x82, 0x42,
+	0xa7, 0x54, 0x18, 0x23, 0xd8, 0x5f, 0xe2, 0xc2, 0x33, 0x96, 0x72, 0x54, 0xcf, 0xa0, 0xce, 0xb2,
+	0x72, 0xa4, 0x2b, 0x9d, 0xdf, 0x66, 0xa3, 0x7b, 0x30, 0x31, 0x2a, 0x90, 0xac, 0xd9, 0x91, 0x5b,
+	0xa9, 0x72, 0x26, 0x72, 0x03, 0x61, 0x77, 0x88, 0x34, 0x13, 0xac, 0x0d, 0xa6, 0x1e, 0x4e, 0xaf,
+	0x2d, 0x62, 0xe9, 0x53, 0x14, 0xe8, 0x4a, 0x47, 0x31, 0xff, 0x3a, 0xff, 0x66, 0xc3, 0xab, 0xc0,
+	0xb8, 0x03, 0x6d, 0x2e, 0x66, 0x19, 0xb9, 0xb2, 0x0e, 0xf9, 0x2b, 0xb4, 0xfa, 0x39, 0xba, 0x84,
+	0xdb, 0xc0, 0x6f, 0x1e, 0x7f, 0x0e, 0xfa, 0x62, 0x7c, 0x55, 0x6a, 0xa5, 0x2b, 0x79, 0x01, 0xed,
+	0x01, 0x39, 0xfd, 0x0c, 0xfd, 0x25, 0xec, 0xcd, 0x87, 0x57, 0xec, 0x16, 0xd4, 0xe4, 0x47, 0xad,
+	0x7f, 0xd4, 0x4b, 0x4f, 0x6d, 0x2e, 0xff, 0xbe, 0xdc, 0x3a, 0x95, 0xca, 0x78, 0x57, 0xa0, 0x35,
+	0xca, 0x82, 0x2d, 0xdf, 0xc3, 0x2a, 0x37, 0xf6, 0xb5, 0xee, 0xaf, 0xf5, 0xea, 0x5e, 0x83, 0xbe,
+	0xc8, 0xb8, 0x61, 0xe1, 0x10, 0x5a, 0x03, 0x8c, 0xf1, 0xfb, 0xfb, 0x16, 0xd4, 0x8b, 0x49, 0x9b,
+	0x51, 0x5f, 0x9c, 0x3e, 0x9e, 0x8c, 0x23, 0x0a, 0x85, 0x57, 0xec, 0x6d, 0xcf, 0x25, 0x3f, 0xf4,
+	0x59, 0x9e, 0xd9, 0x59, 0x2c, 0x12, 0x0f, 0xf3, 0x23, 0xee, 0x87, 0x98, 0xb8, 0xdc, 0xf6, 0x44,
+	0x14, 0x07, 0xf6, 0x98, 0xd9, 0xd2, 0xcd, 0x93, 0xff, 0xc0, 0xe3, 0xcf, 0x00, 0x00, 0x00, 0xff,
+	0xff, 0x0d, 0x75, 0x5c, 0xc0, 0x1b, 0x05, 0x00, 0x00,
 }

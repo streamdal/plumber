@@ -14,6 +14,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber/config"
 
 	"github.com/kataras/tablewriter"
@@ -65,16 +66,18 @@ type PrinterFunc func(v interface{})
 var errNotAuthenticated = errors.New("you are not authenticated. run `plumber batch login`")
 
 // New creates a new instance of a Batch struct with defaults
-func New(opts *options.Options, cfg *config.Config) *Batch {
+func New(cliOpts *opts.CLIOptions, cfg *config.Config) *Batch {
 	printer := printTable
-	if opts.Batch.OutputType == "json" {
+
+	// TODO: Need to add schema in plumber-schemas for Batch commands
+	if cliOpts.Batch.OutputType == "json" {
 		printer = printJSON
 	}
 
 	b := &Batch{
 		PersistentConfig: cfg,
 		Log:              logrus.WithField("pkg", "batch"),
-		Opts:             opts,
+		Opts:             cliOpts,
 		Client:           &http.Client{},
 		Printer:          printer,
 		ApiUrl:           "https://api.batch.sh",

@@ -56,9 +56,9 @@ func main() {
 	}
 
 	// Launch a dedicated goroutine if stats display is enabled
-	if opts.Read != nil && opts.Read.XCliConfig != nil {
-		if opts.Read.XCliConfig.StatsEnable {
-			stats.Start(opts.Read.XCliConfig.StatsReportIntervalSec)
+	if opts.Read != nil && opts.Read.XCliOptions != nil {
+		if opts.Read.XCliOptions.StatsEnable {
+			stats.Start(opts.Read.XCliOptions.StatsReportIntervalSec)
 		}
 	}
 

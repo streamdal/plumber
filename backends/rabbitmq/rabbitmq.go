@@ -2,7 +2,6 @@ package rabbitmq
 
 import (
 	"context"
-	"time"
 
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/types"
@@ -46,10 +45,6 @@ func (r *RabbitMQ) Close(ctx context.Context) error {
 
 func (r *RabbitMQ) Test(ctx context.Context) error {
 	return types.NotImplementedErr
-}
-
-func (r *RabbitMQ) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
-	return types.UnsupportedFeatureErr
 }
 
 func newConnection(opts *options.Options) (*rabbit.Rabbit, error) {

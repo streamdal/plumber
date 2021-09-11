@@ -2,7 +2,6 @@ package rpubsub
 
 import (
 	"context"
-	"time"
 
 	"github.com/batchcorp/plumber/types"
 	"github.com/go-redis/redis/v8"
@@ -58,10 +57,6 @@ func (r *Redis) Close(ctx context.Context) error {
 
 func (r *Redis) Test(ctx context.Context) error {
 	return types.NotImplementedErr
-}
-
-func (r *Redis) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
-	return types.UnsupportedFeatureErr
 }
 
 func newClient(opts *options.Options) (*redis.Client, error) {

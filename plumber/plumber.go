@@ -6,18 +6,18 @@ import (
 	"reflect"
 
 	"github.com/alecthomas/kong"
-	"github.com/batchcorp/plumber-schemas/build/go/protos"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
-	"github.com/batchcorp/plumber/config"
-	"github.com/batchcorp/plumber/embed/etcd"
-	"github.com/batchcorp/plumber/pb"
-	"github.com/batchcorp/plumber/validate"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/jhump/protoreflect/desc"
+	"github.com/mcuadros/go-lookup"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"github.com/batchcorp/plumber/config"
+	"github.com/batchcorp/plumber/embed/etcd"
+	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/validate"
 )
 
 var (
@@ -33,7 +33,7 @@ type Config struct {
 	ServiceShutdownCtx context.Context
 	MainShutdownFunc   context.CancelFunc
 	MainShutdownCtx    context.Context
-	CLIOptions         *protos.CLIOptions
+	CLIOptions         *opts.CLIOptions
 	KongCtx            *kong.Context
 }
 
@@ -43,9 +43,9 @@ type Plumber struct {
 	Etcd    *etcd.Etcd
 	RelayCh chan interface{}
 
-	cliMD      *desc.MessageDescriptor
-	cliConnCfg *protos.ConnectionConfig
-	log        *logrus.Entry
+	cliMD       *desc.MessageDescriptor
+	cliConnOpts *opts.ConnectionOptions
+	log         *logrus.Entry
 }
 
 // New instantiates a properly configured instance of Plumber or a config error
@@ -60,8 +60,9 @@ func New(cfg *Config) (*Plumber, error) {
 		log:     logrus.WithField("pkg", "plumber"),
 	}
 
-	if ActionUsesBackend(cfg.CLIOptions.Global.XAction) {
-		// Used only when using plumber in CLI mode
+	// If backend is filled out, we are in CLI-mode, performing an action that
+	// will need a connection and possibly a pb message descriptor.
+	if cfg.CLIOptions.Global.XBackend != "" {
 		md, err := GenerateMessageDescriptor(cfg.CLIOptions)
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to populate protobuf message descriptors")
@@ -73,82 +74,46 @@ func New(cfg *Config) (*Plumber, error) {
 		}
 
 		p.cliMD = md
-		p.cliConnCfg = connCfg
+		p.cliConnOpts = connCfg
 	}
 
 	return p, nil
 }
 
-// ActionUsesBackend checks the action string to determine if a backend will
-// need to be utilized. We need such a check in order to determine if we will
-// need to create a connection config or find message descriptors when running
-// plumber in CLI mode.
-func ActionUsesBackend(action string) bool {
-	switch action {
-	case "read":
-		return true
-	case "relay":
-		return true
-	case "write":
-		return true
-	case "lag":
-		return true
-	}
-
-	return false
-}
-
-func GenerateConnectionConfig(cfg *protos.CLIOptions) (*protos.ConnectionConfig, error) {
+// GenerateConnectionConfig generates a connection config from passed in CLI
+// options. This function is used by plumber in CLI mode.
+func GenerateConnectionConfig(cfg *opts.CLIOptions) (*opts.ConnectionOptions, error) {
 	if cfg == nil {
 		return nil, errors.New("cli options config cannot be nil")
 	}
 
-	connCfg := &protos.ConnectionConfig{
+	connCfg := &opts.ConnectionOptions{
 		Name:  "plumber-cli",
 		Notes: "Generated via plumber-cli",
 	}
 
-	// We are looking for the individual conn located at: cfg.CLIOptions.$action.ReadOpts.$backendName.XConn
-	lookupStrings := []string{
-		cfg.Global.XAction,
-		cfg.Global.XAction + "Opts",
-		cfg.Global.XBackend,
-		"XConn",
-	}
+	// We are looking for the individual conn located at: cfg.$action.$backendName.XConn
+	lookupStrings := []string{cfg.Global.XAction, cfg.Global.XBackend, "XConn"}
 
 	var value reflect.Value
 	var err error
 
-	value, err = LookupI(cfg, lookupStrings...)
+	value, err = lookup.LookupI(cfg, lookupStrings...)
 	if err != nil {
 		return nil, fmt.Errorf("unable to lookup connection info for backend '%s': %s",
 			cfg.Global.XBackend, err)
 	}
 
-	switch value.Interface().(type) {
-	case args.KafkaConn:
-		connCfg.Conn = &protos.ConnectionConfig_Kafka{value.Interface().(*args.KafkaConn)}
-	default:
-		return nil, fmt.Errorf("unsupported backend type '%s'", cfg.Global.XBackend)
+	// This is a little funky - after finding the conn, it'll have an interface{}
+	// type, so we assert it to a connection config so we can perform an assignment.
+	assertedConnCfg, ok := value.Interface().(opts.IsConnectionOptions_Conn)
+	if !ok {
+		return nil, errors.New("unable to type assert connection config")
 	}
 
-	// TODO: This is where we're at. Need to spell out each of the types unfortunately :(
+	connCfg.Conn = assertedConnCfg
 
-	// If it's a read, look under cfg.CLIOptions.Read.ReadOpts.$backendName.XConn
-	// If it's a write, look under cfg.CLIOptions.Write.WriteOpts.$backendName.XConn
-	// If it's a relay, look under cfg.CLIOptions.Relay.RelayOpts.$backendName.XConn
-	// etc.
-
-	//connCfg := &protos.ConnectionConfig{
-	//	Name:  "plumber-cli",
-	//	Notes: "Connection config generated via plumber",
-	//}
-	//
-	//connCfg.Conn = &protos.ConnectionConfig_Kafka{
-	//	Kafka: cfg.Read.ReadOpts.Kafka.XConn,
-	//}
-
-	return nil, nil
+	return connCfg, nil
 }
 
 // Run is the main entrypoint to the plumber application
@@ -159,7 +124,7 @@ func (p *Plumber) Run() {
 	case "server":
 		err = p.RunServer() // DONE
 	case "batch":
-		err = p.HandleBatchCmd() // DONE
+		err = p.HandleBatchCmd() // TODO: Needs plumber-schemas work
 	case "read":
 		err = p.HandleReadCmd() // TODO: Am here
 	case "write":
@@ -183,7 +148,7 @@ func (p *Plumber) Run() {
 	}
 }
 
-func GenerateMessageDescriptor(cliOpts *protos.CLIOptions) (*desc.MessageDescriptor, error) {
+func GenerateMessageDescriptor(cliOpts *opts.CLIOptions) (*desc.MessageDescriptor, error) {
 	if cliOpts.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_JSONPB ||
 		cliOpts.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_PROTOBUF {
 

@@ -6,7 +6,6 @@ import (
 	"crypto/x509"
 	"io/ioutil"
 	"net/url"
-	"time"
 
 	"github.com/jhump/protoreflect/desc"
 	"github.com/nats-io/nats.go"
@@ -72,10 +71,6 @@ func (n *NatsStreaming) Close(ctx context.Context) error {
 
 func (n *NatsStreaming) Test(ctx context.Context) error {
 	return types.NotImplementedErr
-}
-
-func (n *NatsStreaming) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
-	return types.UnsupportedFeatureErr
 }
 
 func (n *NatsStreaming) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {

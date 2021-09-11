@@ -10,7 +10,7 @@ import (
 )
 
 func (a *ActiveMq) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {
-	conn, err := newConn(ctx, a.ConnectionConfig)
+	conn, err := newConn(ctx, a.baseConnConfig)
 	if err != nil {
 		return errors.Wrap(err, "unable to create connection")
 	}

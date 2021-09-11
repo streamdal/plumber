@@ -12,12 +12,10 @@ import (
 	"strings"
 
 	"github.com/alecthomas/kong"
-	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -26,7 +24,7 @@ var (
 	version = "UNSET"
 )
 
-func New(args []string) (*kong.Context, *protos.CLIOptions, error) {
+func New(args []string) (*kong.Context, *opts.CLIOptions, error) {
 	cliOpts := newCLIOptions()
 
 	maybeDisplayVersion(os.Args)
@@ -44,10 +42,73 @@ func New(args []string) (*kong.Context, *protos.CLIOptions, error) {
 	cliOpts.Global.XAction = kongCtx.Command()
 	cliOpts.Global.XFullCommand = strings.Join(args, " ")
 
+	if ActionUsesBackend(cliOpts.Global.XAction) {
+		if len(args) >= 3 {
+			cliOpts.Global.XBackend = args[2]
+		}
+	}
+
 	logrus.Infof("opts.Global.XAction: %s\n", cliOpts.Global.XAction)
 	logrus.Infof("opts.Global.XFullCommand: %s\n", cliOpts.Global.XFullCommand)
+	logrus.Infof("opts.Global.XBackend: %s\n", cliOpts.Global.XBackend)
+
+	unsetUnusedOptions(cliOpts)
 
 	return kongCtx, cliOpts, nil
+}
+
+func unsetUnusedOptions(opts *opts.CLIOptions) {
+	if opts == nil {
+		return
+	}
+
+	switch opts.Global.XAction {
+	case "read":
+		unsetUnusedReadOpts(opts)
+		opts.Write = nil
+		opts.Relay = nil
+	case "write":
+		unsetUnusedWriteOpts(opts)
+		opts.Read = nil
+		opts.Relay = nil
+	case "relay":
+		unsetUnusedRelayOpts(opts)
+		opts.Read = nil
+		opts.Write = nil
+	}
+}
+
+func unsetUnusedReadOpts(opts *opts.CLIOptions) {
+	// TODO: Unset decode options
+	// TODO: Unset sample options
+	// TODO: Unset all unused backends
+}
+
+func unsetUnusedWriteOpts(opts *opts.CLIOptions) {
+	// TODO: Unset encode options
+	// TODO: Unset all unused backends
+}
+
+func unsetUnusedRelayOpts(opts *opts.CLIOptions) {
+	// TODO: Unset all unused backends
+}
+
+// ActionUsesBackend checks the action string to determine if a backend will
+// need to be utilized. This is used to determine if we need to populate
+// XBackend or create a connection config (when in CLI mode).
+func ActionUsesBackend(action string) bool {
+	switch action {
+	case "read":
+		return true
+	case "relay":
+		return true
+	case "write":
+		return true
+	case "lag":
+		return true
+	}
+
+	return false
 }
 
 func maybeDisplayVersion(args []string) {
@@ -59,312 +120,295 @@ func maybeDisplayVersion(args []string) {
 	}
 }
 
-// TODO: Implement
-func GenerateFromReadReq(md *desc.MessageDescriptor, read *protos.CreateReadRequest) (*protos.ReadConfig, error) {
-	// md could be nil if there were no decoding options
-
-	return nil, nil
-}
-
-// TODO: Implement
-func GenerateFromWriteReq(md *desc.MessageDescriptor, req *protos.WriteRequest) (*protos.WriteConfig, error) {
-	// md could be nil, if there are no encoding options
-
-	return nil, nil
-}
-
 // We have to do this in order to ensure that kong has valid destinations to
 // write opts to.
-func newCLIOptions() *protos.CLIOptions {
-	return &protos.CLIOptions{
-		Global: &protos.GlobalCLIOptions{},
-		Server: &protos.ServerConfig{},
-		Read:   newReadConfig(),
-		Write:  newWriteConfig(),
-		Relay:  newRelayConfig(),
+func newCLIOptions() *opts.CLIOptions {
+	return &opts.CLIOptions{
+		Global: &opts.GlobalCLIOptions{},
+		Server: &opts.ServerOptions{},
+		Read:   newReadOptions(),
+		Write:  newWriteOptions(),
+		Relay:  newRelayOptions(),
 	}
 }
 
-func newReadConfig() *protos.ReadConfig {
-	return &protos.ReadConfig{
-		SampleOptions: &protos.ReadSampleOptions{},
+func newReadOptions() *opts.ReadOptions {
+	return &opts.ReadOptions{
+		SampleOptions: &opts.ReadSampleOptions{},
 		DecodeOptions: &encoding.DecodeOptions{
-			Metadata: make(map[string]string, 0),
+			ProtobufSettings: &encoding.ProtobufSettings{
+				ProtobufDirs: make([]string, 0),
+			},
 		},
-		XCliConfig: &protos.ReadCLIConfig{
-			ConvertOutput: make([]protos.ConvertOption, 0),
+		XCliOptions: &opts.ReadCLIOptions{
+			ConvertOutput: make([]opts.ConvertOption, 0),
 		},
-		ReadOpts: &opts.Read{
-			Kafka: &opts.ReadOptsKafka{
-				XConn: &args.KafkaConn{
-					Address: make([]string, 0),
-				},
-				Args: &args.KafkaReadArgs{
-					Topics: make([]string, 0),
-				},
+		Kafka: &opts.ReadGroupKafkaOptions{
+			XConn: &args.KafkaConn{
+				Address: make([]string, 0),
 			},
-			Activemq: &opts.ReadOptsActiveMQ{
-				XConn: &args.ActiveMQConn{},
-				Args:  &args.ActiveMQReadArgs{},
+			Args: &args.KafkaReadArgs{
+				Topics: make([]string, 0),
 			},
-			Awssqs: &opts.ReadOptsAWSSQS{
-				XConn: &args.AWSSQSConn{},
-				Args:  &args.AWSSQSReadArgs{},
+		},
+		Activemq: &opts.ReadGroupActiveMQOptions{
+			XConn: &args.ActiveMQConn{},
+			Args:  &args.ActiveMQReadArgs{},
+		},
+		Awssqs: &opts.ReadGroupAWSSQSOptions{
+			XConn: &args.AWSSQSConn{},
+			Args:  &args.AWSSQSReadArgs{},
+		},
+		Mongo: &opts.ReadGroupMongoOptions{
+			XConn: &args.MongoConn{},
+			Args:  &args.MongoReadArgs{},
+		},
+		Nats: &opts.ReadGroupNatsOptions{
+			XConn: &args.NatsConn{
+				TlsCaCert:       make([]byte, 0),
+				TlsClientCert:   make([]byte, 0),
+				TlsClientKey:    make([]byte, 0),
+				UserCredentials: make([]byte, 0),
 			},
-			Mongo: &opts.ReadOptsMongo{
-				XConn: &args.MongoConn{},
-				Args:  &args.MongoReadArgs{},
+			Args: &args.NatsReadArgs{},
+		},
+		NatsStreaming: &opts.ReadGroupNatsStreamingOptions{
+			XConn: &args.NatsStreamingConn{
+				TlsCaCert:       make([]byte, 0),
+				TlsClientCert:   make([]byte, 0),
+				TlsClientKey:    make([]byte, 0),
+				UserCredentials: make([]byte, 0),
 			},
-			Nats: &opts.ReadOptsNats{
-				XConn: &args.NatsConn{
-					TlsCaCert:       make([]byte, 0),
-					TlsClientCert:   make([]byte, 0),
-					TlsClientKey:    make([]byte, 0),
-					UserCredentials: make([]byte, 0),
-				},
-				Args: &args.NatsReadArgs{},
+			Args: &args.NatsStreamingReadArgs{},
+		},
+		Nsq: &opts.ReadGroupNSQOptions{
+			XConn: &args.NSQConn{
+				TlsCaCert:     make([]byte, 0),
+				TlsClientCert: make([]byte, 0),
+				TlsClientKey:  make([]byte, 0),
 			},
-			NatsStreaming: &opts.ReadOptsNatsStreaming{
-				XConn: &args.NatsStreamingConn{
-					TlsCaCert:       make([]byte, 0),
-					TlsClientCert:   make([]byte, 0),
-					TlsClientKey:    make([]byte, 0),
-					UserCredentials: make([]byte, 0),
-				},
-				Args: &args.NatsStreamingReadArgs{},
+			Args: &args.NSQReadArgs{},
+		},
+		Pulsar: &opts.ReadGroupPulsarOptions{
+			XConn: &args.PulsarConn{
+				TlsClientCert: make([]byte, 0),
+				TlsClientKey:  make([]byte, 0),
 			},
-			Nsq: &opts.ReadOptsNSQ{
-				XConn: &args.NSQConn{
-					TlsCaCert:     make([]byte, 0),
-					TlsClientCert: make([]byte, 0),
-					TlsClientKey:  make([]byte, 0),
-				},
-				Args: &args.NSQReadArgs{},
+			Args: &args.PulsarReadArgs{},
+		},
+		Rabbit: &opts.ReadGroupRabbitOptions{
+			XConn: &args.RabbitConn{},
+			Args:  &args.RabbitReadArgs{},
+		},
+		RabbitStreams: &opts.ReadGroupRabbitStreamsOptions{
+			XConn: &args.RabbitStreamsConn{},
+			Args:  &args.RabbitStreamsReadArgs{},
+		},
+		Mqtt: &opts.ReadGroupMQTTOptions{
+			XConn: &args.MQTTConn{
+				TlsOptions: &args.MQTTTLSOptions{},
 			},
-			Pulsar: &opts.ReadOptsPulsar{
-				XConn: &args.PulsarConn{
-					TlsClientCert: make([]byte, 0),
-					TlsClientKey:  make([]byte, 0),
-				},
-				Args: &args.PulsarReadArgs{},
+			Args: &args.MQTTReadArgs{},
+		},
+		AzureServiceBus: &opts.ReadGroupAzureServiceBusOptions{
+			XConn: &args.AzureServiceBusConn{},
+			Args:  &args.AzureServiceBusReadArgs{},
+		},
+		AzureEventHub: &opts.ReadGroupAzureEventHubOptions{
+			XConn: &args.AzureEventHubConn{},
+			Args:  &args.AzureEventHubReadArgs{},
+		},
+		GcpPubsub: &opts.ReadGroupGCPPubSubOptions{
+			XConn: &args.GCPPubSubConn{},
+			Args:  &args.GCPPubSubReadArgs{},
+		},
+		KubemqQueue: &opts.ReadGroupKubeMQQueueOptions{
+			XConn: &args.KubeMQQueueConn{},
+			Args:  &args.KubeMQQueueReadArgs{},
+		},
+		RedisPubsub: &opts.ReadGroupRedisPubSubOptions{
+			XConn: &args.RedisPubSubConn{},
+			Args: &args.RedisPubSubReadArgs{
+				Channel: make([]string, 0),
 			},
-			Rabbit: &opts.ReadOptsRabbit{
-				XConn: &args.RabbitConn{},
-				Args:  &args.RabbitReadArgs{},
+		},
+		RedisStreams: &opts.ReadGroupRedisStreamsOptions{
+			XConn: &args.RedisStreamsConn{},
+			Args: &args.RedisStreamsReadArgs{
+				Stream:               make([]string, 0),
+				CreateConsumerConfig: &args.CreateConsumerConfig{},
 			},
-			RabbitStreams: &opts.ReadOptsRabbitStreams{
-				XConn: &args.RabbitStreamsConn{},
-				Args:  &args.RabbitStreamsReadArgs{},
-			},
-			Mqtt: &opts.ReadOptsMQTT{
-				XConn: &args.MQTTConn{
-					TlsOptions: &args.MQTTTLSOptions{},
-				},
-				Args: &args.MQTTReadArgs{},
-			},
-			AzureServiceBus: &opts.ReadOptsAzureServiceBus{
-				XConn: &args.AzureServiceBusConn{},
-				Args:  &args.AzureServiceBusReadArgs{},
-			},
-			AzureEventHub: &opts.ReadOptsAzureEventHub{
-				XConn: &args.AzureEventHubConn{},
-				Args:  &args.AzureEventHubReadArgs{},
-			},
-			GcpPubsub: &opts.ReadOptsGCPPubSub{
-				XConn: &args.GCPPubSubConn{},
-				Args:  &args.GCPPubSubReadArgs{},
-			},
-			KubemqQueue: &opts.ReadOptsKubeMQQueue{
-				XConn: &args.KubeMQQueueConn{},
-				Args:  &args.KubeMQQueueReadArgs{},
-			},
-			RedisPubsub: &opts.ReadOptsRedisPubSub{
-				XConn: &args.RedisPubSubConn{},
-				Args: &args.RedisPubSubReadArgs{
-					Channel: make([]string, 0),
-				},
-			},
-			RedisStreams: &opts.ReadOptsRedisStreams{
-				XConn: &args.RedisStreamsConn{},
-				Args: &args.RedisStreamsReadArgs{
-					Stream:               make([]string, 0),
-					CreateConsumerConfig: &args.CreateConsumerConfig{},
-				},
-			},
-			Postgres: &opts.ReadOptsPostgres{
-				XConn: &args.PostgresConn{},
-				Args:  &args.PostgresReadArgs{},
-			},
+		},
+		Postgres: &opts.ReadGroupPostgresOptions{
+			XConn: &args.PostgresConn{},
+			Args:  &args.PostgresReadArgs{},
 		},
 	}
 }
 
-func newWriteConfig() *protos.WriteConfig {
-	return &protos.WriteConfig{
+func newWriteOptions() *opts.WriteOptions {
+	return &opts.WriteOptions{
 		EncodeOptions: &encoding.EncodeOptions{
-			Input:    make(map[string]string, 0),
-			Metadata: make(map[string]string, 0),
+			ProtobufSettings: &encoding.ProtobufSettings{},
 		},
-		WriteOpts: &opts.Write{
-			Record: &records.WriteRecord{
-				InputMetadata: make(map[string]string, 0),
-			},
-			Kafka: &opts.WriteOptsKafka{
-				XConn: &args.KafkaConn{
-					Address: make([]string, 0),
-				},
-				Args: &args.KafkaWriteArgs{},
-			},
-			Activemq: &opts.WriteOptsActiveMQ{
-				XConn: &args.ActiveMQConn{},
-				Args:  &args.ActiveMQWriteArgs{},
-			},
-			Awssqs: &opts.WriteOptsAWSSQS{
-				XConn: &args.AWSSQSConn{},
-				Args:  &args.AWSSQSWriteArgs{},
-			},
-			Nats: &opts.WriteOptsNats{
-				XConn: &args.NatsConn{
-					TlsCaCert:       make([]byte, 0),
-					TlsClientCert:   make([]byte, 0),
-					TlsClientKey:    make([]byte, 0),
-					UserCredentials: make([]byte, 0),
-				},
-				Args: &args.NatsWriteArgs{},
-			},
-			NatsStreaming: &opts.WriteOptsNatsStreaming{
-				XConn: &args.NatsStreamingConn{
-					TlsCaCert:       make([]byte, 0),
-					TlsClientCert:   make([]byte, 0),
-					TlsClientKey:    make([]byte, 0),
-					UserCredentials: make([]byte, 0),
-				},
-				Args: &args.NatsStreamingWriteArgs{},
-			},
-			Nsq: &opts.WriteOptsNSQ{
-				XConn: &args.NSQConn{
-					TlsCaCert:     make([]byte, 0),
-					TlsClientCert: make([]byte, 0),
-					TlsClientKey:  make([]byte, 0),
-				},
-				Args: &args.NSQWriteArgs{},
-			},
-			Pulsar: &opts.WriteOptsPulsar{
-				XConn: &args.PulsarConn{
-					TlsClientCert: make([]byte, 0),
-					TlsClientKey:  make([]byte, 0),
-				},
-				Args: &args.PulsarWriteArgs{},
-			},
-			Rabbit: &opts.WriteOptsRabbit{
-				XConn: &args.RabbitConn{},
-				Args:  &args.RabbitWriteArgs{},
-			},
-			RabbitStreams: &opts.WriteOptsRabbitStreams{
-				XConn: &args.RabbitStreamsConn{},
-				Args:  &args.RabbitStreamsWriteArgs{},
-			},
-			Mqtt: &opts.WriteOptsMQTT{
-				XConn: &args.MQTTConn{
-					TlsOptions: &args.MQTTTLSOptions{},
-				},
-				Args: &args.MQTTWriteArgs{},
-			},
-			AzureServiceBus: &opts.WriteOptsAzureServiceBus{
-				XConn: &args.AzureServiceBusConn{},
-				Args:  &args.AzureServiceBusWriteArgs{},
-			},
-			AzureEventHub: &opts.WriteOptsAzureEventHub{
-				XConn: &args.AzureEventHubConn{},
-				Args:  &args.AzureEventHubWriteArgs{},
-			},
-			GcpPubsub: &opts.WriteOptsGCPPubSub{
-				XConn: &args.GCPPubSubConn{},
-				Args:  &args.GCPPubSubWriteArgs{},
-			},
-			KubemqQueue: &opts.WriteOptsKubeMQQueue{
-				XConn: &args.KubeMQQueueConn{},
-				Args:  &args.KubeMQQueueWriteArgs{},
-			},
-			RedisPubsub: &opts.WriteOptsRedisPubSub{
-				XConn: &args.RedisPubSubConn{},
-				Args:  &args.RedisPubSubWriteArgs{},
-			},
-			RedisStreams: &opts.WriteOptsRedisStreams{
-				XConn: &args.RedisStreamsConn{},
-				Args:  &args.RedisStreamsWriteArgs{},
-			},
+		Record: &records.WriteRecord{
+			InputMetadata: make(map[string]string, 0),
 		},
-		XCliConfig: &protos.WriteCLIConfig{},
+		XCliOptions: &opts.WriteCLIOptions{},
+		Kafka: &opts.WriteGroupKafkaOptions{
+			XConn: &args.KafkaConn{
+				Address: make([]string, 0),
+			},
+			Args: &args.KafkaWriteArgs{},
+		},
+		Activemq: &opts.WriteGroupActiveMQOptions{
+			XConn: &args.ActiveMQConn{},
+			Args:  &args.ActiveMQWriteArgs{},
+		},
+		Awssqs: &opts.WriteGroupAWSSQSOptions{
+			XConn: &args.AWSSQSConn{},
+			Args:  &args.AWSSQSWriteArgs{},
+		},
+		Nats: &opts.WriteGroupNatsOptions{
+			XConn: &args.NatsConn{
+				TlsCaCert:       make([]byte, 0),
+				TlsClientCert:   make([]byte, 0),
+				TlsClientKey:    make([]byte, 0),
+				UserCredentials: make([]byte, 0),
+			},
+			Args: &args.NatsWriteArgs{},
+		},
+		NatsStreaming: &opts.WriteGroupNatsStreamingOptions{
+			XConn: &args.NatsStreamingConn{
+				TlsCaCert:       make([]byte, 0),
+				TlsClientCert:   make([]byte, 0),
+				TlsClientKey:    make([]byte, 0),
+				UserCredentials: make([]byte, 0),
+			},
+			Args: &args.NatsStreamingWriteArgs{},
+		},
+		Nsq: &opts.WriteGroupNSQOptions{
+			XConn: &args.NSQConn{
+				TlsCaCert:     make([]byte, 0),
+				TlsClientCert: make([]byte, 0),
+				TlsClientKey:  make([]byte, 0),
+			},
+			Args: &args.NSQWriteArgs{},
+		},
+		Pulsar: &opts.WriteGroupPulsarOptions{
+			XConn: &args.PulsarConn{
+				TlsClientCert: make([]byte, 0),
+				TlsClientKey:  make([]byte, 0),
+			},
+			Args: &args.PulsarWriteArgs{},
+		},
+		Rabbit: &opts.WriteGroupRabbitOptions{
+			XConn: &args.RabbitConn{},
+			Args:  &args.RabbitWriteArgs{},
+		},
+		RabbitStreams: &opts.WriteGroupRabbitStreamsOptions{
+			XConn: &args.RabbitStreamsConn{},
+			Args:  &args.RabbitStreamsWriteArgs{},
+		},
+		Mqtt: &opts.WriteGroupMQTTOptions{
+			XConn: &args.MQTTConn{
+				TlsOptions: &args.MQTTTLSOptions{},
+			},
+			Args: &args.MQTTWriteArgs{},
+		},
+		AzureServiceBus: &opts.WriteGroupAzureServiceBusOptions{
+			XConn: &args.AzureServiceBusConn{},
+			Args:  &args.AzureServiceBusWriteArgs{},
+		},
+		AzureEventHub: &opts.WriteGroupAzureEventHubOptions{
+			XConn: &args.AzureEventHubConn{},
+			Args:  &args.AzureEventHubWriteArgs{},
+		},
+		GcpPubsub: &opts.WriteGroupGCPPubSubOptions{
+			XConn: &args.GCPPubSubConn{},
+			Args:  &args.GCPPubSubWriteArgs{},
+		},
+		KubemqQueue: &opts.WriteGroupKubeMQQueueOptions{
+			XConn: &args.KubeMQQueueConn{},
+			Args:  &args.KubeMQQueueWriteArgs{},
+		},
+		RedisPubsub: &opts.WriteGroupRedisPubSubOptions{
+			XConn: &args.RedisPubSubConn{},
+			Args:  &args.RedisPubSubWriteArgs{},
+		},
+		RedisStreams: &opts.WriteGroupRedisStreamsOptions{
+			XConn: &args.RedisStreamsConn{},
+			Args:  &args.RedisStreamsWriteArgs{},
+		},
 	}
+
 }
 
-func newRelayConfig() *protos.RelayConfig {
-	return &protos.RelayConfig{
-		RelayOpts: &opts.Relay{
-			Kafka: &opts.RelayOptsKafka{
-				XConn: &args.KafkaConn{
-					Address: make([]string, 0),
-				},
-				Args: &args.KafkaRelayArgs{
-					Topics: make([]string, 0),
-				},
+func newRelayOptions() *opts.RelayOptions {
+	return &opts.RelayOptions{
+		XCliOptions: &opts.RelayCLIOptions{},
+		Kafka: &opts.RelayGroupKafkaOptions{
+			XConn: &args.KafkaConn{
+				Address: make([]string, 0),
 			},
-			Awssqs: &opts.RelayOptsAWSSQS{
-				XConn: &args.AWSSQSConn{},
-				Args:  &args.AWSSQSRelayArgs{},
+			Args: &args.KafkaRelayArgs{
+				Topics: make([]string, 0),
 			},
-			Mongo: &opts.RelayOptsMongo{
-				XConn: &args.MongoConn{},
-				Args:  &args.MongoReadArgs{},
+		},
+		Awssqs: &opts.RelayGroupAWSSQSOptions{
+			XConn: &args.AWSSQSConn{},
+			Args:  &args.AWSSQSRelayArgs{},
+		},
+		Mongo: &opts.RelayGroupMongoOptions{
+			XConn: &args.MongoConn{},
+			Args:  &args.MongoReadArgs{},
+		},
+		Nsq: &opts.RelayGroupNSQOptions{
+			XConn: &args.NSQConn{
+				TlsCaCert:     make([]byte, 0),
+				TlsClientCert: make([]byte, 0),
+				TlsClientKey:  make([]byte, 0),
 			},
-			Nsq: &opts.RelayOptsNSQ{
-				XConn: &args.NSQConn{
-					TlsCaCert:     make([]byte, 0),
-					TlsClientCert: make([]byte, 0),
-					TlsClientKey:  make([]byte, 0),
-				},
-				Args: &args.NSQReadArgs{},
+			Args: &args.NSQReadArgs{},
+		},
+		Rabbit: &opts.RelayGroupRabbitOptions{
+			XConn: &args.RabbitConn{},
+			Args:  &args.RabbitReadArgs{},
+		},
+		Mqtt: &opts.RelayGroupMQTTOptions{
+			XConn: &args.MQTTConn{
+				TlsOptions: &args.MQTTTLSOptions{},
 			},
-			Rabbit: &opts.RelayOptsRabbit{
-				XConn: &args.RabbitConn{},
-				Args:  &args.RabbitReadArgs{},
+			Args: &args.MQTTReadArgs{},
+		},
+		AzureServiceBus: &opts.RelayGroupAzureServiceBusOptions{
+			XConn: &args.AzureServiceBusConn{},
+			Args:  &args.AzureServiceBusReadArgs{},
+		},
+		GcpPubsub: &opts.RelayGroupGCPPubSubOptions{
+			XConn: &args.GCPPubSubConn{},
+			Args:  &args.GCPPubSubReadArgs{},
+		},
+		KubemqQueue: &opts.RelayGroupKubeMQQueueOptions{
+			XConn: &args.KubeMQQueueConn{},
+			Args:  &args.KubeMQQueueReadArgs{},
+		},
+		RedisPubsub: &opts.RelayGroupRedisPubSubOptions{
+			XConn: &args.RedisPubSubConn{},
+			Args: &args.RedisPubSubReadArgs{
+				Channel: make([]string, 0),
 			},
-			Mqtt: &opts.RelayOptsMQTT{
-				XConn: &args.MQTTConn{
-					TlsOptions: &args.MQTTTLSOptions{},
-				},
-				Args: &args.MQTTReadArgs{},
+		},
+		RedisStreams: &opts.RelayGroupRedisStreamsOptions{
+			XConn: &args.RedisStreamsConn{},
+			Args: &args.RedisStreamsReadArgs{
+				Stream:               make([]string, 0),
+				CreateConsumerConfig: &args.CreateConsumerConfig{},
 			},
-			AzureServiceBus: &opts.RelayOptsAzureServiceBus{
-				XConn: &args.AzureServiceBusConn{},
-				Args:  &args.AzureServiceBusReadArgs{},
-			},
-			GcpPubsub: &opts.RelayOptsGCPPubSub{
-				XConn: &args.GCPPubSubConn{},
-				Args:  &args.GCPPubSubReadArgs{},
-			},
-			KubemqQueue: &opts.RelayOptsKubeMQQueue{
-				XConn: &args.KubeMQQueueConn{},
-				Args:  &args.KubeMQQueueReadArgs{},
-			},
-			RedisPubsub: &opts.RelayOptsRedisPubSub{
-				XConn: &args.RedisPubSubConn{},
-				Args: &args.RedisPubSubReadArgs{
-					Channel: make([]string, 0),
-				},
-			},
-			RedisStreams: &opts.RelayOptsRedisStreams{
-				XConn: &args.RedisStreamsConn{},
-				Args: &args.RedisStreamsReadArgs{
-					Stream:               make([]string, 0),
-					CreateConsumerConfig: &args.CreateConsumerConfig{},
-				},
-			},
-			Postgres: &opts.RelayOptsPostgres{
-				XConn: &args.PostgresConn{},
-				Args:  &args.PostgresReadArgs{},
-			},
+		},
+		Postgres: &opts.RelayGroupPostgresOptions{
+			XConn: &args.PostgresConn{},
+			Args:  &args.PostgresReadArgs{},
 		},
 	}
 }

@@ -3,67 +3,65 @@ package kafka
 import (
 	"fmt"
 	"strconv"
+	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/logrusorgru/aurora"
 	"github.com/pkg/errors"
-	"github.com/segmentio/kafka-go"
 
 	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/reader"
-	"github.com/batchcorp/plumber/types"
 )
 
-func (k *Kafka) DisplayMessage(msg *types.ReadMessage) error {
+func (k *Kafka) DisplayMessage(msg *records.ReadRecord) error {
 	if msg == nil {
 		return errors.New("msg cannot be nil")
 	}
 
-	rawMsg, ok := msg.Raw.(kafka.Message)
-	if !ok {
-		return errors.New("unable to type assert message")
-	}
-
-	decoded, err := reader.Decode(k.Options, msg.Value)
-	if err != nil {
-		return errors.Wrap(err, "unable to decode data")
+	record := msg.GetKafka()
+	if record == nil {
+		return errors.New("BUG: record in message is nil")
 	}
 
 	key := aurora.Gray(12, "NONE").String()
 
-	if len(rawMsg.Key) != 0 {
-		key = string(rawMsg.Key)
+	if len(record.Key) != 0 {
+		key = string(record.Key)
 	}
 
 	properties := [][]string{
 		{"Key", key},
-		{"topic", rawMsg.Topic},
-		{"Offset", fmt.Sprintf("%d", rawMsg.Offset)},
-		{"Partition", fmt.Sprintf("%d", rawMsg.Partition)},
+		{"topic", record.Topic},
+		{"Offset", fmt.Sprintf("%d", record.Offset)},
+		{"Partition", fmt.Sprintf("%d", record.Partition)},
 	}
 
 	// Display offset info if it exists
 	if lastOffset, ok := msg.Metadata["last_offset"]; ok {
-		lastOffsetInt, ok := lastOffset.(int64)
+		lastOffsetInt, err := strconv.ParseInt(lastOffset, 10, 64)
 
-		if ok {
+		if err != nil {
+			k.log.Errorf("unable to parse last_offset '%s': %s", lastOffset, err)
+		} else {
 			lastOffStr := strconv.FormatUint(uint64(lastOffsetInt), 10)
 			properties = append(properties, []string{"LastOffset", lastOffStr})
 		}
 	}
 
-	properties = append(properties, generateHeaders(rawMsg.Headers)...)
+	properties = append(properties, generateHeaders(record.Headers)...)
 
-	printer.PrintTable(properties, msg.Num, rawMsg.Time, decoded)
+	receivedAt := time.Unix(msg.ReceivedAtUnixTsUtc, 0)
+
+	printer.PrintTable(properties, msg.Num, receivedAt, msg.Payload)
 
 	return nil
 }
 
-func (k *Kafka) DisplayError(msg *types.ErrorMessage) error {
+func (k *Kafka) DisplayError(msg *records.ErrorRecord) error {
 	printer.DefaultDisplayError(msg)
 	return nil
 }
 
-func generateHeaders(headers []kafka.Header) [][]string {
+func generateHeaders(headers []*records.KafkaHeader) [][]string {
 	if len(headers) == 0 {
 		return [][]string{
 			[]string{"Header(s)", aurora.Gray(12, "NONE").String()},

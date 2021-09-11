@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"sync"
-	"time"
 
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
@@ -58,10 +57,6 @@ func (r *RabbitMQStreams) Test(ctx context.Context) error {
 }
 
 func (r *RabbitMQStreams) Dynamic(ctx context.Context) error {
-	return types.UnsupportedFeatureErr
-}
-
-func (r *RabbitMQStreams) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
 	return types.UnsupportedFeatureErr
 }
 

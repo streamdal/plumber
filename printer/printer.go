@@ -40,12 +40,12 @@ func PrintLogo() {
 	logrus.Info(logo)
 }
 
-func PrintTable(properties [][]string, count int, timestamp time.Time, data []byte) {
+func PrintTable(properties [][]string, count int64, receivedAt time.Time, data []byte) {
 	fullHeader := fmt.Sprintf("\n------------- [Count: %d Received at: %s] -------------------\n\n",
-		aurora.Cyan(count), aurora.Yellow(timestamp.Format(time.RFC3339)).String())
+		aurora.Cyan(count), aurora.Yellow(receivedAt.Format(time.RFC3339)).String())
 
 	minimalHeader := fmt.Sprintf("\n------------- [Received at: %s] -------------------\n\n",
-		aurora.Yellow(timestamp.Format(time.RFC3339)).String())
+		aurora.Yellow(receivedAt.Format(time.RFC3339)).String())
 
 	if count == 0 && data == nil {
 		fmt.Print(minimalHeader)

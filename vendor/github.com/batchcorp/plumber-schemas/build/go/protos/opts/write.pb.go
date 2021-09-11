@@ -6,6 +6,7 @@ package opts
 import (
 	fmt "fmt"
 	args "github.com/batchcorp/plumber-schemas/build/go/protos/args"
+	encoding "github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	records "github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	proto "github.com/golang/protobuf/proto"
 	math "math"
@@ -22,202 +23,280 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-// WriteOpts is the structure that backends accept for performing a write.
-// NOTE: _conn is only used by the CLI - desktop does not need to set it.
-type Write struct {
-	// @gotags: kong:"embed"
-	Record *records.Write `protobuf:"bytes,1,opt,name=record,proto3" json:"record,omitempty" kong:"embed"`
-	// @gotags: kong:"cmd,help='Apache Kafka'"
-	Kafka *WriteOptsKafka `protobuf:"bytes,100,opt,name=kafka,proto3" json:"kafka,omitempty" kong:"cmd,help='Apache Kafka'"`
-	// @gotags: kong:"cmd,help='Apache ActiveMQ'"
-	Activemq *WriteOptsActiveMQ `protobuf:"bytes,101,opt,name=activemq,proto3" json:"activemq,omitempty" kong:"cmd,help='Apache ActiveMQ'"`
-	// @gotags: kong:"cmd,help='AWS Simple Queue System'"
-	Awssqs *WriteOptsAWSSQS `protobuf:"bytes,102,opt,name=awssqs,proto3" json:"awssqs,omitempty" kong:"cmd,help='AWS Simple Queue System'"`
-	// @gotags: kong:"cmd,help='AWS Simple Notification System'"
-	Awssns *WriteOptsAWSSNS `protobuf:"bytes,103,opt,name=awssns,proto3" json:"awssns,omitempty" kong:"cmd,help='AWS Simple Notification System'"`
-	// @gotags: kong:"cmd,help='NATS'"
-	Nats *WriteOptsNats `protobuf:"bytes,104,opt,name=nats,proto3" json:"nats,omitempty" kong:"cmd,help='NATS'"`
-	// @gotags: kong:"cmd,help='NATS Streaming'"
-	NatsStreaming *WriteOptsNatsStreaming `protobuf:"bytes,105,opt,name=nats_streaming,json=natsStreaming,proto3" json:"nats_streaming,omitempty" kong:"cmd,help='NATS Streaming'"`
-	// @gotags: kong:"cmd,help='NSQ'"
-	Nsq *WriteOptsNSQ `protobuf:"bytes,106,opt,name=nsq,proto3" json:"nsq,omitempty" kong:"cmd,help='NSQ'"`
-	// @gotags: kong:"cmd,help='Apache Pulsar'"
-	Pulsar *WriteOptsPulsar `protobuf:"bytes,107,opt,name=pulsar,proto3" json:"pulsar,omitempty" kong:"cmd,help='Apache Pulsar'"`
-	// @gotags: kong:"cmd,help='RabbitMQ'"
-	Rabbit *WriteOptsRabbit `protobuf:"bytes,108,opt,name=rabbit,proto3" json:"rabbit,omitempty" kong:"cmd,help='RabbitMQ'"`
-	// @gotags: kong:"cmd,help='RabbitMQ Streams'"
-	RabbitStreams *WriteOptsRabbitStreams `protobuf:"bytes,109,opt,name=rabbit_streams,json=rabbitStreams,proto3" json:"rabbit_streams,omitempty" kong:"cmd,help='RabbitMQ Streams'"`
-	// @gotags: kong:"cmd,help='MQTT'"
-	Mqtt *WriteOptsMQTT `protobuf:"bytes,110,opt,name=mqtt,proto3" json:"mqtt,omitempty" kong:"cmd,help='MQTT'"`
-	// @gotags: kong:"cmd,help='Azure Service Bus'"
-	AzureServiceBus *WriteOptsAzureServiceBus `protobuf:"bytes,111,opt,name=azure_service_bus,json=azureServiceBus,proto3" json:"azure_service_bus,omitempty" kong:"cmd,help='Azure Service Bus'"`
-	// @gotags: kong:"cmd,help='Azure Event Hub'"
-	AzureEventHub *WriteOptsAzureEventHub `protobuf:"bytes,112,opt,name=azure_event_hub,json=azureEventHub,proto3" json:"azure_event_hub,omitempty" kong:"cmd,help='Azure Event Hub'"`
-	// @gotags: kong:"cmd,help='Google Cloud Platform Pub/Sub'"
-	GcpPubsub *WriteOptsGCPPubSub `protobuf:"bytes,113,opt,name=gcp_pubsub,json=gcpPubsub,proto3" json:"gcp_pubsub,omitempty" kong:"cmd,help='Google Cloud Platform Pub/Sub'"`
-	// @gotags: kong:"cmd,help='KubeMQ Queue'"
-	KubemqQueue *WriteOptsKubeMQQueue `protobuf:"bytes,114,opt,name=kubemq_queue,json=kubemqQueue,proto3" json:"kubemq_queue,omitempty" kong:"cmd,help='KubeMQ Queue'"`
-	// @gotags: kong:"cmd,help='Redis PubSub'"
-	RedisPubsub *WriteOptsRedisPubSub `protobuf:"bytes,115,opt,name=redis_pubsub,json=redisPubsub,proto3" json:"redis_pubsub,omitempty" kong:"cmd,help='Redis PubSub'"`
-	// @gotags: kong:"cmd,help='Redis Streams'"
-	RedisStreams         *WriteOptsRedisStreams `protobuf:"bytes,116,opt,name=redis_streams,json=redisStreams,proto3" json:"redis_streams,omitempty" kong:"cmd,help='Redis Streams'"`
-	XXX_NoUnkeyedLiteral struct{}               `json:"-"`
-	XXX_unrecognized     []byte                 `json:"-"`
-	XXX_sizecache        int32                  `json:"-"`
+type WriteCLIOptions struct {
+	// @gotags: kong:"help='Write data from input file',existingfile,xor=input"
+	InputFile string `protobuf:"bytes,1,opt,name=input_file,json=inputFile,proto3" json:"input_file,omitempty" kong:"help='Write data from input file',existingfile,xor=input"`
+	// @gotags: kong="help='Treat input as JSON array - each array element will be written as a separate message'"
+	InputAsJsonArray     bool     `protobuf:"varint,2,opt,name=input_as_json_array,json=inputAsJsonArray,proto3" json:"input_as_json_array,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *Write) Reset()         { *m = Write{} }
-func (m *Write) String() string { return proto.CompactTextString(m) }
-func (*Write) ProtoMessage()    {}
-func (*Write) Descriptor() ([]byte, []int) {
+func (m *WriteCLIOptions) Reset()         { *m = WriteCLIOptions{} }
+func (m *WriteCLIOptions) String() string { return proto.CompactTextString(m) }
+func (*WriteCLIOptions) ProtoMessage()    {}
+func (*WriteCLIOptions) Descriptor() ([]byte, []int) {
 	return fileDescriptor_469a5ee066df479e, []int{0}
 }
 
-func (m *Write) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Write.Unmarshal(m, b)
+func (m *WriteCLIOptions) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WriteCLIOptions.Unmarshal(m, b)
 }
-func (m *Write) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Write.Marshal(b, m, deterministic)
+func (m *WriteCLIOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WriteCLIOptions.Marshal(b, m, deterministic)
 }
-func (m *Write) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Write.Merge(m, src)
+func (m *WriteCLIOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WriteCLIOptions.Merge(m, src)
 }
-func (m *Write) XXX_Size() int {
-	return xxx_messageInfo_Write.Size(m)
+func (m *WriteCLIOptions) XXX_Size() int {
+	return xxx_messageInfo_WriteCLIOptions.Size(m)
 }
-func (m *Write) XXX_DiscardUnknown() {
-	xxx_messageInfo_Write.DiscardUnknown(m)
+func (m *WriteCLIOptions) XXX_DiscardUnknown() {
+	xxx_messageInfo_WriteCLIOptions.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Write proto.InternalMessageInfo
+var xxx_messageInfo_WriteCLIOptions proto.InternalMessageInfo
 
-func (m *Write) GetRecord() *records.Write {
+func (m *WriteCLIOptions) GetInputFile() string {
+	if m != nil {
+		return m.InputFile
+	}
+	return ""
+}
+
+func (m *WriteCLIOptions) GetInputAsJsonArray() bool {
+	if m != nil {
+		return m.InputAsJsonArray
+	}
+	return false
+}
+
+// Write is the structure that backends accept for facilitating a write.
+// NOTE: _conn is only used by the CLI - desktop does not need to set it.
+type WriteOptions struct {
+	// Required for desktop; ignored in CLI.
+	// @gotags: kong:"-"
+	ConnectionId string `protobuf:"bytes,1,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty" kong:"-"`
+	// @gotags: kong:"embed"
+	Record *records.WriteRecord `protobuf:"bytes,2,opt,name=record,proto3" json:"record,omitempty" kong:"embed"`
+	// @gotags: kong:"embed"
+	EncodeOptions *encoding.EncodeOptions `protobuf:"bytes,3,opt,name=encode_options,json=encodeOptions,proto3" json:"encode_options,omitempty" kong:"embed"`
+	// Optional; CLI-specific and non-backend-specific options
+	// @gotags: kong:"embed"
+	XCliOptions *WriteCLIOptions `protobuf:"bytes,1000,opt,name=_cli_options,json=CliOptions,proto3" json:"_cli_options,omitempty" kong:"embed"`
+	// @gotags: kong:"cmd,help='Apache Kafka'"
+	Kafka *WriteGroupKafkaOptions `protobuf:"bytes,100,opt,name=kafka,proto3" json:"kafka,omitempty" kong:"cmd,help='Apache Kafka'"`
+	// @gotags: kong:"cmd,help='Apache ActiveMQ'"
+	Activemq *WriteGroupActiveMQOptions `protobuf:"bytes,101,opt,name=activemq,proto3" json:"activemq,omitempty" kong:"cmd,help='Apache ActiveMQ'"`
+	// @gotags: kong:"cmd,help='AWS Simple Queue System'"
+	Awssqs *WriteGroupAWSSQSOptions `protobuf:"bytes,102,opt,name=awssqs,proto3" json:"awssqs,omitempty" kong:"cmd,help='AWS Simple Queue System'"`
+	// @gotags: kong:"cmd,help='AWS Simple Notification System'"
+	Awssns *WriteGroupAWSSNSOptions `protobuf:"bytes,103,opt,name=awssns,proto3" json:"awssns,omitempty" kong:"cmd,help='AWS Simple Notification System'"`
+	// @gotags: kong:"cmd,help='NATS'"
+	Nats *WriteGroupNatsOptions `protobuf:"bytes,104,opt,name=nats,proto3" json:"nats,omitempty" kong:"cmd,help='NATS'"`
+	// @gotags: kong:"cmd,help='NATS Streaming'"
+	NatsStreaming *WriteGroupNatsStreamingOptions `protobuf:"bytes,105,opt,name=nats_streaming,json=natsStreaming,proto3" json:"nats_streaming,omitempty" kong:"cmd,help='NATS Streaming'"`
+	// @gotags: kong:"cmd,help='NSQ'"
+	Nsq *WriteGroupNSQOptions `protobuf:"bytes,106,opt,name=nsq,proto3" json:"nsq,omitempty" kong:"cmd,help='NSQ'"`
+	// @gotags: kong:"cmd,help='Apache Pulsar'"
+	Pulsar *WriteGroupPulsarOptions `protobuf:"bytes,107,opt,name=pulsar,proto3" json:"pulsar,omitempty" kong:"cmd,help='Apache Pulsar'"`
+	// @gotags: kong:"cmd,help='RabbitMQ'"
+	Rabbit *WriteGroupRabbitOptions `protobuf:"bytes,108,opt,name=rabbit,proto3" json:"rabbit,omitempty" kong:"cmd,help='RabbitMQ'"`
+	// @gotags: kong:"cmd,help='RabbitMQ Streams'"
+	RabbitStreams *WriteGroupRabbitStreamsOptions `protobuf:"bytes,109,opt,name=rabbit_streams,json=rabbitStreams,proto3" json:"rabbit_streams,omitempty" kong:"cmd,help='RabbitMQ Streams'"`
+	// @gotags: kong:"cmd,help='MQTT'"
+	Mqtt *WriteGroupMQTTOptions `protobuf:"bytes,110,opt,name=mqtt,proto3" json:"mqtt,omitempty" kong:"cmd,help='MQTT'"`
+	// @gotags: kong:"cmd,help='Azure Service Bus'"
+	AzureServiceBus *WriteGroupAzureServiceBusOptions `protobuf:"bytes,111,opt,name=azure_service_bus,json=azureServiceBus,proto3" json:"azure_service_bus,omitempty" kong:"cmd,help='Azure Service Bus'"`
+	// @gotags: kong:"cmd,help='Azure Event Hub'"
+	AzureEventHub *WriteGroupAzureEventHubOptions `protobuf:"bytes,112,opt,name=azure_event_hub,json=azureEventHub,proto3" json:"azure_event_hub,omitempty" kong:"cmd,help='Azure Event Hub'"`
+	// @gotags: kong:"cmd,help='Google Cloud Platform Pub/Sub'"
+	GcpPubsub *WriteGroupGCPPubSubOptions `protobuf:"bytes,113,opt,name=gcp_pubsub,json=gcpPubsub,proto3" json:"gcp_pubsub,omitempty" kong:"cmd,help='Google Cloud Platform Pub/Sub'"`
+	// @gotags: kong:"cmd,help='KubeMQ Queue'"
+	KubemqQueue *WriteGroupKubeMQQueueOptions `protobuf:"bytes,114,opt,name=kubemq_queue,json=kubemqQueue,proto3" json:"kubemq_queue,omitempty" kong:"cmd,help='KubeMQ Queue'"`
+	// @gotags: kong:"cmd,help='Redis PubSub'"
+	RedisPubsub *WriteGroupRedisPubSubOptions `protobuf:"bytes,115,opt,name=redis_pubsub,json=redisPubsub,proto3" json:"redis_pubsub,omitempty" kong:"cmd,help='Redis PubSub'"`
+	// @gotags: kong:"cmd,help='Redis Streams'"
+	RedisStreams         *WriteGroupRedisStreamsOptions `protobuf:"bytes,116,opt,name=redis_streams,json=redisStreams,proto3" json:"redis_streams,omitempty" kong:"cmd,help='Redis Streams'"`
+	XXX_NoUnkeyedLiteral struct{}                       `json:"-"`
+	XXX_unrecognized     []byte                         `json:"-"`
+	XXX_sizecache        int32                          `json:"-"`
+}
+
+func (m *WriteOptions) Reset()         { *m = WriteOptions{} }
+func (m *WriteOptions) String() string { return proto.CompactTextString(m) }
+func (*WriteOptions) ProtoMessage()    {}
+func (*WriteOptions) Descriptor() ([]byte, []int) {
+	return fileDescriptor_469a5ee066df479e, []int{1}
+}
+
+func (m *WriteOptions) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WriteOptions.Unmarshal(m, b)
+}
+func (m *WriteOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WriteOptions.Marshal(b, m, deterministic)
+}
+func (m *WriteOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WriteOptions.Merge(m, src)
+}
+func (m *WriteOptions) XXX_Size() int {
+	return xxx_messageInfo_WriteOptions.Size(m)
+}
+func (m *WriteOptions) XXX_DiscardUnknown() {
+	xxx_messageInfo_WriteOptions.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_WriteOptions proto.InternalMessageInfo
+
+func (m *WriteOptions) GetConnectionId() string {
+	if m != nil {
+		return m.ConnectionId
+	}
+	return ""
+}
+
+func (m *WriteOptions) GetRecord() *records.WriteRecord {
 	if m != nil {
 		return m.Record
 	}
 	return nil
 }
 
-func (m *Write) GetKafka() *WriteOptsKafka {
+func (m *WriteOptions) GetEncodeOptions() *encoding.EncodeOptions {
+	if m != nil {
+		return m.EncodeOptions
+	}
+	return nil
+}
+
+func (m *WriteOptions) GetXCliOptions() *WriteCLIOptions {
+	if m != nil {
+		return m.XCliOptions
+	}
+	return nil
+}
+
+func (m *WriteOptions) GetKafka() *WriteGroupKafkaOptions {
 	if m != nil {
 		return m.Kafka
 	}
 	return nil
 }
 
-func (m *Write) GetActivemq() *WriteOptsActiveMQ {
+func (m *WriteOptions) GetActivemq() *WriteGroupActiveMQOptions {
 	if m != nil {
 		return m.Activemq
 	}
 	return nil
 }
 
-func (m *Write) GetAwssqs() *WriteOptsAWSSQS {
+func (m *WriteOptions) GetAwssqs() *WriteGroupAWSSQSOptions {
 	if m != nil {
 		return m.Awssqs
 	}
 	return nil
 }
 
-func (m *Write) GetAwssns() *WriteOptsAWSSNS {
+func (m *WriteOptions) GetAwssns() *WriteGroupAWSSNSOptions {
 	if m != nil {
 		return m.Awssns
 	}
 	return nil
 }
 
-func (m *Write) GetNats() *WriteOptsNats {
+func (m *WriteOptions) GetNats() *WriteGroupNatsOptions {
 	if m != nil {
 		return m.Nats
 	}
 	return nil
 }
 
-func (m *Write) GetNatsStreaming() *WriteOptsNatsStreaming {
+func (m *WriteOptions) GetNatsStreaming() *WriteGroupNatsStreamingOptions {
 	if m != nil {
 		return m.NatsStreaming
 	}
 	return nil
 }
 
-func (m *Write) GetNsq() *WriteOptsNSQ {
+func (m *WriteOptions) GetNsq() *WriteGroupNSQOptions {
 	if m != nil {
 		return m.Nsq
 	}
 	return nil
 }
 
-func (m *Write) GetPulsar() *WriteOptsPulsar {
+func (m *WriteOptions) GetPulsar() *WriteGroupPulsarOptions {
 	if m != nil {
 		return m.Pulsar
 	}
 	return nil
 }
 
-func (m *Write) GetRabbit() *WriteOptsRabbit {
+func (m *WriteOptions) GetRabbit() *WriteGroupRabbitOptions {
 	if m != nil {
 		return m.Rabbit
 	}
 	return nil
 }
 
-func (m *Write) GetRabbitStreams() *WriteOptsRabbitStreams {
+func (m *WriteOptions) GetRabbitStreams() *WriteGroupRabbitStreamsOptions {
 	if m != nil {
 		return m.RabbitStreams
 	}
 	return nil
 }
 
-func (m *Write) GetMqtt() *WriteOptsMQTT {
+func (m *WriteOptions) GetMqtt() *WriteGroupMQTTOptions {
 	if m != nil {
 		return m.Mqtt
 	}
 	return nil
 }
 
-func (m *Write) GetAzureServiceBus() *WriteOptsAzureServiceBus {
+func (m *WriteOptions) GetAzureServiceBus() *WriteGroupAzureServiceBusOptions {
 	if m != nil {
 		return m.AzureServiceBus
 	}
 	return nil
 }
 
-func (m *Write) GetAzureEventHub() *WriteOptsAzureEventHub {
+func (m *WriteOptions) GetAzureEventHub() *WriteGroupAzureEventHubOptions {
 	if m != nil {
 		return m.AzureEventHub
 	}
 	return nil
 }
 
-func (m *Write) GetGcpPubsub() *WriteOptsGCPPubSub {
+func (m *WriteOptions) GetGcpPubsub() *WriteGroupGCPPubSubOptions {
 	if m != nil {
 		return m.GcpPubsub
 	}
 	return nil
 }
 
-func (m *Write) GetKubemqQueue() *WriteOptsKubeMQQueue {
+func (m *WriteOptions) GetKubemqQueue() *WriteGroupKubeMQQueueOptions {
 	if m != nil {
 		return m.KubemqQueue
 	}
 	return nil
 }
 
-func (m *Write) GetRedisPubsub() *WriteOptsRedisPubSub {
+func (m *WriteOptions) GetRedisPubsub() *WriteGroupRedisPubSubOptions {
 	if m != nil {
 		return m.RedisPubsub
 	}
 	return nil
 }
 
-func (m *Write) GetRedisStreams() *WriteOptsRedisStreams {
+func (m *WriteOptions) GetRedisStreams() *WriteGroupRedisStreamsOptions {
 	if m != nil {
 		return m.RedisStreams
 	}
 	return nil
 }
 
-type WriteOptsKafka struct {
+type WriteGroupKafkaOptions struct {
 	// @gotags: kong:"embed"
 	XConn *args.KafkaConn `protobuf:"bytes,1,opt,name=_conn,json=Conn,proto3" json:"_conn,omitempty" kong:"embed"`
 	// @gotags: kong:"embed"
@@ -227,46 +306,46 @@ type WriteOptsKafka struct {
 	XXX_sizecache        int32                `json:"-"`
 }
 
-func (m *WriteOptsKafka) Reset()         { *m = WriteOptsKafka{} }
-func (m *WriteOptsKafka) String() string { return proto.CompactTextString(m) }
-func (*WriteOptsKafka) ProtoMessage()    {}
-func (*WriteOptsKafka) Descriptor() ([]byte, []int) {
-	return fileDescriptor_469a5ee066df479e, []int{1}
+func (m *WriteGroupKafkaOptions) Reset()         { *m = WriteGroupKafkaOptions{} }
+func (m *WriteGroupKafkaOptions) String() string { return proto.CompactTextString(m) }
+func (*WriteGroupKafkaOptions) ProtoMessage()    {}
+func (*WriteGroupKafkaOptions) Descriptor() ([]byte, []int) {
+	return fileDescriptor_469a5ee066df479e, []int{2}
 }
 
-func (m *WriteOptsKafka) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_WriteOptsKafka.Unmarshal(m, b)
+func (m *WriteGroupKafkaOptions) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WriteGroupKafkaOptions.Unmarshal(m, b)
 }
-func (m *WriteOptsKafka) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_WriteOptsKafka.Marshal(b, m, deterministic)
+func (m *WriteGroupKafkaOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WriteGroupKafkaOptions.Marshal(b, m, deterministic)
 }
-func (m *WriteOptsKafka) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WriteOptsKafka.Merge(m, src)
+func (m *WriteGroupKafkaOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WriteGroupKafkaOptions.Merge(m, src)
 }
-func (m *WriteOptsKafka) XXX_Size() int {
-	return xxx_messageInfo_WriteOptsKafka.Size(m)
+func (m *WriteGroupKafkaOptions) XXX_Size() int {
+	return xxx_messageInfo_WriteGroupKafkaOptions.Size(m)
 }
-func (m *WriteOptsKafka) XXX_DiscardUnknown() {
-	xxx_messageInfo_WriteOptsKafka.DiscardUnknown(m)
+func (m *WriteGroupKafkaOptions) XXX_DiscardUnknown() {
+	xxx_messageInfo_WriteGroupKafkaOptions.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_WriteOptsKafka proto.InternalMessageInfo
+var xxx_messageInfo_WriteGroupKafkaOptions proto.InternalMessageInfo
 
-func (m *WriteOptsKafka) GetXConn() *args.KafkaConn {
+func (m *WriteGroupKafkaOptions) GetXConn() *args.KafkaConn {
 	if m != nil {
 		return m.XConn
 	}
 	return nil
 }
 
-func (m *WriteOptsKafka) GetArgs() *args.KafkaWriteArgs {
+func (m *WriteGroupKafkaOptions) GetArgs() *args.KafkaWriteArgs {
 	if m != nil {
 		return m.Args
 	}
 	return nil
 }
 
-type WriteOptsActiveMQ struct {
+type WriteGroupActiveMQOptions struct {
 	// @gotags: kong:"embed"
 	XConn *args.ActiveMQConn `protobuf:"bytes,1,opt,name=_conn,json=Conn,proto3" json:"_conn,omitempty" kong:"embed"`
 	// @gotags: kong:"embed"
@@ -276,46 +355,46 @@ type WriteOptsActiveMQ struct {
 	XXX_sizecache        int32                   `json:"-"`
 }
 
-func (m *WriteOptsActiveMQ) Reset()         { *m = WriteOptsActiveMQ{} }
-func (m *WriteOptsActiveMQ) String() string { return proto.CompactTextString(m) }
-func (*WriteOptsActiveMQ) ProtoMessage()    {}
-func (*WriteOptsActiveMQ) Descriptor() ([]byte, []int) {
-	return fileDescriptor_469a5ee066df479e, []int{2}
+func (m *WriteGroupActiveMQOptions) Reset()         { *m = WriteGroupActiveMQOptions{} }
+func (m *WriteGroupActiveMQOptions) String() string { return proto.CompactTextString(m) }
+func (*WriteGroupActiveMQOptions) ProtoMessage()    {}
+func (*WriteGroupActiveMQOptions) Descriptor() ([]byte, []int) {
+	return fileDescriptor_469a5ee066df479e, []int{3}
 }
 
-func (m *WriteOptsActiveMQ) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_WriteOptsActiveMQ.Unmarshal(m, b)
+func (m *WriteGroupActiveMQOptions) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WriteGroupActiveMQOptions.Unmarshal(m, b)
 }
-func (m *WriteOptsActiveMQ) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_WriteOptsActiveMQ.Marshal(b, m, deterministic)
+func (m *WriteGroupActiveMQOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WriteGroupActiveMQOptions.Marshal(b, m, deterministic)
 }
-func (m *WriteOptsActiveMQ) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WriteOptsActiveMQ.Merge(m, src)
+func (m *WriteGroupActiveMQOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WriteGroupActiveMQOptions.Merge(m, src)
 }
-func (m *WriteOptsActiveMQ) XXX_Size() int {
-	return xxx_messageInfo_WriteOptsActiveMQ.Size(m)
+func (m *WriteGroupActiveMQOptions) XXX_Size() int {
+	return xxx_messageInfo_WriteGroupActiveMQOptions.Size(m)
 }
-func (m *WriteOptsActiveMQ) XXX_DiscardUnknown() {
-	xxx_messageInfo_WriteOptsActiveMQ.DiscardUnknown(m)
+func (m *WriteGroupActiveMQOptions) XXX_DiscardUnknown() {
+	xxx_messageInfo_WriteGroupActiveMQOptions.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_WriteOptsActiveMQ proto.InternalMessageInfo
+var xxx_messageInfo_WriteGroupActiveMQOptions proto.InternalMessageInfo
 
-func (m *WriteOptsActiveMQ) GetXConn() *args.ActiveMQConn {
+func (m *WriteGroupActiveMQOptions) GetXConn() *args.ActiveMQConn {
 	if m != nil {
 		return m.XConn
 	}
 	return nil
 }
 
-func (m *WriteOptsActiveMQ) GetArgs() *args.ActiveMQWriteArgs {
+func (m *WriteGroupActiveMQOptions) GetArgs() *args.ActiveMQWriteArgs {
 	if m != nil {
 		return m.Args
 	}
 	return nil
 }
 
-type WriteOptsAWSSQS struct {
+type WriteGroupAWSSQSOptions struct {
 	// @gotags: kong:"embed"
 	XConn *args.AWSSQSConn `protobuf:"bytes,1,opt,name=_conn,json=Conn,proto3" json:"_conn,omitempty" kong:"embed"`
 	// @gotags: kong:"embed"
@@ -325,46 +404,46 @@ type WriteOptsAWSSQS struct {
 	XXX_sizecache        int32                 `json:"-"`
 }
 
-func (m *WriteOptsAWSSQS) Reset()         { *m = WriteOptsAWSSQS{} }
-func (m *WriteOptsAWSSQS) String() string { return proto.CompactTextString(m) }
-func (*WriteOptsAWSSQS) ProtoMessage()    {}
-func (*WriteOptsAWSSQS) Descriptor() ([]byte, []int) {
-	return fileDescriptor_469a5ee066df479e, []int{3}
+func (m *WriteGroupAWSSQSOptions) Reset()         { *m = WriteGroupAWSSQSOptions{} }
+func (m *WriteGroupAWSSQSOptions) String() string { return proto.CompactTextString(m) }
+func (*WriteGroupAWSSQSOptions) ProtoMessage()    {}
+func (*WriteGroupAWSSQSOptions) Descriptor() ([]byte, []int) {
+	return fileDescriptor_469a5ee066df479e, []int{4}
 }
 
-func (m *WriteOptsAWSSQS) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_WriteOptsAWSSQS.Unmarshal(m, b)
+func (m *WriteGroupAWSSQSOptions) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WriteGroupAWSSQSOptions.Unmarshal(m, b)
 }
-func (m *WriteOptsAWSSQS) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_WriteOptsAWSSQS.Marshal(b, m, deterministic)
+func (m *WriteGroupAWSSQSOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WriteGroupAWSSQSOptions.Marshal(b, m, deterministic)
 }
-func (m *WriteOptsAWSSQS) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WriteOptsAWSSQS.Merge(m, src)
+func (m *WriteGroupAWSSQSOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WriteGroupAWSSQSOptions.Merge(m, src)
 }
-func (m *WriteOptsAWSSQS) XXX_Size() int {
-	return xxx_messageInfo_WriteOptsAWSSQS.Size(m)
+func (m *WriteGroupAWSSQSOptions) XXX_Size() int {
+	return xxx_messageInfo_WriteGroupAWSSQSOptions.Size(m)
 }
-func (m *WriteOptsAWSSQS) XXX_DiscardUnknown() {
-	xxx_messageInfo_WriteOptsAWSSQS.DiscardUnknown(m)
+func (m *WriteGroupAWSSQSOptions) XXX_DiscardUnknown() {
+	xxx_messageInfo_WriteGroupAWSSQSOptions.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_WriteOptsAWSSQS proto.InternalMessageInfo
+var xxx_messageInfo_WriteGroupAWSSQSOptions proto.InternalMessageInfo
 
-func (m *WriteOptsAWSSQS) GetXConn() *args.AWSSQSConn {
+func (m *WriteGroupAWSSQSOptions) GetXConn() *args.AWSSQSConn {
 	if m != nil {
 		return m.XConn
 	}
 	return nil
 }
 
-func (m *WriteOptsAWSSQS) GetArgs() *args.AWSSQSWriteArgs {
+func (m *WriteGroupAWSSQSOptions) GetArgs() *args.AWSSQSWriteArgs {
 	if m != nil {
 		return m.Args
 	}
 	return nil
 }
 
-type WriteOptsAWSSNS struct {
+type WriteGroupAWSSNSOptions struct {
 	// @gotags: kong:"embed"
 	XConn *args.AWSSNSConn `protobuf:"bytes,1,opt,name=_conn,json=Conn,proto3" json:"_conn,omitempty" kong:"embed"`
 	// @gotags: kong:"embed"
@@ -374,46 +453,46 @@ type WriteOptsAWSSNS struct {
 	XXX_sizecache        int32                 `json:"-"`
 }
 
-func (m *WriteOptsAWSSNS) Reset()         { *m = WriteOptsAWSSNS{} }
-func (m *WriteOptsAWSSNS) String() string { return proto.CompactTextString(m) }
-func (*WriteOptsAWSSNS) ProtoMessage()    {}
-func (*WriteOptsAWSSNS) Descriptor() ([]byte, []int) {
-	return fileDescriptor_469a5ee066df479e, []int{4}
+func (m *WriteGroupAWSSNSOptions) Reset()         { *m = WriteGroupAWSSNSOptions{} }
+func (m *WriteGroupAWSSNSOptions) String() string { return proto.CompactTextString(m) }
+func (*WriteGroupAWSSNSOptions) ProtoMessage()    {}
+func (*WriteGroupAWSSNSOptions) Descriptor() ([]byte, []int) {
+	return fileDescriptor_469a5ee066df479e, []int{5}
 }
 
-func (m *WriteOptsAWSSNS) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_WriteOptsAWSSNS.Unmarshal(m, b)
+func (m *WriteGroupAWSSNSOptions) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WriteGroupAWSSNSOptions.Unmarshal(m, b)
 }
-func (m *WriteOptsAWSSNS) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_WriteOptsAWSSNS.Marshal(b, m, deterministic)
+func (m *WriteGroupAWSSNSOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WriteGroupAWSSNSOptions.Marshal(b, m, deterministic)
 }
-func (m *WriteOptsAWSSNS) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WriteOptsAWSSNS.Merge(m, src)
+func (m *WriteGroupAWSSNSOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WriteGroupAWSSNSOptions.Merge(m, src)
 }
-func (m *WriteOptsAWSSNS) XXX_Size() int {
-	return xxx_messageInfo_WriteOptsAWSSNS.Size(m)
+func (m *WriteGroupAWSSNSOptions) XXX_Size() int {
+	return xxx_messageInfo_WriteGroupAWSSNSOptions.Size(m)
 }
-func (m *WriteOptsAWSSNS) XXX_DiscardUnknown() {
-	xxx_messageInfo_WriteOptsAWSSNS.DiscardUnknown(m)
+func (m *WriteGroupAWSSNSOptions) XXX_DiscardUnknown() {
+	xxx_messageInfo_WriteGroupAWSSNSOptions.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_WriteOptsAWSSNS proto.InternalMessageInfo
+var xxx_messageInfo_WriteGroupAWSSNSOptions proto.InternalMessageInfo
 
-func (m *WriteOptsAWSSNS) GetXConn() *args.AWSSNSConn {
+func (m *WriteGroupAWSSNSOptions) GetXConn() *args.AWSSNSConn {
 	if m != nil {
 		return m.XConn
 	}
 	return nil
 }
 
-func (m *WriteOptsAWSSNS) GetArgs() *args.AWSSNSWriteArgs {
+func (m *WriteGroupAWSSNSOptions) GetArgs() *args.AWSSNSWriteArgs {
 	if m != nil {
 		return m.Args
 	}
 	return nil
 }
 
-type WriteOptsNats struct {
+type WriteGroupNatsOptions struct {
 	// @gotags: kong:"embed"
 	XConn *args.NatsConn `protobuf:"bytes,1,opt,name=_conn,json=Conn,proto3" json:"_conn,omitempty" kong:"embed"`
 	// @gotags: kong:"embed"
@@ -423,46 +502,46 @@ type WriteOptsNats struct {
 	XXX_sizecache        int32               `json:"-"`
 }
 
-func (m *WriteOptsNats) Reset()         { *m = WriteOptsNats{} }
-func (m *WriteOptsNats) String() string { return proto.CompactTextString(m) }
-func (*WriteOptsNats) ProtoMessage()    {}
-func (*WriteOptsNats) Descriptor() ([]byte, []int) {
-	return fileDescriptor_469a5ee066df479e, []int{5}
+func (m *WriteGroupNatsOptions) Reset()         { *m = WriteGroupNatsOptions{} }
+func (m *WriteGroupNatsOptions) String() string { return proto.CompactTextString(m) }
+func (*WriteGroupNatsOptions) ProtoMessage()    {}
+func (*WriteGroupNatsOptions) Descriptor() ([]byte, []int) {
+	return fileDescriptor_469a5ee066df479e, []int{6}
 }
 
-func (m *WriteOptsNats) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_WriteOptsNats.Unmarshal(m, b)
+func (m *WriteGroupNatsOptions) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WriteGroupNatsOptions.Unmarshal(m, b)
 }
-func (m *WriteOptsNats) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_WriteOptsNats.Marshal(b, m, deterministic)
+func (m *WriteGroupNatsOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WriteGroupNatsOptions.Marshal(b, m, deterministic)
 }
-func (m *WriteOptsNats) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WriteOptsNats.Merge(m, src)
+func (m *WriteGroupNatsOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WriteGroupNatsOptions.Merge(m, src)
 }
-func (m *WriteOptsNats) XXX_Size() int {
-	return xxx_messageInfo_WriteOptsNats.Size(m)
+func (m *WriteGroupNatsOptions) XXX_Size() int {
+	return xxx_messageInfo_WriteGroupNatsOptions.Size(m)
 }
-func (m *WriteOptsNats) XXX_DiscardUnknown() {
-	xxx_messageInfo_WriteOptsNats.DiscardUnknown(m)
+func (m *WriteGroupNatsOptions) XXX_DiscardUnknown() {
+	xxx_messageInfo_WriteGroupNatsOptions.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_WriteOptsNats proto.InternalMessageInfo
+var xxx_messageInfo_WriteGroupNatsOptions proto.InternalMessageInfo
 
-func (m *WriteOptsNats) GetXConn() *args.NatsConn {
+func (m *WriteGroupNatsOptions) GetXConn() *args.NatsConn {
 	if m != nil {
 		return m.XConn
 	}
 	return nil
 }
 
-func (m *WriteOptsNats) GetArgs() *args.NatsWriteArgs {
+func (m *WriteGroupNatsOptions) GetArgs() *args.NatsWriteArgs {
 	if m != nil {
 		return m.Args
 	}
 	return nil
 }
 
-type WriteOptsNatsStreaming struct {
+type WriteGroupNatsStreamingOptions struct {
 	// @gotags: kong:"embed"
 	XConn *args.NatsStreamingConn `protobuf:"bytes,1,opt,name=_conn,json=Conn,proto3" json:"_conn,omitempty" kong:"embed"`
 	// @gotags: kong:"embed"
@@ -472,46 +551,46 @@ type WriteOptsNatsStreaming struct {
 	XXX_sizecache        int32                        `json:"-"`
 }
 
-func (m *WriteOptsNatsStreaming) Reset()         { *m = WriteOptsNatsStreaming{} }
-func (m *WriteOptsNatsStreaming) String() string { return proto.CompactTextString(m) }
-func (*WriteOptsNatsStreaming) ProtoMessage()    {}
-func (*WriteOptsNatsStreaming) Descriptor() ([]byte, []int) {
-	return fileDescriptor_469a5ee066df479e, []int{6}
+func (m *WriteGroupNatsStreamingOptions) Reset()         { *m = WriteGroupNatsStreamingOptions{} }
+func (m *WriteGroupNatsStreamingOptions) String() string { return proto.CompactTextString(m) }
+func (*WriteGroupNatsStreamingOptions) ProtoMessage()    {}
+func (*WriteGroupNatsStreamingOptions) Descriptor() ([]byte, []int) {
+	return fileDescriptor_469a5ee066df479e, []int{7}
 }
 
-func (m *WriteOptsNatsStreaming) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_WriteOptsNatsStreaming.Unmarshal(m, b)
+func (m *WriteGroupNatsStreamingOptions) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WriteGroupNatsStreamingOptions.Unmarshal(m, b)
 }
-func (m *WriteOptsNatsStreaming) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_WriteOptsNatsStreaming.Marshal(b, m, deterministic)
+func (m *WriteGroupNatsStreamingOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WriteGroupNatsStreamingOptions.Marshal(b, m, deterministic)
 }
-func (m *WriteOptsNatsStreaming) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WriteOptsNatsStreaming.Merge(m, src)
+func (m *WriteGroupNatsStreamingOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WriteGroupNatsStreamingOptions.Merge(m, src)
 }
-func (m *WriteOptsNatsStreaming) XXX_Size() int {
-	return xxx_messageInfo_WriteOptsNatsStreaming.Size(m)
+func (m *WriteGroupNatsStreamingOptions) XXX_Size() int {
+	return xxx_messageInfo_WriteGroupNatsStreamingOptions.Size(m)
 }
-func (m *WriteOptsNatsStreaming) XXX_DiscardUnknown() {
-	xxx_messageInfo_WriteOptsNatsStreaming.DiscardUnknown(m)
+func (m *WriteGroupNatsStreamingOptions) XXX_DiscardUnknown() {
+	xxx_messageInfo_WriteGroupNatsStreamingOptions.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_WriteOptsNatsStreaming proto.InternalMessageInfo
+var xxx_messageInfo_WriteGroupNatsStreamingOptions proto.InternalMessageInfo
 
-func (m *WriteOptsNatsStreaming) GetXConn() *args.NatsStreamingConn {
+func (m *WriteGroupNatsStreamingOptions) GetXConn() *args.NatsStreamingConn {
 	if m != nil {
 		return m.XConn
 	}
 	return nil
 }
 
-func (m *WriteOptsNatsStreaming) GetArgs() *args.NatsStreamingWriteArgs {
+func (m *WriteGroupNatsStreamingOptions) GetArgs() *args.NatsStreamingWriteArgs {
 	if m != nil {
 		return m.Args
 	}
 	return nil
 }
 
-type WriteOptsNSQ struct {
+type WriteGroupNSQOptions struct {
 	// @gotags: kong:"embed"
 	XConn *args.NSQConn `protobuf:"bytes,1,opt,name=_conn,json=Conn,proto3" json:"_conn,omitempty" kong:"embed"`
 	// @gotags: kong:"embed"
@@ -521,46 +600,46 @@ type WriteOptsNSQ struct {
 	XXX_sizecache        int32              `json:"-"`
 }
 
-func (m *WriteOptsNSQ) Reset()         { *m = WriteOptsNSQ{} }
-func (m *WriteOptsNSQ) String() string { return proto.CompactTextString(m) }
-func (*WriteOptsNSQ) ProtoMessage()    {}
-func (*WriteOptsNSQ) Descriptor() ([]byte, []int) {
-	return fileDescriptor_469a5ee066df479e, []int{7}
+func (m *WriteGroupNSQOptions) Reset()         { *m = WriteGroupNSQOptions{} }
+func (m *WriteGroupNSQOptions) String() string { return proto.CompactTextString(m) }
+func (*WriteGroupNSQOptions) ProtoMessage()    {}
+func (*WriteGroupNSQOptions) Descriptor() ([]byte, []int) {
+	return fileDescriptor_469a5ee066df479e, []int{8}
 }
 
-func (m *WriteOptsNSQ) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_WriteOptsNSQ.Unmarshal(m, b)
+func (m *WriteGroupNSQOptions) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WriteGroupNSQOptions.Unmarshal(m, b)
 }
-func (m *WriteOptsNSQ) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_WriteOptsNSQ.Marshal(b, m, deterministic)
+func (m *WriteGroupNSQOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WriteGroupNSQOptions.Marshal(b, m, deterministic)
 }
-func (m *WriteOptsNSQ) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WriteOptsNSQ.Merge(m, src)
+func (m *WriteGroupNSQOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WriteGroupNSQOptions.Merge(m, src)
 }
-func (m *WriteOptsNSQ) XXX_Size() int {
-	return xxx_messageInfo_WriteOptsNSQ.Size(m)
+func (m *WriteGroupNSQOptions) XXX_Size() int {
+	return xxx_messageInfo_WriteGroupNSQOptions.Size(m)
 }
-func (m *WriteOptsNSQ) XXX_DiscardUnknown() {
-	xxx_messageInfo_WriteOptsNSQ.DiscardUnknown(m)
+func (m *WriteGroupNSQOptions) XXX_DiscardUnknown() {
+	xxx_messageInfo_WriteGroupNSQOptions.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_WriteOptsNSQ proto.InternalMessageInfo
+var xxx_messageInfo_WriteGroupNSQOptions proto.InternalMessageInfo
 
-func (m *WriteOptsNSQ) GetXConn() *args.NSQConn {
+func (m *WriteGroupNSQOptions) GetXConn() *args.NSQConn {
 	if m != nil {
 		return m.XConn
 	}
 	return nil
 }
 
-func (m *WriteOptsNSQ) GetArgs() *args.NSQWriteArgs {
+func (m *WriteGroupNSQOptions) GetArgs() *args.NSQWriteArgs {
 	if m != nil {
 		return m.Args
 	}
 	return nil
 }
 
-type WriteOptsPulsar struct {
+type WriteGroupPulsarOptions struct {
 	// @gotags: kong:"embed"
 	XConn *args.PulsarConn `protobuf:"bytes,1,opt,name=_conn,json=Conn,proto3" json:"_conn,omitempty" kong:"embed"`
 	// @gotags: kong:"embed"
@@ -570,46 +649,46 @@ type WriteOptsPulsar struct {
 	XXX_sizecache        int32                 `json:"-"`
 }
 
-func (m *WriteOptsPulsar) Reset()         { *m = WriteOptsPulsar{} }
-func (m *WriteOptsPulsar) String() string { return proto.CompactTextString(m) }
-func (*WriteOptsPulsar) ProtoMessage()    {}
-func (*WriteOptsPulsar) Descriptor() ([]byte, []int) {
-	return fileDescriptor_469a5ee066df479e, []int{8}
+func (m *WriteGroupPulsarOptions) Reset()         { *m = WriteGroupPulsarOptions{} }
+func (m *WriteGroupPulsarOptions) String() string { return proto.CompactTextString(m) }
+func (*WriteGroupPulsarOptions) ProtoMessage()    {}
+func (*WriteGroupPulsarOptions) Descriptor() ([]byte, []int) {
+	return fileDescriptor_469a5ee066df479e, []int{9}
 }
 
-func (m *WriteOptsPulsar) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_WriteOptsPulsar.Unmarshal(m, b)
+func (m *WriteGroupPulsarOptions) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WriteGroupPulsarOptions.Unmarshal(m, b)
 }
-func (m *WriteOptsPulsar) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_WriteOptsPulsar.Marshal(b, m, deterministic)
+func (m *WriteGroupPulsarOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WriteGroupPulsarOptions.Marshal(b, m, deterministic)
 }
-func (m *WriteOptsPulsar) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WriteOptsPulsar.Merge(m, src)
+func (m *WriteGroupPulsarOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WriteGroupPulsarOptions.Merge(m, src)
 }
-func (m *WriteOptsPulsar) XXX_Size() int {
-	return xxx_messageInfo_WriteOptsPulsar.Size(m)
+func (m *WriteGroupPulsarOptions) XXX_Size() int {
+	return xxx_messageInfo_WriteGroupPulsarOptions.Size(m)
 }
-func (m *WriteOptsPulsar) XXX_DiscardUnknown() {
-	xxx_messageInfo_WriteOptsPulsar.DiscardUnknown(m)
+func (m *WriteGroupPulsarOptions) XXX_DiscardUnknown() {
+	xxx_messageInfo_WriteGroupPulsarOptions.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_WriteOptsPulsar proto.InternalMessageInfo
+var xxx_messageInfo_WriteGroupPulsarOptions proto.InternalMessageInfo
 
-func (m *WriteOptsPulsar) GetXConn() *args.PulsarConn {
+func (m *WriteGroupPulsarOptions) GetXConn() *args.PulsarConn {
 	if m != nil {
 		return m.XConn
 	}
 	return nil
 }
 
-func (m *WriteOptsPulsar) GetArgs() *args.PulsarWriteArgs {
+func (m *WriteGroupPulsarOptions) GetArgs() *args.PulsarWriteArgs {
 	if m != nil {
 		return m.Args
 	}
 	return nil
 }
 
-type WriteOptsRabbit struct {
+type WriteGroupRabbitOptions struct {
 	// @gotags: kong:"embed"
 	XConn *args.RabbitConn `protobuf:"bytes,1,opt,name=_conn,json=Conn,proto3" json:"_conn,omitempty" kong:"embed"`
 	// @gotags: kong:"embed"
@@ -619,46 +698,46 @@ type WriteOptsRabbit struct {
 	XXX_sizecache        int32                 `json:"-"`
 }
 
-func (m *WriteOptsRabbit) Reset()         { *m = WriteOptsRabbit{} }
-func (m *WriteOptsRabbit) String() string { return proto.CompactTextString(m) }
-func (*WriteOptsRabbit) ProtoMessage()    {}
-func (*WriteOptsRabbit) Descriptor() ([]byte, []int) {
-	return fileDescriptor_469a5ee066df479e, []int{9}
+func (m *WriteGroupRabbitOptions) Reset()         { *m = WriteGroupRabbitOptions{} }
+func (m *WriteGroupRabbitOptions) String() string { return proto.CompactTextString(m) }
+func (*WriteGroupRabbitOptions) ProtoMessage()    {}
+func (*WriteGroupRabbitOptions) Descriptor() ([]byte, []int) {
+	return fileDescriptor_469a5ee066df479e, []int{10}
 }
 
-func (m *WriteOptsRabbit) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_WriteOptsRabbit.Unmarshal(m, b)
+func (m *WriteGroupRabbitOptions) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WriteGroupRabbitOptions.Unmarshal(m, b)
 }
-func (m *WriteOptsRabbit) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_WriteOptsRabbit.Marshal(b, m, deterministic)
+func (m *WriteGroupRabbitOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WriteGroupRabbitOptions.Marshal(b, m, deterministic)
 }
-func (m *WriteOptsRabbit) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WriteOptsRabbit.Merge(m, src)
+func (m *WriteGroupRabbitOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WriteGroupRabbitOptions.Merge(m, src)
 }
-func (m *WriteOptsRabbit) XXX_Size() int {
-	return xxx_messageInfo_WriteOptsRabbit.Size(m)
+func (m *WriteGroupRabbitOptions) XXX_Size() int {
+	return xxx_messageInfo_WriteGroupRabbitOptions.Size(m)
 }
-func (m *WriteOptsRabbit) XXX_DiscardUnknown() {
-	xxx_messageInfo_WriteOptsRabbit.DiscardUnknown(m)
+func (m *WriteGroupRabbitOptions) XXX_DiscardUnknown() {
+	xxx_messageInfo_WriteGroupRabbitOptions.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_WriteOptsRabbit proto.InternalMessageInfo
+var xxx_messageInfo_WriteGroupRabbitOptions proto.InternalMessageInfo
 
-func (m *WriteOptsRabbit) GetXConn() *args.RabbitConn {
+func (m *WriteGroupRabbitOptions) GetXConn() *args.RabbitConn {
 	if m != nil {
 		return m.XConn
 	}
 	return nil
 }
 
-func (m *WriteOptsRabbit) GetArgs() *args.RabbitWriteArgs {
+func (m *WriteGroupRabbitOptions) GetArgs() *args.RabbitWriteArgs {
 	if m != nil {
 		return m.Args
 	}
 	return nil
 }
 
-type WriteOptsRabbitStreams struct {
+type WriteGroupRabbitStreamsOptions struct {
 	// @gotags: kong:"embed"
 	XConn *args.RabbitStreamsConn `protobuf:"bytes,1,opt,name=_conn,json=Conn,proto3" json:"_conn,omitempty" kong:"embed"`
 	// @gotags: kong:"embed"
@@ -668,46 +747,46 @@ type WriteOptsRabbitStreams struct {
 	XXX_sizecache        int32                        `json:"-"`
 }
 
-func (m *WriteOptsRabbitStreams) Reset()         { *m = WriteOptsRabbitStreams{} }
-func (m *WriteOptsRabbitStreams) String() string { return proto.CompactTextString(m) }
-func (*WriteOptsRabbitStreams) ProtoMessage()    {}
-func (*WriteOptsRabbitStreams) Descriptor() ([]byte, []int) {
-	return fileDescriptor_469a5ee066df479e, []int{10}
+func (m *WriteGroupRabbitStreamsOptions) Reset()         { *m = WriteGroupRabbitStreamsOptions{} }
+func (m *WriteGroupRabbitStreamsOptions) String() string { return proto.CompactTextString(m) }
+func (*WriteGroupRabbitStreamsOptions) ProtoMessage()    {}
+func (*WriteGroupRabbitStreamsOptions) Descriptor() ([]byte, []int) {
+	return fileDescriptor_469a5ee066df479e, []int{11}
 }
 
-func (m *WriteOptsRabbitStreams) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_WriteOptsRabbitStreams.Unmarshal(m, b)
+func (m *WriteGroupRabbitStreamsOptions) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WriteGroupRabbitStreamsOptions.Unmarshal(m, b)
 }
-func (m *WriteOptsRabbitStreams) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_WriteOptsRabbitStreams.Marshal(b, m, deterministic)
+func (m *WriteGroupRabbitStreamsOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WriteGroupRabbitStreamsOptions.Marshal(b, m, deterministic)
 }
-func (m *WriteOptsRabbitStreams) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WriteOptsRabbitStreams.Merge(m, src)
+func (m *WriteGroupRabbitStreamsOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WriteGroupRabbitStreamsOptions.Merge(m, src)
 }
-func (m *WriteOptsRabbitStreams) XXX_Size() int {
-	return xxx_messageInfo_WriteOptsRabbitStreams.Size(m)
+func (m *WriteGroupRabbitStreamsOptions) XXX_Size() int {
+	return xxx_messageInfo_WriteGroupRabbitStreamsOptions.Size(m)
 }
-func (m *WriteOptsRabbitStreams) XXX_DiscardUnknown() {
-	xxx_messageInfo_WriteOptsRabbitStreams.DiscardUnknown(m)
+func (m *WriteGroupRabbitStreamsOptions) XXX_DiscardUnknown() {
+	xxx_messageInfo_WriteGroupRabbitStreamsOptions.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_WriteOptsRabbitStreams proto.InternalMessageInfo
+var xxx_messageInfo_WriteGroupRabbitStreamsOptions proto.InternalMessageInfo
 
-func (m *WriteOptsRabbitStreams) GetXConn() *args.RabbitStreamsConn {
+func (m *WriteGroupRabbitStreamsOptions) GetXConn() *args.RabbitStreamsConn {
 	if m != nil {
 		return m.XConn
 	}
 	return nil
 }
 
-func (m *WriteOptsRabbitStreams) GetArgs() *args.RabbitStreamsWriteArgs {
+func (m *WriteGroupRabbitStreamsOptions) GetArgs() *args.RabbitStreamsWriteArgs {
 	if m != nil {
 		return m.Args
 	}
 	return nil
 }
 
-type WriteOptsRedisPubSub struct {
+type WriteGroupRedisPubSubOptions struct {
 	// @gotags: kong:"embed"
 	XConn *args.RedisPubSubConn `protobuf:"bytes,1,opt,name=_conn,json=Conn,proto3" json:"_conn,omitempty" kong:"embed"`
 	// @gotags: kong:"embed"
@@ -717,46 +796,46 @@ type WriteOptsRedisPubSub struct {
 	XXX_sizecache        int32                      `json:"-"`
 }
 
-func (m *WriteOptsRedisPubSub) Reset()         { *m = WriteOptsRedisPubSub{} }
-func (m *WriteOptsRedisPubSub) String() string { return proto.CompactTextString(m) }
-func (*WriteOptsRedisPubSub) ProtoMessage()    {}
-func (*WriteOptsRedisPubSub) Descriptor() ([]byte, []int) {
-	return fileDescriptor_469a5ee066df479e, []int{11}
+func (m *WriteGroupRedisPubSubOptions) Reset()         { *m = WriteGroupRedisPubSubOptions{} }
+func (m *WriteGroupRedisPubSubOptions) String() string { return proto.CompactTextString(m) }
+func (*WriteGroupRedisPubSubOptions) ProtoMessage()    {}
+func (*WriteGroupRedisPubSubOptions) Descriptor() ([]byte, []int) {
+	return fileDescriptor_469a5ee066df479e, []int{12}
 }
 
-func (m *WriteOptsRedisPubSub) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_WriteOptsRedisPubSub.Unmarshal(m, b)
+func (m *WriteGroupRedisPubSubOptions) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WriteGroupRedisPubSubOptions.Unmarshal(m, b)
 }
-func (m *WriteOptsRedisPubSub) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_WriteOptsRedisPubSub.Marshal(b, m, deterministic)
+func (m *WriteGroupRedisPubSubOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WriteGroupRedisPubSubOptions.Marshal(b, m, deterministic)
 }
-func (m *WriteOptsRedisPubSub) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WriteOptsRedisPubSub.Merge(m, src)
+func (m *WriteGroupRedisPubSubOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WriteGroupRedisPubSubOptions.Merge(m, src)
 }
-func (m *WriteOptsRedisPubSub) XXX_Size() int {
-	return xxx_messageInfo_WriteOptsRedisPubSub.Size(m)
+func (m *WriteGroupRedisPubSubOptions) XXX_Size() int {
+	return xxx_messageInfo_WriteGroupRedisPubSubOptions.Size(m)
 }
-func (m *WriteOptsRedisPubSub) XXX_DiscardUnknown() {
-	xxx_messageInfo_WriteOptsRedisPubSub.DiscardUnknown(m)
+func (m *WriteGroupRedisPubSubOptions) XXX_DiscardUnknown() {
+	xxx_messageInfo_WriteGroupRedisPubSubOptions.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_WriteOptsRedisPubSub proto.InternalMessageInfo
+var xxx_messageInfo_WriteGroupRedisPubSubOptions proto.InternalMessageInfo
 
-func (m *WriteOptsRedisPubSub) GetXConn() *args.RedisPubSubConn {
+func (m *WriteGroupRedisPubSubOptions) GetXConn() *args.RedisPubSubConn {
 	if m != nil {
 		return m.XConn
 	}
 	return nil
 }
 
-func (m *WriteOptsRedisPubSub) GetArgs() *args.RedisPubSubWriteArgs {
+func (m *WriteGroupRedisPubSubOptions) GetArgs() *args.RedisPubSubWriteArgs {
 	if m != nil {
 		return m.Args
 	}
 	return nil
 }
 
-type WriteOptsRedisStreams struct {
+type WriteGroupRedisStreamsOptions struct {
 	// @gotags: kong:"embed"
 	XConn *args.RedisStreamsConn `protobuf:"bytes,1,opt,name=_conn,json=Conn,proto3" json:"_conn,omitempty" kong:"embed"`
 	// @gotags: kong:"embed"
@@ -766,46 +845,46 @@ type WriteOptsRedisStreams struct {
 	XXX_sizecache        int32                       `json:"-"`
 }
 
-func (m *WriteOptsRedisStreams) Reset()         { *m = WriteOptsRedisStreams{} }
-func (m *WriteOptsRedisStreams) String() string { return proto.CompactTextString(m) }
-func (*WriteOptsRedisStreams) ProtoMessage()    {}
-func (*WriteOptsRedisStreams) Descriptor() ([]byte, []int) {
-	return fileDescriptor_469a5ee066df479e, []int{12}
+func (m *WriteGroupRedisStreamsOptions) Reset()         { *m = WriteGroupRedisStreamsOptions{} }
+func (m *WriteGroupRedisStreamsOptions) String() string { return proto.CompactTextString(m) }
+func (*WriteGroupRedisStreamsOptions) ProtoMessage()    {}
+func (*WriteGroupRedisStreamsOptions) Descriptor() ([]byte, []int) {
+	return fileDescriptor_469a5ee066df479e, []int{13}
 }
 
-func (m *WriteOptsRedisStreams) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_WriteOptsRedisStreams.Unmarshal(m, b)
+func (m *WriteGroupRedisStreamsOptions) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WriteGroupRedisStreamsOptions.Unmarshal(m, b)
 }
-func (m *WriteOptsRedisStreams) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_WriteOptsRedisStreams.Marshal(b, m, deterministic)
+func (m *WriteGroupRedisStreamsOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WriteGroupRedisStreamsOptions.Marshal(b, m, deterministic)
 }
-func (m *WriteOptsRedisStreams) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WriteOptsRedisStreams.Merge(m, src)
+func (m *WriteGroupRedisStreamsOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WriteGroupRedisStreamsOptions.Merge(m, src)
 }
-func (m *WriteOptsRedisStreams) XXX_Size() int {
-	return xxx_messageInfo_WriteOptsRedisStreams.Size(m)
+func (m *WriteGroupRedisStreamsOptions) XXX_Size() int {
+	return xxx_messageInfo_WriteGroupRedisStreamsOptions.Size(m)
 }
-func (m *WriteOptsRedisStreams) XXX_DiscardUnknown() {
-	xxx_messageInfo_WriteOptsRedisStreams.DiscardUnknown(m)
+func (m *WriteGroupRedisStreamsOptions) XXX_DiscardUnknown() {
+	xxx_messageInfo_WriteGroupRedisStreamsOptions.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_WriteOptsRedisStreams proto.InternalMessageInfo
+var xxx_messageInfo_WriteGroupRedisStreamsOptions proto.InternalMessageInfo
 
-func (m *WriteOptsRedisStreams) GetXConn() *args.RedisStreamsConn {
+func (m *WriteGroupRedisStreamsOptions) GetXConn() *args.RedisStreamsConn {
 	if m != nil {
 		return m.XConn
 	}
 	return nil
 }
 
-func (m *WriteOptsRedisStreams) GetArgs() *args.RedisStreamsWriteArgs {
+func (m *WriteGroupRedisStreamsOptions) GetArgs() *args.RedisStreamsWriteArgs {
 	if m != nil {
 		return m.Args
 	}
 	return nil
 }
 
-type WriteOptsAzureEventHub struct {
+type WriteGroupAzureEventHubOptions struct {
 	// @gotags: kong:"embed"
 	XConn *args.AzureEventHubConn `protobuf:"bytes,1,opt,name=_conn,json=Conn,proto3" json:"_conn,omitempty" kong:"embed"`
 	// @gotags: kong:"embed"
@@ -815,46 +894,46 @@ type WriteOptsAzureEventHub struct {
 	XXX_sizecache        int32                        `json:"-"`
 }
 
-func (m *WriteOptsAzureEventHub) Reset()         { *m = WriteOptsAzureEventHub{} }
-func (m *WriteOptsAzureEventHub) String() string { return proto.CompactTextString(m) }
-func (*WriteOptsAzureEventHub) ProtoMessage()    {}
-func (*WriteOptsAzureEventHub) Descriptor() ([]byte, []int) {
-	return fileDescriptor_469a5ee066df479e, []int{13}
+func (m *WriteGroupAzureEventHubOptions) Reset()         { *m = WriteGroupAzureEventHubOptions{} }
+func (m *WriteGroupAzureEventHubOptions) String() string { return proto.CompactTextString(m) }
+func (*WriteGroupAzureEventHubOptions) ProtoMessage()    {}
+func (*WriteGroupAzureEventHubOptions) Descriptor() ([]byte, []int) {
+	return fileDescriptor_469a5ee066df479e, []int{14}
 }
 
-func (m *WriteOptsAzureEventHub) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_WriteOptsAzureEventHub.Unmarshal(m, b)
+func (m *WriteGroupAzureEventHubOptions) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WriteGroupAzureEventHubOptions.Unmarshal(m, b)
 }
-func (m *WriteOptsAzureEventHub) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_WriteOptsAzureEventHub.Marshal(b, m, deterministic)
+func (m *WriteGroupAzureEventHubOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WriteGroupAzureEventHubOptions.Marshal(b, m, deterministic)
 }
-func (m *WriteOptsAzureEventHub) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WriteOptsAzureEventHub.Merge(m, src)
+func (m *WriteGroupAzureEventHubOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WriteGroupAzureEventHubOptions.Merge(m, src)
 }
-func (m *WriteOptsAzureEventHub) XXX_Size() int {
-	return xxx_messageInfo_WriteOptsAzureEventHub.Size(m)
+func (m *WriteGroupAzureEventHubOptions) XXX_Size() int {
+	return xxx_messageInfo_WriteGroupAzureEventHubOptions.Size(m)
 }
-func (m *WriteOptsAzureEventHub) XXX_DiscardUnknown() {
-	xxx_messageInfo_WriteOptsAzureEventHub.DiscardUnknown(m)
+func (m *WriteGroupAzureEventHubOptions) XXX_DiscardUnknown() {
+	xxx_messageInfo_WriteGroupAzureEventHubOptions.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_WriteOptsAzureEventHub proto.InternalMessageInfo
+var xxx_messageInfo_WriteGroupAzureEventHubOptions proto.InternalMessageInfo
 
-func (m *WriteOptsAzureEventHub) GetXConn() *args.AzureEventHubConn {
+func (m *WriteGroupAzureEventHubOptions) GetXConn() *args.AzureEventHubConn {
 	if m != nil {
 		return m.XConn
 	}
 	return nil
 }
 
-func (m *WriteOptsAzureEventHub) GetArgs() *args.AzureEventHubWriteArgs {
+func (m *WriteGroupAzureEventHubOptions) GetArgs() *args.AzureEventHubWriteArgs {
 	if m != nil {
 		return m.Args
 	}
 	return nil
 }
 
-type WriteOptsAzureServiceBus struct {
+type WriteGroupAzureServiceBusOptions struct {
 	// @gotags: kong:"embed"{
 	XConn *args.AzureServiceBusConn `protobuf:"bytes,1,opt,name=_conn,json=Conn,proto3" json:"_conn,omitempty" kong:"embed"`
 	// @gotags: kong:"embed"
@@ -864,46 +943,46 @@ type WriteOptsAzureServiceBus struct {
 	XXX_sizecache        int32                          `json:"-"`
 }
 
-func (m *WriteOptsAzureServiceBus) Reset()         { *m = WriteOptsAzureServiceBus{} }
-func (m *WriteOptsAzureServiceBus) String() string { return proto.CompactTextString(m) }
-func (*WriteOptsAzureServiceBus) ProtoMessage()    {}
-func (*WriteOptsAzureServiceBus) Descriptor() ([]byte, []int) {
-	return fileDescriptor_469a5ee066df479e, []int{14}
+func (m *WriteGroupAzureServiceBusOptions) Reset()         { *m = WriteGroupAzureServiceBusOptions{} }
+func (m *WriteGroupAzureServiceBusOptions) String() string { return proto.CompactTextString(m) }
+func (*WriteGroupAzureServiceBusOptions) ProtoMessage()    {}
+func (*WriteGroupAzureServiceBusOptions) Descriptor() ([]byte, []int) {
+	return fileDescriptor_469a5ee066df479e, []int{15}
 }
 
-func (m *WriteOptsAzureServiceBus) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_WriteOptsAzureServiceBus.Unmarshal(m, b)
+func (m *WriteGroupAzureServiceBusOptions) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WriteGroupAzureServiceBusOptions.Unmarshal(m, b)
 }
-func (m *WriteOptsAzureServiceBus) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_WriteOptsAzureServiceBus.Marshal(b, m, deterministic)
+func (m *WriteGroupAzureServiceBusOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WriteGroupAzureServiceBusOptions.Marshal(b, m, deterministic)
 }
-func (m *WriteOptsAzureServiceBus) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WriteOptsAzureServiceBus.Merge(m, src)
+func (m *WriteGroupAzureServiceBusOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WriteGroupAzureServiceBusOptions.Merge(m, src)
 }
-func (m *WriteOptsAzureServiceBus) XXX_Size() int {
-	return xxx_messageInfo_WriteOptsAzureServiceBus.Size(m)
+func (m *WriteGroupAzureServiceBusOptions) XXX_Size() int {
+	return xxx_messageInfo_WriteGroupAzureServiceBusOptions.Size(m)
 }
-func (m *WriteOptsAzureServiceBus) XXX_DiscardUnknown() {
-	xxx_messageInfo_WriteOptsAzureServiceBus.DiscardUnknown(m)
+func (m *WriteGroupAzureServiceBusOptions) XXX_DiscardUnknown() {
+	xxx_messageInfo_WriteGroupAzureServiceBusOptions.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_WriteOptsAzureServiceBus proto.InternalMessageInfo
+var xxx_messageInfo_WriteGroupAzureServiceBusOptions proto.InternalMessageInfo
 
-func (m *WriteOptsAzureServiceBus) GetXConn() *args.AzureServiceBusConn {
+func (m *WriteGroupAzureServiceBusOptions) GetXConn() *args.AzureServiceBusConn {
 	if m != nil {
 		return m.XConn
 	}
 	return nil
 }
 
-func (m *WriteOptsAzureServiceBus) GetArgs() *args.AzureServiceBusWriteArgs {
+func (m *WriteGroupAzureServiceBusOptions) GetArgs() *args.AzureServiceBusWriteArgs {
 	if m != nil {
 		return m.Args
 	}
 	return nil
 }
 
-type WriteOptsMQTT struct {
+type WriteGroupMQTTOptions struct {
 	// @gotags: kong:"embed"
 	XConn *args.MQTTConn `protobuf:"bytes,1,opt,name=_conn,json=Conn,proto3" json:"_conn,omitempty" kong:"embed"`
 	// @gotags: kong:"embed"
@@ -913,46 +992,46 @@ type WriteOptsMQTT struct {
 	XXX_sizecache        int32               `json:"-"`
 }
 
-func (m *WriteOptsMQTT) Reset()         { *m = WriteOptsMQTT{} }
-func (m *WriteOptsMQTT) String() string { return proto.CompactTextString(m) }
-func (*WriteOptsMQTT) ProtoMessage()    {}
-func (*WriteOptsMQTT) Descriptor() ([]byte, []int) {
-	return fileDescriptor_469a5ee066df479e, []int{15}
+func (m *WriteGroupMQTTOptions) Reset()         { *m = WriteGroupMQTTOptions{} }
+func (m *WriteGroupMQTTOptions) String() string { return proto.CompactTextString(m) }
+func (*WriteGroupMQTTOptions) ProtoMessage()    {}
+func (*WriteGroupMQTTOptions) Descriptor() ([]byte, []int) {
+	return fileDescriptor_469a5ee066df479e, []int{16}
 }
 
-func (m *WriteOptsMQTT) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_WriteOptsMQTT.Unmarshal(m, b)
+func (m *WriteGroupMQTTOptions) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WriteGroupMQTTOptions.Unmarshal(m, b)
 }
-func (m *WriteOptsMQTT) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_WriteOptsMQTT.Marshal(b, m, deterministic)
+func (m *WriteGroupMQTTOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WriteGroupMQTTOptions.Marshal(b, m, deterministic)
 }
-func (m *WriteOptsMQTT) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WriteOptsMQTT.Merge(m, src)
+func (m *WriteGroupMQTTOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WriteGroupMQTTOptions.Merge(m, src)
 }
-func (m *WriteOptsMQTT) XXX_Size() int {
-	return xxx_messageInfo_WriteOptsMQTT.Size(m)
+func (m *WriteGroupMQTTOptions) XXX_Size() int {
+	return xxx_messageInfo_WriteGroupMQTTOptions.Size(m)
 }
-func (m *WriteOptsMQTT) XXX_DiscardUnknown() {
-	xxx_messageInfo_WriteOptsMQTT.DiscardUnknown(m)
+func (m *WriteGroupMQTTOptions) XXX_DiscardUnknown() {
+	xxx_messageInfo_WriteGroupMQTTOptions.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_WriteOptsMQTT proto.InternalMessageInfo
+var xxx_messageInfo_WriteGroupMQTTOptions proto.InternalMessageInfo
 
-func (m *WriteOptsMQTT) GetXConn() *args.MQTTConn {
+func (m *WriteGroupMQTTOptions) GetXConn() *args.MQTTConn {
 	if m != nil {
 		return m.XConn
 	}
 	return nil
 }
 
-func (m *WriteOptsMQTT) GetArgs() *args.MQTTWriteArgs {
+func (m *WriteGroupMQTTOptions) GetArgs() *args.MQTTWriteArgs {
 	if m != nil {
 		return m.Args
 	}
 	return nil
 }
 
-type WriteOptsGCPPubSub struct {
+type WriteGroupGCPPubSubOptions struct {
 	// @gotags: kong:"embed"
 	XConn *args.GCPPubSubConn `protobuf:"bytes,1,opt,name=_conn,json=Conn,proto3" json:"_conn,omitempty" kong:"embed"`
 	// @gotags: kong:"embed"
@@ -962,46 +1041,46 @@ type WriteOptsGCPPubSub struct {
 	XXX_sizecache        int32                    `json:"-"`
 }
 
-func (m *WriteOptsGCPPubSub) Reset()         { *m = WriteOptsGCPPubSub{} }
-func (m *WriteOptsGCPPubSub) String() string { return proto.CompactTextString(m) }
-func (*WriteOptsGCPPubSub) ProtoMessage()    {}
-func (*WriteOptsGCPPubSub) Descriptor() ([]byte, []int) {
-	return fileDescriptor_469a5ee066df479e, []int{16}
+func (m *WriteGroupGCPPubSubOptions) Reset()         { *m = WriteGroupGCPPubSubOptions{} }
+func (m *WriteGroupGCPPubSubOptions) String() string { return proto.CompactTextString(m) }
+func (*WriteGroupGCPPubSubOptions) ProtoMessage()    {}
+func (*WriteGroupGCPPubSubOptions) Descriptor() ([]byte, []int) {
+	return fileDescriptor_469a5ee066df479e, []int{17}
 }
 
-func (m *WriteOptsGCPPubSub) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_WriteOptsGCPPubSub.Unmarshal(m, b)
+func (m *WriteGroupGCPPubSubOptions) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WriteGroupGCPPubSubOptions.Unmarshal(m, b)
 }
-func (m *WriteOptsGCPPubSub) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_WriteOptsGCPPubSub.Marshal(b, m, deterministic)
+func (m *WriteGroupGCPPubSubOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WriteGroupGCPPubSubOptions.Marshal(b, m, deterministic)
 }
-func (m *WriteOptsGCPPubSub) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WriteOptsGCPPubSub.Merge(m, src)
+func (m *WriteGroupGCPPubSubOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WriteGroupGCPPubSubOptions.Merge(m, src)
 }
-func (m *WriteOptsGCPPubSub) XXX_Size() int {
-	return xxx_messageInfo_WriteOptsGCPPubSub.Size(m)
+func (m *WriteGroupGCPPubSubOptions) XXX_Size() int {
+	return xxx_messageInfo_WriteGroupGCPPubSubOptions.Size(m)
 }
-func (m *WriteOptsGCPPubSub) XXX_DiscardUnknown() {
-	xxx_messageInfo_WriteOptsGCPPubSub.DiscardUnknown(m)
+func (m *WriteGroupGCPPubSubOptions) XXX_DiscardUnknown() {
+	xxx_messageInfo_WriteGroupGCPPubSubOptions.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_WriteOptsGCPPubSub proto.InternalMessageInfo
+var xxx_messageInfo_WriteGroupGCPPubSubOptions proto.InternalMessageInfo
 
-func (m *WriteOptsGCPPubSub) GetXConn() *args.GCPPubSubConn {
+func (m *WriteGroupGCPPubSubOptions) GetXConn() *args.GCPPubSubConn {
 	if m != nil {
 		return m.XConn
 	}
 	return nil
 }
 
-func (m *WriteOptsGCPPubSub) GetArgs() *args.GCPPubSubWriteArgs {
+func (m *WriteGroupGCPPubSubOptions) GetArgs() *args.GCPPubSubWriteArgs {
 	if m != nil {
 		return m.Args
 	}
 	return nil
 }
 
-type WriteOptsKubeMQQueue struct {
+type WriteGroupKubeMQQueueOptions struct {
 	// @gotags: kong:"embed"
 	XConn *args.KubeMQQueueConn `protobuf:"bytes,1,opt,name=_conn,json=Conn,proto3" json:"_conn,omitempty" kong:"embed"`
 	// @gotags: kong:"embed"
@@ -1011,39 +1090,39 @@ type WriteOptsKubeMQQueue struct {
 	XXX_sizecache        int32                      `json:"-"`
 }
 
-func (m *WriteOptsKubeMQQueue) Reset()         { *m = WriteOptsKubeMQQueue{} }
-func (m *WriteOptsKubeMQQueue) String() string { return proto.CompactTextString(m) }
-func (*WriteOptsKubeMQQueue) ProtoMessage()    {}
-func (*WriteOptsKubeMQQueue) Descriptor() ([]byte, []int) {
-	return fileDescriptor_469a5ee066df479e, []int{17}
+func (m *WriteGroupKubeMQQueueOptions) Reset()         { *m = WriteGroupKubeMQQueueOptions{} }
+func (m *WriteGroupKubeMQQueueOptions) String() string { return proto.CompactTextString(m) }
+func (*WriteGroupKubeMQQueueOptions) ProtoMessage()    {}
+func (*WriteGroupKubeMQQueueOptions) Descriptor() ([]byte, []int) {
+	return fileDescriptor_469a5ee066df479e, []int{18}
 }
 
-func (m *WriteOptsKubeMQQueue) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_WriteOptsKubeMQQueue.Unmarshal(m, b)
+func (m *WriteGroupKubeMQQueueOptions) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WriteGroupKubeMQQueueOptions.Unmarshal(m, b)
 }
-func (m *WriteOptsKubeMQQueue) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_WriteOptsKubeMQQueue.Marshal(b, m, deterministic)
+func (m *WriteGroupKubeMQQueueOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WriteGroupKubeMQQueueOptions.Marshal(b, m, deterministic)
 }
-func (m *WriteOptsKubeMQQueue) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_WriteOptsKubeMQQueue.Merge(m, src)
+func (m *WriteGroupKubeMQQueueOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WriteGroupKubeMQQueueOptions.Merge(m, src)
 }
-func (m *WriteOptsKubeMQQueue) XXX_Size() int {
-	return xxx_messageInfo_WriteOptsKubeMQQueue.Size(m)
+func (m *WriteGroupKubeMQQueueOptions) XXX_Size() int {
+	return xxx_messageInfo_WriteGroupKubeMQQueueOptions.Size(m)
 }
-func (m *WriteOptsKubeMQQueue) XXX_DiscardUnknown() {
-	xxx_messageInfo_WriteOptsKubeMQQueue.DiscardUnknown(m)
+func (m *WriteGroupKubeMQQueueOptions) XXX_DiscardUnknown() {
+	xxx_messageInfo_WriteGroupKubeMQQueueOptions.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_WriteOptsKubeMQQueue proto.InternalMessageInfo
+var xxx_messageInfo_WriteGroupKubeMQQueueOptions proto.InternalMessageInfo
 
-func (m *WriteOptsKubeMQQueue) GetXConn() *args.KubeMQQueueConn {
+func (m *WriteGroupKubeMQQueueOptions) GetXConn() *args.KubeMQQueueConn {
 	if m != nil {
 		return m.XConn
 	}
 	return nil
 }
 
-func (m *WriteOptsKubeMQQueue) GetArgs() *args.KubeMQQueueWriteArgs {
+func (m *WriteGroupKubeMQQueueOptions) GetArgs() *args.KubeMQQueueWriteArgs {
 	if m != nil {
 		return m.Args
 	}
@@ -1051,92 +1130,104 @@ func (m *WriteOptsKubeMQQueue) GetArgs() *args.KubeMQQueueWriteArgs {
 }
 
 func init() {
-	proto.RegisterType((*Write)(nil), "protos.opts.Write")
-	proto.RegisterType((*WriteOptsKafka)(nil), "protos.opts.WriteOptsKafka")
-	proto.RegisterType((*WriteOptsActiveMQ)(nil), "protos.opts.WriteOptsActiveMQ")
-	proto.RegisterType((*WriteOptsAWSSQS)(nil), "protos.opts.WriteOptsAWSSQS")
-	proto.RegisterType((*WriteOptsAWSSNS)(nil), "protos.opts.WriteOptsAWSSNS")
-	proto.RegisterType((*WriteOptsNats)(nil), "protos.opts.WriteOptsNats")
-	proto.RegisterType((*WriteOptsNatsStreaming)(nil), "protos.opts.WriteOptsNatsStreaming")
-	proto.RegisterType((*WriteOptsNSQ)(nil), "protos.opts.WriteOptsNSQ")
-	proto.RegisterType((*WriteOptsPulsar)(nil), "protos.opts.WriteOptsPulsar")
-	proto.RegisterType((*WriteOptsRabbit)(nil), "protos.opts.WriteOptsRabbit")
-	proto.RegisterType((*WriteOptsRabbitStreams)(nil), "protos.opts.WriteOptsRabbitStreams")
-	proto.RegisterType((*WriteOptsRedisPubSub)(nil), "protos.opts.WriteOptsRedisPubSub")
-	proto.RegisterType((*WriteOptsRedisStreams)(nil), "protos.opts.WriteOptsRedisStreams")
-	proto.RegisterType((*WriteOptsAzureEventHub)(nil), "protos.opts.WriteOptsAzureEventHub")
-	proto.RegisterType((*WriteOptsAzureServiceBus)(nil), "protos.opts.WriteOptsAzureServiceBus")
-	proto.RegisterType((*WriteOptsMQTT)(nil), "protos.opts.WriteOptsMQTT")
-	proto.RegisterType((*WriteOptsGCPPubSub)(nil), "protos.opts.WriteOptsGCPPubSub")
-	proto.RegisterType((*WriteOptsKubeMQQueue)(nil), "protos.opts.WriteOptsKubeMQQueue")
+	proto.RegisterType((*WriteCLIOptions)(nil), "protos.opts.WriteCLIOptions")
+	proto.RegisterType((*WriteOptions)(nil), "protos.opts.WriteOptions")
+	proto.RegisterType((*WriteGroupKafkaOptions)(nil), "protos.opts.WriteGroupKafkaOptions")
+	proto.RegisterType((*WriteGroupActiveMQOptions)(nil), "protos.opts.WriteGroupActiveMQOptions")
+	proto.RegisterType((*WriteGroupAWSSQSOptions)(nil), "protos.opts.WriteGroupAWSSQSOptions")
+	proto.RegisterType((*WriteGroupAWSSNSOptions)(nil), "protos.opts.WriteGroupAWSSNSOptions")
+	proto.RegisterType((*WriteGroupNatsOptions)(nil), "protos.opts.WriteGroupNatsOptions")
+	proto.RegisterType((*WriteGroupNatsStreamingOptions)(nil), "protos.opts.WriteGroupNatsStreamingOptions")
+	proto.RegisterType((*WriteGroupNSQOptions)(nil), "protos.opts.WriteGroupNSQOptions")
+	proto.RegisterType((*WriteGroupPulsarOptions)(nil), "protos.opts.WriteGroupPulsarOptions")
+	proto.RegisterType((*WriteGroupRabbitOptions)(nil), "protos.opts.WriteGroupRabbitOptions")
+	proto.RegisterType((*WriteGroupRabbitStreamsOptions)(nil), "protos.opts.WriteGroupRabbitStreamsOptions")
+	proto.RegisterType((*WriteGroupRedisPubSubOptions)(nil), "protos.opts.WriteGroupRedisPubSubOptions")
+	proto.RegisterType((*WriteGroupRedisStreamsOptions)(nil), "protos.opts.WriteGroupRedisStreamsOptions")
+	proto.RegisterType((*WriteGroupAzureEventHubOptions)(nil), "protos.opts.WriteGroupAzureEventHubOptions")
+	proto.RegisterType((*WriteGroupAzureServiceBusOptions)(nil), "protos.opts.WriteGroupAzureServiceBusOptions")
+	proto.RegisterType((*WriteGroupMQTTOptions)(nil), "protos.opts.WriteGroupMQTTOptions")
+	proto.RegisterType((*WriteGroupGCPPubSubOptions)(nil), "protos.opts.WriteGroupGCPPubSubOptions")
+	proto.RegisterType((*WriteGroupKubeMQQueueOptions)(nil), "protos.opts.WriteGroupKubeMQQueueOptions")
 }
 
 func init() { proto.RegisterFile("opts/write.proto", fileDescriptor_469a5ee066df479e) }
 
 var fileDescriptor_469a5ee066df479e = []byte{
-	// 1017 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x97, 0x5b, 0x6f, 0xdc, 0x44,
-	0x14, 0xc7, 0xb5, 0x90, 0x44, 0x65, 0xd2, 0x24, 0xcd, 0xd0, 0xb4, 0x93, 0x25, 0xa4, 0xed, 0x56,
-	0x95, 0x80, 0x62, 0x1b, 0x12, 0x0a, 0x2a, 0x48, 0x48, 0x6d, 0x41, 0x45, 0x54, 0x59, 0xb2, 0xb3,
-	0x95, 0x2a, 0xf1, 0xb2, 0xb2, 0x1d, 0xd7, 0x6b, 0x92, 0xf5, 0x6d, 0x3c, 0x89, 0xd4, 0x27, 0x24,
-	0x24, 0x9e, 0xf8, 0x7e, 0x7c, 0x1d, 0x34, 0x17, 0x6f, 0xe6, 0xf8, 0x32, 0x5d, 0x5e, 0xba, 0x9d,
-	0x33, 0xbf, 0xff, 0xf9, 0x9f, 0xf1, 0xd9, 0x39, 0xeb, 0xa0, 0x5b, 0x59, 0x5e, 0x31, 0xef, 0xaa,
-	0x4c, 0xaa, 0xc8, 0xcd, 0xcb, 0xac, 0xca, 0xf0, 0xa6, 0xfc, 0x60, 0xae, 0xd8, 0x18, 0xe2, 0x32,
-	0x0a, 0xb3, 0xf2, 0x8c, 0x79, 0x81, 0xcf, 0x34, 0x30, 0xfc, 0xd8, 0x2f, 0x63, 0xe6, 0xf9, 0x61,
-	0x95, 0x5c, 0x46, 0x8b, 0x42, 0x07, 0x0f, 0x54, 0xf0, 0x1d, 0x2f, 0x23, 0x87, 0x45, 0xe5, 0x65,
-	0x12, 0x46, 0x4e, 0xc0, 0x99, 0xde, 0x1d, 0x1a, 0xbb, 0xd1, 0x65, 0x94, 0x56, 0xce, 0x9c, 0x07,
-	0x7a, 0x0f, 0xab, 0xbd, 0x2b, 0xe6, 0xb0, 0x94, 0xb5, 0x63, 0x45, 0x1d, 0xdb, 0x93, 0xb1, 0x38,
-	0xcc, 0x9d, 0x9c, 0x07, 0x6c, 0x29, 0xbf, 0x25, 0xc3, 0xe7, 0xfe, 0xdb, 0x73, 0x5f, 0x47, 0xee,
-	0xaa, 0x08, 0x0f, 0xa2, 0x45, 0xe1, 0x14, 0x3c, 0xe2, 0x75, 0xe1, 0x3b, 0x72, 0x63, 0x51, 0x54,
-	0x15, 0x08, 0xa4, 0x7e, 0x55, 0x7b, 0xec, 0x2f, 0x03, 0x0e, 0xab, 0xca, 0xc8, 0x5f, 0x24, 0x69,
-	0xac, 0xb7, 0xb6, 0xd5, 0x16, 0xab, 0x0f, 0xbc, 0x2b, 0xd7, 0x39, 0xbf, 0x60, 0x7e, 0x09, 0x42,
-	0xa5, 0x1f, 0x04, 0x49, 0x05, 0x12, 0xaa, 0x90, 0x4e, 0xc9, 0x40, 0x99, 0x65, 0x74, 0x96, 0x30,
-	0x78, 0x22, 0x62, 0x6c, 0x00, 0xc9, 0xe8, 0xdf, 0x1b, 0x68, 0xfd, 0x8d, 0x68, 0x15, 0x76, 0xd0,
-	0x86, 0xea, 0x0c, 0x19, 0xdc, 0x1f, 0x7c, 0xb6, 0x79, 0xb4, 0xe7, 0xea, 0xae, 0xe9, 0x7e, 0xb9,
-	0x12, 0xa3, 0x1a, 0xc2, 0x5f, 0xa3, 0x75, 0xf9, 0x84, 0xc8, 0x99, 0xa4, 0x3f, 0x71, 0x8d, 0x1e,
-	0x2b, 0xf4, 0xb7, 0xbc, 0x62, 0xaf, 0x04, 0x42, 0x15, 0x89, 0xbf, 0x47, 0x37, 0xea, 0x16, 0x93,
-	0x48, 0xaa, 0x0e, 0xbb, 0x55, 0xcf, 0x24, 0x75, 0x32, 0xa1, 0x4b, 0x1e, 0x7f, 0x83, 0x36, 0xfc,
-	0x2b, 0xc6, 0x0a, 0x46, 0xde, 0x4a, 0xe5, 0x41, 0x8f, 0xf2, 0xcd, 0x74, 0x3a, 0x99, 0x52, 0xcd,
-	0xd6, 0xaa, 0x94, 0x91, 0xf8, 0x7d, 0xaa, 0xb1, 0x56, 0xa5, 0x0c, 0xbb, 0x68, 0x4d, 0xf4, 0x8b,
-	0xcc, 0xa5, 0x66, 0xd8, 0xad, 0x19, 0xfb, 0x15, 0xa3, 0x92, 0xc3, 0xbf, 0xa2, 0x6d, 0xf1, 0x39,
-	0x5b, 0xf6, 0x97, 0x24, 0x52, 0xf9, 0xb0, 0x5f, 0x39, 0xad, 0x51, 0xba, 0x95, 0x9a, 0x4b, 0xfc,
-	0x18, 0x7d, 0x98, 0xb2, 0x82, 0xfc, 0x21, 0x13, 0xec, 0xf7, 0x24, 0x98, 0x4e, 0xa8, 0xa0, 0xc4,
-	0xf1, 0xd4, 0xb7, 0x85, 0x9c, 0xdb, 0x8e, 0x77, 0x2a, 0x19, 0xaa, 0x59, 0xa1, 0x52, 0xdf, 0x1e,
-	0x72, 0x61, 0x53, 0x51, 0xc9, 0x50, 0xcd, 0x8a, 0x43, 0xaa, 0xff, 0xe9, 0x63, 0x32, 0xb2, 0xb0,
-	0x1d, 0x52, 0xa9, 0xd5, 0xb9, 0x18, 0xdd, 0x2a, 0xcd, 0xa5, 0x78, 0xc0, 0xe2, 0xca, 0x90, 0xd4,
-	0xf6, 0x80, 0x4f, 0x26, 0xaf, 0x5f, 0x53, 0xc9, 0xe1, 0x09, 0xda, 0x95, 0x17, 0x7d, 0xa6, 0xc7,
-	0xc0, 0x2c, 0xe0, 0x8c, 0x64, 0x52, 0xfc, 0xa8, 0xa7, 0xa3, 0x02, 0x9f, 0x2a, 0xfa, 0x39, 0x67,
-	0x74, 0xc7, 0x87, 0x01, 0xfc, 0x0a, 0xa9, 0xd0, 0x4c, 0xce, 0x8e, 0xd9, 0x9c, 0x07, 0x24, 0xb7,
-	0x9d, 0x47, 0x26, 0xfc, 0x59, 0xb0, 0xbf, 0xf0, 0x80, 0x6e, 0xf9, 0xe6, 0x12, 0xff, 0x88, 0x50,
-	0x1c, 0xe6, 0x33, 0x75, 0xe5, 0x48, 0x21, 0xf3, 0xdc, 0xeb, 0xce, 0xf3, 0xf2, 0xc5, 0xe9, 0x29,
-	0x0f, 0xa6, 0x3c, 0xa0, 0x1f, 0xc5, 0x61, 0x7e, 0x2a, 0x15, 0xf8, 0x27, 0x74, 0x53, 0xcd, 0x96,
-	0x99, 0x9c, 0x2d, 0xa4, 0x94, 0x19, 0x1e, 0xf4, 0x5c, 0x29, 0x1e, 0x44, 0x27, 0x93, 0x89, 0x00,
-	0xe9, 0xa6, 0x92, 0xc9, 0x85, 0xc8, 0x22, 0x6f, 0x78, 0x5d, 0x07, 0xb3, 0x65, 0xa1, 0x82, 0xd4,
-	0x95, 0x6c, 0x96, 0x7a, 0x21, 0x6a, 0x79, 0x89, 0xb6, 0x54, 0x96, 0xba, 0xcd, 0x95, 0x4c, 0x33,
-	0xb2, 0xa4, 0xa9, 0xbb, 0xac, 0xec, 0xf5, 0x6a, 0x94, 0xa2, 0x6d, 0x38, 0x06, 0xf0, 0x63, 0xb4,
-	0x3e, 0x0b, 0xb3, 0x34, 0xd5, 0x03, 0xe6, 0x4e, 0x9d, 0x52, 0x0c, 0x27, 0x57, 0x22, 0x2f, 0xb2,
-	0x34, 0xa5, 0x6b, 0xe2, 0x5f, 0xec, 0xa1, 0x35, 0x11, 0x27, 0x1f, 0xc0, 0xf1, 0x72, 0xcd, 0xca,
-	0xe4, 0xcf, 0xca, 0x98, 0x51, 0x09, 0x8e, 0xae, 0xd0, 0x6e, 0x6b, 0x80, 0x60, 0x17, 0x5a, 0xee,
-	0x83, 0x34, 0x35, 0x65, 0xb8, 0x1e, 0x01, 0xd7, 0xc3, 0x4e, 0xbc, 0x69, 0x5c, 0xa0, 0x9d, 0xc6,
-	0xfc, 0xc1, 0x5f, 0x42, 0xdb, 0xbb, 0x30, 0x8f, 0x64, 0x0c, 0xd3, 0xaf, 0x80, 0xe9, 0x41, 0x07,
-	0xfc, 0x3e, 0xcb, 0xf1, 0x0a, 0x96, 0xe3, 0xff, 0x63, 0x39, 0x6e, 0x59, 0x9e, 0xa3, 0x2d, 0x30,
-	0xc1, 0xf0, 0x17, 0xd0, 0x70, 0x0f, 0xe4, 0x10, 0x84, 0x61, 0xe7, 0x02, 0xbb, 0x61, 0x0b, 0x6d,
-	0x9a, 0xfd, 0x3d, 0x40, 0x77, 0xba, 0xe7, 0x25, 0x3e, 0x86, 0xb6, 0x87, 0xad, 0x5c, 0x4b, 0xd4,
-	0xf0, 0xff, 0x0e, 0xf8, 0x3f, 0xec, 0xd7, 0x34, 0x0b, 0x99, 0xa3, 0x9b, 0xe6, 0xd8, 0xc5, 0x9f,
-	0x43, 0xf7, 0xdb, 0x30, 0xd3, 0xd4, 0xfc, 0x2a, 0x39, 0xc0, 0x73, 0xbf, 0x49, 0xda, 0x5a, 0xaa,
-	0x06, 0xb6, 0xbd, 0xa5, 0x8a, 0x59, 0xb1, 0xa5, 0x0a, 0xb6, 0x59, 0xaa, 0x79, 0x6d, 0xb7, 0x54,
-	0xcc, 0x8a, 0x96, 0x0a, 0xb6, 0x36, 0x16, 0xfc, 0x46, 0xd8, 0x1b, 0x0b, 0xd0, 0x15, 0x1b, 0x0b,
-	0x34, 0xcd, 0x42, 0xfe, 0x1c, 0xa0, 0xdb, 0x5d, 0xc3, 0x50, 0xbc, 0xd7, 0x98, 0x65, 0x34, 0x0e,
-	0x75, 0x0d, 0x1a, 0x45, 0x3c, 0x01, 0x45, 0x3c, 0xe8, 0x53, 0x34, 0x4b, 0xf8, 0x6b, 0x80, 0xf6,
-	0x3a, 0x07, 0x29, 0x3e, 0x82, 0x35, 0x7c, 0xda, 0xce, 0xd8, 0x7e, 0x12, 0xdf, 0x82, 0x22, 0x46,
-	0xbd, 0x12, 0x6b, 0x47, 0xc0, 0xaf, 0x9c, 0xbd, 0x23, 0x00, 0x5d, 0xb1, 0x23, 0x40, 0xd3, 0x2c,
-	0xe4, 0x9f, 0x01, 0x22, 0x7d, 0xbf, 0xdf, 0xf8, 0x09, 0x2c, 0xe5, 0x7e, 0x3b, 0xed, 0x35, 0x6c,
-	0x14, 0xf3, 0x14, 0x14, 0xf3, 0xc8, 0xa6, 0xb2, 0xcd, 0x3b, 0xf1, 0x2a, 0x62, 0x9f, 0x77, 0x82,
-	0x58, 0x71, 0xde, 0x09, 0xb4, 0x69, 0xf6, 0x0e, 0xe1, 0xf6, 0x1b, 0x02, 0xf6, 0xa0, 0x23, 0x4c,
-	0xb3, 0xc4, 0x0c, 0xdb, 0x63, 0x60, 0x7b, 0xaf, 0x9b, 0xb7, 0xde, 0x04, 0xe3, 0xe5, 0xc2, 0x7e,
-	0x13, 0x0c, 0x70, 0xc5, 0x9b, 0x60, 0x28, 0x1a, 0x25, 0x3c, 0xff, 0xe1, 0xf7, 0xa7, 0x71, 0x52,
-	0x89, 0xbf, 0xdf, 0xc2, 0x6c, 0xe1, 0x05, 0x7e, 0x15, 0xce, 0xc3, 0xac, 0xcc, 0xbd, 0xfc, 0x82,
-	0x2f, 0x82, 0xa8, 0x74, 0x58, 0x38, 0x8f, 0x16, 0x3e, 0xf3, 0x02, 0x9e, 0x5c, 0x9c, 0x79, 0x71,
-	0xe6, 0xa9, 0xbc, 0x9e, 0x78, 0x17, 0x09, 0x36, 0xe4, 0xe2, 0xf8, 0xbf, 0x00, 0x00, 0x00, 0xff,
-	0xff, 0xa1, 0x1a, 0xc0, 0x28, 0x77, 0x0e, 0x00, 0x00,
+	// 1188 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x57, 0x5b, 0x4f, 0xdc, 0x46,
+	0x14, 0xd6, 0x36, 0x84, 0x86, 0x59, 0x6e, 0x99, 0x04, 0x30, 0x14, 0x28, 0x59, 0x7a, 0xc9, 0xa5,
+	0xb6, 0x5b, 0x50, 0x52, 0xa1, 0x56, 0xaa, 0x00, 0x91, 0x34, 0x6d, 0x20, 0xe0, 0x8d, 0x14, 0xb5,
+	0x2f, 0x96, 0xed, 0x1d, 0x76, 0x1d, 0x76, 0x6d, 0xef, 0x8c, 0x0d, 0x4a, 0x5f, 0x2a, 0xf5, 0xa9,
+	0x52, 0xa5, 0x3e, 0xf5, 0xa5, 0xff, 0xb0, 0x3f, 0xa3, 0x9a, 0x33, 0x1e, 0xe3, 0xf1, 0xae, 0x87,
+	0xcd, 0x4b, 0x36, 0x3e, 0xe7, 0xbb, 0x9c, 0x99, 0x33, 0x73, 0x6c, 0xd0, 0x62, 0x9c, 0xa4, 0xcc,
+	0xbe, 0xa2, 0x61, 0x4a, 0xac, 0x84, 0xc6, 0x69, 0x8c, 0x9b, 0xf0, 0xc3, 0x2c, 0x9e, 0x58, 0xc3,
+	0x94, 0x04, 0x31, 0xed, 0x30, 0xdb, 0xf7, 0x58, 0x0e, 0x58, 0xbb, 0xe7, 0xd1, 0x2e, 0xb3, 0xbd,
+	0x20, 0x0d, 0x2f, 0xc9, 0x60, 0x98, 0x07, 0xd7, 0x45, 0xf0, 0xb7, 0x8c, 0x12, 0x93, 0x11, 0x7a,
+	0x19, 0x06, 0xc4, 0xf4, 0x33, 0x96, 0x67, 0xd7, 0x4a, 0x59, 0x72, 0x49, 0xa2, 0xd4, 0xec, 0x65,
+	0x7e, 0x9e, 0xc3, 0x22, 0x77, 0xc5, 0x4c, 0x16, 0xb1, 0xd1, 0xd8, 0x50, 0xc6, 0x96, 0x20, 0xd6,
+	0x0d, 0x12, 0x33, 0xc9, 0x7c, 0x56, 0xd0, 0x17, 0x21, 0x7c, 0xe1, 0x9d, 0x5f, 0x78, 0x79, 0x64,
+	0x45, 0x44, 0x32, 0x9f, 0x0c, 0x86, 0xe6, 0x30, 0x23, 0x99, 0x2c, 0x7c, 0x01, 0x12, 0x83, 0x61,
+	0x9a, 0x2a, 0x81, 0xc8, 0x4b, 0xa5, 0xc7, 0x6a, 0x11, 0x30, 0x59, 0x4a, 0x89, 0x37, 0x08, 0xa3,
+	0x6e, 0x9e, 0x9a, 0x17, 0x29, 0x26, 0x17, 0x7c, 0x17, 0x9e, 0x93, 0xac, 0xcf, 0x3c, 0xaa, 0x84,
+	0xa8, 0xe7, 0xfb, 0x61, 0xaa, 0x08, 0x8a, 0x50, 0x2e, 0xc9, 0x94, 0x32, 0x29, 0xe9, 0x84, 0x4c,
+	0x5d, 0x91, 0x51, 0x4a, 0xa8, 0x94, 0x65, 0x12, 0x05, 0x71, 0x27, 0x8c, 0xba, 0x76, 0x9c, 0xa4,
+	0x61, 0x2c, 0xb7, 0xab, 0xe5, 0xa2, 0x85, 0xb7, 0xbc, 0x83, 0x87, 0xaf, 0x5e, 0xbe, 0x16, 0x09,
+	0xbc, 0x81, 0x50, 0x18, 0x25, 0x59, 0xea, 0x9e, 0x87, 0x7d, 0x62, 0x34, 0xb6, 0x1a, 0x0f, 0x67,
+	0x9c, 0x19, 0x88, 0x3c, 0x0f, 0xfb, 0x04, 0x9b, 0xe8, 0x9e, 0x48, 0x7b, 0xcc, 0x7d, 0xc7, 0xe2,
+	0xc8, 0xf5, 0x28, 0xf5, 0xde, 0x1b, 0x1f, 0x6d, 0x35, 0x1e, 0xde, 0x71, 0x16, 0x21, 0xb5, 0xcf,
+	0x7e, 0x62, 0x71, 0xb4, 0xcf, 0xe3, 0xad, 0x7f, 0x9b, 0x68, 0x16, 0x1c, 0xa4, 0xfc, 0x36, 0x9a,
+	0x0b, 0xe2, 0x28, 0x22, 0x01, 0x7f, 0x74, 0xc3, 0x4e, 0xee, 0x30, 0x7b, 0x1d, 0x7c, 0xd9, 0xc1,
+	0xbb, 0x68, 0x5a, 0x1c, 0x1f, 0xd0, 0x6d, 0xee, 0x7c, 0x62, 0xe5, 0x47, 0x2b, 0x3f, 0x54, 0x16,
+	0x48, 0x3a, 0xf0, 0xe0, 0xe4, 0x50, 0x7c, 0x84, 0xe6, 0x61, 0x95, 0xc4, 0xcd, 0xd7, 0x68, 0xdc,
+	0x02, 0xf2, 0xa6, 0x24, 0xcb, 0x3d, 0xb0, 0x8e, 0x00, 0x96, 0x57, 0xe4, 0xcc, 0x91, 0xf2, 0x23,
+	0xfe, 0x01, 0xcd, 0xba, 0x41, 0x3f, 0x2c, 0x44, 0xfe, 0xfb, 0x18, 0x54, 0xd6, 0xad, 0xd2, 0xe9,
+	0xb6, 0x2a, 0x9b, 0xe6, 0xa0, 0xc3, 0x7e, 0x28, 0x05, 0xf6, 0xd0, 0x6d, 0x38, 0x54, 0x46, 0x07,
+	0x88, 0xdb, 0xa3, 0xc4, 0x17, 0x34, 0xce, 0x92, 0x9f, 0x39, 0x46, 0xf2, 0x05, 0x03, 0x1f, 0xa0,
+	0x3b, 0xf2, 0x76, 0x18, 0x04, 0xd8, 0x5f, 0xd4, 0xb0, 0xf7, 0x01, 0x76, 0x7c, 0x26, 0x05, 0x0a,
+	0x1e, 0xfe, 0x1e, 0x4d, 0x7b, 0x57, 0x8c, 0x0d, 0x99, 0x71, 0x0e, 0x0a, 0x9f, 0xd5, 0x29, 0xbc,
+	0x6d, 0xb7, 0xcf, 0xda, 0x92, 0x9f, 0x73, 0x24, 0x3b, 0x62, 0x46, 0xf7, 0x46, 0xf6, 0x89, 0xca,
+	0x8e, 0x18, 0x7e, 0x86, 0xa6, 0xf8, 0x15, 0x30, 0x7a, 0xc0, 0x6d, 0xd5, 0x70, 0x4f, 0xbc, 0x94,
+	0x49, 0x26, 0xe0, 0xb1, 0x83, 0xe6, 0xf9, 0xaf, 0x5b, 0x5c, 0x1d, 0x23, 0x04, 0x85, 0x27, 0x1a,
+	0x85, 0xb6, 0xc4, 0x16, 0x7d, 0x8c, 0xca, 0x51, 0xbc, 0x8b, 0x6e, 0x45, 0x6c, 0x68, 0xbc, 0x03,
+	0xa1, 0x07, 0x75, 0x42, 0xed, 0x62, 0x07, 0x39, 0x9a, 0x2f, 0x5f, 0x5c, 0x4c, 0xe3, 0x42, 0xbb,
+	0xfc, 0x53, 0x00, 0x15, 0xcb, 0x17, 0x1c, 0xce, 0x16, 0x17, 0xd6, 0xe8, 0x6b, 0xd9, 0x0e, 0x80,
+	0x0a, 0xb6, 0xe0, 0xf0, 0x4d, 0x10, 0xff, 0xcb, 0xb7, 0x81, 0x19, 0x03, 0xed, 0x26, 0x08, 0x15,
+	0xb1, 0xe0, 0x62, 0x3f, 0xe7, 0x68, 0x39, 0xca, 0x1b, 0xc2, 0xa7, 0x96, 0x11, 0x69, 0x1b, 0x72,
+	0x7c, 0xf6, 0xe6, 0x4d, 0xd1, 0x10, 0x8e, 0xc7, 0xbf, 0xa0, 0xbb, 0x30, 0x73, 0xdd, 0x7c, 0x22,
+	0xbb, 0x7e, 0xc6, 0x8c, 0x18, 0x44, 0xcc, 0xba, 0x13, 0xc1, 0xf1, 0x6d, 0x01, 0x3f, 0xc8, 0x8a,
+	0x82, 0x16, 0x3c, 0x35, 0x8e, 0xdb, 0x48, 0x84, 0x5c, 0x18, 0xe7, 0x6e, 0x2f, 0xf3, 0x8d, 0x44,
+	0xbb, 0x4e, 0x10, 0x3e, 0xe2, 0xe0, 0x1f, 0x33, 0xbf, 0x58, 0xa7, 0x57, 0x8e, 0xe2, 0xe7, 0x08,
+	0x75, 0x83, 0xc4, 0x15, 0xd3, 0xd0, 0x18, 0x82, 0xde, 0x97, 0x35, 0x7a, 0x2f, 0x0e, 0x4f, 0x4f,
+	0x33, 0xbf, 0x7d, 0xad, 0x35, 0xd3, 0x0d, 0x92, 0x53, 0x60, 0xe2, 0x57, 0x68, 0x56, 0x8c, 0x7f,
+	0x17, 0xc6, 0xbf, 0x41, 0x41, 0xe9, 0x51, 0xdd, 0x15, 0xce, 0x7c, 0x72, 0x7c, 0x76, 0xc6, 0x91,
+	0x52, 0xab, 0x29, 0xe8, 0x10, 0xe3, 0x6a, 0x30, 0x8c, 0x65, 0x5d, 0x4c, 0xab, 0xe6, 0x70, 0xa8,
+	0x5a, 0x59, 0x93, 0xe6, 0x31, 0x5e, 0xdb, 0x6b, 0x34, 0x27, 0xd4, 0xe4, 0xf1, 0x48, 0x41, 0xee,
+	0xb1, 0x4e, 0xae, 0x72, 0x3a, 0x44, 0x39, 0x79, 0xb0, 0x75, 0x89, 0x96, 0xc7, 0x8f, 0x23, 0xfc,
+	0x04, 0xdd, 0x76, 0xf9, 0x40, 0x86, 0xe1, 0xdc, 0xdc, 0x59, 0x96, 0x16, 0xfc, 0xfd, 0x62, 0x01,
+	0xf2, 0x30, 0x8e, 0x22, 0x67, 0x8a, 0xff, 0x8b, 0x6d, 0x34, 0xc5, 0xe3, 0xd5, 0x51, 0x7d, 0x8d,
+	0x05, 0x93, 0x7d, 0xda, 0x65, 0x0e, 0x00, 0x5b, 0xbf, 0xa3, 0xd5, 0xda, 0x41, 0x86, 0x2d, 0xd5,
+	0x7a, 0x55, 0x91, 0x93, 0xe0, 0x92, 0xfb, 0x8e, 0xe2, 0xbe, 0x39, 0x16, 0x5e, 0x2d, 0xe0, 0x3d,
+	0x5a, 0xa9, 0x99, 0x83, 0xf8, 0x2b, 0xd5, 0x7e, 0x45, 0xd5, 0x03, 0x68, 0xc9, 0xfc, 0x6b, 0xc5,
+	0x7c, 0x7d, 0x0c, 0xf8, 0x46, 0xeb, 0x93, 0xc9, 0xad, 0x4f, 0x3e, 0xc4, 0xfa, 0x64, 0xc4, 0x9a,
+	0xa1, 0xa5, 0xb1, 0x33, 0x18, 0x3f, 0x56, 0x8d, 0x97, 0x14, 0x2d, 0x0e, 0x2c, 0xd9, 0x5a, 0x8a,
+	0xed, 0xda, 0x08, 0xb4, 0x6a, 0xfa, 0x77, 0x03, 0x6d, 0xea, 0xe7, 0x36, 0xde, 0x55, 0xed, 0x37,
+	0x47, 0x34, 0x0b, 0x46, 0xa9, 0x8e, 0x6f, 0x95, 0x3a, 0xb6, 0xeb, 0x39, 0xd5, 0x82, 0x12, 0x74,
+	0x7f, 0xdc, 0xf8, 0xc7, 0x8f, 0xd4, 0x2a, 0xee, 0xab, 0x8a, 0xed, 0xf2, 0x91, 0x33, 0x15, 0xef,
+	0xd5, 0x2a, 0x52, 0xdb, 0x72, 0xe5, 0xc5, 0xa1, 0x6f, 0xb9, 0x80, 0x4e, 0xd8, 0x72, 0x01, 0xd6,
+	0x5a, 0x2b, 0x6f, 0x1d, 0xbd, 0xb5, 0x80, 0x4e, 0x68, 0x2d, 0xc0, 0xfa, 0xc6, 0x8f, 0x7b, 0x57,
+	0xe9, 0x1b, 0xaf, 0x30, 0x26, 0x6c, 0xbc, 0xc2, 0xa9, 0x16, 0xf4, 0x67, 0x03, 0xad, 0xeb, 0x86,
+	0x2d, 0xfe, 0x46, 0x2d, 0xa7, 0xb2, 0xc8, 0x6b, 0x7c, 0xa9, 0x98, 0xa7, 0x4a, 0x31, 0x0f, 0xea,
+	0x18, 0xd5, 0x52, 0xfe, 0x6a, 0xa0, 0x0d, 0xed, 0xa0, 0xc6, 0x3b, 0x6a, 0x2d, 0x1b, 0xa3, 0xca,
+	0xa3, 0x3b, 0xf3, 0x4c, 0x29, 0xa6, 0x55, 0x4b, 0xd1, 0x77, 0x6a, 0xdc, 0xdb, 0x56, 0xdf, 0x29,
+	0x85, 0x31, 0x61, 0xa7, 0x14, 0x4e, 0xb5, 0xa0, 0x7f, 0x1a, 0x68, 0xeb, 0xa6, 0xef, 0x0a, 0xfc,
+	0x54, 0x2d, 0x69, 0x6b, 0x54, 0xfe, 0x9a, 0x53, 0x2a, 0x6a, 0x4f, 0x29, 0xea, 0x73, 0x1d, 0x4b,
+	0x3b, 0x3f, 0x4b, 0x9f, 0x4c, 0xfa, 0xf9, 0xc9, 0x81, 0x13, 0xce, 0x4f, 0x0e, 0xad, 0x9a, 0xfe,
+	0xd1, 0x40, 0x6b, 0xf5, 0x9f, 0x2e, 0xd8, 0x56, 0xad, 0x55, 0xbd, 0x02, 0x5d, 0xf2, 0xdf, 0x55,
+	0xfc, 0x3f, 0x1d, 0x8f, 0xd7, 0x5f, 0x9d, 0xd1, 0xaf, 0x1e, 0xfd, 0xd5, 0x29, 0xe1, 0x27, 0xbc,
+	0x3a, 0x25, 0x46, 0xa5, 0x94, 0x83, 0xef, 0x7e, 0xdd, 0xeb, 0x86, 0x69, 0x2f, 0xf3, 0xad, 0x20,
+	0x1e, 0xd8, 0xbe, 0x97, 0x06, 0xbd, 0x20, 0xa6, 0x89, 0x9d, 0xf4, 0xb3, 0x81, 0x4f, 0xa8, 0xc9,
+	0x82, 0x1e, 0x19, 0x78, 0xcc, 0xf6, 0xb3, 0xb0, 0xdf, 0xb1, 0xbb, 0xb1, 0x2d, 0x74, 0xf9, 0x9f,
+	0xbd, 0xcc, 0x9f, 0x86, 0x87, 0xdd, 0xff, 0x03, 0x00, 0x00, 0xff, 0xff, 0x76, 0x17, 0xf7, 0x00,
+	0xbb, 0x10, 0x00, 0x00,
 }

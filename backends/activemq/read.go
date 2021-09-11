@@ -4,18 +4,20 @@ import (
 	"context"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/types"
 	"github.com/go-stomp/stomp/v3"
 	"github.com/pkg/errors"
 )
 
-func (a *ActiveMq) Read(ctx context.Context, resultsCh chan *types.ReadMessage, errorCh chan *types.ErrorMessage) error {
-	if err := validateReadOptions(a.ConnectionConfig); err != nil {
+func (a *ActiveMq) Read(ctx context.Context, cfg *protos.ReadConfig, resultsCh chan *records.Read, errorCh chan *records.Error) error {
+	if err := validateReadConfig(cfg); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	client, err := newConn(ctx, a.ConnectionConfig)
+	client, err := newConn(ctx, a.connArgs)
 	if err != nil {
 		return errors.Wrap(err, "unable to establish new connection")
 	}
@@ -59,7 +61,7 @@ MAIN:
 			break MAIN
 		}
 
-		if !a.ConnectionConfig.Read.Follow {
+		if !a.baseConnConfig.Read.Follow {
 			return nil
 		}
 
@@ -71,7 +73,7 @@ MAIN:
 	return nil
 }
 
-func validateReadOptions(opts *options.Options) error {
+func validateReadConfig(opts *options.Options) error {
 	if opts.ActiveMq.Topic != "" && opts.ActiveMq.Queue != "" {
 		return errors.New("you may only specify a \"topic\" or a \"queue\" not both")
 	}

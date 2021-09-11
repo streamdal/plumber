@@ -22,181 +22,6 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-type CLIRelayConfig struct {
-	// @gotags: kong:"help='What address to bind the built-in HTTP server to',default='http://localhost:9191'"
-	HttpListenAddress    string   `protobuf:"bytes,1,opt,name=http_listen_address,json=httpListenAddress,proto3" json:"http_listen_address,omitempty" kong:"help='What address to bind the built-in HTTP server to',default='http://localhost:9191'"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *CLIRelayConfig) Reset()         { *m = CLIRelayConfig{} }
-func (m *CLIRelayConfig) String() string { return proto.CompactTextString(m) }
-func (*CLIRelayConfig) ProtoMessage()    {}
-func (*CLIRelayConfig) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{0}
-}
-
-func (m *CLIRelayConfig) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CLIRelayConfig.Unmarshal(m, b)
-}
-func (m *CLIRelayConfig) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CLIRelayConfig.Marshal(b, m, deterministic)
-}
-func (m *CLIRelayConfig) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CLIRelayConfig.Merge(m, src)
-}
-func (m *CLIRelayConfig) XXX_Size() int {
-	return xxx_messageInfo_CLIRelayConfig.Size(m)
-}
-func (m *CLIRelayConfig) XXX_DiscardUnknown() {
-	xxx_messageInfo_CLIRelayConfig.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CLIRelayConfig proto.InternalMessageInfo
-
-func (m *CLIRelayConfig) GetHttpListenAddress() string {
-	if m != nil {
-		return m.HttpListenAddress
-	}
-	return ""
-}
-
-type RelayConfig struct {
-	// @gotags: kong:"help='Secret collection token',name=token,required"
-	CollectionToken string `protobuf:"bytes,1,opt,name=collection_token,json=collectionToken,proto3" json:"collection_token,omitempty" kong:"help='Secret collection token',name=token,required"`
-	// @gotags: kong:"help='How many messages to send in a single batch',default=1000"
-	BatchSize int32 `protobuf:"varint,2,opt,name=batch_size,json=batchSize,proto3" json:"batch_size,omitempty" kong:"help='How many messages to send in a single batch',default=1000"`
-	// @gotags: kong:"help='How many times plumber will try re-sending a batch',default=3"
-	BatchMaxRetry int32 `protobuf:"varint,3,opt,name=batch_max_retry,json=batchMaxRetry,proto3" json:"batch_max_retry,omitempty" kong:"help='How many times plumber will try re-sending a batch',default=3"`
-	// Required for desktop; ignored in CLI.
-	// @gotags: kong:"-"
-	ConnectionId string `protobuf:"bytes,4,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty" kong:"-"`
-	// @gotags: kong:"name='How many workers to launch per relay',default=10"
-	NumWorkers int32 `protobuf:"varint,5,opt,name=num_workers,json=numWorkers,proto3" json:"num_workers,omitempty" kong:"name='How many workers to launch per relay',default=10"`
-	// @gotags: kong:"help='Alternative collector to relay events to',name='grpc-address',default='grpc-collector.batch.sh:9000'"
-	XBatchshGrpcAddress string `protobuf:"bytes,6,opt,name=_batchsh_grpc_address,json=BatchshGrpcAddress,proto3" json:"_batchsh_grpc_address,omitempty" kong:"help='Alternative collector to relay events to',name='grpc-address',default='grpc-collector.batch.sh:9000'"`
-	// @gotags: kong:"help='Whether to use TLS with collector',name=grpc-disable-tls,default=true"
-	XBatchshGrpcDisableTls bool `protobuf:"varint,7,opt,name=_batchsh_grpc_disable_tls,json=BatchshGrpcDisableTls,proto3" json:"_batchsh_grpc_disable_tls,omitempty" kong:"help='Whether to use TLS with collector',name=grpc-disable-tls,default=true"`
-	// @gotags: kong:"help='How long to wait before giving up talking to the gRPC collector',name='grpc-timeout-seconds'"
-	XBatchshGrpcTimeoutSeconds int32 `protobuf:"varint,8,opt,name=_batchsh_grpc_timeout_seconds,json=BatchshGrpcTimeoutSeconds,proto3" json:"_batchsh_grpc_timeout_seconds,omitempty" kong:"help='How long to wait before giving up talking to the gRPC collector',name='grpc-timeout-seconds'"`
-	// Any extra opts that can differ between relays (same as reads).
-	// NOTE: Desktop can leave conn unset - an existing connection will be used
-	// by looking up connection_id.
-	// @gotags: kong:"embed"
-	RelayOpts *opts.Relay `protobuf:"bytes,9,opt,name=relay_opts,json=relayOpts,proto3" json:"relay_opts,omitempty" kong:"embed"`
-	// ID of the created relay entry; populated by plumber.
-	// @gotags: kong:"-"
-	XRelayId string `protobuf:"bytes,10,opt,name=_relay_id,json=RelayId,proto3" json:"_relay_id,omitempty" kong:"-"`
-	// @gotags: kong:"embed"
-	XCliConfig           *CLIRelayConfig `protobuf:"bytes,11,opt,name=_cli_config,json=CliConfig,proto3" json:"_cli_config,omitempty" kong:"embed"`
-	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
-	XXX_unrecognized     []byte          `json:"-"`
-	XXX_sizecache        int32           `json:"-"`
-}
-
-func (m *RelayConfig) Reset()         { *m = RelayConfig{} }
-func (m *RelayConfig) String() string { return proto.CompactTextString(m) }
-func (*RelayConfig) ProtoMessage()    {}
-func (*RelayConfig) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{1}
-}
-
-func (m *RelayConfig) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_RelayConfig.Unmarshal(m, b)
-}
-func (m *RelayConfig) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_RelayConfig.Marshal(b, m, deterministic)
-}
-func (m *RelayConfig) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_RelayConfig.Merge(m, src)
-}
-func (m *RelayConfig) XXX_Size() int {
-	return xxx_messageInfo_RelayConfig.Size(m)
-}
-func (m *RelayConfig) XXX_DiscardUnknown() {
-	xxx_messageInfo_RelayConfig.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_RelayConfig proto.InternalMessageInfo
-
-func (m *RelayConfig) GetCollectionToken() string {
-	if m != nil {
-		return m.CollectionToken
-	}
-	return ""
-}
-
-func (m *RelayConfig) GetBatchSize() int32 {
-	if m != nil {
-		return m.BatchSize
-	}
-	return 0
-}
-
-func (m *RelayConfig) GetBatchMaxRetry() int32 {
-	if m != nil {
-		return m.BatchMaxRetry
-	}
-	return 0
-}
-
-func (m *RelayConfig) GetConnectionId() string {
-	if m != nil {
-		return m.ConnectionId
-	}
-	return ""
-}
-
-func (m *RelayConfig) GetNumWorkers() int32 {
-	if m != nil {
-		return m.NumWorkers
-	}
-	return 0
-}
-
-func (m *RelayConfig) GetXBatchshGrpcAddress() string {
-	if m != nil {
-		return m.XBatchshGrpcAddress
-	}
-	return ""
-}
-
-func (m *RelayConfig) GetXBatchshGrpcDisableTls() bool {
-	if m != nil {
-		return m.XBatchshGrpcDisableTls
-	}
-	return false
-}
-
-func (m *RelayConfig) GetXBatchshGrpcTimeoutSeconds() int32 {
-	if m != nil {
-		return m.XBatchshGrpcTimeoutSeconds
-	}
-	return 0
-}
-
-func (m *RelayConfig) GetRelayOpts() *opts.Relay {
-	if m != nil {
-		return m.RelayOpts
-	}
-	return nil
-}
-
-func (m *RelayConfig) GetXRelayId() string {
-	if m != nil {
-		return m.XRelayId
-	}
-	return ""
-}
-
-func (m *RelayConfig) GetXCliConfig() *CLIRelayConfig {
-	if m != nil {
-		return m.XCliConfig
-	}
-	return nil
-}
-
 type GetAllRelaysRequest struct {
 	// Every gRPC request must have a valid auth config
 	Auth                 *common.Auth `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
@@ -209,7 +34,7 @@ func (m *GetAllRelaysRequest) Reset()         { *m = GetAllRelaysRequest{} }
 func (m *GetAllRelaysRequest) String() string { return proto.CompactTextString(m) }
 func (*GetAllRelaysRequest) ProtoMessage()    {}
 func (*GetAllRelaysRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{2}
+	return fileDescriptor_9f69a7d5a802d584, []int{0}
 }
 
 func (m *GetAllRelaysRequest) XXX_Unmarshal(b []byte) error {
@@ -240,17 +65,17 @@ func (m *GetAllRelaysRequest) GetAuth() *common.Auth {
 type GetAllRelaysResponse struct {
 	Status *common.Status `protobuf:"bytes,1000,opt,name=status,proto3" json:"status,omitempty"`
 	// Will be set as empty []Relay if no relays are configured
-	Configs              []*RelayConfig `protobuf:"bytes,1,rep,name=configs,proto3" json:"configs,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
-	XXX_unrecognized     []byte         `json:"-"`
-	XXX_sizecache        int32          `json:"-"`
+	Opts                 []*opts.RelayOptions `protobuf:"bytes,1,rep,name=opts,proto3" json:"opts,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
 }
 
 func (m *GetAllRelaysResponse) Reset()         { *m = GetAllRelaysResponse{} }
 func (m *GetAllRelaysResponse) String() string { return proto.CompactTextString(m) }
 func (*GetAllRelaysResponse) ProtoMessage()    {}
 func (*GetAllRelaysResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{3}
+	return fileDescriptor_9f69a7d5a802d584, []int{1}
 }
 
 func (m *GetAllRelaysResponse) XXX_Unmarshal(b []byte) error {
@@ -278,9 +103,9 @@ func (m *GetAllRelaysResponse) GetStatus() *common.Status {
 	return nil
 }
 
-func (m *GetAllRelaysResponse) GetConfigs() []*RelayConfig {
+func (m *GetAllRelaysResponse) GetOpts() []*opts.RelayOptions {
 	if m != nil {
-		return m.Configs
+		return m.Opts
 	}
 	return nil
 }
@@ -298,7 +123,7 @@ func (m *GetRelayRequest) Reset()         { *m = GetRelayRequest{} }
 func (m *GetRelayRequest) String() string { return proto.CompactTextString(m) }
 func (*GetRelayRequest) ProtoMessage()    {}
 func (*GetRelayRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{4}
+	return fileDescriptor_9f69a7d5a802d584, []int{2}
 }
 
 func (m *GetRelayRequest) XXX_Unmarshal(b []byte) error {
@@ -336,17 +161,17 @@ func (m *GetRelayRequest) GetRelayId() string {
 type GetRelayResponse struct {
 	Status *common.Status `protobuf:"bytes,1000,opt,name=status,proto3" json:"status,omitempty"`
 	// Set only if status is OK
-	Config               *RelayConfig `protobuf:"bytes,1,opt,name=config,proto3" json:"config,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
-	XXX_unrecognized     []byte       `json:"-"`
-	XXX_sizecache        int32        `json:"-"`
+	Opts                 *opts.RelayOptions `protobuf:"bytes,1,opt,name=opts,proto3" json:"opts,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
+	XXX_unrecognized     []byte             `json:"-"`
+	XXX_sizecache        int32              `json:"-"`
 }
 
 func (m *GetRelayResponse) Reset()         { *m = GetRelayResponse{} }
 func (m *GetRelayResponse) String() string { return proto.CompactTextString(m) }
 func (*GetRelayResponse) ProtoMessage()    {}
 func (*GetRelayResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{5}
+	return fileDescriptor_9f69a7d5a802d584, []int{3}
 }
 
 func (m *GetRelayResponse) XXX_Unmarshal(b []byte) error {
@@ -374,27 +199,27 @@ func (m *GetRelayResponse) GetStatus() *common.Status {
 	return nil
 }
 
-func (m *GetRelayResponse) GetConfig() *RelayConfig {
+func (m *GetRelayResponse) GetOpts() *opts.RelayOptions {
 	if m != nil {
-		return m.Config
+		return m.Opts
 	}
 	return nil
 }
 
 type CreateRelayRequest struct {
 	// Every gRPC request must have a valid auth config
-	Auth                 *common.Auth `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
-	Config               *RelayConfig `protobuf:"bytes,1,opt,name=config,proto3" json:"config,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
-	XXX_unrecognized     []byte       `json:"-"`
-	XXX_sizecache        int32        `json:"-"`
+	Auth                 *common.Auth       `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
+	Opts                 *opts.RelayOptions `protobuf:"bytes,1,opt,name=opts,proto3" json:"opts,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
+	XXX_unrecognized     []byte             `json:"-"`
+	XXX_sizecache        int32              `json:"-"`
 }
 
 func (m *CreateRelayRequest) Reset()         { *m = CreateRelayRequest{} }
 func (m *CreateRelayRequest) String() string { return proto.CompactTextString(m) }
 func (*CreateRelayRequest) ProtoMessage()    {}
 func (*CreateRelayRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{6}
+	return fileDescriptor_9f69a7d5a802d584, []int{4}
 }
 
 func (m *CreateRelayRequest) XXX_Unmarshal(b []byte) error {
@@ -422,9 +247,9 @@ func (m *CreateRelayRequest) GetAuth() *common.Auth {
 	return nil
 }
 
-func (m *CreateRelayRequest) GetConfig() *RelayConfig {
+func (m *CreateRelayRequest) GetOpts() *opts.RelayOptions {
 	if m != nil {
-		return m.Config
+		return m.Opts
 	}
 	return nil
 }
@@ -442,7 +267,7 @@ func (m *CreateRelayResponse) Reset()         { *m = CreateRelayResponse{} }
 func (m *CreateRelayResponse) String() string { return proto.CompactTextString(m) }
 func (*CreateRelayResponse) ProtoMessage()    {}
 func (*CreateRelayResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{7}
+	return fileDescriptor_9f69a7d5a802d584, []int{5}
 }
 
 func (m *CreateRelayResponse) XXX_Unmarshal(b []byte) error {
@@ -480,19 +305,19 @@ func (m *CreateRelayResponse) GetRelayId() string {
 // WARNING: Any in-progress relay will be interrupted/restarted
 type UpdateRelayRequest struct {
 	// Every gRPC request must have a valid auth config
-	Auth                 *common.Auth `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
-	RelayId              string       `protobuf:"bytes,1,opt,name=relay_id,json=relayId,proto3" json:"relay_id,omitempty"`
-	Config               *RelayConfig `protobuf:"bytes,2,opt,name=config,proto3" json:"config,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
-	XXX_unrecognized     []byte       `json:"-"`
-	XXX_sizecache        int32        `json:"-"`
+	Auth                 *common.Auth       `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
+	RelayId              string             `protobuf:"bytes,1,opt,name=relay_id,json=relayId,proto3" json:"relay_id,omitempty"`
+	Opts                 *opts.RelayOptions `protobuf:"bytes,2,opt,name=opts,proto3" json:"opts,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
+	XXX_unrecognized     []byte             `json:"-"`
+	XXX_sizecache        int32              `json:"-"`
 }
 
 func (m *UpdateRelayRequest) Reset()         { *m = UpdateRelayRequest{} }
 func (m *UpdateRelayRequest) String() string { return proto.CompactTextString(m) }
 func (*UpdateRelayRequest) ProtoMessage()    {}
 func (*UpdateRelayRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{8}
+	return fileDescriptor_9f69a7d5a802d584, []int{6}
 }
 
 func (m *UpdateRelayRequest) XXX_Unmarshal(b []byte) error {
@@ -527,9 +352,9 @@ func (m *UpdateRelayRequest) GetRelayId() string {
 	return ""
 }
 
-func (m *UpdateRelayRequest) GetConfig() *RelayConfig {
+func (m *UpdateRelayRequest) GetOpts() *opts.RelayOptions {
 	if m != nil {
-		return m.Config
+		return m.Opts
 	}
 	return nil
 }
@@ -545,7 +370,7 @@ func (m *UpdateRelayResponse) Reset()         { *m = UpdateRelayResponse{} }
 func (m *UpdateRelayResponse) String() string { return proto.CompactTextString(m) }
 func (*UpdateRelayResponse) ProtoMessage()    {}
 func (*UpdateRelayResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{9}
+	return fileDescriptor_9f69a7d5a802d584, []int{7}
 }
 
 func (m *UpdateRelayResponse) XXX_Unmarshal(b []byte) error {
@@ -587,7 +412,7 @@ func (m *ResumeRelayRequest) Reset()         { *m = ResumeRelayRequest{} }
 func (m *ResumeRelayRequest) String() string { return proto.CompactTextString(m) }
 func (*ResumeRelayRequest) ProtoMessage()    {}
 func (*ResumeRelayRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{10}
+	return fileDescriptor_9f69a7d5a802d584, []int{8}
 }
 
 func (m *ResumeRelayRequest) XXX_Unmarshal(b []byte) error {
@@ -633,7 +458,7 @@ func (m *ResumeRelayResponse) Reset()         { *m = ResumeRelayResponse{} }
 func (m *ResumeRelayResponse) String() string { return proto.CompactTextString(m) }
 func (*ResumeRelayResponse) ProtoMessage()    {}
 func (*ResumeRelayResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{11}
+	return fileDescriptor_9f69a7d5a802d584, []int{9}
 }
 
 func (m *ResumeRelayResponse) XXX_Unmarshal(b []byte) error {
@@ -675,7 +500,7 @@ func (m *StopRelayRequest) Reset()         { *m = StopRelayRequest{} }
 func (m *StopRelayRequest) String() string { return proto.CompactTextString(m) }
 func (*StopRelayRequest) ProtoMessage()    {}
 func (*StopRelayRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{12}
+	return fileDescriptor_9f69a7d5a802d584, []int{10}
 }
 
 func (m *StopRelayRequest) XXX_Unmarshal(b []byte) error {
@@ -721,7 +546,7 @@ func (m *StopRelayResponse) Reset()         { *m = StopRelayResponse{} }
 func (m *StopRelayResponse) String() string { return proto.CompactTextString(m) }
 func (*StopRelayResponse) ProtoMessage()    {}
 func (*StopRelayResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{13}
+	return fileDescriptor_9f69a7d5a802d584, []int{11}
 }
 
 func (m *StopRelayResponse) XXX_Unmarshal(b []byte) error {
@@ -762,7 +587,7 @@ func (m *DeleteRelayRequest) Reset()         { *m = DeleteRelayRequest{} }
 func (m *DeleteRelayRequest) String() string { return proto.CompactTextString(m) }
 func (*DeleteRelayRequest) ProtoMessage()    {}
 func (*DeleteRelayRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{14}
+	return fileDescriptor_9f69a7d5a802d584, []int{12}
 }
 
 func (m *DeleteRelayRequest) XXX_Unmarshal(b []byte) error {
@@ -808,7 +633,7 @@ func (m *DeleteRelayResponse) Reset()         { *m = DeleteRelayResponse{} }
 func (m *DeleteRelayResponse) String() string { return proto.CompactTextString(m) }
 func (*DeleteRelayResponse) ProtoMessage()    {}
 func (*DeleteRelayResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9f69a7d5a802d584, []int{15}
+	return fileDescriptor_9f69a7d5a802d584, []int{13}
 }
 
 func (m *DeleteRelayResponse) XXX_Unmarshal(b []byte) error {
@@ -837,8 +662,6 @@ func (m *DeleteRelayResponse) GetStatus() *common.Status {
 }
 
 func init() {
-	proto.RegisterType((*CLIRelayConfig)(nil), "protos.CLIRelayConfig")
-	proto.RegisterType((*RelayConfig)(nil), "protos.RelayConfig")
 	proto.RegisterType((*GetAllRelaysRequest)(nil), "protos.GetAllRelaysRequest")
 	proto.RegisterType((*GetAllRelaysResponse)(nil), "protos.GetAllRelaysResponse")
 	proto.RegisterType((*GetRelayRequest)(nil), "protos.GetRelayRequest")
@@ -858,47 +681,29 @@ func init() {
 func init() { proto.RegisterFile("relay.proto", fileDescriptor_9f69a7d5a802d584) }
 
 var fileDescriptor_9f69a7d5a802d584 = []byte{
-	// 668 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x55, 0x5d, 0x6b, 0x13, 0x41,
-	0x14, 0x65, 0xfb, 0x91, 0x34, 0x37, 0xd6, 0xa6, 0x13, 0x2b, 0xdb, 0x42, 0x31, 0xac, 0x20, 0x11,
-	0x69, 0x96, 0xaa, 0x14, 0xdf, 0x6c, 0x9b, 0x4a, 0x29, 0x54, 0x85, 0x4d, 0xb5, 0xe8, 0xcb, 0xb8,
-	0x1f, 0x63, 0x76, 0xe8, 0xec, 0xce, 0x3a, 0x33, 0x8b, 0x6d, 0x7f, 0x80, 0xaf, 0xfe, 0x4d, 0xff,
-	0x83, 0x2f, 0xb2, 0x33, 0xdb, 0x66, 0x57, 0x50, 0xe9, 0x52, 0x9f, 0x12, 0xce, 0xb9, 0xf7, 0xcc,
-	0x39, 0xf7, 0x5e, 0x12, 0xe8, 0x0a, 0xc2, 0xfc, 0x8b, 0x51, 0x26, 0xb8, 0xe2, 0xa8, 0xa5, 0x3f,
-	0xe4, 0xc6, 0x6a, 0xc8, 0x93, 0x84, 0xa7, 0xae, 0x9f, 0xab, 0xd8, 0x50, 0x1b, 0xfd, 0x12, 0x92,
-	0xca, 0x57, 0xb9, 0x2c, 0xc1, 0x1e, 0xcf, 0x94, 0x74, 0x2b, 0x0a, 0xce, 0x2e, 0xdc, 0x1d, 0x1f,
-	0x1f, 0x79, 0x05, 0x32, 0xe6, 0xe9, 0x67, 0x3a, 0x45, 0x23, 0xe8, 0xc7, 0x4a, 0x65, 0x98, 0x51,
-	0xa9, 0x48, 0x8a, 0xfd, 0x28, 0x12, 0x44, 0x4a, 0xdb, 0x1a, 0x58, 0xc3, 0x8e, 0xb7, 0x5a, 0x50,
-	0xc7, 0x9a, 0xd9, 0x33, 0x84, 0xf3, 0x73, 0x1e, 0xba, 0xd5, 0xfe, 0xc7, 0xd0, 0x0b, 0x39, 0x63,
-	0x24, 0x54, 0x94, 0xa7, 0x58, 0xf1, 0x33, 0x92, 0x96, 0xcd, 0x2b, 0x33, 0xfc, 0xa4, 0x80, 0xd1,
-	0x26, 0x40, 0xe0, 0xab, 0x30, 0xc6, 0x92, 0x5e, 0x12, 0x7b, 0x6e, 0x60, 0x0d, 0x17, 0xbd, 0x8e,
-	0x46, 0x26, 0xf4, 0x92, 0xa0, 0x47, 0xb0, 0x62, 0xe8, 0xc4, 0x3f, 0xc7, 0x82, 0x28, 0x71, 0x61,
-	0xcf, 0xeb, 0x9a, 0x65, 0x0d, 0xbf, 0xf6, 0xcf, 0xbd, 0x02, 0x44, 0x0f, 0x61, 0x39, 0xe4, 0x69,
-	0x5a, 0xbe, 0x48, 0x23, 0x7b, 0x41, 0x3f, 0x77, 0x67, 0x06, 0x1e, 0x45, 0xe8, 0x01, 0x74, 0xd3,
-	0x3c, 0xc1, 0x5f, 0xb9, 0x38, 0x23, 0x42, 0xda, 0x8b, 0x5a, 0x08, 0xd2, 0x3c, 0x39, 0x35, 0x08,
-	0xda, 0x86, 0x35, 0xac, 0x75, 0x65, 0x8c, 0xa7, 0x22, 0x0b, 0xaf, 0x93, 0xb7, 0xb4, 0x1a, 0xda,
-	0x37, 0xdc, 0xa1, 0xc8, 0xc2, 0x32, 0x3a, 0x7a, 0x01, 0xeb, 0xf5, 0x96, 0x88, 0x4a, 0x3f, 0x60,
-	0x04, 0x2b, 0x26, 0xed, 0xf6, 0xc0, 0x1a, 0x2e, 0x79, 0x6b, 0x95, 0xb6, 0x03, 0xc3, 0x9e, 0x30,
-	0x89, 0x76, 0x61, 0xb3, 0xde, 0xa9, 0x68, 0x42, 0x78, 0xae, 0xb0, 0x24, 0x21, 0x4f, 0x23, 0x69,
-	0x2f, 0x69, 0x7f, 0xeb, 0x95, 0xee, 0x13, 0x53, 0x31, 0x31, 0x05, 0x68, 0x1b, 0x40, 0xef, 0x11,
-	0x17, 0x2b, 0xb5, 0x3b, 0x03, 0x6b, 0xd8, 0x7d, 0x8a, 0xcc, 0x52, 0xe5, 0xa8, 0xc0, 0x46, 0x7a,
-	0x29, 0x5e, 0x47, 0x57, 0xbd, 0xcd, 0x94, 0x44, 0x1b, 0xd0, 0xc1, 0xa6, 0x87, 0x46, 0x36, 0xe8,
-	0x54, 0x6d, 0x5d, 0x74, 0x14, 0xa1, 0x1d, 0xe8, 0xe2, 0x90, 0x51, 0x1c, 0xea, 0x25, 0xda, 0x5d,
-	0xad, 0x77, 0xff, 0x4a, 0xaf, 0x7e, 0x22, 0x5e, 0x67, 0xcc, 0xa8, 0xf9, 0xea, 0xbc, 0x84, 0xfe,
-	0x21, 0x51, 0x7b, 0x8c, 0x69, 0x5e, 0x7a, 0xe4, 0x4b, 0x4e, 0xa4, 0x42, 0x43, 0x58, 0x28, 0x6e,
-	0xd1, 0xfe, 0xfe, 0x46, 0x0b, 0xf5, 0xaf, 0x84, 0xcc, 0x51, 0x8e, 0xf6, 0x72, 0x15, 0x7b, 0xba,
-	0xc2, 0xc9, 0xe1, 0x5e, 0x5d, 0x40, 0x66, 0x3c, 0x95, 0x04, 0x8d, 0xa0, 0x65, 0x4e, 0xd7, 0xfe,
-	0xd1, 0xd6, 0x1a, 0x6b, 0xbf, 0x69, 0x4c, 0x34, 0xeb, 0x95, 0x55, 0x68, 0x0b, 0xda, 0xc6, 0x7b,
-	0x71, 0xaa, 0xf3, 0xd5, 0x37, 0xab, 0xce, 0xaf, 0x6a, 0x9c, 0xf7, 0xb0, 0x72, 0x48, 0x94, 0x19,
-	0xd1, 0x4d, 0x3d, 0xa3, 0x75, 0x58, 0xba, 0x9e, 0xa3, 0x39, 0xed, 0xb6, 0x30, 0x73, 0x74, 0x38,
-	0xf4, 0x66, 0xba, 0x0d, 0xa3, 0x3c, 0x81, 0x56, 0xb9, 0x06, 0xab, 0xee, 0xa4, 0x9a, 0xa4, 0x2c,
-	0x71, 0xce, 0x00, 0x8d, 0x05, 0xf1, 0x15, 0x69, 0x98, 0xe5, 0x46, 0x8f, 0x7d, 0x82, 0x7e, 0xed,
-	0xb1, 0x86, 0x01, 0xff, 0x32, 0xbf, 0x6f, 0x16, 0xa0, 0x77, 0x59, 0xd4, 0x3c, 0xcf, 0x9f, 0xb5,
-	0x2b, 0x51, 0xe7, 0xfe, 0x1d, 0xf5, 0x15, 0xf4, 0x6b, 0x3e, 0x9a, 0x45, 0x75, 0x3e, 0x00, 0xf2,
-	0x88, 0xcc, 0x93, 0xdb, 0x8f, 0x53, 0x38, 0xac, 0x49, 0x37, 0x74, 0x78, 0x0a, 0xbd, 0x89, 0xe2,
-	0xd9, 0xed, 0xfb, 0x1b, 0xc3, 0x6a, 0x45, 0xb8, 0xf9, 0xfc, 0x0e, 0x08, 0x23, 0xea, 0xff, 0xcc,
-	0xaf, 0x26, 0xdd, 0xcc, 0xe1, 0xfe, 0xce, 0xc7, 0xe7, 0x53, 0xaa, 0xe2, 0x3c, 0x28, 0x78, 0x57,
-	0xff, 0xa8, 0x87, 0x5c, 0x64, 0x6e, 0xc6, 0xf2, 0x24, 0x20, 0x62, 0x4b, 0x86, 0x31, 0x49, 0x7c,
-	0xe9, 0x06, 0x39, 0x65, 0x91, 0x3b, 0xe5, 0xae, 0x51, 0x0b, 0xcc, 0x7f, 0xf7, 0xb3, 0x5f, 0x01,
-	0x00, 0x00, 0xff, 0xff, 0x28, 0x2e, 0x72, 0xfe, 0xd1, 0x07, 0x00, 0x00,
+	// 376 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x94, 0xcf, 0x4a, 0xeb, 0x40,
+	0x14, 0x87, 0xc9, 0xbd, 0xa5, 0xbd, 0xf7, 0x74, 0x71, 0xdb, 0xc9, 0x15, 0xd2, 0xae, 0x4a, 0x56,
+	0xd9, 0x34, 0x81, 0x2a, 0x6e, 0xa5, 0x56, 0x29, 0x6e, 0x14, 0x52, 0x54, 0x74, 0xa3, 0xf9, 0x33,
+	0x34, 0x81, 0xa4, 0x33, 0xcd, 0x9c, 0x59, 0xf8, 0x06, 0xee, 0x7c, 0x4d, 0x1f, 0x43, 0x32, 0xa9,
+	0xda, 0x08, 0x4a, 0x3b, 0xd6, 0x55, 0xc8, 0x39, 0x87, 0xef, 0xfc, 0xbe, 0xb3, 0x18, 0x68, 0x17,
+	0x34, 0x0b, 0x1e, 0x5c, 0x5e, 0x30, 0x64, 0xa4, 0xa9, 0x3e, 0xa2, 0xdf, 0x8d, 0x58, 0x9e, 0xb3,
+	0x85, 0x17, 0x48, 0x4c, 0xaa, 0x56, 0xdf, 0x5c, 0x95, 0x04, 0x06, 0x28, 0xc5, 0xaa, 0xd8, 0x61,
+	0x1c, 0x85, 0xb7, 0x46, 0xb0, 0x8f, 0xc0, 0x9c, 0x52, 0x1c, 0x67, 0x99, 0x5f, 0x16, 0x85, 0x4f,
+	0x97, 0x92, 0x0a, 0x24, 0x0e, 0x34, 0x4a, 0x96, 0xf5, 0x74, 0x3e, 0x30, 0x9c, 0xf6, 0xc8, 0xac,
+	0xa6, 0x85, 0x5b, 0x41, 0xdd, 0xb1, 0xc4, 0xc4, 0x57, 0x13, 0xb6, 0x84, 0xff, 0x75, 0x80, 0xe0,
+	0x6c, 0x21, 0x28, 0x71, 0xa1, 0x59, 0xad, 0xb6, 0x9e, 0x5b, 0x8a, 0xb1, 0xf7, 0x81, 0x31, 0x53,
+	0x5d, 0x7f, 0x35, 0x45, 0x86, 0xd0, 0x28, 0xc3, 0x59, 0xc6, 0xe0, 0xb7, 0xd3, 0x1e, 0xf5, 0x5e,
+	0x87, 0xcb, 0x9a, 0xab, 0xd0, 0x17, 0x1c, 0x53, 0xb6, 0x10, 0xbe, 0x1a, 0xb3, 0xaf, 0xe0, 0xdf,
+	0x94, 0xa2, 0x6a, 0x6c, 0x9d, 0x99, 0xf4, 0xe0, 0x8f, 0xba, 0xc1, 0x5d, 0x1a, 0x5b, 0xc6, 0xc0,
+	0x70, 0xfe, 0xfa, 0x2d, 0xf5, 0x7f, 0x16, 0xdb, 0x4b, 0xe8, 0xbc, 0x73, 0xbf, 0xad, 0x62, 0x6c,
+	0xa2, 0x92, 0x03, 0x99, 0x14, 0x34, 0x40, 0xaa, 0x69, 0xb3, 0xe5, 0xba, 0x7b, 0x30, 0x6b, 0xeb,
+	0x34, 0x25, 0xbf, 0xb8, 0xe1, 0xa3, 0x01, 0xe4, 0x92, 0xc7, 0xfa, 0x46, 0x9f, 0xb3, 0xdf, 0x64,
+	0x7f, 0x6d, 0x26, 0x7b, 0x0a, 0x66, 0x2d, 0x89, 0x9e, 0xac, 0x7d, 0x03, 0xc4, 0xa7, 0x42, 0xe6,
+	0xbb, 0x17, 0x2a, 0x13, 0xd6, 0xd0, 0x9a, 0x09, 0xaf, 0xa1, 0x33, 0x43, 0xc6, 0x77, 0x9f, 0x6f,
+	0x02, 0xdd, 0x35, 0xb0, 0xfe, 0xfd, 0x4e, 0x68, 0x46, 0xf1, 0x67, 0xee, 0x57, 0x43, 0xeb, 0x25,
+	0x3c, 0x3e, 0xbc, 0x3d, 0x98, 0xa7, 0x98, 0xc8, 0xb0, 0xec, 0x7b, 0x61, 0x80, 0x51, 0x12, 0xb1,
+	0x82, 0x7b, 0x3c, 0x93, 0x79, 0x48, 0x8b, 0xa1, 0x88, 0x12, 0x9a, 0x07, 0xc2, 0x0b, 0x65, 0x9a,
+	0xc5, 0xde, 0x9c, 0x79, 0x15, 0x2d, 0xac, 0x5e, 0xe0, 0xfd, 0x97, 0x00, 0x00, 0x00, 0xff, 0xff,
+	0x02, 0x01, 0x12, 0x15, 0x97, 0x05, 0x00, 0x00,
 }

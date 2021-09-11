@@ -91,10 +91,6 @@ func (s *ServiceBus) Test(_ context.Context) error {
 	return types.NotImplementedErr
 }
 
-func (s *ServiceBus) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
-	return types.UnsupportedFeatureErr
-}
-
 // NewClient returns a properly configured service bus client
 func newClient(opts *options.Options) (*servicebus.Namespace, error) {
 	c, err := servicebus.NewNamespace(servicebus.NamespaceWithConnectionString(opts.Azure.ConnectionString))

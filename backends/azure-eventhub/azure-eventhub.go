@@ -51,10 +51,6 @@ func (e *EventHub) Test(ctx context.Context) error {
 	return types.NotImplementedErr
 }
 
-func (e *EventHub) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
-	return types.UnsupportedFeatureErr
-}
-
 func (e *EventHub) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {
 	return types.UnsupportedFeatureErr
 }

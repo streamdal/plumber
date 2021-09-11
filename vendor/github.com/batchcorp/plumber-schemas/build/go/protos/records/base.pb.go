@@ -21,11 +21,12 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 // Returned for read requests (server & cli)
-type Read struct {
+type ReadRecord struct {
 	// Unique id automatically created by plumber
 	MessageId string `protobuf:"bytes,1,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
-	// Identifies which plumber instance received the event
-	PlumberId string `protobuf:"bytes,2,opt,name=plumber_id,json=plumberId,proto3" json:"plumber_id,omitempty"`
+	// Plumber counts the number of messages it reads; this number represents
+	// the message number (useful for CLI).
+	Num int64 `protobuf:"varint,3,opt,name=num,proto3" json:"num,omitempty"`
 	// Metadata may contain properties that cannot be found in the Raw message.
 	// For example: read lag in Kafka.
 	//
@@ -33,124 +34,134 @@ type Read struct {
 	// number that plumber assigns to each message it receives. This is used
 	// with read via CLI functionality to allow the user to quickly discern
 	// whether this is message #1 or #500, etc.
-	Metadata map[string][]byte `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// Original backend message (encoded with gob, ie. *skafka.Message, etc.)
-	Raw []byte `protobuf:"bytes,4,opt,name=raw,proto3" json:"raw,omitempty"`
-	// UTC unix timestamp of when plumber received the message (a backend record
-	// entry might have its own timestamp as well).
-	ReceivedAtUnixTsUtc int64 `protobuf:"varint,5,opt,name=received_at_unix_ts_utc,json=receivedAtUnixTsUtc,proto3" json:"received_at_unix_ts_utc,omitempty"`
+	Metadata map[string]string `protobuf:"bytes,4,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	// UTC unix timestamp of when plumber received the message; a backend record
+	// entry might have its own timestamp as well. This should be seconds.
+	ReceivedAtUnixTsUtc int64 `protobuf:"varint,6,opt,name=received_at_unix_ts_utc,json=receivedAtUnixTsUtc,proto3" json:"received_at_unix_ts_utc,omitempty"`
 	// Set _outside_ the backend; will contain the final value, regardless of
 	// whether decoding options were specified for a read.
 	// _This_ is what both CLI and desktop should display for the payload.
 	Payload []byte `protobuf:"bytes,99,opt,name=payload,proto3" json:"payload,omitempty"`
 	// Types that are valid to be assigned to Record:
-	//	*Read_Kafka
-	Record               isRead_Record `protobuf_oneof:"Record"`
-	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
-	XXX_unrecognized     []byte        `json:"-"`
-	XXX_sizecache        int32         `json:"-"`
+	//	*ReadRecord_Kafka
+	Record isReadRecord_Record `protobuf_oneof:"Record"`
+	// Original backend message (encoded with gob, ie. *skafka.Message, etc.).
+	// In most cases, you should use the oneof record instead of the raw message.
+	XRaw []byte `protobuf:"bytes,1000,opt,name=_raw,json=Raw,proto3" json:"_raw,omitempty"`
+	// Identifies which plumber instance received the event (set outside the backend)
+	XPlumberId           string   `protobuf:"bytes,1001,opt,name=_plumber_id,json=PlumberId,proto3" json:"_plumber_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *Read) Reset()         { *m = Read{} }
-func (m *Read) String() string { return proto.CompactTextString(m) }
-func (*Read) ProtoMessage()    {}
-func (*Read) Descriptor() ([]byte, []int) {
+func (m *ReadRecord) Reset()         { *m = ReadRecord{} }
+func (m *ReadRecord) String() string { return proto.CompactTextString(m) }
+func (*ReadRecord) ProtoMessage()    {}
+func (*ReadRecord) Descriptor() ([]byte, []int) {
 	return fileDescriptor_cd29fa8a30a39852, []int{0}
 }
 
-func (m *Read) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Read.Unmarshal(m, b)
+func (m *ReadRecord) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ReadRecord.Unmarshal(m, b)
 }
-func (m *Read) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Read.Marshal(b, m, deterministic)
+func (m *ReadRecord) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ReadRecord.Marshal(b, m, deterministic)
 }
-func (m *Read) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Read.Merge(m, src)
+func (m *ReadRecord) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ReadRecord.Merge(m, src)
 }
-func (m *Read) XXX_Size() int {
-	return xxx_messageInfo_Read.Size(m)
+func (m *ReadRecord) XXX_Size() int {
+	return xxx_messageInfo_ReadRecord.Size(m)
 }
-func (m *Read) XXX_DiscardUnknown() {
-	xxx_messageInfo_Read.DiscardUnknown(m)
+func (m *ReadRecord) XXX_DiscardUnknown() {
+	xxx_messageInfo_ReadRecord.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Read proto.InternalMessageInfo
+var xxx_messageInfo_ReadRecord proto.InternalMessageInfo
 
-func (m *Read) GetMessageId() string {
+func (m *ReadRecord) GetMessageId() string {
 	if m != nil {
 		return m.MessageId
 	}
 	return ""
 }
 
-func (m *Read) GetPlumberId() string {
+func (m *ReadRecord) GetNum() int64 {
 	if m != nil {
-		return m.PlumberId
+		return m.Num
 	}
-	return ""
+	return 0
 }
 
-func (m *Read) GetMetadata() map[string][]byte {
+func (m *ReadRecord) GetMetadata() map[string]string {
 	if m != nil {
 		return m.Metadata
 	}
 	return nil
 }
 
-func (m *Read) GetRaw() []byte {
-	if m != nil {
-		return m.Raw
-	}
-	return nil
-}
-
-func (m *Read) GetReceivedAtUnixTsUtc() int64 {
+func (m *ReadRecord) GetReceivedAtUnixTsUtc() int64 {
 	if m != nil {
 		return m.ReceivedAtUnixTsUtc
 	}
 	return 0
 }
 
-func (m *Read) GetPayload() []byte {
+func (m *ReadRecord) GetPayload() []byte {
 	if m != nil {
 		return m.Payload
 	}
 	return nil
 }
 
-type isRead_Record interface {
-	isRead_Record()
+type isReadRecord_Record interface {
+	isReadRecord_Record()
 }
 
-type Read_Kafka struct {
+type ReadRecord_Kafka struct {
 	Kafka *Kafka `protobuf:"bytes,100,opt,name=kafka,proto3,oneof"`
 }
 
-func (*Read_Kafka) isRead_Record() {}
+func (*ReadRecord_Kafka) isReadRecord_Record() {}
 
-func (m *Read) GetRecord() isRead_Record {
+func (m *ReadRecord) GetRecord() isReadRecord_Record {
 	if m != nil {
 		return m.Record
 	}
 	return nil
 }
 
-func (m *Read) GetKafka() *Kafka {
-	if x, ok := m.GetRecord().(*Read_Kafka); ok {
+func (m *ReadRecord) GetKafka() *Kafka {
+	if x, ok := m.GetRecord().(*ReadRecord_Kafka); ok {
 		return x.Kafka
 	}
 	return nil
 }
 
+func (m *ReadRecord) GetXRaw() []byte {
+	if m != nil {
+		return m.XRaw
+	}
+	return nil
+}
+
+func (m *ReadRecord) GetXPlumberId() string {
+	if m != nil {
+		return m.XPlumberId
+	}
+	return ""
+}
+
 // XXX_OneofWrappers is for the internal use of the proto package.
-func (*Read) XXX_OneofWrappers() []interface{} {
+func (*ReadRecord) XXX_OneofWrappers() []interface{} {
 	return []interface{}{
-		(*Read_Kafka)(nil),
+		(*ReadRecord_Kafka)(nil),
 	}
 }
 
 // Used as an arg for write requests (server & cli)
-type Write struct {
+type WriteRecord struct {
 	// If encoding options are provided, this value will be updated by plumber
 	// to contain the encoded payload _before_ passing it to the backend.
 	// @gotags: kong:"help='Input string',name=input,xor=input,default"
@@ -162,39 +173,39 @@ type Write struct {
 	XXX_sizecache        int32             `json:"-"`
 }
 
-func (m *Write) Reset()         { *m = Write{} }
-func (m *Write) String() string { return proto.CompactTextString(m) }
-func (*Write) ProtoMessage()    {}
-func (*Write) Descriptor() ([]byte, []int) {
+func (m *WriteRecord) Reset()         { *m = WriteRecord{} }
+func (m *WriteRecord) String() string { return proto.CompactTextString(m) }
+func (*WriteRecord) ProtoMessage()    {}
+func (*WriteRecord) Descriptor() ([]byte, []int) {
 	return fileDescriptor_cd29fa8a30a39852, []int{1}
 }
 
-func (m *Write) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Write.Unmarshal(m, b)
+func (m *WriteRecord) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WriteRecord.Unmarshal(m, b)
 }
-func (m *Write) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Write.Marshal(b, m, deterministic)
+func (m *WriteRecord) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WriteRecord.Marshal(b, m, deterministic)
 }
-func (m *Write) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Write.Merge(m, src)
+func (m *WriteRecord) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WriteRecord.Merge(m, src)
 }
-func (m *Write) XXX_Size() int {
-	return xxx_messageInfo_Write.Size(m)
+func (m *WriteRecord) XXX_Size() int {
+	return xxx_messageInfo_WriteRecord.Size(m)
 }
-func (m *Write) XXX_DiscardUnknown() {
-	xxx_messageInfo_Write.DiscardUnknown(m)
+func (m *WriteRecord) XXX_DiscardUnknown() {
+	xxx_messageInfo_WriteRecord.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Write proto.InternalMessageInfo
+var xxx_messageInfo_WriteRecord proto.InternalMessageInfo
 
-func (m *Write) GetInput() string {
+func (m *WriteRecord) GetInput() string {
 	if m != nil {
 		return m.Input
 	}
 	return ""
 }
 
-func (m *Write) GetInputMetadata() map[string]string {
+func (m *WriteRecord) GetInputMetadata() map[string]string {
 	if m != nil {
 		return m.InputMetadata
 	}
@@ -202,7 +213,7 @@ func (m *Write) GetInputMetadata() map[string]string {
 }
 
 // Used for communicating errors that occur during a read, write, relay, etc.
-type Error struct {
+type ErrorRecord struct {
 	OccurredAtUnixTsUtc  int64             `protobuf:"varint,1,opt,name=occurred_at_unix_ts_utc,json=occurredAtUnixTsUtc,proto3" json:"occurred_at_unix_ts_utc,omitempty"`
 	Error                string            `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
 	Metadata             map[string][]byte `protobuf:"bytes,3,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
@@ -211,46 +222,46 @@ type Error struct {
 	XXX_sizecache        int32             `json:"-"`
 }
 
-func (m *Error) Reset()         { *m = Error{} }
-func (m *Error) String() string { return proto.CompactTextString(m) }
-func (*Error) ProtoMessage()    {}
-func (*Error) Descriptor() ([]byte, []int) {
+func (m *ErrorRecord) Reset()         { *m = ErrorRecord{} }
+func (m *ErrorRecord) String() string { return proto.CompactTextString(m) }
+func (*ErrorRecord) ProtoMessage()    {}
+func (*ErrorRecord) Descriptor() ([]byte, []int) {
 	return fileDescriptor_cd29fa8a30a39852, []int{2}
 }
 
-func (m *Error) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Error.Unmarshal(m, b)
+func (m *ErrorRecord) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ErrorRecord.Unmarshal(m, b)
 }
-func (m *Error) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Error.Marshal(b, m, deterministic)
+func (m *ErrorRecord) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ErrorRecord.Marshal(b, m, deterministic)
 }
-func (m *Error) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Error.Merge(m, src)
+func (m *ErrorRecord) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ErrorRecord.Merge(m, src)
 }
-func (m *Error) XXX_Size() int {
-	return xxx_messageInfo_Error.Size(m)
+func (m *ErrorRecord) XXX_Size() int {
+	return xxx_messageInfo_ErrorRecord.Size(m)
 }
-func (m *Error) XXX_DiscardUnknown() {
-	xxx_messageInfo_Error.DiscardUnknown(m)
+func (m *ErrorRecord) XXX_DiscardUnknown() {
+	xxx_messageInfo_ErrorRecord.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Error proto.InternalMessageInfo
+var xxx_messageInfo_ErrorRecord proto.InternalMessageInfo
 
-func (m *Error) GetOccurredAtUnixTsUtc() int64 {
+func (m *ErrorRecord) GetOccurredAtUnixTsUtc() int64 {
 	if m != nil {
 		return m.OccurredAtUnixTsUtc
 	}
 	return 0
 }
 
-func (m *Error) GetError() string {
+func (m *ErrorRecord) GetError() string {
 	if m != nil {
 		return m.Error
 	}
 	return ""
 }
 
-func (m *Error) GetMetadata() map[string][]byte {
+func (m *ErrorRecord) GetMetadata() map[string][]byte {
 	if m != nil {
 		return m.Metadata
 	}
@@ -258,44 +269,46 @@ func (m *Error) GetMetadata() map[string][]byte {
 }
 
 func init() {
-	proto.RegisterType((*Read)(nil), "protos.records.Read")
-	proto.RegisterMapType((map[string][]byte)(nil), "protos.records.Read.MetadataEntry")
-	proto.RegisterType((*Write)(nil), "protos.records.Write")
-	proto.RegisterMapType((map[string]string)(nil), "protos.records.Write.InputMetadataEntry")
-	proto.RegisterType((*Error)(nil), "protos.records.Error")
-	proto.RegisterMapType((map[string][]byte)(nil), "protos.records.Error.MetadataEntry")
+	proto.RegisterType((*ReadRecord)(nil), "protos.records.ReadRecord")
+	proto.RegisterMapType((map[string]string)(nil), "protos.records.ReadRecord.MetadataEntry")
+	proto.RegisterType((*WriteRecord)(nil), "protos.records.WriteRecord")
+	proto.RegisterMapType((map[string]string)(nil), "protos.records.WriteRecord.InputMetadataEntry")
+	proto.RegisterType((*ErrorRecord)(nil), "protos.records.ErrorRecord")
+	proto.RegisterMapType((map[string][]byte)(nil), "protos.records.ErrorRecord.MetadataEntry")
 }
 
 func init() { proto.RegisterFile("records/base.proto", fileDescriptor_cd29fa8a30a39852) }
 
 var fileDescriptor_cd29fa8a30a39852 = []byte{
-	// 445 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x52, 0x5b, 0x6b, 0xd4, 0x40,
-	0x14, 0x76, 0x76, 0x9b, 0xda, 0x3d, 0xbd, 0x20, 0xd3, 0x8a, 0x61, 0x41, 0x08, 0xeb, 0x4b, 0x5e,
-	0x9a, 0x40, 0xf5, 0x41, 0x54, 0xea, 0x05, 0x0a, 0x2e, 0x22, 0x42, 0xb0, 0x08, 0xbe, 0x84, 0xc9,
-	0xcc, 0xb8, 0x3b, 0xec, 0x26, 0x13, 0xe6, 0x52, 0xbb, 0xff, 0xca, 0xbf, 0xe2, 0xbb, 0x3f, 0x46,
-	0x66, 0x32, 0x29, 0x7b, 0x41, 0x7c, 0xe8, 0x53, 0xce, 0x39, 0xdf, 0x97, 0x73, 0xbe, 0x39, 0xdf,
-	0x01, 0xac, 0x38, 0x95, 0x8a, 0xe9, 0xbc, 0x22, 0x9a, 0x67, 0xad, 0x92, 0x46, 0xe2, 0x13, 0xff,
-	0xd1, 0x59, 0x80, 0xc6, 0xa7, 0x3d, 0x67, 0x41, 0x7e, 0x2c, 0x48, 0x47, 0x9a, 0xfc, 0x19, 0xc0,
-	0x5e, 0xc1, 0x09, 0xc3, 0x4f, 0x01, 0x6a, 0xae, 0x35, 0x99, 0xf1, 0x52, 0xb0, 0x18, 0x25, 0x28,
-	0x1d, 0x15, 0xa3, 0x50, 0x99, 0x7a, 0xb8, 0x5d, 0xda, 0xba, 0xe2, 0xca, 0xc1, 0x83, 0x0e, 0x0e,
-	0x95, 0x29, 0xc3, 0x97, 0x70, 0x50, 0x73, 0x43, 0x18, 0x31, 0x24, 0x1e, 0x26, 0xc3, 0xf4, 0xf0,
-	0x62, 0x92, 0x6d, 0x8e, 0xcf, 0xdc, 0x94, 0xec, 0x73, 0x20, 0x5d, 0x35, 0x46, 0xad, 0x8a, 0xbb,
-	0x7f, 0xf0, 0x23, 0x18, 0x2a, 0xf2, 0x33, 0xde, 0x4b, 0x50, 0x7a, 0x54, 0xb8, 0x10, 0xbf, 0x80,
-	0x27, 0x8a, 0x53, 0x2e, 0x6e, 0x38, 0x2b, 0x89, 0x29, 0x6d, 0x23, 0x6e, 0x4b, 0xa3, 0x4b, 0x6b,
-	0x68, 0x1c, 0x25, 0x28, 0x1d, 0x16, 0xa7, 0x3d, 0xfc, 0xde, 0x5c, 0x37, 0xe2, 0xf6, 0xab, 0xbe,
-	0x36, 0x14, 0xc7, 0xf0, 0xb0, 0x25, 0xab, 0xa5, 0x24, 0x2c, 0xa6, 0xbe, 0x57, 0x9f, 0xe2, 0x73,
-	0x88, 0xfc, 0xbb, 0x63, 0x96, 0xa0, 0xf4, 0xf0, 0xe2, 0xf1, 0xb6, 0xbc, 0x4f, 0x0e, 0xfc, 0xf8,
-	0xa0, 0xe8, 0x58, 0xe3, 0xd7, 0x70, 0xbc, 0xa1, 0xd5, 0x29, 0x5c, 0xf0, 0x55, 0x58, 0x8c, 0x0b,
-	0xf1, 0x19, 0x44, 0x37, 0x64, 0x69, 0xb9, 0xdf, 0xc6, 0x51, 0xd1, 0x25, 0xaf, 0x06, 0x2f, 0xd1,
-	0x87, 0x03, 0xd8, 0x2f, 0x7c, 0xdb, 0xc9, 0x2f, 0x04, 0xd1, 0x37, 0x25, 0x0c, 0x77, 0x6c, 0xd1,
-	0xb4, 0xd6, 0x84, 0x0e, 0x5d, 0x82, 0xbf, 0xc0, 0x89, 0x0f, 0xca, 0xbb, 0xed, 0x0d, 0xfc, 0xf6,
-	0xd2, 0x6d, 0x79, 0xbe, 0x49, 0x36, 0x75, 0xdc, 0xcd, 0x1d, 0x1e, 0x8b, 0xf5, 0xda, 0xf8, 0x1d,
-	0xe0, 0x5d, 0xd2, 0xff, 0xc4, 0x8f, 0xd6, 0xc4, 0x4f, 0x7e, 0x23, 0x88, 0xae, 0x94, 0x92, 0xca,
-	0x59, 0x20, 0x29, 0xb5, 0x4a, 0xed, 0x5a, 0x80, 0x3a, 0x0b, 0x7a, 0x78, 0xdd, 0x82, 0x33, 0x88,
-	0xb8, 0xfb, 0xbd, 0xef, 0xec, 0x13, 0xfc, 0x76, 0xe7, 0x40, 0x9e, 0x6d, 0x3f, 0xd1, 0x0f, 0xfd,
-	0xd7, 0x85, 0xdc, 0xcf, 0x90, 0xcb, 0xef, 0x6f, 0x66, 0xc2, 0xcc, 0x6d, 0x95, 0x51, 0x59, 0xe7,
-	0x15, 0x31, 0x74, 0x4e, 0xa5, 0x6a, 0xf3, 0x70, 0xc0, 0xe7, 0x9a, 0xce, 0x79, 0x4d, 0x74, 0x5e,
-	0x59, 0xb1, 0x64, 0xf9, 0x4c, 0xe6, 0x9d, 0xb4, 0x3c, 0x48, 0xab, 0xf6, 0x7d, 0xfe, 0xfc, 0x6f,
-	0x00, 0x00, 0x00, 0xff, 0xff, 0x19, 0xe9, 0xaf, 0x62, 0x67, 0x03, 0x00, 0x00,
+	// 474 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x52, 0x5d, 0x8b, 0xd3, 0x40,
+	0x14, 0x35, 0xcd, 0xb6, 0xdd, 0xbd, 0xd9, 0x5d, 0x64, 0xb6, 0xb2, 0xa1, 0x20, 0x86, 0x3e, 0xc5,
+	0x87, 0x4d, 0x60, 0xdd, 0x07, 0x51, 0x11, 0x15, 0x0b, 0x16, 0x11, 0x24, 0x58, 0x04, 0x5f, 0xc2,
+	0x64, 0x66, 0x6c, 0x43, 0x9b, 0x0f, 0xe6, 0x63, 0x77, 0xfb, 0xdf, 0xfc, 0x2b, 0xbe, 0xeb, 0x9f,
+	0x10, 0xc9, 0xcc, 0x64, 0x4d, 0xbb, 0xf8, 0xd0, 0xa7, 0xcc, 0xfd, 0xc8, 0xb9, 0xf7, 0x9c, 0x73,
+	0x01, 0x71, 0x46, 0x2a, 0x4e, 0x45, 0x9c, 0x61, 0xc1, 0xa2, 0x9a, 0x57, 0xb2, 0x42, 0xa7, 0xfa,
+	0x23, 0x22, 0x5b, 0x1a, 0x9f, 0xb5, 0x3d, 0x2b, 0xfc, 0x7d, 0x85, 0x4d, 0xd3, 0xe4, 0x4f, 0x0f,
+	0x20, 0x61, 0x98, 0x26, 0xba, 0x86, 0x1e, 0x03, 0x14, 0x4c, 0x08, 0xbc, 0x60, 0x69, 0x4e, 0x7d,
+	0x27, 0x70, 0xc2, 0xa3, 0xe4, 0xc8, 0x66, 0x66, 0x14, 0x3d, 0x04, 0xb7, 0x54, 0x85, 0xef, 0x06,
+	0x4e, 0xe8, 0x26, 0xcd, 0x13, 0xbd, 0x87, 0xc3, 0x82, 0x49, 0x4c, 0xb1, 0xc4, 0xfe, 0x41, 0xe0,
+	0x86, 0xde, 0x65, 0x18, 0x6d, 0xcf, 0x8d, 0xfe, 0xc1, 0x47, 0x9f, 0x6c, 0xeb, 0xb4, 0x94, 0x7c,
+	0x93, 0xdc, 0xfd, 0x89, 0xae, 0xe0, 0x9c, 0x33, 0xc2, 0xf2, 0x6b, 0x46, 0x53, 0x2c, 0x53, 0x55,
+	0xe6, 0xb7, 0xa9, 0x14, 0xa9, 0x92, 0xc4, 0x1f, 0xe8, 0x59, 0x67, 0x6d, 0xf9, 0xad, 0x9c, 0x97,
+	0xf9, 0xed, 0x17, 0x31, 0x97, 0x04, 0xf9, 0x30, 0xac, 0xf1, 0x66, 0x5d, 0x61, 0xea, 0x93, 0xc0,
+	0x09, 0x8f, 0x93, 0x36, 0x44, 0x17, 0xd0, 0xd7, 0x24, 0x7d, 0x1a, 0x38, 0xa1, 0x77, 0xf9, 0x68,
+	0x77, 0xa5, 0x8f, 0x4d, 0xf1, 0xc3, 0x83, 0xc4, 0x74, 0x21, 0x04, 0x07, 0x29, 0xc7, 0x37, 0xfe,
+	0xaf, 0xa1, 0x86, 0x71, 0x13, 0x7c, 0x83, 0x9e, 0x80, 0x97, 0xd6, 0x6b, 0x55, 0x64, 0x8c, 0x37,
+	0x52, 0xfc, 0x1e, 0x1a, 0x2d, 0x3e, 0x9b, 0xd4, 0x8c, 0x8e, 0x5f, 0xc2, 0xc9, 0x16, 0x9d, 0x46,
+	0x9c, 0x15, 0xdb, 0x58, 0xd1, 0x9a, 0x27, 0x1a, 0x41, 0xff, 0x1a, 0xaf, 0x15, 0xf3, 0x7b, 0x3a,
+	0x67, 0x82, 0x17, 0xbd, 0xe7, 0xce, 0xbb, 0x43, 0x18, 0x18, 0x49, 0x26, 0x3f, 0x1c, 0xf0, 0xbe,
+	0xf2, 0x5c, 0x32, 0xeb, 0xc0, 0x08, 0xfa, 0x79, 0x59, 0x2b, 0x69, 0x71, 0x4c, 0x80, 0xe6, 0x70,
+	0xaa, 0x1f, 0xe9, 0x9d, 0xd8, 0x3d, 0x2d, 0x76, 0xb4, 0xcb, 0xac, 0x03, 0x15, 0xcd, 0x9a, 0x3f,
+	0xb6, 0x25, 0x3f, 0xc9, 0xbb, 0xb9, 0xf1, 0x1b, 0x40, 0xf7, 0x9b, 0xf6, 0x21, 0x32, 0xf9, 0xe9,
+	0x80, 0x37, 0xe5, 0xbc, 0xe2, 0x76, 0xfd, 0x2b, 0x38, 0xaf, 0x08, 0x51, 0x9c, 0xdf, 0x77, 0xd2,
+	0x31, 0x4e, 0xb6, 0xe5, 0xae, 0x93, 0x23, 0xe8, 0xb3, 0x06, 0xa4, 0xc5, 0xd7, 0x01, 0x9a, 0x76,
+	0x6e, 0xcb, 0xd5, 0x74, 0x9f, 0xee, 0xd2, 0xed, 0x8c, 0xfe, 0xdf, 0x71, 0xed, 0x6d, 0xd4, 0x71,
+	0xd7, 0xa8, 0xd7, 0xdf, 0x5e, 0x2d, 0x72, 0xb9, 0x54, 0x59, 0x44, 0xaa, 0x22, 0xce, 0xb0, 0x24,
+	0x4b, 0x52, 0xf1, 0x3a, 0xb6, 0xa7, 0x71, 0x21, 0xc8, 0x92, 0x15, 0x58, 0xc4, 0x99, 0xca, 0xd7,
+	0x34, 0x5e, 0x54, 0xb1, 0x59, 0x30, 0xb6, 0x0b, 0x66, 0x03, 0x1d, 0x3f, 0xfb, 0x1b, 0x00, 0x00,
+	0xff, 0xff, 0xe4, 0xbf, 0xb5, 0x42, 0xa1, 0x03, 0x00, 0x00,
 }

@@ -15,20 +15,20 @@ import (
 func (a *ActiveMq) Dynamic(ctx context.Context) error {
 	llog := logrus.WithField("pkg", "activemq/dynamic")
 
-	conn, err := newConn(ctx, a.ConnectionConfig)
+	conn, err := newConn(ctx, a.baseConnConfig)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new connection")
 	}
 
 	// Start up dynamic connection
-	grpc, err := dproxy.New(a.ConnectionConfig, "ActiveMQ")
+	grpc, err := dproxy.New(a.baseConnConfig, "ActiveMQ")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
 
 	go grpc.Start()
 
-	destination := getDestination(a.ConnectionConfig)
+	destination := getDestination(a.baseConnConfig)
 
 	// Continually loop looking for messages on the channel.
 MAIN:

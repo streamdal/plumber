@@ -17,16 +17,16 @@ import (
 // attempt to establish a connection, parse protobuf before finally attempting
 // to perform the write.
 func (k *Kafka) Write(ctx context.Context, errorCh chan *types.ErrorMessage, messages ...*types.WriteMessage) error {
-	writer, err := NewWriter(k.dialer, k.Options)
+	writer, err := NewWriter(k.dialer, k.connOpts)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new writer")
 	}
 
 	defer writer.Close()
 
-	for _, topic := range k.Options.Kafka.Topics {
+	for _, topic := range k.connOpts.Kafka.Topics {
 		for _, msg := range messages {
-			if err := k.write(ctx, writer, topic, []byte(k.Options.Kafka.WriteKey), msg.Value); err != nil {
+			if err := k.write(ctx, writer, topic, []byte(k.connOpts.Kafka.WriteKey), msg.Value); err != nil {
 				util.WriteError(k.log, errorCh, fmt.Errorf("unable to write message to topic '%s': %s", topic, err))
 			}
 		}
@@ -45,7 +45,7 @@ func (k *Kafka) write(ctx context.Context, writer *skafka.Writer, topic string, 
 
 	headers := make([]skafka.Header, 0)
 
-	for headerName, headerValue := range k.Options.Kafka.WriteHeader {
+	for headerName, headerValue := range k.connOpts.Kafka.WriteHeader {
 		headers = append(headers, skafka.Header{
 			Key:   headerName,
 			Value: []byte(headerValue),

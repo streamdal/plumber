@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"time"
 
 	"github.com/batchcorp/pgoutput"
 	"github.com/batchcorp/plumber/types"
@@ -91,10 +90,6 @@ func (c *CDCPostgres) Test(ctx context.Context) error {
 }
 
 func (c *CDCPostgres) Dynamic(ctx context.Context) error {
-	return types.UnsupportedFeatureErr
-}
-
-func (c *CDCPostgres) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
 	return types.UnsupportedFeatureErr
 }
 

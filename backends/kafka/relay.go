@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/pkg/errors"
 
 	ktypes "github.com/batchcorp/plumber/backends/kafka/types"
-	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/stats"
-	"github.com/batchcorp/plumber/types"
 	"github.com/batchcorp/plumber/util"
 )
 
@@ -23,17 +23,19 @@ var (
 )
 
 // Relay sets up a new Kafka relayer
-func (k *Kafka) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {
-	if err := validateRelayOptions(k.Options); err != nil {
+func (k *Kafka) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
+	if err := validateRelayOptions(relayOpts); err != nil {
 		return errors.Wrap(err, "unable to verify options")
 	}
 
+	// TODO: Why is this here? ~ds 09.10.21
 	k.log.Infof("Relaying Kafka messages from '%s' topic(s) -> '%s'",
-		k.Options.Kafka.Topics, k.Options.Relay.GRPCAddress)
+		relayOpts.Kafka.Args.Topics, relayOpts.XBatchshGrpcAddress)
 
-	k.log.Infof("HTTP server listening on '%s'", k.Options.Relay.HTTPListenAddress)
+	// TODO: What is this? ~ds 09.10.21
+	//k.log.Infof("HTTP server listening on '%s'", k.connOpts.Relay.HTTPListenAddress)
 
-	reader, err := NewReader(k.dialer, k.Options)
+	reader, err := NewReaderForRelay(k.dialer, k.connArgs, relayOpts.Kafka.Args)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new reader")
 	}
@@ -73,9 +75,21 @@ func (k *Kafka) Relay(ctx context.Context, relayCh chan interface{}, errorCh cha
 	}
 }
 
-// validateRelayOptions ensures all required CLI options are present before initializing relay mode
-func validateRelayOptions(opts *options.Options) error {
-	if len(opts.Kafka.Topics) == 0 {
+// validateRelayOptions ensures all required relay options are present
+func validateRelayOptions(relayOpts *opts.RelayOptions) error {
+	if relayOpts == nil {
+		return errors.New("relay opts cannot be nil")
+	}
+
+	if relayOpts.Kafka == nil {
+		return errors.New("kafka opts cannot be nil")
+	}
+
+	if relayOpts.Kafka.Args == nil {
+		return errors.New("kafka args cannot be nil")
+	}
+
+	if len(relayOpts.Kafka.Args.Topics) == 0 {
 		return ErrMissingTopic
 	}
 

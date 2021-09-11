@@ -9,10 +9,26 @@ import (
 	"strings"
 	"time"
 
-	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
+
+func DurationSec(durationSec interface{}) time.Duration {
+	if v, ok := durationSec.(int32); ok {
+		return time.Duration(v) * time.Second
+	}
+
+	if v, ok := durationSec.(int64); ok {
+		return time.Duration(v) * time.Second
+	}
+
+	if v, ok := durationSec.(int); ok {
+		return time.Duration(v) * time.Second
+	}
+
+	return 0
+}
 
 // Gunzip decompresses a slice of bytes and returns a slice of decompressed
 // bytes or an error.
@@ -51,28 +67,18 @@ func DirsExist(dirs []string) error {
 	return errors.New(strings.Join(errs, "; "))
 }
 
-func GetBackendName(cmd string) (string, error) {
-	splitCmd := strings.Split(cmd, " ")
-
-	if len(splitCmd) < 2 {
-		return "", errors.New("unexpected number of results in split command")
-	}
-
-	return splitCmd[1], nil
-}
-
 // WriteError is a wrapper for logging an error + writing to an error channel.
 // Both the logger and error channel can be nil.
-func WriteError(l *logrus.Entry, errorCh chan *types.ErrorMessage, err error) {
+func WriteError(l *logrus.Entry, errorCh chan *records.Error, err error) {
 	if l != nil {
 		l.Error(err)
 	}
 
 	if errorCh != nil {
 		go func() {
-			errorCh <- &types.ErrorMessage{
-				OccurredAt: time.Now().UTC(),
-				Error:      err,
+			errorCh <- &records.Error{
+				OccurredAtUnixTsUtc: time.Now().UTC().UnixNano(),
+				Error:               err.Error(),
 			}
 		}()
 	}

@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"io/ioutil"
-	"time"
 
 	"github.com/jhump/protoreflect/desc"
 	"github.com/nsqio/go-nsq"
@@ -111,10 +110,6 @@ func (n *NSQ) Test(ctx context.Context) error {
 }
 
 func (n *NSQ) Dynamic(ctx context.Context) error {
-	return types.UnsupportedFeatureErr
-}
-
-func (n *NSQ) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
 	return types.UnsupportedFeatureErr
 }
 

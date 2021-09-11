@@ -6,23 +6,17 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/util"
 	"github.com/batchcorp/plumber/validate"
 	"github.com/pkg/errors"
 )
 
 // HandleReadCmd handles CLI read mode
 func (p *Plumber) HandleReadCmd() error {
-	backendName, err := util.GetBackendName(p.CLIOptions.Global.XFullCommand)
-	if err != nil {
-		return errors.Wrap(err, "unable to get backend name")
-	}
-
 	if err := validate.ReadConfig(p.CLIOptions.Read); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	backend, err := backends.New(backendName, connCfg)
+	backend, err := backends.New(p.CLIOptions.Global.XBackend, p.cliConnOpts)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new backend")
 	}
@@ -32,7 +26,7 @@ func (p *Plumber) HandleReadCmd() error {
 
 	// backend.Read() blocks
 	go func() {
-		if err := backend.Read(context.Background(), resultCh, errorCh); err != nil {
+		if err := backend.Read(context.Background(), p.CLIOptions.Read, resultCh, errorCh); err != nil {
 			p.log.Errorf("unable to complete read for backend '%s': %s", backend.Name(), err)
 		}
 	}()
@@ -54,7 +48,7 @@ MAIN:
 			printer.Errorf("unable to display message with '%s' backend: %s", backend.Name(), err)
 		}
 
-		if !p.CLIOptions.Read.Follow {
+		if !p.CLIOptions.Read.Continuous {
 			break MAIN
 		}
 	}

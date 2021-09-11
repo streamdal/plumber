@@ -3,7 +3,6 @@ package awssns
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -68,10 +67,6 @@ func (a *AWSSNS) Read(ctx context.Context, resultsChan chan *types.ReadMessage, 
 
 func (a *AWSSNS) Test(ctx context.Context) error {
 	return types.NotImplementedErr
-}
-
-func (a *AWSSNS) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
-	return types.UnsupportedFeatureErr
 }
 
 func (a *AWSSNS) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {

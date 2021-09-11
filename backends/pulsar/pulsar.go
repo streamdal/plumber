@@ -65,10 +65,6 @@ func (p *Pulsar) Dynamic(ctx context.Context) error {
 	return types.UnsupportedFeatureErr
 }
 
-func (p *Pulsar) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
-	return types.UnsupportedFeatureErr
-}
-
 func (p *Pulsar) Relay(ctx context.Context, relayCh chan interface{}, errorCh chan *types.ErrorMessage) error {
 	return types.UnsupportedFeatureErr
 }

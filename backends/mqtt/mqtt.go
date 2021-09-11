@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
-	"time"
 
 	"github.com/batchcorp/plumber/types"
 	pahomqtt "github.com/eclipse/paho.mqtt.golang"
@@ -73,10 +72,6 @@ func (m *MQTT) Close(ctx context.Context) error {
 
 func (m *MQTT) Test(ctx context.Context) error {
 	return types.NotImplementedErr
-}
-
-func (m *MQTT) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
-	return types.UnsupportedFeatureErr
 }
 
 func connect(opts *options.Options) (pahomqtt.Client, error) {
