@@ -7,48 +7,50 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
 
-	"github.com/batchcorp/plumber/types"
-
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/serializers"
 )
 
-func GenerateWriteMessageFromOptions(opts *options.Options) ([]*types.WriteMessage, error) {
-	writeValues := make([]*types.WriteMessage, 0)
+func GenerateWriteMessageFromOptions(writeOpts *opts.WriteOptions) ([]*records.WriteRecord, error) {
+	writeValues := make([]*records.WriteRecord, 0)
 
 	// File source
-	if opts.Write.InputFile != "" {
-		data, err := ioutil.ReadFile(opts.Write.InputFile)
+	if writeOpts.XCliOptions.InputFile != "" {
+		data, err := ioutil.ReadFile(writeOpts.XCliOptions.InputFile)
 		if err != nil {
-			return nil, fmt.Errorf("unable to read file '%s': %s", opts.Write.InputFile, err)
+			return nil, fmt.Errorf("unable to read file '%s': %s", writeOpts.XCliOptions.InputFile, err)
 		}
 
-		wv, err := generateWriteValue(data, opts)
+		wv, err := generateWriteValue(data, writeOpts)
 		if err != nil {
 			return nil, err
 		}
 
-		writeValues = append(writeValues, &types.WriteMessage{
-			Value: wv,
+		writeValues = append(writeValues, &records.WriteRecord{
+			Input:         string(wv),
+			InputMetadata: writeOpts.Record.InputMetadata,
 		})
 
 		return writeValues, nil
 	}
 
 	// Stdin source
-	for _, data := range opts.Write.InputData {
-		wv, err := generateWriteValue([]byte(data), opts)
+	for _, data := range writeOpts.XCliOptions.InputStdin {
+		wv, err := generateWriteValue([]byte(data), writeOpts)
 		if err != nil {
 			return nil, err
 		}
 
-		writeValues = append(writeValues, &types.WriteMessage{
-			Value: wv,
+		writeValues = append(writeValues, &records.WriteRecord{
+			Input:         string(wv),
+			InputMetadata: writeOpts.Record.InputMetadata,
 		})
 	}
 
@@ -56,16 +58,16 @@ func GenerateWriteMessageFromOptions(opts *options.Options) ([]*types.WriteMessa
 }
 
 // generateWriteValue will transform input data into the required format for transmission
-func generateWriteValue(data []byte, opts *options.Options) ([]byte, error) {
+func generateWriteValue(data []byte, writeOpts *opts.WriteOptions) ([]byte, error) {
 	// New AVRO
-	if opts.Decoding.AvroSchemaFile != "" {
-		data, err := serializers.AvroEncodeWithSchemaFile(opts.Decoding.AvroSchemaFile, data)
+	if writeOpts.Decoding.AvroSchemaFile != "" {
+		data, err := serializers.AvroEncodeWithSchemaFile(writeOpts.Decoding.AvroSchemaFile, data)
 		if err != nil {
 			return nil, err
 		}
 
 		// Since AWS SQS works with strings only, we must convert it to base64
-		if opts.AWSSQS.QueueName != "" {
+		if writeOpts.AWSSQS.QueueName != "" {
 			encoded := base64.StdEncoding.EncodeToString(data)
 			return []byte(encoded), nil
 		}
@@ -74,21 +76,21 @@ func generateWriteValue(data []byte, opts *options.Options) ([]byte, error) {
 	}
 
 	// Input: Plain Output: Plain
-	if opts.Write.InputType == "plain" {
+	if writeOpts.Write.InputType == "plain" {
 		return data, nil
 	}
 
 	// Input: JSONPB Output: Protobuf
-	if opts.Write.InputType == "jsonpb" {
+	if writeOpts.Write.InputType == "jsonpb" {
 		var convertErr error
 
-		data, convertErr = ConvertJSONPBToProtobuf(data, dynamic.NewMessage(opts.Encoding.MsgDesc))
+		data, convertErr = ConvertJSONPBToProtobuf(data, dynamic.NewMessage(writeOpts.Encoding.MsgDesc))
 		if convertErr != nil {
 			return nil, errors.Wrap(convertErr, "unable to convert JSONPB to protobuf")
 		}
 
 		// Since AWS SQS works with strings only, we must convert it to base64
-		if opts.AWSSQS.QueueName != "" {
+		if writeOpts.AWSSQS.QueueName != "" {
 			encoded := base64.StdEncoding.EncodeToString(data)
 			return []byte(encoded), nil
 		}

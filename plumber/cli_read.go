@@ -13,7 +13,7 @@ import (
 
 // HandleReadCmd handles CLI read mode
 func (p *Plumber) HandleReadCmd() error {
-	if err := validate.ReadConfig(p.CLIOptions.Read); err != nil {
+	if err := validate.ReadOptions(p.CLIOptions.Read); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
