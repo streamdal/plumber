@@ -126,19 +126,14 @@ func (p *Plumber) Run() {
 	case "batch":
 		err = p.HandleBatchCmd() // TODO: Needs plumber-schemas work
 	case "read":
-		err = p.HandleReadCmd() // TODO: Am here
+		err = p.HandleReadCmd() // DONE
 	case "write":
-		err = p.HandleWriteCmd()
+		err = p.HandleWriteCmd() // TODO: Am here
 	case "relay":
 		printer.PrintRelayOptions(p.CLIOptions)
 		err = p.HandleRelayCmd()
 	case "dynamic":
 		err = p.HandleDynamicCmd()
-	case "lag":
-		err = p.HandleLagCmd()
-	// TODO: should github cmd be in plumber?
-	//case "github":
-	//	err = p.HandleGithubCmd()
 	default:
 		logrus.Fatalf("unrecognized command: %s", p.CLIOptions.Global.XAction)
 	}

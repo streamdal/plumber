@@ -6,6 +6,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/reader"
 	"github.com/batchcorp/plumber/validate"
 	"github.com/pkg/errors"
 )
@@ -38,6 +39,19 @@ MAIN:
 		select {
 		case msg := <-resultCh:
 			p.log.Debug("HandleReadCmd: received message on resultCh")
+
+			decoded, decodeErr := reader.Decode(p.CLIOptions, msg.Payload)
+			if decodeErr != nil {
+				printer.Errorf("unable to decode message payload for backend '%s': %s", backend.Name(), err)
+
+				if !p.CLIOptions.Read.Continuous {
+					break MAIN
+				}
+
+				continue
+			}
+
+			msg.Payload = decoded
 
 			err = backend.DisplayMessage(msg)
 		case errorMsg := <-errorCh:

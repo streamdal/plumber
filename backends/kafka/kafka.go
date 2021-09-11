@@ -185,13 +185,15 @@ func NewReaderForRelay(dialer *skafka.Dialer, connArgs *args.KafkaConn, relayArg
 // NOTE: Continuing to use the deprecated NewWriter() func to avoid dealing with
 // TLS issues (since *Writer does not have a Dialer and Transport has TLS
 // defined separate from the dialer).
-func NewWriter(dialer *skafka.Dialer, connArgs *args.KafkaConn, topic string) (*skafka.Writer, error) {
+func NewWriter(dialer *skafka.Dialer, connArgs *args.KafkaConn, topics ...string) (*skafka.Writer, error) {
 	// Necessary for auto-creating topics on writes, if enabled on the server
-	conn, err := connect(dialer, connArgs, topic, 0)
-	if err != nil {
-		return nil, err
+	for _, t := range topics {
+		conn, err := connect(dialer, connArgs, t, 0)
+		if err != nil {
+			return nil, fmt.Errorf("unable to establish connection to leader for topic '%s': %s", t, err)
+		}
+		conn.Close()
 	}
-	conn.Close()
 
 	// NOTE: We explicitly do NOT set the topic - it will be set in the message
 	return skafka.NewWriter(skafka.WriterConfig{
