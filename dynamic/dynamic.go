@@ -1,4 +1,4 @@
-package dproxy
+package dynamic
 
 import (
 	"context"
@@ -159,6 +159,7 @@ func (d *Client) handleAuthResponse(resp *services.DynamicReplay) {
 			d.log.Error("could not cleanly disconnect from server")
 		}
 		d.log.Fatalf("Received invalid authentication response from server")
+		return // only here to quiet ide warnings
 	}
 
 	if authResponse.Authorized == false {

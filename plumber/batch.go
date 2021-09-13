@@ -7,6 +7,8 @@ import (
 	"github.com/batchcorp/plumber/backends/batch"
 )
 
+// TODO: This needs to be updated to work with new batch cli opts
+//
 // HandleBatchCmd handles all commands related to Batch.sh API
 func (p *Plumber) HandleBatchCmd() error {
 	b := batch.New(p.CLIOptions, p.PersistentConfig)

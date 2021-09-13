@@ -121,16 +121,16 @@ func (p *Plumber) Run() {
 	var err error
 
 	switch p.CLIOptions.Global.XAction {
-	case "server":
-		err = p.RunServer() // DONE
-	case "batch":
-		err = p.HandleBatchCmd() // TODO: Needs plumber-schemas work
-	case "read":
-		err = p.HandleReadCmd() // DONE
-	case "write":
-		err = p.HandleWriteCmd() // DONE
-	case "relay":
-		printer.PrintRelayOptions(p.CLIOptions) // TODO: AM HERE
+	case "server": // DONE
+		err = p.RunServer()
+	case "batch": // TODO: Needs plumber-schemas work
+		err = p.HandleBatchCmd()
+	case "read": // DONE
+		err = p.HandleReadCmd()
+	case "write": // DONE
+		err = p.HandleWriteCmd()
+	case "relay": // DONE
+		printer.PrintRelayOptions(p.CLIOptions)
 		err = p.HandleRelayCmd()
 	case "dynamic":
 		err = p.HandleDynamicCmd()

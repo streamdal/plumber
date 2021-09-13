@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/dproxy"
+	"github.com/batchcorp/plumber/dynamic"
 )
 
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
@@ -22,7 +22,7 @@ func (r *RabbitMQ) Dynamic(ctx context.Context) error {
 	defer client.Close()
 
 	// Start up dynamic connection
-	grpc, err := dproxy.New(r.Options, "RabbitMQ")
+	grpc, err := dynamic.New(r.Options, "RabbitMQ")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}

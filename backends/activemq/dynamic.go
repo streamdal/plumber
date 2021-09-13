@@ -3,7 +3,7 @@ package activemq
 import (
 	"context"
 
-	"github.com/batchcorp/plumber/dproxy"
+	"github.com/batchcorp/plumber/dynamic"
 	"github.com/batchcorp/plumber/options"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -21,7 +21,7 @@ func (a *ActiveMq) Dynamic(ctx context.Context) error {
 	}
 
 	// Start up dynamic connection
-	grpc, err := dproxy.New(a.baseConnConfig, "ActiveMQ")
+	grpc, err := dynamic.New(a.baseConnConfig, "ActiveMQ")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}

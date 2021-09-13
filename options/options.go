@@ -75,7 +75,19 @@ func unsetUnusedOptions(opts *opts.CLIOptions) {
 		unsetUnusedRelayOpts(opts)
 		opts.Read = nil
 		opts.Write = nil
+	case "dynamic":
+		unsetUnusedDynamicOpts(opts)
+	case "batch":
+		unsetUnusedBatchOpts(opts)
 	}
+}
+
+func unsetUnusedDynamicOpts(opts *opts.CLIOptions) {
+	// TODO: unset unused backends
+}
+
+func unsetUnusedBatchOpts(opts *opts.CLIOptions) {
+	// TODO: Unset unused backends
 }
 
 func unsetUnusedReadOpts(opts *opts.CLIOptions) {
@@ -104,7 +116,7 @@ func ActionUsesBackend(action string) bool {
 		return true
 	case "write":
 		return true
-	case "lag":
+	case "dynamic":
 		return true
 	}
 
@@ -124,11 +136,13 @@ func maybeDisplayVersion(args []string) {
 // write opts to.
 func newCLIOptions() *opts.CLIOptions {
 	return &opts.CLIOptions{
-		Global: &opts.GlobalCLIOptions{},
-		Server: &opts.ServerOptions{},
-		Read:   newReadOptions(),
-		Write:  newWriteOptions(),
-		Relay:  newRelayOptions(),
+		Global:  &opts.GlobalCLIOptions{},
+		Server:  &opts.ServerOptions{},
+		Read:    newReadOptions(),
+		Write:   newWriteOptions(),
+		Relay:   newRelayOptions(),
+		Dynamic: newDynamicOptions(),
+		Batch:   newBatchOptions(),
 	}
 }
 
@@ -409,6 +423,127 @@ func newRelayOptions() *opts.RelayOptions {
 		Postgres: &opts.RelayGroupPostgresOptions{
 			XConn: &args.PostgresConn{},
 			Args:  &args.PostgresReadArgs{},
+		},
+	}
+}
+
+func newDynamicOptions() *opts.DynamicOptions {
+	return &opts.DynamicOptions{
+		Kafka: &opts.DynamicGroupKafkaOptions{
+			XConn: &args.KafkaConn{
+				Address: make([]string, 0),
+			},
+			Args: &args.KafkaWriteArgs{},
+		},
+		Activemq: &opts.DynamicGroupActiveMQOptions{
+			XConn: &args.ActiveMQConn{},
+			Args:  &args.ActiveMQWriteArgs{},
+		},
+		Awssqs: &opts.DynamicGroupAWSSQSOptions{
+			XConn: &args.AWSSQSConn{},
+			Args:  &args.AWSSQSWriteArgs{},
+		},
+		Nats: &opts.DynamicGroupNatsOptions{
+			XConn: &args.NatsConn{
+				TlsCaCert:       make([]byte, 0),
+				TlsClientCert:   make([]byte, 0),
+				TlsClientKey:    make([]byte, 0),
+				UserCredentials: make([]byte, 0),
+			},
+			Args: &args.NatsWriteArgs{},
+		},
+		NatsStreaming: &opts.DynamicGroupNatsStreamingOptions{
+			XConn: &args.NatsStreamingConn{
+				TlsCaCert:       make([]byte, 0),
+				TlsClientCert:   make([]byte, 0),
+				TlsClientKey:    make([]byte, 0),
+				UserCredentials: make([]byte, 0),
+			},
+			Args: &args.NatsStreamingWriteArgs{},
+		},
+		Nsq: &opts.DynamicGroupNSQOptions{
+			XConn: &args.NSQConn{
+				TlsCaCert:     make([]byte, 0),
+				TlsClientCert: make([]byte, 0),
+				TlsClientKey:  make([]byte, 0),
+			},
+			Args: &args.NSQWriteArgs{},
+		},
+		Rabbit: &opts.DynamicGroupRabbitOptions{
+			XConn: &args.RabbitConn{},
+			Args:  &args.RabbitWriteArgs{},
+		},
+		Mqtt: &opts.DynamicGroupMQTTOptions{
+			XConn: &args.MQTTConn{
+				TlsOptions: &args.MQTTTLSOptions{},
+			},
+			Args: &args.MQTTWriteArgs{},
+		},
+		AzureServiceBus: &opts.DynamicGroupAzureServiceBusOptions{
+			XConn: &args.AzureServiceBusConn{},
+			Args:  &args.AzureServiceBusWriteArgs{},
+		},
+		AzureEventHub: &opts.DynamicGroupAzureEventHubOptions{
+			XConn: &args.AzureEventHubConn{},
+			Args:  &args.AzureEventHubWriteArgs{},
+		},
+		GcpPubsub: &opts.DynamicGroupGCPPubSubOptions{
+			XConn: &args.GCPPubSubConn{},
+			Args:  &args.GCPPubSubWriteArgs{},
+		},
+		KubemqQueue: &opts.DynamicGroupKubeMQQueueOptions{
+			XConn: &args.KubeMQQueueConn{},
+			Args:  &args.KubeMQQueueWriteArgs{},
+		},
+		RedisPubsub: &opts.DynamicGroupRedisPubSubOptions{
+			XConn: &args.RedisPubSubConn{},
+			Args:  &args.RedisPubSubWriteArgs{},
+		},
+		RedisStreams: &opts.DynamicGroupRedisStreamsOptions{
+			XConn: &args.RedisStreamsConn{},
+			Args:  &args.RedisStreamsWriteArgs{},
+		},
+	}
+}
+
+func newBatchOptions() *opts.BatchOptions {
+	return &opts.BatchOptions{
+		Login:  &opts.BatchLoginOptions{},
+		Logout: &opts.BatchLogoutOptions{},
+		List:   &opts.BatchListOptions{},
+		Create: &opts.BatchCreateOptions{
+			Collection: &opts.BatchCreateCollectionOptions{},
+			Replay:     &opts.BatchCreateReplayOptions{},
+			Destination: &opts.BatchCreateDestinationOptions{
+				Kafka: &opts.WriteGroupKafkaOptions{
+					XConn: &args.KafkaConn{},
+					Args: &args.KafkaWriteArgs{
+						Headers: make(map[string]string, 0),
+						Topics:  make([]string, 0),
+					},
+				},
+				Rabbit: &opts.WriteGroupRabbitOptions{
+					XConn: &args.RabbitConn{},
+					Args:  &args.RabbitWriteArgs{},
+				},
+				KubemqQueue: &opts.WriteGroupKubeMQQueueOptions{
+					XConn: &args.KubeMQQueueConn{},
+					Args:  &args.KubeMQQueueWriteArgs{},
+				},
+				Awssqs: &opts.WriteGroupAWSSQSOptions{
+					XConn: &args.AWSSQSConn{},
+					Args: &args.AWSSQSWriteArgs{
+						Attributes: make(map[string]string, 0),
+					},
+				},
+				Http: &opts.HTTPDestination{
+					Headers: make(map[string]string, 0),
+				},
+			},
+		},
+		Search: &opts.BatchSearchOptions{},
+		Archive: &opts.BatchArchiveOptions{
+			Replay: &opts.BatchArchiveReplayOptions{},
 		},
 	}
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/dproxy"
+	"github.com/batchcorp/plumber/dynamic"
 )
 
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
@@ -21,7 +21,7 @@ func (s *ServiceBus) Dynamic(ctx context.Context) error {
 	llog := logrus.WithField("pkg", "azure/dynamic")
 
 	// Start up dynamic connection
-	grpc, err := dproxy.New(s.Options, "Azure Service Bus")
+	grpc, err := dynamic.New(s.Options, "Azure Service Bus")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}

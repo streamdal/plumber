@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/dproxy"
+	"github.com/batchcorp/plumber/dynamic"
 )
 
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
@@ -23,7 +23,7 @@ func (a *AWSSQS) Dynamic(ctx context.Context) error {
 	log := logrus.WithField("pkg", "gcppubsub/dynamic")
 
 	// Start up dynamic connection
-	grpc, err := dproxy.New(a.Options, "AWS SQS")
+	grpc, err := dynamic.New(a.Options, "AWS SQS")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
