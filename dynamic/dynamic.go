@@ -6,17 +6,21 @@ import (
 	"io"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
-	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/schemas/build/go/events"
 	"github.com/batchcorp/schemas/build/go/services"
 )
 
 const (
+	// DefaultDynamicAddress is the default address that the dynamic pkg will
+	// use if an alternate address is not specified
+	DefaultDynamicAddress = "dproxy.batch.sh:443"
+
 	// ReconnectSleep determines the length of time to wait between reconnect attempts to dProxy
 	ReconnectSleep = time.Second * 5
 )
@@ -29,22 +33,28 @@ type Client struct {
 	MessageBus        string
 	OutboundMessageCh chan *events.Outbound
 
-	Options *options.Options
+	Options *opts.DynamicOptions
 }
 
 // New validates CLI options and returns a new Client struct
-func New(opts *options.Options, bus string) (*Client, error) {
-	ctx, _ := context.WithTimeout(context.Background(), opts.DProxy.GRPCTimeout)
+func New(opts *opts.DynamicOptions, bus string) (*Client, error) {
+	if err := validateDynamicOptions(opts); err != nil {
+		return nil, errors.Wrap(err, "unable to validate dynamic options")
+	}
 
-	conn, err := grpc.DialContext(ctx, opts.DProxy.Address, getDialOptions(opts)...)
+	grpcConnTimeout := time.Duration(opts.XGrpcTimeoutSeconds) * time.Second
+
+	ctx, _ := context.WithTimeout(context.Background(), grpcConnTimeout)
+
+	conn, err := grpc.DialContext(ctx, opts.XGrpcAddress, getDialOptions(opts)...)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to open connection to %s", opts.DProxy.Address)
+		return nil, errors.Wrapf(err, "unable to open connection to %s", opts.XGrpcAddress)
 	}
 
 	dClient := &Client{
 		Client:            services.NewDProxyClient(conn),
 		Conn:              conn,
-		Token:             opts.DProxy.APIToken,
+		Token:             opts.ApiToken,
 		log:               logrus.WithField("pkg", "dproxy"),
 		OutboundMessageCh: make(chan *events.Outbound, 1),
 		MessageBus:        bus,
@@ -54,10 +64,26 @@ func New(opts *options.Options, bus string) (*Client, error) {
 	return dClient, nil
 }
 
+func validateDynamicOptions(opts *opts.DynamicOptions) error {
+	if opts == nil {
+		return errors.New("opts cannot be nil")
+	}
+
+	if opts.ApiToken == "" {
+		return errors.New("api token cannot be empty")
+	}
+
+	if opts.XGrpcAddress == "" {
+		opts.XGrpcAddress = DefaultDynamicAddress
+	}
+
+	return nil
+}
+
 func (d *Client) reconnect() error {
-	conn, err := grpc.Dial(d.Options.DProxy.Address, getDialOptions(d.Options)...)
+	conn, err := grpc.Dial(d.Options.XGrpcAddress, getDialOptions(d.Options)...)
 	if err != nil {
-		return errors.Wrapf(err, "unable to open connection to %s", d.Options.DProxy.Address)
+		return errors.Wrapf(err, "unable to open connection to %s", d.Options.XGrpcAddress)
 	}
 
 	d.Client = services.NewDProxyClient(conn)
@@ -65,10 +91,10 @@ func (d *Client) reconnect() error {
 }
 
 // getDialOptions returns all necessary grpc dial options to connect to dProxy
-func getDialOptions(opts *options.Options) []grpc.DialOption {
+func getDialOptions(opts *opts.DynamicOptions) []grpc.DialOption {
 	dialOpts := []grpc.DialOption{grpc.WithBlock()}
 
-	if opts.DProxy.Insecure {
+	if opts.XGrpcInsecure {
 		dialOpts = append(dialOpts, grpc.WithInsecure())
 	} else {
 		dialOpts = append(dialOpts, grpc.WithTransportCredentials(credentials.NewTLS(
