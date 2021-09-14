@@ -498,6 +498,11 @@ github.com/thrift-iterator/go/raw
 github.com/thrift-iterator/go/spi
 # github.com/tidwall/gjson v1.8.0
 ## explicit
+github.com/tidwall/gjson
+# github.com/tidwall/match v1.0.3
+github.com/tidwall/match
+# github.com/tidwall/pretty v1.1.0
+github.com/tidwall/pretty
 # github.com/tmc/grpc-websocket-proxy v0.0.0-20201229170055-e5319fda7802
 github.com/tmc/grpc-websocket-proxy/wsproxy
 # github.com/v2pro/plz v0.0.0-20200805122259-422184e41b6e

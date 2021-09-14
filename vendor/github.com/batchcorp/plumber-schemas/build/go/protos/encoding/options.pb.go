@@ -139,12 +139,12 @@ type EncodeOptions struct {
 	// @gotags: kong:"-"
 	SchemaId string `protobuf:"bytes,1,opt,name=schema_id,json=schemaId,proto3" json:"schema_id,omitempty" kong:"-"`
 	// TODO: Update kong to be able to use proto/smart enums
-	// @gotags: kong:"help='Input type (0: Unset, 1: JSONPB)',default=0"
-	EncodeType EncodeType `protobuf:"varint,2,opt,name=encode_type,json=encodeType,proto3,enum=protos.encoding.EncodeType" json:"encode_type,omitempty" kong:"help='Input type (0: Unset, 1: JSONPB)',default=0"`
-	// @gotags: kong="embed,group=protobuf"
-	ProtobufSettings *ProtobufSettings `protobuf:"bytes,3,opt,name=protobuf_settings,json=protobufSettings,proto3" json:"protobuf_settings,omitempty"`
-	// @gotags: kong="help='If encode-type is set to avro, must specify avro schema file',existingfile"
-	AvroSchemaFile       string   `protobuf:"bytes,4,opt,name=avro_schema_file,json=avroSchemaFile,proto3" json:"avro_schema_file,omitempty"`
+	// @gotags: kong:"help='Encode type (0: Unset, 1: JSONPB)',default=0"
+	EncodeType EncodeType `protobuf:"varint,2,opt,name=encode_type,json=encodeType,proto3,enum=protos.encoding.EncodeType" json:"encode_type,omitempty" kong:"help='Encode type (0: Unset, 1: JSONPB)',default=0"`
+	// @gotags: kong:"embed,group=protobuf"
+	ProtobufSettings *ProtobufSettings `protobuf:"bytes,3,opt,name=protobuf_settings,json=protobufSettings,proto3" json:"protobuf_settings,omitempty" kong:"embed,group=protobuf"`
+	// @gotags: kong:"help='If encode-type is set to avro, must specify avro schema file',existingfile"
+	AvroSchemaFile       string   `protobuf:"bytes,4,opt,name=avro_schema_file,json=avroSchemaFile,proto3" json:"avro_schema_file,omitempty" kong:"help='If encode-type is set to avro, must specify avro schema file',existingfile"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -207,10 +207,10 @@ type DecodeOptions struct {
 	// Use an existing schema for decoding (and ignore all other decode settings)
 	// @gotags: kong:"-"
 	SchemaId string `protobuf:"bytes,1,opt,name=schema_id,json=schemaId,proto3" json:"schema_id,omitempty" kong:"-"`
-	// @gotags: kong:"help='Input type (0: Unset, 1: JSONPB, 2: Protobuf, 3: Avro, 4: Thrift, 5: Flatbuffer)',default=0"
-	DecodeType DecodeType `protobuf:"varint,2,opt,name=decode_type,json=decodeType,proto3,enum=protos.encoding.DecodeType" json:"decode_type,omitempty" kong:"help='Input type (0: Unset, 1: JSONPB, 2: Protobuf, 3: Avro, 4: Thrift, 5: Flatbuffer)',default=0"`
-	// @gotags: kong="embed,group=protobuf"
-	ProtobufSettings     *ProtobufSettings `protobuf:"bytes,3,opt,name=protobuf_settings,json=protobufSettings,proto3" json:"protobuf_settings,omitempty"`
+	// @gotags: kong:"help='Decode type (0: Unset, 1: JSONPB, 2: Protobuf, 3: Avro, 4: Thrift, 5: Flatbuffer)',default=0"
+	DecodeType DecodeType `protobuf:"varint,2,opt,name=decode_type,json=decodeType,proto3,enum=protos.encoding.DecodeType" json:"decode_type,omitempty" kong:"help='Decode type (0: Unset, 1: JSONPB, 2: Protobuf, 3: Avro, 4: Thrift, 5: Flatbuffer)',default=0"`
+	// @gotags: kong:"embed,group=protobuf"
+	ProtobufSettings     *ProtobufSettings `protobuf:"bytes,3,opt,name=protobuf_settings,json=protobufSettings,proto3" json:"protobuf_settings,omitempty" kong:"embed,group=protobuf"`
 	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
 	XXX_unrecognized     []byte            `json:"-"`
 	XXX_sizecache        int32             `json:"-"`

@@ -2,6 +2,9 @@
 package validate
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber/util"
@@ -51,13 +54,28 @@ func ReadOptions(readOpts *opts.ReadOptions) error {
 	return nil
 }
 
-func WriteOptions(writeOpts *opts.WriteOptions) error {
+func WriteOptionsCLI(writeOpts *opts.WriteOptions) error {
 	if writeOpts == nil {
 		return errors.New("write options cannot be nil")
 	}
 
 	if writeOpts.XCliOptions == nil {
 		return errors.New("cli options cannot be nil")
+	}
+
+	if writeOpts.Record.Input == "" && writeOpts.XCliOptions.InputFile == "" && len(writeOpts.XCliOptions.InputStdin) == 0 {
+		return errors.New("either --input or --input-file or  must be specified")
+	}
+
+	// Input and file cannot be set at the same time
+	if len(writeOpts.Write.InputData) > 0 && writeOpts.Write.InputFile != "" {
+		return fmt.Errorf("--input-data and --input-file cannot both be set")
+	}
+
+	if writeOpts.XCliOptions.InputFile != "" {
+		if _, err := os.Stat(writeOpts.Write.InputFile); os.IsNotExist(err) {
+			return fmt.Errorf("--file '%s' does not exist", writeOpts.Write.InputFile)
+		}
 	}
 
 	if writeOpts.EncodeOptions != nil {

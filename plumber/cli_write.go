@@ -14,7 +14,7 @@ import (
 
 // HandleWriteCmd handles write mode
 func (p *Plumber) HandleWriteCmd() error {
-	if err := validate.WriteOptions(p.CLIOptions.Write); err != nil {
+	if err := validate.WriteOptionsCLI(p.CLIOptions.Write); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
@@ -23,7 +23,7 @@ func (p *Plumber) HandleWriteCmd() error {
 		return errors.Wrap(err, "unable to create new backend")
 	}
 
-	value, err := writer.GenerateWriteMessageFromOptions(p.CLIOptions.Write)
+	value, err := writer.GenerateWriteMessageForCLI(p.CLIOptions.Write, p.cliMD)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}
