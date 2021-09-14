@@ -1,3 +1,7 @@
+// Package kafka is the most complex backend as it has several different
+// operating modes. Due to this, it should not be used as a "template" for other
+// backends - most other backends are significantly simpler and follow an
+// expected flow.
 package kafka
 
 import (
@@ -82,44 +86,6 @@ func (k *Kafka) Close(_ context.Context) error {
 func (k *Kafka) Test(_ context.Context) error {
 	return types.NotImplementedErr
 }
-
-//// TODO: If read message contains record - there's no need for this func; each
-//// backend would fill out the necessary record bits
-//func (k *Kafka) ConvertReadToRecord(msgID, plumberID string, readMsg *types.ReadMessage) (*records.Message, error) {
-//	if readMsg == nil {
-//		return nil, errors.New("read message cannot be nil")
-//	}
-//
-//	rawMsg, ok := readMsg.Raw.(skafka.Message)
-//	if !ok {
-//		return nil, errors.New("unable to assert raw message")
-//	}
-//
-//	// Try to decode the value
-//	// TODO: Make sure that opts.MessageDesc is set so Decode can work
-//	decoded, err := reader.Decode(k.connOpts, rawMsg.Value)
-//	if err != nil {
-//		return nil, errors.Wrap(err, "unable to decode value")
-//	}
-//
-//	return &records.Message{
-//		MessageId:        msgID,
-//		PlumberId:        plumberID,
-//		UnixTimestampUtc: readMsg.ReceivedAt.UnixNano(),
-//		Decoded:          decoded,
-//		Message: &records.Message_Kafka{
-//			Kafka: &records.Kafka{
-//				Topic:     rawMsg.Topic,
-//				Key:       rawMsg.Key,
-//				Value:     rawMsg.Value, // original payload
-//				Timestamp: rawMsg.Time.UnixNano(),
-//				Offset:    rawMsg.Offset,
-//				Partition: int32(rawMsg.Partition),
-//				Headers:   convertKafkaHeadersToProto(rawMsg.Headers),
-//			},
-//		},
-//	}, nil
-//}
 
 func NewReaderForRead(dialer *skafka.Dialer, connArgs *args.KafkaConn, readArgs *args.KafkaReadArgs) (*skafka.Reader, error) {
 	rc := skafka.ReaderConfig{

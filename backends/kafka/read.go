@@ -29,12 +29,19 @@ func (k *Kafka) Read(
 		return errors.Wrap(err, "unable to validate read config")
 	}
 
-	reader, err := NewReaderForRead(k.dialer, k.connArgs, readOpts.Kafka.Args)
-	if err != nil {
-		return errors.Wrap(err, "unable to create new reader")
-	}
+	var reader *skafka.Reader
 
-	defer reader.Close()
+	// We only need to instantiate a reader if this is not a Lag read
+	if !readOpts.Kafka.Args.Lag {
+		var err error
+
+		reader, err = NewReaderForRead(k.dialer, k.connArgs, readOpts.Kafka.Args)
+		if err != nil {
+			return errors.Wrap(err, "unable to create new reader")
+		}
+
+		defer reader.Close()
+	}
 
 	return k.read(ctx, readOpts, reader, resultsChan, errorChan)
 }
@@ -46,10 +53,6 @@ func (k *Kafka) read(
 	resultsChan chan *records.ReadRecord,
 	errorChan chan *records.ErrorRecord,
 ) error {
-
-	if reader == nil {
-		return errors.New("reader cannot be nil")
-	}
 
 	k.log.Info("Initializing (could take a minute or two) ...")
 
@@ -73,7 +76,7 @@ func (k *Kafka) read(
 	switch {
 	case readOpts.Kafka.Args.Lag:
 		readType = "lag"
-		err = k.performLagRead(ctx, readOpts, lag, resultsChan, errorChan)
+		err = lag.Lag(ctx, resultsChan, errorChan, DefaultLagInterval)
 	case readOpts.SampleOptions != nil:
 		readType = "sampled"
 		err = k.performSampledRead(ctx, readOpts, reader, lag, resultsChan, errorChan)
@@ -88,17 +91,6 @@ func (k *Kafka) read(
 
 	k.log.Debug("reader exiting")
 
-	return nil
-}
-
-// TODO: Implement
-func (k *Kafka) performLagRead(
-	ctx context.Context,
-	readOpts *opts.ReadOptions,
-	lag *Lag,
-	resultsChan chan *records.ReadRecord,
-	errorChan chan *records.ErrorRecord,
-) error {
 	return nil
 }
 
@@ -322,6 +314,12 @@ func validateReadOptions(readOpts *opts.ReadOptions) error {
 
 	if readOpts.Kafka.Args == nil {
 		return errors.New("kafka read option args cannot be nil")
+	}
+
+	if readOpts.Kafka.Args.Lag {
+		if readOpts.Kafka.Args.LagConsumerGroup == "" {
+			return errors.New("Lag consumer group must be specified if --lag is set")
+		}
 	}
 
 	if readOpts.Kafka.Args.ReadOffset < 0 {

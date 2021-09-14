@@ -84,8 +84,8 @@ func (p *Plumber) runServer() error {
 		ReadsMutex:       &sync.RWMutex{},
 		RelaysMutex:      &sync.RWMutex{},
 		GithubService:    gh,
+		Log:              logrus.WithField("pkg", "plumber/cli_server.go"),
 		Etcd:             p.Etcd,
-		Log:              logrus.WithField("pkg", "plumber/server.go"),
 	}
 
 	protos.RegisterPlumberServerServer(grpcServer, plumberServer)

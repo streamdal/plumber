@@ -2,15 +2,23 @@ package kafka
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+	"github.com/batchcorp/plumber/util"
 	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
 	skafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/types"
+)
+
+const (
+	DefaultLagInterval = 5 * time.Second
 )
 
 type Lag struct {
@@ -68,8 +76,19 @@ func validateReadArgsForLag(readArgs *args.KafkaReadArgs) error {
 
 // Lag fetches topic stats on the given interval and returns them over the
 // resultsChan. This is a blocking call.
-func (l *Lag) Lag(ctx context.Context, resultsCh chan []*types.TopicStats, interval time.Duration) error {
+func (l *Lag) Lag(
+	ctx context.Context,
+	resultsCh chan *records.ReadRecord,
+	errorCh chan *records.ErrorRecord,
+	interval time.Duration,
+) error {
 	t := time.NewTicker(interval)
+
+	// This metadata is used by kafka's DisplayMessage to determine that the
+	// record contains lag info instead of a regular payload.
+	metadata := map[string]string{
+		"lag": "true",
+	}
 
 MAIN:
 	for {
@@ -80,10 +99,24 @@ MAIN:
 		case <-t.C:
 			topicStats, err := l.getConsumerGroupLag(ctx)
 			if err != nil {
-				return errors.Wrap(err, "unable to fetch lag stats")
+				util.WriteError(l.log, errorCh, errors.Wrap(err, "unable to get consumer lag"))
+
+				continue MAIN
 			}
 
-			resultsCh <- topicStats
+			topicStatsJSON, err := json.Marshal(topicStats)
+			if err != nil {
+				util.WriteError(l.log, errorCh, errors.Wrap(err, "unable to marshal topic stats to JSON"))
+
+				continue MAIN
+			}
+
+			resultsCh <- &records.ReadRecord{
+				MessageId:           uuid.NewV4().String(),
+				Metadata:            metadata,
+				ReceivedAtUnixTsUtc: time.Now().UTC().Unix(),
+				XRaw:                topicStatsJSON,
+			}
 		}
 	}
 

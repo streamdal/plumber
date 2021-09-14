@@ -56,6 +56,9 @@ func GenerateWriteMessageForCLI(writeOpts *opts.WriteOptions, md *desc.MessageDe
 		return writeValues, nil
 	}
 
+	// TODO: This is kind of lame - stdin should probably just go straight into
+	// WriteOpts.Record.Input (and make Input into repeated string)
+
 	// Stdin source
 	for _, data := range writeOpts.XCliOptions.InputStdin {
 		wv, err := generateWriteValue([]byte(data), writeOpts, md)
@@ -78,7 +81,7 @@ func GenerateWriteMessageForCLI(writeOpts *opts.WriteOptions, md *desc.MessageDe
 
 // generateWriteValue will transform input data into the required format for transmission
 func generateWriteValue(data []byte, writeOpts *opts.WriteOptions, md *desc.MessageDescriptor) ([]byte, error) {
-	// New AVRO
+	// Input: AVRO
 	if writeOpts.EncodeOptions.AvroSchemaFile != "" {
 		data, err := serializers.AvroEncodeWithSchemaFile(writeOpts.EncodeOptions.AvroSchemaFile, data)
 		if err != nil {
@@ -94,12 +97,12 @@ func generateWriteValue(data []byte, writeOpts *opts.WriteOptions, md *desc.Mess
 		return data, nil
 	}
 
-	// Input: Plain Output: Plain
+	// Input: Plain
 	if writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_UNSET {
 		return data, nil
 	}
 
-	// Input: JSONPB Output: Protobuf
+	// Input: JSONPB
 	if writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_JSONPB {
 		var convertErr error
 

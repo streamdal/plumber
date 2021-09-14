@@ -131,9 +131,9 @@ func (p *Plumber) Run() {
 		err = p.HandleWriteCmd()
 	case "relay": // DONE
 		printer.PrintRelayOptions(p.CLIOptions)
-		err = p.HandleRelayCmd()
+		err = p.HandleRelayCmd() // DONE
 	case "dynamic":
-		err = p.HandleDynamicCmd()
+		err = p.HandleDynamicCmd() // TODO: Update next
 	default:
 		logrus.Fatalf("unrecognized command: %s", p.CLIOptions.Global.XAction)
 	}
