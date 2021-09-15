@@ -23,7 +23,7 @@ func (p *Plumber) HandleWriteCmd() error {
 		return errors.Wrap(err, "unable to create new backend")
 	}
 
-	value, err := writer.GenerateWriteMessageForCLI(p.CLIOptions.Write, p.cliMD)
+	value, err := writer.GenerateWriteValue(p.CLIOptions.Write, p.cliMD)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}

@@ -21,8 +21,10 @@ import (
 	"github.com/lensesio/tableprinter"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+)
 
-	"github.com/batchcorp/plumber/options"
+const (
+	DefaultAPIURL = "https://api.batch.sh"
 )
 
 type IBatch interface {
@@ -41,7 +43,7 @@ type IBatch interface {
 type Batch struct {
 	PersistentConfig *config.Config
 	Log              *logrus.Entry
-	Opts             *options.Options
+	Opts             *opts.CLIOptions
 	Client           *http.Client
 	Printer          PrinterFunc
 	ApiUrl           string
@@ -69,8 +71,7 @@ var errNotAuthenticated = errors.New("you are not authenticated. run `plumber ba
 func New(cliOpts *opts.CLIOptions, cfg *config.Config) *Batch {
 	printer := printTable
 
-	// TODO: Need to add schema in plumber-schemas for Batch commands
-	if cliOpts.Batch.OutputType == "json" {
+	if cliOpts.Batch.OutputType == opts.BatchOutputType_JSON {
 		printer = printJSON
 	}
 
@@ -80,12 +81,11 @@ func New(cliOpts *opts.CLIOptions, cfg *config.Config) *Batch {
 		Opts:             cliOpts,
 		Client:           &http.Client{},
 		Printer:          printer,
-		ApiUrl:           "https://api.batch.sh",
+		ApiUrl:           cliOpts.Batch.ApiUrl,
 	}
 
-	url := os.Getenv("API_URL")
-	if url != "" {
-		b.ApiUrl = url
+	if b.ApiUrl == "" {
+		b.ApiUrl = DefaultAPIURL
 	}
 
 	return b
@@ -163,6 +163,10 @@ func (b *Batch) Post(path string, params map[string]interface{}) ([]byte, int, e
 	}
 
 	req, err := http.NewRequest(http.MethodPost, b.ApiUrl+path, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, 0, errors.New("unable to create new request for post")
+	}
+
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := b.Client.Do(req)
@@ -197,6 +201,10 @@ func (b *Batch) Delete(path string) ([]byte, int, error) {
 	}
 
 	req, err := http.NewRequest(http.MethodDelete, b.ApiUrl+path, nil)
+	if err != nil {
+		return nil, 0, errors.New("unable to create new request for delete")
+	}
+
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := b.Client.Do(req)

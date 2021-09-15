@@ -69,14 +69,14 @@ func DirsExist(dirs []string) error {
 
 // WriteError is a wrapper for logging an error + writing to an error channel.
 // Both the logger and error channel can be nil.
-func WriteError(l *logrus.Entry, errorCh chan *records.Error, err error) {
+func WriteError(l *logrus.Entry, errorCh chan *records.ErrorRecord, err error) {
 	if l != nil {
 		l.Error(err)
 	}
 
 	if errorCh != nil {
 		go func() {
-			errorCh <- &records.Error{
+			errorCh <- &records.ErrorRecord{
 				OccurredAtUnixTsUtc: time.Now().UTC().UnixNano(),
 				Error:               err.Error(),
 			}

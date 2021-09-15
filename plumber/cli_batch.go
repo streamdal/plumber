@@ -7,37 +7,36 @@ import (
 	"github.com/batchcorp/plumber/backends/batch"
 )
 
-// TODO: This needs to be updated to work with new batch cli opts
-//
 // HandleBatchCmd handles all commands related to Batch.sh API
 func (p *Plumber) HandleBatchCmd() error {
 	b := batch.New(p.CLIOptions, p.PersistentConfig)
 
-	if strings.HasPrefix(p.CLIOptions.Global.XFullCommand, "batch create destination") {
-		commands := strings.Split(p.CLIOptions.Global.XFullCommand, " ")
-		return b.CreateDestination(commands[3])
-	}
+	// Less typing
+	cmd := p.CLIOptions.Global.XFullCommand
 
-	switch p.CLIOptions.Global.XFullCommand {
-	case "batch login":
+	switch {
+	case strings.HasPrefix(cmd, "batch login"):
 		return b.Login()
-	case "batch logout":
+	case strings.HasPrefix(cmd, "batch logout"):
 		return b.Logout()
-	case "batch list collection":
+	case strings.HasPrefix(cmd, "batch list collection"):
 		return b.ListCollections()
-	case "batch create collection":
+	case strings.HasPrefix(cmd, "batch create collection"):
 		return b.CreateCollection()
-	case "batch list destination":
+	case strings.HasPrefix(cmd, "batch create destination"):
+		commands := strings.Split(cmd, " ")
+		return b.CreateDestination(commands[3])
+	case strings.HasPrefix(cmd, "batch list destination"):
 		return b.ListDestinations()
-	case "batch list schema":
+	case strings.HasPrefix(cmd, "batch list schema"):
 		return b.ListSchemas()
-	case "batch list replay":
+	case strings.HasPrefix(cmd, "batch list replay"):
 		return b.ListReplays()
-	case "batch create replay":
+	case strings.HasPrefix(cmd, "batch create replay"):
 		return b.CreateReplay()
-	case "batch archive replay":
+	case strings.HasPrefix(cmd, "batch archive replay"):
 		return b.ArchiveReplay()
-	case "batch search":
+	case strings.HasPrefix(cmd, "batch search"):
 		return b.SearchCollection()
 	default:
 		return fmt.Errorf("unrecognized command: %s", p.CLIOptions.Global.XFullCommand)

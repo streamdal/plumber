@@ -18,7 +18,7 @@ import (
 	"github.com/batchcorp/plumber/serializers"
 )
 
-func GenerateWriteMessageForCLI(writeOpts *opts.WriteOptions, md *desc.MessageDescriptor) ([]*records.WriteRecord, error) {
+func GenerateWriteValue(writeOpts *opts.WriteOptions, md *desc.MessageDescriptor) ([]*records.WriteRecord, error) {
 	writeValues := make([]*records.WriteRecord, 0)
 
 	// Input already provided
