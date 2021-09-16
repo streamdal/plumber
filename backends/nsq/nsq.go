@@ -174,7 +174,7 @@ func generateTLSConfig(opts *options.Options) (*tls.Config, error) {
 		return nil, errors.Wrap(err, "unable to parse certificate")
 	}
 
-	// Create tls.Config with desired tls properties
+	// Create tls.ReadOptions with desired tls properties
 	return &tls.Config{
 		RootCAs:            certpool,
 		ClientAuth:         tls.NoClientCert,

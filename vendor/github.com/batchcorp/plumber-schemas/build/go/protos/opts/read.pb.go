@@ -57,8 +57,8 @@ type ReadCLIOptions struct {
 	StatsEnable bool `protobuf:"varint,2,opt,name=stats_enable,json=statsEnable,proto3" json:"stats_enable,omitempty" kong:"group=stats,help='Display periodic read stats'"`
 	// @gotags: kong:"group=stats,help='How often to print stats',default=5"
 	StatsReportIntervalSec int32 `protobuf:"varint,3,opt,name=stats_report_interval_sec,json=statsReportIntervalSec,proto3" json:"stats_report_interval_sec,omitempty" kong:"group=stats,help='How often to print stats',default=5"`
-	// @gotags: kong:"help='Whether to try to make output pretty'"
-	Pretty               bool     `protobuf:"varint,4,opt,name=pretty,proto3" json:"pretty,omitempty" kong:"help='Whether to try to make output pretty'"`
+	// @gotags: kong:"help='Provide pretty output'"
+	Pretty               bool     `protobuf:"varint,4,opt,name=pretty,proto3" json:"pretty,omitempty" kong:"help='Provide pretty output'"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`

@@ -152,7 +152,7 @@ func GenerateMessageDescriptor(cliOpts *opts.CLIOptions) (*desc.MessageDescripto
 		pbDirs := cliOpts.Read.DecodeOptions.ProtobufSettings.ProtobufDirs
 		pbRootMessage := cliOpts.Read.DecodeOptions.ProtobufSettings.ProtobufRootMessage
 
-		if err := validate.ProtobufOptions(pbDirs, pbRootMessage); err != nil {
+		if err := validate.ProtobufOptionsForCLI(pbDirs, pbRootMessage); err != nil {
 			return nil, errors.Wrap(err, "unable to validate protobuf settings for decode")
 		}
 
@@ -170,7 +170,7 @@ func GenerateMessageDescriptor(cliOpts *opts.CLIOptions) (*desc.MessageDescripto
 		pbDirs := cliOpts.Write.EncodeOptions.ProtobufSettings.ProtobufDirs
 		pbRootMessage := cliOpts.Write.EncodeOptions.ProtobufSettings.ProtobufRootMessage
 
-		if err := validate.ProtobufOptions(pbDirs, pbRootMessage); err != nil {
+		if err := validate.ProtobufOptionsForCLI(pbDirs, pbRootMessage); err != nil {
 			return nil, errors.Wrap(err, "unable to validate protobuf settings for encode")
 		}
 

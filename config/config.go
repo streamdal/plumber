@@ -139,7 +139,7 @@ func getConfigJson(fileName string) (*os.File, error) {
 		f.WriteString("{}")
 	}
 
-	// Config exists, open it
+	// ReadOptions exists, open it
 	return os.Open(configPath)
 }
 

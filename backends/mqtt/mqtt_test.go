@@ -43,7 +43,7 @@ var _ = Describe("MQTT Backend", func() {
 	})
 
 	Context("generateTLSConfig", func() {
-		It("returns a valid tls.Config", func() {
+		It("returns a valid tls.ReadOptions", func() {
 			opts := &options.Options{
 				MQTT: &options.MQTTOptions{
 					TLSClientKeyFile:  "../../test-assets/ssl/client.key",

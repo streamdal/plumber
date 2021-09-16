@@ -18,8 +18,8 @@ import (
 	"github.com/batchcorp/plumber/options"
 )
 
-func (p *Server) getBackendByConnectionID(connectionID string, opts *options.Options) (backends.Backend, error) {
-	conn := p.getConn(connectionID)
+func (s *Server) getBackendByConnectionID(connectionID string, opts *options.Options) (backends.Backend, error) {
+	conn := s.getConn(connectionID)
 	if conn == nil {
 		return nil, fmt.Errorf("unable to fetch connection for connection id '%s'", connectionID)
 	}

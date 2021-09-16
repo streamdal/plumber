@@ -14,7 +14,7 @@ import (
 
 // HandleRelayCmd handles CLI relay mode. Container/envar mode is handled by processEnvRelayFlags
 func (p *Plumber) HandleRelayCmd() error {
-	if err := validate.RelayOptions(p.CLIOptions.Relay); err != nil {
+	if err := validate.RelayOptionsForCLI(p.CLIOptions.Relay); err != nil {
 		return errors.Wrap(err, "unable to validate relay options")
 	}
 

@@ -11,7 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func ProtobufOptions(dirs []string, rootMessage string) error {
+func ProtobufOptionsForCLI(dirs []string, rootMessage string) error {
 	if len(dirs) == 0 {
 		return errors.New("at least one '--protobuf-dir' required when type " +
 			"is set to 'protobuf'")
@@ -30,7 +30,7 @@ func ProtobufOptions(dirs []string, rootMessage string) error {
 	return nil
 }
 
-func RelayOptions(relayOpts *opts.RelayOptions) error {
+func RelayOptionsForCLI(relayOpts *opts.RelayOptions) error {
 	if relayOpts == nil {
 		return errors.New("relay options cannot be nil")
 	}
@@ -42,7 +42,7 @@ func RelayOptions(relayOpts *opts.RelayOptions) error {
 	return nil
 }
 
-func ReadOptions(readOpts *opts.ReadOptions) error {
+func ReadOptionsForCLI(readOpts *opts.ReadOptions) error {
 	if readOpts == nil {
 		return errors.New("read options cannot be nil")
 	}
@@ -68,13 +68,13 @@ func WriteOptionsCLI(writeOpts *opts.WriteOptions) error {
 	}
 
 	// Input and file cannot be set at the same time
-	if len(writeOpts.Write.InputData) > 0 && writeOpts.Write.InputFile != "" {
+	if len(writeOpts.Record.Input) > 0 && writeOpts.XCliOptions.InputFile != "" {
 		return fmt.Errorf("--input-data and --input-file cannot both be set")
 	}
 
 	if writeOpts.XCliOptions.InputFile != "" {
-		if _, err := os.Stat(writeOpts.Write.InputFile); os.IsNotExist(err) {
-			return fmt.Errorf("--file '%s' does not exist", writeOpts.Write.InputFile)
+		if _, err := os.Stat(writeOpts.XCliOptions.InputFile); os.IsNotExist(err) {
+			return fmt.Errorf("--input-file '%s' does not exist", writeOpts.XCliOptions.InputFile)
 		}
 	}
 

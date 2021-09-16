@@ -18,7 +18,7 @@ func (r *Read) startBackgroundRead() {
 		}
 	}()
 
-	r.Config.Active = true
+	r.ReadOptions.Active = true
 
 	resultChan := make(chan *types.ReadMessage, 1)
 	errorChan := make(chan *types.ErrorMessage, 1)
@@ -53,16 +53,16 @@ MAIN:
 		case errorMsg := <-errorChan:
 			// TODO: We should probably send the error message to attached clients
 			// PUNT for now; ds & mg 08.20.21
-			r.log.Errorf("received error message for read '%s': %+v", r.Config.Id, errorMsg)
+			r.log.Errorf("received error message for read '%s': %+v", r.ReadOptions.Id, errorMsg)
 			continue
 		}
 
 		if err != nil {
-			r.log.Errorf("unable to process result msg for read id '%s': %s", r.Config.Id, err)
+			r.log.Errorf("unable to process result msg for read id '%s': %s", r.ReadOptions.Id, err)
 			continue
 		}
 
-		r.log.Debug("processed result message for read id '%s'", r.Config.Id)
+		r.log.Debug("processed result message for read id '%s'", r.ReadOptions.Id)
 	}
 
 	r.log.Debug("StartBackgroundReader exiting")
@@ -75,6 +75,8 @@ func (r *Read) processResultMessage(msg *types.ReadMessage) error {
 	if err != nil {
 		return errors.Wrap(err, "unable to generate kafka payload")
 	}
+
+	// Pipeline jobs go <here>
 
 	// Send message payload to all attached streams
 	r.AttachedClientsMutex.RLock()
