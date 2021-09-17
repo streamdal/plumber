@@ -73,6 +73,7 @@ func ReadConfig(fileName string) (*Config, error) {
 		Relays:           make(map[string]*types.Relay),
 		Schemas:          make(map[string]*protos.Schema),
 		Services:         make(map[string]*protos.Service),
+		Reads:            make(map[string]*types.Read),
 	}
 	if err := json.Unmarshal(data, cfg); err != nil {
 		return nil, errors.Wrapf(err, "could not unmarshal ~/.batchsh/%s", fileName)

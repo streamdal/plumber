@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
@@ -150,10 +151,16 @@ func getConfig() *config.Config {
 
 	if cfg == nil {
 		cfg = &config.Config{
-			Connections: make(map[string]*protos.Connection),
-			Relays:      make(map[string]*types.Relay),
-			Schemas:     make(map[string]*protos.Schema),
-			Services:    make(map[string]*protos.Service),
+			Connections:      make(map[string]*protos.Connection),
+			Relays:           make(map[string]*types.Relay),
+			Schemas:          make(map[string]*protos.Schema),
+			Services:         make(map[string]*protos.Service),
+			Reads:            make(map[string]*types.Read),
+			ConnectionsMutex: &sync.RWMutex{},
+			ServicesMutex:    &sync.RWMutex{},
+			ReadsMutex:       &sync.RWMutex{},
+			RelaysMutex:      &sync.RWMutex{},
+			SchemasMutex:     &sync.RWMutex{},
 		}
 	}
 
