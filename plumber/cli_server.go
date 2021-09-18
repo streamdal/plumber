@@ -3,6 +3,7 @@ package plumber
 import (
 	"fmt"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/pkg/errors"
