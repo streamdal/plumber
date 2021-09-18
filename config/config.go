@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/pkg/errors"
 
@@ -22,21 +23,21 @@ type IConfig interface {
 
 // Config stores Account IDs and the auth_token cookie
 type Config struct {
-	PlumberID        string                        `json:"plumber_id"`
-	Token            string                        `json:"token"`
-	TeamID           string                        `json:"team_id"`
-	UserID           string                        `json:"user_id"`
-	Connections      map[string]*protos.Connection `json:"-"`
-	Relays           map[string]*types.Relay       `json:"-"`
-	Schemas          map[string]*protos.Schema     `json:"-"`
-	Services         map[string]*protos.Service    `json:"-"`
-	Reads            map[string]*types.Read        `json:"-"`
-	GitHubToken      string                        `json:"github_bearer_token"`
-	ConnectionsMutex *sync.RWMutex                 `json:"-"`
-	ServicesMutex    *sync.RWMutex                 `json:"-"`
-	ReadsMutex       *sync.RWMutex                 `json:"-"`
-	RelaysMutex      *sync.RWMutex                 `json:"-"`
-	SchemasMutex     *sync.RWMutex                 `json:"-"`
+	PlumberID        string                             `json:"plumber_id"`
+	Token            string                             `json:"token"`
+	TeamID           string                             `json:"team_id"`
+	UserID           string                             `json:"user_id"`
+	Connections      map[string]*opts.ConnectionOptions `json:"-"`
+	Relays           map[string]*types.Relay            `json:"-"`
+	Schemas          map[string]*protos.Schema          `json:"-"`
+	Services         map[string]*protos.Service         `json:"-"`
+	Reads            map[string]*types.Read             `json:"-"`
+	GitHubToken      string                             `json:"github_bearer_token"`
+	ConnectionsMutex *sync.RWMutex                      `json:"-"`
+	ServicesMutex    *sync.RWMutex                      `json:"-"`
+	ReadsMutex       *sync.RWMutex                      `json:"-"`
+	RelaysMutex      *sync.RWMutex                      `json:"-"`
+	SchemasMutex     *sync.RWMutex                      `json:"-"`
 }
 
 // Save is a convenience method of persisting the config to disk via a single call
@@ -69,7 +70,7 @@ func ReadConfig(fileName string) (*Config, error) {
 		ReadsMutex:       &sync.RWMutex{},
 		RelaysMutex:      &sync.RWMutex{},
 		SchemasMutex:     &sync.RWMutex{},
-		Connections:      make(map[string]*protos.Connection),
+		Connections:      make(map[string]*opts.ConnectionOptions),
 		Relays:           make(map[string]*types.Relay),
 		Schemas:          make(map[string]*protos.Schema),
 		Services:         make(map[string]*protos.Service),
@@ -266,7 +267,7 @@ func (c *Config) DeleteSchema(schemaID string) {
 }
 
 // GetConnection retrieves a connection from in-memory map
-func (c *Config) GetConnection(connID string) *protos.Connection {
+func (c *Config) GetConnection(connID string) *opts.ConnectionOptions {
 	c.ConnectionsMutex.RLock()
 	defer c.ConnectionsMutex.RUnlock()
 
@@ -276,7 +277,7 @@ func (c *Config) GetConnection(connID string) *protos.Connection {
 }
 
 // SetConnection saves a connection to in-memory map
-func (c *Config) SetConnection(connID string, conn *protos.Connection) {
+func (c *Config) SetConnection(connID string, conn *opts.ConnectionOptions) {
 	c.ConnectionsMutex.Lock()
 	defer c.ConnectionsMutex.Unlock()
 	c.Connections[connID] = conn

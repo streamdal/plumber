@@ -12,7 +12,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 )
 
-var _ = Describe("Config", func() {
+var _ = Describe("Options", func() {
 	Context("Connections", func() {
 		cfg := &Config{
 			ConnectionsMutex: &sync.RWMutex{},
@@ -75,8 +75,8 @@ var _ = Describe("Config", func() {
 
 			// TODO: this needs an ID
 			relay := &types.Relay{
-				Id:     id,
-				Config: &protos.Relay{},
+				Id:      id,
+				Options: &protos.Relay{},
 			}
 
 			// Save

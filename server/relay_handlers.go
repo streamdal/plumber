@@ -23,7 +23,7 @@ func (p *PlumberServer) GetAllRelays(_ context.Context, req *protos.GetAllRelays
 
 	relays := make([]*protos.Relay, 0)
 	for _, v := range p.PersistentConfig.Relays {
-		relays = append(relays, v.Config)
+		relays = append(relays, v.Options)
 	}
 
 	return &protos.GetAllRelaysResponse{
@@ -53,17 +53,17 @@ func (p *PlumberServer) CreateRelay(ctx context.Context, req *protos.CreateRelay
 		Id:         uuid.NewV4().String(),
 		CancelFunc: shutdownFunc,
 		CancelCtx:  shutdownCtx,
-		Config:     req.Relay,
+		Options:    req.Relay,
 	}
 
 	if err := r.StartRelay(conn); err != nil {
 		return nil, errors.Wrap(err, "unable to start relay")
 	}
 
-	r.Config.RelayId = r.Id
+	r.Options.RelayId = r.Id
 	r.Active = true
 
-	data, err := proto.Marshal(r.Config)
+	data, err := proto.Marshal(r.Options)
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
 	}
@@ -78,7 +78,7 @@ func (p *PlumberServer) CreateRelay(ctx context.Context, req *protos.CreateRelay
 	p.PersistentConfig.SetRelay(r.Id, r)
 
 	// Publish CreateSchema event
-	if err := p.Etcd.PublishCreateRelay(ctx, r.Config); err != nil {
+	if err := p.Etcd.PublishCreateRelay(ctx, r.Options); err != nil {
 		p.Log.Error(err)
 	}
 
@@ -114,10 +114,10 @@ func (p *PlumberServer) UpdateRelay(_ context.Context, req *protos.UpdateRelayRe
 	time.Sleep(time.Second)
 
 	// Update relay config
-	relay.Config = req.Relay
+	relay.Options = req.Relay
 
 	// Restart relay
-	conn := p.PersistentConfig.GetConnection(relay.Config.ConnectionId)
+	conn := p.PersistentConfig.GetConnection(relay.Options.ConnectionId)
 	if conn == nil {
 		return nil, CustomError(common.Code_NOT_FOUND, "connection does not exist")
 	}
@@ -130,7 +130,7 @@ func (p *PlumberServer) UpdateRelay(_ context.Context, req *protos.UpdateRelayRe
 		return nil, errors.Wrap(err, "unable to start relay")
 	}
 
-	data, err := proto.Marshal(relay.Config)
+	data, err := proto.Marshal(relay.Options)
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
 	}
@@ -145,7 +145,7 @@ func (p *PlumberServer) UpdateRelay(_ context.Context, req *protos.UpdateRelayRe
 	p.PersistentConfig.SetRelay(relay.Id, relay)
 
 	// Publish CreateSchema event
-	if err := p.Etcd.PublishUpdateRelay(ctx, relay.Config); err != nil {
+	if err := p.Etcd.PublishUpdateRelay(ctx, relay.Options); err != nil {
 		p.Log.Error(err)
 	}
 
@@ -205,7 +205,7 @@ func (p *PlumberServer) ResumeRelay(ctx context.Context, req *protos.ResumeRelay
 		return nil, CustomError(common.Code_FAILED_PRECONDITION, "Relay is not stopped")
 	}
 
-	conn := p.PersistentConfig.GetConnection(relay.Config.ConnectionId)
+	conn := p.PersistentConfig.GetConnection(relay.Options.ConnectionId)
 	if conn == nil {
 		return nil, CustomError(common.Code_NOT_FOUND, "connection does not exist")
 	}
@@ -254,7 +254,7 @@ func (p *PlumberServer) DeleteRelay(ctx context.Context, req *protos.DeleteRelay
 	p.PersistentConfig.DeleteRelay(relay.Id)
 
 	// Publish delete event
-	if err := p.Etcd.PublishDeleteRelay(ctx, relay.Config); err != nil {
+	if err := p.Etcd.PublishDeleteRelay(ctx, relay.Options); err != nil {
 		p.Log.Error(err)
 	}
 

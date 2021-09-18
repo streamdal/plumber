@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 
@@ -30,19 +31,19 @@ func (e *Etcd) PublishDeleteService(ctx context.Context, svc *protos.Service) er
 
 // PublishCreateConnection publishes a CreateConnection message, which other plumber instances will receive
 // and add the connection to their local in-memory maps
-func (e *Etcd) PublishCreateConnection(ctx context.Context, conn *protos.Connection) error {
+func (e *Etcd) PublishCreateConnection(ctx context.Context, conn *opts.ConnectionOptions) error {
 	return e.publishConnectionMessage(ctx, CreateConnection, conn)
 }
 
 // PublishUpdateConnection publishes an UpdateConnection message, which other plumber instances will receive
 // and update the connection in their local in-memory maps
-func (e *Etcd) PublishUpdateConnection(ctx context.Context, conn *protos.Connection) error {
+func (e *Etcd) PublishUpdateConnection(ctx context.Context, conn *opts.ConnectionOptions) error {
 	return e.publishConnectionMessage(ctx, UpdateConnection, conn)
 }
 
 // PublishDeleteConnection publishes a DeleteConnection message, which other plumber instances will receive
 // and delete from their local in-memory maps
-func (e *Etcd) PublishDeleteConnection(ctx context.Context, conn *protos.Connection) error {
+func (e *Etcd) PublishDeleteConnection(ctx context.Context, conn *opts.ConnectionOptions) error {
 	return e.publishConnectionMessage(ctx, DeleteConnection, conn)
 }
 
@@ -66,19 +67,19 @@ func (e *Etcd) PublishDeleteSchema(ctx context.Context, schema *protos.Schema) e
 
 // PublishCreateRelay publishes a CreateRelay message, which other plumber instances will receive
 // and add the service to their local in-memory maps
-func (e *Etcd) PublishCreateRelay(ctx context.Context, relay *protos.Relay) error {
+func (e *Etcd) PublishCreateRelay(ctx context.Context, relay *opts.RelayOptions) error {
 	return e.publishRelayMessage(ctx, CreateRelay, relay)
 }
 
 // PublishUpdateRelay publishes an UpdateRelay message, which other plumber instances will receive
 // and update the connection in their local in-memory maps
-func (e *Etcd) PublishUpdateRelay(ctx context.Context, relay *protos.Relay) error {
+func (e *Etcd) PublishUpdateRelay(ctx context.Context, relay *opts.RelayOptions) error {
 	return e.publishRelayMessage(ctx, UpdateRelay, relay)
 }
 
 // PublishDeleteRelay publishes a DeleteRelay message, which other plumber instances will receive
 // and delete from their local in-memory maps
-func (e *Etcd) PublishDeleteRelay(ctx context.Context, relay *protos.Relay) error {
+func (e *Etcd) PublishDeleteRelay(ctx context.Context, relay *opts.RelayOptions) error {
 	return e.publishRelayMessage(ctx, DeleteSchema, relay)
 }
 
@@ -97,10 +98,10 @@ func (e *Etcd) publishServiceMessage(ctx context.Context, action Action, svc *pr
 	})
 }
 
-func (e *Etcd) publishConnectionMessage(ctx context.Context, action Action, conn *protos.Connection) error {
+func (e *Etcd) publishConnectionMessage(ctx context.Context, action Action, conn *opts.ConnectionOptions) error {
 	data, err := proto.Marshal(conn)
 	if err != nil {
-		return errors.Wrapf(err, "unable to publish connection message for '%s'", conn.Id)
+		return errors.Wrapf(err, "unable to publish connection message for '%s'", conn.XId)
 	}
 
 	// Publish delete
@@ -127,10 +128,10 @@ func (e *Etcd) publishSchemaMessage(ctx context.Context, action Action, svc *pro
 	})
 }
 
-func (e *Etcd) publishRelayMessage(ctx context.Context, action Action, relay *protos.Relay) error {
+func (e *Etcd) publishRelayMessage(ctx context.Context, action Action, relay *opts.RelayOptions) error {
 	data, err := proto.Marshal(relay)
 	if err != nil {
-		return errors.Wrapf(err, "unable to publish relay message for '%s'", relay.RelayId)
+		return errors.Wrapf(err, "unable to publish relay message for '%s'", relay.XRelayId)
 	}
 
 	// Publish delete

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber/util"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -21,31 +23,32 @@ type Relay struct {
 	CancelFunc context.CancelFunc  `json:"-"`
 	RelayCh    chan interface{}    `json:"-"`
 	Backend    relay.IRelayBackend `json:"-"`
-	Config     *protos.Relay       `json:"config"`
+	Options    *opts.RelayOptions  `json:"config"`
 	log        *logrus.Entry       `json:"-"`
 }
 
 // StartRelay starts a configured relay, it's workers, and the GRPC workers
-func (r *Relay) StartRelay(conn *protos.Connection) error {
+func (r *Relay) StartRelay(conn *opts.ConnectionOptions) error {
 
 	relayCh := make(chan interface{})
 
-	// Needed to satisfy relay.Config{}, not used
+	// Needed to satisfy relay.Options{}, not used
 	_, stubCancelFunc := context.WithCancel(context.Background())
 
-	rr, relayType, err := getRelayBackend(r.Config, conn, relayCh, r.CancelCtx)
+	rr, relayType, err := getRelayBackend(r.Options, conn, relayCh, r.CancelCtx)
 	if err != nil {
-		return err
+		stubCancelFunc()
+		return errors.Wrap(err, "unable to get backend for relay")
 	}
 
 	relayCfg := &relay.Config{
-		Token:              r.Config.BatchCollectionToken,
-		GRPCAddress:        r.Config.BatchshGrpcAddress,
-		NumWorkers:         5,                // TODO: protos?
-		Timeout:            time.Second * 10, // TODO: protos?
+		Token:              r.Options.CollectionToken,
+		GRPCAddress:        r.Options.XBatchshGrpcAddress,
+		NumWorkers:         5,
+		Timeout:            util.DurationSec(r.Options.XBatchshGrpcTimeoutSeconds),
 		RelayCh:            relayCh,
-		DisableTLS:         r.Config.BatchshGrpcDisableTls,
-		BatchSize:          int(r.Config.BatchSize),
+		DisableTLS:         r.Options.XBatchshGrpcDisableTls,
+		BatchSize:          r.Options.BatchSize,
 		Type:               relayType,
 		MainShutdownFunc:   stubCancelFunc,
 		ServiceShutdownCtx: r.CancelCtx,
@@ -53,7 +56,7 @@ func (r *Relay) StartRelay(conn *protos.Connection) error {
 
 	grpcRelayer, err := relay.New(relayCfg)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "unable to create new relayer instance")
 	}
 
 	// Launch gRPC Workers
@@ -75,9 +78,10 @@ func (r *Relay) StartRelay(conn *protos.Connection) error {
 	return nil
 }
 
+// TODO: This needs to go - no longer needed
 func getRelayBackend(
 	req *protos.Relay,
-	conn *protos.Connection,
+	conn *opts.ConnectionOptions,
 	relayCh chan interface{},
 	shutdownCtx context.Context,
 ) (rr relay.IRelayBackend, relayType string, err error) {
