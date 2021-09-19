@@ -24,7 +24,7 @@ func (s *Server) importGithub(ctx context.Context, req *protos.ImportGithubReque
 	}
 
 	switch req.Type {
-	case encoding.Type_PROTOBUF:
+	case encoding.Type_Protobuf:
 		schema, err = importGithubProtobuf(zipfile, req)
 	case encoding.Type_AVRO:
 	// TODO
