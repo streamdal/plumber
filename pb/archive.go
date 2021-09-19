@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/batchcorp/plumber/plumber"
+	"github.com/batchcorp/plumber/config"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoparse"
@@ -19,53 +19,54 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 )
 
-// GetCachedMessageDescriptor returns a message descriptor using either the provided stored schema ID, or
-// the provided protobuf zip file and root type
-func GetCachedMessageDescriptor(p *plumber.Plumber, decodeOptions *encoding.DecodeOptions) (*desc.MessageDescriptor, error) {
-	// No decode options passed
-	if decodeOptions == nil {
-		return nil, nil
-	}
-
-	// TODO: Support only protobuf for now
-	if decodeOptions.DecodeType != encoding.DecodeType_DECODE_TYPE_PROTOBUF {
-		return nil, nil
+// GetMessageDescriptor is a protobuf-specific function that returns a message
+// descriptor using either the provided stored schema ID or using the provided
+// protobuf zip file and root type.
+func GetMessageDescriptor(schemaID string, pcfg *config.Config, pbSettings *encoding.ProtobufSettings) (*desc.MessageDescriptor, error) {
+	if pbSettings == nil {
+		return nil, errors.New("protobuf settings cannot be nil")
 	}
 
 	// Using passed protobuf zip file and root type
-	if decodeOptions.SchemaId == "" {
-		fds, _, err := GetFDFromArchive(decodeOptions.ProtobufSettings.Archive, "")
+	if schemaID == "" {
+		fds, _, err := GetFDFromArchive(pbSettings.Archive, "")
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "cannot get fd from archive")
 		}
 
-		md, err := GetMDFromDescriptors(fds, decodeOptions.ProtobufSettings.ProtobufRootMessage)
+		md, err := GetMDFromDescriptors(fds, pbSettings.ProtobufRootMessage)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "cannot get md from descriptors")
 		}
 
 		if md == nil {
 			return nil, errors.New("unable to decode message descriptor")
 		}
 
-		// TODO: Save it in persistent config
-
 		return md, nil
 	}
 
-	if p == nil {
-		return nil, errors.New("passed in plumber instance cannot be nil")
+	// We need plumber to be able to access persistent store
+	if pcfg == nil {
+		return nil, errors.New("passed in persistent config cannot be nil")
 	}
 
-	// Using stored schema
-	schema := p.PersistentConfig.GetSchema(decodeOptions.SchemaId)
+	// From here on out, we are using a stored schema
+
+	schema := pcfg.GetSchema(schemaID)
 	if schema == nil {
-		return nil, fmt.Errorf("schema '%s' not found", decodeOptions.SchemaId)
+		return nil, fmt.Errorf("schema '%s' not found", schemaID)
 	}
 
-	md, err := GetMDFromDescriptorBlob(schema.MessageDescriptor, schema.RootType)
+	settings := schema.GetProtobufSettings()
+
+	if settings == nil {
+		return nil, errors.New("unexpected: protobuf settings are nil in stored schema")
+	}
+
+	md, err := GetMDFromDescriptorBlob(settings.XMessageDescriptor, settings.ProtobufRootMessage)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "unable to get md from descriptor blob")
 	}
 	if md == nil {
 		return nil, errors.New("unable to decode message descriptor")
@@ -193,19 +194,20 @@ func CreateBlob(fds []*desc.FileDescriptor, rootType string) ([]byte, error) {
 	return protoBytes, nil
 }
 
-func ProcessProtobufArchive(rootType string, files map[string]string) (*desc.FileDescriptor, map[string]string, error) {
-	fds, err := readFileDescriptorsV2(files)
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "unable to get file descriptors from archive")
-	}
-
-	rootFD := FindRootDescriptor(rootType, fds)
-	if rootFD == nil {
-		return nil, nil, errors.New("root type is missing from archive")
-	}
-
-	return rootFD, files, nil
-}
+// Don't think this is needed? ~ds 09.19.21
+//func ProcessProtobufArchive(rootType string, files map[string]string) (*desc.FileDescriptor, map[string]string, error) {
+//	fds, err := readFileDescriptorsV2(files)
+//	if err != nil {
+//		return nil, nil, errors.Wrap(err, "unable to get file descriptors from archive")
+//	}
+//
+//	rootFD := FindRootDescriptor(rootType, fds)
+//	if rootFD == nil {
+//		return nil, nil, errors.New("root type is missing from archive")
+//	}
+//
+//	return rootFD, files, nil
+//}
 
 // truncateProtoDirectories attempts to locate a .proto file in the shortest path of a directory tree so that
 // import paths work correctly

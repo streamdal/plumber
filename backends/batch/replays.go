@@ -149,7 +149,7 @@ func (b *Batch) resumeReplay() error {
 func (b *Batch) createReplay(query string) (*Replay, error) {
 	p := map[string]interface{}{
 		"name":           b.Opts.Batch.Create.Replay.Name,
-		"type":           b.Opts.Batch.Create.Replay.Type, // TODO: This is probably incorrect
+		"type":           b.Opts.Batch.Create.Replay.Type, // TODO: This is probably incorrect (why? ~ds)
 		"query":          query,
 		"collection_id":  b.Opts.Batch.Create.Replay.CollectionId,
 		"destination_id": b.Opts.Batch.Create.Replay.DestinationId,

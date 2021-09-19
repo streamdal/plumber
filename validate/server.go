@@ -22,28 +22,18 @@ var (
 	// Connections
 
 	ErrMissingConnectionOptions = errors.New("connection options cannot be nil")
-	ErrMissingAddress           = errors.New("at least one kafka server address must be specified")
-	ErrMissingUsername          = errors.New("you must provide a username when specifying a SASL type")
-	ErrMissingPassword          = errors.New("you must provide a password when specifying a SASL type")
 	ErrMissingConnName          = errors.New("you must provide a connection name")
 	ErrMissingConnectionType    = errors.New("you must provide at least one connection of: kafka")
 
 	// Reads
 
-	ErrMissingConnectionID      = errors.New("missing connection ID")
-	ErrMissingReadOptions       = errors.New("missing Read options")
-	ErrMissingReadType          = errors.New("you must provide at least one read argument message")
-	ErrMissingTopic             = errors.New("you must provide at least one topic to read from")
-	ErrMissingConsumerGroupName = errors.New("group name must be specified when using a consumer group")
-	ErrMissingRootType          = errors.New("root message cannot be empty")
-	ErrMissingZipArchive        = errors.New("zip archive is empty")
-	ErrMissingAVROSchema        = errors.New("AVRO schema cannot be empty")
-	ErrMissingKafkaArgs         = errors.New("you must provide at least one arguments of: kafka")
+	ErrMissingConnectionID = errors.New("missing connection ID")
+	ErrMissingReadOptions  = errors.New("missing Read options")
+	ErrMissingReadType     = errors.New("you must provide at least one read argument message")
 
 	// Services
 
 	ErrMissingName     = errors.New("name cannot be empty")
-	ErrMissingOwner    = errors.New("owner cannot be empty")
 	ErrMissingService  = errors.New("service cannot be empty")
 	ErrInvalidRepoURL  = errors.New("repo URL must be a valid URL or left blank")
 	ErrServiceNotFound = errors.New("service does not exist")

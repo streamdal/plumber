@@ -8,6 +8,7 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/server/types"
 	"github.com/batchcorp/plumber/validate"
 	"github.com/jhump/protoreflect/desc"
@@ -126,22 +127,6 @@ func (s *Server) StartRead(req *protos.StartReadRequest, srv protos.PlumberServe
 	}
 }
 
-// TODO: Implement -- pull md from cache or generate if first time
-func (s *Server) getMessageDescriptorFromDecodeOptions(decodeOptions *encoding.DecodeOptions) (*desc.MessageDescriptor, error) {
-	// TODO: Precedence - schemaId > ProtobufSettings
-	// TODO: If neither is present - do nothing
-	// TODO: If schemaId is pointing to a non-protobuf schema - do nothing
-	return nil, nil
-}
-
-// TODO: Implement -- pull md from cache or generate if first time
-func (s *Server) getMessageDescriptorFromEncodeOptions(encodeOptions *encoding.EncodeOptions) (*desc.MessageDescriptor, error) {
-	// TODO: Precedence - schemaId > ProtobufSettings
-	// TODO: If neither is present - do nothing
-	// TODO: If schemaId is pointing to a non-protobuf schema - do nothing
-	return nil, nil
-}
-
 func (s *Server) CreateRead(_ context.Context, req *protos.CreateReadRequest) (*protos.CreateReadResponse, error) {
 	if err := s.validateAuth(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
@@ -164,11 +149,10 @@ func (s *Server) CreateRead(_ context.Context, req *protos.CreateReadRequest) (*
 
 	var md *desc.MessageDescriptor
 
-	// TODO: Maybe this is nil
 	if req.Read.DecodeOptions != nil && req.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_PROTOBUF {
 		var mdErr error
 
-		md, mdErr = s.getMessageDescriptorFromDecodeOptions(req.Read.DecodeOptions)
+		md, mdErr = pb.GetMessageDescriptor(req.Read.DecodeOptions.SchemaId, s.PersistentConfig, req.Read.DecodeOptions.ProtobufSettings)
 		if mdErr != nil {
 			return nil, errors.Wrap(mdErr, "unable to get message descriptor")
 		}

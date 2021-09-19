@@ -121,19 +121,19 @@ func (p *Plumber) Run() {
 	var err error
 
 	switch p.CLIOptions.Global.XAction {
-	case "server": // DONE
+	case "server":
 		err = p.RunServer()
 	case "batch":
-		err = p.HandleBatchCmd() // TODO: Update
-	case "read": // DONE
+		err = p.HandleBatchCmd()
+	case "read":
 		err = p.HandleReadCmd()
-	case "write": // DONE
+	case "write":
 		err = p.HandleWriteCmd()
-	case "relay": // DONE
+	case "relay":
 		printer.PrintRelayOptions(p.CLIOptions)
-		err = p.HandleRelayCmd() // DONE
+		err = p.HandleRelayCmd()
 	case "dynamic":
-		err = p.HandleDynamicCmd() // DONE
+		err = p.HandleDynamicCmd()
 	default:
 		logrus.Fatalf("unrecognized command: %s", p.CLIOptions.Global.XAction)
 	}

@@ -4,8 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
+	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/validate"
 	"github.com/batchcorp/plumber/writer"
+	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
@@ -29,11 +32,18 @@ func (s *Server) Write(ctx context.Context, req *protos.WriteRequest) (*protos.W
 
 	// We only need/want to do this once, so generate and pass to generateWriteValue
 
-	md, err := s.getMessageDescriptorFromEncodeOptions(req.Opts.EncodeOptions)
-	if err != nil {
-		return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to fetch message descriptor: %s", err))
+	var md *desc.MessageDescriptor
+
+	if req.Opts.EncodeOptions != nil && req.Opts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_JSONPB {
+		var mdErr error
+
+		md, mdErr = pb.GetMessageDescriptor(req.Opts.EncodeOptions.SchemaId, s.PersistentConfig, req.Opts.EncodeOptions.ProtobufSettings)
+		if mdErr != nil {
+			return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to fetch message descriptor: %s", mdErr))
+		}
 	}
 
+	// Okay if md is nil
 	records, err := writer.GenerateWriteValue(req.Opts, md)
 	if err != nil {
 		return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to generate write records: %s", err))
