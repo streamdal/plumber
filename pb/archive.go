@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/batchcorp/plumber/plumber"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoparse"
@@ -18,39 +19,48 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 )
 
-// getMessageDescriptor returns a message descriptor using either the provided stored schema ID, or
+// GetCachedMessageDescriptor returns a message descriptor using either the provided stored schema ID, or
 // the provided protobuf zip file and root type
-func (p *PlumberServer) getMessageDescriptor(opts *encoding.Options) (*desc.MessageDescriptor, error) {
+func GetCachedMessageDescriptor(p *plumber.Plumber, decodeOptions *encoding.DecodeOptions) (*desc.MessageDescriptor, error) {
 	// No decode options passed
-	if opts == nil {
+	if decodeOptions == nil {
 		return nil, nil
 	}
 
-	if opts.Type != encoding.Type_PROTOBUF {
+	// TODO: Support only protobuf for now
+	if decodeOptions.DecodeType != encoding.DecodeType_DECODE_TYPE_PROTOBUF {
 		return nil, nil
 	}
 
 	// Using passed protobuf zip file and root type
-	if opts.SchemaId == "" {
-		pbOptions := opts.GetProtobuf()
-		fds, _, err := GetFDFromArchive(pbOptions.ZipArchive, "")
+	if decodeOptions.SchemaId == "" {
+		fds, _, err := GetFDFromArchive(decodeOptions.ProtobufSettings.Archive, "")
 		if err != nil {
 			return nil, err
 		}
 
-		md, err := GetMDFromDescriptors(fds, pbOptions.RootType)
+		md, err := GetMDFromDescriptors(fds, decodeOptions.ProtobufSettings.ProtobufRootMessage)
 		if err != nil {
 			return nil, err
 		}
+
 		if md == nil {
 			return nil, errors.New("unable to decode message descriptor")
 		}
+
+		// TODO: Save it in persistent config
+
+		return md, nil
+	}
+
+	if p == nil {
+		return nil, errors.New("passed in plumber instance cannot be nil")
 	}
 
 	// Using stored schema
-	schema := p.PersistentConfig.GetSchema(opts.SchemaId)
+	schema := p.PersistentConfig.GetSchema(decodeOptions.SchemaId)
 	if schema == nil {
-		return nil, fmt.Errorf("schema '%s' not found", opts.SchemaId)
+		return nil, fmt.Errorf("schema '%s' not found", decodeOptions.SchemaId)
 	}
 
 	md, err := GetMDFromDescriptorBlob(schema.MessageDescriptor, schema.RootType)
@@ -101,9 +111,10 @@ func GetMDFromDescriptorBlob(blob []byte, rootType string) (*desc.MessageDescrip
 	return md, nil
 }
 
-// readFileDescriptors takes in a map of protobuf files and their contents, and pulls file descriptors for each
-// TODO: replace with pb.readFileDescriptors
-func readFileDescriptors(files map[string]string) ([]*desc.FileDescriptor, error) {
+// readFileDescriptorsV1 takes in a map of protobuf files and their contents
+// and pulls file descriptors for each
+// TODO: replace with pb.readFileDescriptorsV1
+func readFileDescriptorsV2(files map[string]string) ([]*desc.FileDescriptor, error) {
 	var keys []string
 	for k := range files {
 		keys = append(keys, k)
@@ -145,7 +156,7 @@ func GetFDFromArchive(archive []byte, rootDir string) ([]*desc.FileDescriptor, m
 	}
 
 	// Generate file descriptors
-	fds, err := readFileDescriptors(files)
+	fds, err := readFileDescriptorsV2(files)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "unable to get file descriptors from archive")
 	}
@@ -183,7 +194,7 @@ func CreateBlob(fds []*desc.FileDescriptor, rootType string) ([]byte, error) {
 }
 
 func ProcessProtobufArchive(rootType string, files map[string]string) (*desc.FileDescriptor, map[string]string, error) {
-	fds, err := readFileDescriptors(files)
+	fds, err := readFileDescriptorsV2(files)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "unable to get file descriptors from archive")
 	}
@@ -223,7 +234,7 @@ func truncateProtoDirectories(files map[string]string, rootDir string) map[strin
 }
 
 // getProtoFilesFromZip reads all proto files from a zip archive
-// TODO: make output compatible with pb.readFileDescriptors's map[string][]string
+// TODO: make output compatible with pb.readFileDescriptorsV1's map[string][]string
 func getProtoFilesFromZip(archive []byte) (map[string]string, error) {
 	files := make(map[string]string)
 

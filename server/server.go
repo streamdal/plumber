@@ -11,7 +11,7 @@ import (
 	"github.com/batchcorp/plumber/github"
 )
 
-type PlumberServer struct {
+type Server struct {
 	AuthToken        string
 	PersistentConfig *config.Config
 	GithubAuth       *github.UserCodeResponse
@@ -38,7 +38,7 @@ func CustomError(c common.Code, msg string) error {
 	}
 }
 
-func (p *PlumberServer) validateRequest(auth *common.Auth) error {
+func (p *Server) validateRequest(auth *common.Auth) error {
 	if auth == nil {
 		return ErrMissingAuth
 	}

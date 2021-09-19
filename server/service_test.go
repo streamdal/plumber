@@ -19,12 +19,12 @@ import (
 
 var _ = Describe("Services", func() {
 
-	var p *PlumberServer
+	var p *Server
 
 	BeforeEach(func() {
 		fakeEtcd := &etcdfakes.FakeIEtcd{}
 
-		p = &PlumberServer{
+		p = &Server{
 			Etcd:      fakeEtcd,
 			AuthToken: "batchcorp",
 			PersistentConfig: &config.Config{

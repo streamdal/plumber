@@ -13,7 +13,7 @@ import (
 
 // importGithub imports a github repo as a schema
 // TODO: types other than protobuf
-func (p *PlumberServer) importGithub(ctx context.Context, req *protos.ImportGithubRequest) (*protos.Schema, error) {
+func (p *Server) importGithub(ctx context.Context, req *protos.ImportGithubRequest) (*protos.Schema, error) {
 	var schema *protos.Schema
 	var err error
 
@@ -58,7 +58,7 @@ func importGithubProtobuf(zipfile []byte, req *protos.ImportGithubRequest) (*pro
 }
 
 // importLocal is used to import a schema from the UI
-func (p *PlumberServer) importLocal(req *protos.ImportLocalRequest) (*protos.Schema, error) {
+func (p *Server) importLocal(req *protos.ImportLocalRequest) (*protos.Schema, error) {
 	var schema *protos.Schema
 	var err error
 

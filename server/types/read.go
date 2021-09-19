@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/backends/kafka"
@@ -32,14 +33,14 @@ const (
 )
 
 type AttachedStream struct {
-	MessageCh chan *records.Message
+	MessageCh chan *records.ReadRecord
 }
 
 type Read struct {
 	AttachedClientsMutex *sync.RWMutex
 	AttachedClients      map[string]*AttachedStream
 	PlumberID            string
-	Config               *protos.Read
+	ReadOptions          *opts.ReadOptions
 	ContextCxl           context.Context
 	CancelFunc           context.CancelFunc
 	Backend              *kafka.KafkaReader // TODO: have to genercize once backend refactor is done
@@ -92,7 +93,7 @@ func (r *Read) GetSampleRate(ctx context.Context) (offsetStep int64, offsetStart
 
 	span := float64(msg.Offset - offsetStart)
 
-	sampleOpts := r.Config.SampleOptions
+	sampleOpts := r.ReadOptions.SampleOptions
 
 	var rate float64
 	switch sampleOpts.SampleInterval {
@@ -116,7 +117,7 @@ func (r *Read) GetSampleRate(ctx context.Context) (offsetStep int64, offsetStart
 // or a read is stopped via the API
 func (r *Read) StartRead() {
 	defer r.Backend.Reader.Close()
-	r.Config.Active = true
+	r.ReadOptions.Active = true
 
 	if r.SampleStart > 0 {
 		r.Log.Debugf("Starting read at %d with step %d", r.SampleStart, r.SampleStep)
@@ -178,7 +179,7 @@ func (r *Read) generateKafkaPayload(msg *skafka.Message) (*records.Message, erro
 	var err error
 	var data []byte
 
-	if do := r.Config.GetDecodeOptions(); do != nil {
+	if do := r.ReadOptions.GetDecodeOptions(); do != nil {
 		switch do.Type {
 		case encoding.Type_PROTOBUF:
 			data, err = DecodeProtobuf(r.MsgDesc, msg.Value)
@@ -186,7 +187,7 @@ func (r *Read) generateKafkaPayload(msg *skafka.Message) (*records.Message, erro
 				return nil, errors.Wrap(err, "unable to decode protobuf")
 			}
 		case encoding.Type_AVRO:
-			data, err = serializers.AvroDecode(r.Config.DecodeOptions.GetAvro().Schema, msg.Value)
+			data, err = serializers.AvroDecode(r.ReadOptions.DecodeOptions.GetAvro().Schema, msg.Value)
 			if err != nil {
 				return nil, errors.Wrap(err, "unable to decode AVRO message")
 			}

@@ -12,7 +12,6 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber/backends/kafka"
-	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/relay"
 )
 

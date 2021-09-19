@@ -83,7 +83,7 @@ func (p *Plumber) runServer() error {
 		ConnectionsMutex: &sync.RWMutex{},
 		Reads:            make(map[string]*server.Read),
 		ReadsMutex:       &sync.RWMutex{},
-		RelaysMutex:      &sync.RWMutex{},
+		RelaysMutex:      &sync.RWMutex{}, // TODO: Are these used?
 		GithubService:    gh,
 		Log:              logrus.WithField("pkg", "plumber/cli_server.go"),
 		Etcd:             p.Etcd,

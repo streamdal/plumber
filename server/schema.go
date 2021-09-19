@@ -14,7 +14,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 )
 
-func (p *PlumberServer) GetAllSchemas(_ context.Context, req *protos.GetAllSchemasRequest) (*protos.GetAllSchemasResponse, error) {
+func (p *Server) GetAllSchemas(_ context.Context, req *protos.GetAllSchemasRequest) (*protos.GetAllSchemasResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -30,7 +30,7 @@ func (p *PlumberServer) GetAllSchemas(_ context.Context, req *protos.GetAllSchem
 	}, nil
 }
 
-func (p *PlumberServer) GetSchema(_ context.Context, req *protos.GetSchemaRequest) (*protos.GetSchemaResponse, error) {
+func (p *Server) GetSchema(_ context.Context, req *protos.GetSchemaRequest) (*protos.GetSchemaResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -45,7 +45,7 @@ func (p *PlumberServer) GetSchema(_ context.Context, req *protos.GetSchemaReques
 	}, nil
 }
 
-func (p *PlumberServer) ImportGithub(ctx context.Context, req *protos.ImportGithubRequest) (*protos.ImportGithubResponse, error) {
+func (p *Server) ImportGithub(ctx context.Context, req *protos.ImportGithubRequest) (*protos.ImportGithubResponse, error) {
 	schema, err := p.importGithub(ctx, req)
 	if err != nil {
 		return nil, CustomError(common.Code_FAILED_PRECONDITION, err.Error())
@@ -80,7 +80,7 @@ func (p *PlumberServer) ImportGithub(ctx context.Context, req *protos.ImportGith
 	}, nil
 }
 
-func (p *PlumberServer) ImportLocal(ctx context.Context, req *protos.ImportLocalRequest) (*protos.ImportLocalResponse, error) {
+func (p *Server) ImportLocal(ctx context.Context, req *protos.ImportLocalRequest) (*protos.ImportLocalResponse, error) {
 	schema, err := p.importLocal(req)
 	if err != nil {
 		return nil, CustomError(common.Code_FAILED_PRECONDITION, err.Error())
@@ -115,7 +115,7 @@ func (p *PlumberServer) ImportLocal(ctx context.Context, req *protos.ImportLocal
 	}, nil
 }
 
-func (p *PlumberServer) DeleteSchema(ctx context.Context, req *protos.DeleteSchemaRequest) (*protos.DeleteSchemaResponse, error) {
+func (p *Server) DeleteSchema(ctx context.Context, req *protos.DeleteSchemaRequest) (*protos.DeleteSchemaResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}

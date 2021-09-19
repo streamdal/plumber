@@ -17,7 +17,7 @@ var _ = Describe("Server", func() {
 
 	Context("validateRequest", func() {
 		It("validates missing auth", func() {
-			p := &PlumberServer{}
+			p := &Server{}
 
 			err := p.validateRequest(nil)
 			Expect(err).To(HaveOccurred())
@@ -25,7 +25,7 @@ var _ = Describe("Server", func() {
 		})
 
 		It("validates token", func() {
-			p := &PlumberServer{AuthToken: "foo"}
+			p := &Server{AuthToken: "foo"}
 
 			err := p.validateRequest(&common.Auth{Token: "batch"})
 			Expect(err).To(HaveOccurred())

@@ -24,7 +24,7 @@ var _ = Describe("Decoding", func() {
 
 	Context("getMessageDescriptor", func() {
 		It("returns nil,nil when no options passed", func() {
-			p := &PlumberServer{}
+			p := &Server{}
 
 			md, err := p.getMessageDescriptor(nil)
 

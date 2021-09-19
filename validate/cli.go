@@ -96,7 +96,11 @@ func WriteOptionsCLI(writeOpts *opts.WriteOptions) error {
 
 		// Avro
 		if writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_AVRO {
-			if writeOpts.EncodeOptions.AvroSchemaFile == "" {
+			if writeOpts.EncodeOptions.AvroSettings == nil {
+				return errors.New("avro settings cannot be nil if encode type is set to avro")
+			}
+
+			if writeOpts.EncodeOptions.AvroSettings.AvroSchemaFile == "" {
 				return errors.New("avro schema file must be specified if encode type is set to avro")
 			}
 		}

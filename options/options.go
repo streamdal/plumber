@@ -154,9 +154,7 @@ func newReadOptions() *opts.ReadOptions {
 				ProtobufDirs: make([]string, 0),
 			},
 		},
-		XCliOptions: &opts.ReadCLIOptions{
-			ConvertOutput: make([]opts.ConvertOption, 0),
-		},
+		XCliOptions: &opts.ReadCLIOptions{},
 		Kafka: &opts.ReadGroupKafkaOptions{
 			XConn: &args.KafkaConn{
 				Address: make([]string, 0),

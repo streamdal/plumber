@@ -7,7 +7,6 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/conns"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 )
 

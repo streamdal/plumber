@@ -3,6 +3,7 @@ package config
 import (
 	"sync"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	uuid "github.com/satori/go.uuid"
@@ -16,25 +17,25 @@ var _ = Describe("Options", func() {
 	Context("Connections", func() {
 		cfg := &Config{
 			ConnectionsMutex: &sync.RWMutex{},
-			Connections:      make(map[string]*protos.Connection),
+			Connections:      make(map[string]*opts.ConnectionOptions),
 		}
 		It("Can save/get/delete", func() {
 			id := uuid.NewV4().String()
 
-			conn := &protos.Connection{
-				Id: id,
+			conn := &opts.ConnectionOptions{
+				XId: id,
 			}
 
 			// Save
-			cfg.SetConnection(conn.Id, conn)
+			cfg.SetConnection(conn.XId, conn)
 
 			// Get
-			stored := cfg.GetConnection(conn.Id)
+			stored := cfg.GetConnection(conn.XId)
 			Expect(stored).To(Equal(conn))
 
 			// Delete
-			cfg.DeleteConnection(conn.Id)
-			notThere := cfg.GetConnection(conn.Id)
+			cfg.DeleteConnection(conn.XId)
+			notThere := cfg.GetConnection(conn.XId)
 			Expect(notThere).To(BeNil())
 		})
 	})
@@ -76,7 +77,7 @@ var _ = Describe("Options", func() {
 			// TODO: this needs an ID
 			relay := &types.Relay{
 				Id:      id,
-				Options: &protos.Relay{},
+				Options: &opts.RelayOptions{},
 			}
 
 			// Save
@@ -127,20 +128,20 @@ var _ = Describe("Options", func() {
 		It("Can save/get/delete", func() {
 			id := uuid.NewV4().String()
 
-			read := &types.Read{Config: &protos.Read{
-				Id: id,
+			read := &types.Read{ReadOptions: &opts.ReadOptions{
+				XId: id,
 			}}
 
 			// Save
-			cfg.SetRead(read.Config.Id, read)
+			cfg.SetRead(read.ReadOptions.XId, read)
 
 			// Get
-			stored := cfg.GetRead(read.Config.Id)
+			stored := cfg.GetRead(read.ReadOptions.XId)
 			Expect(stored).To(Equal(read))
 
 			// Delete
-			cfg.DeleteRead(read.Config.Id)
-			notThere := cfg.GetRead(read.Config.Id)
+			cfg.DeleteRead(read.ReadOptions.XId)
+			notThere := cfg.GetRead(read.ReadOptions.XId)
 			Expect(notThere).To(BeNil())
 		})
 	})

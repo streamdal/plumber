@@ -12,7 +12,6 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/conns"
 
 	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/options"
@@ -24,7 +23,7 @@ func (s *Server) getBackendByConnectionID(connectionID string, opts *options.Opt
 		return nil, fmt.Errorf("unable to fetch connection for connection id '%s'", connectionID)
 	}
 
-// testConnection is called by PlumberServer.TestConnection and determines if we are able to
+// testConnection is called by Server.TestConnection and determines if we are able to
 // successfully connect to the target message bus
 func testConnection(conn *protos.Connection) error {
 	switch {
@@ -65,7 +64,7 @@ func testConnectionKafka(connCfg *conns.Kafka) error {
 }
 
 // getBackendRead gets the backend message bus needed to read/write from
-func (p *PlumberServer) getBackendRead(read *protos.Read) (*kafka.KafkaReader, error) {
+func (p *Server) getBackendRead(read *protos.Read) (*kafka.KafkaReader, error) {
 	connCfg := p.PersistentConfig.GetConnection(read.ConnectionId)
 	if connCfg == nil {
 		return nil, errors.New("connection does not exist")
@@ -161,7 +160,7 @@ func getBackendReadKafka(connCfg *conns.Kafka, readArgs *args.Kafka, sampleOptio
 
 // getBackendWrite gets the backend message bus needed to read/write from
 // TODO: genericize after backend refactor
-func (p *PlumberServer) getBackendWrite(req *protos.WriteRequest) (*kafka.KafkaWriter, error) {
+func (p *Server) getBackendWrite(req *protos.WriteRequest) (*kafka.KafkaWriter, error) {
 	connCfg := p.PersistentConfig.GetConnection(req.ConnectionId)
 	if connCfg == nil {
 		return nil, errors.New("connection does not exist")

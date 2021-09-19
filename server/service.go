@@ -14,7 +14,7 @@ import (
 	"github.com/batchcorp/plumber/embed/etcd"
 )
 
-func (p *PlumberServer) GetService(_ context.Context, req *protos.GetServiceRequest) (*protos.GetServiceResponse, error) {
+func (p *Server) GetService(_ context.Context, req *protos.GetServiceRequest) (*protos.GetServiceResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -33,7 +33,7 @@ func (p *PlumberServer) GetService(_ context.Context, req *protos.GetServiceRequ
 	}, nil
 }
 
-func (p *PlumberServer) GetAllServices(_ context.Context, req *protos.GetAllServicesRequest) (*protos.GetAllServicesResponse, error) {
+func (p *Server) GetAllServices(_ context.Context, req *protos.GetAllServicesRequest) (*protos.GetAllServicesResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -56,7 +56,7 @@ func (p *PlumberServer) GetAllServices(_ context.Context, req *protos.GetAllServ
 	}, nil
 }
 
-func (p *PlumberServer) CreateService(ctx context.Context, req *protos.CreateServiceRequest) (*protos.CreateServiceResponse, error) {
+func (p *Server) CreateService(ctx context.Context, req *protos.CreateServiceRequest) (*protos.CreateServiceResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -100,7 +100,7 @@ func (p *PlumberServer) CreateService(ctx context.Context, req *protos.CreateSer
 	}, nil
 }
 
-func (p *PlumberServer) UpdateService(ctx context.Context, req *protos.UpdateServiceRequest) (*protos.UpdateServiceResponse, error) {
+func (p *Server) UpdateService(ctx context.Context, req *protos.UpdateServiceRequest) (*protos.UpdateServiceResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -143,7 +143,7 @@ func (p *PlumberServer) UpdateService(ctx context.Context, req *protos.UpdateSer
 	}, nil
 }
 
-func (p *PlumberServer) DeleteService(ctx context.Context, req *protos.DeleteServiceRequest) (*protos.DeleteServiceResponse, error) {
+func (p *Server) DeleteService(ctx context.Context, req *protos.DeleteServiceRequest) (*protos.DeleteServiceResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}

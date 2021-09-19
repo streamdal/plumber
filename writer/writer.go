@@ -82,8 +82,8 @@ func GenerateWriteValue(writeOpts *opts.WriteOptions, md *desc.MessageDescriptor
 // generateWriteValue will transform input data into the required format for transmission
 func generateWriteValue(data []byte, writeOpts *opts.WriteOptions, md *desc.MessageDescriptor) ([]byte, error) {
 	// Input: AVRO
-	if writeOpts.EncodeOptions.AvroSchemaFile != "" {
-		data, err := serializers.AvroEncodeWithSchemaFile(writeOpts.EncodeOptions.AvroSchemaFile, data)
+	if writeOpts.EncodeOptions.AvroSettings.AvroSchemaFile != "" {
+		data, err := serializers.AvroEncodeWithSchemaFile(writeOpts.EncodeOptions.AvroSettings.AvroSchemaFile, data)
 		if err != nil {
 			return nil, err
 		}

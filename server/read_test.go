@@ -19,12 +19,12 @@ import (
 )
 
 var _ = Describe("Read", func() {
-	var p *PlumberServer
+	var p *Server
 
 	BeforeEach(func() {
 		fakeEtcd := &etcdfakes.FakeIEtcd{}
 
-		p = &PlumberServer{
+		p = &Server{
 			Etcd:      fakeEtcd,
 			AuthToken: "batchcorp",
 			PersistentConfig: &config.Config{
@@ -51,7 +51,7 @@ var _ = Describe("Read", func() {
 					Id: uuid.NewV4().String(),
 				}
 
-				p.PersistentConfig.SetRead(r.Id, &types.Read{Config: r})
+				p.PersistentConfig.SetRead(r.Id, &types.Read{ReadOptions: r})
 			}
 
 			resp, err := p.GetAllReads(context.Background(), &protos.GetAllReadsRequest{
@@ -109,7 +109,7 @@ var _ = Describe("Read", func() {
 			ctx, cancelFunc := context.WithCancel(context.Background())
 
 			read := &types.Read{
-				Config: &protos.Read{
+				ReadOptions: &protos.Read{
 					Active: true,
 				},
 				ContextCxl: ctx,
@@ -125,7 +125,7 @@ var _ = Describe("Read", func() {
 
 			Expect(err).ToNot(HaveOccurred())
 			Expect(resp.Status.Code).To(Equal(common.Code_OK))
-			Expect(read.Config.Active).To(BeFalse())
+			Expect(read.ReadOptions.Active).To(BeFalse())
 		})
 	})
 
@@ -160,7 +160,7 @@ var _ = Describe("Read", func() {
 			ctx, cancelFunc := context.WithCancel(context.Background())
 
 			read := &types.Read{
-				Config: &protos.Read{
+				ReadOptions: &protos.Read{
 					Active: true,
 				},
 				ContextCxl: ctx,

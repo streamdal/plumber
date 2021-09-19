@@ -43,7 +43,7 @@ const (
 var _ = Describe("Schema Import", func() {
 	Context("importLocal", func() {
 		It("returns error on unknown encoding type", func() {
-			p := &PlumberServer{}
+			p := &Server{}
 
 			_, err := p.importLocal(&protos.ImportLocalRequest{
 				Auth: &common.Auth{Token: "batchcorp"},
@@ -113,7 +113,7 @@ var _ = Describe("Schema Import", func() {
 
 	Context("importGithub", func() {
 		It("returns error on invalid schema type", func() {
-			p := &PlumberServer{
+			p := &Server{
 				GithubService:    &githubfakes.FakeIGithub{},
 				PersistentConfig: &config.Config{},
 			}
@@ -132,7 +132,7 @@ var _ = Describe("Schema Import", func() {
 				return base64.StdEncoding.DecodeString(GithubZipFile)
 			}
 
-			p := &PlumberServer{
+			p := &Server{
 				PersistentConfig: &config.Config{},
 				GithubService:    fakeGithub,
 			}

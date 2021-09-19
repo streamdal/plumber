@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"sync"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	uuid "github.com/satori/go.uuid"
@@ -12,7 +13,6 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/conns"
 
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/embed/etcd/etcdfakes"
@@ -22,17 +22,17 @@ var logger = &logrus.Logger{Out: ioutil.Discard}
 
 var _ = Describe("Connection", func() {
 
-	var p *PlumberServer
+	var p *Server
 
 	BeforeEach(func() {
 		fakeEtcd := &etcdfakes.FakeIEtcd{}
 
-		p = &PlumberServer{
+		p = &Server{
 			Etcd:      fakeEtcd,
 			AuthToken: "batchcorp",
 			PersistentConfig: &config.Config{
 				ConnectionsMutex: &sync.RWMutex{},
-				Connections:      map[string]*protos.Connection{},
+				Connections:      map[string]*opts.ConnectionOptions{},
 			},
 			Log: logrus.NewEntry(logger),
 		}
@@ -51,11 +51,11 @@ var _ = Describe("Connection", func() {
 		It("returns a specific connection", func() {
 			connID := uuid.NewV4().String()
 
-			conn := &protos.Connection{
+			conn := &opts.ConnectionOptions{
 				Name:  "testing",
 				Notes: "test connection",
-				Id:    connID,
-				Conn: &protos.Connection_Kafka{Kafka: &conns.Kafka{
+				XId:   connID,
+				Conn: &opts.Conn_Kafka{Kafka: &conns.Kafka{
 					Address: []string{"127.0.0.1:9200"},
 				}},
 			}
@@ -85,11 +85,11 @@ var _ = Describe("Connection", func() {
 		It("returns all specific connections", func() {
 
 			for i := 0; i < 10; i++ {
-				conn := &protos.Connection{
+				conn := &opts.ConnectionOptions{
 					Name:  "testing",
 					Notes: "test connection",
-					Id:    uuid.NewV4().String(),
-					Conn: &protos.Connection_Kafka{Kafka: &conns.Kafka{
+					XId:   uuid.NewV4().String(),
+					Conn: &opts.Conn_Kafka{Kafka: &conns.Kafka{
 						Address: []string{"127.0.0.1:9200"},
 					}},
 				}
@@ -130,10 +130,10 @@ var _ = Describe("Connection", func() {
 		})
 
 		It("creates a connection", func() {
-			conn := &protos.Connection{
+			conn := &opts.ConnectionOptions{
 				Name:  "testing",
 				Notes: "test connection",
-				Conn: &protos.Connection_Kafka{Kafka: &conns.Kafka{
+				Conn: &opts.Conn_Kafka{Kafka: &conns.Kafka{
 					Address: []string{"127.0.0.1:9200"},
 				}},
 			}
@@ -164,30 +164,30 @@ var _ = Describe("Connection", func() {
 			fakeEtcd := &etcdfakes.FakeIEtcd{}
 			p.Etcd = fakeEtcd
 
-			conn := &protos.Connection{
-				Id:    connID,
+			conn := &opts.ConnectionOptions{
+				XId:   connID,
 				Name:  "testing",
 				Notes: "test connection",
-				Conn: &protos.Connection_Kafka{Kafka: &conns.Kafka{
+				Conn: &opts.Conn_Kafka{Kafka: &conns.Kafka{
 					Address: []string{"127.0.0.1:9200"},
 				}},
 			}
 
 			p.PersistentConfig.SetConnection(conn.Id, conn)
 
-			newConn := &protos.Connection{
-				Id:    connID,
+			newConn := &opts.ConnectionOptions{
+				XId:   connID,
 				Name:  "updated",
 				Notes: "test connection",
-				Conn: &protos.Connection_Kafka{Kafka: &conns.Kafka{
+				Conn: &opts.Conn_Kafka{Kafka: &conns.Kafka{
 					Address: []string{"1.2.3.4:9200"},
 				}},
 			}
 
 			_, err := p.UpdateConnection(context.Background(), &protos.UpdateConnectionRequest{
-				Auth:         &common.Auth{Token: "batchcorp"},
-				ConnectionId: connID,
-				Connection:   newConn,
+				Auth:          &common.Auth{Token: "batchcorp"},
+				ConnectionXId: connID,
+				Connection:    newConn,
 			})
 
 			updateConn := p.PersistentConfig.GetConnection(connID)
@@ -215,11 +215,11 @@ var _ = Describe("Connection", func() {
 			fakeEtcd := &etcdfakes.FakeIEtcd{}
 			p.Etcd = fakeEtcd
 
-			conn := &protos.Connection{
-				Id:    connID,
+			conn := &opts.ConnectionOptions{
+				XId:   connID,
 				Name:  "testing",
 				Notes: "test connection",
-				Conn: &protos.Connection_Kafka{Kafka: &conns.Kafka{
+				Conn: &opts.Conn_Kafka{Kafka: &conns.Kafka{
 					Address: []string{"127.0.0.1:9200"},
 				}},
 			}
@@ -227,8 +227,8 @@ var _ = Describe("Connection", func() {
 			p.PersistentConfig.SetConnection(conn.Id, conn)
 
 			resp, err := p.DeleteConnection(context.Background(), &protos.DeleteConnectionRequest{
-				Auth:         &common.Auth{Token: "batchcorp"},
-				ConnectionId: connID,
+				Auth:          &common.Auth{Token: "batchcorp"},
+				ConnectionXId: connID,
 			})
 
 			Expect(err).ToNot(HaveOccurred())

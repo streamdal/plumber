@@ -16,7 +16,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
-func (p *PlumberServer) GetAllReads(_ context.Context, req *protos.GetAllReadsRequest) (*protos.GetAllReadsResponse, error) {
+func (p *Server) GetAllReads(_ context.Context, req *protos.GetAllReadsRequest) (*protos.GetAllReadsResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -24,7 +24,7 @@ func (p *PlumberServer) GetAllReads(_ context.Context, req *protos.GetAllReadsRe
 	reads := make([]*protos.Read, 0)
 
 	for _, v := range p.PersistentConfig.Reads {
-		reads = append(reads, v.Config)
+		reads = append(reads, v.ReadOptions)
 	}
 
 	return &protos.GetAllReadsResponse{
@@ -36,7 +36,7 @@ func (p *PlumberServer) GetAllReads(_ context.Context, req *protos.GetAllReadsRe
 	}, nil
 }
 
-func (p *PlumberServer) StartRead(req *protos.StartReadRequest, srv protos.PlumberServer_StartReadServer) error {
+func (p *Server) StartRead(req *protos.StartReadRequest, srv protos.PlumberServer_StartReadServer) error {
 	requestID := uuid.NewV4().String()
 
 	if err := p.validateRequest(req.Auth); err != nil {
@@ -60,7 +60,7 @@ func (p *PlumberServer) StartRead(req *protos.StartReadRequest, srv protos.Plumb
 	read.AttachedClients[requestID] = stream
 	read.AttachedClientsMutex.Unlock()
 
-	llog := p.Log.WithField("read_id", read.Config.Id).
+	llog := p.Log.WithField("read_id", read.ReadOptions.Id).
 		WithField("client_id", requestID)
 
 	// Ensure we remove this client from the active streams on exit
@@ -122,7 +122,7 @@ func (p *PlumberServer) StartRead(req *protos.StartReadRequest, srv protos.Plumb
 	}
 }
 
-func (p *PlumberServer) CreateRead(_ context.Context, req *protos.CreateReadRequest) (*protos.CreateReadResponse, error) {
+func (p *Server) CreateRead(_ context.Context, req *protos.CreateReadRequest) (*protos.CreateReadResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -155,7 +155,7 @@ func (p *PlumberServer) CreateRead(_ context.Context, req *protos.CreateReadRequ
 		AttachedClients:      make(map[string]*types.AttachedStream, 0),
 		AttachedClientsMutex: &sync.RWMutex{},
 		PlumberID:            p.PersistentConfig.PlumberID,
-		Config:               readCfg,
+		ReadOptions:          readCfg,
 		ContextCxl:           ctx,
 		CancelFunc:           cancelFunc,
 		Backend:              backend,
@@ -231,7 +231,7 @@ func getFallBackSampleRate(sampleOpts *protos.SampleOptions) (time.Duration, err
 	}
 }
 
-func (p *PlumberServer) StopRead(_ context.Context, req *protos.StopReadRequest) (*protos.StopReadResponse, error) {
+func (p *Server) StopRead(_ context.Context, req *protos.StopReadRequest) (*protos.StopReadResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -244,13 +244,13 @@ func (p *PlumberServer) StopRead(_ context.Context, req *protos.StopReadRequest)
 		return nil, CustomError(common.Code_NOT_FOUND, "read does not exist or has already been stopped")
 	}
 
-	if !read.Config.Active {
+	if !read.ReadOptions.Active {
 		return nil, CustomError(common.Code_FAILED_PRECONDITION, "Read is already stopped")
 	}
 
 	read.CancelFunc()
 
-	read.Config.Active = false
+	read.ReadOptions.Active = false
 
 	p.Log.WithField("request_id", requestID).Infof("Read '%s' stopped", req.ReadId)
 
@@ -263,7 +263,7 @@ func (p *PlumberServer) StopRead(_ context.Context, req *protos.StopReadRequest)
 	}, nil
 }
 
-func (p *PlumberServer) ResumeRead(_ context.Context, req *protos.ResumeReadRequest) (*protos.ResumeReadResponse, error) {
+func (p *Server) ResumeRead(_ context.Context, req *protos.ResumeReadRequest) (*protos.ResumeReadResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -276,13 +276,13 @@ func (p *PlumberServer) ResumeRead(_ context.Context, req *protos.ResumeReadRequ
 		return nil, CustomError(common.Code_NOT_FOUND, "read does not exist or has already been stopped")
 	}
 
-	if read.Config.Active {
+	if read.ReadOptions.Active {
 		return nil, CustomError(common.Code_FAILED_PRECONDITION, "Read is already active")
 	}
 
 	ctx, cancelFunc := context.WithCancel(context.Background())
 
-	backend, err := p.getBackendRead(read.Config)
+	backend, err := p.getBackendRead(read.ReadOptions)
 	if err != nil {
 		cancelFunc()
 		return nil, CustomError(common.Code_ABORTED, err.Error())
@@ -292,7 +292,7 @@ func (p *PlumberServer) ResumeRead(_ context.Context, req *protos.ResumeReadRequ
 	read.Backend = backend
 	read.ContextCxl = ctx
 	read.CancelFunc = cancelFunc
-	read.Config.Active = true
+	read.ReadOptions.Active = true
 
 	go read.StartRead()
 
@@ -307,7 +307,7 @@ func (p *PlumberServer) ResumeRead(_ context.Context, req *protos.ResumeReadRequ
 	}, nil
 }
 
-func (p *PlumberServer) DeleteRead(_ context.Context, req *protos.DeleteReadRequest) (*protos.DeleteReadResponse, error) {
+func (p *Server) DeleteRead(_ context.Context, req *protos.DeleteReadRequest) (*protos.DeleteReadResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -321,7 +321,7 @@ func (p *PlumberServer) DeleteRead(_ context.Context, req *protos.DeleteReadRequ
 	}
 
 	// Stop it if it's in progress
-	if read.Config.Active {
+	if read.ReadOptions.Active {
 		read.CancelFunc()
 	}
 

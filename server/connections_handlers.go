@@ -13,7 +13,7 @@ import (
 	"github.com/batchcorp/plumber/embed/etcd"
 )
 
-func (p *PlumberServer) GetAllConnections(_ context.Context, req *protos.GetAllConnectionsRequest) (*protos.GetAllConnectionsResponse, error) {
+func (p *Server) GetAllConnections(_ context.Context, req *protos.GetAllConnectionsRequest) (*protos.GetAllConnectionsResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -28,7 +28,7 @@ func (p *PlumberServer) GetAllConnections(_ context.Context, req *protos.GetAllC
 	}, nil
 }
 
-func (p *PlumberServer) GetConnection(_ context.Context, req *protos.GetConnectionRequest) (*protos.GetConnectionResponse, error) {
+func (p *Server) GetConnection(_ context.Context, req *protos.GetConnectionRequest) (*protos.GetConnectionResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -43,7 +43,7 @@ func (p *PlumberServer) GetConnection(_ context.Context, req *protos.GetConnecti
 	}, nil
 }
 
-func (p *PlumberServer) CreateConnection(ctx context.Context, req *protos.CreateConnectionRequest) (*protos.CreateConnectionResponse, error) {
+func (p *Server) CreateConnection(ctx context.Context, req *protos.CreateConnectionRequest) (*protos.CreateConnectionResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -82,7 +82,7 @@ func (p *PlumberServer) CreateConnection(ctx context.Context, req *protos.Create
 	}, nil
 }
 
-func (p *PlumberServer) TestConnection(_ context.Context, req *protos.TestConnectionRequest) (*protos.TestConnectionResponse, error) {
+func (p *Server) TestConnection(_ context.Context, req *protos.TestConnectionRequest) (*protos.TestConnectionResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -110,7 +110,7 @@ func (p *PlumberServer) TestConnection(_ context.Context, req *protos.TestConnec
 	}, nil
 }
 
-func (p *PlumberServer) UpdateConnection(ctx context.Context, req *protos.UpdateConnectionRequest) (*protos.UpdateConnectionResponse, error) {
+func (p *Server) UpdateConnection(ctx context.Context, req *protos.UpdateConnectionRequest) (*protos.UpdateConnectionResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
@@ -158,7 +158,7 @@ func (p *PlumberServer) UpdateConnection(ctx context.Context, req *protos.Update
 	}, nil
 }
 
-func (p *PlumberServer) DeleteConnection(ctx context.Context, req *protos.DeleteConnectionRequest) (*protos.DeleteConnectionResponse, error) {
+func (p *Server) DeleteConnection(ctx context.Context, req *protos.DeleteConnectionRequest) (*protos.DeleteConnectionResponse, error) {
 	if err := p.validateRequest(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}

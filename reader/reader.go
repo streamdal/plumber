@@ -58,7 +58,7 @@ func Decode(readOpts *opts.ReadOptions, md *desc.MessageDescriptor, message []by
 			message = plain
 		}
 
-		decoded, err := serializers.AvroDecodeWithSchemaFile(readOpts.DecodeOptions.AvroSchemaFile, message)
+		decoded, err := serializers.AvroDecodeWithSchemaFile(readOpts.DecodeOptions.AvroSettings.AvroSchemaFile, message)
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to decode avro message")
 		}

@@ -33,7 +33,7 @@ func FindMessageDescriptor(protobufDirs []string, protobufRootMessage string) (*
 		return nil, fmt.Errorf("no .proto found in dir(s) '%v'", protobufDirs)
 	}
 
-	fds, err := readFileDescriptors(files)
+	fds, err := readFileDescriptorsV1(files)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to read file descriptors")
 	}
@@ -73,7 +73,7 @@ func FindMessageDescriptorInFDS(fds []*desc.FileDescriptor, rootMessage string) 
 	return nil, errors.New("message descriptor not found in file descriptor(s)")
 }
 
-func readFileDescriptors(files map[string][]string) ([]*desc.FileDescriptor, error) {
+func readFileDescriptorsV1(files map[string][]string) ([]*desc.FileDescriptor, error) {
 	contents := make(map[string]string, 0)
 	keys := make([]string, 0)
 
