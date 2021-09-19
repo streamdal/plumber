@@ -4,60 +4,45 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jhump/protoreflect/desc"
-	"github.com/jhump/protoreflect/dynamic"
+	"github.com/batchcorp/plumber/validate"
+	"github.com/batchcorp/plumber/writer"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
-	skafka "github.com/segmentio/kafka-go"
-
-	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
-	"github.com/batchcorp/plumber/serializers"
-	"github.com/batchcorp/plumber/writer"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
-func (p *Server) Write(ctx context.Context, req *protos.WriteRequest) (*protos.WriteResponse, error) {
-	if err := p.validateRequest(req.Auth); err != nil {
+func (s *Server) Write(ctx context.Context, req *protos.WriteRequest) (*protos.WriteResponse, error) {
+	if err := s.validateAuth(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	backend, err := p.getBackendWrite(req)
-	if err != nil {
-		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
+	if err := validate.WriteOptionsForServer(req.Opts); err != nil {
+		return nil, CustomError(common.Code_FAILED_PRECONDITION, fmt.Sprintf("unable to validate write options: %s", err))
+	}
+
+	be := s.PersistentConfig.GetBackend(req.Opts.ConnectionId)
+	if be == nil {
+		return nil, validate.ErrBackendNotFound
 	}
 
 	// We only need/want to do this once, so generate and pass to generateWriteValue
-	md, err := p.getMessageDescriptor(req.GetEncodeOptions())
+
+	md, err := s.getMessageDescriptorFromEncodeOptions(req.Opts.EncodeOptions)
 	if err != nil {
-		return nil, err
+		return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to fetch message descriptor: %s", err))
 	}
 
-	defer backend.Writer.Close()
-
-	messages := make([]skafka.Message, 0)
-
-	for _, v := range req.Records {
-		km := v.GetKafka()
-
-		blob, err := generateWriteValue(md, req.GetEncodeOptions(), km.Value)
-		if err != nil {
-			p.Log.Errorf("Could not generate write value: %s", err)
-			continue
-		}
-		messages = append(messages, skafka.Message{
-			Topic:   km.Topic,
-			Key:     km.Key,
-			Value:   blob,
-			Headers: convertProtoHeadersToKafka(km.GetHeaders()),
-		})
+	records, err := writer.GenerateWriteValue(req.Opts, md)
+	if err != nil {
+		return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to generate write records: %s", err))
 	}
 
-	if err := backend.Writer.WriteMessages(ctx, messages...); err != nil {
+	// TODO: Should update to use a proper error chan
+	if err := be.Write(ctx, req.Opts, nil, records...); err != nil {
 		err = errors.Wrap(err, "unable to write messages to kafka")
-		p.Log.Error(err)
+		s.Log.Error(err)
 
 		return &protos.WriteResponse{
 			Status: &common.Status{
@@ -68,9 +53,9 @@ func (p *Server) Write(ctx context.Context, req *protos.WriteRequest) (*protos.W
 		}, nil
 	}
 
-	logMsg := fmt.Sprintf("%d record(s) written", len(messages))
+	logMsg := fmt.Sprintf("wrote %d record(s)", len(records))
 
-	p.Log.Info(logMsg)
+	s.Log.Debug(logMsg)
 
 	return &protos.WriteResponse{
 		Status: &common.Status{
@@ -79,46 +64,4 @@ func (p *Server) Write(ctx context.Context, req *protos.WriteRequest) (*protos.W
 			RequestId: uuid.NewV4().String(),
 		},
 	}, nil
-}
-
-// generateWriteValue encodes the message value using avro/protobuf/etc
-func generateWriteValue(md *desc.MessageDescriptor, encodingOpts *encoding.Options, data []byte) ([]byte, error) {
-	// No encoding options passed
-	if encodingOpts == nil {
-		return data, nil
-	}
-
-	var err error
-
-	switch encodingOpts.Type {
-	case encoding.Type_PROTOBUF:
-		data, err = writer.ConvertJSONPBToProtobuf(data, dynamic.NewMessage(md))
-		if err != nil {
-			return nil, errors.Wrap(err, "unable to convert JSONPB to protobuf")
-		}
-	case encoding.Type_AVRO:
-		data, err = serializers.AvroDecode(encodingOpts.GetAvro().Schema, data)
-		if err != nil {
-			return nil, errors.Wrap(err, "unable to decode AVRO message")
-		}
-		fallthrough
-	case encoding.Type_JSON_SCHEMA:
-		// TODO
-	}
-
-	return data, nil
-}
-
-// convertProtoHeadersToKafka converts type of header slice from segmentio's to our protobuf type
-func convertProtoHeadersToKafka(original []*records.KafkaHeader) []skafka.Header {
-	converted := make([]skafka.Header, 0)
-
-	for _, o := range original {
-		converted = append(converted, skafka.Header{
-			Key:   o.Key,
-			Value: []byte(o.Value),
-		})
-	}
-
-	return converted
 }

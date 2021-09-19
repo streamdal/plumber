@@ -18,7 +18,7 @@ func (p *Plumber) HandleRelayCmd() error {
 		return errors.Wrap(err, "unable to validate relay options")
 	}
 
-	backend, err := backends.New(p.CLIOptions.Global.XBackend, p.cliConnOpts)
+	backend, err := backends.New(p.cliConnOpts)
 	if err != nil {
 		return errors.Wrap(err, "unable to instantiate backend")
 	}

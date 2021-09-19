@@ -7,8 +7,10 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
@@ -154,7 +156,7 @@ func getConfig() *config.Config {
 
 	if cfg == nil {
 		cfg = &config.Config{
-			Connections:      make(map[string]*protos.Connection),
+			Connections:      make(map[string]*opts.ConnectionOptions),
 			Relays:           make(map[string]*types.Relay),
 			Schemas:          make(map[string]*protos.Schema),
 			Services:         make(map[string]*protos.Service),

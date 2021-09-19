@@ -68,7 +68,7 @@ func New(cfg *Config) (*Plumber, error) {
 			return nil, errors.Wrap(err, "unable to populate protobuf message descriptors")
 		}
 
-		connCfg, err := GenerateConnectionConfig(cfg.CLIOptions)
+		connCfg, err := generateConnectionOptions(cfg.CLIOptions)
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to generate connection config")
 		}
@@ -80,9 +80,9 @@ func New(cfg *Config) (*Plumber, error) {
 	return p, nil
 }
 
-// GenerateConnectionConfig generates a connection config from passed in CLI
+// generateConnectionOptions generates a connection config from passed in CLI
 // options. This function is used by plumber in CLI mode.
-func GenerateConnectionConfig(cfg *opts.CLIOptions) (*opts.ConnectionOptions, error) {
+func generateConnectionOptions(cfg *opts.CLIOptions) (*opts.ConnectionOptions, error) {
 	if cfg == nil {
 		return nil, errors.New("cli options config cannot be nil")
 	}

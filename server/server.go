@@ -1,6 +1,10 @@
 package server
 
 import (
+	"context"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber/validate"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 
@@ -18,6 +22,14 @@ type Server struct {
 	GithubService    github.IGithub
 	Etcd             etcd.IEtcd
 	Log              *logrus.Entry
+}
+
+func (s *Server) GetServerOptions(ctx context.Context, request *protos.GetServerOptionsRequest) (*protos.GetServerOptionsResponse, error) {
+	panic("implement me")
+}
+
+func (s *Server) GetGithubEvents(request *protos.GetGithubEventsRequest, server protos.PlumberServer_GetGithubEventsServer) error {
+	panic("implement me")
 }
 
 type ErrorWrapper struct {
@@ -38,13 +50,13 @@ func CustomError(c common.Code, msg string) error {
 	}
 }
 
-func (p *Server) validateRequest(auth *common.Auth) error {
+func (s *Server) validateAuth(auth *common.Auth) error {
 	if auth == nil {
-		return ErrMissingAuth
+		return validate.ErrMissingAuth
 	}
 
-	if auth.Token != p.AuthToken {
-		return ErrInvalidToken
+	if auth.Token != s.AuthToken {
+		return validate.ErrInvalidToken
 	}
 
 	return nil

@@ -4,94 +4,135 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/golang/protobuf/proto"
-	uuid "github.com/satori/go.uuid"
-
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber/backends"
+	"github.com/batchcorp/plumber/validate"
+	"github.com/golang/protobuf/proto"
+	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber/embed/etcd"
 )
 
-func (p *Server) GetAllConnections(_ context.Context, req *protos.GetAllConnectionsRequest) (*protos.GetAllConnectionsResponse, error) {
-	if err := p.validateRequest(req.Auth); err != nil {
+func (s *Server) GetAllConnections(_ context.Context, req *protos.GetAllConnectionsRequest) (*protos.GetAllConnectionsResponse, error) {
+	if err := s.validateAuth(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	conns := make([]*protos.Connection, 0)
-	for _, v := range p.PersistentConfig.Connections {
+	conns := make([]*opts.ConnectionOptions, 0)
+	for _, v := range s.PersistentConfig.Connections {
 		conns = append(conns, v)
 	}
 
 	return &protos.GetAllConnectionsResponse{
-		Connections: conns,
+		Options: conns,
 	}, nil
 }
 
-func (p *Server) GetConnection(_ context.Context, req *protos.GetConnectionRequest) (*protos.GetConnectionResponse, error) {
-	if err := p.validateRequest(req.Auth); err != nil {
+func (s *Server) GetConnection(_ context.Context, req *protos.GetConnectionRequest) (*protos.GetConnectionResponse, error) {
+	if err := s.validateAuth(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	conn := p.PersistentConfig.GetConnection(req.ConnectionId)
+	conn := s.PersistentConfig.GetConnection(req.ConnectionId)
 	if conn == nil {
 		return nil, CustomError(common.Code_NOT_FOUND, "no such connection id")
 	}
 
 	return &protos.GetConnectionResponse{
-		Connection: conn,
+		Options: conn,
 	}, nil
 }
 
-func (p *Server) CreateConnection(ctx context.Context, req *protos.CreateConnectionRequest) (*protos.CreateConnectionResponse, error) {
-	if err := p.validateRequest(req.Auth); err != nil {
+func (s *Server) CreateConnection(ctx context.Context, req *protos.CreateConnectionRequest) (*protos.CreateConnectionResponse, error) {
+	if err := s.validateAuth(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	conn := req.GetConnection()
-	if conn == nil {
+	connOpts := req.GetOptions()
+	if connOpts == nil {
 		return nil, CustomError(common.Code_FAILED_PRECONDITION, "No connection message found in the payload")
 	}
-	conn.Id = uuid.NewV4().String()
+	connOpts.XId = uuid.NewV4().String()
 
-	if err := validateConnection(req.GetConnection()); err != nil {
+	if err := validate.ConnectionOptionsForServer(connOpts); err != nil {
 		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
 	}
 
-	data, err := proto.Marshal(conn)
+	// Try to create a backend from given connection options
+	be, err := backends.New(connOpts)
+	if err != nil {
+		return nil, CustomError(common.Code_ABORTED, fmt.Sprintf("unable to create backend: %s", err))
+	}
+
+	// Save conn options to etcd
+	data, err := proto.Marshal(connOpts)
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
 	}
 
-	// Save to etcd
-	_, err = p.Etcd.Put(ctx, etcd.CacheConnectionsPrefix+"/"+conn.Id, string(data))
+	_, err = s.Etcd.Put(ctx, etcd.CacheConnectionsPrefix+"/"+connOpts.XId, string(data))
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
 
-	p.PersistentConfig.SetConnection(conn.Id, conn)
+	// Save backend in mem
+	s.PersistentConfig.SetBackend(req.Options.XId, be)
+	// Save connection options in mem
+	s.PersistentConfig.SetConnection(connOpts.XId, connOpts)
 
-	if err := p.Etcd.PublishCreateConnection(ctx, conn); err != nil {
-		p.Log.Error(err)
+	// TODO: What if the publish fails - how do other nodes know about the new
+	// connection? Once this is figured out, we can move this down; for now,
+	// this should fail the request. ~ds
+	if err := s.Etcd.PublishCreateConnection(ctx, connOpts); err != nil {
+		s.rollbackCreateConnection(ctx, connOpts)
+
+		s.Log.Error(errors.Wrap(err, "unable to publish create connection event"))
+		return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to create connection event: %s", err))
 	}
 
-	p.Log.Infof("Connection '%s' created", conn.Id)
+	s.Log.Infof("Connection '%s' created", connOpts.XId)
 
 	return &protos.CreateConnectionResponse{
-		ConnectionId: conn.Id,
+		ConnectionId: connOpts.XId,
 	}, nil
 }
 
-func (p *Server) TestConnection(_ context.Context, req *protos.TestConnectionRequest) (*protos.TestConnectionResponse, error) {
-	if err := p.validateRequest(req.Auth); err != nil {
+// Rollback anything that may have been done during a conn creation request
+func (s *Server) rollbackCreateConnection(ctx context.Context, connOpts *opts.ConnectionOptions) {
+	// Remove connection from etcd
+	if _, err := s.Etcd.Delete(ctx, etcd.CacheConnectionsPrefix+"/"+connOpts.XId); err != nil {
+		// TODO: This should push a notification to a global log
+		s.Log.Errorf("unable to delete connection options in etcd: %s", err)
+	}
+
+	// Close backend + delete entry in persistent config map (if it exists)
+	// NOTE: We are doing this in a goroutine because it might take a moment
+	// to close the backend.
+	go s.PersistentConfig.DeleteBackend(connOpts.XId)
+
+	// Delete connections options map entry
+	s.PersistentConfig.DeleteConnection(connOpts.XId)
+}
+
+func (s *Server) TestConnection(ctx context.Context, req *protos.TestConnectionRequest) (*protos.TestConnectionResponse, error) {
+	if err := s.validateAuth(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	if err := validateConnection(req.GetConnection()); err != nil {
+	if err := validate.ConnectionOptionsForServer(req.Options); err != nil {
 		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
 	}
 
-	if err := testConnection(req.GetConnection()); err != nil {
+	// Fetch the associated backend
+	be := s.PersistentConfig.GetBackend(req.Options.XId)
+	if be == nil {
+		return nil, CustomError(common.Code_NOT_FOUND, "unable to find backend for given connection id")
+	}
+
+	if err := be.Test(ctx); err != nil {
 		return &protos.TestConnectionResponse{
 			Status: &common.Status{
 				Code:      common.Code_INTERNAL,
@@ -110,44 +151,45 @@ func (p *Server) TestConnection(_ context.Context, req *protos.TestConnectionReq
 	}, nil
 }
 
-func (p *Server) UpdateConnection(ctx context.Context, req *protos.UpdateConnectionRequest) (*protos.UpdateConnectionResponse, error) {
-	if err := p.validateRequest(req.Auth); err != nil {
+func (s *Server) UpdateConnection(ctx context.Context, req *protos.UpdateConnectionRequest) (*protos.UpdateConnectionResponse, error) {
+	if err := s.validateAuth(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
 	requestID := uuid.NewV4().String()
 
-	conn := p.PersistentConfig.GetConnection(req.ConnectionId)
-	if conn == nil {
+	connOptions := s.PersistentConfig.GetConnection(req.ConnectionId)
+	if connOptions == nil {
 		return nil, CustomError(common.Code_NOT_FOUND, "no such connection id")
 	}
 
-	if err := validateConnection(req.GetConnection()); err != nil {
+	if err := validate.ConnectionOptionsForServer(req.Options); err != nil {
 		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
 	}
 
-	conn = req.Connection
+	// Re-assign connection options so we can update in-mem + etcd
+	connOptions = req.Options
 
-	data, err := proto.Marshal(conn)
+	data, err := proto.Marshal(connOptions)
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
 	}
 
 	// Update in etcd
-	_, err = p.Etcd.Put(ctx, etcd.CacheConnectionsPrefix+"/"+conn.Id, string(data))
+	_, err = s.Etcd.Put(ctx, etcd.CacheConnectionsPrefix+"/"+connOptions.XId, string(data))
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
 
 	// Update in memory
-	p.PersistentConfig.SetConnection(req.Connection.Id, conn)
+	s.PersistentConfig.SetConnection(connOptions.XId, connOptions)
 
 	// Publish UpdateConnection event
-	if err := p.Etcd.PublishUpdateConnection(ctx, conn); err != nil {
-		p.Log.Error(err)
+	if err := s.Etcd.PublishUpdateConnection(ctx, connOptions); err != nil {
+		s.Log.Error(err)
 	}
 
-	p.Log.WithField("request_id", requestID).Infof("Connection '%s' updated", req.ConnectionId)
+	s.Log.WithField("request_id", requestID).Infof("Connection '%s' updated", req.ConnectionId)
 
 	return &protos.UpdateConnectionResponse{
 		Status: &common.Status{
@@ -158,33 +200,34 @@ func (p *Server) UpdateConnection(ctx context.Context, req *protos.UpdateConnect
 	}, nil
 }
 
-func (p *Server) DeleteConnection(ctx context.Context, req *protos.DeleteConnectionRequest) (*protos.DeleteConnectionResponse, error) {
-	if err := p.validateRequest(req.Auth); err != nil {
+func (s *Server) DeleteConnection(ctx context.Context, req *protos.DeleteConnectionRequest) (*protos.DeleteConnectionResponse, error) {
+	if err := s.validateAuth(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
 	requestID := uuid.NewV4().String()
 
-	conn := p.PersistentConfig.GetConnection(req.ConnectionId)
-	if conn == nil {
+	connOptions := s.PersistentConfig.GetConnection(req.ConnectionId)
+	if connOptions == nil {
 		return nil, CustomError(common.Code_NOT_FOUND, "no such connection id")
 	}
 
 	// Delete in etcd
-	_, err := p.Etcd.Delete(ctx, etcd.CacheConnectionsPrefix+"/"+conn.Id)
+	_, err := s.Etcd.Delete(ctx, etcd.CacheConnectionsPrefix+"/"+connOptions.XId)
 	if err != nil {
 		return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to delete connection: "+err.Error()))
 	}
 
 	// Delete in memory
-	p.PersistentConfig.DeleteConnection(conn.Id)
+	s.PersistentConfig.DeleteConnection(connOptions.XId)
+	s.PersistentConfig.DeleteBackend(connOptions.XId)
 
 	// Publish DeleteConnection event
-	if err := p.Etcd.PublishDeleteConnection(ctx, conn); err != nil {
-		p.Log.Error(err)
+	if err := s.Etcd.PublishDeleteConnection(ctx, connOptions); err != nil {
+		s.Log.Error(err)
 	}
 
-	p.Log.WithField("request_id", requestID).Infof("Connection '%s' deleted", req.ConnectionId)
+	s.Log.WithField("request_id", requestID).Infof("Connection '%s' deleted", req.ConnectionId)
 
 	return &protos.DeleteConnectionResponse{
 		Status: &common.Status{

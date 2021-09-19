@@ -65,9 +65,10 @@ type IEtcd interface {
 }
 
 type Etcd struct {
+	PlumberConfig *config.Config
+
 	server             *embed.Etcd
 	client             *clientv3.Client
-	PlumberConfig      *config.Config
 	serverOptions      *opts.ServerOptions
 	urls               *urls
 	started            bool

@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber/embed/etcd"
+	"github.com/batchcorp/plumber/validate"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
@@ -16,14 +18,14 @@ import (
 	"github.com/batchcorp/plumber/server/types"
 )
 
-func (p *Server) GetAllRelays(_ context.Context, req *protos.GetAllRelaysRequest) (*protos.GetAllRelaysResponse, error) {
-	if err := p.validateRequest(req.Auth); err != nil {
+func (s *Server) GetAllRelays(_ context.Context, req *protos.GetAllRelaysRequest) (*protos.GetAllRelaysResponse, error) {
+	if err := s.validateAuth(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	relays := make([]*protos.Relay, 0)
-	for _, v := range p.PersistentConfig.Relays {
-		relays = append(relays, v.Options)
+	RelayOptions := make([]*opts.RelayOptions, 0)
+	for _, v := range s.PersistentConfig.Relays {
+		RelayOptions = append(RelayOptions, v.Options)
 	}
 
 	return &protos.GetAllRelaysResponse{
@@ -31,19 +33,35 @@ func (p *Server) GetAllRelays(_ context.Context, req *protos.GetAllRelaysRequest
 			Code:      common.Code_OK,
 			RequestId: uuid.NewV4().String(),
 		},
-		Relays: relays,
+		Opts: RelayOptions,
 	}, nil
 }
 
-func (p *Server) CreateRelay(ctx context.Context, req *protos.CreateRelayRequest) (*protos.CreateRelayResponse, error) {
-	if err := p.validateRequest(req.Auth); err != nil {
+func (s *Server) CreateRelay(ctx context.Context, req *protos.CreateRelayRequest) (*protos.CreateRelayResponse, error) {
+	if err := s.validateAuth(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
+	if err := validate.RelayOptionsForServer(req.Opts); err != nil {
+		return nil, CustomError(common.Code_ABORTED, fmt.Sprintf("unable to validate relay options: %s", err))
+	}
+
 	// Get stored connection information
-	conn := p.PersistentConfig.GetConnection(req.Relay.ConnectionId)
-	if conn == nil {
-		return nil, fmt.Errorf("connection '%s' does not exist", req.Relay.ConnectionId)
+	be := s.PersistentConfig.GetBackend(req.Opts.ConnectionId)
+	if be == nil {
+		return nil, validate.ErrBackendNotFound
+	}
+
+	// Save to etcd
+	data, err := proto.Marshal(req.Opts)
+	if err != nil {
+		return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
+	}
+
+	_, err = s.Etcd.Put(ctx, etcd.CacheRelaysPrefix+"/"+req.Opts.XRelayId, string(data))
+	if err != nil {
+		s.rollbackCreateRelay(ctx, req.Opts)
+		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
 
 	// Used to shutdown relays on StopRelay() gRPC call
@@ -51,38 +69,30 @@ func (p *Server) CreateRelay(ctx context.Context, req *protos.CreateRelayRequest
 
 	r := &types.Relay{
 		Id:         uuid.NewV4().String(),
+		Backend:    be,
 		CancelFunc: shutdownFunc,
 		CancelCtx:  shutdownCtx,
-		Options:    req.Relay,
-	}
-
-	if err := r.StartRelay(conn); err != nil {
-		return nil, errors.Wrap(err, "unable to start relay")
-	}
-
-	r.Options.RelayId = r.Id
-	r.Active = true
-
-	data, err := proto.Marshal(r.Options)
-	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
-	}
-
-	// Save to etcd
-	_, err = p.Etcd.Put(ctx, etcd.CacheRelaysPrefix+"/"+conn.Id, string(data))
-	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, err.Error())
+		Options:    req.Opts,
 	}
 
 	// Save to memory
-	p.PersistentConfig.SetRelay(r.Id, r)
+	s.PersistentConfig.SetRelay(r.Id, r)
 
 	// Publish CreateSchema event
-	if err := p.Etcd.PublishCreateRelay(ctx, r.Options); err != nil {
-		p.Log.Error(err)
+	if err := s.Etcd.PublishCreateRelay(ctx, r.Options); err != nil {
+		s.rollbackCreateRelay(ctx, req.Opts)
+		s.Log.Error(err)
 	}
 
-	p.Log.Infof("Relay '%s' started", r.Id)
+	if err := r.StartRelay(); err != nil {
+		s.rollbackCreateRelay(ctx, req.Opts)
+		return nil, errors.Wrap(err, "unable to start relay")
+	}
+
+	r.Options.XRelayId = r.Id
+	r.Active = true
+
+	s.Log.Infof("Relay '%s' started", r.Id)
 
 	return &protos.CreateRelayResponse{
 		Status: &common.Status{
@@ -94,13 +104,17 @@ func (p *Server) CreateRelay(ctx context.Context, req *protos.CreateRelayRequest
 	}, nil
 }
 
-func (p *Server) UpdateRelay(_ context.Context, req *protos.UpdateRelayRequest) (*protos.UpdateRelayResponse, error) {
-	if err := p.validateRequest(req.Auth); err != nil {
+func (s *Server) rollbackCreateRelay(ctx context.Context, req *opts.RelayOptions) {
+	// TODO: Implement
+}
+
+func (s *Server) UpdateRelay(_ context.Context, req *protos.UpdateRelayRequest) (*protos.UpdateRelayResponse, error) {
+	if err := s.validateAuth(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
 	// Stop existing relay
-	relay := p.PersistentConfig.GetRelay(req.RelayId)
+	relay := s.PersistentConfig.GetRelay(req.RelayId)
 	if relay == nil {
 		return nil, CustomError(common.Code_NOT_FOUND, "relay does not exist")
 	}
@@ -108,48 +122,56 @@ func (p *Server) UpdateRelay(_ context.Context, req *protos.UpdateRelayRequest) 
 	// Stop workers
 	relay.CancelFunc()
 
-	p.Log.Infof("Relay '%s' stopped", relay.Id)
+	s.Log.Infof("Relay '%s' stopped", relay.Id)
 
 	// TODO: need to get signal of when relay shutdown is complete
 	time.Sleep(time.Second)
 
 	// Update relay config
-	relay.Options = req.Relay
+	relay.Options = req.Opts
 
-	// Restart relay
-	conn := p.PersistentConfig.GetConnection(relay.Options.ConnectionId)
-	if conn == nil {
-		return nil, CustomError(common.Code_NOT_FOUND, "connection does not exist")
-	}
-
+	// Give relayer new ctx & cancel func
 	ctx, cancelFunc := context.WithCancel(context.Background())
+
 	relay.CancelCtx = ctx
 	relay.CancelFunc = cancelFunc
 
-	if err := relay.StartRelay(conn); err != nil {
+	if err := relay.StartRelay(); err != nil {
 		return nil, errors.Wrap(err, "unable to start relay")
 	}
 
 	data, err := proto.Marshal(relay.Options)
 	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
+		s.rollbackUpdateRelay(ctx, req.Opts)
+		fullErr := fmt.Sprintf("unable to marshal relay options to bytes for relay id '%s': %s", req.Opts.XRelayId, err)
+		s.Log.Error(fullErr)
+
+		return nil, CustomError(common.Code_ABORTED, fullErr)
 	}
 
 	// Save to etcd
-	_, err = p.Etcd.Put(ctx, etcd.CacheRelaysPrefix+"/"+conn.Id, string(data))
+	_, err = s.Etcd.Put(ctx, etcd.CacheRelaysPrefix+"/"+req.Opts.XRelayId, string(data))
 	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, err.Error())
+		s.rollbackUpdateRelay(ctx, req.Opts)
+		fullErr := fmt.Sprintf("unable to save new relay options to etcd for relay id '%s': %s", req.Opts.XRelayId, err)
+		s.Log.Error(fullErr)
+
+		return nil, CustomError(common.Code_ABORTED, fullErr)
 	}
 
 	// Save to memory
-	p.PersistentConfig.SetRelay(relay.Id, relay)
+	s.PersistentConfig.SetRelay(relay.Id, relay)
 
 	// Publish CreateSchema event
-	if err := p.Etcd.PublishUpdateRelay(ctx, relay.Options); err != nil {
-		p.Log.Error(err)
+	if err := s.Etcd.PublishUpdateRelay(ctx, relay.Options); err != nil {
+		s.rollbackUpdateRelay(ctx, req.Opts)
+		fullErr := fmt.Sprintf("unable to publish update relay event for relay id '%s': %s", req.Opts.XRelayId, err)
+		s.Log.Error(fullErr)
+
+		return nil, CustomError(common.Code_ABORTED, fullErr)
 	}
 
-	p.Log.Infof("Relay '%s' started", relay.Id)
+	s.Log.Infof("Relay '%s' started", relay.Id)
 
 	relay.Active = true
 
@@ -162,12 +184,21 @@ func (p *Server) UpdateRelay(_ context.Context, req *protos.UpdateRelayRequest) 
 	}, nil
 }
 
-func (p *Server) StopRelay(_ context.Context, req *protos.StopRelayRequest) (*protos.StopRelayResponse, error) {
-	if err := p.validateRequest(req.Auth); err != nil {
+// TODO: Implement
+func (s *Server) rollbackUpdateRelay(ctx context.Context, relayOptions *opts.RelayOptions) {
+	// Remove from etcd
+
+	// Stop grpc relayers
+
+	// Remove from persistent storage
+}
+
+func (s *Server) StopRelay(_ context.Context, req *protos.StopRelayRequest) (*protos.StopRelayResponse, error) {
+	if err := s.validateAuth(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	relay := p.PersistentConfig.GetRelay(req.RelayId)
+	relay := s.PersistentConfig.GetRelay(req.RelayId)
 	if relay == nil {
 		return nil, CustomError(common.Code_NOT_FOUND, "relay does not exist")
 	}
@@ -180,7 +211,7 @@ func (p *Server) StopRelay(_ context.Context, req *protos.StopRelayRequest) (*pr
 	relay.CancelFunc()
 	relay.Active = false
 
-	p.Log.Infof("Relay '%s' stopped", relay.Id)
+	s.Log.Infof("Relay '%s' stopped", relay.Id)
 
 	return &protos.StopRelayResponse{
 		Status: &common.Status{
@@ -191,12 +222,12 @@ func (p *Server) StopRelay(_ context.Context, req *protos.StopRelayRequest) (*pr
 	}, nil
 }
 
-func (p *Server) ResumeRelay(ctx context.Context, req *protos.ResumeRelayRequest) (*protos.ResumeRelayResponse, error) {
-	if err := p.validateRequest(req.Auth); err != nil {
+func (s *Server) ResumeRelay(ctx context.Context, req *protos.ResumeRelayRequest) (*protos.ResumeRelayResponse, error) {
+	if err := s.validateAuth(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	relay := p.PersistentConfig.GetRelay(req.RelayId)
+	relay := s.PersistentConfig.GetRelay(req.RelayId)
 	if relay == nil {
 		return nil, CustomError(common.Code_NOT_FOUND, "relay does not exist")
 	}
@@ -205,20 +236,15 @@ func (p *Server) ResumeRelay(ctx context.Context, req *protos.ResumeRelayRequest
 		return nil, CustomError(common.Code_FAILED_PRECONDITION, "Relay is not stopped")
 	}
 
-	conn := p.PersistentConfig.GetConnection(relay.Options.ConnectionId)
-	if conn == nil {
-		return nil, CustomError(common.Code_NOT_FOUND, "connection does not exist")
-	}
-
 	ctx, cancelFunc := context.WithCancel(context.Background())
 	relay.CancelCtx = ctx
 	relay.CancelFunc = cancelFunc
 
-	if err := relay.StartRelay(conn); err != nil {
+	if err := relay.StartRelay(); err != nil {
 		return nil, errors.Wrap(err, "unable to start relay")
 	}
 
-	p.Log.Infof("Relay '%s' started", relay.Id)
+	s.Log.Infof("Relay '%s' started", relay.Id)
 
 	relay.Active = true
 
@@ -231,12 +257,12 @@ func (p *Server) ResumeRelay(ctx context.Context, req *protos.ResumeRelayRequest
 	}, nil
 }
 
-func (p *Server) DeleteRelay(ctx context.Context, req *protos.DeleteRelayRequest) (*protos.DeleteRelayResponse, error) {
-	if err := p.validateRequest(req.Auth); err != nil {
+func (s *Server) DeleteRelay(ctx context.Context, req *protos.DeleteRelayRequest) (*protos.DeleteRelayResponse, error) {
+	if err := s.validateAuth(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	relay := p.PersistentConfig.GetRelay(req.RelayId)
+	relay := s.PersistentConfig.GetRelay(req.RelayId)
 	if relay == nil {
 		return nil, CustomError(common.Code_NOT_FOUND, "relay does not exist")
 	}
@@ -245,17 +271,17 @@ func (p *Server) DeleteRelay(ctx context.Context, req *protos.DeleteRelayRequest
 	relay.CancelFunc()
 
 	// Delete in etcd
-	_, err := p.Etcd.Delete(ctx, etcd.CacheRelaysPrefix+"/"+relay.Id)
+	_, err := s.Etcd.Delete(ctx, etcd.CacheRelaysPrefix+"/"+relay.Id)
 	if err != nil {
 		return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to delete connection: "+err.Error()))
 	}
 
 	// Delete in memory
-	p.PersistentConfig.DeleteRelay(relay.Id)
+	s.PersistentConfig.DeleteRelay(relay.Id)
 
 	// Publish delete event
-	if err := p.Etcd.PublishDeleteRelay(ctx, relay.Options); err != nil {
-		p.Log.Error(err)
+	if err := s.Etcd.PublishDeleteRelay(ctx, relay.Options); err != nil {
+		s.Log.Error(err)
 	}
 
 	return &protos.DeleteRelayResponse{

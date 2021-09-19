@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/batchcorp/plumber/validate"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
@@ -13,11 +14,11 @@ import (
 
 // importGithub imports a github repo as a schema
 // TODO: types other than protobuf
-func (p *Server) importGithub(ctx context.Context, req *protos.ImportGithubRequest) (*protos.Schema, error) {
+func (s *Server) importGithub(ctx context.Context, req *protos.ImportGithubRequest) (*protos.Schema, error) {
 	var schema *protos.Schema
 	var err error
 
-	zipfile, err := p.GithubService.GetRepoArchive(ctx, p.PersistentConfig.GitHubToken, req.GithubUrl)
+	zipfile, err := s.GithubService.GetRepoArchive(ctx, s.PersistentConfig.GitHubToken, req.GithubUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +29,7 @@ func (p *Server) importGithub(ctx context.Context, req *protos.ImportGithubReque
 	case encoding.Type_AVRO:
 	// TODO
 	default:
-		err = ErrInvalidGithubSchemaType
+		err = validate.ErrInvalidGithubSchemaType
 	}
 
 	if err != nil {
@@ -58,7 +59,7 @@ func importGithubProtobuf(zipfile []byte, req *protos.ImportGithubRequest) (*pro
 }
 
 // importLocal is used to import a schema from the UI
-func (p *Server) importLocal(req *protos.ImportLocalRequest) (*protos.Schema, error) {
+func (s *Server) importLocal(req *protos.ImportLocalRequest) (*protos.Schema, error) {
 	var schema *protos.Schema
 	var err error
 

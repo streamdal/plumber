@@ -1,6 +1,10 @@
+// Package config is used for storing and manipulating (server) state in plumber.
+// There should be, at most, a single instance of the plumber config that is
+// passed around between various components.
 package config
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"os"
@@ -9,10 +13,10 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-
 	"github.com/pkg/errors"
 
-	"github.com/batchcorp/plumber/server/types"
+	"github.com/batchcorp/plumber/backends"
+	stypes "github.com/batchcorp/plumber/server/types"
 )
 
 type IConfig interface {
@@ -27,17 +31,19 @@ type Config struct {
 	Token            string                             `json:"token"`
 	TeamID           string                             `json:"team_id"`
 	UserID           string                             `json:"user_id"`
+	Backends         map[string]backends.Backend        `json:"-"`
 	Connections      map[string]*opts.ConnectionOptions `json:"-"`
-	Relays           map[string]*types.Relay            `json:"-"`
+	Relays           map[string]*stypes.Relay           `json:"-"`
 	Schemas          map[string]*protos.Schema          `json:"-"`
 	Services         map[string]*protos.Service         `json:"-"`
-	Reads            map[string]*types.Read             `json:"-"`
+	Reads            map[string]*stypes.Read            `json:"-"`
 	GitHubToken      string                             `json:"github_bearer_token"`
 	ConnectionsMutex *sync.RWMutex                      `json:"-"`
 	ServicesMutex    *sync.RWMutex                      `json:"-"`
 	ReadsMutex       *sync.RWMutex                      `json:"-"`
 	RelaysMutex      *sync.RWMutex                      `json:"-"`
 	SchemasMutex     *sync.RWMutex                      `json:"-"`
+	BackendsMutex    *sync.RWMutex                      `json:"-"`
 }
 
 // Save is a convenience method of persisting the config to disk via a single call
@@ -70,11 +76,13 @@ func ReadConfig(fileName string) (*Config, error) {
 		ReadsMutex:       &sync.RWMutex{},
 		RelaysMutex:      &sync.RWMutex{},
 		SchemasMutex:     &sync.RWMutex{},
+		BackendsMutex:    &sync.RWMutex{},
+		Backends:         make(map[string]backends.Backend),
 		Connections:      make(map[string]*opts.ConnectionOptions),
-		Relays:           make(map[string]*types.Relay),
+		Relays:           make(map[string]*stypes.Relay),
 		Schemas:          make(map[string]*protos.Schema),
 		Services:         make(map[string]*protos.Service),
-		Reads:            make(map[string]*types.Read),
+		Reads:            make(map[string]*stypes.Read),
 	}
 	if err := json.Unmarshal(data, cfg); err != nil {
 		return nil, errors.Wrapf(err, "could not unmarshal ~/.batchsh/%s", fileName)
@@ -170,7 +178,7 @@ func createConfigDir() error {
 }
 
 // GetRead returns an in-progress read from the Read map
-func (c *Config) GetRead(readID string) *types.Read {
+func (c *Config) GetRead(readID string) *stypes.Read {
 	c.ReadsMutex.RLock()
 	defer c.ReadsMutex.RUnlock()
 
@@ -180,7 +188,7 @@ func (c *Config) GetRead(readID string) *types.Read {
 }
 
 // SetRead adds an in-progress read to the Read map
-func (c *Config) SetRead(readID string, read *types.Read) {
+func (c *Config) SetRead(readID string, read *stypes.Read) {
 	c.ReadsMutex.Lock()
 	defer c.ReadsMutex.Unlock()
 
@@ -195,7 +203,7 @@ func (c *Config) DeleteRead(readID string) {
 }
 
 // GetRelay returns a relay from the in-memory map
-func (c *Config) GetRelay(relayID string) *types.Relay {
+func (c *Config) GetRelay(relayID string) *stypes.Relay {
 	c.RelaysMutex.RLock()
 	defer c.RelaysMutex.RUnlock()
 
@@ -205,7 +213,7 @@ func (c *Config) GetRelay(relayID string) *types.Relay {
 }
 
 // SetRelay saves a relay to in-memory map
-func (c *Config) SetRelay(relayID string, relay *types.Relay) {
+func (c *Config) SetRelay(relayID string, relay *stypes.Relay) {
 	c.RelaysMutex.Lock()
 	c.Relays[relayID] = relay
 	c.RelaysMutex.Unlock()
@@ -288,4 +296,32 @@ func (c *Config) DeleteConnection(connID string) {
 	c.ConnectionsMutex.Lock()
 	defer c.ConnectionsMutex.Unlock()
 	delete(c.Connections, connID)
+}
+
+func (c *Config) GetBackend(connID string) backends.Backend {
+	c.BackendsMutex.RUnlock()
+	defer c.BackendsMutex.RUnlock()
+
+	be, _ := c.Backends[connID]
+
+	return be
+}
+
+func (c *Config) SetBackend(connID string, be backends.Backend) {
+	c.BackendsMutex.Lock()
+	defer c.BackendsMutex.Unlock()
+	c.Backends[connID] = be
+}
+
+// DeleteBackend a backend (if it exists) and deletes the entry in the map
+func (c *Config) DeleteBackend(connID string) {
+	c.BackendsMutex.Lock()
+	defer c.BackendsMutex.Unlock()
+
+	be, ok := c.Backends[connID]
+	if ok {
+		be.Close(context.Background())
+	}
+
+	delete(c.Backends, connID)
 }

@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -75,6 +76,7 @@ type Config struct {
 	NumWorkers         int32
 	BatchSize          int32
 	RelayCh            chan interface{}
+	ErrorCh            chan *records.ErrorRecord
 	DisableTLS         bool
 	Timeout            time.Duration // general grpc timeout (used for all grpc calls)
 	Type               string
@@ -242,6 +244,7 @@ func (r *Relay) StartWorkers(shutdownCtx context.Context) error {
 
 // Run is a GRPC worker that runs as a goroutine. outboundCtx is used for sending GRPC requests as it will contain
 // metadata, specifically "batch-token". shutdownCtx is passed from the main plumber app to shut down workers
+// TODO: This should also read from errorCh
 func (r *Relay) Run(id int32, conn *grpc.ClientConn, outboundCtx, shutdownCtx context.Context) {
 	llog := r.log.WithField("relayId", id)
 	r.addWorker(id)

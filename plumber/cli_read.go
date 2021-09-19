@@ -17,7 +17,7 @@ func (p *Plumber) HandleReadCmd() error {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
-	backend, err := backends.New(p.CLIOptions.Global.XBackend, p.cliConnOpts)
+	backend, err := backends.New(p.cliConnOpts)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new backend")
 	}

@@ -8,7 +8,7 @@ import (
 
 // HandleDynamicCmd handles dynamic replay destination mode commands
 func (p *Plumber) HandleDynamicCmd() error {
-	backend, err := backends.New(p.CLIOptions.Global.XBackend, p.cliConnOpts)
+	backend, err := backends.New(p.cliConnOpts)
 	if err != nil {
 		return errors.Wrap(err, "unable to instantiate backend")
 	}

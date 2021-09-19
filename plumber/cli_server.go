@@ -3,7 +3,6 @@ package plumber
 import (
 	"fmt"
 	"net"
-	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -80,10 +79,6 @@ func (p *Plumber) runServer() error {
 	plumberServer := &server.Server{
 		PersistentConfig: p.PersistentConfig,
 		AuthToken:        p.CLIOptions.Server.AuthToken,
-		ConnectionsMutex: &sync.RWMutex{},
-		Reads:            make(map[string]*server.Read),
-		ReadsMutex:       &sync.RWMutex{},
-		RelaysMutex:      &sync.RWMutex{}, // TODO: Are these used?
 		GithubService:    gh,
 		Log:              logrus.WithField("pkg", "plumber/cli_server.go"),
 		Etcd:             p.Etcd,

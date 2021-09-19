@@ -22,7 +22,18 @@ import (
 	"github.com/batchcorp/plumber/util"
 )
 
+// Decode will attempt to decode the payload IF decode options are present
 func Decode(readOpts *opts.ReadOptions, md *desc.MessageDescriptor, message []byte) ([]byte, error) {
+	if readOpts == nil {
+		return nil, errors.New("read options cannot be nil")
+	}
+
+	// If decode options are not provided, instantiate an empty decode options
+	// so that we can avoid a panic & get to the last in the func.
+	if readOpts.DecodeOptions == nil {
+		readOpts.DecodeOptions = &encoding.DecodeOptions{}
+	}
+
 	// Protobuf
 	if readOpts.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_PROTOBUF {
 		if md == nil {

@@ -28,13 +28,6 @@ func (k *Kafka) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 		return errors.Wrap(err, "unable to verify options")
 	}
 
-	// TODO: Why is this here? ~ds 09.10.21
-	k.log.Infof("Relaying Kafka messages from '%s' topic(s) -> '%s'",
-		relayOpts.Kafka.Args.Topics, relayOpts.XBatchshGrpcAddress)
-
-	// TODO: What is this? ~ds 09.10.21
-	//k.log.Infof("HTTP server listening on '%s'", k.connOpts.Relay.HTTPListenAddress)
-
 	reader, err := NewReaderForRelay(k.dialer, k.connArgs, relayOpts.Kafka.Args)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new reader")

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber/server/types"
 
 	"github.com/golang/protobuf/proto"
@@ -76,13 +75,27 @@ func (e *Etcd) handleBroadcastWatchResponse(ctx context.Context, resp *clientv3.
 func (e *Etcd) doCreateConnection(_ context.Context, msg *Message) error {
 	e.log.Debugf("running doCreateConnection handler for msg emitted by %s", msg.EmittedBy)
 
-	conn := &opts.ConnectionOptions{}
+	// TODO: Validate the message
+
+	// TODO: Create a backend
+
+	// TODO: What happens if a backend can't be created?
+	//  1. Need functionality for a "cluster error log" that is exposed to the desktop client
+	//  2. The error log must be global - so probably in etcd
+	//  3. How do you deal with one instance not having a backend for a connection?
+	//  	^ Figure out a way to put the plumber node in unhealthy state until
+	//        the issue is "resolved". Follow-up: how do you "resolve" the issue?
+	//        Should there be a way to "re-attempt" a connection create?
+
+	// TODO: Save in persistent config
+
+	conn := &protos.Connection{}
 	if err := proto.Unmarshal(msg.Data, conn); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into opts.ConnectionOptions")
+		return errors.Wrap(err, "unable to unmarshal message into protos.Connection")
 	}
 
 	// Save connection to in-memory map
-	e.PlumberConfig.SetConnection(conn.XId, conn)
+	e.PlumberConfig.SetConnection(conn.Id, conn)
 
 	e.log.Debugf("created connection '%s'", conn.Name)
 
@@ -92,13 +105,13 @@ func (e *Etcd) doCreateConnection(_ context.Context, msg *Message) error {
 func (e *Etcd) doUpdateConnection(_ context.Context, msg *Message) error {
 	e.log.Debugf("running doCreateConnection handler for msg emitted by %s", msg.EmittedBy)
 
-	conn := &opts.ConnectionOptions{}
+	conn := &protos.Connection{}
 	if err := proto.Unmarshal(msg.Data, conn); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into opts.ConnectionOptions")
+		return errors.Wrap(err, "unable to unmarshal message into protos.Connection")
 	}
 
 	// Update connection in in-memory map
-	e.PlumberConfig.SetConnection(conn.XId, conn)
+	e.PlumberConfig.SetConnection(conn.Id, conn)
 
 	e.log.Debugf("updated connection '%s'", conn.Name)
 
@@ -110,13 +123,13 @@ func (e *Etcd) doUpdateConnection(_ context.Context, msg *Message) error {
 func (e *Etcd) doDeleteConnection(_ context.Context, msg *Message) error {
 	e.log.Debugf("running doCreateConnection handler for msg emitted by %s", msg.EmittedBy)
 
-	conn := &opts.ConnectionOptions{}
+	conn := &protos.Connection{}
 	if err := proto.Unmarshal(msg.Data, conn); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into opts.ConnectionOptions")
+		return errors.Wrap(err, "unable to unmarshal message into protos.Connection")
 	}
 
 	// Delete connection
-	e.PlumberConfig.DeleteConnection(conn.XId)
+	e.PlumberConfig.DeleteConnection(conn.Id)
 
 	e.log.Debugf("deleted connection '%s'", conn.Name)
 
@@ -210,43 +223,43 @@ func (e *Etcd) doDeleteSchema(_ context.Context, msg *Message) error {
 }
 
 func (e *Etcd) doCreateRelay(_ context.Context, msg *Message) error {
-	relay := &opts.RelayOptions{}
+	relay := &protos.Relay{}
 	if err := proto.Unmarshal(msg.Data, relay); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into opts.RelayOptions")
+		return errors.Wrap(err, "unable to unmarshal message into protos.Relay")
 	}
 
 	// Set in config map
-	e.PlumberConfig.SetRelay(relay.XRelayId, &types.Relay{Options: relay})
+	e.PlumberConfig.SetRelay(relay.RelayId, &types.Relay{Options: relay})
 
-	e.log.Debugf("updated relay '%s'", relay.XRelayId)
+	e.log.Debugf("updated relay '%s'", relay.RelayId)
 
 	return nil
 }
 
 func (e *Etcd) doUpdateRelay(_ context.Context, msg *Message) error {
-	relay := &opts.RelayOptions{}
+	relay := &protos.Relay{}
 	if err := proto.Unmarshal(msg.Data, relay); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into opts.RelayOptions")
+		return errors.Wrap(err, "unable to unmarshal message into protos.Relay")
 	}
 
 	// Set in config map
-	e.PlumberConfig.SetRelay(relay.XRelayId, &types.Relay{Options: relay})
+	e.PlumberConfig.SetRelay(relay.RelayId, &types.Relay{Options: relay})
 
-	e.log.Debugf("updated relay '%s'", relay.XRelayId)
+	e.log.Debugf("updated relay '%s'", relay.RelayId)
 
 	return nil
 }
 
 func (e *Etcd) doDeleteRelay(_ context.Context, msg *Message) error {
-	relay := &opts.RelayOptions{}
+	relay := &protos.Relay{}
 	if err := proto.Unmarshal(msg.Data, relay); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into opts.RelayOptions")
+		return errors.Wrap(err, "unable to unmarshal message into protos.Relay")
 	}
 
 	// Set in config map
-	e.PlumberConfig.DeleteRelay(relay.XRelayId)
+	e.PlumberConfig.DeleteRelay(relay.RelayId)
 
-	e.log.Debugf("deleted schema '%s'", relay.XRelayId)
+	e.log.Debugf("deleted schema '%s'", relay.RelayId)
 
 	return nil
 }

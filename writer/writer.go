@@ -18,8 +18,18 @@ import (
 	"github.com/batchcorp/plumber/serializers"
 )
 
+// GenerateWriteValue generates a slice of WriteRecords that can be passed to
+// backends to perform a write.
 func GenerateWriteValue(writeOpts *opts.WriteOptions, md *desc.MessageDescriptor) ([]*records.WriteRecord, error) {
 	writeValues := make([]*records.WriteRecord, 0)
+
+	if writeOpts == nil {
+		return nil, errors.New("write opts cannot be nil")
+	}
+
+	if writeOpts.Record == nil {
+		return nil, errors.New("write opts record cannot be nil")
+	}
 
 	// Input already provided
 	if writeOpts.Record.Input != "" {
@@ -34,6 +44,11 @@ func GenerateWriteValue(writeOpts *opts.WriteOptions, md *desc.MessageDescriptor
 		})
 
 		return writeValues, nil
+	}
+
+	// If server, the only possible input is Record.Input
+	if writeOpts.XCliOptions == nil {
+		return nil, errors.New("no input found - unable to generate write value")
 	}
 
 	// File source
@@ -81,6 +96,13 @@ func GenerateWriteValue(writeOpts *opts.WriteOptions, md *desc.MessageDescriptor
 
 // generateWriteValue will transform input data into the required format for transmission
 func generateWriteValue(data []byte, writeOpts *opts.WriteOptions, md *desc.MessageDescriptor) ([]byte, error) {
+	// Input: Plain / unset
+	if writeOpts.EncodeOptions == nil ||
+		writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_UNSET {
+
+		return data, nil
+	}
+
 	// Input: AVRO
 	if writeOpts.EncodeOptions.AvroSettings.AvroSchemaFile != "" {
 		data, err := serializers.AvroEncodeWithSchemaFile(writeOpts.EncodeOptions.AvroSettings.AvroSchemaFile, data)
@@ -89,7 +111,7 @@ func generateWriteValue(data []byte, writeOpts *opts.WriteOptions, md *desc.Mess
 		}
 
 		// Since AWS SQS works with strings only, we must convert it to base64
-		if writeOpts.Awssqs.Args.QueueName != "" {
+		if writeOpts.Awssqs != nil && writeOpts.Awssqs.Args.QueueName != "" {
 			encoded := base64.StdEncoding.EncodeToString(data)
 			return []byte(encoded), nil
 		}
@@ -97,14 +119,13 @@ func generateWriteValue(data []byte, writeOpts *opts.WriteOptions, md *desc.Mess
 		return data, nil
 	}
 
-	// Input: Plain
-	if writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_UNSET {
-		return data, nil
-	}
-
 	// Input: JSONPB
 	if writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_JSONPB {
 		var convertErr error
+
+		if md == nil {
+			return nil, errors.New("message descriptor cannot be nil")
+		}
 
 		data, convertErr = ConvertJSONPBToProtobuf(data, dynamic.NewMessage(md))
 		if convertErr != nil {
@@ -112,7 +133,7 @@ func generateWriteValue(data []byte, writeOpts *opts.WriteOptions, md *desc.Mess
 		}
 
 		// Since AWS SQS works with strings only, we must convert it to base64
-		if writeOpts.Awssqs.Args.QueueName != "" {
+		if writeOpts.Awssqs != nil && writeOpts.Awssqs.Args.QueueName != "" {
 			encoded := base64.StdEncoding.EncodeToString(data)
 			return []byte(encoded), nil
 		}

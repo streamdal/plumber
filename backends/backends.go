@@ -2,11 +2,11 @@ package backends
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/backends/kafka"
+	"github.com/pkg/errors"
 )
 
 // Backend is the interface that all backends implement; the interface is used
@@ -62,11 +62,11 @@ type Backend interface {
 
 // New is a convenience function to instantiate the appropriate backend based on
 // package name of the backend.
-func New(name string, connOpts *opts.ConnectionOptions) (Backend, error) {
+func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 	var be Backend
 	var err error
 
-	switch name {
+	switch connOpts.Conn.(type) {
 	//case "activemq":
 	//	be, err = activemq.New(cfg)
 	//case "aws-sqs":
@@ -79,7 +79,7 @@ func New(name string, connOpts *opts.ConnectionOptions) (Backend, error) {
 	//	be, err = azure_eventhub.New(cfg)
 	//case "gcp-pubsub":
 	//	be, err = gcppubsub.New(cfg)
-	case "kafka":
+	case *opts.ConnectionOptions_Kafka:
 		be, err = kafka.New(connOpts)
 	//case "mqtt":
 	//	be, err = mqtt.New(cfg)
@@ -104,12 +104,12 @@ func New(name string, connOpts *opts.ConnectionOptions) (Backend, error) {
 	//case "cdc-postgres":
 	//	be, err = cdc_postgres.New(cfg)
 	default:
-		return nil, fmt.Errorf("unknown backend '%s'", name)
+		return nil, errors.New("unknown backend")
 
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("unable to instantiate '%s' backend: %s", name, err)
+		return nil, errors.Wrap(err, "unable to instantiate backend")
 	}
 
 	return be, nil
