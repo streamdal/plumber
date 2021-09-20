@@ -124,8 +124,8 @@ type CLIOptions struct {
 	Dynamic *DynamicOptions `protobuf:"bytes,5,opt,name=dynamic,proto3" json:"dynamic,omitempty" kong:"cmd,help='Use plumber as a replay destination in Batch.sh'"`
 	// @gotags: kong:"cmd,help='Control Batch resources via the public API'"
 	Batch *BatchOptions `protobuf:"bytes,6,opt,name=batch,proto3" json:"batch,omitempty" kong:"cmd,help='Control Batch resources via the public API'"`
-	// @gotags: kong:"cmd,group=server,help='Run plumber in server mode'"
-	Server               *ServerOptions `protobuf:"bytes,7,opt,name=server,proto3" json:"server,omitempty" kong:"cmd,group=server,help='Run plumber in server mode'"`
+	// @gotags: kong:"cmd,help='Run plumber in server mode'"
+	Server               *ServerOptions `protobuf:"bytes,7,opt,name=server,proto3" json:"server,omitempty" kong:"cmd,help='Run plumber in server mode'"`
 	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
 	XXX_unrecognized     []byte         `json:"-"`
 	XXX_sizecache        int32          `json:"-"`

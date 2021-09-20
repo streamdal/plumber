@@ -34,9 +34,10 @@ func New(args []string) (*kong.Context, *opts.CLIOptions, error) {
 		kong.IgnoreFieldsRegex(".*XXX_"),
 		kong.Name("plumber"),
 		kong.Description("`curl` for messaging systems. See: https://github.com/batchcorp/plumber"),
-		kong.UsageOnError(),
+		kong.ShortUsageOnError(),
 		kong.ConfigureHelp(kong.HelpOptions{
-			Compact: true,
+			Compact:             true,
+			NoExpandSubcommands: true,
 		}),
 	)
 	if err != nil {
