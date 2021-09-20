@@ -37,7 +37,9 @@ func (s *Server) Write(ctx context.Context, req *protos.WriteRequest) (*protos.W
 	if req.Opts.EncodeOptions != nil && req.Opts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_JSONPB {
 		var mdErr error
 
-		md, mdErr = pb.GetMessageDescriptor(req.Opts.EncodeOptions.SchemaId, s.PersistentConfig, req.Opts.EncodeOptions.ProtobufSettings)
+		cachedSchemaOptions := s.PersistentConfig.GetSchema(req.Opts.EncodeOptions.SchemaId)
+
+		md, mdErr = pb.GetMessageDescriptor(cachedSchemaOptions, req.Opts.EncodeOptions.ProtobufSettings)
 		if mdErr != nil {
 			return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to fetch message descriptor: %s", mdErr))
 		}

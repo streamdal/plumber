@@ -6,10 +6,11 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/backends"
-	"github.com/batchcorp/plumber/reader"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber/backends"
+	"github.com/batchcorp/plumber/reader"
 )
 
 type AttachedStream struct {

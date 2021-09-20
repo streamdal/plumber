@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/batchcorp/plumber/config"
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoparse"
@@ -22,23 +22,29 @@ import (
 // GetMessageDescriptor is a protobuf-specific function that returns a message
 // descriptor using either the provided stored schema ID or using the provided
 // protobuf zip file and root type.
-func GetMessageDescriptor(schemaID string, pcfg *config.Config, pbSettings *encoding.ProtobufSettings) (*desc.MessageDescriptor, error) {
-	if pbSettings == nil {
-		return nil, errors.New("protobuf settings cannot be nil")
-	}
+//
+// Either cachedSchemaOptions or pbSettings can be nil (but not both).
+//
+// NOTE: The signature for this function is unfortunately a bit funky - this is
+// because we would _prefer_ to get a schemaID & a persistent config, but that
+// causes import cycle errors.
+//
+// So, the expectation for the usage of this func is to call it as follows:
+//
+// GetMessageDescriptor(persistentConfig.GetSchema(schemaID), req.Opts.EncodeSettings.ProtobufSettings)
+func GetMessageDescriptor(cachedSchemaOptions *protos.Schema, pbSettings *encoding.ProtobufSettings) (*desc.MessageDescriptor, error) {
+	// Stored schema settings take precedence
+	if cachedSchemaOptions != nil {
+		cachedPbSettings := cachedSchemaOptions.GetProtobufSettings()
 
-	// Using passed protobuf zip file and root type
-	if schemaID == "" {
-		fds, _, err := GetFDFromArchive(pbSettings.Archive, "")
-		if err != nil {
-			return nil, errors.Wrap(err, "cannot get fd from archive")
+		if cachedPbSettings == nil {
+			return nil, errors.New("unexpected: protobuf settings are nil in stored schema")
 		}
 
-		md, err := GetMDFromDescriptors(fds, pbSettings.ProtobufRootMessage)
+		md, err := GetMDFromDescriptorBlob(cachedPbSettings.XMessageDescriptor, cachedPbSettings.ProtobufRootMessage)
 		if err != nil {
-			return nil, errors.Wrap(err, "cannot get md from descriptors")
+			return nil, errors.Wrap(err, "unable to get md from descriptor blob")
 		}
-
 		if md == nil {
 			return nil, errors.New("unable to decode message descriptor")
 		}
@@ -46,28 +52,21 @@ func GetMessageDescriptor(schemaID string, pcfg *config.Config, pbSettings *enco
 		return md, nil
 	}
 
-	// We need plumber to be able to access persistent store
-	if pcfg == nil {
-		return nil, errors.New("passed in persistent config cannot be nil")
+	// No cached pb settings - try pbSettings
+	if pbSettings == nil {
+		return nil, errors.New("cannot get descriptors - both cached schema options and protobuf settings are nil")
 	}
 
-	// From here on out, we are using a stored schema
-
-	schema := pcfg.GetSchema(schemaID)
-	if schema == nil {
-		return nil, fmt.Errorf("schema '%s' not found", schemaID)
-	}
-
-	settings := schema.GetProtobufSettings()
-
-	if settings == nil {
-		return nil, errors.New("unexpected: protobuf settings are nil in stored schema")
-	}
-
-	md, err := GetMDFromDescriptorBlob(settings.XMessageDescriptor, settings.ProtobufRootMessage)
+	fds, _, err := GetFDFromArchive(pbSettings.Archive, "")
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to get md from descriptor blob")
+		return nil, errors.Wrap(err, "cannot get fd from archive")
 	}
+
+	md, err := GetMDFromDescriptors(fds, pbSettings.ProtobufRootMessage)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot get md from descriptors")
+	}
+
 	if md == nil {
 		return nil, errors.New("unable to decode message descriptor")
 	}

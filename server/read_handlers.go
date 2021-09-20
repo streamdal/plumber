@@ -152,7 +152,9 @@ func (s *Server) CreateRead(_ context.Context, req *protos.CreateReadRequest) (*
 	if req.Read.DecodeOptions != nil && req.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_PROTOBUF {
 		var mdErr error
 
-		md, mdErr = pb.GetMessageDescriptor(req.Read.DecodeOptions.SchemaId, s.PersistentConfig, req.Read.DecodeOptions.ProtobufSettings)
+		cachedSchemaOptions := s.PersistentConfig.GetSchema(req.Read.DecodeOptions.SchemaId)
+
+		md, mdErr = pb.GetMessageDescriptor(cachedSchemaOptions, req.Read.DecodeOptions.ProtobufSettings)
 		if mdErr != nil {
 			return nil, errors.Wrap(mdErr, "unable to get message descriptor")
 		}

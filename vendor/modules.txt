@@ -10,79 +10,18 @@ cloud.google.com/go/pubsub
 cloud.google.com/go/pubsub/apiv1
 cloud.google.com/go/pubsub/internal/distribution
 cloud.google.com/go/pubsub/internal/scheduler
-# github.com/99designs/keyring v1.1.5
-github.com/99designs/keyring
-# github.com/AthenZ/athenz v1.10.15
-github.com/AthenZ/athenz/clients/go/zts
-github.com/AthenZ/athenz/libs/go/zmssvctoken
-github.com/AthenZ/athenz/libs/go/ztsroletoken
-# github.com/Azure/azure-amqp-common-go/v3 v3.0.1
-github.com/Azure/azure-amqp-common-go/v3
-github.com/Azure/azure-amqp-common-go/v3/aad
-github.com/Azure/azure-amqp-common-go/v3/auth
-github.com/Azure/azure-amqp-common-go/v3/cbs
-github.com/Azure/azure-amqp-common-go/v3/conn
-github.com/Azure/azure-amqp-common-go/v3/internal
-github.com/Azure/azure-amqp-common-go/v3/internal/tracing
-github.com/Azure/azure-amqp-common-go/v3/rpc
-github.com/Azure/azure-amqp-common-go/v3/sas
-github.com/Azure/azure-amqp-common-go/v3/uuid
 # github.com/Azure/azure-event-hubs-go/v3 v3.3.7
 ## explicit
-github.com/Azure/azure-event-hubs-go/v3
-github.com/Azure/azure-event-hubs-go/v3/atom
-github.com/Azure/azure-event-hubs-go/v3/persist
-# github.com/Azure/azure-sdk-for-go v37.1.0+incompatible
-github.com/Azure/azure-sdk-for-go/services/eventhub/mgmt/2017-04-01/eventhub
-github.com/Azure/azure-sdk-for-go/version
 # github.com/Azure/azure-service-bus-go v0.10.8
 ## explicit
-github.com/Azure/azure-service-bus-go
-github.com/Azure/azure-service-bus-go/atom
-# github.com/Azure/go-amqp v0.13.1
-github.com/Azure/go-amqp
-github.com/Azure/go-amqp/internal/testconn
-# github.com/Azure/go-autorest v14.2.0+incompatible
-github.com/Azure/go-autorest
-# github.com/Azure/go-autorest/autorest v0.11.7
-github.com/Azure/go-autorest/autorest
-github.com/Azure/go-autorest/autorest/azure
-# github.com/Azure/go-autorest/autorest/adal v0.9.4
-github.com/Azure/go-autorest/autorest/adal
-# github.com/Azure/go-autorest/autorest/date v0.3.0
-github.com/Azure/go-autorest/autorest/date
-# github.com/Azure/go-autorest/autorest/to v0.4.0
-github.com/Azure/go-autorest/autorest/to
-# github.com/Azure/go-autorest/autorest/validation v0.3.0
-github.com/Azure/go-autorest/autorest/validation
-# github.com/Azure/go-autorest/logger v0.2.0
-github.com/Azure/go-autorest/logger
-# github.com/Azure/go-autorest/tracing v0.6.0
-github.com/Azure/go-autorest/tracing
-# github.com/DataDog/zstd v1.4.6-0.20210211175136-c6db21d202f4
-github.com/DataDog/zstd
 # github.com/alecthomas/kong v0.2.18-0.20210830204702-74cb5130e341
 ## explicit
 github.com/alecthomas/kong
 # github.com/apache/pulsar-client-go v0.6.0
 ## explicit
-github.com/apache/pulsar-client-go/pulsar
-github.com/apache/pulsar-client-go/pulsar/internal
-github.com/apache/pulsar-client-go/pulsar/internal/auth
-github.com/apache/pulsar-client-go/pulsar/internal/compression
-github.com/apache/pulsar-client-go/pulsar/internal/pulsar_proto
-github.com/apache/pulsar-client-go/pulsar/log
-# github.com/apache/pulsar-client-go/oauth2 v0.0.0-20201120111947-b8bd55bc02bd
-github.com/apache/pulsar-client-go/oauth2
-github.com/apache/pulsar-client-go/oauth2/cache
-github.com/apache/pulsar-client-go/oauth2/clock
-github.com/apache/pulsar-client-go/oauth2/store
-# github.com/ardielle/ardielle-go v1.5.2
-github.com/ardielle/ardielle-go/rdl
 # github.com/aws/aws-sdk-go v1.34.28
 ## explicit
 github.com/aws/aws-sdk-go/aws
-github.com/aws/aws-sdk-go/aws/arn
 github.com/aws/aws-sdk-go/aws/awserr
 github.com/aws/aws-sdk-go/aws/awsutil
 github.com/aws/aws-sdk-go/aws/client
@@ -115,16 +54,12 @@ github.com/aws/aws-sdk-go/private/protocol/query
 github.com/aws/aws-sdk-go/private/protocol/query/queryutil
 github.com/aws/aws-sdk-go/private/protocol/rest
 github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
-github.com/aws/aws-sdk-go/service/sns
-github.com/aws/aws-sdk-go/service/sns/snsiface
 github.com/aws/aws-sdk-go/service/sqs
-github.com/aws/aws-sdk-go/service/sqs/sqsiface
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
 # github.com/batchcorp/pgoutput v0.3.2
 ## explicit
-github.com/batchcorp/pgoutput
-# github.com/batchcorp/plumber-schemas v0.0.58
+# github.com/batchcorp/plumber-schemas v0.0.59
 ## explicit
 github.com/batchcorp/plumber-schemas/build/go/protos
 github.com/batchcorp/plumber-schemas/build/go/protos/args
@@ -134,7 +69,6 @@ github.com/batchcorp/plumber-schemas/build/go/protos/opts
 github.com/batchcorp/plumber-schemas/build/go/protos/records
 # github.com/batchcorp/rabbit v0.1.9
 ## explicit
-github.com/batchcorp/rabbit
 # github.com/batchcorp/schemas v0.2.157
 ## explicit
 github.com/batchcorp/schemas/build/go/events
@@ -151,25 +85,8 @@ github.com/cespare/xxhash/v2
 github.com/coreos/go-semver/semver
 # github.com/coreos/go-systemd/v22 v22.3.2
 github.com/coreos/go-systemd/v22/journal
-# github.com/danieljoos/wincred v1.0.2
-github.com/danieljoos/wincred
-# github.com/devigned/tab v0.1.1
-github.com/devigned/tab
-# github.com/dgrijalva/jwt-go v3.2.0+incompatible
-github.com/dgrijalva/jwt-go
-# github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f
-github.com/dgryski/go-rendezvous
 # github.com/dustin/go-humanize v1.0.0
 github.com/dustin/go-humanize
-# github.com/dvsekhvalnov/jose2go v0.0.0-20180829124132-7f401d37b68a
-github.com/dvsekhvalnov/jose2go
-github.com/dvsekhvalnov/jose2go/aes
-github.com/dvsekhvalnov/jose2go/arrays
-github.com/dvsekhvalnov/jose2go/base64url
-github.com/dvsekhvalnov/jose2go/compact
-github.com/dvsekhvalnov/jose2go/kdf
-github.com/dvsekhvalnov/jose2go/keys/ecc
-github.com/dvsekhvalnov/jose2go/padding
 # github.com/eclipse/paho.mqtt.golang v1.2.0
 ## explicit
 github.com/eclipse/paho.mqtt.golang
@@ -183,23 +100,8 @@ github.com/form3tech-oss/jwt-go
 github.com/fsnotify/fsnotify
 # github.com/go-redis/redis/v8 v8.11.1
 ## explicit
-github.com/go-redis/redis/v8
-github.com/go-redis/redis/v8/internal
-github.com/go-redis/redis/v8/internal/hashtag
-github.com/go-redis/redis/v8/internal/hscan
-github.com/go-redis/redis/v8/internal/pool
-github.com/go-redis/redis/v8/internal/proto
-github.com/go-redis/redis/v8/internal/rand
-github.com/go-redis/redis/v8/internal/util
-# github.com/go-stack/stack v1.8.0
-github.com/go-stack/stack
 # github.com/go-stomp/stomp/v3 v3.0.2
 ## explicit
-github.com/go-stomp/stomp/v3
-github.com/go-stomp/stomp/v3/frame
-github.com/go-stomp/stomp/v3/internal/log
-# github.com/godbus/dbus v0.0.0-20190726142602-4481cbc300e2
-github.com/godbus/dbus
 # github.com/gofrs/uuid v4.0.0+incompatible
 ## explicit
 # github.com/gogo/protobuf v1.3.2
@@ -253,19 +155,11 @@ github.com/grpc-ecosystem/go-grpc-prometheus
 github.com/grpc-ecosystem/grpc-gateway/internal
 github.com/grpc-ecosystem/grpc-gateway/runtime
 github.com/grpc-ecosystem/grpc-gateway/utilities
-# github.com/gsterjov/go-libsecret v0.0.0-20161001094733-a6f4afe4910c
-github.com/gsterjov/go-libsecret
 # github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
 ## explicit
 github.com/hokaccha/go-prettyjson
 # github.com/jackc/pgx v3.6.2+incompatible
 ## explicit
-github.com/jackc/pgx
-github.com/jackc/pgx/chunkreader
-github.com/jackc/pgx/internal/sanitize
-github.com/jackc/pgx/pgio
-github.com/jackc/pgx/pgproto3
-github.com/jackc/pgx/pgtype
 # github.com/jhump/protoreflect v1.8.2
 ## explicit
 github.com/jhump/protoreflect/codec
@@ -280,8 +174,6 @@ github.com/jhump/protoreflect/internal/codec
 github.com/jmespath/go-jmespath
 # github.com/jonboulle/clockwork v0.2.2
 github.com/jonboulle/clockwork
-# github.com/jpillora/backoff v1.0.0
-github.com/jpillora/backoff
 # github.com/json-iterator/go v1.1.11
 ## explicit
 github.com/json-iterator/go
@@ -295,10 +187,7 @@ github.com/julienschmidt/httprouter
 # github.com/kataras/tablewriter v0.0.0-20180708051242-e063d29b7c23
 ## explicit
 github.com/kataras/tablewriter
-# github.com/keybase/go-keychain v0.0.0-20190712205309-48d3d31d256d
-github.com/keybase/go-keychain
 # github.com/klauspost/compress v1.11.12
-github.com/klauspost/compress/flate
 github.com/klauspost/compress/fse
 github.com/klauspost/compress/huff0
 github.com/klauspost/compress/snappy
@@ -331,34 +220,18 @@ github.com/maxbrunsfeld/counterfeiter/v6/generator
 # github.com/mcuadros/go-lookup v0.0.0-20200831155250-80f87a4fa5ee
 ## explicit
 github.com/mcuadros/go-lookup
-# github.com/mitchellh/go-homedir v1.1.0
-github.com/mitchellh/go-homedir
-# github.com/mitchellh/mapstructure v1.3.3
-github.com/mitchellh/mapstructure
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.1
 github.com/modern-go/reflect2
-# github.com/mtibben/percent v0.2.1
-github.com/mtibben/percent
 # github.com/nats-io/nats-streaming-server v0.22.1
 ## explicit
 # github.com/nats-io/nats.go v1.11.1-0.20210623165838-4b75fc59ae30
 ## explicit
-github.com/nats-io/nats.go
-github.com/nats-io/nats.go/encoders/builtin
-github.com/nats-io/nats.go/util
-# github.com/nats-io/nkeys v0.3.0
-github.com/nats-io/nkeys
-# github.com/nats-io/nuid v1.0.1
-github.com/nats-io/nuid
 # github.com/nats-io/stan.go v0.10.0
 ## explicit
-github.com/nats-io/stan.go
-github.com/nats-io/stan.go/pb
 # github.com/nsqio/go-nsq v1.0.8
 ## explicit
-github.com/nsqio/go-nsq
 # github.com/nxadm/tail v1.4.8
 github.com/nxadm/tail
 github.com/nxadm/tail/ratelimiter
@@ -427,10 +300,6 @@ github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
 # github.com/rabbitmq/rabbitmq-stream-go-client v0.0.0-20210718174647-8ed32be73644
 ## explicit
-github.com/rabbitmq/rabbitmq-stream-go-client/pkg/amqp
-github.com/rabbitmq/rabbitmq-stream-go-client/pkg/logs
-github.com/rabbitmq/rabbitmq-stream-go-client/pkg/message
-github.com/rabbitmq/rabbitmq-stream-go-client/pkg/stream
 # github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d
 ## explicit
 github.com/relistan/go-director
@@ -477,13 +346,10 @@ github.com/segmentio/kafka-go/sasl/scram
 github.com/sirupsen/logrus
 # github.com/soheilhy/cmux v0.1.5
 github.com/soheilhy/cmux
-# github.com/spaolacci/murmur3 v1.1.0
-github.com/spaolacci/murmur3
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
 # github.com/streadway/amqp v1.0.0
 ## explicit
-github.com/streadway/amqp
 # github.com/thrift-iterator/go v0.0.0-20190402154806-9b5a67519118
 ## explicit
 github.com/thrift-iterator/go
@@ -526,20 +392,12 @@ github.com/v2pro/quokka/docstore/compiler
 # github.com/v2pro/wombat v0.0.0-20180402055224-a56dbdcddef2
 ## explicit
 github.com/v2pro/wombat/generic
-# github.com/xdg-go/pbkdf2 v1.0.0
-github.com/xdg-go/pbkdf2
-# github.com/xdg-go/scram v1.0.2
-github.com/xdg-go/scram
-# github.com/xdg-go/stringprep v1.0.2
-github.com/xdg-go/stringprep
 # github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c
 github.com/xdg/scram
 # github.com/xdg/stringprep v1.0.0
 github.com/xdg/stringprep
 # github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2
 github.com/xiang90/probing
-# github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d
-github.com/youmark/pkcs8
 # go.etcd.io/bbolt v1.3.6
 go.etcd.io/bbolt
 # go.etcd.io/etcd/api/v3 v3.5.0
@@ -634,38 +492,6 @@ go.etcd.io/etcd/server/v3/wal
 go.etcd.io/etcd/server/v3/wal/walpb
 # go.mongodb.org/mongo-driver v1.5.1
 ## explicit
-go.mongodb.org/mongo-driver/bson
-go.mongodb.org/mongo-driver/bson/bsoncodec
-go.mongodb.org/mongo-driver/bson/bsonoptions
-go.mongodb.org/mongo-driver/bson/bsonrw
-go.mongodb.org/mongo-driver/bson/bsontype
-go.mongodb.org/mongo-driver/bson/primitive
-go.mongodb.org/mongo-driver/event
-go.mongodb.org/mongo-driver/internal
-go.mongodb.org/mongo-driver/mongo
-go.mongodb.org/mongo-driver/mongo/address
-go.mongodb.org/mongo-driver/mongo/description
-go.mongodb.org/mongo-driver/mongo/options
-go.mongodb.org/mongo-driver/mongo/readconcern
-go.mongodb.org/mongo-driver/mongo/readpref
-go.mongodb.org/mongo-driver/mongo/writeconcern
-go.mongodb.org/mongo-driver/tag
-go.mongodb.org/mongo-driver/version
-go.mongodb.org/mongo-driver/x/bsonx
-go.mongodb.org/mongo-driver/x/bsonx/bsoncore
-go.mongodb.org/mongo-driver/x/mongo/driver
-go.mongodb.org/mongo-driver/x/mongo/driver/auth
-go.mongodb.org/mongo-driver/x/mongo/driver/auth/internal/gssapi
-go.mongodb.org/mongo-driver/x/mongo/driver/connstring
-go.mongodb.org/mongo-driver/x/mongo/driver/dns
-go.mongodb.org/mongo-driver/x/mongo/driver/mongocrypt
-go.mongodb.org/mongo-driver/x/mongo/driver/mongocrypt/options
-go.mongodb.org/mongo-driver/x/mongo/driver/ocsp
-go.mongodb.org/mongo-driver/x/mongo/driver/operation
-go.mongodb.org/mongo-driver/x/mongo/driver/session
-go.mongodb.org/mongo-driver/x/mongo/driver/topology
-go.mongodb.org/mongo-driver/x/mongo/driver/uuid
-go.mongodb.org/mongo-driver/x/mongo/driver/wiremessage
 # go.opencensus.io v0.22.4
 go.opencensus.io
 go.opencensus.io/internal
@@ -754,9 +580,6 @@ go.uber.org/zap/zapgrpc
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/cast5
-golang.org/x/crypto/ed25519
-golang.org/x/crypto/ed25519/internal/edwards25519
-golang.org/x/crypto/ocsp
 golang.org/x/crypto/openpgp
 golang.org/x/crypto/openpgp/armor
 golang.org/x/crypto/openpgp/elgamal
@@ -764,8 +587,6 @@ golang.org/x/crypto/openpgp/errors
 golang.org/x/crypto/openpgp/packet
 golang.org/x/crypto/openpgp/s2k
 golang.org/x/crypto/pbkdf2
-golang.org/x/crypto/pkcs12
-golang.org/x/crypto/pkcs12/internal/rc2
 golang.org/x/crypto/ssh/terminal
 # golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 golang.org/x/lint
@@ -807,7 +628,6 @@ golang.org/x/sys/windows
 # golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
 golang.org/x/term
 # golang.org/x/text v0.3.5
-golang.org/x/text/cases
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
 golang.org/x/text/encoding/htmlindex
@@ -818,7 +638,6 @@ golang.org/x/text/encoding/korean
 golang.org/x/text/encoding/simplifiedchinese
 golang.org/x/text/encoding/traditionalchinese
 golang.org/x/text/encoding/unicode
-golang.org/x/text/internal
 golang.org/x/text/internal/language
 golang.org/x/text/internal/language/compact
 golang.org/x/text/internal/tag
@@ -826,11 +645,9 @@ golang.org/x/text/internal/utf8internal
 golang.org/x/text/language
 golang.org/x/text/runes
 golang.org/x/text/secure/bidirule
-golang.org/x/text/secure/precis
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-golang.org/x/text/width
 # golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba
 golang.org/x/time/rate
 # golang.org/x/tools v0.1.2
@@ -1000,11 +817,5 @@ gopkg.in/natefinch/lumberjack.v2
 gopkg.in/tomb.v1
 # gopkg.in/yaml.v2 v2.4.0
 gopkg.in/yaml.v2
-# nhooyr.io/websocket v1.8.6
-nhooyr.io/websocket
-nhooyr.io/websocket/internal/bpool
-nhooyr.io/websocket/internal/errd
-nhooyr.io/websocket/internal/wsjs
-nhooyr.io/websocket/internal/xsync
 # sigs.k8s.io/yaml v1.2.0
 sigs.k8s.io/yaml

@@ -25,18 +25,18 @@ import (
 )
 
 func main() {
-	kongCtx, opts, err := options.New(os.Args[1:])
+	kongCtx, cliOpts, err := options.New(os.Args[1:])
 	if err != nil {
 		logrus.Fatalf("Unable to handle CLI input: %s", err)
 	}
 
 	// TODO: STDIN write should be continuous; punting for now.
-	readFromStdin(opts)
+	readFromStdin(cliOpts)
 
 	switch {
-	case opts.Global.Debug:
+	case cliOpts.Global.Debug:
 		logrus.SetLevel(logrus.DebugLevel)
-	case opts.Global.Quiet:
+	case cliOpts.Global.Quiet:
 		logrus.SetLevel(logrus.ErrorLevel)
 	}
 
@@ -44,7 +44,7 @@ func main() {
 	mainCtx, mainShutdownFunc := context.WithCancel(context.Background())
 
 	// We only want to intercept interrupt signals in relay or server mode
-	if opts.Global.XAction == "relay" || opts.Global.XAction == "server" {
+	if cliOpts.Global.XAction == "relay" || cliOpts.Global.XAction == "server" {
 		logrus.Debug("Intercepting signals")
 
 		c := make(chan os.Signal, 1)
@@ -63,9 +63,9 @@ func main() {
 	}
 
 	// Launch a dedicated goroutine if stats display is enabled
-	if opts.Read != nil && opts.Read.XCliOptions != nil {
-		if opts.Read.XCliOptions.StatsEnable {
-			stats.Start(opts.Read.XCliOptions.StatsReportIntervalSec)
+	if cliOpts.Read != nil && cliOpts.Read.XCliOptions != nil {
+		if cliOpts.Read.XCliOptions.StatsEnable {
+			stats.Start(cliOpts.Read.XCliOptions.StatsReportIntervalSec)
 		}
 	}
 
@@ -82,7 +82,7 @@ func main() {
 		MainShutdownFunc:   mainShutdownFunc,
 		MainShutdownCtx:    mainCtx,
 		KongCtx:            kongCtx,
-		CLIOptions:         opts,
+		CLIOptions:         cliOpts,
 	})
 
 	if err != nil {

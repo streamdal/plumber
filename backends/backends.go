@@ -67,41 +67,41 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 	var err error
 
 	switch connOpts.Conn.(type) {
-	//case "activemq":
-	//	be, err = activemq.New(cfg)
-	//case "aws-sqs":
-	//	be, err = awssqs.New(cfg)
-	//case "aws-sns":
-	//	be, err = awssns.New(cfg)
-	//case "azure":
-	//	be, err = azure.New(cfg)
-	//case "azure-eventhub":
-	//	be, err = azure_eventhub.New(cfg)
-	//case "gcp-pubsub":
-	//	be, err = gcppubsub.New(cfg)
 	case *opts.ConnectionOptions_Kafka:
 		be, err = kafka.New(connOpts)
-	//case "mqtt":
+	//case *opts.ConnectionOptions_ActiveMq:
+	//	be, err = activemq.New(cfg)
+	//case *opts.ConnectionOptions_Awssqs:
+	//	be, err = awssqs.New(cfg)
+	//case *opts.ConnectionOptions_Awssns:
+	//	be, err = awssns.New(cfg)
+	//case *opts.ConnectionOptions_AzureServiceBus:
+	//	be, err = azure.New(cfg)
+	//case *opts.ConnectionOptions_AzureEventHub:
+	//	be, err = azure_eventhub.New(cfg)
+	//case *opts.ConnectionOptions_GcpPubsub:
+	//	be, err = gcppubsub.New(cfg)
+	//case *opts.ConnectionOptions_Mqtt:
 	//	be, err = mqtt.New(cfg)
-	//case "nats":
+	//case *opts.ConnectionOptions_Nats:
 	//	be, err = nats.New(cfg)
-	//case "nats-streaming":
+	//case *opts.ConnectionOptions_NatsStreaming:
 	//	be, err = nats_streaming.New(cfg)
-	//case "nsq":
+	//case *opts.ConnectionOptions_Nsq:
 	//	be, err = nsq.New(cfg)
-	//case "pulsar":
+	//case *opts.ConnectionOptions_Pulsar:
 	//	be, err = pulsar.New(cfg)
-	//case "rabbit":
+	//case *opts.ConnectionOptions_Rabbit:
 	//	be, err = rabbitmq.New(cfg)
-	//case "rabbit-streams":
+	//case *opts.ConnectionOptions_RabbitStreams:
 	//	be, err = rabbitmq_streams.New(cfg)
-	//case "redis-pubsub":
+	//case *opts.ConnectionOptions_RedisPubsub:
 	//	be, err = rpubsub.New(cfg)
-	//case "redis-streams":
+	//case *opts.ConnectionOptions_RedisStreams:
 	//	be, err = rstreams.New(cfg)
-	//case "cdc-mongo":
+	//case *opts.ConnectionOptions_Mongo:
 	//	be, err = cdc_mongo.New(cfg)
-	//case "cdc-postgres":
+	//case *opts.ConnectionOptions_Postgres:
 	//	be, err = cdc_postgres.New(cfg)
 	default:
 		return nil, errors.New("unknown backend")

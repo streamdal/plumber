@@ -29,7 +29,16 @@ func New(args []string) (*kong.Context, *opts.CLIOptions, error) {
 
 	maybeDisplayVersion(os.Args)
 
-	k, err := kong.New(args)
+	k, err := kong.New(
+		cliOpts,
+		kong.IgnoreFieldsRegex(".*XXX_"),
+		kong.Name("plumber"),
+		kong.Description("`curl` for messaging systems. See: https://github.com/batchcorp/plumber"),
+		kong.UsageOnError(),
+		kong.ConfigureHelp(kong.HelpOptions{
+			Compact: true,
+		}),
+	)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "unable to create new kong instance")
 	}
