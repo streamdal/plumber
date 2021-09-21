@@ -49,12 +49,12 @@ func New(args []string) (*kong.Context, *opts.CLIOptions, error) {
 		return nil, nil, errors.Wrap(err, "unable to parse CLI options")
 	}
 
-	cliOpts.Global.XAction = kongCtx.Command()
+	cliOpts.Global.XAction = kongCtx.Args[0]
 	cliOpts.Global.XFullCommand = strings.Join(args, " ")
 
 	if ActionUsesBackend(cliOpts.Global.XAction) {
 		if len(args) >= 3 {
-			cliOpts.Global.XBackend = args[2]
+			cliOpts.Global.XBackend = args[1]
 		}
 	}
 

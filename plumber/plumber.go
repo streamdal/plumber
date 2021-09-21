@@ -3,7 +3,7 @@ package plumber
 import (
 	"context"
 	"fmt"
-	"reflect"
+	"log"
 
 	"github.com/alecthomas/kong"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
@@ -90,31 +90,64 @@ func generateConnectionOptions(cfg *opts.CLIOptions) (*opts.ConnectionOptions, e
 	connCfg := &opts.ConnectionOptions{
 		Name:  "plumber-cli",
 		Notes: "Generated via plumber-cli",
+
+		// This is what we'll be trying to create dynamically:
+		//Conn: &opts.ConnectionOptions_Kafka{
+		//	Kafka: &args.KafkaConn{},
+		//},
 	}
 
 	// We are looking for the individual conn located at: cfg.$action.$backendName.XConn
-	lookupStrings := []string{cfg.Global.XAction, cfg.Global.XBackend, "XConn"}
+	lookupStrings := []string{cfg.Global.XAction, cfg.Global.XBackend}
 
-	var value reflect.Value
-	var err error
-
-	value, err = lookup.LookupI(cfg, lookupStrings...)
+	rvKafkaConn, err := lookup.LookupI(cfg, lookupStrings...)
 	if err != nil {
 		return nil, fmt.Errorf("unable to lookup connection info for backend '%s': %s",
 			cfg.Global.XBackend, err)
 	}
 
-	// This is a little funky - after finding the conn, it'll have an interface{}
-	// type, so we assert it to a connection config so we can perform an assignment.
-	assertedConnCfg, ok := value.Interface().(opts.IsConnectionOptions_Conn)
+	fmt.Printf("type: %+v\n", rvKafkaConn.Type())
+
+	genericConn, ok := generateGenericConnOpts(cfg.Global.XBackend, rvKafkaConn.Interface())
 	if !ok {
-		return nil, errors.New("unable to type assert connection config")
+		return nil, fmt.Errorf("unable to generate generic connection options")
 	}
 
-	connCfg.Conn = assertedConnCfg
+	connCfg.Conn = genericConn
+
+	log.Fatal("woops")
 
 	return connCfg, nil
 }
+
+var (
+	SupportedBackendsMap = map[string]opts.IsConnectionOptions_Conn{
+		"kafka": f,
+	}
+)
+
+func generateGenericConnOpts(backend string, reflectValueConn interface{}) (opts.IsConnectionOptions_Conn, bool) {
+	connArgs, ok := SupportedBackendsMap[backend]
+	if !ok {
+		return nil, false
+	}
+}
+
+//func generateGenericConnOpts(backend string, connArgs interface{}) (opts.IsConnectionOptions_Conn, bool) {
+//	switch backend {
+//	case "kafka":
+//		asserted, ok := connArgs.(*args.KafkaConn)
+//		if !ok {
+//			return nil, false
+//		}
+//
+//		return &opts.ConnectionOptions_Kafka{
+//			Kafka: asserted,
+//		}, true
+//	}
+//
+//	return nil, false
+//}
 
 // Run is the main entrypoint to the plumber application
 func (p *Plumber) Run() {
@@ -144,42 +177,47 @@ func (p *Plumber) Run() {
 }
 
 func GenerateMessageDescriptor(cliOpts *opts.CLIOptions) (*desc.MessageDescriptor, error) {
-	if cliOpts.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_JSONPB ||
-		cliOpts.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_PROTOBUF {
+	if cliOpts.Read != nil && cliOpts.Read.DecodeOptions != nil {
+		if cliOpts.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_JSONPB ||
+			cliOpts.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_PROTOBUF {
 
-		logrus.Debug("attempting to find decoding protobuf descriptors")
+			logrus.Debug("attempting to find decoding protobuf descriptors")
 
-		pbDirs := cliOpts.Read.DecodeOptions.ProtobufSettings.ProtobufDirs
-		pbRootMessage := cliOpts.Read.DecodeOptions.ProtobufSettings.ProtobufRootMessage
+			pbDirs := cliOpts.Read.DecodeOptions.ProtobufSettings.ProtobufDirs
+			pbRootMessage := cliOpts.Read.DecodeOptions.ProtobufSettings.ProtobufRootMessage
 
-		if err := validate.ProtobufOptionsForCLI(pbDirs, pbRootMessage); err != nil {
-			return nil, errors.Wrap(err, "unable to validate protobuf settings for decode")
+			if err := validate.ProtobufOptionsForCLI(pbDirs, pbRootMessage); err != nil {
+				return nil, errors.Wrap(err, "unable to validate protobuf settings for decode")
+			}
+
+			md, err := pb.FindMessageDescriptor(pbDirs, pbRootMessage)
+			if err != nil {
+				return nil, errors.Wrap(err, "unable to find root message descriptor for decode")
+			}
+
+			return md, nil
 		}
 
-		md, err := pb.FindMessageDescriptor(pbDirs, pbRootMessage)
-		if err != nil {
-			return nil, errors.Wrap(err, "unable to find root message descriptor for decode")
-		}
-
-		return md, nil
 	}
 
-	if cliOpts.Write.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_JSONPB {
-		logrus.Debug("attempting to find encoding protobuf descriptors")
+	if cliOpts.Write != nil && cliOpts.Write.EncodeOptions != nil {
+		if cliOpts.Write != nil && cliOpts.Write.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_JSONPB {
+			logrus.Debug("attempting to find encoding protobuf descriptors")
 
-		pbDirs := cliOpts.Write.EncodeOptions.ProtobufSettings.ProtobufDirs
-		pbRootMessage := cliOpts.Write.EncodeOptions.ProtobufSettings.ProtobufRootMessage
+			pbDirs := cliOpts.Write.EncodeOptions.ProtobufSettings.ProtobufDirs
+			pbRootMessage := cliOpts.Write.EncodeOptions.ProtobufSettings.ProtobufRootMessage
 
-		if err := validate.ProtobufOptionsForCLI(pbDirs, pbRootMessage); err != nil {
-			return nil, errors.Wrap(err, "unable to validate protobuf settings for encode")
+			if err := validate.ProtobufOptionsForCLI(pbDirs, pbRootMessage); err != nil {
+				return nil, errors.Wrap(err, "unable to validate protobuf settings for encode")
+			}
+
+			md, err := pb.FindMessageDescriptor(pbDirs, pbRootMessage)
+			if err != nil {
+				return nil, errors.Wrap(err, "unable to find root message descriptor for encode")
+			}
+
+			return md, nil
 		}
-
-		md, err := pb.FindMessageDescriptor(pbDirs, pbRootMessage)
-		if err != nil {
-			return nil, errors.Wrap(err, "unable to find root message descriptor for encode")
-		}
-
-		return md, nil
 	}
 
 	return nil, nil
