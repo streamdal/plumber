@@ -6,18 +6,19 @@ import (
 	"sync"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/jhump/protoreflect/desc"
+	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
+
+	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/server/types"
 	"github.com/batchcorp/plumber/validate"
-	"github.com/jhump/protoreflect/desc"
-	"github.com/pkg/errors"
-
-	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
@@ -119,7 +120,7 @@ func (s *Server) StartRead(req *protos.StartReadRequest, srv protos.PlumberServe
 			llog.Debugf("Sent message to client '%s'", requestID)
 		case <-read.ContextCxl.Done():
 			// StartRead stopped. close out all streams for it
-			llog.Debugf("StartRead stopped. closing stream for client '%s'", requestID)
+			llog.Debugf("Read stopped. closing stream for client '%s'", requestID)
 			return nil
 		default:
 			// NOOP
@@ -136,10 +137,15 @@ func (s *Server) CreateRead(_ context.Context, req *protos.CreateReadRequest) (*
 		return nil, err
 	}
 
-	// Do we have a backend for this read?
-	be := s.PersistentConfig.GetBackend(req.Read.ConnectionId)
-	if be == nil {
-		return nil, CustomError(common.Code_NOT_FOUND, validate.ErrBackendNotFound.Error())
+	conn := s.PersistentConfig.GetConnection(req.Read.ConnectionId)
+	if conn == nil {
+		return nil, CustomError(common.Code_NOT_FOUND, validate.ErrConnectionNotFound.Error())
+	}
+
+	// Try to create a backend from given connection options
+	be, err := backends.New(conn)
+	if err != nil {
+		return nil, CustomError(common.Code_ABORTED, fmt.Sprintf("unable to create backend: %s", err))
 	}
 
 	requestID := uuid.NewV4().String()
@@ -182,7 +188,7 @@ func (s *Server) CreateRead(_ context.Context, req *protos.CreateReadRequest) (*
 	return &protos.CreateReadResponse{
 		Status: &common.Status{
 			Code:      common.Code_OK,
-			Message:   "StartRead started",
+			Message:   "Read started",
 			RequestId: requestID,
 		},
 		ReadId: req.Read.XId,
@@ -243,10 +249,17 @@ func (s *Server) ResumeRead(_ context.Context, req *protos.ResumeReadRequest) (*
 
 	ctx, cancelFunc := context.WithCancel(context.Background())
 
-	be := s.PersistentConfig.GetBackend(req.ReadId)
-	if be == nil {
+	conn := s.PersistentConfig.GetConnection(read.ReadOptions.ConnectionId)
+	if conn == nil {
 		cancelFunc()
-		return nil, CustomError(common.Code_ABORTED, validate.ErrBackendNotFound.Error())
+		return nil, CustomError(common.Code_ABORTED, validate.ErrConnectionNotFound.Error())
+	}
+
+	// Try to create a backend from given connection options
+	be, err := backends.New(conn)
+	if err != nil {
+		cancelFunc()
+		return nil, CustomError(common.Code_ABORTED, fmt.Sprintf("unable to create backend: %s", err))
 	}
 
 	// Fresh connection and context

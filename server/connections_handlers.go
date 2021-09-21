@@ -4,16 +4,17 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber/backends"
-	"github.com/batchcorp/plumber/validate"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
+	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/embed/etcd"
+	"github.com/batchcorp/plumber/validate"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
 func (s *Server) GetAllConnections(_ context.Context, req *protos.GetAllConnectionsRequest) (*protos.GetAllConnectionsResponse, error) {
@@ -61,12 +62,6 @@ func (s *Server) CreateConnection(ctx context.Context, req *protos.CreateConnect
 		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
 	}
 
-	// Try to create a backend from given connection options
-	be, err := backends.New(connOpts)
-	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, fmt.Sprintf("unable to create backend: %s", err))
-	}
-
 	// Save conn options to etcd
 	data, err := proto.Marshal(connOpts)
 	if err != nil {
@@ -78,8 +73,6 @@ func (s *Server) CreateConnection(ctx context.Context, req *protos.CreateConnect
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
 
-	// Save backend in mem
-	s.PersistentConfig.SetBackend(req.Options.XId, be)
 	// Save connection options in mem
 	s.PersistentConfig.SetConnection(connOpts.XId, connOpts)
 
@@ -108,11 +101,6 @@ func (s *Server) rollbackCreateConnection(ctx context.Context, connOpts *opts.Co
 		s.Log.Errorf("unable to delete connection options in etcd: %s", err)
 	}
 
-	// Close backend + delete entry in persistent config map (if it exists)
-	// NOTE: We are doing this in a goroutine because it might take a moment
-	// to close the backend.
-	go s.PersistentConfig.DeleteBackend(connOpts.XId)
-
 	// Delete connections options map entry
 	s.PersistentConfig.DeleteConnection(connOpts.XId)
 }
@@ -127,9 +115,14 @@ func (s *Server) TestConnection(ctx context.Context, req *protos.TestConnectionR
 	}
 
 	// Fetch the associated backend
-	be := s.PersistentConfig.GetBackend(req.Options.XId)
-	if be == nil {
+	conn := s.PersistentConfig.GetConnection(req.Options.XId)
+	if conn == nil {
 		return nil, CustomError(common.Code_NOT_FOUND, "unable to find backend for given connection id")
+	}
+
+	be, err := backends.New(conn)
+	if err != nil {
+		return nil, CustomError(common.Code_ABORTED, fmt.Sprintf("unable to create backend: %s", err))
 	}
 
 	if err := be.Test(ctx); err != nil {
@@ -220,7 +213,6 @@ func (s *Server) DeleteConnection(ctx context.Context, req *protos.DeleteConnect
 
 	// Delete in memory
 	s.PersistentConfig.DeleteConnection(connOptions.XId)
-	s.PersistentConfig.DeleteBackend(connOptions.XId)
 
 	// Publish DeleteConnection event
 	if err := s.Etcd.PublishDeleteConnection(ctx, connOptions); err != nil {

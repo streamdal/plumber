@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber/embed/etcd"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
@@ -66,11 +67,11 @@ type FakeIEtcd struct {
 		result1 *clientv3.GetResponse
 		result2 error
 	}
-	PublishCreateConnectionStub        func(context.Context, *protos.Connection) error
+	PublishCreateConnectionStub        func(context.Context, *opts.ConnectionOptions) error
 	publishCreateConnectionMutex       sync.RWMutex
 	publishCreateConnectionArgsForCall []struct {
 		arg1 context.Context
-		arg2 *protos.Connection
+		arg2 *opts.ConnectionOptions
 	}
 	publishCreateConnectionReturns struct {
 		result1 error
@@ -78,11 +79,11 @@ type FakeIEtcd struct {
 	publishCreateConnectionReturnsOnCall map[int]struct {
 		result1 error
 	}
-	PublishCreateRelayStub        func(context.Context, *protos.Relay) error
+	PublishCreateRelayStub        func(context.Context, *opts.RelayOptions) error
 	publishCreateRelayMutex       sync.RWMutex
 	publishCreateRelayArgsForCall []struct {
 		arg1 context.Context
-		arg2 *protos.Relay
+		arg2 *opts.RelayOptions
 	}
 	publishCreateRelayReturns struct {
 		result1 error
@@ -114,11 +115,11 @@ type FakeIEtcd struct {
 	publishCreateServiceReturnsOnCall map[int]struct {
 		result1 error
 	}
-	PublishDeleteConnectionStub        func(context.Context, *protos.Connection) error
+	PublishDeleteConnectionStub        func(context.Context, *opts.ConnectionOptions) error
 	publishDeleteConnectionMutex       sync.RWMutex
 	publishDeleteConnectionArgsForCall []struct {
 		arg1 context.Context
-		arg2 *protos.Connection
+		arg2 *opts.ConnectionOptions
 	}
 	publishDeleteConnectionReturns struct {
 		result1 error
@@ -126,11 +127,11 @@ type FakeIEtcd struct {
 	publishDeleteConnectionReturnsOnCall map[int]struct {
 		result1 error
 	}
-	PublishDeleteRelayStub        func(context.Context, *protos.Relay) error
+	PublishDeleteRelayStub        func(context.Context, *opts.RelayOptions) error
 	publishDeleteRelayMutex       sync.RWMutex
 	publishDeleteRelayArgsForCall []struct {
 		arg1 context.Context
-		arg2 *protos.Relay
+		arg2 *opts.RelayOptions
 	}
 	publishDeleteRelayReturns struct {
 		result1 error
@@ -162,11 +163,11 @@ type FakeIEtcd struct {
 	publishDeleteServiceReturnsOnCall map[int]struct {
 		result1 error
 	}
-	PublishUpdateConnectionStub        func(context.Context, *protos.Connection) error
+	PublishUpdateConnectionStub        func(context.Context, *opts.ConnectionOptions) error
 	publishUpdateConnectionMutex       sync.RWMutex
 	publishUpdateConnectionArgsForCall []struct {
 		arg1 context.Context
-		arg2 *protos.Connection
+		arg2 *opts.ConnectionOptions
 	}
 	publishUpdateConnectionReturns struct {
 		result1 error
@@ -174,11 +175,11 @@ type FakeIEtcd struct {
 	publishUpdateConnectionReturnsOnCall map[int]struct {
 		result1 error
 	}
-	PublishUpdateRelayStub        func(context.Context, *protos.Relay) error
+	PublishUpdateRelayStub        func(context.Context, *opts.RelayOptions) error
 	publishUpdateRelayMutex       sync.RWMutex
 	publishUpdateRelayArgsForCall []struct {
 		arg1 context.Context
-		arg2 *protos.Relay
+		arg2 *opts.RelayOptions
 	}
 	publishUpdateRelayReturns struct {
 		result1 error
@@ -509,12 +510,12 @@ func (fake *FakeIEtcd) GetReturnsOnCall(i int, result1 *clientv3.GetResponse, re
 	}{result1, result2}
 }
 
-func (fake *FakeIEtcd) PublishCreateConnection(arg1 context.Context, arg2 *protos.Connection) error {
+func (fake *FakeIEtcd) PublishCreateConnection(arg1 context.Context, arg2 *opts.ConnectionOptions) error {
 	fake.publishCreateConnectionMutex.Lock()
 	ret, specificReturn := fake.publishCreateConnectionReturnsOnCall[len(fake.publishCreateConnectionArgsForCall)]
 	fake.publishCreateConnectionArgsForCall = append(fake.publishCreateConnectionArgsForCall, struct {
 		arg1 context.Context
-		arg2 *protos.Connection
+		arg2 *opts.ConnectionOptions
 	}{arg1, arg2})
 	stub := fake.PublishCreateConnectionStub
 	fakeReturns := fake.publishCreateConnectionReturns
@@ -535,13 +536,13 @@ func (fake *FakeIEtcd) PublishCreateConnectionCallCount() int {
 	return len(fake.publishCreateConnectionArgsForCall)
 }
 
-func (fake *FakeIEtcd) PublishCreateConnectionCalls(stub func(context.Context, *protos.Connection) error) {
+func (fake *FakeIEtcd) PublishCreateConnectionCalls(stub func(context.Context, *opts.ConnectionOptions) error) {
 	fake.publishCreateConnectionMutex.Lock()
 	defer fake.publishCreateConnectionMutex.Unlock()
 	fake.PublishCreateConnectionStub = stub
 }
 
-func (fake *FakeIEtcd) PublishCreateConnectionArgsForCall(i int) (context.Context, *protos.Connection) {
+func (fake *FakeIEtcd) PublishCreateConnectionArgsForCall(i int) (context.Context, *opts.ConnectionOptions) {
 	fake.publishCreateConnectionMutex.RLock()
 	defer fake.publishCreateConnectionMutex.RUnlock()
 	argsForCall := fake.publishCreateConnectionArgsForCall[i]
@@ -571,12 +572,12 @@ func (fake *FakeIEtcd) PublishCreateConnectionReturnsOnCall(i int, result1 error
 	}{result1}
 }
 
-func (fake *FakeIEtcd) PublishCreateRelay(arg1 context.Context, arg2 *protos.Relay) error {
+func (fake *FakeIEtcd) PublishCreateRelay(arg1 context.Context, arg2 *opts.RelayOptions) error {
 	fake.publishCreateRelayMutex.Lock()
 	ret, specificReturn := fake.publishCreateRelayReturnsOnCall[len(fake.publishCreateRelayArgsForCall)]
 	fake.publishCreateRelayArgsForCall = append(fake.publishCreateRelayArgsForCall, struct {
 		arg1 context.Context
-		arg2 *protos.Relay
+		arg2 *opts.RelayOptions
 	}{arg1, arg2})
 	stub := fake.PublishCreateRelayStub
 	fakeReturns := fake.publishCreateRelayReturns
@@ -597,13 +598,13 @@ func (fake *FakeIEtcd) PublishCreateRelayCallCount() int {
 	return len(fake.publishCreateRelayArgsForCall)
 }
 
-func (fake *FakeIEtcd) PublishCreateRelayCalls(stub func(context.Context, *protos.Relay) error) {
+func (fake *FakeIEtcd) PublishCreateRelayCalls(stub func(context.Context, *opts.RelayOptions) error) {
 	fake.publishCreateRelayMutex.Lock()
 	defer fake.publishCreateRelayMutex.Unlock()
 	fake.PublishCreateRelayStub = stub
 }
 
-func (fake *FakeIEtcd) PublishCreateRelayArgsForCall(i int) (context.Context, *protos.Relay) {
+func (fake *FakeIEtcd) PublishCreateRelayArgsForCall(i int) (context.Context, *opts.RelayOptions) {
 	fake.publishCreateRelayMutex.RLock()
 	defer fake.publishCreateRelayMutex.RUnlock()
 	argsForCall := fake.publishCreateRelayArgsForCall[i]
@@ -757,12 +758,12 @@ func (fake *FakeIEtcd) PublishCreateServiceReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeIEtcd) PublishDeleteConnection(arg1 context.Context, arg2 *protos.Connection) error {
+func (fake *FakeIEtcd) PublishDeleteConnection(arg1 context.Context, arg2 *opts.ConnectionOptions) error {
 	fake.publishDeleteConnectionMutex.Lock()
 	ret, specificReturn := fake.publishDeleteConnectionReturnsOnCall[len(fake.publishDeleteConnectionArgsForCall)]
 	fake.publishDeleteConnectionArgsForCall = append(fake.publishDeleteConnectionArgsForCall, struct {
 		arg1 context.Context
-		arg2 *protos.Connection
+		arg2 *opts.ConnectionOptions
 	}{arg1, arg2})
 	stub := fake.PublishDeleteConnectionStub
 	fakeReturns := fake.publishDeleteConnectionReturns
@@ -783,13 +784,13 @@ func (fake *FakeIEtcd) PublishDeleteConnectionCallCount() int {
 	return len(fake.publishDeleteConnectionArgsForCall)
 }
 
-func (fake *FakeIEtcd) PublishDeleteConnectionCalls(stub func(context.Context, *protos.Connection) error) {
+func (fake *FakeIEtcd) PublishDeleteConnectionCalls(stub func(context.Context, *opts.ConnectionOptions) error) {
 	fake.publishDeleteConnectionMutex.Lock()
 	defer fake.publishDeleteConnectionMutex.Unlock()
 	fake.PublishDeleteConnectionStub = stub
 }
 
-func (fake *FakeIEtcd) PublishDeleteConnectionArgsForCall(i int) (context.Context, *protos.Connection) {
+func (fake *FakeIEtcd) PublishDeleteConnectionArgsForCall(i int) (context.Context, *opts.ConnectionOptions) {
 	fake.publishDeleteConnectionMutex.RLock()
 	defer fake.publishDeleteConnectionMutex.RUnlock()
 	argsForCall := fake.publishDeleteConnectionArgsForCall[i]
@@ -819,12 +820,12 @@ func (fake *FakeIEtcd) PublishDeleteConnectionReturnsOnCall(i int, result1 error
 	}{result1}
 }
 
-func (fake *FakeIEtcd) PublishDeleteRelay(arg1 context.Context, arg2 *protos.Relay) error {
+func (fake *FakeIEtcd) PublishDeleteRelay(arg1 context.Context, arg2 *opts.RelayOptions) error {
 	fake.publishDeleteRelayMutex.Lock()
 	ret, specificReturn := fake.publishDeleteRelayReturnsOnCall[len(fake.publishDeleteRelayArgsForCall)]
 	fake.publishDeleteRelayArgsForCall = append(fake.publishDeleteRelayArgsForCall, struct {
 		arg1 context.Context
-		arg2 *protos.Relay
+		arg2 *opts.RelayOptions
 	}{arg1, arg2})
 	stub := fake.PublishDeleteRelayStub
 	fakeReturns := fake.publishDeleteRelayReturns
@@ -845,13 +846,13 @@ func (fake *FakeIEtcd) PublishDeleteRelayCallCount() int {
 	return len(fake.publishDeleteRelayArgsForCall)
 }
 
-func (fake *FakeIEtcd) PublishDeleteRelayCalls(stub func(context.Context, *protos.Relay) error) {
+func (fake *FakeIEtcd) PublishDeleteRelayCalls(stub func(context.Context, *opts.RelayOptions) error) {
 	fake.publishDeleteRelayMutex.Lock()
 	defer fake.publishDeleteRelayMutex.Unlock()
 	fake.PublishDeleteRelayStub = stub
 }
 
-func (fake *FakeIEtcd) PublishDeleteRelayArgsForCall(i int) (context.Context, *protos.Relay) {
+func (fake *FakeIEtcd) PublishDeleteRelayArgsForCall(i int) (context.Context, *opts.RelayOptions) {
 	fake.publishDeleteRelayMutex.RLock()
 	defer fake.publishDeleteRelayMutex.RUnlock()
 	argsForCall := fake.publishDeleteRelayArgsForCall[i]
@@ -1005,12 +1006,12 @@ func (fake *FakeIEtcd) PublishDeleteServiceReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeIEtcd) PublishUpdateConnection(arg1 context.Context, arg2 *protos.Connection) error {
+func (fake *FakeIEtcd) PublishUpdateConnection(arg1 context.Context, arg2 *opts.ConnectionOptions) error {
 	fake.publishUpdateConnectionMutex.Lock()
 	ret, specificReturn := fake.publishUpdateConnectionReturnsOnCall[len(fake.publishUpdateConnectionArgsForCall)]
 	fake.publishUpdateConnectionArgsForCall = append(fake.publishUpdateConnectionArgsForCall, struct {
 		arg1 context.Context
-		arg2 *protos.Connection
+		arg2 *opts.ConnectionOptions
 	}{arg1, arg2})
 	stub := fake.PublishUpdateConnectionStub
 	fakeReturns := fake.publishUpdateConnectionReturns
@@ -1031,13 +1032,13 @@ func (fake *FakeIEtcd) PublishUpdateConnectionCallCount() int {
 	return len(fake.publishUpdateConnectionArgsForCall)
 }
 
-func (fake *FakeIEtcd) PublishUpdateConnectionCalls(stub func(context.Context, *protos.Connection) error) {
+func (fake *FakeIEtcd) PublishUpdateConnectionCalls(stub func(context.Context, *opts.ConnectionOptions) error) {
 	fake.publishUpdateConnectionMutex.Lock()
 	defer fake.publishUpdateConnectionMutex.Unlock()
 	fake.PublishUpdateConnectionStub = stub
 }
 
-func (fake *FakeIEtcd) PublishUpdateConnectionArgsForCall(i int) (context.Context, *protos.Connection) {
+func (fake *FakeIEtcd) PublishUpdateConnectionArgsForCall(i int) (context.Context, *opts.ConnectionOptions) {
 	fake.publishUpdateConnectionMutex.RLock()
 	defer fake.publishUpdateConnectionMutex.RUnlock()
 	argsForCall := fake.publishUpdateConnectionArgsForCall[i]
@@ -1067,12 +1068,12 @@ func (fake *FakeIEtcd) PublishUpdateConnectionReturnsOnCall(i int, result1 error
 	}{result1}
 }
 
-func (fake *FakeIEtcd) PublishUpdateRelay(arg1 context.Context, arg2 *protos.Relay) error {
+func (fake *FakeIEtcd) PublishUpdateRelay(arg1 context.Context, arg2 *opts.RelayOptions) error {
 	fake.publishUpdateRelayMutex.Lock()
 	ret, specificReturn := fake.publishUpdateRelayReturnsOnCall[len(fake.publishUpdateRelayArgsForCall)]
 	fake.publishUpdateRelayArgsForCall = append(fake.publishUpdateRelayArgsForCall, struct {
 		arg1 context.Context
-		arg2 *protos.Relay
+		arg2 *opts.RelayOptions
 	}{arg1, arg2})
 	stub := fake.PublishUpdateRelayStub
 	fakeReturns := fake.publishUpdateRelayReturns
@@ -1093,13 +1094,13 @@ func (fake *FakeIEtcd) PublishUpdateRelayCallCount() int {
 	return len(fake.publishUpdateRelayArgsForCall)
 }
 
-func (fake *FakeIEtcd) PublishUpdateRelayCalls(stub func(context.Context, *protos.Relay) error) {
+func (fake *FakeIEtcd) PublishUpdateRelayCalls(stub func(context.Context, *opts.RelayOptions) error) {
 	fake.publishUpdateRelayMutex.Lock()
 	defer fake.publishUpdateRelayMutex.Unlock()
 	fake.PublishUpdateRelayStub = stub
 }
 
-func (fake *FakeIEtcd) PublishUpdateRelayArgsForCall(i int) (context.Context, *protos.Relay) {
+func (fake *FakeIEtcd) PublishUpdateRelayArgsForCall(i int) (context.Context, *opts.RelayOptions) {
 	fake.publishUpdateRelayMutex.RLock()
 	defer fake.publishUpdateRelayMutex.RUnlock()
 	argsForCall := fake.publishUpdateRelayArgsForCall[i]

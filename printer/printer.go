@@ -5,11 +5,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/logrusorgru/aurora"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
 func Error(str string) {
@@ -122,7 +123,7 @@ func PrintRelayOptions(cliOpts *opts.CLIOptions) {
 	logrus.Infof("- %-24s%-6d", "Num workers", cliOpts.Relay.NumWorkers)
 	logrus.Infof("- %-24s%-6d", "Batch size", cliOpts.Relay.BatchSize)
 	logrus.Infof("- %-24s%-6v", "Stats enabled", cliOpts.Read.XCliOptions.StatsEnable)
-	logrus.Infof("- %-24s%-6s", "Stats report interval (seconds)", cliOpts.Read.XCliOptions.StatsReportIntervalSec)
+	logrus.Infof("- %-24s%-6d", "Stats report interval (seconds)", cliOpts.Read.XCliOptions.StatsReportIntervalSec)
 	logrus.Info("")
 
 	switch cliOpts.Global.XBackend {

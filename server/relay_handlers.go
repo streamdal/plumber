@@ -5,17 +5,18 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber/embed/etcd"
-	"github.com/batchcorp/plumber/validate"
-
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+
+	"github.com/batchcorp/plumber/backends"
+	"github.com/batchcorp/plumber/embed/etcd"
 	"github.com/batchcorp/plumber/server/types"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (s *Server) GetAllRelays(_ context.Context, req *protos.GetAllRelaysRequest) (*protos.GetAllRelaysResponse, error) {
@@ -47,15 +48,21 @@ func (s *Server) CreateRelay(ctx context.Context, req *protos.CreateRelayRequest
 	}
 
 	// Get stored connection information
-	be := s.PersistentConfig.GetBackend(req.Opts.ConnectionId)
-	if be == nil {
-		return nil, validate.ErrBackendNotFound
+	conn := s.PersistentConfig.GetConnection(req.Opts.ConnectionId)
+	if conn == nil {
+		return nil, CustomError(common.Code_NOT_FOUND, validate.ErrConnectionNotFound.Error())
+	}
+
+	// Try to create a backend from given connection options
+	be, err := backends.New(conn)
+	if err != nil {
+		return nil, CustomError(common.Code_ABORTED, fmt.Sprintf("unable to create backend: %s", err))
 	}
 
 	// Save to etcd
 	data, err := proto.Marshal(req.Opts)
 	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
+		return nil, CustomError(common.Code_ABORTED, "could not marshal relay")
 	}
 
 	_, err = s.Etcd.Put(ctx, etcd.CacheRelaysPrefix+"/"+req.Opts.XRelayId, string(data))

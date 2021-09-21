@@ -1,9 +1,10 @@
 package batch
 
 import (
-	"github.com/batchcorp/plumber/options"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
 var _ = Describe("Replays", func() {
@@ -105,11 +106,20 @@ var _ = Describe("Replays", func() {
 	Context("generateReplayQuery", func() {
 		It("handles wildcard", func() {
 			b := &Batch{
-				Opts: &options.Options{
-					Batch: &options.BatchOptions{
-						Query:      "*",
-						ReplayFrom: "2021-04-01T12:13:14Z",
-						ReplayTo:   "2021-04-02T12:13:14Z",
+				Opts: &opts.CLIOptions{
+					Batch: &opts.BatchOptions{
+						Create: &opts.BatchCreateOptions{
+							Replay: &opts.BatchCreateReplayOptions{
+								Name:          "",
+								Type:          0,
+								Notes:         "",
+								CollectionId:  "",
+								DestinationId: "",
+								Query:         "*",
+								FromTimestamp: "2021-04-01T12:13:14Z",
+								ToTimestamp:   "2021-04-02T12:13:14Z",
+							},
+						},
 					},
 				},
 			}
@@ -121,11 +131,20 @@ var _ = Describe("Replays", func() {
 
 		It("handles query with a field", func() {
 			b := &Batch{
-				Opts: &options.Options{
-					Batch: &options.BatchOptions{
-						Query:      "batch.team.id: 'foo'",
-						ReplayFrom: "2021-04-01T12:13:14Z",
-						ReplayTo:   "2021-04-02T12:13:14Z",
+				Opts: &opts.CLIOptions{
+					Batch: &opts.BatchOptions{
+						Create: &opts.BatchCreateOptions{
+							Replay: &opts.BatchCreateReplayOptions{
+								Name:          "",
+								Type:          0,
+								Notes:         "",
+								CollectionId:  "",
+								DestinationId: "",
+								Query:         "batch.team.id: 'foo'",
+								FromTimestamp: "2021-04-01T12:13:14Z",
+								ToTimestamp:   "2021-04-02T12:13:14Z",
+							},
+						},
 					},
 				},
 			}

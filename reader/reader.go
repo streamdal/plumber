@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/jhump/protoreflect/desc"
 	jsoniter "github.com/json-iterator/go"
 	thrifter "github.com/thrift-iterator/go"
 	"github.com/thrift-iterator/go/general"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/hokaccha/go-prettyjson"
 	"github.com/jhump/protoreflect/dynamic"
@@ -107,7 +108,7 @@ func Decode(readOpts *opts.ReadOptions, md *desc.MessageDescriptor, message []by
 
 	// Pretty output
 
-	if readOpts.XCliOptions.Pretty {
+	if readOpts.XCliOptions != nil && readOpts.XCliOptions.Pretty {
 		// Only do pretty output for JSON (for now)
 		if json.Valid(data) {
 			colorized, err := prettyjson.Format(data)
