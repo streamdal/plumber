@@ -108,9 +108,9 @@ func generateConnectionOptions(cfg *opts.CLIOptions) (*opts.ConnectionOptions, e
 
 	fmt.Printf("type: %+v\n", rvKafkaConn.Type())
 
-	conn, ok := generateGenericConnOpts(cfg.Global.XBackend, rvKafkaConn.Interface())
+	conn, ok := opts.GenerateConnOpts(cfg.Global.XBackend, rvKafkaConn.Interface())
 	if !ok {
-		return nil, fmt.Errorf("unable to generate generic connection options")
+		return nil, errors.New("unable to generate connection options via proto func")
 	}
 
 	connCfg.Conn = conn
