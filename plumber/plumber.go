@@ -3,9 +3,9 @@ package plumber
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/alecthomas/kong"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/jhump/protoreflect/desc"
@@ -98,7 +98,7 @@ func generateConnectionOptions(cfg *opts.CLIOptions) (*opts.ConnectionOptions, e
 	}
 
 	// We are looking for the individual conn located at: cfg.$action.$backendName.XConn
-	lookupStrings := []string{cfg.Global.XAction, cfg.Global.XBackend}
+	lookupStrings := []string{cfg.Global.XAction, cfg.Global.XBackend, "XConn"}
 
 	rvKafkaConn, err := lookup.LookupI(cfg, lookupStrings...)
 	if err != nil {
@@ -108,46 +108,32 @@ func generateConnectionOptions(cfg *opts.CLIOptions) (*opts.ConnectionOptions, e
 
 	fmt.Printf("type: %+v\n", rvKafkaConn.Type())
 
-	genericConn, ok := generateGenericConnOpts(cfg.Global.XBackend, rvKafkaConn.Interface())
+	conn, ok := generateGenericConnOpts(cfg.Global.XBackend, rvKafkaConn.Interface())
 	if !ok {
 		return nil, fmt.Errorf("unable to generate generic connection options")
 	}
 
-	connCfg.Conn = genericConn
-
-	log.Fatal("woops")
+	connCfg.Conn = conn
 
 	return connCfg, nil
 }
 
-var (
-	SupportedBackendsMap = map[string]opts.IsConnectionOptions_Conn{
-		"kafka": f,
-	}
-)
+// TODO: This function should be auto-generated (as part of `make generate/all`
+func generateGenericConnOpts(backend string, connArgs interface{}) (opts.IsConnectionOptions_Conn, bool) {
+	switch backend {
+	case "kafka":
+		asserted, ok := connArgs.(args.KafkaConn)
+		if !ok {
+			return nil, false
+		}
 
-func generateGenericConnOpts(backend string, reflectValueConn interface{}) (opts.IsConnectionOptions_Conn, bool) {
-	connArgs, ok := SupportedBackendsMap[backend]
-	if !ok {
-		return nil, false
+		return &opts.ConnectionOptions_Kafka{
+			Kafka: &asserted,
+		}, true
 	}
+
+	return nil, false
 }
-
-//func generateGenericConnOpts(backend string, connArgs interface{}) (opts.IsConnectionOptions_Conn, bool) {
-//	switch backend {
-//	case "kafka":
-//		asserted, ok := connArgs.(*args.KafkaConn)
-//		if !ok {
-//			return nil, false
-//		}
-//
-//		return &opts.ConnectionOptions_Kafka{
-//			Kafka: asserted,
-//		}, true
-//	}
-//
-//	return nil, false
-//}
 
 // Run is the main entrypoint to the plumber application
 func (p *Plumber) Run() {

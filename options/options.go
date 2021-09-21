@@ -62,56 +62,81 @@ func New(args []string) (*kong.Context, *opts.CLIOptions, error) {
 	logrus.Infof("opts.Global.XFullCommand: %s\n", cliOpts.Global.XFullCommand)
 	logrus.Infof("opts.Global.XBackend: %s\n", cliOpts.Global.XBackend)
 
-	unsetUnusedOptions(cliOpts)
+	unsetUnusedOptions(kongCtx, cliOpts)
 
 	return kongCtx, cliOpts, nil
 }
 
-func unsetUnusedOptions(opts *opts.CLIOptions) {
-	if opts == nil {
+func unsetUnusedOptions(kongCtx *kong.Context, cliOptions *opts.CLIOptions) {
+	if cliOptions == nil {
 		return
 	}
 
-	switch opts.Global.XAction {
+	switch cliOptions.Global.XAction {
 	case "read":
-		unsetUnusedReadOpts(opts)
-		opts.Write = nil
-		opts.Relay = nil
+		unsetUnusedReadOpts(kongCtx, cliOptions)
+		cliOptions.Write = nil
+		cliOptions.Relay = nil
 	case "write":
-		unsetUnusedWriteOpts(opts)
-		opts.Read = nil
-		opts.Relay = nil
+		unsetUnusedWriteOpts(cliOptions)
+		cliOptions.Read = nil
+		cliOptions.Relay = nil
 	case "relay":
-		unsetUnusedRelayOpts(opts)
-		opts.Read = nil
-		opts.Write = nil
+		unsetUnusedRelayOpts(cliOptions)
+		cliOptions.Read = nil
+		cliOptions.Write = nil
 	case "dynamic":
-		unsetUnusedDynamicOpts(opts)
+		unsetUnusedDynamicOpts(cliOptions)
 	case "batch":
-		unsetUnusedBatchOpts(opts)
+		unsetUnusedBatchOpts(cliOptions)
 	}
 }
 
-func unsetUnusedDynamicOpts(opts *opts.CLIOptions) {
+func unsetUnusedDynamicOpts(cliOptions *opts.CLIOptions) {
 	// TODO: unset unused backends
 }
 
-func unsetUnusedBatchOpts(opts *opts.CLIOptions) {
+func unsetUnusedBatchOpts(cliOptions *opts.CLIOptions) {
 	// TODO: Unset unused backends
 }
 
-func unsetUnusedReadOpts(opts *opts.CLIOptions) {
-	// TODO: Unset decode options
-	// TODO: Unset sample options
+func unsetUnusedReadOpts(kongCtx *kong.Context, cliOptions *opts.CLIOptions) {
+	if cliOptions.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_UNSET {
+		cliOptions.Read.DecodeOptions = nil
+	}
+
+	var hasSampling bool
+
+	for _, arg := range kongCtx.Args {
+		if strings.Contains(arg, "--sample") {
+			hasSampling = true
+		}
+	}
+
+	if !hasSampling {
+		cliOptions.Read.SampleOptions = nil
+	}
+
+	unsetUnusedBackends(cliOptions)
+}
+
+func unsetUnusedBackends(cliOptions *opts.CLIOptions) {
+	if cliOptions == nil || cliOptions.Global == nil {
+		return
+	}
+
+	// TODO: Implement a dynamic unset
+}
+
+func unsetUnusedWriteOpts(cliOptions *opts.CLIOptions) {
+	if cliOptions.Write.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_UNSET {
+		cliOptions.Write.EncodeOptions = nil
+	}
+
 	// TODO: Unset all unused backends
 }
 
-func unsetUnusedWriteOpts(opts *opts.CLIOptions) {
-	// TODO: Unset encode options
-	// TODO: Unset all unused backends
-}
-
-func unsetUnusedRelayOpts(opts *opts.CLIOptions) {
+func unsetUnusedRelayOpts(cliOptions *opts.CLIOptions) {
 	// TODO: Unset all unused backends
 }
 
@@ -143,7 +168,7 @@ func maybeDisplayVersion(args []string) {
 }
 
 // We have to do this in order to ensure that kong has valid destinations to
-// write opts to.
+// write cliOptions to.
 func newCLIOptions() *opts.CLIOptions {
 	return &opts.CLIOptions{
 		Global:  &opts.GlobalCLIOptions{},

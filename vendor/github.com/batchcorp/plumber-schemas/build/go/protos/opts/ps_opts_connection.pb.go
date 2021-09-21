@@ -48,7 +48,7 @@ type ConnectionOptions struct {
 	//	*ConnectionOptions_Mqtt
 	//	*ConnectionOptions_KubemqQueue
 	//	*ConnectionOptions_GcpPubsub
-	Conn IsConnectionOptions_Conn `protobuf_oneof:"conn"`
+	Conn isConnectionOptions_Conn `protobuf_oneof:"conn"`
 	// Used internally by plumber
 	XId                  string   `protobuf:"bytes,1000,opt,name=_id,json=Id,proto3" json:"_id,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
