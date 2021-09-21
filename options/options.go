@@ -12,12 +12,13 @@ import (
 	"strings"
 
 	"github.com/alecthomas/kong"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -25,7 +26,7 @@ var (
 )
 
 func New(args []string) (*kong.Context, *opts.CLIOptions, error) {
-	cliOpts := newCLIOptions()
+	cliOpts := NewCLIOptions()
 
 	maybeDisplayVersion(os.Args)
 
@@ -169,7 +170,7 @@ func maybeDisplayVersion(args []string) {
 
 // We have to do this in order to ensure that kong has valid destinations to
 // write cliOptions to.
-func newCLIOptions() *opts.CLIOptions {
+func NewCLIOptions() *opts.CLIOptions {
 	return &opts.CLIOptions{
 		Global:  &opts.GlobalCLIOptions{},
 		Server:  &opts.ServerOptions{},

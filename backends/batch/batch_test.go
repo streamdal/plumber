@@ -6,13 +6,14 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-
-	"github.com/batchcorp/plumber/config"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+
+	"github.com/batchcorp/plumber/config"
+	"github.com/batchcorp/plumber/options"
 )
 
 var logger = &logrus.Logger{Out: ioutil.Discard}
@@ -41,31 +42,7 @@ func BatchWithMockResponse(httpCode int, responseBody string) *Batch {
 	return &Batch{
 		Log:    logrus.NewEntry(logger),
 		Client: client,
-		Opts: &opts.CLIOptions{
-			Batch: &opts.BatchOptions{
-				OutputType: opts.BatchOutputType_JSON,
-				ApiUrl:     "https://localhost:8080",
-				Login:      &opts.BatchLoginOptions{},
-				Logout:     &opts.BatchLogoutOptions{},
-				List:       &opts.BatchListOptions{},
-				Create: &opts.BatchCreateOptions{
-					Collection: &opts.BatchCreateCollectionOptions{},
-					Replay:     &opts.BatchCreateReplayOptions{},
-					Destination: &opts.BatchCreateDestinationOptions{
-						Name:                "test",
-						Notes:               "test",
-						XApiDestinationType: "http",
-						Kafka:               &opts.WriteGroupKafkaOptions{},
-						Rabbit:              &opts.WriteGroupRabbitOptions{},
-						KubemqQueue:         &opts.WriteGroupKubeMQQueueOptions{},
-						Awssqs:              &opts.WriteGroupAWSSQSOptions{},
-						Http:                &opts.HTTPDestination{},
-					},
-				},
-				Search:  nil,
-				Archive: nil,
-			},
-		},
+		Opts:   options.NewCLIOptions(),
 		PersistentConfig: &config.Config{
 			Connections: make(map[string]*opts.ConnectionOptions),
 		},
