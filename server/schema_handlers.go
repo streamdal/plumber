@@ -53,7 +53,7 @@ func (s *Server) ImportGithub(ctx context.Context, req *protos.ImportGithubReque
 
 	data, err := proto.Marshal(schema)
 	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
+		return nil, CustomError(common.Code_ABORTED, "could not marshal schema")
 	}
 
 	// Save to etcd
@@ -88,7 +88,7 @@ func (s *Server) ImportLocal(ctx context.Context, req *protos.ImportLocalRequest
 
 	data, err := proto.Marshal(schema)
 	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
+		return nil, CustomError(common.Code_ABORTED, "could not marshal schema")
 	}
 
 	// Save to etcd

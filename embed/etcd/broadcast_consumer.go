@@ -78,18 +78,6 @@ func (e *Etcd) doCreateConnection(_ context.Context, msg *Message) error {
 
 	// TODO: Validate the message
 
-	// TODO: Create a backend
-
-	// TODO: What happens if a backend can't be created?
-	//  1. Need functionality for a "cluster error log" that is exposed to the desktop client
-	//  2. The error log must be global - so probably in etcd
-	//  3. How do you deal with one instance not having a backend for a connection?
-	//  	^ Figure out a way to put the plumber node in unhealthy state until
-	//        the issue is "resolved". Follow-up: how do you "resolve" the issue?
-	//        Should there be a way to "re-attempt" a connection create?
-
-	// TODO: Save in persistent config
-
 	connOpts := &opts.ConnectionOptions{}
 	if err := proto.Unmarshal(msg.Data, connOpts); err != nil {
 		return errors.Wrap(err, "unable to unmarshal message into protos.Connection")

@@ -4,18 +4,17 @@
 package config
 
 import (
-	"context"
 	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path"
 	"sync"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/pkg/errors"
 
-	"github.com/batchcorp/plumber/backends"
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+
 	stypes "github.com/batchcorp/plumber/server/types"
 )
 
@@ -31,7 +30,6 @@ type Config struct {
 	Token            string                             `json:"token"`
 	TeamID           string                             `json:"team_id"`
 	UserID           string                             `json:"user_id"`
-	Backends         map[string]backends.Backend        `json:"-"`
 	Connections      map[string]*opts.ConnectionOptions `json:"-"`
 	Relays           map[string]*stypes.Relay           `json:"-"`
 	Schemas          map[string]*protos.Schema          `json:"-"`
@@ -43,7 +41,6 @@ type Config struct {
 	ReadsMutex       *sync.RWMutex                      `json:"-"`
 	RelaysMutex      *sync.RWMutex                      `json:"-"`
 	SchemasMutex     *sync.RWMutex                      `json:"-"`
-	BackendsMutex    *sync.RWMutex                      `json:"-"`
 }
 
 // Save is a convenience method of persisting the config to disk via a single call
@@ -76,8 +73,6 @@ func ReadConfig(fileName string) (*Config, error) {
 		ReadsMutex:       &sync.RWMutex{},
 		RelaysMutex:      &sync.RWMutex{},
 		SchemasMutex:     &sync.RWMutex{},
-		BackendsMutex:    &sync.RWMutex{},
-		Backends:         make(map[string]backends.Backend),
 		Connections:      make(map[string]*opts.ConnectionOptions),
 		Relays:           make(map[string]*stypes.Relay),
 		Schemas:          make(map[string]*protos.Schema),
@@ -296,32 +291,4 @@ func (c *Config) DeleteConnection(connID string) {
 	c.ConnectionsMutex.Lock()
 	defer c.ConnectionsMutex.Unlock()
 	delete(c.Connections, connID)
-}
-
-func (c *Config) GetBackend(connID string) backends.Backend {
-	c.BackendsMutex.RUnlock()
-	defer c.BackendsMutex.RUnlock()
-
-	be, _ := c.Backends[connID]
-
-	return be
-}
-
-func (c *Config) SetBackend(connID string, be backends.Backend) {
-	c.BackendsMutex.Lock()
-	defer c.BackendsMutex.Unlock()
-	c.Backends[connID] = be
-}
-
-// DeleteBackend a backend (if it exists) and deletes the entry in the map
-func (c *Config) DeleteBackend(connID string) {
-	c.BackendsMutex.Lock()
-	defer c.BackendsMutex.Unlock()
-
-	be, ok := c.Backends[connID]
-	if ok {
-		be.Close(context.Background())
-	}
-
-	delete(c.Backends, connID)
 }

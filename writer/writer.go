@@ -6,14 +6,15 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/serializers"
 )
@@ -104,7 +105,8 @@ func generateWriteValue(data []byte, writeOpts *opts.WriteOptions, md *desc.Mess
 	}
 
 	// Input: AVRO
-	if writeOpts.EncodeOptions.AvroSettings.AvroSchemaFile != "" {
+	if writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_AVRO &&
+		writeOpts.EncodeOptions.AvroSettings.AvroSchemaFile != "" {
 		data, err := serializers.AvroEncodeWithSchemaFile(writeOpts.EncodeOptions.AvroSettings.AvroSchemaFile, data)
 		if err != nil {
 			return nil, err

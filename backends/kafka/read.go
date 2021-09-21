@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/util"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	skafka "github.com/segmentio/kafka-go"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+	"github.com/batchcorp/plumber/util"
 )
 
 const (
@@ -250,6 +251,11 @@ func (k *Kafka) performFullRead(
 		// groups are setup on initial connect.
 		msg, err := reader.ReadMessage(ctx)
 		if err != nil {
+			if err == context.Canceled {
+				// Read has been stopped in server mode, exit
+				return nil
+			}
+
 			if !readOpts.Continuous {
 				return errors.Wrap(err, "unable to read message (exiting)")
 			}

@@ -3,10 +3,11 @@ package validate
 import (
 	"net/url"
 
+	"github.com/pkg/errors"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/pkg/errors"
 )
 
 var (
@@ -21,6 +22,7 @@ var (
 
 	// Connections
 
+	ErrConnectionNotFound       = errors.New("connection not found")
 	ErrMissingConnectionOptions = errors.New("connection options cannot be nil")
 	ErrMissingConnName          = errors.New("you must provide a connection name")
 	ErrMissingConnectionType    = errors.New("you must provide at least one connection of: kafka")
@@ -62,7 +64,7 @@ func ReadOptionsForServer(readOptions *opts.ReadOptions) error {
 		return errors.Wrap(err, "unable to validate decode options")
 	}
 
-	return ErrMissingReadType
+	return nil
 }
 
 func SamplingOptionsForServer(sampleOptions *opts.ReadSampleOptions) error {

@@ -4,16 +4,18 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
-	"github.com/batchcorp/plumber/pb"
-	"github.com/batchcorp/plumber/validate"
-	"github.com/batchcorp/plumber/writer"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
+	"github.com/batchcorp/plumber/backends"
+	"github.com/batchcorp/plumber/pb"
+	"github.com/batchcorp/plumber/validate"
+	"github.com/batchcorp/plumber/writer"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 )
 
 func (s *Server) Write(ctx context.Context, req *protos.WriteRequest) (*protos.WriteResponse, error) {
@@ -25,10 +27,17 @@ func (s *Server) Write(ctx context.Context, req *protos.WriteRequest) (*protos.W
 		return nil, CustomError(common.Code_FAILED_PRECONDITION, fmt.Sprintf("unable to validate write options: %s", err))
 	}
 
-	be := s.PersistentConfig.GetBackend(req.Opts.ConnectionId)
-	if be == nil {
-		return nil, validate.ErrBackendNotFound
+	conn := s.PersistentConfig.GetConnection(req.Opts.ConnectionId)
+	if conn == nil {
+		return nil, CustomError(common.Code_NOT_FOUND, validate.ErrConnectionNotFound.Error())
 	}
+
+	be, err := backends.New(conn)
+	if err != nil {
+		return nil, CustomError(common.Code_ABORTED, fmt.Sprintf("unable to create backend: %s", err))
+	}
+
+	defer be.Close(ctx)
 
 	// We only need/want to do this once, so generate and pass to generateWriteValue
 
