@@ -5,17 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/jhump/protoreflect/desc"
-	jsoniter "github.com/json-iterator/go"
-	thrifter "github.com/thrift-iterator/go"
-	"github.com/thrift-iterator/go/general"
-
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-
 	"github.com/hokaccha/go-prettyjson"
+	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/pkg/errors"
+	thrifter "github.com/thrift-iterator/go"
+	"github.com/thrift-iterator/go/general"
 
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"

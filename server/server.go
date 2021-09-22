@@ -28,10 +28,6 @@ func (s *Server) GetServerOptions(ctx context.Context, request *protos.GetServer
 	panic("implement me")
 }
 
-func (s *Server) GetGithubEvents(request *protos.GetGithubEventsRequest, server protos.PlumberServer_GetGithubEventsServer) error {
-	panic("implement me")
-}
-
 type ErrorWrapper struct {
 	Status *common.Status
 }

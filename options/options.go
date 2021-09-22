@@ -13,7 +13,6 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
@@ -58,10 +57,6 @@ func New(args []string) (*kong.Context, *opts.CLIOptions, error) {
 			cliOpts.Global.XBackend = args[1]
 		}
 	}
-
-	logrus.Infof("opts.Global.XAction: %s\n", cliOpts.Global.XAction)
-	logrus.Infof("opts.Global.XFullCommand: %s\n", cliOpts.Global.XFullCommand)
-	logrus.Infof("opts.Global.XBackend: %s\n", cliOpts.Global.XBackend)
 
 	unsetUnusedOptions(kongCtx, cliOpts)
 

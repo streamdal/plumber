@@ -175,8 +175,8 @@ type ReadOptions struct {
 	// @gotags: kong:"-"
 	ConnectionId string `protobuf:"bytes,2,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty" kong:"-"`
 	// Required; specify if a read is continuous or not (default: false)
-	// @gotags: short:"f" default: "false"
-	Continuous bool `protobuf:"varint,3,opt,name=continuous,proto3" json:"continuous,omitempty" short:"f"`
+	// @gotags: kong:"help='Follow/read continuously',short=f"
+	Continuous bool `protobuf:"varint,3,opt,name=continuous,proto3" json:"continuous,omitempty" kong:"help='Follow/read continuously',short=f"`
 	// Optional; specify if reading should utilize sampling
 	// @gotags: kong:"embed,group=sampling"
 	SampleOptions *ReadSampleOptions `protobuf:"bytes,4,opt,name=sample_options,json=sampleOptions,proto3" json:"sample_options,omitempty" kong:"embed,group=sampling"`

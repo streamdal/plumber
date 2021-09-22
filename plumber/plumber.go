@@ -106,8 +106,6 @@ func generateConnectionOptions(cfg *opts.CLIOptions) (*opts.ConnectionOptions, e
 			cfg.Global.XBackend, err)
 	}
 
-	fmt.Printf("type: %+v\n", rvKafkaConn.Type())
-
 	conn, ok := opts.GenerateConnOpts(cfg.Global.XBackend, rvKafkaConn.Interface())
 	if !ok {
 		return nil, errors.New("unable to generate connection options via proto func")
@@ -164,9 +162,7 @@ func (p *Plumber) Run() {
 
 func GenerateMessageDescriptor(cliOpts *opts.CLIOptions) (*desc.MessageDescriptor, error) {
 	if cliOpts.Read != nil && cliOpts.Read.DecodeOptions != nil {
-		if cliOpts.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_JSONPB ||
-			cliOpts.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_PROTOBUF {
-
+		if cliOpts.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_PROTOBUF {
 			logrus.Debug("attempting to find decoding protobuf descriptors")
 
 			pbDirs := cliOpts.Read.DecodeOptions.ProtobufSettings.ProtobufDirs
