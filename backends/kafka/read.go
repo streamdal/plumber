@@ -2,119 +2,350 @@ package kafka
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"time"
 
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
+	uuid "github.com/satori/go.uuid"
+	skafka "github.com/segmentio/kafka-go"
 
-	"github.com/batchcorp/plumber/backends/kafka/types"
-	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/reader"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+	"github.com/batchcorp/plumber/util"
 )
 
-// Read is the entry point function for performing read operations in Kafka.
-//
-// This is where we verify that the provided arguments and flag combination
-// makes sense/are valid; this is also where we will perform our initial conn.
-func Read(opts *cli.Options, md *desc.MessageDescriptor) error {
-	if err := validateReadOptions(opts); err != nil {
-		return errors.Wrap(err, "unable to validate read options")
+const (
+	RetrySampledReadInterval = 10 * time.Second
+)
+
+func (k *Kafka) Read(
+	ctx context.Context,
+	readOpts *opts.ReadOptions,
+	resultsChan chan *records.ReadRecord,
+	errorChan chan *records.ErrorRecord,
+) error {
+
+	if err := validateReadOptions(readOpts); err != nil {
+		return errors.Wrap(err, "unable to validate read config")
 	}
 
-	kafkaReader, err := NewReader(opts)
-	if err != nil {
-		return errors.Wrap(err, "unable to create new reader")
+	var reader *skafka.Reader
+
+	// We only need to instantiate a reader if this is not a Lag read
+	if !readOpts.Kafka.Args.Lag {
+		var err error
+
+		reader, err = NewReaderForRead(k.dialer, k.connArgs, readOpts.Kafka.Args)
+		if err != nil {
+			return errors.Wrap(err, "unable to create new reader")
+		}
+
+		defer reader.Close()
 	}
 
-	defer kafkaReader.Conn.Close()
-	defer kafkaReader.Reader.Close()
-
-	k := &Kafka{
-		Options: opts,
-		MsgDesc: md,
-		Reader:  kafkaReader.Reader,
-		log:     logrus.WithField("pkg", "kafka/read.go"),
-	}
-
-	return k.Read()
+	return k.read(ctx, readOpts, reader, resultsChan, errorChan)
 }
 
-// Read will attempt to consume one or more messages from a given topic,
-// optionally decode it and/or convert the returned output.
-//
-// This method SHOULD be able to recover from network hiccups.
-func (k *Kafka) Read() error {
+func (k *Kafka) read(
+	ctx context.Context,
+	readOpts *opts.ReadOptions,
+	reader *skafka.Reader,
+	resultsChan chan *records.ReadRecord,
+	errorChan chan *records.ErrorRecord,
+) error {
+
 	k.log.Info("Initializing (could take a minute or two) ...")
 
-	count := 1
-	lastOffset := int64(-1)
-	lastPartitionProcessed := -1
+	var lag *Lag
 
-	var lagConn *KafkaLag
+	// In addition to instantiating Lag when the user wants to include offset
+	// info or view consumer lag, we also need to instantiate Lag to facilitate
+	// sampled reads as they require offset lookup methods.
+	if readOpts.Kafka.Args.IncludeOffsetInfo || readOpts.SampleOptions != nil || readOpts.Kafka.Args.Lag {
+		var err error
+
+		lag, err = k.NewLag(readOpts.Kafka.Args)
+		if err != nil {
+			return errors.Wrap(err, "unable to create new lag client")
+		}
+	}
+
+	var err error
+	var readType string
+
+	switch {
+	case readOpts.Kafka.Args.Lag:
+		readType = "lag"
+		err = lag.Lag(ctx, resultsChan, errorChan, DefaultLagInterval)
+	case readOpts.SampleOptions != nil:
+		readType = "sampled"
+		err = k.performSampledRead(ctx, readOpts, reader, lag, resultsChan, errorChan)
+	default:
+		readType = "regular"
+		err = k.performFullRead(ctx, readOpts, reader, lag, resultsChan, errorChan)
+	}
+
+	if err != nil {
+		return fmt.Errorf("unable to complete '%s' read: %s", readType, err)
+	}
+
+	k.log.Debug("reader exiting")
+
+	return nil
+}
+
+func (k *Kafka) performSampledRead(
+	ctx context.Context,
+	readOpts *opts.ReadOptions,
+	reader *skafka.Reader,
+	lag *Lag,
+	resultsChan chan *records.ReadRecord,
+	errorChan chan *records.ErrorRecord,
+) error {
+
+	llog := k.log.WithField("method", "performSampledRead")
+
+	if lag == nil {
+		return errors.New("lag cannot be nil with sampled reads")
+	}
+
+	topic := readOpts.Kafka.Args.Topics[0]
+
+	// TODO: This should probably be refreshed once in a while
+	partitions, err := lag.discoverPartitions(topic)
+	if err != nil {
+		return fmt.Errorf("unable to discover partitions for topic '%s': %s", topic, err)
+	}
+
+	var count int64
+	var previousLatestOffset int64
+
+	for {
+		// Get the latest offset for topic
+		currentLatestOffset, err := lag.GetAllPartitionsLastOffset(topic, partitions)
+		if err != nil {
+			util.WriteError(llog, errorChan, fmt.Errorf("unable to discover latest offset for topic '%s': %s",
+				topic, err))
+
+			if !readOpts.Continuous {
+				break
+			}
+
+			llog.Warningf("unable to fetch currentLatestOffset for topic '%s', retrying in %s", topic, RetrySampledReadInterval)
+
+			time.Sleep(RetrySampledReadInterval)
+
+			continue
+		}
+
+		// Sleep for interval
+		time.Sleep(util.DurationSec(readOpts.SampleOptions.SampleIntervalSeconds))
+
+		if previousLatestOffset == 0 {
+			previousLatestOffset = currentLatestOffset
+			continue
+		}
+
+		// previousOffset exists, determine the difference between previous and
+		// latest offsets; apply the sample rate to the difference to get the
+		// size of offset steps we'll need between every sample.
+		step := (currentLatestOffset - previousLatestOffset) / int64(readOpts.SampleOptions.SampleRate)
+
+		for offset := previousLatestOffset; offset < currentLatestOffset; offset += step {
+			llog.Debugf("attempting to set next offset at '%d' for topic '%s'", offset, topic)
+
+			// Set the offset at the correct position
+			if err := reader.SetOffset(offset); err != nil {
+				fullErr := fmt.Errorf("unable to set offset to '%d' for topic '%s': %s", offset, topic, err)
+
+				util.WriteError(llog, errorChan, fullErr)
+
+				if !readOpts.Continuous {
+					return fullErr
+				}
+
+				time.Sleep(RetrySampledReadInterval)
+
+				continue
+			}
+
+			// Attempt to read the msg at the specified offset
+			msg, err := reader.ReadMessage(ctx)
+			if err != nil {
+				util.WriteError(llog, errorChan, fmt.Errorf("unable to set offset to '%d' for topic '%s': %s",
+					offset, topic, err))
+
+				time.Sleep(RetrySampledReadInterval)
+
+				continue
+			}
+
+			receivedAt := time.Now().UTC()
+
+			metadata := make(map[string]string, 0)
+
+			if readOpts.Kafka.Args.IncludeOffsetInfo {
+				lastOffset, err := lag.GetPartitionLastOffset(msg.Topic, msg.Partition)
+				if err != nil {
+					return errors.Wrap(err, "unable to obtain lastOffset for partition")
+				}
+
+				metadata["last_offset"] = fmt.Sprint(lastOffset)
+			}
+
+			count++
+
+			serializedMsg, err := json.Marshal(msg)
+			if err != nil {
+				return errors.Wrap(err, "unable to serialize kafka message into JSON")
+			}
+
+			resultsChan <- &records.ReadRecord{
+				MessageId:           uuid.NewV4().String(),
+				Num:                 count,
+				Metadata:            metadata,
+				ReceivedAtUnixTsUtc: receivedAt.Unix(),
+				Payload:             msg.Value,
+				XRaw:                serializedMsg,
+				Record: &records.ReadRecord_Kafka{
+					Kafka: &records.Kafka{
+						Topic:     msg.Topic,
+						Key:       msg.Key,
+						Value:     msg.Value,
+						Timestamp: msg.Time.Unix(),
+						Offset:    msg.Offset,
+						Partition: int32(msg.Partition),
+						Headers:   convertKafkaHeadersToProto(msg.Headers),
+					},
+				},
+			}
+		}
+
+		if !readOpts.Continuous {
+			break
+		}
+	}
+
+	llog.Debug("performSampledRead exiting")
+
+	return nil
+}
+
+func (k *Kafka) performFullRead(
+	ctx context.Context,
+	readOpts *opts.ReadOptions,
+	reader *skafka.Reader,
+	lag *Lag,
+	resultsChan chan *records.ReadRecord,
+	errorChan chan *records.ErrorRecord,
+) error {
+
+	llog := k.log.WithField("method", "performFullRead")
+
+	var count int64
 
 	// init only one connection for partition discovery
 	for {
 		// Initial message read can take a while to occur due to how consumer
 		// groups are setup on initial connect.
-		msg, err := k.Reader.ReadMessage(context.Background())
-
+		msg, err := reader.ReadMessage(ctx)
 		if err != nil {
-			if !k.Options.ReadFollow {
-				return errors.Wrap(err, "unable to read message")
+			if err == context.Canceled {
+				// Read has been stopped in server mode, exit
+				return nil
 			}
 
-			printer.Error(fmt.Sprintf("Unable to read message: %s", err))
+			if !readOpts.Continuous {
+				return errors.Wrap(err, "unable to read message (exiting)")
+			}
+
+			util.WriteError(llog, errorChan, errors.Wrap(err, "unable to read message (continuing)"))
 			continue
 		}
 
-		data, err := reader.Decode(k.Options, k.MsgDesc, msg.Value)
+		receivedAt := time.Now().UTC()
+		metadata := make(map[string]string, 0)
 
-		if err != nil {
-			return err
-		}
-
-		if k.Options.ReadLag && msg.Partition != lastPartitionProcessed {
-
-			lastPartitionProcessed = msg.Partition
-
-			lagConn, err = NewKafkaLagConnection(k.Options)
-
-			if err != nil {
-				k.log.Debugf("Unable to connect establish a kafka lag connection: %s", err)
-				continue
-			}
-
-			lastOffset, err = lagConn.GetLastOffsetPerPartition(msg.Topic, k.Reader.Config().GroupID, msg.Partition, k.Options)
-
+		if readOpts.Kafka.Args.IncludeOffsetInfo && lag != nil {
+			lastOffset, err := lag.GetPartitionLastOffset(msg.Topic, msg.Partition)
 			if err != nil {
 				return errors.Wrap(err, "unable to obtain lastOffset for partition")
 			}
+
+			metadata["last_offset"] = fmt.Sprint(lastOffset)
 		}
 
-		offsetInfo := &types.OffsetInfo{
-			Count:      count,
-			LastOffset: lastOffset,
-		}
-
-		printer.PrintKafkaResult(k.Options, offsetInfo, msg, data)
-
-		if !k.Options.ReadFollow {
-			break
+		serializedMsg, err := json.Marshal(msg)
+		if err != nil {
+			return errors.Wrap(err, "unable to serialize kafka msg to JSON")
 		}
 
 		count++
+
+		resultsChan <- &records.ReadRecord{
+			MessageId:           uuid.NewV4().String(),
+			Num:                 count,
+			Metadata:            metadata,
+			ReceivedAtUnixTsUtc: receivedAt.Unix(),
+			Payload:             msg.Value,
+			XRaw:                serializedMsg,
+			Record: &records.ReadRecord_Kafka{
+				Kafka: &records.Kafka{
+					Topic:     msg.Topic,
+					Key:       msg.Key,
+					Value:     msg.Value,
+					Timestamp: msg.Time.Unix(),
+					Offset:    msg.Offset,
+					Partition: int32(msg.Partition),
+					Headers:   convertKafkaHeadersToProto(msg.Headers),
+				},
+			},
+		}
+
+		if !readOpts.Continuous {
+			break
+		}
 	}
 
-	k.log.Debug("Reader exiting")
+	llog.Debug("performSampledRead exiting")
 
 	return nil
 }
 
-func validateReadOptions(opts *cli.Options) error {
-	if opts.Kafka.ReadOffset < 0 {
+func validateReadOptions(readOpts *opts.ReadOptions) error {
+	if readOpts.Kafka == nil {
+		return errors.New("kafka read options cannot be nil")
+	}
+
+	if readOpts.Kafka.Args == nil {
+		return errors.New("kafka read option args cannot be nil")
+	}
+
+	if readOpts.Kafka.Args.Lag {
+		if readOpts.Kafka.Args.LagConsumerGroup == "" {
+			return errors.New("Lag consumer group must be specified if --lag is set")
+		}
+	}
+
+	if readOpts.Kafka.Args.ReadOffset < 0 {
 		return errors.New("read offset must be >= 0")
+	}
+
+	if readOpts.SampleOptions != nil {
+		if readOpts.Kafka.Args.UseConsumerGroup {
+			return errors.New("sampling cannot be enabled while consumer group usage is enabled")
+		}
+
+		if readOpts.SampleOptions.SampleRate < 1 {
+			return errors.New("sampling rate must be >0")
+		}
+
+		samplingIntervalDuration := time.Duration(readOpts.SampleOptions.SampleIntervalSeconds) * time.Second
+
+		if samplingIntervalDuration > 5*time.Minute || samplingIntervalDuration < time.Second {
+			return errors.New("sampling interval must be between 1s and 5 minutes")
+		}
 	}
 
 	return nil

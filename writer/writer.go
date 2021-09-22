@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
-	"os"
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
@@ -13,58 +12,108 @@ import (
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
 	"github.com/batchcorp/plumber/serializers"
 )
 
-func GenerateWriteValues(md *desc.MessageDescriptor, opts *cli.Options) ([][]byte, error) {
-	writeValues := make([][]byte, 0)
+// GenerateWriteValue generates a slice of WriteRecords that can be passed to
+// backends to perform a write.
+func GenerateWriteValue(writeOpts *opts.WriteOptions, md *desc.MessageDescriptor) ([]*records.WriteRecord, error) {
+	writeValues := make([]*records.WriteRecord, 0)
 
-	// File source
-	if opts.WriteInputFile != "" {
-		data, err := ioutil.ReadFile(opts.WriteInputFile)
-		if err != nil {
-			return nil, fmt.Errorf("unable to read file '%s': %s", opts.WriteInputFile, err)
-		}
+	if writeOpts == nil {
+		return nil, errors.New("write opts cannot be nil")
+	}
 
-		wv, err := generateWriteValue(data, md, opts)
+	if writeOpts.Record == nil {
+		return nil, errors.New("write opts record cannot be nil")
+	}
+
+	// Input already provided
+	if writeOpts.Record.Input != "" {
+		wv, err := generateWriteValue([]byte(writeOpts.Record.Input), writeOpts, md)
 		if err != nil {
 			return nil, err
 		}
 
-		writeValues = append(writeValues, wv)
+		writeValues = append(writeValues, &records.WriteRecord{
+			Input:         string(wv),
+			InputMetadata: writeOpts.Record.InputMetadata,
+		})
+
 		return writeValues, nil
 	}
 
-	// Stdin source
-	for _, data := range opts.WriteInputData {
-		wv, err := generateWriteValue([]byte(data), md, opts)
+	// If server, the only possible input is Record.Input
+	if writeOpts.XCliOptions == nil {
+		return nil, errors.New("no input found - unable to generate write value")
+	}
+
+	// File source
+	if writeOpts.XCliOptions.InputFile != "" {
+		data, err := ioutil.ReadFile(writeOpts.XCliOptions.InputFile)
+		if err != nil {
+			return nil, fmt.Errorf("unable to read file '%s': %s", writeOpts.XCliOptions.InputFile, err)
+		}
+
+		wv, err := generateWriteValue(data, writeOpts, md)
 		if err != nil {
 			return nil, err
 		}
 
-		writeValues = append(writeValues, wv)
+		writeValues = append(writeValues, &records.WriteRecord{
+			Input:         string(wv),
+			InputMetadata: writeOpts.Record.InputMetadata,
+		})
+
+		return writeValues, nil
+	}
+
+	// TODO: This is kind of lame - stdin should probably just go straight into
+	// WriteOpts.Record.Input (and make Input into repeated string)
+
+	// Stdin source
+	for _, data := range writeOpts.XCliOptions.InputStdin {
+		wv, err := generateWriteValue([]byte(data), writeOpts, md)
+		if err != nil {
+			return nil, err
+		}
+
+		writeValues = append(writeValues, &records.WriteRecord{
+			Input:         string(wv),
+			InputMetadata: writeOpts.Record.InputMetadata,
+		})
+	}
+
+	if len(writeValues) == 0 {
+		return nil, errors.New("exhausted all input sources - no input found")
 	}
 
 	return writeValues, nil
 }
 
 // generateWriteValue will transform input data into the required format for transmission
-func generateWriteValue(data []byte, md *desc.MessageDescriptor, opts *cli.Options) ([]byte, error) {
-	// Ensure we do not try to operate on a nil md
-	if opts.WriteInputFile == "jsonpb" && md == nil {
-		return nil, errors.New("message descriptor cannot be nil when --input-type is jsonpb")
+func generateWriteValue(data []byte, writeOpts *opts.WriteOptions, md *desc.MessageDescriptor) ([]byte, error) {
+	// Input: Plain / unset
+	if writeOpts.EncodeOptions == nil ||
+		writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_UNSET {
+
+		return data, nil
 	}
 
-	// Handle AVRO
-	if opts.AvroSchemaFile != "" {
-		data, err := serializers.AvroEncodeWithSchemaFile(opts.AvroSchemaFile, data)
+	// Input: AVRO
+	if writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_AVRO &&
+		writeOpts.EncodeOptions.AvroSettings.AvroSchemaFile != "" {
+		data, err := serializers.AvroEncodeWithSchemaFile(writeOpts.EncodeOptions.AvroSettings.AvroSchemaFile, data)
 		if err != nil {
 			return nil, err
 		}
 
 		// Since AWS SQS works with strings only, we must convert it to base64
-		if opts.AWSSQS.QueueName != "" {
+		if writeOpts.Awssqs != nil && writeOpts.Awssqs.Args.QueueName != "" {
 			encoded := base64.StdEncoding.EncodeToString(data)
 			return []byte(encoded), nil
 		}
@@ -72,14 +121,13 @@ func generateWriteValue(data []byte, md *desc.MessageDescriptor, opts *cli.Optio
 		return data, nil
 	}
 
-	// Input: Plain Output: Plain
-	if opts.WriteInputType == "plain" {
-		return data, nil
-	}
-
-	// Input: JSONPB Output: Protobuf
-	if opts.WriteInputType == "jsonpb" {
+	// Input: JSONPB
+	if writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_JSONPB {
 		var convertErr error
+
+		if md == nil {
+			return nil, errors.New("message descriptor cannot be nil")
+		}
 
 		data, convertErr = ConvertJSONPBToProtobuf(data, dynamic.NewMessage(md))
 		if convertErr != nil {
@@ -87,7 +135,7 @@ func generateWriteValue(data []byte, md *desc.MessageDescriptor, opts *cli.Optio
 		}
 
 		// Since AWS SQS works with strings only, we must convert it to base64
-		if opts.AWSSQS.QueueName != "" {
+		if writeOpts.Awssqs != nil && writeOpts.Awssqs.Args.QueueName != "" {
 			encoded := base64.StdEncoding.EncodeToString(data)
 			return []byte(encoded), nil
 		}
@@ -95,33 +143,6 @@ func generateWriteValue(data []byte, md *desc.MessageDescriptor, opts *cli.Optio
 	}
 
 	return nil, errors.New("unsupported --input-type")
-}
-
-// ValidateWriteOptions ensures that the correct flags and their values have been provided.
-// Backends which require additional bus specific validation can pass them in via a closure
-func ValidateWriteOptions(opts *cli.Options, busSpecific func(options *cli.Options) error) error {
-	if busSpecific != nil {
-		if err := busSpecific(opts); err != nil {
-			return err
-		}
-	}
-
-	if len(opts.WriteInputData) == 0 && opts.WriteInputFile == "" {
-		return errors.New("either --input-data or --input-file must be specified")
-	}
-
-	// InputData and file cannot be set at the same time
-	if len(opts.WriteInputData) > 0 && opts.WriteInputFile != "" {
-		return fmt.Errorf("--input-data and --input-file cannot both be set")
-	}
-
-	if opts.WriteInputFile != "" {
-		if _, err := os.Stat(opts.WriteInputFile); os.IsNotExist(err) {
-			return fmt.Errorf("--file '%s' does not exist", opts.WriteInputFile)
-		}
-	}
-
-	return nil
 }
 
 // ConvertJSONPBToProtobuf converts input data from jsonpb -> protobuf -> bytes

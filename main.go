@@ -11,13 +11,13 @@ import (
 	"syscall"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
-
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/ssh/terminal"
 
-	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/config"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/plumber"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/server/types"
@@ -25,34 +25,35 @@ import (
 )
 
 func main() {
-	cmd, opts, err := cli.Handle(os.Args[1:])
+	kongCtx, cliOpts, err := options.New(os.Args[1:])
 	if err != nil {
 		logrus.Fatalf("Unable to handle CLI input: %s", err)
 	}
 
-	readFromStdin(opts)
+	// TODO: STDIN write should be continuous; punting for now.
+	readFromStdin(cliOpts)
 
-	if opts.Debug {
+	switch {
+	case cliOpts.Global.Debug:
 		logrus.SetLevel(logrus.DebugLevel)
-	}
-
-	if opts.Quiet {
+	case cliOpts.Global.Quiet:
 		logrus.SetLevel(logrus.ErrorLevel)
 	}
 
 	serviceCtx, serviceShutdownFunc := context.WithCancel(context.Background())
 	mainCtx, mainShutdownFunc := context.WithCancel(context.Background())
 
-	// We only want to intercept these in relay or serve mode
-	if strings.HasPrefix(cmd, "relay") || strings.HasPrefix(cmd, "serve") {
+	// We only want to intercept interrupt signals in relay or server mode
+	if cliOpts.Global.XAction == "relay" || cliOpts.Global.XAction == "server" {
 		logrus.Debug("Intercepting signals")
+
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)
 		signal.Notify(c, syscall.SIGTERM)
 
 		go func() {
-			signal := <-c
-			logrus.Debugf("Received system call: %+v", signal)
+			sig := <-c
+			logrus.Debugf("Received system call: %+v", sig)
 
 			serviceShutdownFunc()
 		}()
@@ -61,12 +62,15 @@ func main() {
 		stats.InitPrometheusMetrics()
 	}
 
-	if opts.Stats {
-		stats.Start(opts.StatsReportInterval)
+	// Launch a dedicated goroutine if stats display is enabled
+	if cliOpts.Read != nil && cliOpts.Read.XCliOptions != nil {
+		if cliOpts.Read.XCliOptions.StatsEnable {
+			stats.Start(cliOpts.Read.XCliOptions.StatsReportIntervalSec)
+		}
 	}
 
-	// In container mode, force JSON and don't print logo
-	if !terminal.IsTerminal(int(os.Stderr.Fd())) || opts.Batch.OutputType == "json" {
+	// Force JSON and don't print logo when NOT in terminal (ie. in container, detached)
+	if !terminal.IsTerminal(int(os.Stderr.Fd())) {
 		logrus.SetFormatter(&logrus.JSONFormatter{})
 	} else {
 		printer.PrintLogo()
@@ -77,8 +81,8 @@ func main() {
 		ServiceShutdownCtx: serviceCtx,
 		MainShutdownFunc:   mainShutdownFunc,
 		MainShutdownCtx:    mainCtx,
-		Cmd:                cmd,
-		Options:            opts,
+		KongCtx:            kongCtx,
+		CLIOptions:         cliOpts,
 	})
 
 	if err != nil {
@@ -89,7 +93,7 @@ func main() {
 }
 
 // readFromStdin reads data piped into stdin
-func readFromStdin(opts *cli.Options) {
+func readFromStdin(opts *opts.CLIOptions) {
 	info, err := os.Stdin.Stat()
 	if err != nil {
 		logrus.Fatal(err)
@@ -111,18 +115,19 @@ func readFromStdin(opts *cli.Options) {
 	}
 
 	// Treat input as a JSON array
-	if opts.WriteInputIsJsonArray {
-		opts.WriteInputData = convertJSONInput(inputData[0])
+	if opts.Write.XCliOptions.InputAsJsonArray {
+		opts.Write.XCliOptions.InputStdin = convertJSONInput(inputData[0])
 		return
 	}
 
 	// Treat input as new object on each line
-	opts.WriteInputData = inputData
+	opts.Write.XCliOptions.InputStdin = inputData
 }
 
 // convertJSONInput converts a JSON array to a slice of strings for the writer to consume
 func convertJSONInput(value string) []string {
 	inputData := make([]string, 0)
+
 	jsonArray := gjson.Parse(value)
 	if !jsonArray.IsArray() {
 		logrus.Fatal("--json-array option was passed, but input data is not a valid JSON array")
@@ -151,7 +156,7 @@ func getConfig() *config.Config {
 
 	if cfg == nil {
 		cfg = &config.Config{
-			Connections:      make(map[string]*protos.Connection),
+			Connections:      make(map[string]*opts.ConnectionOptions),
 			Relays:           make(map[string]*types.Relay),
 			Schemas:          make(map[string]*protos.Schema),
 			Services:         make(map[string]*protos.Service),

@@ -2,90 +2,133 @@ package kafka
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"strings"
+	"time"
 
-	"github.com/batchcorp/plumber/cli"
-	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+	"github.com/batchcorp/plumber/util"
 	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
 	skafka "github.com/segmentio/kafka-go"
+	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber/types"
 )
 
-// validate cli options and init connection
-func Lag(opts *cli.Options) error {
-	if err := validateLagOptions(opts); err != nil {
-		return errors.Wrap(err, "unable to validate read options")
-	}
+const (
+	DefaultLagInterval = 5 * time.Second
+)
 
-	kafkaLag, err := NewKafkaLagConnection(opts)
-
-	if err != nil {
-		return errors.Wrap(err, "unable to create connection")
-	}
-
-	for _, v := range kafkaLag.partitionDiscoverConn {
-		defer v.Close()
-	}
-
-	groupId := opts.Kafka.GroupID
-
-	return kafkaLag.LagCalculationForConsumerGroup(groupId, opts)
+type Lag struct {
+	dialer   *skafka.Dialer
+	conns    map[string]*skafka.Conn // Conns for each topic
+	readArgs *args.KafkaReadArgs
+	connArgs *args.KafkaConn
+	log      *logrus.Entry
+	ctx      context.Context
 }
 
-// calculate lag with a given connection
-func (kLag *KafkaLag) LagCalculationForConsumerGroup(groupId string, opts *cli.Options) error {
-
-	topicPartionMap := make(map[string][]skafka.Partition)
-
-	for tp, kc := range kLag.partitionDiscoverConn {
-
-		partitionList, err := kc.ReadPartitions(tp)
-
-		if err != nil {
-			return errors.Wrap(err, "unable to obtain partitions")
-		}
-
-		topicPartionMap[tp] = partitionList
+// NewLag creates a lag instance but does not perform any lag operations
+func (k *Kafka) NewLag(readArgs *args.KafkaReadArgs) (*Lag, error) {
+	if err := validateReadArgsForLag(readArgs); err != nil {
+		return nil, errors.Wrap(err, "unable to validate read options for lag")
 	}
 
-	// calculate and print lag
-	var sb strings.Builder
+	conns, err := ConnectAllTopics(k.dialer, k.connArgs, readArgs.Topics)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create initial connections")
+	}
 
-	for tpKey, partValue := range topicPartionMap {
+	return &Lag{
+		dialer:   k.dialer,
+		conns:    conns,
+		connArgs: k.connArgs,
+		readArgs: readArgs,
+		log:      logrus.WithField("pkg", "kafka/lag"),
+	}, nil
+}
 
-		for _, part := range partValue {
+func validateReadArgs(readArgs *args.KafkaReadArgs) error {
+	if readArgs == nil {
+		return errors.New("read args cannot be nil")
+	}
 
-			lagPerPartition, err := kLag.LagCalculationPerPartition(tpKey, groupId, part.ID, opts)
-			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("unable to calculate lag for partition %v", part))
-			}
-
-			sb.WriteString(fmt.Sprintf("Lag in partition %v is <%v messages> for consumer with group-id \"%s\" \n", part.ID, lagPerPartition, groupId))
-		}
-
-		printer.Print(sb.String())
-
+	if len(readArgs.Topics) == 0 {
+		return errors.New("at least one topic must be set")
 	}
 
 	return nil
-
 }
 
-func discoverPartitions(topic string, partDiscoverConn *skafka.Conn, opts *cli.Options) ([]skafka.Partition, error) {
-
-	partitions, err := partDiscoverConn.ReadPartitions(topic)
-
-	if err != nil {
-		return nil, errors.Wrap(err, "Failed to get partition list")
+func validateReadArgsForLag(readArgs *args.KafkaReadArgs) error {
+	if err := validateReadArgs(readArgs); err != nil {
+		return errors.Wrap(err, "unable to complete base read args validation")
 	}
 
-	return partitions, nil
+	if readArgs.Lag && readArgs.LagConsumerGroup == "" {
+		return errors.New("must include lag consumer group if --lag is specified")
+	}
+
+	return nil
 }
 
-func (kLag *KafkaLag) GetLastOffsetPerPartition(topic string, groupId string, part int, opts *cli.Options) (int64, error) {
+// Lag fetches topic stats on the given interval and returns them over the
+// resultsChan. This is a blocking call.
+func (l *Lag) Lag(
+	ctx context.Context,
+	resultsCh chan *records.ReadRecord,
+	errorCh chan *records.ErrorRecord,
+	interval time.Duration,
+) error {
+	t := time.NewTicker(interval)
 
-	partitions, err := discoverPartitions(topic, kLag.partitionDiscoverConn[topic], opts)
+	// This metadata is used by kafka's DisplayMessage to determine that the
+	// record contains lag info instead of a regular payload.
+	metadata := map[string]string{
+		"lag": "true",
+	}
 
+MAIN:
+	for {
+		select {
+		case <-ctx.Done():
+			l.log.Warn("context cancelled")
+			break MAIN
+		case <-t.C:
+			topicStats, err := l.getConsumerGroupLag(ctx)
+			if err != nil {
+				util.WriteError(l.log, errorCh, errors.Wrap(err, "unable to get consumer lag"))
+
+				continue MAIN
+			}
+
+			topicStatsJSON, err := json.Marshal(topicStats)
+			if err != nil {
+				util.WriteError(l.log, errorCh, errors.Wrap(err, "unable to marshal topic stats to JSON"))
+
+				continue MAIN
+			}
+
+			resultsCh <- &records.ReadRecord{
+				MessageId:           uuid.NewV4().String(),
+				Metadata:            metadata,
+				ReceivedAtUnixTsUtc: time.Now().UTC().Unix(),
+				XRaw:                topicStatsJSON,
+			}
+		}
+	}
+
+	l.log.Debug("exiting")
+
+	return nil
+}
+
+// GetPartitionLastOffset - gets the last offset for a given partition. It is
+// used by both Read() and Lag() to display offset stats and/or calculate lag.
+func (l *Lag) GetPartitionLastOffset(topic string, part int) (int64, error) {
+	partitions, err := l.discoverPartitions(topic)
 	if err != nil {
 		return -1, errors.Wrapf(err, "unable to discover partitions")
 	}
@@ -94,10 +137,12 @@ func (kLag *KafkaLag) GetLastOffsetPerPartition(topic string, groupId string, pa
 
 	for _, pt := range partitions {
 		if pt.ID == part {
-			partConn, err = newConnectionPerPartition(topic, pt.ID, opts)
+			partConn, err = connect(l.dialer, l.connArgs, topic, pt.ID)
 			if err != nil {
-				return -1, errors.Wrap(err, "Unable establish a connection to the partition")
+				return -1, errors.Wrap(err, "unable establish a connection to the partition")
 			}
+
+			break
 		}
 	}
 
@@ -107,58 +152,136 @@ func (kLag *KafkaLag) GetLastOffsetPerPartition(topic string, groupId string, pa
 
 	defer partConn.Close()
 
-	_, lastOffet, err := partConn.ReadOffsets()
+	_, lastOffset, err := partConn.ReadOffsets()
+	if err != nil {
+		return -1, fmt.Errorf("unable to read offsets for partition '%d': %s", part, err)
+	}
 
-	return lastOffet, err
+	return lastOffset, nil
 }
 
-// create new connection per topic and address
-func (kLag *KafkaLag) LagCalculationPerPartition(topic string, groupId string, part int, opts *cli.Options) (int64, error) {
+// GetAllPartitionsLastOffset finds the MAX lastOffset across given partitions
+// and topic.
+func (l *Lag) GetAllPartitionsLastOffset(topic string, partitions []skafka.Partition) (int64, error) {
+	lastOffsets := make([]int64, 0)
+
+	for _, v := range partitions {
+		conn, err := connect(l.dialer, l.connArgs, topic, v.ID)
+		if err != nil {
+			return 0, fmt.Errorf("unable to create leader connection for topic '%s', partition ID '%d': %s",
+				topic, v.ID, err)
+		}
+
+		_, lastOffset, err := conn.ReadOffsets()
+		if err != nil {
+			return 0, fmt.Errorf("unable to read offset for topic '%s', partition ID '%d': %s",
+				topic, v.ID, err)
+		}
+
+		lastOffsets = append(lastOffsets, lastOffset)
+	}
+
+	var maxOffset int64
+
+	for _, offset := range lastOffsets {
+		if offset > maxOffset {
+			maxOffset = offset
+		}
+	}
+
+	return maxOffset, nil
+}
+
+func (l *Lag) getConsumerGroupLag(ctx context.Context) ([]*types.TopicStats, error) {
+	topicPartitionMap := make(map[string][]skafka.Partition)
+
+	// Build partition list for _all_ topics
+	for _, topic := range l.readArgs.Topics {
+		partitionList, err := l.discoverPartitions(topic)
+		if err != nil {
+			return nil, fmt.Errorf("unable to discover partition list for topic '%s': %s", topic, err)
+		}
+
+		topicPartitionMap[topic] = partitionList
+	}
+
+	topicStats := make([]*types.TopicStats, 0)
+
+	for tpKey, partValue := range topicPartitionMap {
+		partitionStats := make(map[int]*types.PartitionStats, 0)
+
+		for _, part := range partValue {
+			lagPerPartition, err := l.getPartitionLag(ctx, tpKey, l.readArgs.LagConsumerGroup, part.ID)
+			if err != nil {
+				return nil, fmt.Errorf("unable to get per-partition lag for topic '%s', partition '%d': %s",
+					tpKey, part.ID, err)
+			}
+
+			partitionStats[part.ID] = &types.PartitionStats{
+				MessagesBehind: lagPerPartition,
+			}
+		}
+
+		topicStats = append(topicStats, &types.TopicStats{
+			TopicName:  tpKey,
+			GroupID:    l.readArgs.LagConsumerGroup,
+			Partitions: partitionStats,
+		})
+	}
+
+	return topicStats, nil
+}
+
+// discoverPartitions returns a list of partitions for a specific topic. It is
+// used by Read() to display offset stats.
+func (l *Lag) discoverPartitions(topic string) ([]skafka.Partition, error) {
+	conn, ok := l.conns[topic]
+	if !ok {
+		return nil, fmt.Errorf("unable to lookup connection for topic '%s'", topic)
+	}
+
+	partitions, err := conn.ReadPartitions(topic)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get partition list")
+	}
+
+	return partitions, nil
+}
+
+// getPartitionLag fetches the lag for a given topic and partition.
+func (l *Lag) getPartitionLag(ctx context.Context, topic string, groupId string, part int) (int64, error) {
+	if _, ok := l.conns[topic]; !ok {
+		return -1, fmt.Errorf("topic '%s' does not exist in conn map", topic)
+	}
+
+	remoteAddr := l.conns[topic].RemoteAddr()
 
 	// get last offset per partition
+	lastOffset, err := l.GetPartitionLastOffset(topic, part)
 
-	lastOffset, err := kLag.GetLastOffsetPerPartition(topic, groupId, part, opts)
+	// obtain last committed offset for a given partition and consumer group
+	kafkaClient := &skafka.Client{Addr: remoteAddr}
 
-	// obtain last commited offset for a given partition and consumer group
-
-	kcli := &skafka.Client{Addr: kLag.partitionDiscoverConn[topic].RemoteAddr()}
-
-	offsetResponse, err := kcli.OffsetFetch(context.Background(), &skafka.OffsetFetchRequest{
-		Addr:    kLag.partitionDiscoverConn[topic].RemoteAddr(),
+	offsetResponse, err := kafkaClient.OffsetFetch(ctx, &skafka.OffsetFetchRequest{
+		Addr:    remoteAddr,
 		GroupID: groupId,
 		Topics:  map[string][]int{topic: {part}},
 	})
 
 	if err != nil {
-		return -1, errors.Wrap(err, "Unable to obtain last commited offset per partition")
+		return -1, errors.Wrap(err, "Unable to obtain last committed offset per partition")
 	}
 
-	var lastCommitedOffset int64
+	var lastCommittedOffset int64
 
 	for _, v := range offsetResponse.Topics[topic] {
 		if v.Partition == part {
-			lastCommitedOffset = v.CommittedOffset
+			lastCommittedOffset = v.CommittedOffset
 			break
 		}
 	}
 
-	lagInPartition := lastOffset - lastCommitedOffset
+	lagInPartition := lastOffset - lastCommittedOffset
 
 	return lagInPartition, nil
-
-}
-
-func validateLagOptions(opts *cli.Options) error {
-
-	if len(opts.Kafka.Brokers) == 0 {
-		return errors.New("no broker address available")
-
-	}
-
-	if len(opts.Kafka.Topics) == 0 {
-		return errors.New("no topic available in options")
-
-	}
-
-	return nil
 }

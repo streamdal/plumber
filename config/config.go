@@ -1,3 +1,6 @@
+// Package config is used for storing and manipulating (server) state in plumber.
+// There should be, at most, a single instance of the plumber config that is
+// passed around between various components.
 package config
 
 import (
@@ -7,11 +10,12 @@ import (
 	"path"
 	"sync"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos"
-
 	"github.com/pkg/errors"
 
-	"github.com/batchcorp/plumber/server/types"
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+
+	stypes "github.com/batchcorp/plumber/server/types"
 )
 
 type IConfig interface {
@@ -22,21 +26,21 @@ type IConfig interface {
 
 // Config stores Account IDs and the auth_token cookie
 type Config struct {
-	PlumberID        string                        `json:"plumber_id"`
-	Token            string                        `json:"token"`
-	TeamID           string                        `json:"team_id"`
-	UserID           string                        `json:"user_id"`
-	Connections      map[string]*protos.Connection `json:"-"`
-	Relays           map[string]*types.Relay       `json:"-"`
-	Schemas          map[string]*protos.Schema     `json:"-"`
-	Services         map[string]*protos.Service    `json:"-"`
-	Reads            map[string]*types.Read        `json:"-"`
-	GitHubToken      string                        `json:"github_bearer_token"`
-	ConnectionsMutex *sync.RWMutex                 `json:"-"`
-	ServicesMutex    *sync.RWMutex                 `json:"-"`
-	ReadsMutex       *sync.RWMutex                 `json:"-"`
-	RelaysMutex      *sync.RWMutex                 `json:"-"`
-	SchemasMutex     *sync.RWMutex                 `json:"-"`
+	PlumberID        string                             `json:"plumber_id"`
+	Token            string                             `json:"token"`
+	TeamID           string                             `json:"team_id"`
+	UserID           string                             `json:"user_id"`
+	Connections      map[string]*opts.ConnectionOptions `json:"-"`
+	Relays           map[string]*stypes.Relay           `json:"-"`
+	Schemas          map[string]*protos.Schema          `json:"-"`
+	Services         map[string]*protos.Service         `json:"-"`
+	Reads            map[string]*stypes.Read            `json:"-"`
+	GitHubToken      string                             `json:"github_bearer_token"`
+	ConnectionsMutex *sync.RWMutex                      `json:"-"`
+	ServicesMutex    *sync.RWMutex                      `json:"-"`
+	ReadsMutex       *sync.RWMutex                      `json:"-"`
+	RelaysMutex      *sync.RWMutex                      `json:"-"`
+	SchemasMutex     *sync.RWMutex                      `json:"-"`
 }
 
 // Save is a convenience method of persisting the config to disk via a single call
@@ -69,11 +73,11 @@ func ReadConfig(fileName string) (*Config, error) {
 		ReadsMutex:       &sync.RWMutex{},
 		RelaysMutex:      &sync.RWMutex{},
 		SchemasMutex:     &sync.RWMutex{},
-		Connections:      make(map[string]*protos.Connection),
-		Relays:           make(map[string]*types.Relay),
+		Connections:      make(map[string]*opts.ConnectionOptions),
+		Relays:           make(map[string]*stypes.Relay),
 		Schemas:          make(map[string]*protos.Schema),
 		Services:         make(map[string]*protos.Service),
-		Reads:            make(map[string]*types.Read),
+		Reads:            make(map[string]*stypes.Read),
 	}
 	if err := json.Unmarshal(data, cfg); err != nil {
 		return nil, errors.Wrapf(err, "could not unmarshal ~/.batchsh/%s", fileName)
@@ -139,7 +143,7 @@ func getConfigJson(fileName string) (*os.File, error) {
 		f.WriteString("{}")
 	}
 
-	// Config exists, open it
+	// ReadOptions exists, open it
 	return os.Open(configPath)
 }
 
@@ -169,7 +173,7 @@ func createConfigDir() error {
 }
 
 // GetRead returns an in-progress read from the Read map
-func (c *Config) GetRead(readID string) *types.Read {
+func (c *Config) GetRead(readID string) *stypes.Read {
 	c.ReadsMutex.RLock()
 	defer c.ReadsMutex.RUnlock()
 
@@ -179,7 +183,7 @@ func (c *Config) GetRead(readID string) *types.Read {
 }
 
 // SetRead adds an in-progress read to the Read map
-func (c *Config) SetRead(readID string, read *types.Read) {
+func (c *Config) SetRead(readID string, read *stypes.Read) {
 	c.ReadsMutex.Lock()
 	defer c.ReadsMutex.Unlock()
 
@@ -194,7 +198,7 @@ func (c *Config) DeleteRead(readID string) {
 }
 
 // GetRelay returns a relay from the in-memory map
-func (c *Config) GetRelay(relayID string) *types.Relay {
+func (c *Config) GetRelay(relayID string) *stypes.Relay {
 	c.RelaysMutex.RLock()
 	defer c.RelaysMutex.RUnlock()
 
@@ -204,7 +208,7 @@ func (c *Config) GetRelay(relayID string) *types.Relay {
 }
 
 // SetRelay saves a relay to in-memory map
-func (c *Config) SetRelay(relayID string, relay *types.Relay) {
+func (c *Config) SetRelay(relayID string, relay *stypes.Relay) {
 	c.RelaysMutex.Lock()
 	c.Relays[relayID] = relay
 	c.RelaysMutex.Unlock()
@@ -266,7 +270,7 @@ func (c *Config) DeleteSchema(schemaID string) {
 }
 
 // GetConnection retrieves a connection from in-memory map
-func (c *Config) GetConnection(connID string) *protos.Connection {
+func (c *Config) GetConnection(connID string) *opts.ConnectionOptions {
 	c.ConnectionsMutex.RLock()
 	defer c.ConnectionsMutex.RUnlock()
 
@@ -276,7 +280,7 @@ func (c *Config) GetConnection(connID string) *protos.Connection {
 }
 
 // SetConnection saves a connection to in-memory map
-func (c *Config) SetConnection(connID string, conn *protos.Connection) {
+func (c *Config) SetConnection(connID string, conn *opts.ConnectionOptions) {
 	c.ConnectionsMutex.Lock()
 	defer c.ConnectionsMutex.Unlock()
 	c.Connections[connID] = conn

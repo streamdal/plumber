@@ -112,7 +112,7 @@ func (b *Batch) ArchiveReplay() error {
 }
 
 func (b *Batch) archiveReplay() error {
-	res, code, err := b.Delete("/v1/replay/" + b.Opts.Batch.ReplayID)
+	res, code, err := b.Delete("/v1/replay/" + b.Opts.Batch.Archive.Replay.ReplayId)
 	if err != nil {
 		return errors.Wrap(err, errReplayArchiveFailed.Error())
 	}
@@ -148,11 +148,11 @@ func (b *Batch) resumeReplay() error {
 
 func (b *Batch) createReplay(query string) (*Replay, error) {
 	p := map[string]interface{}{
-		"name":           b.Opts.Batch.ReplayName,
-		"type":           b.Opts.Batch.ReplayType,
+		"name":           b.Opts.Batch.Create.Replay.Name,
+		"type":           b.Opts.Batch.Create.Replay.Type, // TODO: This is probably incorrect (why? ~ds)
 		"query":          query,
-		"collection_id":  b.Opts.Batch.CollectionID,
-		"destination_id": b.Opts.Batch.DestinationID,
+		"collection_id":  b.Opts.Batch.Create.Replay.CollectionId,
+		"destination_id": b.Opts.Batch.Create.Replay.DestinationId,
 	}
 
 	res, code, err := b.Post("/v1/replay", p)
@@ -199,19 +199,19 @@ func (b *Batch) CreateReplay() error {
 }
 
 func (b *Batch) generateReplayQuery() (string, error) {
-	from, err := time.Parse("2006-01-02T15:04:05Z", b.Opts.Batch.ReplayFrom)
+	from, err := time.Parse("2006-01-02T15:04:05Z", b.Opts.Batch.Create.Replay.FromTimestamp)
 	if err != nil {
-		return "", fmt.Errorf("--from-timestamp '%s' is not a valid RFC3339 date", b.Opts.Batch.ReplayFrom)
+		return "", fmt.Errorf("--from-timestamp '%s' is not a valid RFC3339 date", b.Opts.Batch.Create.Replay.FromTimestamp)
 	}
 
-	to, err := time.Parse("2006-01-02T15:04:05Z", b.Opts.Batch.ReplayTo)
+	to, err := time.Parse("2006-01-02T15:04:05Z", b.Opts.Batch.Create.Replay.ToTimestamp)
 	if err != nil {
-		return "", fmt.Errorf("--to-timestamp '%s' is not a valid RFC3339 date", b.Opts.Batch.ReplayTo)
+		return "", fmt.Errorf("--to-timestamp '%s' is not a valid RFC3339 date", b.Opts.Batch.Create.Replay.ToTimestamp)
 	}
 
-	if b.Opts.Batch.Query == "*" {
+	if b.Opts.Batch.Create.Replay.Query == "*" {
 		return fmt.Sprintf("batch.info.date_human: [%s TO %s]", from.Format(time.RFC3339), to.Format(time.RFC3339)), nil
 	}
 
-	return fmt.Sprintf("%s AND batch.info.date_human: [%s TO %s]", b.Opts.Batch.Query, from.Format(time.RFC3339), to.Format(time.RFC3339)), nil
+	return fmt.Sprintf("%s AND batch.info.date_human: [%s TO %s]", b.Opts.Batch.Create.Replay.Query, from.Format(time.RFC3339), to.Format(time.RFC3339)), nil
 }

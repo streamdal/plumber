@@ -7,9 +7,28 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
+
+func DurationSec(durationSec interface{}) time.Duration {
+	if v, ok := durationSec.(int32); ok {
+		return time.Duration(v) * time.Second
+	}
+
+	if v, ok := durationSec.(int64); ok {
+		return time.Duration(v) * time.Second
+	}
+
+	if v, ok := durationSec.(int); ok {
+		return time.Duration(v) * time.Second
+	}
+
+	return 0
+}
 
 // Gunzip decompresses a slice of bytes and returns a slice of decompressed
 // bytes or an error.
@@ -46,4 +65,21 @@ func DirsExist(dirs []string) error {
 	}
 
 	return errors.New(strings.Join(errs, "; "))
+}
+
+// WriteError is a wrapper for logging an error + writing to an error channel.
+// Both the logger and error channel can be nil.
+func WriteError(l *logrus.Entry, errorCh chan *records.ErrorRecord, err error) {
+	if l != nil {
+		l.Error(err)
+	}
+
+	if errorCh != nil {
+		go func() {
+			errorCh <- &records.ErrorRecord{
+				OccurredAtUnixTsUtc: time.Now().UTC().UnixNano(),
+				Error:               err.Error(),
+			}
+		}()
+	}
 }

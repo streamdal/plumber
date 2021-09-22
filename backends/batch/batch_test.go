@@ -6,14 +6,14 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos"
-	"github.com/batchcorp/plumber/config"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/cli"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+
+	"github.com/batchcorp/plumber/config"
+	"github.com/batchcorp/plumber/options"
 )
 
 var logger = &logrus.Logger{Out: ioutil.Discard}
@@ -42,11 +42,9 @@ func BatchWithMockResponse(httpCode int, responseBody string) *Batch {
 	return &Batch{
 		Log:    logrus.NewEntry(logger),
 		Client: client,
-		Opts: &cli.Options{
-			Batch: &cli.BatchOptions{},
-		},
+		Opts:   options.NewCLIOptions(),
 		PersistentConfig: &config.Config{
-			Connections: make(map[string]*protos.Connection),
+			Connections: make(map[string]*opts.ConnectionOptions),
 		},
 	}
 }
@@ -54,7 +52,7 @@ func BatchWithMockResponse(httpCode int, responseBody string) *Batch {
 var _ = Describe("Batch", func() {
 	Context("New", func() {
 		It("returns a new instance of Batch struct", func() {
-			b := New(&cli.Options{Batch: &cli.BatchOptions{}}, &config.Config{})
+			b := New(&opts.CLIOptions{Batch: &opts.BatchOptions{}}, &config.Config{})
 			Expect(b).To(BeAssignableToTypeOf(&Batch{}))
 		})
 	})

@@ -564,7 +564,7 @@ var _ = Describe("Functional", func() {
 
 					writeGot := string(writeOut[:])
 
-					writeWant := fmt.Sprintf("Successfully wrote message to AWS queue '%s'", queueName)
+					writeWant := "Successfully wrote '1' message(s) to 'aws-sqs'"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
 					// Now try and read from the SQS queue
@@ -601,7 +601,7 @@ var _ = Describe("Functional", func() {
 					Expect(err).ToNot(HaveOccurred())
 
 					writeGot := string(writeOut[:])
-					writeWant := fmt.Sprintf("Successfully wrote message to AWS queue '%s'", queueName)
+					writeWant := "Successfully wrote '1' message(s) to 'aws-sqs'"
 
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
@@ -642,7 +642,7 @@ var _ = Describe("Functional", func() {
 
 					writeGot := string(writeOut[:])
 
-					writeWant := fmt.Sprintf("Successfully wrote message to AWS queue '%s'", queueName)
+					writeWant := "Successfully wrote '1' message(s) to 'aws-sqs'"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
 					// Now try and read from the SQS queue
@@ -699,7 +699,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 100)
 
-					// Reader is ready, write the message to MQTT
+					// reader is ready, write the message to MQTT
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -748,7 +748,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 50)
 
-					// Reader is ready, write the message to MQTT
+					// reader is ready, write the message to MQTT
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -830,128 +830,128 @@ var _ = Describe("Functional", func() {
 			})
 		})
 	})
-
-	Describe("ActiveMQ", func() {
-		Describe("read/write", func() {
-			Context("plain input, plain output", func() {
-				It("should work", func() {
-					var queueName string = fmt.Sprintf("TestQueue%d", rand.Int())
-					const testMessage string = "welovemessaging"
-
-					// First write the message
-					writeCmd := exec.Command(
-						binary,
-						"write",
-						"activemq",
-						"--queue", queueName,
-						"--input-data", testMessage,
-					)
-
-					writeOut, err := writeCmd.CombinedOutput()
-					Expect(err).ToNot(HaveOccurred())
-
-					writeGot := string(writeOut[:])
-					writeWant := fmt.Sprintf("Successfully wrote message to '%s'", queueName)
-					Expect(writeGot).To(ContainSubstring(writeWant))
-
-					// Now try and read from the queue
-					readCmd := exec.Command(
-						binary,
-						"read",
-						"activemq",
-						"--queue", queueName,
-					)
-
-					readOutput, err := readCmd.CombinedOutput()
-					Expect(err).ToNot(HaveOccurred())
-
-					readGot := string(readOutput[:])
-					Expect(readGot).To(ContainSubstring(testMessage))
-				})
-			})
-
-			Context("jsonpb input, protobuf output", func() {
-				It("should work", func() {
-					var queueName string = fmt.Sprintf("TestQueue%d", rand.Int())
-
-					writeCmd := exec.Command(
-						binary,
-						"write",
-						"activemq",
-						"--queue", queueName,
-						"--input-type", "jsonpb",
-						"--input-file", sampleOutboundJSONPB,
-						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "events.Outbound",
-					)
-
-					writeOut, err := writeCmd.CombinedOutput()
-					Expect(err).ToNot(HaveOccurred())
-
-					writeGot := string(writeOut[:])
-					writeWant := fmt.Sprintf("Successfully wrote message to '%s'", queueName)
-
-					Expect(writeGot).To(ContainSubstring(writeWant))
-
-					// Now try and read from the queue
-					readCmd := exec.Command(
-						binary,
-						"read",
-						"activemq",
-						"--queue", queueName,
-						"--protobuf-dir", protoSchemasDir,
-						"--protobuf-root-message", "events.Outbound",
-					)
-
-					readOut, err := readCmd.CombinedOutput()
-					Expect(err).ToNot(HaveOccurred())
-
-					readGot := string(readOut[:])
-					Expect(readGot).To(ContainSubstring("30ddb850-1aca-4ee5-870c-1bb7b339ee5d"))
-					Expect(readGot).To(ContainSubstring("eyJoZWxsbyI6ImRhbiJ9Cg=="))
-				})
-			})
-		})
-
-		Context("avro and json", func() {
-			It("should work", func() {
-				var queueName string = fmt.Sprintf("TestQueue%d", rand.Int())
-				const testMessage string = "{\"company\":\"Batch Corp\"}"
-
-				// First write the message
-				writeCmd := exec.Command(
-					binary,
-					"write",
-					"activemq",
-					"--avro-schema", "./test-assets/avro/test.avsc",
-					"--queue", queueName,
-					"--input-data", testMessage,
-				)
-
-				writeOut, err := writeCmd.CombinedOutput()
-				Expect(err).ToNot(HaveOccurred())
-
-				writeGot := string(writeOut[:])
-				writeWant := fmt.Sprintf("Successfully wrote message to '%s'", queueName)
-				Expect(writeGot).To(ContainSubstring(writeWant))
-
-				// Now try and read from the queue
-				readCmd := exec.Command(
-					binary,
-					"read",
-					"activemq",
-					"--avro-schema", "./test-assets/avro/test.avsc",
-					"--queue", queueName,
-				)
-
-				readOutput, err := readCmd.CombinedOutput()
-				Expect(err).ToNot(HaveOccurred())
-
-				readGot := string(readOutput[:])
-				Expect(readGot).To(ContainSubstring(testMessage))
-			})
-		})
-	})
+	//
+	//Describe("ActiveMQ", func() {
+	//	Describe("read/write", func() {
+	//		Context("plain input, plain output", func() {
+	//			It("should work", func() {
+	//				var queueName string = fmt.Sprintf("TestQueue%d", rand.Int())
+	//				const testMessage string = "welovemessaging"
+	//
+	//				// First write the message
+	//				writeCmd := exec.Command(
+	//					binary,
+	//					"write",
+	//					"activemq",
+	//					"--queue", queueName,
+	//					"--input-data", testMessage,
+	//				)
+	//
+	//				writeOut, err := writeCmd.CombinedOutput()
+	//				Expect(err).ToNot(HaveOccurred())
+	//
+	//				writeGot := string(writeOut[:])
+	//				writeWant := "Successfully wrote '1' message(s) to 'activemq'"
+	//				Expect(writeGot).To(ContainSubstring(writeWant))
+	//
+	//				// Now try and read from the queue
+	//				readCmd := exec.Command(
+	//					binary,
+	//					"read",
+	//					"activemq",
+	//					"--queue", queueName,
+	//				)
+	//
+	//				readOutput, err := readCmd.CombinedOutput()
+	//				Expect(err).ToNot(HaveOccurred())
+	//
+	//				readGot := string(readOutput[:])
+	//				Expect(readGot).To(ContainSubstring(testMessage))
+	//			})
+	//		})
+	//
+	//		FContext("jsonpb input, protobuf output", func() {
+	//			It("should work", func() {
+	//				var queueName string = fmt.Sprintf("TestQueue%d", rand.Int())
+	//
+	//				writeCmd := exec.Command(
+	//					binary,
+	//					"write",
+	//					"activemq",
+	//					"--queue", queueName,
+	//					"--input-type", "jsonpb",
+	//					"--input-file", sampleOutboundJSONPB,
+	//					"--protobuf-dir", protoSchemasDir,
+	//					"--protobuf-root-message", "events.Outbound",
+	//				)
+	//
+	//				writeOut, err := writeCmd.CombinedOutput()
+	//				Expect(err).ToNot(HaveOccurred())
+	//
+	//				writeGot := string(writeOut[:])
+	//				writeWant := "Successfully wrote '1' message(s) to 'activemq'"
+	//
+	//				Expect(writeGot).To(ContainSubstring(writeWant))
+	//
+	//				// Now try and read from the queue
+	//				readCmd := exec.Command(
+	//					binary,
+	//					"read",
+	//					"activemq",
+	//					"--queue", queueName,
+	//					"--protobuf-dir", protoSchemasDir,
+	//					"--protobuf-root-message", "events.Outbound",
+	//				)
+	//
+	//				readOut, err := readCmd.CombinedOutput()
+	//				Expect(err).ToNot(HaveOccurred())
+	//
+	//				readGot := string(readOut[:])
+	//				Expect(readGot).To(ContainSubstring("30ddb850-1aca-4ee5-870c-1bb7b339ee5d"))
+	//				Expect(readGot).To(ContainSubstring("eyJoZWxsbyI6ImRhbiJ9Cg=="))
+	//			})
+	//		})
+	//	})
+	//
+	//	Context("avro and json", func() {
+	//		It("should work", func() {
+	//			var queueName string = fmt.Sprintf("TestQueue%d", rand.Int())
+	//			const testMessage string = "{\"company\":\"Batch Corp\"}"
+	//
+	//			// First write the message
+	//			writeCmd := exec.Command(
+	//				binary,
+	//				"write",
+	//				"activemq",
+	//				"--avro-schema", "./test-assets/avro/test.avsc",
+	//				"--queue", queueName,
+	//				"--input-data", testMessage,
+	//			)
+	//
+	//			writeOut, err := writeCmd.CombinedOutput()
+	//			Expect(err).ToNot(HaveOccurred())
+	//
+	//			writeGot := string(writeOut[:])
+	//			writeWant := "Successfully wrote '1' message(s) to 'activemq'"
+	//			Expect(writeGot).To(ContainSubstring(writeWant))
+	//
+	//			// Now try and read from the queue
+	//			readCmd := exec.Command(
+	//				binary,
+	//				"read",
+	//				"activemq",
+	//				"--avro-schema", "./test-assets/avro/test.avsc",
+	//				"--queue", queueName,
+	//			)
+	//
+	//			readOutput, err := readCmd.CombinedOutput()
+	//			Expect(err).ToNot(HaveOccurred())
+	//
+	//			readGot := string(readOutput[:])
+	//			Expect(readGot).To(ContainSubstring(testMessage))
+	//		})
+	//	})
+	//})
 
 	Describe("NATS", func() {
 
@@ -987,7 +987,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 100)
 
-					// Reader is ready, write the message to NATS
+					// reader is ready, write the message to NATS
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -1001,7 +1001,7 @@ var _ = Describe("Functional", func() {
 
 					writeGot := string(writeOut[:])
 
-					writeWant := fmt.Sprintf("Successfully wrote message to '%s'", topicName)
+					writeWant := "Successfully wrote '1' message(s) to 'nats'"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
 					output := <-capture
@@ -1036,7 +1036,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 50)
 
-					// Reader is ready, write the message to NATS
+					// reader is ready, write the message to NATS
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -1052,7 +1052,7 @@ var _ = Describe("Functional", func() {
 					Expect(err).ToNot(HaveOccurred())
 
 					writeGot := string(writeOut[:])
-					writeWant := fmt.Sprintf("Successfully wrote message to '%s'", topicName)
+					writeWant := "Successfully wrote '1' message(s) to 'nats'"
 
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
@@ -1106,7 +1106,7 @@ var _ = Describe("Functional", func() {
 
 					writeGot := string(writeOut[:])
 
-					writeWant := fmt.Sprintf("Successfully wrote message to '%s'", topicName)
+					writeWant := "Successfully wrote '1' message(s) to 'nats'"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
 					output := <-capture
@@ -1152,7 +1152,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 100)
 
-					// Reader is ready, write the message to RedisPubSub
+					// reader is ready, write the message to RedisPubSub
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -1168,7 +1168,7 @@ var _ = Describe("Functional", func() {
 
 					writeGot := string(writeOut[:])
 
-					writeWant := fmt.Sprintf("Successfully wrote message to '%s'", topicName)
+					writeWant := "Successfully wrote '1' message(s) to 'redis-pubsub'"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
 					output := <-capture
@@ -1203,7 +1203,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 50)
 
-					// Reader is ready, write the message to RedisPubSub
+					// reader is ready, write the message to RedisPubSub
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -1221,7 +1221,7 @@ var _ = Describe("Functional", func() {
 					}
 
 					writeGot := string(writeOut[:])
-					writeWant := fmt.Sprintf("Successfully wrote message to '%s'", topicName)
+					writeWant := "Successfully wrote '1' message(s) to 'redis-pubsub'"
 
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
@@ -1277,7 +1277,7 @@ var _ = Describe("Functional", func() {
 
 					writeGot := string(writeOut[:])
 
-					writeWant := fmt.Sprintf("Successfully wrote message to '%s'", topicName)
+					writeWant := "Successfully wrote '1' message(s) to 'redis-pubsub'"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
 					output := <-capture
@@ -1326,7 +1326,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 100)
 
-					// Reader is ready, write the message to RedisPubSub
+					// reader is ready, write the message to RedisPubSub
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -1343,7 +1343,7 @@ var _ = Describe("Functional", func() {
 
 					writeGot := string(writeOut[:])
 
-					writeWant := fmt.Sprintf("Successfully wrote message to stream '%s' with key", topicName)
+					writeWant := "Successfully wrote '1' message(s) to 'redis-streams'"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
 					output := <-capture
@@ -1379,7 +1379,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 50)
 
-					// Reader is ready, write the message to RedisPubSub
+					// reader is ready, write the message to RedisPubSub
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -1398,7 +1398,7 @@ var _ = Describe("Functional", func() {
 					}
 
 					writeGot := string(writeOut[:])
-					writeWant := fmt.Sprintf("Successfully wrote message to stream '%s' with key", topicName)
+					writeWant := "Successfully wrote '1' message(s) to 'redis-streams'"
 
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
@@ -1456,7 +1456,7 @@ var _ = Describe("Functional", func() {
 
 					writeGot := string(writeOut[:])
 
-					writeWant := fmt.Sprintf("Successfully wrote message to stream '%s' with key", topicName)
+					writeWant := "Successfully wrote '1' message(s) to 'redis-streams'"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
 					output := <-capture
@@ -1503,7 +1503,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 100)
 
-					// Reader is ready, write the message to RedisPubSub
+					// reader is ready, write the message to RedisPubSub
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -1519,7 +1519,7 @@ var _ = Describe("Functional", func() {
 
 					writeGot := string(writeOut[:])
 
-					writeWant := fmt.Sprintf("Successfully wrote message to topic '%s'", topicName)
+					writeWant := "Successfully wrote '1' message(s) to 'pulsar'"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
 					output := <-capture
@@ -1554,7 +1554,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 100)
 
-					// Reader is ready, write the message to RedisPubSub
+					// reader is ready, write the message to RedisPubSub
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -1570,7 +1570,7 @@ var _ = Describe("Functional", func() {
 
 					writeGot := string(writeOut[:])
 
-					writeWant := fmt.Sprintf("Successfully wrote message to topic '%s'", topicName)
+					writeWant := "Successfully wrote '1' message(s) to 'pulsar'"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
 					output := <-capture
@@ -1606,7 +1606,7 @@ var _ = Describe("Functional", func() {
 					// Wait for reader to start up
 					time.Sleep(time.Millisecond * 50)
 
-					// Reader is ready, write the message to RedisPubSub
+					// reader is ready, write the message to RedisPubSub
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -1624,7 +1624,7 @@ var _ = Describe("Functional", func() {
 					}
 
 					writeGot := string(writeOut[:])
-					writeWant := fmt.Sprintf("Successfully wrote message to topic '%s'", topicName)
+					writeWant := "Successfully wrote '1' message(s) to 'pulsar'"
 
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
@@ -1681,7 +1681,7 @@ var _ = Describe("Functional", func() {
 
 					writeGot := string(writeOut[:])
 
-					writeWant := fmt.Sprintf("Successfully wrote message to topic '%s'", topicName)
+					writeWant := "Successfully wrote '1' message(s) to 'pulsar'"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
 					output := <-capture
@@ -1739,8 +1739,6 @@ func newKafkaWriter(address, topic string) (*Kafka, error) {
 	dialer := &skafka.Dialer{
 		Timeout: 5 * time.Second,
 	}
-
-	fmt.Println("Creating a new writer for topic: ", topic)
 
 	// The dialer timeout does not get utilized under some conditions (such as
 	// when kafka is configured to NOT auto create topics) - we need a

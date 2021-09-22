@@ -345,14 +345,13 @@ plumger write nsq --nsqd-address localhost:4050 --topic orders --input-data="{\"
 
 ```bash
 $ docker run --name plumber-rabbit -p 8080:8080 \
-    -e PLUMBER_RELAY_TYPE=rabbit \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
     -e PLUMBER_RELAY_RABBIT_EXCHANGE=my_exchange \
     -e PLUMBER_RELAY_RABBIT_QUEUE=my_queue \
     -e PLUMBER_RELAY_RABBIT_ROUTING_KEY=some.routing.key \
     -e PLUMBER_RELAY_RABBIT_QUEUE_EXCLUSIVE=false \
     -e PLUMBER_RELAY_RABBIT_QUEUE_DURABLE=true \
-    batchcorp/plumber
+    batchcorp/plumber rabbit
 ```
 
 ##### Continuously relay messages from an SQS queue to a Batch.sh collection
@@ -362,9 +361,8 @@ docker run -d --name plumber-sqs -p 8080:8080 \
     -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
     -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
     -e PLUMBER_RELAY_SQS_QUEUE_NAME=TestQueue \
-    -e PLUMBER_RELAY_TYPE=aws-sqs \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
-    batchcorp/plumber 
+    batchcorp/plumber aws-sqs
 ```
 
 ##### Continuously relay messages from an Azure queue to a Batch.sh collection
@@ -373,9 +371,8 @@ docker run -d --name plumber-sqs -p 8080:8080 \
 docker run -d --name plumber-azure -p 8080:8080 \
     -e SERVICEBUS_CONNECTION_STRING="Endpoint=sb://mybus.servicebus.windows.net/;SharedAccessKeyName..."
     -e PLUMBER_RELAY_AZURE_QUEUE_NAME=neworders \
-    -e PLUMBER_RELAY_TYPE=azure \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
-    batchcorp/plumber 
+    batchcorp/plumber azure
 ```
 
 ##### Continuously relay messages from an Azure topic to a Batch.sh collection
@@ -385,9 +382,8 @@ docker run -d --name plumber-azure -p 8080:8080 \
     -e SERVICEBUS_CONNECTION_STRING="Endpoint=sb://mybus.servicebus.windows.net/;SharedAccessKeyName..."
     -e PLUMBER_RELAY_AZURE_TOPIC_NAME=neworders \
     -e PLUMBER_RELAY_AZURE_SUBSCRIPTION=some-sub \
-    -e PLUMBER_RELAY_TYPE=azure \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
-    batchcorp/plumber 
+    batchcorp/plumber azure
 ```
 
 ##### Continuously relay messages from multiple Redis channels to a Batch.sh collection
@@ -396,9 +392,8 @@ docker run -d --name plumber-azure -p 8080:8080 \
 docker run -d --name plumber-redis-pubsub -p 8080:8080 \
     -e PLUMBER_RELAY_REDIS_PUBSUB_ADDRESS=localhost:6379 \
     -e PLUMBER_RELAY_REDIS_PUBSUB_CHANNELS=channel1,channel2 \
-    -e PLUMBER_RELAY_TYPE=redis-pubsub \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
-    batchcorp/plumber 
+    batchcorp/plumber redis-pubsub
 ```
 
 ##### Continuously relay messages from multiple Redis streams to a Batch.sh collection
@@ -407,15 +402,13 @@ docker run -d --name plumber-redis-pubsub -p 8080:8080 \
 docker run -d --name plumber-redis-streams -p 8080:8080 \
     -e PLUMBER_RELAY_REDIS_STREAMS_ADDRESS=localhost:6379 \
     -e PLUMBER_RELAY_REDIS_STREAMS_STREAMS=stream1,stream2 \
-    -e PLUMBER_RELAY_TYPE=redis-streams \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
-    batchcorp/plumber 
+    batchcorp/plumber redis-streams
 ```
 
 ##### Continuously relay messages from a Kafka topic (on Confluent) to a Batch.sh collection (via CLI)
 
 ```
-export PLUMBER_RELAY_TYPE="kafka"
 export PLUMBER_RELAY_TOKEN="$YOUR-BATCHSH-TOKEN-HERE"
 export PLUMBER_RELAY_KAFKA_ADDRESS="pkc-4kgmg.us-west-2.aws.confluent.cloud:9092,pkc-5kgmg.us-west-2.aws.confluent.cloud:9092"
 export PLUMBER_RELAY_KAFKA_TOPIC="$YOUR_TOPIC"
@@ -424,7 +417,7 @@ export PLUMBER_RELAY_KAFKA_USERNAME="$YOUR_CONFLUENT_API_KEY"
 export PLUMBER_RELAY_KAFKA_PASSWORD="$YOUR_CONFLUENT_API_SECRET"
 export PLUMBER_RELAY_KAFKA_SASL_TYPE="plain"
 
-$ plumber relay
+$ plumber relay kafka
 ```
 
 ##### Continuously relay messages from a MQTT topic to a Batch.sh collection
@@ -434,9 +427,8 @@ docker run -d --name plumber-mqtt -p 8080:8080 \
     -e PLUMBER_RELAY_MQTT_ADDRESS=tcp://localhost:1883 \
     -e PLUMBER_RELAY_MQTT_TOPIC=iotdata \
     -e PLUMBER_RELAY_MQTT_QOS=1 \
-    -e PLUMBER_RELAY_TYPE=mqtt \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
-    batchcorp/plumber 
+    batchcorp/plumber:local mqtt
 ```
 
 
@@ -452,11 +444,10 @@ up PostgreSQL CDC
 ```bash
 docker run -d --name plumber-cdc-mongo -p 8080:8080 \
     -e PLUMBER_RELAY_CDCMONGO_DSN=mongodb://mongo.mysite.com:27017 \
-    -e PLUMBER_RELAY_TYPE=cdc-mongo \
     -e PLUMBER_RELAY_CDCMONGO_DATABASE=mydb \
     -e PLUMBER_RELAY_CDCMONGO_COLLECTION=customers \
     -e PLUMBER_RELAY_TOKEN=YOUR_BATCHSH_TOKEN_HERE \
-    batchcorp/plumber 
+    batchcorp/plumber cdc-mongo
 
 ```
 

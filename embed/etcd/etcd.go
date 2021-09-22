@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -17,7 +18,6 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 
-	"github.com/batchcorp/plumber/cli"
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/server/types"
 )
@@ -53,26 +53,36 @@ type IEtcd interface {
 	PublishCreateService(ctx context.Context, svc *protos.Service) error
 	PublishUpdateService(ctx context.Context, svc *protos.Service) error
 	PublishDeleteService(ctx context.Context, svc *protos.Service) error
-	PublishCreateConnection(ctx context.Context, conn *protos.Connection) error
-	PublishUpdateConnection(ctx context.Context, conn *protos.Connection) error
-	PublishDeleteConnection(ctx context.Context, conn *protos.Connection) error
+	PublishCreateConnection(ctx context.Context, conn *opts.ConnectionOptions) error
+	PublishUpdateConnection(ctx context.Context, conn *opts.ConnectionOptions) error
+	PublishDeleteConnection(ctx context.Context, conn *opts.ConnectionOptions) error
 	PublishCreateSchema(ctx context.Context, schema *protos.Schema) error
 	PublishUpdateSchema(ctx context.Context, schema *protos.Schema) error
 	PublishDeleteSchema(ctx context.Context, schema *protos.Schema) error
-	PublishCreateRelay(ctx context.Context, relay *protos.Relay) error
-	PublishUpdateRelay(ctx context.Context, relay *protos.Relay) error
-	PublishDeleteRelay(ctx context.Context, relay *protos.Relay) error
+	PublishCreateRelay(ctx context.Context, relay *opts.RelayOptions) error
+	PublishUpdateRelay(ctx context.Context, relay *opts.RelayOptions) error
+	PublishDeleteRelay(ctx context.Context, relay *opts.RelayOptions) error
 }
 
 type Etcd struct {
+	PlumberConfig *config.Config
+
 	server             *embed.Etcd
 	client             *clientv3.Client
-	PlumberConfig      *config.Config
-	cfg                *cli.ServerOptions
+	serverOptions      *opts.ServerOptions
+	urls               *urls
 	started            bool
 	consumerContext    context.Context
 	consumerCancelFunc context.CancelFunc
 	log                *logrus.Entry
+}
+
+// URLs are specified as string in proto schemas - this is an intermediate holder
+type urls struct {
+	AdvertiseClientURL *url.URL
+	AdvertisePeerURL   *url.URL
+	ListenerClientURL  *url.URL
+	ListenerPeerURL    *url.URL
 }
 
 var (
@@ -80,19 +90,54 @@ var (
 	ServerAlreadyStartedErr = errors.New("server already started")
 )
 
-func New(cfg *cli.ServerOptions, plumberConfig *config.Config) (*Etcd, error) {
-	if err := validateOptions(cfg); err != nil {
+func New(serverOptions *opts.ServerOptions, plumberConfig *config.Config) (*Etcd, error) {
+	if err := validateOptions(serverOptions); err != nil {
 		return nil, errors.Wrap(err, "unable to validate options")
 	}
 
+	urls, err := parseURLs(serverOptions)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to parse etcd URLs")
+	}
+
 	return &Etcd{
-		cfg:           cfg,
+		serverOptions: serverOptions,
+		urls:          urls,
 		PlumberConfig: plumberConfig,
 		log:           logrus.WithField("pkg", "etcd"),
 	}, nil
 }
 
-func validateOptions(cfg *cli.ServerOptions) error {
+func parseURLs(serverOptions *opts.ServerOptions) (*urls, error) {
+	acu, err := url.Parse(serverOptions.AdvertiseClientUrl)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to parse advertise client URL")
+	}
+
+	apu, err := url.Parse(serverOptions.AdvertisePeerUrl)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to parse advertise peer URL")
+	}
+
+	lcu, err := url.Parse(serverOptions.ListenerClientUrl)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to parse advertise client URL")
+	}
+
+	lpu, err := url.Parse(serverOptions.ListenerPeerUrl)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to parse advertise peer URL")
+	}
+
+	return &urls{
+		AdvertiseClientURL: acu,
+		AdvertisePeerURL:   apu,
+		ListenerClientURL:  lcu,
+		ListenerPeerURL:    lpu,
+	}, nil
+}
+
+func validateOptions(cfg *opts.ServerOptions) error {
 	if cfg == nil {
 		return errors.New("server options config cannot be nil")
 	}
@@ -101,20 +146,20 @@ func validateOptions(cfg *cli.ServerOptions) error {
 		return errors.New("InitialCluster setting cannot be empty")
 	}
 
-	if cfg.AdvertisePeerURL == nil {
-		return errors.New("AdvertisePeerURL cannot be nil")
+	if cfg.AdvertisePeerUrl == "" {
+		return errors.New("AdvertisePeerURL cannot be empty")
 	}
 
-	if cfg.AdvertiseClientURL == nil {
-		return errors.New("AdvertiseClientURL cannot be nil")
+	if cfg.AdvertiseClientUrl == "" {
+		return errors.New("AdvertiseClientURL cannot be empty")
 	}
 
-	if cfg.ListenerPeerURL == nil {
-		return errors.New("ListenerPeerURL cannot be nil")
+	if cfg.ListenerPeerUrl == "" {
+		return errors.New("ListenerPeerURL cannot be empty")
 	}
 
-	if cfg.ListenerClientURL == nil {
-		return errors.New("ListenerClientURL cannot be nil")
+	if cfg.ListenerClientUrl == "" {
+		return errors.New("ListenerClientURL cannot be empty")
 	}
 
 	if cfg.PeerToken == "" {
@@ -285,17 +330,17 @@ func (e *Etcd) Shutdown(force bool) error {
 	return nil
 }
 
-func (e *Etcd) launchEmbeddedEtcd(ctx context.Context) (*embed.Etcd, error) {
+func (e *Etcd) launchEmbeddedEtcd(_ context.Context) (*embed.Etcd, error) {
 	cfg := embed.NewConfig()
 
-	cfg.Name = e.cfg.NodeID
-	cfg.Dir = e.cfg.NodeID + ".etcd"
-	cfg.LPUrls = []url.URL{*e.cfg.ListenerPeerURL}
-	cfg.LCUrls = []url.URL{*e.cfg.ListenerClientURL}
-	cfg.APUrls = []url.URL{*e.cfg.AdvertisePeerURL}
-	cfg.ACUrls = []url.URL{*e.cfg.AdvertiseClientURL}
-	cfg.InitialCluster = e.cfg.InitialCluster
-	cfg.LogOutputs = []string{fmt.Sprintf("./%s.etcd.log", e.cfg.NodeID)}
+	cfg.Name = e.serverOptions.NodeId
+	cfg.Dir = e.serverOptions.NodeId + ".etcd"
+	cfg.LPUrls = []url.URL{*e.urls.ListenerPeerURL}
+	cfg.LCUrls = []url.URL{*e.urls.ListenerClientURL}
+	cfg.APUrls = []url.URL{*e.urls.AdvertisePeerURL}
+	cfg.ACUrls = []url.URL{*e.urls.AdvertiseClientURL}
+	cfg.InitialCluster = e.serverOptions.InitialCluster
+	cfg.LogOutputs = []string{fmt.Sprintf("./%s.etcd.log", e.serverOptions.NodeId)}
 
 	embeddedEtcd, err := embed.StartEtcd(cfg)
 	if err != nil {
@@ -304,7 +349,7 @@ func (e *Etcd) launchEmbeddedEtcd(ctx context.Context) (*embed.Etcd, error) {
 
 	select {
 	case <-embeddedEtcd.Server.ReadyNotify():
-		e.log.Debugf("embedded etcd server '%s' has started", e.cfg.NodeID)
+		e.log.Debugf("embedded etcd server '%s' has started", e.serverOptions.NodeId)
 	case <-time.After(time.Minute):
 		embeddedEtcd.Server.Stop()
 		return nil, errors.New("etcd server took too long to start")
@@ -393,7 +438,7 @@ func (e *Etcd) populateConnectionCache() error {
 	var count int
 
 	for _, v := range resp.Kvs {
-		conn := &protos.Connection{}
+		conn := &opts.ConnectionOptions{}
 		if err := proto.Unmarshal(v.Value, conn); err != nil {
 			e.log.Errorf("unable to unmarshal protos.Connection message: %s", err)
 			continue
@@ -401,7 +446,7 @@ func (e *Etcd) populateConnectionCache() error {
 
 		count++
 
-		e.PlumberConfig.SetConnection(conn.Id, conn)
+		e.PlumberConfig.SetConnection(conn.XId, conn)
 	}
 
 	e.log.Debugf("Loaded '%d' connections from etcd", count)
@@ -443,18 +488,18 @@ func (e *Etcd) populateRelayCache() error {
 	var count int
 
 	for _, v := range resp.Kvs {
-		relay := &protos.Relay{}
+		relay := &opts.RelayOptions{}
 		if err := proto.Unmarshal(v.Value, relay); err != nil {
-			e.log.Errorf("unable to unmarshal protos.Relay message: %s", err)
+			e.log.Errorf("unable to unmarshal opts.RelayOptions message: %s", err)
 			continue
 		}
 
 		count++
 
-		e.PlumberConfig.SetRelay(relay.RelayId, &types.Relay{
-			Active: false,
-			Id:     relay.RelayId,
-			Config: relay,
+		e.PlumberConfig.SetRelay(relay.XRelayId, &types.Relay{
+			Active:  false,
+			Id:      relay.XRelayId,
+			Options: relay,
 		})
 	}
 

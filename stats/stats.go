@@ -26,11 +26,12 @@ var (
 )
 
 // Start initiates CLI stats reporting
-func Start(reportInterval time.Duration) {
-	ReportInterval = reportInterval
-	looper = director.NewImmediateTimedLooper(director.FOREVER, ReportInterval, make(chan error, 1))
+func Start(reportIntervalSeconds int32) {
+	interval := time.Duration(reportIntervalSeconds) * time.Second
 
-	logrus.Debug("Launching stats reporter")
+	looper = director.NewImmediateTimedLooper(director.FOREVER, interval, make(chan error, 1))
+
+	logrus.Debugf("Launching stats reporter ('%s' interval)", interval)
 
 	go func() {
 		looper.Loop(func() error {
@@ -38,10 +39,10 @@ func Start(reportInterval time.Duration) {
 			defer mutex.Unlock()
 
 			for counterName, counterValue := range counters {
-				perSecond := counterValue / int(ReportInterval.Seconds())
+				perSecond := counterValue / int(interval.Seconds())
 
 				logrus.Infof("STATS [%s]: %d / %s (%d/s)\n", counterName, counterValue,
-					ReportInterval, perSecond)
+					interval, perSecond)
 
 				if strings.HasSuffix(counterName, "relay-producer") {
 					SetPromGauge("plumber_relay_rate", perSecond)

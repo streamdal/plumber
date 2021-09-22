@@ -107,18 +107,18 @@ func (b *Batch) listCollections() ([]CollectionOutput, error) {
 
 // SearchCollection queries a collection
 func (b *Batch) SearchCollection() error {
-	return b.search(PageSize*b.Opts.Batch.Page, PageSize, b.Opts.Batch.Page)
+	return b.search(PageSize*int(b.Opts.Batch.Search.Page), PageSize, int(b.Opts.Batch.Search.Page))
 }
 
 // search recursively displays pages of (PageSize) results until no more are available
 func (b *Batch) search(from, size, page int) error {
 	p := map[string]interface{}{
-		"query": b.Opts.Batch.Query,
+		"query": b.Opts.Batch.Search.Query,
 		"from":  from,
 		"size":  size,
 	}
 
-	res, _, err := b.Post("/v1/collection/"+b.Opts.Batch.CollectionID+"/search", p)
+	res, _, err := b.Post("/v1/collection/"+b.Opts.Batch.Search.CollectionId+"/search", p)
 
 	results := &SearchResult{}
 	if err := json.Unmarshal(res, results); err != nil {
@@ -182,9 +182,9 @@ func (b *Batch) CreateCollection() error {
 
 	// Create collection
 	p := map[string]interface{}{
-		"schema_id":   b.Opts.Batch.SchemaID,
-		"name":        b.Opts.Batch.CollectionName,
-		"notes":       b.Opts.Batch.Notes,
+		"schema_id":   b.Opts.Batch.Create.Collection.SchemaId,
+		"name":        b.Opts.Batch.Create.Collection.Name,
+		"notes":       b.Opts.Batch.Create.Collection.Notes,
 		"datalake_id": datalakeID,
 	}
 

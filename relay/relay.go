@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -16,17 +17,7 @@ import (
 
 	"github.com/batchcorp/schemas/build/go/services"
 
-	sqsTypes "github.com/batchcorp/plumber/backends/aws-sqs/types"
-	azureTypes "github.com/batchcorp/plumber/backends/azure/types"
-	mongoTypes "github.com/batchcorp/plumber/backends/cdc-mongo/types"
-	postgresTypes "github.com/batchcorp/plumber/backends/cdc-postgres/types"
-	gcpTypes "github.com/batchcorp/plumber/backends/gcp-pubsub/types"
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
-	mqttTypes "github.com/batchcorp/plumber/backends/mqtt/types"
-	nsqTypes "github.com/batchcorp/plumber/backends/nsq/types"
-	rabbitTypes "github.com/batchcorp/plumber/backends/rabbitmq/types"
-	redisTypes "github.com/batchcorp/plumber/backends/rpubsub/types"
-	rstreamsTypes "github.com/batchcorp/plumber/backends/rstreams/types"
 	"github.com/batchcorp/plumber/stats"
 )
 
@@ -64,7 +55,7 @@ type IRelayBackend interface {
 
 type Relay struct {
 	*Config
-	Workers      map[int]struct{}
+	Workers      map[int32]struct{}
 	WorkersMutex *sync.RWMutex
 	log          *logrus.Entry
 }
@@ -72,9 +63,10 @@ type Relay struct {
 type Config struct {
 	Token              string
 	GRPCAddress        string
-	NumWorkers         int
-	BatchSize          int
+	NumWorkers         int32
+	BatchSize          int32
 	RelayCh            chan interface{}
+	ErrorCh            chan *records.ErrorRecord
 	DisableTLS         bool
 	Timeout            time.Duration // general grpc timeout (used for all grpc calls)
 	Type               string
@@ -95,7 +87,7 @@ func New(relayCfg *Config) (*Relay, error) {
 
 	return &Relay{
 		Config:       relayCfg,
-		Workers:      make(map[int]struct{}),
+		Workers:      make(map[int32]struct{}),
 		WorkersMutex: &sync.RWMutex{},
 		log:          logrus.WithField("pkg", "relay"),
 	}, nil
@@ -212,21 +204,21 @@ func (r *Relay) WaitForShutdown() {
 }
 
 // removeWorker removes a worker from the workers map so we can track when all workers have shut down
-func (r *Relay) removeWorker(id int) {
+func (r *Relay) removeWorker(id int32) {
 	r.WorkersMutex.Lock()
 	defer r.WorkersMutex.Unlock()
 	delete(r.Workers, id)
 }
 
 // addWorker adds a worker ID to the workers map
-func (r *Relay) addWorker(id int) {
+func (r *Relay) addWorker(id int32) {
 	r.WorkersMutex.Lock()
 	defer r.WorkersMutex.Unlock()
 	r.Workers[id] = struct{}{}
 }
 
 func (r *Relay) StartWorkers(shutdownCtx context.Context) error {
-	for i := 0; i != r.Config.NumWorkers; i++ {
+	for i := int32(0); i != r.Config.NumWorkers; i++ {
 		r.log.WithField("workerId", i).Debug("starting worker")
 
 		conn, outboundCtx, err := NewConnection(r.Config.GRPCAddress, r.Config.Token, r.Config.Timeout, r.Config.DisableTLS, true)
@@ -242,7 +234,8 @@ func (r *Relay) StartWorkers(shutdownCtx context.Context) error {
 
 // Run is a GRPC worker that runs as a goroutine. outboundCtx is used for sending GRPC requests as it will contain
 // metadata, specifically "batch-token". shutdownCtx is passed from the main plumber app to shut down workers
-func (r *Relay) Run(id int, conn *grpc.ClientConn, outboundCtx, shutdownCtx context.Context) {
+// TODO: This should also read from errorCh
+func (r *Relay) Run(id int32, conn *grpc.ClientConn, outboundCtx, shutdownCtx context.Context) {
 	llog := r.log.WithField("relayId", id)
 	r.addWorker(id)
 
@@ -267,7 +260,7 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, outboundCtx, shutdownCtx cont
 			queue = append(queue, msg)
 
 			// Max queue size reached
-			if len(queue) >= r.Config.BatchSize {
+			if len(queue) >= int(r.Config.BatchSize) {
 				llog.Debugf("%d: max queue size reached - flushing!", id)
 
 				r.flush(outboundCtx, conn, queue...)
@@ -278,9 +271,9 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, outboundCtx, shutdownCtx cont
 				// Reset ticker (so time-based flush doesn't occur)
 				flushTicker.Reset(QueueFlushInterval)
 
-				// Queue is empty, safe to quit
+				// queue is empty, safe to quit
 				if quit {
-					llog.Debug("Queue empty, worker exiting")
+					llog.Debug("queue empty, worker exiting")
 					r.removeWorker(id)
 					return
 				}
@@ -296,9 +289,9 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, outboundCtx, shutdownCtx cont
 				queue = make([]interface{}, 0)
 			}
 
-			// Queue is empty, safe to quit
+			// queue is empty, safe to quit
 			if quit {
-				llog.Debug("Queue empty, worker exiting")
+				llog.Debug("queue empty, worker exiting")
 				r.removeWorker(id)
 				return
 			}
@@ -312,7 +305,7 @@ func (r *Relay) Run(id int, conn *grpc.ClientConn, outboundCtx, shutdownCtx cont
 
 			// If queue is empty, quit immediately
 			if len(queue) == 0 {
-				llog.Debug("Queue empty, worker exiting")
+				llog.Debug("queue empty, worker exiting")
 				r.removeWorker(id)
 				return
 			}
@@ -333,40 +326,42 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 
 	var err error
 
+	// TODO: Need to get away from the switch type flow ~ds 09.11.21
+
 	switch v := messages[0].(type) {
-	case *sqsTypes.RelayMessage:
-		r.log.Debugf("flushing %d sqs message(s)", len(messages))
-		err = r.handleSQS(ctx, conn, messages)
-	case *rabbitTypes.RelayMessage:
-		r.log.Debugf("flushing %d rabbit message(s)", len(messages))
-		err = r.handleRabbit(ctx, conn, messages)
+	//case *sqsTypes.RelayMessage:
+	//	r.log.Debugf("flushing %d sqs message(s)", len(messages))
+	//	err = r.handleSQS(ctx, conn, messages)
+	//case *rabbitTypes.RelayMessage:
+	//	r.log.Debugf("flushing %d rabbit message(s)", len(messages))
+	//	err = r.handleRabbit(ctx, conn, messages)
 	case *kafkaTypes.RelayMessage:
 		r.log.Debugf("flushing %d kafka message(s)", len(messages))
 		err = r.handleKafka(ctx, conn, messages)
-	case *azureTypes.RelayMessage:
-		r.log.Debugf("flushing %d azure message(s)", len(messages))
-		err = r.handleAzure(ctx, conn, messages)
-	case *gcpTypes.RelayMessage:
-		r.log.Debugf("flushing %d gcp message(s)", len(messages))
-		err = r.handleGCP(ctx, conn, messages)
-	case *mongoTypes.RelayMessage:
-		r.log.Debugf("flushing %d mongo message(s)", len(messages))
-		err = r.handleCDCMongo(ctx, conn, messages)
-	case *redisTypes.RelayMessage:
-		r.log.Debugf("flushing %d redis-pubsub message(s)", len(messages))
-		err = r.handleRedisPubSub(ctx, conn, messages)
-	case *rstreamsTypes.RelayMessage:
-		r.log.Debugf("flushing %d redis-streams message(s)", len(messages))
-		err = r.handleRedisStreams(ctx, conn, messages)
-	case *postgresTypes.RelayMessage:
-		r.log.Debugf("flushing %d cdc-postgres message(s)", len(messages))
-		err = r.handleCdcPostgres(ctx, conn, messages)
-	case *mqttTypes.RelayMessage:
-		r.log.Debugf("flushing %d mqtt message(s)", len(messages))
-		err = r.handleMQTT(ctx, conn, messages)
-	case *nsqTypes.RelayMessage:
-		r.log.Debugf("flushing %d nsq message(s)", len(messages))
-		err = r.handleNSQ(ctx, conn, messages)
+	//case *azureTypes.RelayMessage:
+	//	r.log.Debugf("flushing %d azure message(s)", len(messages))
+	//	err = r.handleAzure(ctx, conn, messages)
+	//case *gcpTypes.RelayMessage:
+	//	r.log.Debugf("flushing %d gcp message(s)", len(messages))
+	//	err = r.handleGCP(ctx, conn, messages)
+	//case *mongoTypes.RelayMessage:
+	//	r.log.Debugf("flushing %d mongo message(s)", len(messages))
+	//	err = r.handleCDCMongo(ctx, conn, messages)
+	//case *redisTypes.RelayMessage:
+	//	r.log.Debugf("flushing %d redis-pubsub message(s)", len(messages))
+	//	err = r.handleRedisPubSub(ctx, conn, messages)
+	//case *rstreamsTypes.RelayMessage:
+	//	r.log.Debugf("flushing %d redis-streams message(s)", len(messages))
+	//	err = r.handleRedisStreams(ctx, conn, messages)
+	//case *postgresTypes.RelayMessage:
+	//	r.log.Debugf("flushing %d cdc-postgres message(s)", len(messages))
+	//	err = r.handleCdcPostgres(ctx, conn, messages)
+	//case *mqttTypes.RelayMessage:
+	//	r.log.Debugf("flushing %d mqtt message(s)", len(messages))
+	//	err = r.handleMQTT(ctx, conn, messages)
+	//case *nsqTypes.RelayMessage:
+	//	r.log.Debugf("flushing %d nsq message(s)", len(messages))
+	//	err = r.handleNSQ(ctx, conn, messages)
 	default:
 		r.log.WithField("type", v).Error("received unknown message type - skipping")
 		return

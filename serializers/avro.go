@@ -34,7 +34,6 @@ func AvroEncode(schema, data []byte) ([]byte, error) {
 // AvroDecode takes in a path to a AVRO schema file, and binary encoded data
 // and returns the plain JSON representation
 func AvroDecode(schema, data []byte) ([]byte, error) {
-
 	codec, err := goavro.NewCodec(string(schema))
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to read AVRO schema")
