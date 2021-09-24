@@ -30,6 +30,7 @@ type Config struct {
 	Token            string                             `json:"token"`
 	TeamID           string                             `json:"team_id"`
 	UserID           string                             `json:"user_id"`
+	VCServiceToken   string                             `json:"-"`
 	Connections      map[string]*opts.ConnectionOptions `json:"-"`
 	Relays           map[string]*stypes.Relay           `json:"-"`
 	Schemas          map[string]*protos.Schema          `json:"-"`

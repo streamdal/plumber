@@ -23,10 +23,17 @@ const (
 	CreateRelay = "CreateRelay"
 	UpdateRelay = "UpdateRelay"
 	DeleteRelay = "DeleteRelay"
+
+	UpdateConfig = "UpdateConfig"
 )
 
 var (
-	ValidActions = []Action{CreateConnection, UpdateConnection, DeleteConnection}
+	ValidActions = []Action{
+		CreateConnection, UpdateConnection, DeleteConnection,
+		CreateService, UpdateService, DeleteService,
+		CreateRelay, UpdateRelay, DeleteRelay,
+		UpdateConfig,
+	}
 )
 
 type Action string
@@ -39,15 +46,12 @@ type Message struct {
 	EmittedAt time.Time // UTC
 }
 
-// MessageDeleteConnection is emitted and consumed during DeleteConnection actions
-type MessageDeleteConnection struct {
-	ConnectionID string `json:"connection_id"`
+// MessageUpdateConfig is emitted when a grpc.SetServerOptions() call is made
+type MessageUpdateConfig struct {
+	VCServiceToken string `json:"vsservice_token"`
 }
 
-type MessageDeleteService struct {
-	ServiceID string `json:"service_id"`
-}
-
+// TODO: implement, this isn't being used anywhere at the moment
 func (m *Message) Validate() error {
 	if m == nil {
 		return errors.New("message cannot be nil")

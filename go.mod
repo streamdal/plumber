@@ -10,7 +10,7 @@ require (
 	github.com/apache/pulsar-client-go v0.6.0 // indirect
 	github.com/aws/aws-sdk-go v1.34.28
 	github.com/batchcorp/pgoutput v0.3.2 // indirect
-	github.com/batchcorp/plumber-schemas v0.0.64
+	github.com/batchcorp/plumber-schemas v0.0.65
 	github.com/batchcorp/rabbit v0.1.9 // indirect
 	github.com/batchcorp/schemas v0.2.157
 	github.com/eclipse/paho.mqtt.golang v1.2.0

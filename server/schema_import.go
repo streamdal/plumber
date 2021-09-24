@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/batchcorp/plumber/pb"
-	"github.com/batchcorp/plumber/validate"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
+
+	"github.com/batchcorp/plumber/pb"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 )
@@ -15,26 +15,29 @@ import (
 // importGithub imports a github repo as a schema
 // TODO: types other than protobuf
 func (s *Server) importGithub(ctx context.Context, req *protos.ImportGithubRequest) (*protos.Schema, error) {
+
+	// TODO: this needs to be reworked. We need to get github oauth token from the install process in addition
+	// TODO: to the vc-service token
 	var schema *protos.Schema
-	var err error
+	//var err error
 
-	zipfile, err := s.GithubService.GetRepoArchive(ctx, s.PersistentConfig.GitHubToken, req.GithubUrl)
-	if err != nil {
-		return nil, err
-	}
-
-	switch req.Type {
-	case protos.SchemaType_SCHEMA_TYPE_PROTOBUF:
-		schema, err = importGithubProtobuf(zipfile, req)
-	case protos.SchemaType_SCHEMA_TYPE_AVRO:
-		err = errors.New("not implemented")
-	default:
-		err = validate.ErrInvalidGithubSchemaType
-	}
-
-	if err != nil {
-		return nil, err
-	}
+	//zipfile, err := s.GithubService.GetRepoArchive(ctx, s.PersistentConfig.GitHubToken, req.GithubUrl)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//switch req.Type {
+	//case protos.SchemaType_SCHEMA_TYPE_PROTOBUF:
+	//	schema, err = importGithubProtobuf(zipfile, req)
+	//case protos.SchemaType_SCHEMA_TYPE_AVRO:
+	//	err = errors.New("not implemented")
+	//default:
+	//	err = validate.ErrInvalidGithubSchemaType
+	//}
+	//
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	return schema, nil
 }
