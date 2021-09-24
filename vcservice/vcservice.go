@@ -177,7 +177,7 @@ func (c *Client) Start() {
 
 		// Handle any backend work that needs to be done
 		if err := c.handleResponse(response); err != nil {
-			c.log.Error("Unable to handle VCEvent: %s", err)
+			c.log.Errorf("Unable to handle VCEvent: %s", err)
 		}
 
 		// Ship message to frontend
