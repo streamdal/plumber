@@ -203,6 +203,8 @@ func (c *Client) handleResponse(resp *protos.VCEvent) error {
 	switch resp.Type {
 	case protos.VCEvent_AUTH_RESPONSE:
 		return c.handleAuthResponse(resp)
+	case protos.VCEvent_NEW_JWT_TOKEN:
+		return c.handleNewJWTToken(resp.GetNewJwtToken())
 	case protos.VCEvent_GITHUB:
 		return c.handleGithubEvent(resp)
 	case protos.VCEvent_GITLAB:
@@ -257,8 +259,6 @@ func (c *Client) handleGithubEvent(event *protos.VCEvent) error {
 	case protos.GithubEvent_PULL_MERGED:
 		// TODO
 		return errors.New("unimplemented")
-	case protos.GithubEvent_NEW_JWT_TOKEN:
-		return c.handleNewJWTToken(payload.GetNewJwtToken())
 	}
 
 	return fmt.Errorf("unknown GithHub event type '%s'", payload.GetType())
