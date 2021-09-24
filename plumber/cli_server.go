@@ -5,6 +5,8 @@ import (
 	"net"
 	"time"
 
+	"github.com/batchcorp/plumber/github"
+
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
@@ -86,10 +88,16 @@ func (p *Plumber) runServer() error {
 		}
 	}
 
+	ghService, err := github.New()
+	if err != nil {
+		return errors.Wrap(err, "unable to start GitHub service")
+	}
+
 	plumberServer := &server.Server{
 		PersistentConfig: p.PersistentConfig,
 		AuthToken:        p.CLIOptions.Server.AuthToken,
 		VCService:        vcService,
+		GithubService:    ghService,
 		Log:              logrus.WithField("pkg", "plumber/cli_server.go"),
 		Etcd:             p.Etcd,
 		CLIOptions:       p.CLIOptions,

@@ -49,6 +49,7 @@ type Message struct {
 // MessageUpdateConfig is emitted when a grpc.SetServerOptions() call is made
 type MessageUpdateConfig struct {
 	VCServiceToken string `json:"vsservice_token"`
+	GithubToken    string `json:"oauth_token_github"`
 }
 
 // TODO: implement, this isn't being used anywhere at the moment

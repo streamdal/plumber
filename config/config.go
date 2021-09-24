@@ -26,17 +26,18 @@ type IConfig interface {
 
 // Config stores Account IDs and the auth_token cookie
 type Config struct {
-	PlumberID        string                             `json:"plumber_id"`
-	Token            string                             `json:"token"`
-	TeamID           string                             `json:"team_id"`
-	UserID           string                             `json:"user_id"`
-	VCServiceToken   string                             `json:"-"`
+	PlumberID      string `json:"plumber_id"`
+	Token          string `json:"token"`
+	TeamID         string `json:"team_id"`
+	UserID         string `json:"user_id"`
+	VCServiceToken string `json:"vc_service_token"`    // entire vc-service JWT
+	GitHubToken    string `json:"github_bearer_token"` // retrieved from vc-service JWT contents
+
 	Connections      map[string]*opts.ConnectionOptions `json:"-"`
 	Relays           map[string]*stypes.Relay           `json:"-"`
 	Schemas          map[string]*protos.Schema          `json:"-"`
 	Services         map[string]*protos.Service         `json:"-"`
 	Reads            map[string]*stypes.Read            `json:"-"`
-	GitHubToken      string                             `json:"github_bearer_token"`
 	ConnectionsMutex *sync.RWMutex                      `json:"-"`
 	ServicesMutex    *sync.RWMutex                      `json:"-"`
 	ReadsMutex       *sync.RWMutex                      `json:"-"`
@@ -46,6 +47,12 @@ type Config struct {
 
 // Save is a convenience method of persisting the config to disk via a single call
 func (c *Config) Save() error {
+	tmpCfg := *c
+
+	// Don't want to save these to a file, they live in etcd
+	tmpCfg.GitHubToken = ""
+	tmpCfg.VCServiceToken = ""
+
 	data, err := json.Marshal(c)
 	if err != nil {
 		return errors.Wrap(err, "unable to marshal config to JSON")

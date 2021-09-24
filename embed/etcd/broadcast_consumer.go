@@ -263,6 +263,7 @@ func (e *Etcd) doUpdateConfig(_ context.Context, msg *Message) error {
 
 	// Set in config map
 	e.PlumberConfig.VCServiceToken = updateCfg.VCServiceToken
+	e.PlumberConfig.GitHubToken = updateCfg.GithubToken
 
 	e.log.Debugf("updated config via MessageUpdateConfig")
 

@@ -10,19 +10,6 @@ import (
 )
 
 type FakeIGithub struct {
-	GetAccessTokenStub        func(*github.UserCodeResponse) (*github.AccessTokenResponse, error)
-	getAccessTokenMutex       sync.RWMutex
-	getAccessTokenArgsForCall []struct {
-		arg1 *github.UserCodeResponse
-	}
-	getAccessTokenReturns struct {
-		result1 *github.AccessTokenResponse
-		result2 error
-	}
-	getAccessTokenReturnsOnCall map[int]struct {
-		result1 *github.AccessTokenResponse
-		result2 error
-	}
 	GetRepoArchiveStub        func(context.Context, string, string) ([]byte, error)
 	getRepoArchiveMutex       sync.RWMutex
 	getRepoArchiveArgsForCall []struct {
@@ -36,31 +23,6 @@ type FakeIGithub struct {
 	}
 	getRepoArchiveReturnsOnCall map[int]struct {
 		result1 []byte
-		result2 error
-	}
-	GetUserCodeStub        func() (*github.UserCodeResponse, error)
-	getUserCodeMutex       sync.RWMutex
-	getUserCodeArgsForCall []struct {
-	}
-	getUserCodeReturns struct {
-		result1 *github.UserCodeResponse
-		result2 error
-	}
-	getUserCodeReturnsOnCall map[int]struct {
-		result1 *github.UserCodeResponse
-		result2 error
-	}
-	PollForAccessTokenStub        func(*github.UserCodeResponse) (string, error)
-	pollForAccessTokenMutex       sync.RWMutex
-	pollForAccessTokenArgsForCall []struct {
-		arg1 *github.UserCodeResponse
-	}
-	pollForAccessTokenReturns struct {
-		result1 string
-		result2 error
-	}
-	pollForAccessTokenReturnsOnCall map[int]struct {
-		result1 string
 		result2 error
 	}
 	PostStub        func(string, url.Values) ([]byte, int, error)
@@ -81,70 +43,6 @@ type FakeIGithub struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
-}
-
-func (fake *FakeIGithub) GetAccessToken(arg1 *github.UserCodeResponse) (*github.AccessTokenResponse, error) {
-	fake.getAccessTokenMutex.Lock()
-	ret, specificReturn := fake.getAccessTokenReturnsOnCall[len(fake.getAccessTokenArgsForCall)]
-	fake.getAccessTokenArgsForCall = append(fake.getAccessTokenArgsForCall, struct {
-		arg1 *github.UserCodeResponse
-	}{arg1})
-	stub := fake.GetAccessTokenStub
-	fakeReturns := fake.getAccessTokenReturns
-	fake.recordInvocation("GetAccessToken", []interface{}{arg1})
-	fake.getAccessTokenMutex.Unlock()
-	if stub != nil {
-		return stub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeIGithub) GetAccessTokenCallCount() int {
-	fake.getAccessTokenMutex.RLock()
-	defer fake.getAccessTokenMutex.RUnlock()
-	return len(fake.getAccessTokenArgsForCall)
-}
-
-func (fake *FakeIGithub) GetAccessTokenCalls(stub func(*github.UserCodeResponse) (*github.AccessTokenResponse, error)) {
-	fake.getAccessTokenMutex.Lock()
-	defer fake.getAccessTokenMutex.Unlock()
-	fake.GetAccessTokenStub = stub
-}
-
-func (fake *FakeIGithub) GetAccessTokenArgsForCall(i int) *github.UserCodeResponse {
-	fake.getAccessTokenMutex.RLock()
-	defer fake.getAccessTokenMutex.RUnlock()
-	argsForCall := fake.getAccessTokenArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeIGithub) GetAccessTokenReturns(result1 *github.AccessTokenResponse, result2 error) {
-	fake.getAccessTokenMutex.Lock()
-	defer fake.getAccessTokenMutex.Unlock()
-	fake.GetAccessTokenStub = nil
-	fake.getAccessTokenReturns = struct {
-		result1 *github.AccessTokenResponse
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeIGithub) GetAccessTokenReturnsOnCall(i int, result1 *github.AccessTokenResponse, result2 error) {
-	fake.getAccessTokenMutex.Lock()
-	defer fake.getAccessTokenMutex.Unlock()
-	fake.GetAccessTokenStub = nil
-	if fake.getAccessTokenReturnsOnCall == nil {
-		fake.getAccessTokenReturnsOnCall = make(map[int]struct {
-			result1 *github.AccessTokenResponse
-			result2 error
-		})
-	}
-	fake.getAccessTokenReturnsOnCall[i] = struct {
-		result1 *github.AccessTokenResponse
-		result2 error
-	}{result1, result2}
 }
 
 func (fake *FakeIGithub) GetRepoArchive(arg1 context.Context, arg2 string, arg3 string) ([]byte, error) {
@@ -209,126 +107,6 @@ func (fake *FakeIGithub) GetRepoArchiveReturnsOnCall(i int, result1 []byte, resu
 	}
 	fake.getRepoArchiveReturnsOnCall[i] = struct {
 		result1 []byte
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeIGithub) GetUserCode() (*github.UserCodeResponse, error) {
-	fake.getUserCodeMutex.Lock()
-	ret, specificReturn := fake.getUserCodeReturnsOnCall[len(fake.getUserCodeArgsForCall)]
-	fake.getUserCodeArgsForCall = append(fake.getUserCodeArgsForCall, struct {
-	}{})
-	stub := fake.GetUserCodeStub
-	fakeReturns := fake.getUserCodeReturns
-	fake.recordInvocation("GetUserCode", []interface{}{})
-	fake.getUserCodeMutex.Unlock()
-	if stub != nil {
-		return stub()
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeIGithub) GetUserCodeCallCount() int {
-	fake.getUserCodeMutex.RLock()
-	defer fake.getUserCodeMutex.RUnlock()
-	return len(fake.getUserCodeArgsForCall)
-}
-
-func (fake *FakeIGithub) GetUserCodeCalls(stub func() (*github.UserCodeResponse, error)) {
-	fake.getUserCodeMutex.Lock()
-	defer fake.getUserCodeMutex.Unlock()
-	fake.GetUserCodeStub = stub
-}
-
-func (fake *FakeIGithub) GetUserCodeReturns(result1 *github.UserCodeResponse, result2 error) {
-	fake.getUserCodeMutex.Lock()
-	defer fake.getUserCodeMutex.Unlock()
-	fake.GetUserCodeStub = nil
-	fake.getUserCodeReturns = struct {
-		result1 *github.UserCodeResponse
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeIGithub) GetUserCodeReturnsOnCall(i int, result1 *github.UserCodeResponse, result2 error) {
-	fake.getUserCodeMutex.Lock()
-	defer fake.getUserCodeMutex.Unlock()
-	fake.GetUserCodeStub = nil
-	if fake.getUserCodeReturnsOnCall == nil {
-		fake.getUserCodeReturnsOnCall = make(map[int]struct {
-			result1 *github.UserCodeResponse
-			result2 error
-		})
-	}
-	fake.getUserCodeReturnsOnCall[i] = struct {
-		result1 *github.UserCodeResponse
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeIGithub) PollForAccessToken(arg1 *github.UserCodeResponse) (string, error) {
-	fake.pollForAccessTokenMutex.Lock()
-	ret, specificReturn := fake.pollForAccessTokenReturnsOnCall[len(fake.pollForAccessTokenArgsForCall)]
-	fake.pollForAccessTokenArgsForCall = append(fake.pollForAccessTokenArgsForCall, struct {
-		arg1 *github.UserCodeResponse
-	}{arg1})
-	stub := fake.PollForAccessTokenStub
-	fakeReturns := fake.pollForAccessTokenReturns
-	fake.recordInvocation("PollForAccessToken", []interface{}{arg1})
-	fake.pollForAccessTokenMutex.Unlock()
-	if stub != nil {
-		return stub(arg1)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeIGithub) PollForAccessTokenCallCount() int {
-	fake.pollForAccessTokenMutex.RLock()
-	defer fake.pollForAccessTokenMutex.RUnlock()
-	return len(fake.pollForAccessTokenArgsForCall)
-}
-
-func (fake *FakeIGithub) PollForAccessTokenCalls(stub func(*github.UserCodeResponse) (string, error)) {
-	fake.pollForAccessTokenMutex.Lock()
-	defer fake.pollForAccessTokenMutex.Unlock()
-	fake.PollForAccessTokenStub = stub
-}
-
-func (fake *FakeIGithub) PollForAccessTokenArgsForCall(i int) *github.UserCodeResponse {
-	fake.pollForAccessTokenMutex.RLock()
-	defer fake.pollForAccessTokenMutex.RUnlock()
-	argsForCall := fake.pollForAccessTokenArgsForCall[i]
-	return argsForCall.arg1
-}
-
-func (fake *FakeIGithub) PollForAccessTokenReturns(result1 string, result2 error) {
-	fake.pollForAccessTokenMutex.Lock()
-	defer fake.pollForAccessTokenMutex.Unlock()
-	fake.PollForAccessTokenStub = nil
-	fake.pollForAccessTokenReturns = struct {
-		result1 string
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeIGithub) PollForAccessTokenReturnsOnCall(i int, result1 string, result2 error) {
-	fake.pollForAccessTokenMutex.Lock()
-	defer fake.pollForAccessTokenMutex.Unlock()
-	fake.PollForAccessTokenStub = nil
-	if fake.pollForAccessTokenReturnsOnCall == nil {
-		fake.pollForAccessTokenReturnsOnCall = make(map[int]struct {
-			result1 string
-			result2 error
-		})
-	}
-	fake.pollForAccessTokenReturnsOnCall[i] = struct {
-		result1 string
 		result2 error
 	}{result1, result2}
 }
@@ -404,14 +182,8 @@ func (fake *FakeIGithub) PostReturnsOnCall(i int, result1 []byte, result2 int, r
 func (fake *FakeIGithub) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.getAccessTokenMutex.RLock()
-	defer fake.getAccessTokenMutex.RUnlock()
 	fake.getRepoArchiveMutex.RLock()
 	defer fake.getRepoArchiveMutex.RUnlock()
-	fake.getUserCodeMutex.RLock()
-	defer fake.getUserCodeMutex.RUnlock()
-	fake.pollForAccessTokenMutex.RLock()
-	defer fake.pollForAccessTokenMutex.RUnlock()
 	fake.postMutex.RLock()
 	defer fake.postMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
