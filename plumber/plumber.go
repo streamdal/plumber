@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/alecthomas/kong"
+	"github.com/batchcorp/kong"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
