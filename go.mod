@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go/pubsub v1.6.1
 	github.com/aws/aws-sdk-go v1.34.28
 	github.com/batchcorp/kong v0.2.17-batch-fix
-	github.com/batchcorp/plumber-schemas v0.0.69
+	github.com/batchcorp/plumber-schemas v0.0.73
 	github.com/batchcorp/schemas v0.2.157
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fatih/color v1.12.0 // indirect

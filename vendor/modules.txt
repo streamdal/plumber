@@ -51,7 +51,7 @@ github.com/aws/aws-sdk-go/service/sts/stsiface
 # github.com/batchcorp/kong v0.2.17-batch-fix
 ## explicit
 github.com/batchcorp/kong
-# github.com/batchcorp/plumber-schemas v0.0.69
+# github.com/batchcorp/plumber-schemas v0.0.73
 ## explicit
 github.com/batchcorp/plumber-schemas/build/go/protos
 github.com/batchcorp/plumber-schemas/build/go/protos/args
