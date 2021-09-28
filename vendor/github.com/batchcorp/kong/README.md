@@ -6,6 +6,9 @@
 
 <!-- TOC depthfrom:2 updateonsave:true withlinks:true -->
 
+**NOTE**: This is a fork of [alecthomas/kong](https://github.com/alecthomas/kong)
+that includes protobuf-related functionality.
+
 - [Introduction](#introduction)
 - [Help](#help)
     - [Help as a user of a Kong application](#help-as-a-user-of-a-kong-application)
@@ -55,19 +58,19 @@ Can be represented by the following command-line structure:
 ```go
 package main
 
-import "github.com/alecthomas/kong"
+import "github.com/batchcorp/kong"
 
 var CLI struct {
   Rm struct {
     Force     bool `help:"Force removal."`
     Recursive bool `help:"Recursively remove files."`
 
-    Paths []string `arg name:"path" help:"Paths to remove." type:"path"`
-  } `cmd help:"Remove files."`
+    Paths []string `arg:"" name:"path" help:"Paths to remove." type:"path"`
+  } `cmd:"" help:"Remove files."`
 
   Ls struct {
-    Paths []string `arg optional name:"path" help:"Paths to list." type:"path"`
-  } `cmd help:"List paths."`
+    Paths []string `arg:"" optional:"" name:"path" help:"Paths to list." type:"path"`
+  } `cmd:"" help:"List paths."`
 }
 
 func main() {
@@ -148,19 +151,19 @@ eg.
 ```go
 package main
 
-import "github.com/alecthomas/kong"
+import "github.com/batchcorp/kong"
 
 var CLI struct {
   Rm struct {
     Force     bool `help:"Force removal."`
     Recursive bool `help:"Recursively remove files."`
 
-    Paths []string `arg name:"path" help:"Paths to remove." type:"path"`
-  } `cmd help:"Remove files."`
+    Paths []string `arg:"" name:"path" help:"Paths to remove." type:"path"`
+  } `cmd:"" help:"Remove files."`
 
   Ls struct {
-    Paths []string `arg optional name:"path" help:"Paths to list." type:"path"`
-  } `cmd help:"List paths."`
+    Paths []string `arg:"" optional:"" name:"path" help:"Paths to list." type:"path"`
+  } `cmd:"" help:"List paths."`
 }
 
 func main() {
@@ -208,7 +211,7 @@ type RmCmd struct {
   Force     bool `help:"Force removal."`
   Recursive bool `help:"Recursively remove files."`
 
-  Paths []string `arg name:"path" help:"Paths to remove." type:"path"`
+  Paths []string `arg:"" name:"path" help:"Paths to remove." type:"path"`
 }
 
 func (r *RmCmd) Run(ctx *Context) error {
@@ -217,7 +220,7 @@ func (r *RmCmd) Run(ctx *Context) error {
 }
 
 type LsCmd struct {
-  Paths []string `arg optional name:"path" help:"Paths to list." type:"path"`
+  Paths []string `arg:"" optional:"" name:"path" help:"Paths to list." type:"path"`
 }
 
 func (l *LsCmd) Run(ctx *Context) error {
@@ -228,8 +231,8 @@ func (l *LsCmd) Run(ctx *Context) error {
 var cli struct {
   Debug bool `help:"Enable debug mode."`
 
-  Rm RmCmd `cmd help:"Remove files."`
-  Ls LsCmd `cmd help:"List paths."`
+  Rm RmCmd `cmd:"" help:"Remove files."`
+  Ls LsCmd `cmd:"" help:"List paths."`
 }
 
 func main() {
@@ -351,7 +354,7 @@ You would use the following:
 ```go
 var CLI struct {
   Ls struct {
-    Files []string `arg type:"existingfile"`
+    Files []string `arg:"" type:"existingfile"`
   } `cmd`
 }
 ```
@@ -370,7 +373,7 @@ You would use the following:
 var CLI struct {
   Config struct {
     Set struct {
-      Config map[string]float64 `arg type:"file:"`
+      Config map[string]float64 `arg:"" type:"file:"`
     } `cmd`
   } `cmd`
 }
@@ -453,6 +456,14 @@ Tag                    | Description
 `set:"K=V"`            | Set a variable for expansion by child elements. Multiples can occur.
 `embed:""`             | If present, this field's children will be embedded in the parent. Useful for composition.
 `passthrough:""`       | If present, this positional argument stops flag parsing when encountered, as if `--` was processed before. Useful for external command wrappers, like `exec`.
+
+### Protobuf-specific settings
+
+Tag                    | Description
+-----------------------| -------------------------------------------
+`type:"pbenum"`        | If present, `kong` will treat the field as if it was generated via protoc. `kong` will attempt to automatically read all of the available enums and validate that the input is a valid option.
+`pbenum_strip_prefix:"X"`  | When used with `type:"pbenum"`, `kong` will strip the prefix from the enum names before exposing them in the CLI.
+`pbenum_lowercase`     | When used with `type:"pbenum"`, `kong` will lowercase the enum names before exposing them in the CLI.
 `-`                    | Ignore the field. Useful for adding non-CLI fields to a configuration struct. e.g `` `kong:"-"` ``
 
 ## Plugins

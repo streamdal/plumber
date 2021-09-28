@@ -71,8 +71,8 @@ func (BatchReplayType) EnumDescriptor() ([]byte, []int) {
 }
 
 type BatchOptions struct {
-	// @gotags: kong:"help='How to output results (0: table, 1: JSON)',default=0"
-	OutputType BatchOutputType `protobuf:"varint,1,opt,name=output_type,json=outputType,proto3,enum=protos.opts.BatchOutputType" json:"output_type,omitempty" kong:"help='How to output results (0: table, 1: JSON)',default=0"`
+	// @gotags: kong:"help='How to output results (options: table, json)',default=table,type=pbenum,pbenum_lowercase"
+	OutputType BatchOutputType `protobuf:"varint,1,opt,name=output_type,json=outputType,proto3,enum=protos.opts.BatchOutputType" json:"output_type,omitempty" kong:"help='How to output results (options: table, json)',default=table,type=pbenum,pbenum_lowercase"`
 	// @gotags: kong:"help='Alternative URL to use for Batch API',default='https://api.batch.sh'"
 	ApiUrl string `protobuf:"bytes,2,opt,name=api_url,json=apiUrl,proto3" json:"api_url,omitempty" kong:"help='Alternative URL to use for Batch API',default='https://api.batch.sh'"`
 	// @gotags: kong:"cmd,help='Login to the Batch platform'"
@@ -559,8 +559,8 @@ func (m *BatchCreateCollectionOptions) GetNotes() string {
 type BatchCreateReplayOptions struct {
 	// @gotags: kong:"help='Friendly name to assign to the replay',required"
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty" kong:"help='Friendly name to assign to the replay',required"`
-	// @gotags: kong:"help='One-time or continuous replay (default: one-time; 0: ONE_TIME, 1: CONTINUOUS)',default=0"
-	Type BatchReplayType `protobuf:"varint,2,opt,name=type,proto3,enum=protos.opts.BatchReplayType" json:"type,omitempty" kong:"help='One-time or continuous replay (default: one-time; 0: ONE_TIME, 1: CONTINUOUS)',default=0"`
+	// @gotags: kong:"help='One-time/single or continuous replay (options: single, continuous)',type=pbenum,pbenum_lowercase,default=single"
+	Type BatchReplayType `protobuf:"varint,2,opt,name=type,proto3,enum=protos.opts.BatchReplayType" json:"type,omitempty" kong:"help='One-time/single or continuous replay (options: single, continuous)',type=pbenum,pbenum_lowercase,default=single"`
 	// @gotags: kong:"help='Notes to attach to the replay'"
 	Notes string `protobuf:"bytes,3,opt,name=notes,proto3" json:"notes,omitempty" kong:"help='Notes to attach to the replay'"`
 	// @gotags: kong:"help='Collection ID to replay from',required"

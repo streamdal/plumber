@@ -10,15 +10,6 @@ cloud.google.com/go/pubsub
 cloud.google.com/go/pubsub/apiv1
 cloud.google.com/go/pubsub/internal/distribution
 cloud.google.com/go/pubsub/internal/scheduler
-# github.com/Azure/azure-event-hubs-go/v3 v3.3.7
-## explicit
-# github.com/Azure/azure-service-bus-go v0.10.8
-## explicit
-# github.com/alecthomas/kong v0.2.18-0.20210830204702-74cb5130e341
-## explicit
-github.com/alecthomas/kong
-# github.com/apache/pulsar-client-go v0.6.0
-## explicit
 # github.com/aws/aws-sdk-go v1.34.28
 ## explicit
 github.com/aws/aws-sdk-go/aws
@@ -57,9 +48,12 @@ github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
 github.com/aws/aws-sdk-go/service/sqs
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
+# github.com/batchcorp/kong v0.2.17-batch-fix
+## explicit
+github.com/batchcorp/kong
 # github.com/batchcorp/pgoutput v0.3.2
 ## explicit
-# github.com/batchcorp/plumber-schemas v0.0.65
+# github.com/batchcorp/plumber-schemas v0.0.73
 ## explicit
 github.com/batchcorp/plumber-schemas/build/go/protos
 github.com/batchcorp/plumber-schemas/build/go/protos/args
@@ -100,10 +94,6 @@ github.com/fatih/color
 github.com/form3tech-oss/jwt-go
 # github.com/fsnotify/fsnotify v1.4.9
 github.com/fsnotify/fsnotify
-# github.com/go-redis/redis/v8 v8.11.1
-## explicit
-# github.com/go-stomp/stomp/v3 v3.0.2
-## explicit
 # github.com/goccy/go-json v0.7.6
 github.com/goccy/go-json
 github.com/goccy/go-json/internal/decoder
@@ -114,8 +104,6 @@ github.com/goccy/go-json/internal/encoder/vm_color_indent
 github.com/goccy/go-json/internal/encoder/vm_indent
 github.com/goccy/go-json/internal/errors
 github.com/goccy/go-json/internal/runtime
-# github.com/gofrs/uuid v4.0.0+incompatible
-## explicit
 # github.com/gogo/protobuf v1.3.2
 github.com/gogo/protobuf/gogoproto
 github.com/gogo/protobuf/proto
@@ -153,8 +141,6 @@ github.com/google/go-cmp/cmp/internal/value
 github.com/google/go-github/v37/github
 # github.com/google/go-querystring v1.0.0
 github.com/google/go-querystring/query
-# github.com/google/uuid v1.2.0
-## explicit
 # github.com/googleapis/gax-go/v2 v2.0.5
 github.com/googleapis/gax-go/v2
 # github.com/gorilla/websocket v1.4.2
@@ -170,8 +156,6 @@ github.com/grpc-ecosystem/grpc-gateway/utilities
 # github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
 ## explicit
 github.com/hokaccha/go-prettyjson
-# github.com/jackc/pgx v3.6.2+incompatible
-## explicit
 # github.com/jhump/protoreflect v1.8.2
 ## explicit
 github.com/jhump/protoreflect/codec
@@ -200,6 +184,7 @@ github.com/julienschmidt/httprouter
 ## explicit
 github.com/kataras/tablewriter
 # github.com/klauspost/compress v1.11.12
+## explicit
 github.com/klauspost/compress/fse
 github.com/klauspost/compress/huff0
 github.com/klauspost/compress/snappy
@@ -269,14 +254,6 @@ github.com/mcuadros/go-lookup
 github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.1
 github.com/modern-go/reflect2
-# github.com/nats-io/nats-streaming-server v0.22.1
-## explicit
-# github.com/nats-io/nats.go v1.11.1-0.20210623165838-4b75fc59ae30
-## explicit
-# github.com/nats-io/stan.go v0.10.0
-## explicit
-# github.com/nsqio/go-nsq v1.0.8
-## explicit
 # github.com/nxadm/tail v1.4.8
 github.com/nxadm/tail
 github.com/nxadm/tail/ratelimiter
@@ -340,11 +317,10 @@ github.com/prometheus/common/expfmt
 github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg
 github.com/prometheus/common/model
 # github.com/prometheus/procfs v0.7.1
+## explicit
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
-# github.com/rabbitmq/rabbitmq-stream-go-client v0.0.0-20210718174647-8ed32be73644
-## explicit
 # github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d
 ## explicit
 github.com/relistan/go-director
@@ -393,8 +369,6 @@ github.com/sirupsen/logrus
 github.com/soheilhy/cmux
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
-# github.com/streadway/amqp v1.0.0
-## explicit
 # github.com/thrift-iterator/go v0.0.0-20190402154806-9b5a67519118
 ## explicit
 github.com/thrift-iterator/go
@@ -535,8 +509,6 @@ go.etcd.io/etcd/server/v3/proxy/grpcproxy/adapter
 go.etcd.io/etcd/server/v3/verify
 go.etcd.io/etcd/server/v3/wal
 go.etcd.io/etcd/server/v3/wal/walpb
-# go.mongodb.org/mongo-driver v1.5.1
-## explicit
 # go.opencensus.io v0.22.4
 go.opencensus.io
 go.opencensus.io/internal
@@ -669,6 +641,7 @@ golang.org/x/oauth2/jwt
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
 # golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
+## explicit
 golang.org/x/sys/execabs
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
@@ -722,7 +695,6 @@ golang.org/x/tools/internal/typesinternal
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
 # google.golang.org/api v0.29.0
-## explicit
 google.golang.org/api/internal
 google.golang.org/api/iterator
 google.golang.org/api/option
@@ -858,7 +830,7 @@ google.golang.org/protobuf/types/known/timestamppb
 google.golang.org/protobuf/types/known/typepb
 google.golang.org/protobuf/types/known/wrapperspb
 google.golang.org/protobuf/types/pluginpb
-# gopkg.in/alecthomas/kingpin.v2 v2.2.6
+# gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 ## explicit
 # gopkg.in/natefinch/lumberjack.v2 v2.0.0
 gopkg.in/natefinch/lumberjack.v2

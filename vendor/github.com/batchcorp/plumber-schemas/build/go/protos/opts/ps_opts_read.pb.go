@@ -185,8 +185,8 @@ type ReadOptions struct {
 	// with the (untouched) value.
 	// @gotags: kong:"embed,group=decode"
 	DecodeOptions *encoding.DecodeOptions `protobuf:"bytes,5,opt,name=decode_options,json=decodeOptions,proto3" json:"decode_options,omitempty" kong:"embed,group=decode"`
-	// @gotags: kong:"help='Convert output before it is printed to STDOUT (1 = base64, 2 = gzip)',enum"
-	ConvertOutput ConvertOption `protobuf:"varint,6,opt,name=convert_output,json=convertOutput,proto3,enum=protos.opts.ConvertOption" json:"convert_output,omitempty" kong:"help='Convert output before it is printed to STDOUT (1 = base64, 2 = gzip)',enum"`
+	// @gotags: kong:"help='Convert output before it is printed to STDOUT (options: unset, base64, gzip)',type=pbenum,pbenum_strip_prefix=CONVERT_OPTION_,pbenum_lowercase,default=unset"
+	ConvertOutput ConvertOption `protobuf:"varint,6,opt,name=convert_output,json=convertOutput,proto3,enum=protos.opts.ConvertOption" json:"convert_output,omitempty" kong:"help='Convert output before it is printed to STDOUT (options: unset, base64, gzip)',type=pbenum,pbenum_strip_prefix=CONVERT_OPTION_,pbenum_lowercase,default=unset"`
 	// Automatically set by plumber when a new read is created
 	// @gotags: kong:"-"
 	XId string `protobuf:"bytes,1000,opt,name=_id,json=Id,proto3" json:"_id,omitempty" kong:"-"`
