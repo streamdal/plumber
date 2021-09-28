@@ -649,6 +649,12 @@ func pbEnumMapper() MapperFunc {
 
 		// Build a map of all available enums
 		for _, enumDesc := range fd.EnumType {
+			// The file descriptor may contain other enums as well - ignore any
+			// that do not match the type the tag references.
+			if target.Type().Name() != *enumDesc.Name {
+				continue
+			}
+
 			for _, valueDesc := range enumDesc.Value {
 				if valueDesc.Name == nil || valueDesc.Number == nil {
 					continue

@@ -24,6 +24,14 @@ type Server struct {
 	Log              *logrus.Entry
 }
 
+func (s *Server) SetServerOptions(ctx context.Context, request *protos.SetServerOptionsRequest) (*protos.SetServerOptionsResponse, error) {
+	panic("implement me")
+}
+
+func (s *Server) GetVCEvents(request *protos.GetVCEventsRequest, server protos.PlumberServer_GetVCEventsServer) error {
+	panic("implement me")
+}
+
 func (s *Server) GetServerOptions(ctx context.Context, request *protos.GetServerOptionsRequest) (*protos.GetServerOptionsResponse, error) {
 	panic("implement me")
 }

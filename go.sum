@@ -51,10 +51,14 @@ github.com/aws/aws-sdk-go v1.34.28 h1:sscPpn/Ns3i0F4HPEWAVcwdIRaZZCuL7llJ2/60yPI
 github.com/aws/aws-sdk-go v1.34.28/go.mod h1:H7NKnBqNVzoTJpGfLrQkkD+ytBA93eiDYi/+8rV9s48=
 github.com/batchcorp/kong v0.2.17-batch h1:pwH3gGees5iomWRbphKkfNchEwZ9EhXYk3dpLSLQ7qI=
 github.com/batchcorp/kong v0.2.17-batch/go.mod h1:ut4pbR4KLPWzKHbpEHZspWpRqjFr4UiPY3D2xf2tzf8=
+github.com/batchcorp/kong v0.2.17-batch-fix h1:H6sOfst2NcL2T/EZVNLukG7YRimJDHg9DhbRq7gE+KQ=
+github.com/batchcorp/kong v0.2.17-batch-fix/go.mod h1:ut4pbR4KLPWzKHbpEHZspWpRqjFr4UiPY3D2xf2tzf8=
 github.com/batchcorp/plumber-schemas v0.0.64 h1:MKLKo5p0hGKIxTDTafXCOXrRRR3xl45zzMDCz5SBnsU=
 github.com/batchcorp/plumber-schemas v0.0.64/go.mod h1:YULMKnfZ8X7tglTfUzKXhWc1Bfq6dy5ysIQbvsbCOkY=
 github.com/batchcorp/plumber-schemas v0.0.68 h1:0k+5uIMy88V/rCneSowyMDHgnfucg9xa8h/ImOsan4A=
 github.com/batchcorp/plumber-schemas v0.0.68/go.mod h1:YULMKnfZ8X7tglTfUzKXhWc1Bfq6dy5ysIQbvsbCOkY=
+github.com/batchcorp/plumber-schemas v0.0.69 h1:4o2dOVbpyQbkCqevBGhsllvmCp0EEW1pW8CxfilqScw=
+github.com/batchcorp/plumber-schemas v0.0.69/go.mod h1:YULMKnfZ8X7tglTfUzKXhWc1Bfq6dy5ysIQbvsbCOkY=
 github.com/batchcorp/schemas v0.1.8/go.mod h1:OS0jIg50R8wrMJAVwOEirnvpyPKnJlVadifqH4LJlD4=
 github.com/batchcorp/schemas v0.2.157 h1:iyhKioYcsQmmhRiuF0owyNB5bzvizCFXLjfT43mr7Rw=
 github.com/batchcorp/schemas v0.2.157/go.mod h1:R6rjH3b0egODh995q5qwGAfQ5fssAPeDf82gTGZS6d4=
