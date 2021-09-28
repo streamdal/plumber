@@ -57,8 +57,8 @@ type KafkaConn struct {
 	UseTls bool `protobuf:"varint,3,opt,name=use_tls,json=useTls,proto3" json:"use_tls,omitempty" kong:"help='Enable TLS usage',env=PLUMBER_RELAY_USE_TLS"`
 	// @gotags: kong:"help='Allow insecure TLS usage',env=PLUMBER_RELAY_KAFKA_INSECURE_TLS"
 	InsecureTls bool `protobuf:"varint,4,opt,name=insecure_tls,json=insecureTls,proto3" json:"insecure_tls,omitempty" kong:"help='Allow insecure TLS usage',env=PLUMBER_RELAY_KAFKA_INSECURE_TLS"`
-	// @gotags: kong:"help='SASL authentication type (0 - none, 1 - plain, 2 - scram)',env=PLUMBER_RELAY_KAFKA_SASL_TYPE,default=2"
-	SaslType KafkaConn_SASLType `protobuf:"varint,5,opt,name=sasl_type,json=saslType,proto3,enum=protos.args.KafkaConn_SASLType" json:"sasl_type,omitempty" kong:"help='SASL authentication type (0 - none, 1 - plain, 2 - scram)',env=PLUMBER_RELAY_KAFKA_SASL_TYPE,default=2"`
+	// @gotags: kong:"help='SASL authentication type (options: none, plain, scram)',env=PLUMBER_RELAY_KAFKA_SASL_TYPE,type=pbenum,pbenum_lowercase,default=none"
+	SaslType KafkaConn_SASLType `protobuf:"varint,5,opt,name=sasl_type,json=saslType,proto3,enum=protos.args.KafkaConn_SASLType" json:"sasl_type,omitempty" kong:"help='SASL authentication type (options: none, plain, scram)',env=PLUMBER_RELAY_KAFKA_SASL_TYPE,type=pbenum,pbenum_lowercase,default=none"`
 	// @gotags: kong:"help='SASL Username',env=PLUMBER_RELAY_KAFKA_USERNAME"
 	SaslUsername string `protobuf:"bytes,6,opt,name=sasl_username,json=saslUsername,proto3" json:"sasl_username,omitempty" kong:"help='SASL Username',env=PLUMBER_RELAY_KAFKA_USERNAME"`
 	// Required if sasl_type is not NONE

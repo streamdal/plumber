@@ -49,11 +49,11 @@ type Kong struct {
 	Stdout io.Writer
 	Stderr io.Writer
 
-	bindings          bindings
-	loader            ConfigurationLoader
-	resolvers         []Resolver
-	registry          *Registry
-	ignoreFieldsRegex []*regexp.Regexp
+	bindings     bindings
+	loader       ConfigurationLoader
+	resolvers    []Resolver
+	registry     *Registry
+	ignoreFields []*regexp.Regexp
 
 	noDefaultHelp bool
 	usageOnError  usageOnError
@@ -75,14 +75,14 @@ type Kong struct {
 // See the README (https://github.com/alecthomas/kong) for usage instructions.
 func New(grammar interface{}, options ...Option) (*Kong, error) {
 	k := &Kong{
-		Exit:              os.Exit,
-		Stdout:            os.Stdout,
-		Stderr:            os.Stderr,
-		registry:          NewRegistry().RegisterDefaults(),
-		vars:              Vars{},
-		bindings:          bindings{},
-		helpFormatter:     DefaultHelpValueFormatter,
-		ignoreFieldsRegex: make([]*regexp.Regexp, 0),
+		Exit:          os.Exit,
+		Stdout:        os.Stdout,
+		Stderr:        os.Stderr,
+		registry:      NewRegistry().RegisterDefaults(),
+		vars:          Vars{},
+		bindings:      bindings{},
+		helpFormatter: DefaultHelpValueFormatter,
+		ignoreFields:  make([]*regexp.Regexp, 0),
 	}
 
 	options = append(options, Bind(k))
@@ -182,6 +182,9 @@ func (k *Kong) interpolate(node *Node) (err error) {
 func (k *Kong) interpolateValue(value *Value, vars Vars) (err error) {
 	if len(value.Tag.Vars) > 0 {
 		vars = vars.CloneWith(value.Tag.Vars)
+	}
+	if varsContributor, ok := value.Mapper.(VarsContributor); ok {
+		vars = vars.CloneWith(varsContributor.Vars(value))
 	}
 	if value.Default, err = interpolate(value.Default, vars, nil); err != nil {
 		return fmt.Errorf("default value for %s: %s", value.Summary(), err)

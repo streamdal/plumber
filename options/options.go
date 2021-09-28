@@ -11,7 +11,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/alecthomas/kong"
+	"github.com/batchcorp/kong"
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
@@ -31,7 +31,7 @@ func New(args []string) (*kong.Context, *opts.CLIOptions, error) {
 
 	k, err := kong.New(
 		cliOpts,
-		kong.IgnoreFieldsRegex(".*XXX_"),
+		kong.IgnoreFields(".*XXX_"),
 		kong.Name("plumber"),
 		kong.Description("`curl` for messaging systems. See: https://github.com/batchcorp/plumber"),
 		kong.ShortUsageOnError(),
@@ -163,8 +163,9 @@ func maybeDisplayVersion(args []string) {
 	}
 }
 
-// We have to do this in order to ensure that kong has valid destinations to
-// write cliOptions to.
+// NewCLIOptions creates an *opts.CLIOptions with zero values. We have to do
+// this in order to ensure that kong has valid destinations to write discovered
+// options to.
 func NewCLIOptions() *opts.CLIOptions {
 	return &opts.CLIOptions{
 		Global:  &opts.GlobalCLIOptions{},

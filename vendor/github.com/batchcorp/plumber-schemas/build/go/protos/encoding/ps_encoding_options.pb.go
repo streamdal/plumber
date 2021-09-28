@@ -219,9 +219,8 @@ type EncodeOptions struct {
 	// Use an existing schema for encoding (and ignore all other encode settings)
 	// @gotags: kong:"-"
 	SchemaId string `protobuf:"bytes,1,opt,name=schema_id,json=schemaId,proto3" json:"schema_id,omitempty" kong:"-"`
-	// TODO: Update kong to be able to use proto/smart enums
-	// @gotags: kong:"help='Encode type (0: Unset, 1: JSONPB, 2: Avro)',default=0"
-	EncodeType EncodeType `protobuf:"varint,2,opt,name=encode_type,json=encodeType,proto3,enum=protos.encoding.EncodeType" json:"encode_type,omitempty" kong:"help='Encode type (0: Unset, 1: JSONPB, 2: Avro)',default=0"`
+	// @gotags: kong:"help='Encode type (options: unset, jsonpb, avro)',default=unset,type=pbenum,pbenum_strip_prefix=ENCODE_TYPE_,pbenum_lowercase"
+	EncodeType EncodeType `protobuf:"varint,2,opt,name=encode_type,json=encodeType,proto3,enum=protos.encoding.EncodeType" json:"encode_type,omitempty" kong:"help='Encode type (options: unset, jsonpb, avro)',default=unset,type=pbenum,pbenum_strip_prefix=ENCODE_TYPE_,pbenum_lowercase"`
 	// @gotags: kong:"embed,group=protobuf"
 	ProtobufSettings *ProtobufSettings `protobuf:"bytes,3,opt,name=protobuf_settings,json=protobufSettings,proto3" json:"protobuf_settings,omitempty" kong:"embed,group=protobuf"`
 	// @gotags: kong:"embed,group=avro"
@@ -288,8 +287,8 @@ type DecodeOptions struct {
 	// Use an existing schema for decoding (and ignore all other decode settings)
 	// @gotags: kong:"-"
 	SchemaId string `protobuf:"bytes,1,opt,name=schema_id,json=schemaId,proto3" json:"schema_id,omitempty" kong:"-"`
-	// @gotags: kong:"help='Decode type (0: Unset, 1: Protobuf, 2: Avro, 3: Thrift, 4: Flatbuffer)',default=0"
-	DecodeType DecodeType `protobuf:"varint,2,opt,name=decode_type,json=decodeType,proto3,enum=protos.encoding.DecodeType" json:"decode_type,omitempty" kong:"help='Decode type (0: Unset, 1: Protobuf, 2: Avro, 3: Thrift, 4: Flatbuffer)',default=0"`
+	// @gotags: kong:"help='Decode type (options: unset, protobuf, avro, thrift, flatbuffer)',type=pbenum,pbenum_strip_prefix=DECODE_TYPE_,pbenum_lowercase,default=unset"
+	DecodeType DecodeType `protobuf:"varint,2,opt,name=decode_type,json=decodeType,proto3,enum=protos.encoding.DecodeType" json:"decode_type,omitempty" kong:"help='Decode type (options: unset, protobuf, avro, thrift, flatbuffer)',type=pbenum,pbenum_strip_prefix=DECODE_TYPE_,pbenum_lowercase,default=unset"`
 	// @gotags: kong:"embed,group=protobuf"
 	ProtobufSettings *ProtobufSettings `protobuf:"bytes,3,opt,name=protobuf_settings,json=protobufSettings,proto3" json:"protobuf_settings,omitempty" kong:"embed,group=protobuf"`
 	// @gotags: kong:"embed,group=avro"

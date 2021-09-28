@@ -108,8 +108,8 @@ type CreateConsumerConfig struct {
 	CreateStreams bool `protobuf:"varint,1,opt,name=create_streams,json=createStreams,proto3" json:"create_streams,omitempty" kong:"help='Create the streams if creating a new consumer group',env='PLUMBER_RELAY_REDIS_STREAMS_CREATE_STREAMS'"`
 	// @gotags: kong:"help='Recreate this consumer group if it does not exist',env='PLUMBER_RELAY_REDIS_STREAMS_RECREATE_CONSUMER_GROUP'"
 	RecreateConsumerGroup bool `protobuf:"varint,2,opt,name=recreate_consumer_group,json=recreateConsumerGroup,proto3" json:"recreate_consumer_group,omitempty" kong:"help='Recreate this consumer group if it does not exist',env='PLUMBER_RELAY_REDIS_STREAMS_RECREATE_CONSUMER_GROUP'"`
-	// @gotags: kong:"help='What offset to start reading at (0: latest, 1: oldest)',default=0,required,env='PLUMBER_RELAY_REDIS_STREAMS_START_ID'"
-	OffsetStart          CreateConsumerConfig_OffsetStart `protobuf:"varint,3,opt,name=offset_start,json=offsetStart,proto3,enum=protos.args.CreateConsumerConfig_OffsetStart" json:"offset_start,omitempty" kong:"help='What offset to start reading at (0: latest, 1: oldest)',default=0,required,env='PLUMBER_RELAY_REDIS_STREAMS_START_ID'"`
+	// @gotags: kong:"help='What offset to start reading at (options: latest, oldest)',default=latest,required,env='PLUMBER_RELAY_REDIS_STREAMS_START_ID',type=pbenum,pbenum_lowercase"
+	OffsetStart          CreateConsumerConfig_OffsetStart `protobuf:"varint,3,opt,name=offset_start,json=offsetStart,proto3,enum=protos.args.CreateConsumerConfig_OffsetStart" json:"offset_start,omitempty" kong:"help='What offset to start reading at (options: latest, oldest)',default=latest,required,env='PLUMBER_RELAY_REDIS_STREAMS_START_ID',type=pbenum,pbenum_lowercase"`
 	XXX_NoUnkeyedLiteral struct{}                         `json:"-"`
 	XXX_unrecognized     []byte                           `json:"-"`
 	XXX_sizecache        int32                            `json:"-"`
