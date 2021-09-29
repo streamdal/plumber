@@ -242,6 +242,15 @@ func (c *Client) handleGithubEvent(event *protos.VCEvent) error {
 	case protos.GithubEvent_PULL_MERGED:
 		// TODO
 		c.EventsCh <- event
+	case protos.GithubEvent_ISSUE_CREATED:
+		// TODO
+		c.EventsCh <- event
+	case protos.GithubEvent_ISSUE_CLOSED:
+		// TODO
+		c.EventsCh <- event
+	case protos.GithubEvent_ISSUE_REOPENED:
+		// TODO
+		c.EventsCh <- event
 	default:
 		return fmt.Errorf("unknown GithHub event type '%s'", payload.GetType())
 	}
