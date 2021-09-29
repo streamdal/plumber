@@ -8,13 +8,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/batchcorp/plumber/config"
-
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
+	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/embed/etcd"
 	"github.com/batchcorp/plumber/validate"
 
@@ -39,8 +38,6 @@ type Client struct {
 	Conn                 *grpc.ClientConn
 	log                  *logrus.Entry
 	EventsCh             chan *protos.VCEvent
-	Context              context.Context
-	CancelFunc           context.CancelFunc
 	AttachedStreams      map[string]*AttachedStream
 	AttachedStreamsMutex *sync.RWMutex
 }
@@ -69,8 +66,6 @@ func New(cfg *Config) (IVCService, error) {
 		return nil, errors.Wrapf(err, "unable to open connection to %s", cfg.ServerOptions.VcserviceGrpcAddress)
 	}
 
-	cancelCtx, cancelFunc := context.WithCancel(context.Background())
-
 	// TODO: we need attached clients like backend reads so that we don't block events
 	vcClient := &Client{
 		Config:               cfg,
@@ -78,8 +73,6 @@ func New(cfg *Config) (IVCService, error) {
 		Conn:                 conn,
 		log:                  logrus.WithField("pkg", "vcservice"),
 		EventsCh:             make(chan *protos.VCEvent, 1),
-		Context:              cancelCtx,
-		CancelFunc:           cancelFunc,
 		AttachedStreams:      make(map[string]*AttachedStream),
 		AttachedStreamsMutex: &sync.RWMutex{},
 	}
@@ -136,17 +129,9 @@ func (c *Client) Start() {
 	var stream protos.VCService_ConnectClient
 
 	for {
-		// Allow context to be cancelled for token refreshes
-		select {
-		case <-c.Context.Done():
-			return
-		default:
-			// NOOP
-		}
-
 		if stream == nil {
 			// TODO: exponential backoff
-			stream, err = c.authorize(c.Context)
+			stream, err = c.authorize()
 			if err != nil {
 				c.log.Error(err)
 				stream = nil
@@ -190,12 +175,12 @@ func (c *Client) Start() {
 }
 
 // authorize opens a GRPC connection to vc-service. It is called by vcservice.Client.Start()
-func (c *Client) authorize(ctx context.Context) (protos.VCService_ConnectClient, error) {
+func (c *Client) authorize() (protos.VCService_ConnectClient, error) {
 	authRequest := &protos.ConnectAuthRequest{
 		ApiToken: c.PersistentConfig.VCServiceToken,
 	}
 
-	return c.Client.Connect(ctx, authRequest)
+	return c.Client.Connect(context.Background(), authRequest)
 }
 
 // handleResponse receives a dynamic replay message and determines which method should handle it based on the payload
@@ -203,8 +188,6 @@ func (c *Client) handleResponse(resp *protos.VCEvent) error {
 	switch resp.Type {
 	case protos.VCEvent_AUTH_RESPONSE:
 		return c.handleAuthResponse(resp)
-	case protos.VCEvent_NEW_JWT_TOKEN:
-		return c.handleNewJWTToken(resp.GetNewJwtToken())
 	case protos.VCEvent_GITHUB:
 		return c.handleGithubEvent(resp)
 	case protos.VCEvent_GITLAB:
@@ -246,52 +229,22 @@ func (c *Client) handleGithubEvent(event *protos.VCEvent) error {
 	switch payload.GetType() {
 	case protos.GithubEvent_INSTALL_CREATED:
 		// TODO
-		return errors.New("unimplemented")
+		c.EventsCh <- event
 	case protos.GithubEvent_INSTALL_UPDATED:
 		// TODO
-		return errors.New("unimplemented")
+		c.EventsCh <- event
 	case protos.GithubEvent_INSTALL_DELETED:
 		// TODO
-		return errors.New("unimplemented")
+		c.EventsCh <- event
 	case protos.GithubEvent_PULL_CREATED:
 		// TODO
-		return errors.New("unimplemented")
+		c.EventsCh <- event
 	case protos.GithubEvent_PULL_MERGED:
 		// TODO
-		return errors.New("unimplemented")
+		c.EventsCh <- event
+	default:
+		return fmt.Errorf("unknown GithHub event type '%s'", payload.GetType())
 	}
-
-	return fmt.Errorf("unknown GithHub event type '%s'", payload.GetType())
-}
-
-func (c *Client) handleNewJWTToken(payload *protos.NewJwtToken) error {
-
-	// Store new token in config and persist update to Etcd
-	c.PersistentConfig.VCServiceToken = payload.GetToken()
-	c.EtcdService.SaveConfig(context.Background(), c.PersistentConfig)
-
-	// Notify all plumbers of new token
-	msg := &etcd.MessageUpdateConfig{
-		VCServiceToken: payload.GetToken(),
-	}
-	if err := c.EtcdService.PublishConfigUpdate(context.Background(), msg); err != nil {
-		c.log.Errorf("unable to broadcast new JWT to all plumber instances")
-		// Do not fail, other instances will still be able to use existing token for a while
-	}
-
-	// Cancel receive loop in Start()
-	c.CancelFunc()
-
-	// Fresh context
-	c.Context, c.CancelFunc = context.WithCancel(context.Background())
-
-	// Reconnect with new token
-	if err := c.reconnect(); err != nil {
-		return errors.Wrap(err, "unable to handle new JWT token event")
-	}
-
-	// Rerun receive loop
-	c.Start()
 
 	return nil
 }

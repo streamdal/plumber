@@ -6,8 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/batchcorp/plumber/github"
-
 	"github.com/lestrrat-go/jwx/jwt"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -19,6 +17,7 @@ import (
 
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/embed/etcd"
+	"github.com/batchcorp/plumber/github"
 	"github.com/batchcorp/plumber/validate"
 	"github.com/batchcorp/plumber/vcservice"
 )
