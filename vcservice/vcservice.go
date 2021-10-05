@@ -133,7 +133,7 @@ func (c *Client) Start() {
 			// TODO: exponential backoff
 			stream, err = c.authorize()
 			if err != nil {
-				c.log.Error(err)
+				c.log.Errorf("unable to authorize stream: %s", err)
 				stream = nil
 				time.Sleep(ReconnectSleep)
 				continue

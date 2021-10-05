@@ -12,6 +12,12 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
+var (
+	ErrMissingConfigMessage  = errors.New("msg cannot be nil")
+	ErrMissingGithubToken    = errors.New("GithubToken cannot be empty")
+	ErrMissingVCServiceToken = errors.New("VCServiceToken cannot be empty")
+)
+
 // PublishCreateService publishes a CreateService message, which other plumber instances will receive
 // and add the service to their local in-memory maps
 func (e *Etcd) PublishCreateService(ctx context.Context, svc *protos.Service) error {
@@ -87,6 +93,9 @@ func (e *Etcd) PublishDeleteRelay(ctx context.Context, relay *opts.RelayOptions)
 // PublishConfigUpdate publishes a MessageUpdateConfig message, which other plumber instances
 // will receive and update their config with the new token
 func (e *Etcd) PublishConfigUpdate(ctx context.Context, msg *MessageUpdateConfig) error {
+	if err := validateMessageUpdateConfig(msg); err != nil {
+		return errors.Wrap(err, "unable to validate MessageUpdateConfig")
+	}
 	data, err := json.Marshal(msg)
 	if err != nil {
 		return errors.Wrapf(err, "unable to publish config update message")
@@ -98,6 +107,22 @@ func (e *Etcd) PublishConfigUpdate(ctx context.Context, msg *MessageUpdateConfig
 		EmittedBy: e.PlumberConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
+}
+
+func validateMessageUpdateConfig(msg *MessageUpdateConfig) error {
+	if msg == nil {
+		return ErrMissingConfigMessage
+	}
+
+	if msg.GithubToken == "" {
+		return ErrMissingGithubToken
+	}
+
+	if msg.VCServiceToken == "" {
+		return ErrMissingVCServiceToken
+	}
+
+	return nil
 }
 
 func (e *Etcd) publishServiceMessage(ctx context.Context, action Action, svc *protos.Service) error {

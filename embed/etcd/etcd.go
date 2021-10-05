@@ -456,7 +456,7 @@ func (e *Etcd) populateServerConfigCache() error {
 	e.PlumberConfig.VCServiceToken = cfg.VCServiceToken
 	e.PlumberConfig.GitHubToken = cfg.GitHubToken
 
-	// These falues are the ones saved in config.json
+	// These values are the ones saved in config.json
 
 	// TODO: Can we have some migration path from config.json to etcd? Regular plumber mode doesn't launch
 	// TODO: embedded etcd, so that needs to be handled somehow

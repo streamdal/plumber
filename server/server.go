@@ -56,8 +56,14 @@ func (s *Server) GetServerOptions(_ context.Context, req *protos.GetServerOption
 // SetServerOptions is called by the frontend to update any necessary server config options.
 // These changes will also be broadcast to other plumber instances.
 func (s *Server) SetServerOptions(ctx context.Context, req *protos.SetServerOptionsRequest) (*protos.SetServerOptionsResponse, error) {
+	if err := s.validateAuth(req.Auth); err != nil {
+		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
+	}
 
 	vcServiceJWT := req.GetVcserviceToken()
+	if vcServiceJWT == "" {
+		return nil, CustomError(common.Code_FAILED_PRECONDITION, "VcserviceToken cannot be empty")
+	}
 
 	s.PersistentConfig.VCServiceToken = vcServiceJWT
 
