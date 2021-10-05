@@ -54,6 +54,7 @@ require (
 	github.com/v2pro/wombat v0.0.0-20180402055224-a56dbdcddef2 // indirect
 	go.mongodb.org/mongo-driver v1.5.1
 	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
+	google.golang.org/api v0.29.0
 	google.golang.org/grpc v1.35.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )
