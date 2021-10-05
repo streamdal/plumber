@@ -175,7 +175,7 @@ plumber read redis-streams --address="localhost:6379" --streams="new-orders"
 ##### GCP Pub/Sub
 
 ```bash
-plumber read gcp-pubsub --project-id=PROJECT_ID --sub-id=SUBSCRIPTION
+plumber read gcp-pubsub --project-id=PROJECT_ID --sub-id=SUBSCRIPTION --credentials-file=/path/to/credentials.json
 ```
 
 ##### MQTT
@@ -328,7 +328,7 @@ plumber write redis-streams --address="localhost:6379" --streams="new-orders" --
 ##### GCP Pub/Sub
 
 ```bash
-plumber write gcp-pubsub --topic-id=TOPIC --project-id=PROJECT_ID --input-data='{"Sensor":"Room J","Temp":19}' 
+plumber write gcp-pubsub --topic-id=TOPIC --project-id=PROJECT_ID --credentials-file=/path/to/credentials.json --input-data='{"Sensor":"Room J","Temp":19}' 
 ```
 
 ##### MQTT

@@ -87,7 +87,8 @@ Environment Variables
 
 | Environment Variable  | Description | Default |
 | --------------------- | ------------| ------- |
-| `GOOGLE_APPLICATION_CREDENTIALS` | Credentials file for service account | **REQUIRED** |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Credentials file for service account | Required if `PLUMBER_RELAY_GCP_CREDENTIALS` is not specified |
+| `PLUMBER_RELAY_GCP_CREDENTIALS` | JSON credentials as a string | Required if `GOOGLE_APPLICATION_CREDENTIALS` is not specified |
 | `PLUMBER_RELAY_GCP_PROJECT_ID` | Project ID | **REQUIRED** |
 | `PLUMBER_RELAY_GCP_SUBSCRIPTION_ID` | Subscription ID | **REQUIRED** |
 | `PLUMBER_RELAY_GCP_ACK_MESSAGE` | Whether to acknowledge message receive | `true` |

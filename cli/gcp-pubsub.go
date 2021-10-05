@@ -8,7 +8,9 @@ import (
 
 type GCPPubSubOptions struct {
 	// Shared
-	ProjectId string
+	ProjectId       string
+	CredentialsFile string
+	CredentialsJSON string
 
 	// Read
 	ReadSubscriptionId string
@@ -47,6 +49,14 @@ func HandleGCPPubSubFlags(readCmd, writeCmd, relayCmd *kingpin.CmdClause, opts *
 }
 
 func addSharedGCPPubSubFlags(cmd *kingpin.CmdClause, opts *Options) {
+	cmd.Flag("credentials-file", "Location to GCP JSON credentials file").
+		Envar("GOOGLE_APPLICATION_CREDENTIALS").
+		StringVar(&opts.GCPPubSub.CredentialsFile)
+
+	cmd.Flag("credentials-json", "JSON of GCP credentials. Must specify this or --credentials-file").
+		Envar("PLUMBER_RELAY_GCP_CREDENTIALS").
+		StringVar(&opts.GCPPubSub.CredentialsJSON)
+
 	cmd.Flag("project-id", "Project Id").
 		Required().
 		Envar("PLUMBER_RELAY_GCP_PROJECT_ID").
