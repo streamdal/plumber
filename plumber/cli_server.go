@@ -5,15 +5,18 @@ import (
 	"net"
 	"time"
 
+	"github.com/batchcorp/plumber/github"
+
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+
 	"github.com/batchcorp/plumber/embed/etcd"
-	"github.com/batchcorp/plumber/github"
 	"github.com/batchcorp/plumber/server"
+	"github.com/batchcorp/plumber/vcservice"
 )
 
 // RunServer is a wrapper for starting embedded etcd and starting the gRPC server.
@@ -71,17 +74,33 @@ func (p *Plumber) runServer() error {
 		}
 	}
 
-	gh, err := github.New()
+	// Only start if we have an authentication token for the service
+	var vcService vcservice.IVCService
+	if p.PersistentConfig.VCServiceToken != "" {
+		var err error
+		vcService, err = vcservice.New(&vcservice.Config{
+			EtcdService:      p.Etcd,
+			PersistentConfig: p.PersistentConfig,
+			ServerOptions:    p.CLIOptions.Server,
+		})
+		if err != nil {
+			return errors.Wrap(err, "unable to create VCService service instance")
+		}
+	}
+
+	ghService, err := github.New()
 	if err != nil {
-		return errors.Wrap(err, "unable to create GitHub service instance")
+		return errors.Wrap(err, "unable to start GitHub service")
 	}
 
 	plumberServer := &server.Server{
 		PersistentConfig: p.PersistentConfig,
 		AuthToken:        p.CLIOptions.Server.AuthToken,
-		GithubService:    gh,
+		VCService:        vcService,
+		GithubService:    ghService,
 		Log:              logrus.WithField("pkg", "plumber/cli_server.go"),
 		Etcd:             p.Etcd,
+		CLIOptions:       p.CLIOptions,
 	}
 
 	protos.RegisterPlumberServerServer(grpcServer, plumberServer)

@@ -2,13 +2,20 @@ package etcd
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+)
+
+var (
+	ErrMissingConfigMessage  = errors.New("msg cannot be nil")
+	ErrMissingGithubToken    = errors.New("GithubToken cannot be empty")
+	ErrMissingVCServiceToken = errors.New("VCServiceToken cannot be empty")
 )
 
 // PublishCreateService publishes a CreateService message, which other plumber instances will receive
@@ -81,6 +88,41 @@ func (e *Etcd) PublishUpdateRelay(ctx context.Context, relay *opts.RelayOptions)
 // and delete from their local in-memory maps
 func (e *Etcd) PublishDeleteRelay(ctx context.Context, relay *opts.RelayOptions) error {
 	return e.publishRelayMessage(ctx, DeleteSchema, relay)
+}
+
+// PublishConfigUpdate publishes a MessageUpdateConfig message, which other plumber instances
+// will receive and update their config with the new token
+func (e *Etcd) PublishConfigUpdate(ctx context.Context, msg *MessageUpdateConfig) error {
+	if err := validateMessageUpdateConfig(msg); err != nil {
+		return errors.Wrap(err, "unable to validate MessageUpdateConfig")
+	}
+	data, err := json.Marshal(msg)
+	if err != nil {
+		return errors.Wrapf(err, "unable to publish config update message")
+	}
+
+	return e.Broadcast(ctx, &Message{
+		Action:    UpdateConfig,
+		Data:      data,
+		EmittedBy: e.PlumberConfig.PlumberID,
+		EmittedAt: time.Now().UTC(),
+	})
+}
+
+func validateMessageUpdateConfig(msg *MessageUpdateConfig) error {
+	if msg == nil {
+		return ErrMissingConfigMessage
+	}
+
+	if msg.GithubToken == "" {
+		return ErrMissingGithubToken
+	}
+
+	if msg.VCServiceToken == "" {
+		return ErrMissingVCServiceToken
+	}
+
+	return nil
 }
 
 func (e *Etcd) publishServiceMessage(ctx context.Context, action Action, svc *protos.Service) error {

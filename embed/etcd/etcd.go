@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -17,6 +16,7 @@ import (
 	"go.etcd.io/etcd/server/v3/embed"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/server/types"
@@ -29,6 +29,7 @@ const (
 	CacheSchemasPrefix     = "/plumber-server/schemas"
 	CacheRelaysPrefix      = "/plumber-server/relay"
 	CacheServicesPrefix    = "/plumber-server/services"
+	CacheServerConfigKey   = "/plumber-server/server-config"
 )
 
 type HandlerFunc func(context.Context, *clientv3.WatchResponse) error
@@ -45,6 +46,7 @@ type IEtcd interface {
 
 	Broadcast(ctx context.Context, msg *Message) error
 	Direct(ctx context.Context, node string, msg *Message) error
+	SaveConfig(ctx context.Context, cfg *config.Config) error
 	Shutdown(force bool) error
 	Start(serviceCtx context.Context) error
 
@@ -62,6 +64,7 @@ type IEtcd interface {
 	PublishCreateRelay(ctx context.Context, relay *opts.RelayOptions) error
 	PublishUpdateRelay(ctx context.Context, relay *opts.RelayOptions) error
 	PublishDeleteRelay(ctx context.Context, relay *opts.RelayOptions) error
+	PublishConfigUpdate(ctx context.Context, msg *MessageUpdateConfig) error
 }
 
 type Etcd struct {
@@ -410,6 +413,10 @@ func (e *Etcd) Delete(ctx context.Context, key string, opts ...clientv3.OpOption
 
 // PopulateCache loads config from etcd
 func (e *Etcd) PopulateCache() error {
+	if err := e.populateServerConfigCache(); err != nil {
+		return err
+	}
+
 	if err := e.populateConnectionCache(); err != nil {
 		return err
 	}
@@ -424,6 +431,54 @@ func (e *Etcd) PopulateCache() error {
 
 	if err := e.populateRelayCache(); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (e *Etcd) populateServerConfigCache() error {
+	resp, err := e.Get(context.Background(), CacheServerConfigKey)
+	if err != nil {
+		return errors.Wrap(err, "unable to fetch server config from etcd")
+	}
+
+	// Nothing stored yet, do nothing
+	if len(resp.Kvs) == 0 {
+		return nil
+	}
+
+	cfg := &config.Config{}
+	if err := json.Unmarshal(resp.Kvs[0].Value, cfg); err != nil {
+		return errors.Wrap(err, "unable to unmarshal cached server config")
+	}
+
+	// These config values on the ones saved in etcd
+	e.PlumberConfig.VCServiceToken = cfg.VCServiceToken
+	e.PlumberConfig.GitHubToken = cfg.GitHubToken
+
+	// These values are the ones saved in config.json
+
+	// TODO: Can we have some migration path from config.json to etcd? Regular plumber mode doesn't launch
+	// TODO: embedded etcd, so that needs to be handled somehow
+
+	// Wrapped in if block in case config is still stored in config.json
+	if e.PlumberConfig.UserID == "" {
+		e.PlumberConfig.UserID = cfg.UserID
+	}
+
+	// Wrapped in if block in case config is still stored in config.json
+	if e.PlumberConfig.PlumberID == "" {
+		e.PlumberConfig.PlumberID = cfg.PlumberID
+	}
+
+	// Wrapped in if block in case config is still stored in config.json
+	if e.PlumberConfig.TeamID == "" {
+		e.PlumberConfig.TeamID = cfg.TeamID
+	}
+
+	// Wrapped in if block in case config is still stored in config.json
+	if e.PlumberConfig.Token == "" {
+		e.PlumberConfig.Token = cfg.Token
 	}
 
 	return nil
@@ -529,6 +584,21 @@ func (e *Etcd) populateServiceCache() error {
 	}
 
 	e.log.Debugf("Loaded '%d' services from etcd", count)
+
+	return nil
+}
+
+// SaveConfig marshals a config.Config to JSON and saves it to etcd so that it can be retrieved on startup
+func (e *Etcd) SaveConfig(ctx context.Context, cfg *config.Config) error {
+	data, err := json.Marshal(cfg)
+	if err != nil {
+		return errors.Wrap(err, "unable to marshal config to JSON")
+	}
+
+	_, err = e.Put(ctx, CacheServerConfigKey, string(data))
+	if err != nil {
+		return errors.Wrap(err, "unable to save server config to etcd")
+	}
 
 	return nil
 }

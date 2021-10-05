@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/batchcorp/plumber/pb"
-	"github.com/batchcorp/plumber/validate"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
+
+	"github.com/batchcorp/plumber/pb"
+	"github.com/batchcorp/plumber/validate"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 )
@@ -15,6 +16,7 @@ import (
 // importGithub imports a github repo as a schema
 // TODO: types other than protobuf
 func (s *Server) importGithub(ctx context.Context, req *protos.ImportGithubRequest) (*protos.Schema, error) {
+
 	var schema *protos.Schema
 	var err error
 

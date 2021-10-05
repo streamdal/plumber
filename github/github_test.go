@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -76,119 +75,6 @@ var _ = Describe("Github", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(owner).To(Equal("batchcorp"))
 			Expect(name).To(Equal("collector-schemas"))
-		})
-	})
-
-	Context("GetUserCode", func() {
-		It("returns an error on non-200 response", func() {
-			g := NewWithMockResponse(401, `{}`)
-
-			_, err := g.GetUserCode()
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("non-200 response"))
-		})
-		It("returns an error with invalid expires_in", func() {
-			g := NewWithMockResponse(200, `expires_in=abc`)
-
-			_, err := g.GetUserCode()
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("invalid duration"))
-		})
-
-		It("returns an error with invalid expires_in", func() {
-			g := NewWithMockResponse(200, `expires_in=5&interval=abc`)
-
-			_, err := g.GetUserCode()
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("invalid duration"))
-		})
-
-		It("succeeds", func() {
-			mockResp := `expires_in=5&interval=5&device_code=foo&user_code=AAAA-1111&verification_uri=https://github.com`
-
-			g := NewWithMockResponse(200, mockResp)
-
-			resp, err := g.GetUserCode()
-			Expect(err).ToNot(HaveOccurred())
-			Expect(resp.UserCode).To(Equal("AAAA-1111"))
-			Expect(resp.DeviceCode).To(Equal("foo"))
-			Expect(resp.VerificationURL).To(Equal("https://github.com"))
-			Expect(resp.CheckInterval).To(Equal(time.Second * 5))
-
-		})
-	})
-
-	Context("GetAccessToken", func() {
-		It("returns an error on non-200 response", func() {
-			g := NewWithMockResponse(401, `{}`)
-			_, err := g.GetAccessToken(&UserCodeResponse{})
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("non-200 response"))
-		})
-
-		It("handles a pending response", func() {
-			cfg := &UserCodeResponse{
-				CheckInterval: time.Second * 5,
-			}
-
-			g := NewWithMockResponse(200, `error=authorization_pending`)
-
-			resp, err := g.GetAccessToken(cfg)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(resp.SleepDuration).To(Equal(cfg.CheckInterval))
-		})
-
-		It("handles a slowdown response", func() {
-			cfg := &UserCodeResponse{
-				CheckInterval: time.Second * 5,
-			}
-
-			g := NewWithMockResponse(200, `error=slow_down&interval=10`)
-
-			resp, err := g.GetAccessToken(cfg)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(resp.SleepDuration).To(Equal(time.Second * 10))
-		})
-
-		It("returns the bearer token", func() {
-			expectedToken := "gfsdf708gff9dsd98"
-			cfg := &UserCodeResponse{
-				CheckInterval: time.Second * 5,
-			}
-
-			g := NewWithMockResponse(200, "access_token="+expectedToken)
-
-			resp, err := g.GetAccessToken(cfg)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(resp.BearerToken).To(Equal(expectedToken))
-		})
-	})
-
-	Context("PollForAccessToken", func() {
-		It("times out at the given deadline", func() {
-			cfg := &UserCodeResponse{
-				ExpiresIn: time.Now().UTC().Add(time.Millisecond * 100),
-			}
-
-			g := NewWithMockResponse(200, `error=authorization_pending`)
-
-			_, err := g.PollForAccessToken(cfg)
-			Expect(err).To(HaveOccurred())
-			Expect(err).To(Equal(ErrVerifyTimeout))
-		})
-
-		It("returns the access token", func() {
-			expectedToken := "gfsdf708gff9dsd98"
-
-			cfg := &UserCodeResponse{
-				ExpiresIn: time.Now().UTC().Add(time.Second * 5),
-			}
-
-			g := NewWithMockResponse(200, "access_token="+expectedToken)
-
-			token, err := g.PollForAccessToken(cfg)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(token).To(Equal(expectedToken))
 		})
 	})
 

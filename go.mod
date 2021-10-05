@@ -5,8 +5,10 @@ go 1.16
 require (
 	cloud.google.com/go/pubsub v1.6.1
 	github.com/aws/aws-sdk-go v1.34.28
+	github.com/batchcorp/pgoutput v0.3.2 // indirect
+	github.com/batchcorp/rabbit v0.1.9 // indirect
 	github.com/batchcorp/kong v0.2.17-batch-fix
-	github.com/batchcorp/plumber-schemas v0.0.73
+	github.com/batchcorp/plumber-schemas v0.0.74
 	github.com/batchcorp/schemas v0.2.157
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fatih/color v1.12.0 // indirect
@@ -19,6 +21,7 @@ require (
 	github.com/kataras/tablewriter v0.0.0-20180708051242-e063d29b7c23
 	github.com/klauspost/compress v1.11.12 // indirect
 	github.com/lensesio/tableprinter v0.0.0-20201125135848-89e81fc956e7
+	github.com/lestrrat-go/jwx v1.2.6
 	github.com/linkedin/goavro/v2 v2.9.8
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/mattn/go-runewidth v0.0.10 // indirect

@@ -60,6 +60,8 @@ func (e *Etcd) handleBroadcastWatchResponse(ctx context.Context, resp *clientv3.
 			err = e.doUpdateRelay(ctx, msg)
 		case DeleteRelay:
 			err = e.doDeleteRelay(ctx, msg)
+		case UpdateConfig:
+			err = e.doUpdateConfig(ctx, msg)
 		default:
 			e.log.Debugf("unrecognized action '%s' for key '%s' - skipping", msg.Action, string(v.Kv.Key))
 		}
@@ -249,6 +251,21 @@ func (e *Etcd) doDeleteRelay(_ context.Context, msg *Message) error {
 	e.PlumberConfig.DeleteRelay(relayOptions.XRelayId)
 
 	e.log.Debugf("deleted schema '%s'", relayOptions.XRelayId)
+
+	return nil
+}
+
+func (e *Etcd) doUpdateConfig(_ context.Context, msg *Message) error {
+	updateCfg := &MessageUpdateConfig{}
+	if err := json.Unmarshal(msg.Data, updateCfg); err != nil {
+		return errors.Wrap(err, "unable to unmarshal message into MessageUpdateConfig")
+	}
+
+	// Set in config map
+	e.PlumberConfig.VCServiceToken = updateCfg.VCServiceToken
+	e.PlumberConfig.GitHubToken = updateCfg.GithubToken
+
+	e.log.Debugf("updated config via MessageUpdateConfig")
 
 	return nil
 }

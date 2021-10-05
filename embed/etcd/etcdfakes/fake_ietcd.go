@@ -7,6 +7,7 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/embed/etcd"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
@@ -66,6 +67,18 @@ type FakeIEtcd struct {
 	getReturnsOnCall map[int]struct {
 		result1 *clientv3.GetResponse
 		result2 error
+	}
+	PublishConfigUpdateStub        func(context.Context, *etcd.MessageUpdateConfig) error
+	publishConfigUpdateMutex       sync.RWMutex
+	publishConfigUpdateArgsForCall []struct {
+		arg1 context.Context
+		arg2 *etcd.MessageUpdateConfig
+	}
+	publishConfigUpdateReturns struct {
+		result1 error
+	}
+	publishConfigUpdateReturnsOnCall map[int]struct {
+		result1 error
 	}
 	PublishCreateConnectionStub        func(context.Context, *opts.ConnectionOptions) error
 	publishCreateConnectionMutex       sync.RWMutex
@@ -226,6 +239,18 @@ type FakeIEtcd struct {
 	putReturnsOnCall map[int]struct {
 		result1 *clientv3.PutResponse
 		result2 error
+	}
+	SaveConfigStub        func(context.Context, *config.Config) error
+	saveConfigMutex       sync.RWMutex
+	saveConfigArgsForCall []struct {
+		arg1 context.Context
+		arg2 *config.Config
+	}
+	saveConfigReturns struct {
+		result1 error
+	}
+	saveConfigReturnsOnCall map[int]struct {
+		result1 error
 	}
 	ShutdownStub        func(bool) error
 	shutdownMutex       sync.RWMutex
@@ -508,6 +533,68 @@ func (fake *FakeIEtcd) GetReturnsOnCall(i int, result1 *clientv3.GetResponse, re
 		result1 *clientv3.GetResponse
 		result2 error
 	}{result1, result2}
+}
+
+func (fake *FakeIEtcd) PublishConfigUpdate(arg1 context.Context, arg2 *etcd.MessageUpdateConfig) error {
+	fake.publishConfigUpdateMutex.Lock()
+	ret, specificReturn := fake.publishConfigUpdateReturnsOnCall[len(fake.publishConfigUpdateArgsForCall)]
+	fake.publishConfigUpdateArgsForCall = append(fake.publishConfigUpdateArgsForCall, struct {
+		arg1 context.Context
+		arg2 *etcd.MessageUpdateConfig
+	}{arg1, arg2})
+	stub := fake.PublishConfigUpdateStub
+	fakeReturns := fake.publishConfigUpdateReturns
+	fake.recordInvocation("PublishConfigUpdate", []interface{}{arg1, arg2})
+	fake.publishConfigUpdateMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIEtcd) PublishConfigUpdateCallCount() int {
+	fake.publishConfigUpdateMutex.RLock()
+	defer fake.publishConfigUpdateMutex.RUnlock()
+	return len(fake.publishConfigUpdateArgsForCall)
+}
+
+func (fake *FakeIEtcd) PublishConfigUpdateCalls(stub func(context.Context, *etcd.MessageUpdateConfig) error) {
+	fake.publishConfigUpdateMutex.Lock()
+	defer fake.publishConfigUpdateMutex.Unlock()
+	fake.PublishConfigUpdateStub = stub
+}
+
+func (fake *FakeIEtcd) PublishConfigUpdateArgsForCall(i int) (context.Context, *etcd.MessageUpdateConfig) {
+	fake.publishConfigUpdateMutex.RLock()
+	defer fake.publishConfigUpdateMutex.RUnlock()
+	argsForCall := fake.publishConfigUpdateArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIEtcd) PublishConfigUpdateReturns(result1 error) {
+	fake.publishConfigUpdateMutex.Lock()
+	defer fake.publishConfigUpdateMutex.Unlock()
+	fake.PublishConfigUpdateStub = nil
+	fake.publishConfigUpdateReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishConfigUpdateReturnsOnCall(i int, result1 error) {
+	fake.publishConfigUpdateMutex.Lock()
+	defer fake.publishConfigUpdateMutex.Unlock()
+	fake.PublishConfigUpdateStub = nil
+	if fake.publishConfigUpdateReturnsOnCall == nil {
+		fake.publishConfigUpdateReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.publishConfigUpdateReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeIEtcd) PublishCreateConnection(arg1 context.Context, arg2 *opts.ConnectionOptions) error {
@@ -1321,6 +1408,68 @@ func (fake *FakeIEtcd) PutReturnsOnCall(i int, result1 *clientv3.PutResponse, re
 	}{result1, result2}
 }
 
+func (fake *FakeIEtcd) SaveConfig(arg1 context.Context, arg2 *config.Config) error {
+	fake.saveConfigMutex.Lock()
+	ret, specificReturn := fake.saveConfigReturnsOnCall[len(fake.saveConfigArgsForCall)]
+	fake.saveConfigArgsForCall = append(fake.saveConfigArgsForCall, struct {
+		arg1 context.Context
+		arg2 *config.Config
+	}{arg1, arg2})
+	stub := fake.SaveConfigStub
+	fakeReturns := fake.saveConfigReturns
+	fake.recordInvocation("SaveConfig", []interface{}{arg1, arg2})
+	fake.saveConfigMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIEtcd) SaveConfigCallCount() int {
+	fake.saveConfigMutex.RLock()
+	defer fake.saveConfigMutex.RUnlock()
+	return len(fake.saveConfigArgsForCall)
+}
+
+func (fake *FakeIEtcd) SaveConfigCalls(stub func(context.Context, *config.Config) error) {
+	fake.saveConfigMutex.Lock()
+	defer fake.saveConfigMutex.Unlock()
+	fake.SaveConfigStub = stub
+}
+
+func (fake *FakeIEtcd) SaveConfigArgsForCall(i int) (context.Context, *config.Config) {
+	fake.saveConfigMutex.RLock()
+	defer fake.saveConfigMutex.RUnlock()
+	argsForCall := fake.saveConfigArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIEtcd) SaveConfigReturns(result1 error) {
+	fake.saveConfigMutex.Lock()
+	defer fake.saveConfigMutex.Unlock()
+	fake.SaveConfigStub = nil
+	fake.saveConfigReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) SaveConfigReturnsOnCall(i int, result1 error) {
+	fake.saveConfigMutex.Lock()
+	defer fake.saveConfigMutex.Unlock()
+	fake.SaveConfigStub = nil
+	if fake.saveConfigReturnsOnCall == nil {
+		fake.saveConfigReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.saveConfigReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeIEtcd) Shutdown(arg1 bool) error {
 	fake.shutdownMutex.Lock()
 	ret, specificReturn := fake.shutdownReturnsOnCall[len(fake.shutdownArgsForCall)]
@@ -1454,6 +1603,8 @@ func (fake *FakeIEtcd) Invocations() map[string][][]interface{} {
 	defer fake.directMutex.RUnlock()
 	fake.getMutex.RLock()
 	defer fake.getMutex.RUnlock()
+	fake.publishConfigUpdateMutex.RLock()
+	defer fake.publishConfigUpdateMutex.RUnlock()
 	fake.publishCreateConnectionMutex.RLock()
 	defer fake.publishCreateConnectionMutex.RUnlock()
 	fake.publishCreateRelayMutex.RLock()
@@ -1480,6 +1631,8 @@ func (fake *FakeIEtcd) Invocations() map[string][][]interface{} {
 	defer fake.publishUpdateServiceMutex.RUnlock()
 	fake.putMutex.RLock()
 	defer fake.putMutex.RUnlock()
+	fake.saveConfigMutex.RLock()
+	defer fake.saveConfigMutex.RUnlock()
 	fake.shutdownMutex.RLock()
 	defer fake.shutdownMutex.RUnlock()
 	fake.startMutex.RLock()
