@@ -51,6 +51,11 @@ github.com/aws/aws-sdk-go/service/sts/stsiface
 # github.com/batchcorp/kong v0.2.17-batch-fix
 ## explicit
 github.com/batchcorp/kong
+# github.com/batchcorp/lucene2x v0.0.17
+## explicit
+github.com/batchcorp/lucene2x/jsonquery
+github.com/batchcorp/lucene2x/lexer
+github.com/batchcorp/lucene2x/token
 # github.com/batchcorp/pgoutput v0.3.2
 ## explicit
 # github.com/batchcorp/plumber-schemas v0.0.74
@@ -234,7 +239,7 @@ github.com/linkedin/goavro/v2
 github.com/logrusorgru/aurora
 # github.com/mattn/go-colorable v0.1.8
 github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.12
+# github.com/mattn/go-isatty v0.0.13
 github.com/mattn/go-isatty
 # github.com/mattn/go-runewidth v0.0.10
 ## explicit
@@ -250,6 +255,8 @@ github.com/maxbrunsfeld/counterfeiter/v6/generator
 # github.com/mcuadros/go-lookup v0.0.0-20200831155250-80f87a4fa5ee
 ## explicit
 github.com/mcuadros/go-lookup
+# github.com/minio/pkg v1.1.3
+github.com/minio/pkg/wildcard
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.1
@@ -263,10 +270,11 @@ github.com/nxadm/tail/winfile
 # github.com/olekukonko/tablewriter v0.0.5
 ## explicit
 github.com/olekukonko/tablewriter
-# github.com/onsi/ginkgo v1.15.1
+# github.com/onsi/ginkgo v1.16.4
 ## explicit
 github.com/onsi/ginkgo
 github.com/onsi/ginkgo/config
+github.com/onsi/ginkgo/formatter
 github.com/onsi/ginkgo/internal/codelocation
 github.com/onsi/ginkgo/internal/containernode
 github.com/onsi/ginkgo/internal/failer
@@ -284,14 +292,11 @@ github.com/onsi/ginkgo/reporters/stenographer
 github.com/onsi/ginkgo/reporters/stenographer/support/go-colorable
 github.com/onsi/ginkgo/reporters/stenographer/support/go-isatty
 github.com/onsi/ginkgo/types
-# github.com/onsi/gomega v1.11.0
+# github.com/onsi/gomega v1.16.0
 ## explicit
 github.com/onsi/gomega
 github.com/onsi/gomega/format
-github.com/onsi/gomega/internal/assertion
-github.com/onsi/gomega/internal/asyncassertion
-github.com/onsi/gomega/internal/oraclematcher
-github.com/onsi/gomega/internal/testingtsupport
+github.com/onsi/gomega/internal
 github.com/onsi/gomega/matchers
 github.com/onsi/gomega/matchers/support/goraph/bipartitegraph
 github.com/onsi/gomega/matchers/support/goraph/edge
@@ -362,7 +367,7 @@ github.com/segmentio/kafka-go/protocol/saslhandshake
 github.com/segmentio/kafka-go/sasl
 github.com/segmentio/kafka-go/sasl/plain
 github.com/segmentio/kafka-go/sasl/scram
-# github.com/sirupsen/logrus v1.7.0
+# github.com/sirupsen/logrus v1.8.1
 ## explicit
 github.com/sirupsen/logrus
 # github.com/soheilhy/cmux v0.1.5
@@ -615,7 +620,7 @@ golang.org/x/lint/golint
 # golang.org/x/mod v0.4.2
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4
+# golang.org/x/net v0.0.0-20210428140749-89ef3d95e781
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/html
@@ -649,7 +654,7 @@ golang.org/x/sys/unix
 golang.org/x/sys/windows
 # golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1
 golang.org/x/term
-# golang.org/x/text v0.3.5
+# golang.org/x/text v0.3.6
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
 golang.org/x/text/encoding/htmlindex

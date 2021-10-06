@@ -224,7 +224,7 @@ func (s *Server) StopRead(_ context.Context, req *protos.StopReadRequest) (*prot
 	return &protos.StopReadResponse{
 		Status: &common.Status{
 			Code:      common.Code_OK,
-			Message:   "Message read",
+			Message:   "Read stopped",
 			RequestId: requestID,
 		},
 	}, nil
