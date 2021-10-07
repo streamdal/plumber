@@ -7,7 +7,9 @@ import (
 
 	"github.com/jhump/protoreflect/desc"
 	"github.com/sirupsen/logrus"
+	"github.com/tidwall/gjson"
 
+	"github.com/batchcorp/lucene2x/jsonquery"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
@@ -67,6 +69,20 @@ MAIN:
 				// TODO: need to send the err back to the client somehow
 				r.Log.Errorf("unable to decode msg for backend '%s': %s", r.Backend.Name(), err)
 				continue
+			}
+
+			// Message is JSON, perform query if needed
+			filter := r.ReadOptions.GetFilter()
+			if filter != nil && gjson.ValidBytes(decodedPayload) {
+				found, err := jsonquery.Find(decodedPayload, filter.Query)
+				if err != nil {
+					r.Log.Errorf("Could not query payload, message ignored: %s", err)
+					continue
+				}
+				if !found {
+					r.Log.Debug("Message did not match filter, dropping")
+					continue
+				}
 			}
 
 			// Update read record with (maybe) decoded payload
