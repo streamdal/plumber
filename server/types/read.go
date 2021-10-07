@@ -72,7 +72,7 @@ MAIN:
 			}
 
 			// Message is JSON, perform query if needed
-			filter := r.ReadOptions.GetReadFilter()
+			filter := r.ReadOptions.GetFilter()
 			if filter != nil && gjson.ValidBytes(decodedPayload) {
 				found, err := jsonquery.Find(decodedPayload, filter.Query)
 				if err != nil {
