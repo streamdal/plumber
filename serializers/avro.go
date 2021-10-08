@@ -2,10 +2,8 @@ package serializers
 
 import (
 	"archive/zip"
-	"bytes"
 	"fmt"
 	"io/ioutil"
-	"path/filepath"
 	"strings"
 
 	"github.com/linkedin/goavro/v2"
@@ -71,37 +69,6 @@ func AvroDecodeWithSchemaFile(schemaPath string, data []byte) ([]byte, error) {
 	}
 
 	return AvroDecode(schema, data)
-}
-
-// GetAvroFileFromArchive attempts to find an AVRO schema file in a zip archive
-// TODO: remove duplication between this and pb.getProtoFilesFromZip()
-func GetAvroFileFromArchive(archive []byte) (map[string]string, error) {
-	files := make(map[string]string)
-
-	zipReader, err := zip.NewReader(bytes.NewReader(archive), int64(len(archive)))
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse archive")
-	}
-
-	// Read all the files from zip archive
-	for _, zipFile := range zipReader.File {
-		if zipFile.FileInfo().IsDir() {
-			continue
-		}
-
-		_, file := filepath.Split(zipFile.Name)
-
-		unzippedFileBytes, err := readZipFile(zipFile)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to process archive")
-		}
-
-		if strings.HasSuffix(file, ".avsc") {
-			files[zipFile.Name] = string(unzippedFileBytes)
-		}
-	}
-
-	return TruncateRepoArchiveDirectory(files), nil
 }
 
 // readZipFile reads the contents of a zip archive into a []byte

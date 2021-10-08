@@ -22,6 +22,7 @@ var (
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . IGithub
 type IGithub interface {
 	GetRepoArchive(ctx context.Context, token, repoURL string) ([]byte, error)
+	GetRepoFile(ctx context.Context, token, repoURL string) ([]byte, string, error)
 	Post(url string, values url.Values) ([]byte, int, error)
 }
 
@@ -61,7 +62,7 @@ func (g *Github) Post(url string, values url.Values) ([]byte, int, error) {
 
 // GetRepoArchive returns a zip of the contents of a github repository
 func (g *Github) GetRepoArchive(ctx context.Context, token, repoURL string) ([]byte, error) {
-	owner, repo, err := parseRepoUrl(repoURL)
+	owner, repo, err := parseRepoURL(repoURL)
 	if err != nil {
 		return nil, err
 	}
@@ -87,8 +88,48 @@ func (g *Github) GetRepoArchive(ctx context.Context, token, repoURL string) ([]b
 	return contents, nil
 }
 
-// parseRepoUrl extracts the repo name and owner name from a github URL
-func parseRepoUrl(in string) (string, string, error) {
+// GetRepoFile gets a single file from github. Used for Avro and JSONSchema imports
+func (g *Github) GetRepoFile(ctx context.Context, token, repoURL string) ([]byte, string, error) {
+	println("token: " + token)
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: token},
+	)
+
+	tc := oauth2.NewClient(ctx, ts)
+	client := github.NewClient(tc)
+
+	owner, repo, filepath, err := parseRepoFileURL(repoURL)
+	if err != nil {
+		return nil, "", err
+	}
+
+	// GetContents(ctx context.Context, owner, repo, path string, opts *RepositoryContentGetOptions)
+	//			(fileContent *RepositoryContent, directoryContent []*RepositoryContent, resp *Response, err error)
+	fileContent, _, _, err := client.Repositories.GetContents(ctx, owner, repo, filepath, nil)
+	if err != nil {
+		return nil, "", errors.Wrap(err, "unable to get file contents")
+	}
+
+	content, err := fileContent.GetContent()
+	if err != nil {
+		return nil, fileContent.GetName(), errors.Wrap(err, "unable to get file contents")
+	}
+
+	return []byte(content), fileContent.GetName(), nil
+}
+
+// parseRepoFileURL parses a URL pointing to a specific file within a repository
+func parseRepoFileURL(in string) (owner, repo, filepath string, err error) {
+	parts, err := url.Parse(in)
+	if err != nil {
+		return "", "", "", errors.Wrap(err, "unable to parse GitHub repository URL")
+	}
+	names := strings.Split(strings.TrimLeft(parts.Path, "/"), "/")
+	return names[0], names[1], strings.Join(names[2:], "/"), nil
+}
+
+// parseRepoURL extracts the repo name and owner name from a github URL
+func parseRepoURL(in string) (string, string, error) {
 	parts, err := url.Parse(in)
 	if err != nil {
 		return "", "", errors.Wrap(err, "unable to parse GitHub repository URL")
