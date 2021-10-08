@@ -8,8 +8,8 @@ require (
 	github.com/batchcorp/kong v0.2.17-batch-fix
 	github.com/batchcorp/lucene2x v0.0.17
 	github.com/batchcorp/pgoutput v0.3.2 // indirect
-	github.com/batchcorp/plumber-schemas v0.0.76
-	github.com/batchcorp/rabbit v0.1.9 // indirect
+	github.com/batchcorp/plumber-schemas v0.0.77
+	github.com/batchcorp/rabbit v0.1.9
 	github.com/batchcorp/schemas v0.2.157
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fatih/color v1.12.0 // indirect
@@ -39,6 +39,7 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/segmentio/kafka-go v0.4.16
 	github.com/sirupsen/logrus v1.8.1
+	github.com/streadway/amqp v1.0.0
 	github.com/thrift-iterator/go v0.0.0-20190402154806-9b5a67519118
 	github.com/tidwall/gjson v1.8.0
 	github.com/v2pro/plz v0.0.0-20200805122259-422184e41b6e // indirect

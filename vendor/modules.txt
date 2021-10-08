@@ -58,7 +58,7 @@ github.com/batchcorp/lucene2x/lexer
 github.com/batchcorp/lucene2x/token
 # github.com/batchcorp/pgoutput v0.3.2
 ## explicit
-# github.com/batchcorp/plumber-schemas v0.0.76
+# github.com/batchcorp/plumber-schemas v0.0.77
 ## explicit
 github.com/batchcorp/plumber-schemas/build/go/protos
 github.com/batchcorp/plumber-schemas/build/go/protos/args
@@ -68,6 +68,7 @@ github.com/batchcorp/plumber-schemas/build/go/protos/opts
 github.com/batchcorp/plumber-schemas/build/go/protos/records
 # github.com/batchcorp/rabbit v0.1.9
 ## explicit
+github.com/batchcorp/rabbit
 # github.com/batchcorp/schemas v0.2.157
 ## explicit
 github.com/batchcorp/schemas/build/go/events
@@ -374,6 +375,9 @@ github.com/sirupsen/logrus
 github.com/soheilhy/cmux
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
+# github.com/streadway/amqp v1.0.0
+## explicit
+github.com/streadway/amqp
 # github.com/thrift-iterator/go v0.0.0-20190402154806-9b5a67519118
 ## explicit
 github.com/thrift-iterator/go
