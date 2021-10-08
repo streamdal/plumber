@@ -90,7 +90,6 @@ func (g *Github) GetRepoArchive(ctx context.Context, token, repoURL string) ([]b
 
 // GetRepoFile gets a single file from github. Used for Avro and JSONSchema imports
 func (g *Github) GetRepoFile(ctx context.Context, token, repoURL string) ([]byte, string, error) {
-	println("token: " + token)
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
 	)
@@ -103,8 +102,6 @@ func (g *Github) GetRepoFile(ctx context.Context, token, repoURL string) ([]byte
 		return nil, "", err
 	}
 
-	// GetContents(ctx context.Context, owner, repo, path string, opts *RepositoryContentGetOptions)
-	//			(fileContent *RepositoryContent, directoryContent []*RepositoryContent, resp *Response, err error)
 	fileContent, _, _, err := client.Repositories.GetContents(ctx, owner, repo, filepath, nil)
 	if err != nil {
 		return nil, "", errors.Wrap(err, "unable to get file contents")

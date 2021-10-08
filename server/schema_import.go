@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
-
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber/pb"
