@@ -5,10 +5,11 @@ go 1.16
 require (
 	cloud.google.com/go/pubsub v1.6.1
 	github.com/aws/aws-sdk-go v1.34.28
-	github.com/batchcorp/pgoutput v0.3.2 // indirect
-	github.com/batchcorp/rabbit v0.1.9 // indirect
 	github.com/batchcorp/kong v0.2.17-batch-fix
-	github.com/batchcorp/plumber-schemas v0.0.74
+	github.com/batchcorp/lucene2x v0.0.17
+	github.com/batchcorp/pgoutput v0.3.2 // indirect
+	github.com/batchcorp/plumber-schemas v0.0.75
+	github.com/batchcorp/rabbit v0.1.9 // indirect
 	github.com/batchcorp/schemas v0.2.157
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fatih/color v1.12.0 // indirect
@@ -28,8 +29,8 @@ require (
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.3.0
 	github.com/mcuadros/go-lookup v0.0.0-20200831155250-80f87a4fa5ee
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/onsi/ginkgo v1.15.1
-	github.com/onsi/gomega v1.11.0
+	github.com/onsi/ginkgo v1.16.4
+	github.com/onsi/gomega v1.16.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/procfs v0.7.1 // indirect
@@ -37,7 +38,7 @@ require (
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/segmentio/kafka-go v0.4.16
-	github.com/sirupsen/logrus v1.7.0
+	github.com/sirupsen/logrus v1.8.1
 	github.com/thrift-iterator/go v0.0.0-20190402154806-9b5a67519118
 	github.com/tidwall/gjson v1.8.0
 	github.com/v2pro/plz v0.0.0-20200805122259-422184e41b6e // indirect
