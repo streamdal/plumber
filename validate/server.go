@@ -1,8 +1,6 @@
 package validate
 
 import (
-	"net/url"
-
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
@@ -39,10 +37,12 @@ var (
 	ErrMissingService  = errors.New("service cannot be empty")
 	ErrInvalidRepoURL  = errors.New("repo URL must be a valid URL or left blank")
 	ErrServiceNotFound = errors.New("service does not exist")
+	ErrRepoNotFound    = errors.New("repository was not found on this service")
 
 	// Schemas
 
 	ErrInvalidGithubSchemaType = errors.New("only protobuf and avro schemas can be imported from github")
+	ErrSchemaNotFound          = errors.New("schema does not exist")
 )
 
 func ReadOptionsForServer(readOptions *opts.ReadOptions) error {
@@ -162,13 +162,6 @@ func ServiceForServer(s *protos.Service) error {
 	//if s.OwnerId == "" {
 	//	return ErrMissingOwner
 	//}
-
-	if s.RepoUrl != "" {
-		_, err := url.ParseRequestURI(s.RepoUrl)
-		if err != nil {
-			return ErrInvalidRepoURL
-		}
-	}
 
 	return nil
 }
