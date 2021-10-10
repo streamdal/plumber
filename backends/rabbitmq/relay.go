@@ -58,10 +58,9 @@ func (r *RabbitMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, rela
 			}
 			stats.IncrPromCounter("plumber_read_errors", 1)
 
-			// TODO: re-add safe shutdown to relays
-			//case <-r.ShutdownCtx.Done():
-			//	r.log.Info("Received shutdown signal, existing relayer")
-			//	return nil
+		case <-ctx.Done():
+			r.log.Info("Received shutdown signal, existing relayer")
+			return nil
 		}
 	}
 

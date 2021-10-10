@@ -39,7 +39,7 @@ func (r *RabbitMQ) Read(ctx context.Context, readOpts *opts.ReadOptions, results
 
 		serializedMsg, err := json.Marshal(msg)
 		if err != nil {
-			return errors.Wrap(err, "unable to serialize kafka msg to JSON")
+			return errors.Wrap(err, "unable to serialize RabbitMQ msg to JSON")
 		}
 
 		resultsChan <- &records.ReadRecord{
