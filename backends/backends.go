@@ -9,6 +9,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/backends/kafka"
+	"github.com/batchcorp/plumber/backends/nsq"
 	"github.com/batchcorp/plumber/backends/rabbitmq"
 )
 
@@ -90,8 +91,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 	//	be, err = nats.New(cfg)
 	//case *opts.ConnectionOptions_NatsStreaming:
 	//	be, err = nats_streaming.New(cfg)
-	//case *opts.ConnectionOptions_Nsq:
-	//	be, err = nsq.New(cfg)
+	case *opts.ConnectionOptions_Nsq:
+		be, err = nsq.New(connOpts)
 	//case *opts.ConnectionOptions_Pulsar:
 	//	be, err = pulsar.New(cfg)
 	case *opts.ConnectionOptions_Rabbit:
