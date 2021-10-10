@@ -3,10 +3,13 @@ package backends
 import (
 	"context"
 
+	"github.com/pkg/errors"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
 	"github.com/batchcorp/plumber/backends/kafka"
-	"github.com/pkg/errors"
+	"github.com/batchcorp/plumber/backends/rabbitmq"
 )
 
 // Backend is the interface that all backends implement; the interface is used
@@ -91,8 +94,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 	//	be, err = nsq.New(cfg)
 	//case *opts.ConnectionOptions_Pulsar:
 	//	be, err = pulsar.New(cfg)
-	//case *opts.ConnectionOptions_Rabbit:
-	//	be, err = rabbitmq.New(cfg)
+	case *opts.ConnectionOptions_Rabbit:
+		be, err = rabbitmq.New(connOpts)
 	//case *opts.ConnectionOptions_RabbitStreams:
 	//	be, err = rabbitmq_streams.New(cfg)
 	//case *opts.ConnectionOptions_RedisPubsub:
