@@ -77,15 +77,15 @@ func (p *Plumber) runServer() error {
 	// Only start if we have an authentication token for the service
 	var vcService vcservice.IVCService
 	if p.PersistentConfig.VCServiceToken != "" {
-		var err error
-		vcService, err = vcservice.New(&vcservice.Config{
-			EtcdService:      p.Etcd,
-			PersistentConfig: p.PersistentConfig,
-			ServerOptions:    p.CLIOptions.Server,
-		})
-		if err != nil {
-			return errors.Wrap(err, "unable to create VCService service instance")
-		}
+		//var err error
+		//vcService, err = vcservice.New(&vcservice.Config{
+		//	EtcdService:      p.Etcd,
+		//	PersistentConfig: p.PersistentConfig,
+		//	ServerOptions:    p.CLIOptions.Server,
+		//})
+		//if err != nil {
+		//	return errors.Wrap(err, "unable to create VCService service instance")
+		//}
 	}
 
 	ghService, err := github.New()
