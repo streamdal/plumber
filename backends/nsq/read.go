@@ -30,7 +30,7 @@ func (n *NSQ) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan 
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 
-	count := 1
+	var count int64
 
 	consumer.AddHandler(nsq.HandlerFunc(func(msg *nsq.Message) error {
 		count++
@@ -42,7 +42,7 @@ func (n *NSQ) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan 
 
 		resultsChan <- &records.ReadRecord{
 			MessageId:           uuid.NewV4().String(),
-			Num:                 int64(count),
+			Num:                 count,
 			Metadata:            nil,
 			ReceivedAtUnixTsUtc: time.Now().UTC().Unix(),
 			Payload:             msg.Body,
@@ -63,7 +63,7 @@ func (n *NSQ) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan 
 		if !readOpts.Continuous {
 			wg.Done()
 		}
-		count++
+
 		return nil
 	}))
 
