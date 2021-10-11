@@ -62,19 +62,29 @@ var _ = Describe("Github", func() {
 		})
 	})
 
-	Context("parseRepoUrl", func() {
+	Context("parseRepoURL", func() {
 		It("returns repo owner and name", func() {
-			owner, name, err := parseRepoUrl("https://www.github.com/batchcorp/collector-schemas")
+			owner, name, err := parseRepoURL("https://www.github.com/batchcorp/collector-schemas")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(owner).To(Equal("batchcorp"))
 			Expect(name).To(Equal("collector-schemas"))
 		})
 
 		It("handles full paths", func() {
-			owner, name, err := parseRepoUrl("https://www.github.com/batchcorp/collector-schemas/some/file.proto")
+			owner, name, err := parseRepoURL("https://www.github.com/batchcorp/collector-schemas/some/file.proto")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(owner).To(Equal("batchcorp"))
 			Expect(name).To(Equal("collector-schemas"))
+		})
+	})
+
+	Context("parseRepoFileURL", func() {
+		It("succeeds", func() {
+			owner, repo, filepath, err := parseRepoFileURL("https://www.github.com/batchcorp/collector-schemas/blob/master/some/file.json")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(owner).To(Equal("batchcorp"))
+			Expect(repo).To(Equal("collector-schemas"))
+			Expect(filepath).To(Equal("some/file.json"))
 		})
 	})
 
