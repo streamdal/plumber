@@ -3,6 +3,8 @@ package backends
 import (
 	"context"
 
+	"github.com/batchcorp/plumber/backends/awssns"
+
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
@@ -76,8 +78,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 	//	be, err = activemq.New(cfg)
 	//case *opts.ConnectionOptions_Awssqs:
 	//	be, err = awssqs.New(cfg)
-	//case *opts.ConnectionOptions_Awssns:
-	//	be, err = awssns.New(cfg)
+	case *opts.ConnectionOptions_Awssns:
+		be, err = awssns.New(connOpts)
 	//case *opts.ConnectionOptions_AzureServiceBus:
 	//	be, err = azure.New(cfg)
 	//case *opts.ConnectionOptions_AzureEventHub:
