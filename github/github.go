@@ -122,7 +122,7 @@ func parseRepoFileURL(in string) (owner, repo, filepath string, err error) {
 		return "", "", "", errors.Wrap(err, "unable to parse GitHub repository URL")
 	}
 	names := strings.Split(strings.TrimLeft(parts.Path, "/"), "/")
-	return names[0], names[1], strings.Join(names[2:], "/"), nil
+	return names[0], names[1], strings.Join(names[4:], "/"), nil
 }
 
 // parseRepoURL extracts the repo name and owner name from a github URL

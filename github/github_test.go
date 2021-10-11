@@ -80,7 +80,7 @@ var _ = Describe("Github", func() {
 
 	Context("parseRepoFileURL", func() {
 		It("succeeds", func() {
-			owner, repo, filepath, err := parseRepoFileURL("https://www.github.com/batchcorp/collector-schemas/some/file.json")
+			owner, repo, filepath, err := parseRepoFileURL("https://www.github.com/batchcorp/collector-schemas/blob/master/some/file.json")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(owner).To(Equal("batchcorp"))
 			Expect(repo).To(Equal("collector-schemas"))
