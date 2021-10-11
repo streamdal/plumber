@@ -22,7 +22,6 @@ func (n *Nats) DisplayMessage(msg *records.ReadRecord) error {
 
 	properties := [][]string{
 		{"Subject", record.Subject},
-		{"Queue", record.Queue},
 	}
 
 	receivedAt := time.Unix(msg.ReceivedAtUnixTsUtc, 0)
