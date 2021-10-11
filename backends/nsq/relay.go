@@ -9,6 +9,8 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/backends/nsq/types"
+
+	"github.com/batchcorp/plumber/stats"
 )
 
 func (n *NSQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
@@ -23,17 +25,17 @@ func (n *NSQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh c
 
 	consumer.SetLogger(n.log, nsq.LogLevelError)
 
-	count := 1
-
 	consumer.AddHandler(nsq.HandlerFunc(func(msg *nsq.Message) error {
-		count++
+
+		stats.Incr("nsq-relay-consumer", 1)
+
+		n.log.Debugf("Writing NSQ message to relay channel: %s", string(msg.Body))
 
 		relayCh <- &types.RelayMessage{
 			Value:   msg,
 			Options: &types.RelayMessageOptions{},
 		}
 
-		count++
 		return nil
 	}))
 
@@ -51,14 +53,10 @@ func (n *NSQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh c
 
 	defer consumer.Stop()
 
-	for {
-		select {
-		case <-ctx.Done():
-			n.log.Info("Received shutdown signal, existing relayer")
-			return nil
-		default:
-			// noop
-		}
+	select {
+	case <-ctx.Done():
+		n.log.Info("Received shutdown signal, existing relayer")
+		return nil
 	}
 
 	return nil
