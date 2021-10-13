@@ -115,6 +115,38 @@ func (s *Server) ImportLocal(ctx context.Context, req *protos.ImportLocalRequest
 	}, nil
 }
 
+func (s *Server) UpdateSchema(ctx context.Context, req *protos.UpdateSchemaRequest) (*protos.UpdateSchemaResponse, error) {
+	if err := s.validateAuth(req.Auth); err != nil {
+		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
+	}
+
+	schema := s.PersistentConfig.GetSchema(req.Id)
+	if schema == nil {
+		return nil, CustomError(common.Code_NOT_FOUND, "schema does not exist")
+	}
+
+	schema.Name = req.Name
+	schema.OwnerId = req.OwnerId
+	schema.Notes = req.Notes
+
+	// Save to memory
+	s.PersistentConfig.SetSchema(schema.Id, schema)
+
+	// Publish create event
+	if err := s.Etcd.PublishUpdateSchema(ctx, schema); err != nil {
+		s.Log.Error(err)
+	}
+
+	return &protos.UpdateSchemaResponse{
+		Status: &common.Status{
+			Code:      common.Code_OK,
+			Message:   "schema updated",
+			RequestId: uuid.NewV4().String(),
+		},
+		Schema: schema,
+	}, nil
+}
+
 func (s *Server) DeleteSchema(ctx context.Context, req *protos.DeleteSchemaRequest) (*protos.DeleteSchemaResponse, error) {
 	if err := s.validateAuth(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
