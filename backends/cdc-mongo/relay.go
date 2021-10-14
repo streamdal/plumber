@@ -80,8 +80,8 @@ func (r *Relayer) Relay() error {
 				return nil
 			}
 
-			stats.Mute("redis-pubsub-relay-consumer")
-			stats.Mute("redis-pubsub-relay-producer")
+			stats.Mute("cdc-mongo-relay-consumer")
+			stats.Mute("cdc-mongo-relay-producer")
 
 			stats.IncrPromCounter("plumber_read_errors", 1)
 

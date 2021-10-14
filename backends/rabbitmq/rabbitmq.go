@@ -1,12 +1,13 @@
 package rabbitmq
 
 import (
-	"github.com/batchcorp/plumber/cli"
-
-	"github.com/batchcorp/rabbit"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/rabbit"
+
+	"github.com/batchcorp/plumber/cli"
 )
 
 // RabbitMQ holds all attributes required for performing a read/write operations
@@ -21,7 +22,7 @@ type RabbitMQ struct {
 
 func New(opts *cli.Options, md *desc.MessageDescriptor) (*RabbitMQ, error) {
 	mode := rabbit.Consumer
-	if opts.Action == "write" {
+	if opts.Action == "write" || opts.Action == "dynamic" {
 		mode = rabbit.Producer
 	}
 
