@@ -21,8 +21,8 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type MongoConn struct {
-	// @gotags: kong:"help='Dial string for mongo server (Ex: mongodb://localhost:27017)',env=,default=PLUMBER_RELAY_CDCMONGO_DSN'mongodb://localhost:27017'"
-	Dsn                  string   `protobuf:"bytes,1,opt,name=dsn,proto3" json:"dsn,omitempty" kong:"help='Dial string for mongo server (Ex: mongodb://localhost:27017)',env=,default=PLUMBER_RELAY_CDCMONGO_DSN'mongodb://localhost:27017'"`
+	// @gotags: kong:"help='Dial string for mongo server (Ex: mongodb://localhost:27017)',env='PLUMBER_RELAY_CDCMONGO_DSN',default='mongodb://localhost:27017'"
+	Dsn                  string   `protobuf:"bytes,1,opt,name=dsn,proto3" json:"dsn,omitempty" kong:"help='Dial string for mongo server (Ex: mongodb://localhost:27017)',env='PLUMBER_RELAY_CDCMONGO_DSN',default='mongodb://localhost:27017'"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
