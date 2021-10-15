@@ -5,10 +5,11 @@ go 1.16
 require (
 	cloud.google.com/go/pubsub v1.6.1
 	github.com/aws/aws-sdk-go v1.34.28
+	github.com/batchcorp/inferschema v0.0.2
 	github.com/batchcorp/kong v0.2.17-batch-fix
 	github.com/batchcorp/lucene2x v0.0.17
 	github.com/batchcorp/pgoutput v0.3.2 // indirect
-	github.com/batchcorp/plumber-schemas v0.0.80
+	github.com/batchcorp/plumber-schemas v0.0.82
 	github.com/batchcorp/rabbit v0.1.9
 	github.com/batchcorp/schemas v0.2.157
 	github.com/eclipse/paho.mqtt.golang v1.2.0
@@ -30,7 +31,7 @@ require (
 	github.com/mcuadros/go-lookup v0.0.0-20200831155250-80f87a4fa5ee
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/onsi/ginkgo v1.16.4
+	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.16.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.0
@@ -42,7 +43,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/streadway/amqp v1.0.0
 	github.com/thrift-iterator/go v0.0.0-20190402154806-9b5a67519118
-	github.com/tidwall/gjson v1.8.0
+	github.com/tidwall/gjson v1.9.3
 	github.com/v2pro/plz v0.0.0-20200805122259-422184e41b6e // indirect
 	github.com/v2pro/quokka v0.0.0-20171201153428-382cb39c6ee6 // indirect
 	github.com/v2pro/wombat v0.0.0-20180402055224-a56dbdcddef2 // indirect
