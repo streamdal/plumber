@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/batchcorp/kong"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber/monitor"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/mcuadros/go-lookup"
 	"github.com/pkg/errors"
@@ -45,7 +45,11 @@ type Plumber struct {
 
 	cliMD       *desc.MessageDescriptor
 	cliConnOpts *opts.ConnectionOptions
-	log         *logrus.Entry
+
+	// Only filled out when running in server mode
+	monitor monitor.IMonitor
+
+	log *logrus.Entry
 }
 
 // New instantiates a properly configured instance of Plumber or a config error
@@ -114,23 +118,6 @@ func generateConnectionOptions(cfg *opts.CLIOptions) (*opts.ConnectionOptions, e
 	connCfg.Conn = conn
 
 	return connCfg, nil
-}
-
-// TODO: This function should be auto-generated (as part of `make generate/all`
-func generateGenericConnOpts(backend string, connArgs interface{}) (opts.IsConnectionOptions_Conn, bool) {
-	switch backend {
-	case "kafka":
-		asserted, ok := connArgs.(args.KafkaConn)
-		if !ok {
-			return nil, false
-		}
-
-		return &opts.ConnectionOptions_Kafka{
-			Kafka: &asserted,
-		}, true
-	}
-
-	return nil, false
 }
 
 // Run is the main entrypoint to the plumber application

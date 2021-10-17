@@ -65,6 +65,8 @@ type IEtcd interface {
 	PublishUpdateRelay(ctx context.Context, relay *opts.RelayOptions) error
 	PublishDeleteRelay(ctx context.Context, relay *opts.RelayOptions) error
 	PublishConfigUpdate(ctx context.Context, msg *MessageUpdateConfig) error
+
+	Client() *clientv3.Client
 }
 
 type Etcd struct {
@@ -178,6 +180,10 @@ func validateOptions(cfg *opts.ServerOptions) error {
 	}
 
 	return nil
+}
+
+func (e *Etcd) Client() *clientv3.Client {
+	return e.client
 }
 
 func (e *Etcd) Start(serviceCtx context.Context) error {
