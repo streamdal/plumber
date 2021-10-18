@@ -13,7 +13,12 @@ const (
 	DefaultEtcdSessionTTLSeconds = 5
 )
 
-type LeaderStatus struct {
+type ElectLeaderStatus struct {
+	NodeID string
+	Err    error
+}
+
+type LeaderInfo struct {
 	NodeID string
 }
 
@@ -33,11 +38,8 @@ type LeaderStatus struct {
 //
 // Etcd layout
 //
-// /$cluster-id/monitor/leader
-// /$cluster-id/monitor/config/dedicated-*
-// /$cluster-id/monitor/config/shared-*
-// /$cluster-id/monitor/metrics/$check-id
-func (m *Monitor) RunElectLeader(ctx context.Context, ch chan *LeaderStatus, path string) error {
+// TBD
+func (m *Monitor) RunElectLeader(ctx context.Context, ch chan *ElectLeaderStatus, path string) error {
 	llog := m.log.WithField("method", "RunLeaderElect")
 
 	llog.Debug("started leader election")
@@ -50,15 +52,30 @@ func (m *Monitor) RunElectLeader(ctx context.Context, ch chan *LeaderStatus, pat
 		// Give director a little to catch up
 		if m.quitElectLeader {
 			llog.Debug("in the process of quitting - nothing to do")
-			time.Sleep(5 * time.Second)
+			time.Sleep(time.Second)
 			return nil
 		}
 
 		// Any existing leader?
-		leaderInfo, err := m.Leader(ctx, election)
+		leaderInfo, err := m.GetLeader(ctx, election)
 		if err != nil {
+			ch <- &ElectLeaderStatus{
+				Err: errors.Wrap(err, "unable to get existing leader info"),
+			}
+
+			// Our context was cancelled, no reason to retry
+			if err == context.Canceled {
+				llog.Debug("context cancelled - quitting")
+
+				m.quitElectLeader = true
+				m.electLeaderLooper.Quit()
+
+				return nil
+			}
+
 			llog.Errorf("unable to get existing leader info: %s (retrying in %s)", err, RetryCampaignInterval)
 			time.Sleep(RetryCampaignInterval)
+
 			return nil
 		}
 
@@ -70,9 +87,13 @@ func (m *Monitor) RunElectLeader(ctx context.Context, ch chan *LeaderStatus, pat
 
 		session, err := concurrency.NewSession(m.etcdClient, concurrency.WithTTL(DefaultEtcdSessionTTLSeconds))
 		if err != nil {
-			// TODO: This needs to be beefier
+			ch <- &ElectLeaderStatus{
+				Err: errors.Wrap(err, "unable to create new etcd session"),
+			}
+
 			llog.Errorf("unable to create new etcd session: %s", err)
 			time.Sleep(5 * time.Second)
+
 			return nil
 		}
 
@@ -82,7 +103,12 @@ func (m *Monitor) RunElectLeader(ctx context.Context, ch chan *LeaderStatus, pat
 		// block.
 		if err := election.Campaign(ctx, m.nodeID); err != nil {
 			if err == context.Canceled {
+				ch <- &ElectLeaderStatus{
+					Err: errors.New("context cancelled, RunLeader exiting"),
+				}
+
 				llog.Warning("context cancelled - quitting")
+
 				m.quitElectLeader = true
 				m.electLeaderLooper.Quit()
 
@@ -96,8 +122,10 @@ func (m *Monitor) RunElectLeader(ctx context.Context, ch chan *LeaderStatus, pat
 
 		llog.Debug("leader election succeeded")
 
-		go m.runLeader(ctx)
-		go m.runLeaderWatcher(ctx, election)
+		runLeaderCtx, runLeaderCancel := context.WithCancel(ctx)
+
+		go m.runLeader(runLeaderCtx)
+		go m.runLeaderWatcher(ctx, election, runLeaderCancel)
 
 		return nil
 	})
@@ -107,17 +135,24 @@ func (m *Monitor) RunElectLeader(ctx context.Context, ch chan *LeaderStatus, pat
 	return nil
 }
 
-// Leader fetches the value that is set by the leader.
-func (m *Monitor) Leader(ctx context.Context, election *concurrency.Election) (*LeaderStatus, error) {
+// GetLeader fetches the value that is set by the leader.
+func (m *Monitor) GetLeader(ctx context.Context, election *concurrency.Election) (*LeaderInfo, error) {
+	// Election hasn't happened yet
+	if election == nil {
+		return &LeaderInfo{
+			NodeID: "",
+		}, nil
+	}
+
 	resp, err := election.Leader(ctx)
 	if err != nil {
 		if err == concurrency.ErrElectionNoLeader {
-			return &LeaderStatus{
+			return &LeaderInfo{
 				NodeID: "",
 			}, nil
 		}
 
-		return nil, errors.Wrap(err, "error fetching leader value")
+		return nil, err
 	}
 
 	// Should have at least one KV - anything less is an unexpected error
@@ -125,8 +160,8 @@ func (m *Monitor) Leader(ctx context.Context, election *concurrency.Election) (*
 		return nil, errors.New("unexpected number of kvs in etcd resp")
 	}
 
-	// Leader exists
-	return &LeaderStatus{
+	// GetLeader exists
+	return &LeaderInfo{
 		NodeID: string(resp.Kvs[0].Value),
 	}, nil
 }
@@ -136,9 +171,30 @@ func (m *Monitor) runLeader(ctx context.Context) {
 
 	llog.Debug("starting")
 
+	var quit bool
+
 	m.runLeaderLooper.Loop(func() error {
-		// Receive outbound alerts
-		// Perform leader monitoring duties
+		if quit {
+			// Give looper time to pick up the quit
+			llog.Debug("in the process of quitting - nothing to do")
+			time.Sleep(1 * time.Second)
+			return nil
+		}
+
+		select {
+		case <-ctx.Done():
+			llog.Debug("received signal to quit")
+
+			m.runLeaderLooper.Quit()
+			quit = true
+			return nil
+		default:
+			// Receive outbound alerts
+			// Perform leader monitoring duties
+
+			llog.Debug("doing things")
+			time.Sleep(1 * time.Second)
+		}
 
 		return nil
 	})
@@ -149,7 +205,7 @@ func (m *Monitor) runLeader(ctx context.Context) {
 // In a loop, watch the ctx done chan and verify that we are still leader and
 // someone hasn't taken over instead. If a new leader has been elected while
 // we *think* we are leader - shutdown runLeader and runLeaderWatcher.
-func (m *Monitor) runLeaderWatcher(ctx context.Context, election *concurrency.Election) {
+func (m *Monitor) runLeaderWatcher(ctx context.Context, election *concurrency.Election, runLeaderCancel context.CancelFunc) {
 	llog := m.log.WithField("method", "runLeaderWatcher")
 
 	llog.Debug("starting")
@@ -167,8 +223,15 @@ func (m *Monitor) runLeaderWatcher(ctx context.Context, election *concurrency.El
 		}
 
 		// Are we still leader?
-		leaderStatus, err := m.Leader(ctx, election)
+		leaderStatus, err := m.GetLeader(ctx, election)
 		if err != nil {
+			if err == context.Canceled {
+				m.leaderWatcherLooper.Quit()
+				quit = true
+				time.Sleep(time.Second)
+				return nil
+			}
+
 			llog.Errorf("unable to determine leader info: %s (retrying in %s)", err, errRetry)
 			time.Sleep(errRetry)
 
@@ -177,7 +240,7 @@ func (m *Monitor) runLeaderWatcher(ctx context.Context, election *concurrency.El
 
 		if leaderStatus.NodeID != m.nodeID {
 			llog.Debug("no longer leader - shutting down runLeader and myself")
-			m.cancelRunLeader()
+			runLeaderCancel()
 			m.leaderWatcherLooper.Quit()
 			quit = true
 
@@ -188,7 +251,7 @@ func (m *Monitor) runLeaderWatcher(ctx context.Context, election *concurrency.El
 		select {
 		case <-ctx.Done():
 			llog.Debug("leader context cancelled - shutting down runLeader and myself")
-			m.cancelRunLeader()
+			runLeaderCancel()
 			m.leaderWatcherLooper.Quit()
 			quit = true
 		default:

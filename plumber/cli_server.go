@@ -35,7 +35,7 @@ func (p *Plumber) RunServer() error {
 
 	p.log.Info("starting leader election for alerts")
 
-	leaderChan := make(chan *monitor.LeaderStatus, 1)
+	leaderChan := make(chan *monitor.ElectLeaderStatus, 1)
 
 	alertsLeaderPath := fmt.Sprintf("/%s/monitor/leader", p.CLIOptions.Server.ClusterId)
 
@@ -45,8 +45,6 @@ func (p *Plumber) RunServer() error {
 	timeoutCh := time.After(5 * time.Second)
 
 	select {
-	case <-timeoutCh:
-		return errors.New("timeout during leader election")
 	case status := <-leaderChan:
 		if status.Err != nil {
 			return errors.Wrap(status.Err, "unable to complete leader election")
@@ -55,6 +53,9 @@ func (p *Plumber) RunServer() error {
 		// It is OK if we didn't get elected as leader - we only need to make
 		// sure that leader election worked without error.
 		p.log.Debugf("leader election process complete; elected leader '%s'", status.NodeID)
+	case <-timeoutCh:
+		// Timeout hit - no errors, all is well
+		break
 	}
 
 	p.log.Info("starting gRPC server")

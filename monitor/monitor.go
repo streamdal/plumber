@@ -15,7 +15,7 @@ const (
 )
 
 type IMonitor interface {
-	RunElectLeader(ctx context.Context, ch chan *LeaderStatus, path string)
+	RunElectLeader(ctx context.Context, ch chan *ElectLeaderStatus, path string)
 }
 
 type Monitor struct {

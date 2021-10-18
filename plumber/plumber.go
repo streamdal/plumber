@@ -143,7 +143,7 @@ func (p *Plumber) Run() {
 	}
 
 	if err != nil {
-		logrus.Fatalf("Unable to complete command: %s", err)
+		logrus.Fatalf("unable to complete command: %s", err)
 	}
 }
 
