@@ -25,6 +25,16 @@ type FakeIEtcd struct {
 	broadcastReturnsOnCall map[int]struct {
 		result1 error
 	}
+	ClientStub        func() *clientv3.Client
+	clientMutex       sync.RWMutex
+	clientArgsForCall []struct {
+	}
+	clientReturns struct {
+		result1 *clientv3.Client
+	}
+	clientReturnsOnCall map[int]struct {
+		result1 *clientv3.Client
+	}
 	DeleteStub        func(context.Context, string, ...clientv3.OpOption) (*clientv3.DeleteResponse, error)
 	deleteMutex       sync.RWMutex
 	deleteArgsForCall []struct {
@@ -337,6 +347,59 @@ func (fake *FakeIEtcd) BroadcastReturnsOnCall(i int, result1 error) {
 	}
 	fake.broadcastReturnsOnCall[i] = struct {
 		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) Client() *clientv3.Client {
+	fake.clientMutex.Lock()
+	ret, specificReturn := fake.clientReturnsOnCall[len(fake.clientArgsForCall)]
+	fake.clientArgsForCall = append(fake.clientArgsForCall, struct {
+	}{})
+	stub := fake.ClientStub
+	fakeReturns := fake.clientReturns
+	fake.recordInvocation("Client", []interface{}{})
+	fake.clientMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIEtcd) ClientCallCount() int {
+	fake.clientMutex.RLock()
+	defer fake.clientMutex.RUnlock()
+	return len(fake.clientArgsForCall)
+}
+
+func (fake *FakeIEtcd) ClientCalls(stub func() *clientv3.Client) {
+	fake.clientMutex.Lock()
+	defer fake.clientMutex.Unlock()
+	fake.ClientStub = stub
+}
+
+func (fake *FakeIEtcd) ClientReturns(result1 *clientv3.Client) {
+	fake.clientMutex.Lock()
+	defer fake.clientMutex.Unlock()
+	fake.ClientStub = nil
+	fake.clientReturns = struct {
+		result1 *clientv3.Client
+	}{result1}
+}
+
+func (fake *FakeIEtcd) ClientReturnsOnCall(i int, result1 *clientv3.Client) {
+	fake.clientMutex.Lock()
+	defer fake.clientMutex.Unlock()
+	fake.ClientStub = nil
+	if fake.clientReturnsOnCall == nil {
+		fake.clientReturnsOnCall = make(map[int]struct {
+			result1 *clientv3.Client
+		})
+	}
+	fake.clientReturnsOnCall[i] = struct {
+		result1 *clientv3.Client
 	}{result1}
 }
 
@@ -1597,6 +1660,8 @@ func (fake *FakeIEtcd) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.broadcastMutex.RLock()
 	defer fake.broadcastMutex.RUnlock()
+	fake.clientMutex.RLock()
+	defer fake.clientMutex.RUnlock()
 	fake.deleteMutex.RLock()
 	defer fake.deleteMutex.RUnlock()
 	fake.directMutex.RLock()

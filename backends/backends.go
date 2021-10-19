@@ -3,14 +3,15 @@ package backends
 import (
 	"context"
 
-	"github.com/batchcorp/plumber/backends/awssns"
-
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
+	"github.com/batchcorp/plumber/backends/awssns"
+	"github.com/batchcorp/plumber/backends/cdcmongo"
 	"github.com/batchcorp/plumber/backends/kafka"
+	"github.com/batchcorp/plumber/backends/nats"
 	"github.com/batchcorp/plumber/backends/nsq"
 	"github.com/batchcorp/plumber/backends/rabbitmq"
 )
@@ -89,8 +90,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 	//	be, err = gcppubsub.New(cfg)
 	//case *opts.ConnectionOptions_Mqtt:
 	//	be, err = mqtt.New(cfg)
-	//case *opts.ConnectionOptions_Nats:
-	//	be, err = nats.New(cfg)
+	case *opts.ConnectionOptions_Nats:
+		be, err = nats.New(connOpts)
 	//case *opts.ConnectionOptions_NatsStreaming:
 	//	be, err = nats_streaming.New(cfg)
 	case *opts.ConnectionOptions_Nsq:
@@ -105,8 +106,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 	//	be, err = rpubsub.New(cfg)
 	//case *opts.ConnectionOptions_RedisStreams:
 	//	be, err = rstreams.New(cfg)
-	//case *opts.ConnectionOptions_Mongo:
-	//	be, err = cdc_mongo.New(cfg)
+	case *opts.ConnectionOptions_Mongo:
+		be, err = cdcmongo.New(connOpts)
 	//case *opts.ConnectionOptions_Postgres:
 	//	be, err = cdc_postgres.New(cfg)
 	default:

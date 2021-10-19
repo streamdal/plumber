@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/batchcorp/plumber/github"
+	"github.com/batchcorp/plumber/monitor"
 
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -25,6 +26,36 @@ func (p *Plumber) RunServer() error {
 
 	if err := p.startEtcd(); err != nil {
 		return errors.Wrap(err, "unable to start embedded etcd")
+	}
+
+	m, err := monitor.New(p.Etcd.Client(), p.Config.CLIOptions.Server.NodeId)
+	if err != nil {
+		return errors.Wrap(err, "unable to create monitor instance")
+	}
+
+	p.log.Info("starting leader election for alerts")
+
+	leaderChan := make(chan *monitor.ElectLeaderStatus, 1)
+
+	alertsLeaderPath := fmt.Sprintf("/%s/monitor/leader", p.CLIOptions.Server.ClusterId)
+
+	go m.RunElectLeader(p.ServiceShutdownCtx, leaderChan, alertsLeaderPath)
+
+	// Bail out if initial election ran into errors
+	timeoutCh := time.After(5 * time.Second)
+
+	select {
+	case status := <-leaderChan:
+		if status.Err != nil {
+			return errors.Wrap(status.Err, "unable to complete leader election")
+		}
+
+		// It is OK if we didn't get elected as leader - we only need to make
+		// sure that leader election worked without error.
+		p.log.Debugf("leader election process complete; elected leader '%s'", status.NodeID)
+	case <-timeoutCh:
+		// Timeout hit - no errors, all is well
+		break
 	}
 
 	p.log.Info("starting gRPC server")
