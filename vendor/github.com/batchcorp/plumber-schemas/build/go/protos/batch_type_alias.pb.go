@@ -4,6 +4,6 @@ package protos
 
 type IsVCEvent_VcEvent = isVCEvent_VcEvent
 type IsGithubEvent_Payload = isGithubEvent_Payload
-type IsSchema_Settings = isSchema_Settings
+type IsSchemaVersion_Settings = isSchemaVersion_Settings
 type IsImportGithubRequest_Settings = isImportGithubRequest_Settings
 type IsImportLocalRequest_Settings = isImportLocalRequest_Settings
