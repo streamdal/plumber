@@ -11,6 +11,7 @@ import (
 	"github.com/batchcorp/plumber/backends/awssns"
 	"github.com/batchcorp/plumber/backends/cdcmongo"
 	"github.com/batchcorp/plumber/backends/kafka"
+	"github.com/batchcorp/plumber/backends/nats"
 	"github.com/batchcorp/plumber/backends/nsq"
 	"github.com/batchcorp/plumber/backends/rabbitmq"
 )
@@ -89,8 +90,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 	//	be, err = gcppubsub.New(cfg)
 	//case *opts.ConnectionOptions_Mqtt:
 	//	be, err = mqtt.New(cfg)
-	//case *opts.ConnectionOptions_Nats:
-	//	be, err = nats.New(cfg)
+	case *opts.ConnectionOptions_Nats:
+		be, err = nats.New(connOpts)
 	//case *opts.ConnectionOptions_NatsStreaming:
 	//	be, err = nats_streaming.New(cfg)
 	case *opts.ConnectionOptions_Nsq:
