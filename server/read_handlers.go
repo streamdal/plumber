@@ -155,14 +155,16 @@ func (s *Server) CreateRead(_ context.Context, req *protos.CreateReadRequest) (*
 
 	var md *desc.MessageDescriptor
 
-	if req.Read.DecodeOptions != nil && req.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_PROTOBUF {
-		var mdErr error
+	if req.Read.DecodeOptions != nil {
+		if req.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_PROTOBUF {
+			var mdErr error
 
-		cachedSchemaOptions := s.PersistentConfig.GetSchema(req.Read.DecodeOptions.SchemaId)
+			cachedSchemaOptions := s.PersistentConfig.GetSchema(req.Read.DecodeOptions.SchemaId)
 
-		md, mdErr = pb.GetMessageDescriptor(cachedSchemaOptions, req.Read.DecodeOptions.ProtobufSettings)
-		if mdErr != nil {
-			return nil, errors.Wrap(mdErr, "unable to get message descriptor")
+			md, mdErr = pb.GetMessageDescriptor(cachedSchemaOptions, req.Read.DecodeOptions.ProtobufSettings)
+			if mdErr != nil {
+				return nil, errors.Wrap(mdErr, "unable to get message descriptor")
+			}
 		}
 	}
 
@@ -183,7 +185,7 @@ func (s *Server) CreateRead(_ context.Context, req *protos.CreateReadRequest) (*
 
 	s.PersistentConfig.SetRead(req.Read.XId, read)
 
-	go read.StartRead(ctx)
+	go s.beginRead(ctx, read)
 
 	return &protos.CreateReadResponse{
 		Status: &common.Status{
@@ -268,7 +270,7 @@ func (s *Server) ResumeRead(_ context.Context, req *protos.ResumeReadRequest) (*
 	read.CancelFunc = cancelFunc
 	read.ReadOptions.XActive = true
 
-	go read.StartRead(ctx)
+	go s.beginRead(ctx, read)
 
 	s.Log.WithField("request_id", requestID).Infof("Read '%s' resumed", req.ReadId)
 
