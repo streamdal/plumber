@@ -107,8 +107,8 @@ var _ = Describe("Schema Import", func() {
 
 			schema, err := importLocalProtobuf(req)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(schema.GetProtobufSettings().XMessageDescriptor).ToNot(BeEmpty())
-			Expect(schema.Files["sample-message.proto"]).ToNot(BeEmpty())
+			Expect(schema.Versions[0].GetProtobufSettings().XMessageDescriptor).ToNot(BeEmpty())
+			Expect(schema.Versions[0].Files["sample-message.proto"]).ToNot(BeEmpty())
 		})
 	})
 
@@ -142,8 +142,8 @@ var _ = Describe("Schema Import", func() {
 
 			schema, err := s.importGithubProtobuf(context.Background(), req)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(schema.GetProtobufSettings().XMessageDescriptor).ToNot(BeEmpty())
-			Expect(schema.Files["sample-message.proto"]).ToNot(BeEmpty())
+			Expect(schema.Versions[0].GetProtobufSettings().XMessageDescriptor).ToNot(BeEmpty())
+			Expect(schema.Versions[0].Files["sample-message.proto"]).ToNot(BeEmpty())
 		})
 	})
 
@@ -169,8 +169,8 @@ var _ = Describe("Schema Import", func() {
 
 			schema, err := s.importGithubAvro(context.Background(), req)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(schema.GetAvroSettings().Schema).ToNot(BeEmpty())
-			Expect(schema.Files["test.avsc"]).ToNot(BeEmpty())
+			Expect(schema.Versions[0].GetAvroSettings().Schema).ToNot(BeEmpty())
+			Expect(schema.Versions[0].Files["test.avsc"]).ToNot(BeEmpty())
 		})
 	})
 
@@ -196,8 +196,8 @@ var _ = Describe("Schema Import", func() {
 
 			schema, err := s.importGithubJSONSchema(context.Background(), req)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(schema.GetJsonSchemaSettings().Schema).ToNot(BeEmpty())
-			Expect(schema.Files["test.json"]).ToNot(BeEmpty())
+			Expect(schema.Versions[0].GetJsonSchemaSettings().Schema).ToNot(BeEmpty())
+			Expect(schema.Versions[0].Files["test.json"]).ToNot(BeEmpty())
 		})
 	})
 
@@ -238,8 +238,8 @@ var _ = Describe("Schema Import", func() {
 			})
 
 			Expect(err).ToNot(HaveOccurred())
-			Expect(schema.GetProtobufSettings().XMessageDescriptor).ToNot(BeEmpty())
-			Expect(schema.Files["sample-message.proto"]).ToNot(BeEmpty())
+			Expect(schema.Versions[0].GetProtobufSettings().XMessageDescriptor).ToNot(BeEmpty())
+			Expect(schema.Versions[0].Files["sample-message.proto"]).ToNot(BeEmpty())
 		})
 	})
 })

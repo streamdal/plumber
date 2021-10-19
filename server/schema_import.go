@@ -72,13 +72,18 @@ func (s *Server) importGithubProtobuf(ctx context.Context, req *protos.ImportGit
 	settings.XMessageDescriptor = mdBlob
 
 	return &protos.Schema{
-		Id:     uuid.NewV4().String(),
-		Name:   req.Name,
-		Type:   protos.SchemaType_SCHEMA_TYPE_PROTOBUF,
-		Status: protos.SchemaStatus_SCHEMA_STATUS_ACCEPTED,
-		Files:  files,
-		Settings: &protos.Schema_ProtobufSettings{
-			ProtobufSettings: settings,
+		Id:   uuid.NewV4().String(),
+		Name: req.Name,
+		Type: protos.SchemaType_SCHEMA_TYPE_PROTOBUF,
+		Versions: []*protos.SchemaVersion{
+			{
+				Version: 1,
+				Status:  protos.SchemaStatus_SCHEMA_STATUS_ACCEPTED,
+				Files:   files,
+				Settings: &protos.SchemaVersion_ProtobufSettings{
+					ProtobufSettings: settings,
+				},
+			},
 		},
 	}, nil
 }
@@ -95,16 +100,21 @@ func (s *Server) importGithubAvro(ctx context.Context, req *protos.ImportGithubR
 	}
 
 	return &protos.Schema{
-		Id:     uuid.NewV4().String(),
-		Name:   req.Name,
-		Type:   protos.SchemaType_SCHEMA_TYPE_AVRO,
-		Status: protos.SchemaStatus_SCHEMA_STATUS_ACCEPTED,
-		Files: map[string]string{
-			fileName: string(schemaData),
-		},
-		Settings: &protos.Schema_AvroSettings{
-			AvroSettings: &encoding.AvroSettings{
-				Schema: schemaData,
+		Id:   uuid.NewV4().String(),
+		Name: req.Name,
+		Type: protos.SchemaType_SCHEMA_TYPE_AVRO,
+		Versions: []*protos.SchemaVersion{
+			{
+				Version: 1,
+				Status:  protos.SchemaStatus_SCHEMA_STATUS_ACCEPTED,
+				Files: map[string]string{
+					fileName: string(schemaData),
+				},
+				Settings: &protos.SchemaVersion_AvroSettings{
+					AvroSettings: &encoding.AvroSettings{
+						Schema: schemaData,
+					},
+				},
 			},
 		},
 	}, nil
@@ -120,16 +130,21 @@ func (s *Server) importGithubJSONSchema(ctx context.Context, req *protos.ImportG
 	}
 
 	return &protos.Schema{
-		Id:     uuid.NewV4().String(),
-		Name:   req.Name,
-		Type:   protos.SchemaType_SCHEMA_TYPE_JSONSCHEMA,
-		Status: protos.SchemaStatus_SCHEMA_STATUS_ACCEPTED,
-		Files: map[string]string{
-			fileName: string(schemaData),
-		},
-		Settings: &protos.Schema_JsonSchemaSettings{
-			JsonSchemaSettings: &encoding.JSONSchemaSettings{
-				Schema: schemaData,
+		Id:   uuid.NewV4().String(),
+		Name: req.Name,
+		Type: protos.SchemaType_SCHEMA_TYPE_JSONSCHEMA,
+		Versions: []*protos.SchemaVersion{
+			{
+				Version: 1,
+				Status:  protos.SchemaStatus_SCHEMA_STATUS_ACCEPTED,
+				Files: map[string]string{
+					fileName: string(schemaData),
+				},
+				Settings: &protos.SchemaVersion_JsonSchemaSettings{
+					JsonSchemaSettings: &encoding.JSONSchemaSettings{
+						Schema: schemaData,
+					},
+				},
 			},
 		},
 	}, nil
@@ -187,13 +202,18 @@ func importLocalProtobuf(req *protos.ImportLocalRequest) (*protos.Schema, error)
 	settings.XMessageDescriptor = mdBlob
 
 	return &protos.Schema{
-		Id:     uuid.NewV4().String(),
-		Name:   req.Name,
-		Type:   protos.SchemaType_SCHEMA_TYPE_PROTOBUF,
-		Status: protos.SchemaStatus_SCHEMA_STATUS_ACCEPTED,
-		Files:  files,
-		Settings: &protos.Schema_ProtobufSettings{
-			ProtobufSettings: settings,
+		Id:   uuid.NewV4().String(),
+		Name: req.Name,
+		Type: protos.SchemaType_SCHEMA_TYPE_PROTOBUF,
+		Versions: []*protos.SchemaVersion{
+			{
+				Version: 1,
+				Status:  protos.SchemaStatus_SCHEMA_STATUS_ACCEPTED,
+				Files:   files,
+				Settings: &protos.SchemaVersion_ProtobufSettings{
+					ProtobufSettings: settings,
+				},
+			},
 		},
 	}, nil
 }
@@ -209,16 +229,21 @@ func importLocalAvro(req *protos.ImportLocalRequest) (*protos.Schema, error) {
 	}
 
 	return &protos.Schema{
-		Id:     uuid.NewV4().String(),
-		Name:   req.Name,
-		Type:   protos.SchemaType_SCHEMA_TYPE_AVRO,
-		Status: protos.SchemaStatus_SCHEMA_STATUS_ACCEPTED,
-		Files: map[string]string{
-			req.FileName: string(req.FileContents),
-		},
-		Settings: &protos.Schema_AvroSettings{
-			AvroSettings: &encoding.AvroSettings{
-				Schema: req.FileContents,
+		Id:   uuid.NewV4().String(),
+		Name: req.Name,
+		Type: protos.SchemaType_SCHEMA_TYPE_AVRO,
+		Versions: []*protos.SchemaVersion{
+			{
+				Version: 1,
+				Status:  protos.SchemaStatus_SCHEMA_STATUS_ACCEPTED,
+				Files: map[string]string{
+					req.FileName: string(req.FileContents),
+				},
+				Settings: &protos.SchemaVersion_AvroSettings{
+					AvroSettings: &encoding.AvroSettings{
+						Schema: req.FileContents,
+					},
+				},
 			},
 		},
 	}, nil
@@ -234,16 +259,21 @@ func importLocalJSONSchema(req *protos.ImportLocalRequest) (*protos.Schema, erro
 	}
 
 	return &protos.Schema{
-		Id:     uuid.NewV4().String(),
-		Name:   req.Name,
-		Type:   protos.SchemaType_SCHEMA_TYPE_JSONSCHEMA,
-		Status: protos.SchemaStatus_SCHEMA_STATUS_ACCEPTED,
-		Files: map[string]string{
-			req.FileName: string(req.FileContents),
-		},
-		Settings: &protos.Schema_JsonSchemaSettings{
-			JsonSchemaSettings: &encoding.JSONSchemaSettings{
-				Schema: req.FileContents,
+		Id:   uuid.NewV4().String(),
+		Name: req.Name,
+		Type: protos.SchemaType_SCHEMA_TYPE_JSONSCHEMA,
+		Versions: []*protos.SchemaVersion{
+			{
+				Version: 1,
+				Status:  protos.SchemaStatus_SCHEMA_STATUS_ACCEPTED,
+				Files: map[string]string{
+					req.FileName: string(req.FileContents),
+				},
+				Settings: &protos.SchemaVersion_JsonSchemaSettings{
+					JsonSchemaSettings: &encoding.JSONSchemaSettings{
+						Schema: req.FileContents,
+					},
+				},
 			},
 		},
 	}, nil

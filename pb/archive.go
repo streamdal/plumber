@@ -9,13 +9,13 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoparse"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 )
 
@@ -35,7 +35,12 @@ import (
 func GetMessageDescriptor(cachedSchemaOptions *protos.Schema, pbSettings *encoding.ProtobufSettings) (*desc.MessageDescriptor, error) {
 	// Stored schema settings take precedence
 	if cachedSchemaOptions != nil {
-		cachedPbSettings := cachedSchemaOptions.GetProtobufSettings()
+		latestVersion := getLatestSchemaVersion(cachedSchemaOptions)
+		if latestVersion == nil {
+			return nil, errors.New("no schema version found")
+		}
+
+		cachedPbSettings := latestVersion.GetProtobufSettings()
 
 		if cachedPbSettings == nil {
 			return nil, errors.New("unexpected: protobuf settings are nil in stored schema")
@@ -274,4 +279,13 @@ func readZipFile(zf *zip.File) ([]byte, error) {
 	defer f.Close()
 
 	return ioutil.ReadAll(f)
+}
+
+// getLatestSchemaVersion retrieves the most recent schema version
+func getLatestSchemaVersion(schema *protos.Schema) *protos.SchemaVersion {
+	if schema.Versions == nil || len(schema.Versions) == 0 {
+		return nil
+	}
+
+	return schema.Versions[len(schema.Versions)-1]
 }

@@ -180,3 +180,65 @@ func (s *Server) DeleteSchema(ctx context.Context, req *protos.DeleteSchemaReque
 	}, nil
 
 }
+
+func (s *Server) DeleteSchemaVersion(ctx context.Context, req *protos.DeleteSchemaVersionRequest) (*protos.DeleteSchemaVersionResponse, error) {
+	if err := s.validateAuth(req.Auth); err != nil {
+		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
+	}
+
+	schema := s.PersistentConfig.GetSchema(req.Id)
+	if schema == nil {
+		return nil, CustomError(common.Code_NOT_FOUND, "schema does not exist")
+	}
+
+	for i, v := range schema.Versions {
+		if v.Version != req.Version {
+			continue
+		}
+
+		schema.Versions = append(schema.Versions[:i], schema.Versions[i+1:]...)
+		break
+	}
+
+	s.persistSchema(ctx, false, schema)
+
+	return &protos.DeleteSchemaVersionResponse{
+		Schema: schema,
+		Status: &common.Status{
+			Code:      common.Code_OK,
+			Message:   fmt.Sprintf("Deleted version '%d' for schema '%s'", req.Version, req.Id),
+			RequestId: uuid.NewV4().String(),
+		},
+	}, nil
+}
+
+func (s *Server) ApproveSchema(ctx context.Context, req *protos.ApproveSchemaVersionRequest) (*protos.ApproveSchemaVersionResponse, error) {
+	if err := s.validateAuth(req.Auth); err != nil {
+		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
+	}
+
+	schema := s.PersistentConfig.GetSchema(req.Id)
+	if schema == nil {
+		return nil, CustomError(common.Code_NOT_FOUND, "schema does not exist")
+	}
+
+	for _, v := range schema.Versions {
+		if v.Version != req.Version {
+			continue
+		}
+
+		v.Status = protos.SchemaStatus_SCHEMA_STATUS_ACCEPTED
+		break
+	}
+
+	s.persistSchema(ctx, false, schema)
+
+	return &protos.ApproveSchemaVersionResponse{
+		Schema: schema,
+		Status: &common.Status{
+			Code:      common.Code_OK,
+			Message:   fmt.Sprintf("Deleted version '%d' for schema '%s'", req.Version, req.Id),
+			RequestId: uuid.NewV4().String(),
+		},
+	}, nil
+}
