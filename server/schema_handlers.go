@@ -212,7 +212,7 @@ func (s *Server) DeleteSchemaVersion(ctx context.Context, req *protos.DeleteSche
 	}, nil
 }
 
-func (s *Server) ApproveSchemaVersion(ctx context.Context, req *protos.ApproveSchemaVersionRequest) (*protos.ApproveSchemaVersionResponse, error) {
+func (s *Server) ApproveSchema(ctx context.Context, req *protos.ApproveSchemaVersionRequest) (*protos.ApproveSchemaVersionResponse, error) {
 	if err := s.validateAuth(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
