@@ -75,7 +75,9 @@ func PrintTable(properties [][]string, count int64, receivedAt time.Time, data [
 	table.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_RIGHT})
 	table.Render()
 
-	fmt.Println(tableString.String())
+	if len(properties) > 0 {
+		fmt.Println(tableString.String())
+	}
 
 	// Display value
 	if len(data) != 0 {

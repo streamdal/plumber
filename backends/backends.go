@@ -9,6 +9,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/backends/awssns"
+	"github.com/batchcorp/plumber/backends/cdcmongo"
 	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/backends/nats"
 	"github.com/batchcorp/plumber/backends/nsq"
@@ -105,8 +106,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 	//	be, err = rpubsub.New(cfg)
 	//case *opts.ConnectionOptions_RedisStreams:
 	//	be, err = rstreams.New(cfg)
-	//case *opts.ConnectionOptions_Mongo:
-	//	be, err = cdc_mongo.New(cfg)
+	case *opts.ConnectionOptions_Mongo:
+		be, err = cdcmongo.New(connOpts)
 	//case *opts.ConnectionOptions_Postgres:
 	//	be, err = cdc_postgres.New(cfg)
 	default:
