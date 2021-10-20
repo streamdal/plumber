@@ -2,6 +2,7 @@ package github
 
 import (
 	"bytes"
+	"context"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -90,5 +91,47 @@ var _ = Describe("Github", func() {
 
 	Context("getRepoArchiveLink", func() {
 		// TODO
+	})
+
+	Context("GetRepoList", func() {
+		It("returns list of repositories for an install", func() {
+			mockResp := `{
+    "total_count": 1,
+    "repositories": [
+        {
+            "id": 1234567,
+            "node_id": "MFEw0lJlcG1zaXRvc3kzMDQ6NDkzMjK=",
+            "name": "testrepo",
+            "full_name": "batchcorp/testrepo",
+            "private": true,
+            "owner": {
+                "login": "batchcorp",
+                "id": 123456,
+                "avatar_url": "https://avatars.githubusercontent.com/u/28496506?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/batchcorp",
+                "html_url": "https://github.com/batchcorp",
+                "followers_url": "https://api.github.com/users/batchcorp/followers",
+                "following_url": "https://api.github.com/users/batchcorp/following{/other_user}",
+                "gists_url": "https://api.github.com/users/batchcorp/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/batchcorp/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/batchcorp/subscriptions",
+                "organizations_url": "https://api.github.com/users/batchcorp/orgs",
+                "repos_url": "https://api.github.com/users/batchcorp/repos",
+                "events_url": "https://api.github.com/users/batchcorp/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/batchcorp/received_events",
+                "type": "Organization",
+                "site_admin": false
+            },
+            "html_url": "https://github.com/batchcorp/testrepo"
+        }
+    ]
+}`
+			g := NewWithMockResponse(200, mockResp)
+			repos, err := g.GetRepoList(context.Background(), 1234, "oauth_token")
+
+			Expect(err).ToNot(HaveOccurred())
+			Expect(repos).To(Equal([]string{"https://github.com/batchcorp/testrepo"}))
+		})
 	})
 })

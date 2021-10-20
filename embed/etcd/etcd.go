@@ -461,6 +461,7 @@ func (e *Etcd) populateServerConfigCache() error {
 	// These config values on the ones saved in etcd
 	e.PlumberConfig.VCServiceToken = cfg.VCServiceToken
 	e.PlumberConfig.GitHubToken = cfg.GitHubToken
+	e.PlumberConfig.GitHubInstallID = cfg.GitHubInstallID
 
 	// These values are the ones saved in config.json
 

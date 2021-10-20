@@ -26,12 +26,13 @@ type IConfig interface {
 
 // Config stores Account IDs and the auth_token cookie
 type Config struct {
-	PlumberID      string `json:"plumber_id"`
-	Token          string `json:"token"`
-	TeamID         string `json:"team_id"`
-	UserID         string `json:"user_id"`
-	VCServiceToken string `json:"vc_service_token"`    // entire vc-service JWT
-	GitHubToken    string `json:"github_bearer_token"` // retrieved from vc-service JWT contents
+	PlumberID       string `json:"plumber_id"`
+	Token           string `json:"token"`
+	TeamID          string `json:"team_id"`
+	UserID          string `json:"user_id"`
+	VCServiceToken  string `json:"vc_service_token"`    // entire vc-service JWT
+	GitHubToken     string `json:"github_bearer_token"` // retrieved from vc-service JWT contents
+	GitHubInstallID int64  `json:"install_id"`
 
 	Connections      map[string]*opts.ConnectionOptions `json:"-"`
 	Relays           map[string]*stypes.Relay           `json:"-"`
@@ -52,6 +53,7 @@ func (c *Config) Save() error {
 	// Don't want to save these to a file, they live in etcd
 	tmpCfg.GitHubToken = ""
 	tmpCfg.VCServiceToken = ""
+	tmpCfg.GitHubInstallID = 0
 
 	data, err := json.Marshal(c)
 	if err != nil {
