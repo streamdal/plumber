@@ -42,6 +42,21 @@ type FakeIGithub struct {
 		result2 string
 		result3 error
 	}
+	GetRepoListStub        func(context.Context, int64, string) ([]string, error)
+	getRepoListMutex       sync.RWMutex
+	getRepoListArgsForCall []struct {
+		arg1 context.Context
+		arg2 int64
+		arg3 string
+	}
+	getRepoListReturns struct {
+		result1 []string
+		result2 error
+	}
+	getRepoListReturnsOnCall map[int]struct {
+		result1 []string
+		result2 error
+	}
 	PostStub        func(string, url.Values) ([]byte, int, error)
 	postMutex       sync.RWMutex
 	postArgsForCall []struct {
@@ -197,6 +212,72 @@ func (fake *FakeIGithub) GetRepoFileReturnsOnCall(i int, result1 []byte, result2
 	}{result1, result2, result3}
 }
 
+func (fake *FakeIGithub) GetRepoList(arg1 context.Context, arg2 int64, arg3 string) ([]string, error) {
+	fake.getRepoListMutex.Lock()
+	ret, specificReturn := fake.getRepoListReturnsOnCall[len(fake.getRepoListArgsForCall)]
+	fake.getRepoListArgsForCall = append(fake.getRepoListArgsForCall, struct {
+		arg1 context.Context
+		arg2 int64
+		arg3 string
+	}{arg1, arg2, arg3})
+	stub := fake.GetRepoListStub
+	fakeReturns := fake.getRepoListReturns
+	fake.recordInvocation("GetRepoList", []interface{}{arg1, arg2, arg3})
+	fake.getRepoListMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeIGithub) GetRepoListCallCount() int {
+	fake.getRepoListMutex.RLock()
+	defer fake.getRepoListMutex.RUnlock()
+	return len(fake.getRepoListArgsForCall)
+}
+
+func (fake *FakeIGithub) GetRepoListCalls(stub func(context.Context, int64, string) ([]string, error)) {
+	fake.getRepoListMutex.Lock()
+	defer fake.getRepoListMutex.Unlock()
+	fake.GetRepoListStub = stub
+}
+
+func (fake *FakeIGithub) GetRepoListArgsForCall(i int) (context.Context, int64, string) {
+	fake.getRepoListMutex.RLock()
+	defer fake.getRepoListMutex.RUnlock()
+	argsForCall := fake.getRepoListArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeIGithub) GetRepoListReturns(result1 []string, result2 error) {
+	fake.getRepoListMutex.Lock()
+	defer fake.getRepoListMutex.Unlock()
+	fake.GetRepoListStub = nil
+	fake.getRepoListReturns = struct {
+		result1 []string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeIGithub) GetRepoListReturnsOnCall(i int, result1 []string, result2 error) {
+	fake.getRepoListMutex.Lock()
+	defer fake.getRepoListMutex.Unlock()
+	fake.GetRepoListStub = nil
+	if fake.getRepoListReturnsOnCall == nil {
+		fake.getRepoListReturnsOnCall = make(map[int]struct {
+			result1 []string
+			result2 error
+		})
+	}
+	fake.getRepoListReturnsOnCall[i] = struct {
+		result1 []string
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeIGithub) Post(arg1 string, arg2 url.Values) ([]byte, int, error) {
 	fake.postMutex.Lock()
 	ret, specificReturn := fake.postReturnsOnCall[len(fake.postArgsForCall)]
@@ -272,6 +353,8 @@ func (fake *FakeIGithub) Invocations() map[string][][]interface{} {
 	defer fake.getRepoArchiveMutex.RUnlock()
 	fake.getRepoFileMutex.RLock()
 	defer fake.getRepoFileMutex.RUnlock()
+	fake.getRepoListMutex.RLock()
+	defer fake.getRepoListMutex.RUnlock()
 	fake.postMutex.RLock()
 	defer fake.postMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

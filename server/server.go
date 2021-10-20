@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	"github.com/lestrrat-go/jwx/jwt"
 	"github.com/pkg/errors"
@@ -72,7 +73,13 @@ func (s *Server) SetServerOptions(ctx context.Context, req *protos.SetServerOpti
 		return nil, err
 	}
 
+	installID, err := strconv.ParseInt(stateMap["install_id"], 10, 64)
+	if err != nil {
+		return nil, CustomError(common.Code_FAILED_PRECONDITION, "invalid install_id")
+	}
+
 	s.PersistentConfig.GitHubToken = stateMap["oauth_token_github"]
+	s.PersistentConfig.GitHubInstallID = installID
 
 	// Save to etcd
 	if err := s.Etcd.SaveConfig(ctx, s.PersistentConfig); err != nil {

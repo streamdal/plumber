@@ -242,3 +242,18 @@ func (s *Server) ApproveSchema(ctx context.Context, req *protos.ApproveSchemaVer
 		},
 	}, nil
 }
+
+func (s *Server) GetRepoList(ctx context.Context, req *protos.GetRepoListRequest) (*protos.GetRepoListResponse, error) {
+	if err := s.validateAuth(req.Auth); err != nil {
+		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
+	}
+
+	repos, err := s.GithubService.GetRepoList(ctx, s.PersistentConfig.GitHubInstallID, s.PersistentConfig.GitHubToken)
+	if err != nil {
+		return nil, CustomError(common.Code_ABORTED, err.Error())
+	}
+
+	return &protos.GetRepoListResponse{
+		RepositoryUrls: repos,
+	}, nil
+}
