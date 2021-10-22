@@ -13,7 +13,7 @@ var _ = Describe("Protobuf archive extraction", func() {
 			}
 
 			want := map[string]string{
-				"account.proto": "testing",
+				"testing.proto": "testing",
 			}
 
 			Expect(truncateProtoDirectories(files, "events/")).To(Equal(want))
