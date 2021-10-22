@@ -15,18 +15,18 @@ import (
 )
 
 // importGithub imports a github repo or file as a schema
-func (s *Server) importGithub(ctx context.Context, req *protos.ImportGithubRequest) (*protos.Schema, error) {
+func (s *Server) importGithub(ctx context.Context, importReq *protos.ImportGithubRequest, req *protos.ImportGithubSelectRequest) (*protos.Schema, error) {
 
 	var schema *protos.Schema
 	var err error
 
-	switch req.Type {
+	switch importReq.Type {
 	case protos.SchemaType_SCHEMA_TYPE_PROTOBUF:
-		schema, err = s.importGithubProtobuf(ctx, req)
+		schema, err = s.importGithubProtobuf(ctx, importReq, req)
 	case protos.SchemaType_SCHEMA_TYPE_AVRO:
-		schema, err = s.importGithubAvro(ctx, req)
+		schema, err = s.importGithubAvro(ctx, importReq, req)
 	case protos.SchemaType_SCHEMA_TYPE_JSONSCHEMA:
-		schema, err = s.importGithubJSONSchema(ctx, req)
+		schema, err = s.importGithubJSONSchema(ctx, importReq, req)
 	default:
 		err = validate.ErrInvalidGithubSchemaType
 	}
@@ -39,8 +39,13 @@ func (s *Server) importGithub(ctx context.Context, req *protos.ImportGithubReque
 }
 
 // importGithubProtobuf is used to import a protobuf schema from a GitHub repository
-func (s *Server) importGithubProtobuf(ctx context.Context, req *protos.ImportGithubRequest) (*protos.Schema, error) {
-	zipFile, err := s.GithubService.GetRepoArchive(ctx, s.PersistentConfig.GitHubToken, req.GithubUrl)
+func (s *Server) importGithubProtobuf(ctx context.Context, importReq *protos.ImportGithubRequest, req *protos.ImportGithubSelectRequest) (*protos.Schema, error) {
+	repo, err := parseRepoURL(importReq.GithubUrl)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to understand repository URL")
+	}
+
+	zipFile, err := s.GithubService.GetRepoArchive(ctx, s.PersistentConfig.GitHubToken, repo.Organization, repo.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -49,12 +54,7 @@ func (s *Server) importGithubProtobuf(ctx context.Context, req *protos.ImportGit
 		return nil, errors.New("zipFile cannot be empty")
 	}
 
-	if req == nil {
-		return nil, errors.New("request cannot be nil")
-	}
-
 	settings := req.GetProtobufSettings()
-
 	if settings == nil {
 		return nil, errors.New("protobuf settings cannot be nil")
 	}
@@ -66,14 +66,13 @@ func (s *Server) importGithubProtobuf(ctx context.Context, req *protos.ImportGit
 
 	mdBlob, err := pb.CreateBlob(fds, settings.ProtobufRootMessage)
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to create message descriptor blob")
+		return nil, errors.Wrap(err, "unable to get message descriptor")
 	}
-
 	settings.XMessageDescriptor = mdBlob
 
 	return &protos.Schema{
 		Id:   uuid.NewV4().String(),
-		Name: req.Name,
+		Name: importReq.Name,
 		Type: protos.SchemaType_SCHEMA_TYPE_PROTOBUF,
 		Versions: []*protos.SchemaVersion{
 			{
@@ -89,26 +88,31 @@ func (s *Server) importGithubProtobuf(ctx context.Context, req *protos.ImportGit
 }
 
 // importGithubAvro is used to import an avro schema from a GitHub repository
-func (s *Server) importGithubAvro(ctx context.Context, req *protos.ImportGithubRequest) (*protos.Schema, error) {
+func (s *Server) importGithubAvro(ctx context.Context, importReq *protos.ImportGithubRequest, req *protos.ImportGithubSelectRequest) (*protos.Schema, error) {
 	if req == nil {
 		return nil, errors.New("request cannot be nil")
 	}
 
-	schemaData, fileName, err := s.GithubService.GetRepoFile(ctx, s.PersistentConfig.GitHubToken, req.GithubUrl)
+	repo, err := parseRepoURL(importReq.GithubUrl)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to understand repository URL")
+	}
+
+	schemaData, err := s.GithubService.GetRepoFile(ctx, s.PersistentConfig.GitHubToken, repo.Organization, repo.Name, req.SchemaFileSha)
 	if err != nil {
 		return nil, err
 	}
 
 	return &protos.Schema{
 		Id:   uuid.NewV4().String(),
-		Name: req.Name,
+		Name: importReq.Name,
 		Type: protos.SchemaType_SCHEMA_TYPE_AVRO,
 		Versions: []*protos.SchemaVersion{
 			{
 				Version: 1,
 				Status:  protos.SchemaStatus_SCHEMA_STATUS_ACCEPTED,
 				Files: map[string]string{
-					fileName: string(schemaData),
+					req.SchemaFileName: string(schemaData),
 				},
 				Settings: &protos.SchemaVersion_AvroSettings{
 					AvroSettings: &encoding.AvroSettings{
@@ -119,26 +123,31 @@ func (s *Server) importGithubAvro(ctx context.Context, req *protos.ImportGithubR
 		},
 	}, nil
 }
-func (s *Server) importGithubJSONSchema(ctx context.Context, req *protos.ImportGithubRequest) (*protos.Schema, error) {
-	if len(req.GithubUrl) == 0 {
+func (s *Server) importGithubJSONSchema(ctx context.Context, importReq *protos.ImportGithubRequest, req *protos.ImportGithubSelectRequest) (*protos.Schema, error) {
+	if len(importReq.GithubUrl) == 0 {
 		return nil, errors.New("Github URL cannot be empty")
 	}
 
-	schemaData, fileName, err := s.GithubService.GetRepoFile(ctx, s.PersistentConfig.GitHubToken, req.GithubUrl)
+	repo, err := parseRepoURL(importReq.GithubUrl)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to understand repository URL")
+	}
+
+	schemaData, err := s.GithubService.GetRepoFile(ctx, s.PersistentConfig.GitHubToken, repo.Organization, repo.Name, req.SchemaFileSha)
 	if err != nil {
 		return nil, err
 	}
 
 	return &protos.Schema{
 		Id:   uuid.NewV4().String(),
-		Name: req.Name,
+		Name: importReq.Name,
 		Type: protos.SchemaType_SCHEMA_TYPE_JSONSCHEMA,
 		Versions: []*protos.SchemaVersion{
 			{
 				Version: 1,
 				Status:  protos.SchemaStatus_SCHEMA_STATUS_ACCEPTED,
 				Files: map[string]string{
-					fileName: string(schemaData),
+					req.SchemaFileName: string(schemaData),
 				},
 				Settings: &protos.SchemaVersion_JsonSchemaSettings{
 					JsonSchemaSettings: &encoding.JSONSchemaSettings{

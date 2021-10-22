@@ -79,7 +79,7 @@ func GetMessageDescriptor(cachedSchemaOptions *protos.Schema, pbSettings *encodi
 	return md, nil
 }
 
-// GetMDFromDescriptors takes a stored sceham's file descriptorset blob and returns the necessary
+// GetMDFromDescriptors takes a stored schema's file descriptorset blob and returns the necessary
 // message descriptor for the given rootType
 func GetMDFromDescriptors(fds []*desc.FileDescriptor, rootType string) (*desc.MessageDescriptor, error) {
 	rootFD := FindRootDescriptor(rootType, fds)
@@ -198,24 +198,13 @@ func CreateBlob(fds []*desc.FileDescriptor, rootType string) ([]byte, error) {
 	return protoBytes, nil
 }
 
-// Don't think this is needed? ~ds 09.19.21
-//func ProcessProtobufArchive(rootType string, files map[string]string) (*desc.FileDescriptor, map[string]string, error) {
-//	fds, err := readFileDescriptorsV2(files)
-//	if err != nil {
-//		return nil, nil, errors.Wrap(err, "unable to get file descriptors from archive")
-//	}
-//
-//	rootFD := FindRootDescriptor(rootType, fds)
-//	if rootFD == nil {
-//		return nil, nil, errors.New("root type is missing from archive")
-//	}
-//
-//	return rootFD, files, nil
-//}
-
 // truncateProtoDirectories attempts to locate a .proto file in the shortest path of a directory tree so that
 // import paths work correctly
 func truncateProtoDirectories(files map[string]string, rootDir string) map[string]string {
+	if strings.HasSuffix(rootDir, "/") {
+		rootDir = strings.TrimSuffix(rootDir, "/")
+	}
+
 	cleaned := make(map[string]string)
 
 	var zipBaseDir string

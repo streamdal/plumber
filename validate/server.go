@@ -114,9 +114,9 @@ func DecodeOptionsForServer(decodeOptions *encoding.DecodeOptions) error {
 			return errors.New("protobuf root message cannot be empty when decode type is protobuf")
 		}
 
-		if len(decodeOptions.ProtobufSettings.Archive) == 0 {
-			return errors.New("protobuf archive cannot be empty when decode type is protobuf")
-		}
+		//if len(decodeOptions.ProtobufSettings.Archive) == 0 {
+		//	return errors.New("protobuf archive cannot be empty when decode type is protobuf")
+		//}
 	}
 
 	if decodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_AVRO {
