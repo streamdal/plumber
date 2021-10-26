@@ -460,12 +460,12 @@ github.com/thrift-iterator/go/protocol/binary
 github.com/thrift-iterator/go/protocol/compact
 github.com/thrift-iterator/go/raw
 github.com/thrift-iterator/go/spi
-# github.com/tidwall/gjson v1.8.0
+# github.com/tidwall/gjson v1.10.2
 ## explicit
 github.com/tidwall/gjson
-# github.com/tidwall/match v1.0.3
+# github.com/tidwall/match v1.1.1
 github.com/tidwall/match
-# github.com/tidwall/pretty v1.1.0
+# github.com/tidwall/pretty v1.2.0
 github.com/tidwall/pretty
 # github.com/v2pro/plz v0.0.0-20200805122259-422184e41b6e
 ## explicit
