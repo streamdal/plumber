@@ -121,6 +121,10 @@ func (s *Server) ImportGithubSelect(ctx context.Context, req *protos.ImportGithu
 }
 
 func (s *Server) ImportLocal(ctx context.Context, req *protos.ImportLocalRequest) (*protos.ImportLocalResponse, error) {
+	if err := s.validateAuth(req.Auth); err != nil {
+		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
+	}
+	
 	schema, err := s.importLocal(req)
 	if err != nil {
 		return nil, CustomError(common.Code_FAILED_PRECONDITION, err.Error())
