@@ -34,16 +34,18 @@ type Config struct {
 	GitHubToken     string `json:"github_bearer_token"` // retrieved from vc-service JWT contents
 	GitHubInstallID int64  `json:"install_id"`
 
-	Connections      map[string]*opts.ConnectionOptions `json:"-"`
-	Relays           map[string]*stypes.Relay           `json:"-"`
-	Schemas          map[string]*protos.Schema          `json:"-"`
-	Services         map[string]*protos.Service         `json:"-"`
-	Reads            map[string]*stypes.Read            `json:"-"`
-	ConnectionsMutex *sync.RWMutex                      `json:"-"`
-	ServicesMutex    *sync.RWMutex                      `json:"-"`
-	ReadsMutex       *sync.RWMutex                      `json:"-"`
-	RelaysMutex      *sync.RWMutex                      `json:"-"`
-	SchemasMutex     *sync.RWMutex                      `json:"-"`
+	Connections         map[string]*opts.ConnectionOptions     `json:"-"`
+	Relays              map[string]*stypes.Relay               `json:"-"`
+	Schemas             map[string]*protos.Schema              `json:"-"`
+	Services            map[string]*protos.Service             `json:"-"`
+	Reads               map[string]*stypes.Read                `json:"-"`
+	ImportRequests      map[string]*protos.ImportGithubRequest `json:"-"`
+	ConnectionsMutex    *sync.RWMutex                          `json:"-"`
+	ServicesMutex       *sync.RWMutex                          `json:"-"`
+	ReadsMutex          *sync.RWMutex                          `json:"-"`
+	RelaysMutex         *sync.RWMutex                          `json:"-"`
+	SchemasMutex        *sync.RWMutex                          `json:"-"`
+	ImportRequestsMutex *sync.RWMutex                          `json:"-"`
 }
 
 // Save is a convenience method of persisting the config to disk via a single call
@@ -78,16 +80,18 @@ func ReadConfig(fileName string) (*Config, error) {
 	}
 
 	cfg := &Config{
-		ConnectionsMutex: &sync.RWMutex{},
-		ServicesMutex:    &sync.RWMutex{},
-		ReadsMutex:       &sync.RWMutex{},
-		RelaysMutex:      &sync.RWMutex{},
-		SchemasMutex:     &sync.RWMutex{},
-		Connections:      make(map[string]*opts.ConnectionOptions),
-		Relays:           make(map[string]*stypes.Relay),
-		Schemas:          make(map[string]*protos.Schema),
-		Services:         make(map[string]*protos.Service),
-		Reads:            make(map[string]*stypes.Read),
+		ConnectionsMutex:    &sync.RWMutex{},
+		ServicesMutex:       &sync.RWMutex{},
+		ReadsMutex:          &sync.RWMutex{},
+		RelaysMutex:         &sync.RWMutex{},
+		SchemasMutex:        &sync.RWMutex{},
+		ImportRequestsMutex: &sync.RWMutex{},
+		Connections:         make(map[string]*opts.ConnectionOptions),
+		Relays:              make(map[string]*stypes.Relay),
+		Schemas:             make(map[string]*protos.Schema),
+		Services:            make(map[string]*protos.Service),
+		Reads:               make(map[string]*stypes.Read),
+		ImportRequests:      make(map[string]*protos.ImportGithubRequest),
 	}
 	if err := json.Unmarshal(data, cfg); err != nil {
 		return nil, errors.Wrapf(err, "could not unmarshal ~/.batchsh/%s", fileName)
@@ -301,4 +305,25 @@ func (c *Config) DeleteConnection(connID string) {
 	c.ConnectionsMutex.Lock()
 	defer c.ConnectionsMutex.Unlock()
 	delete(c.Connections, connID)
+}
+
+func (c *Config) SetImportRequest(importID string, importSchema *protos.ImportGithubRequest) {
+	c.ImportRequestsMutex.Lock()
+	defer c.ImportRequestsMutex.Unlock()
+	c.ImportRequests[importID] = importSchema
+}
+
+func (c *Config) GetImportRequest(importID string) *protos.ImportGithubRequest {
+	c.ImportRequestsMutex.RLock()
+	defer c.ImportRequestsMutex.RUnlock()
+
+	i, _ := c.ImportRequests[importID]
+
+	return i
+}
+
+func (c *Config) DeleteImportRequest(importID string) {
+	c.ImportRequestsMutex.Lock()
+	defer c.ImportRequestsMutex.Unlock()
+	delete(c.ImportRequests, importID)
 }

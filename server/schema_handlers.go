@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/batchcorp/plumber/embed/etcd"
+	"github.com/batchcorp/plumber/github"
 
 	"github.com/golang/protobuf/proto"
 
@@ -46,9 +47,48 @@ func (s *Server) GetSchema(_ context.Context, req *protos.GetSchemaRequest) (*pr
 }
 
 func (s *Server) ImportGithub(ctx context.Context, req *protos.ImportGithubRequest) (*protos.ImportGithubResponse, error) {
-	schema, err := s.importGithub(ctx, req)
+	if err := s.validateAuth(req.Auth); err != nil {
+		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
+	}
+
+	repo, err := parseRepoURL(req.GithubUrl)
 	if err != nil {
-		return nil, CustomError(common.Code_FAILED_PRECONDITION, err.Error())
+		return nil, CustomError(common.Code_ABORTED, err.Error())
+	}
+
+	tree, err := s.GithubService.GetRepoTree(ctx, s.PersistentConfig.GitHubToken, repo.Organization, repo.Name)
+	if err != nil {
+		return nil, CustomError(common.Code_ABORTED, err.Error())
+	}
+
+	req.XId = uuid.NewV4().String()
+
+	s.PersistentConfig.SetImportRequest(req.XId, req)
+
+	return &protos.ImportGithubResponse{
+		Status: &common.Status{
+			Code:      common.Code_OK,
+			Message:   "choose file",
+			RequestId: uuid.NewV4().String(),
+		},
+		Id:   req.XId,
+		Tree: github.TreeToDisplay(tree.Entries, req.Type),
+	}, nil
+}
+
+func (s *Server) ImportGithubSelect(ctx context.Context, req *protos.ImportGithubSelectRequest) (*protos.ImportGithubSelectResponse, error) {
+	if err := s.validateAuth(req.Auth); err != nil {
+		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
+	}
+
+	importReq := s.PersistentConfig.GetImportRequest(req.ImportId)
+	if importReq == nil {
+		return nil, CustomError(common.Code_NOT_FOUND, fmt.Sprintf("could not find import request '%s'", req.ImportId))
+	}
+
+	schema, err := s.importGithub(ctx, importReq, req)
+	if err != nil {
+		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
 
 	data, err := proto.Marshal(schema)
@@ -70,13 +110,13 @@ func (s *Server) ImportGithub(ctx context.Context, req *protos.ImportGithubReque
 		s.Log.Error(err)
 	}
 
-	return &protos.ImportGithubResponse{
+	return &protos.ImportGithubSelectResponse{
 		Status: &common.Status{
 			Code:      common.Code_OK,
-			Message:   "schema imported successfully",
+			Message:   "Schema imported successfully",
 			RequestId: uuid.NewV4().String(),
 		},
-		Id: schema.Id,
+		Schema: schema,
 	}, nil
 }
 

@@ -192,7 +192,7 @@ func (m *Monitor) runLeader(ctx context.Context) {
 			// Receive outbound alerts
 			// Perform leader monitoring duties
 
-			llog.Debug("doing things")
+			//llog.Debug("doing things")
 			time.Sleep(1 * time.Second)
 		}
 

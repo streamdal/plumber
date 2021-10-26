@@ -91,9 +91,7 @@ type ProtobufSettings struct {
 	// Directory where protos are stored (used for github import)
 	// @gotags: kong:"-"
 	XProtobufRootDir string `protobuf:"bytes,3,opt,name=_protobuf_root_dir,json=ProtobufRootDir,proto3" json:"_protobuf_root_dir,omitempty" kong:"-"`
-	// TODO: This should probably be removed since archive should probably be
-	// exposed at a higher level than inside each of the settings. ~ds 09.18.21
-	// Used by server/desktop
+	// Used by server/desktop when creating a read without an existing schema
 	// @gotags: kong:"-"
 	Archive []byte `protobuf:"bytes,4,opt,name=archive,proto3" json:"archive,omitempty" kong:"-"`
 	// Used internally by the server

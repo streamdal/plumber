@@ -119,7 +119,7 @@ var _ = Describe("Schema Import", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			fakeGithub := &githubfakes.FakeIGithub{}
-			fakeGithub.GetRepoArchiveStub = func(context.Context, string, string) ([]byte, error) {
+			fakeGithub.GetRepoArchiveStub = func(context.Context, string, string, string) ([]byte, error) {
 				return zipData, nil
 			}
 
@@ -128,11 +128,16 @@ var _ = Describe("Schema Import", func() {
 				PersistentConfig: &config.Config{},
 			}
 
-			req := &protos.ImportGithubRequest{
+			importReq := &protos.ImportGithubRequest{
+				Auth:      &common.Auth{Token: "batchcorp"},
+				Name:      "testing",
+				Type:      protos.SchemaType_SCHEMA_TYPE_PROTOBUF,
+				GithubUrl: "https://github.com/batchcorp/test",
+			}
+
+			req := &protos.ImportGithubSelectRequest{
 				Auth: &common.Auth{Token: "batchcorp"},
-				Name: "testing",
-				Type: protos.SchemaType_SCHEMA_TYPE_PROTOBUF,
-				Settings: &protos.ImportGithubRequest_ProtobufSettings{
+				Settings: &protos.ImportGithubSelectRequest_ProtobufSettings{
 					ProtobufSettings: &encoding.ProtobufSettings{
 						XProtobufRootDir:    "test",
 						ProtobufRootMessage: "sample.Message",
@@ -140,7 +145,7 @@ var _ = Describe("Schema Import", func() {
 				},
 			}
 
-			schema, err := s.importGithubProtobuf(context.Background(), req)
+			schema, err := s.importGithubProtobuf(context.Background(), importReq, req)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(schema.Versions[0].GetProtobufSettings().XMessageDescriptor).ToNot(BeEmpty())
 			Expect(schema.Versions[0].Files["sample-message.proto"]).ToNot(BeEmpty())
@@ -150,9 +155,9 @@ var _ = Describe("Schema Import", func() {
 	Context("importGithubAvro", func() {
 		It("returns a schema", func() {
 			fakeGithub := &githubfakes.FakeIGithub{}
-			fakeGithub.GetRepoFileStub = func(context.Context, string, string) ([]byte, string, error) {
+			fakeGithub.GetRepoFileStub = func(context.Context, string, string, string, string) ([]byte, error) {
 				data, _ := base64.StdEncoding.DecodeString(AvroSchema)
-				return data, "test.avsc", nil
+				return data, nil
 			}
 
 			s := &Server{
@@ -160,14 +165,20 @@ var _ = Describe("Schema Import", func() {
 				PersistentConfig: &config.Config{},
 			}
 
-			req := &protos.ImportGithubRequest{
+			importReq := &protos.ImportGithubRequest{
 				Auth:      &common.Auth{Token: "batchcorp"},
 				Name:      "testing",
 				Type:      protos.SchemaType_SCHEMA_TYPE_AVRO,
-				GithubUrl: "https://github.com/batchcorp/avro-test/test.avsc",
+				GithubUrl: "https://github.com/batchcorp/test",
 			}
 
-			schema, err := s.importGithubAvro(context.Background(), req)
+			req := &protos.ImportGithubSelectRequest{
+				Auth:           &common.Auth{Token: "batchcorp"},
+				SchemaFileSha:  "testing",
+				SchemaFileName: "test.avsc",
+			}
+
+			schema, err := s.importGithubAvro(context.Background(), importReq, req)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(schema.Versions[0].GetAvroSettings().Schema).ToNot(BeEmpty())
 			Expect(schema.Versions[0].Files["test.avsc"]).ToNot(BeEmpty())
@@ -177,9 +188,9 @@ var _ = Describe("Schema Import", func() {
 	Context("importGithubJSONSchema", func() {
 		It("returns a schema", func() {
 			fakeGithub := &githubfakes.FakeIGithub{}
-			fakeGithub.GetRepoFileStub = func(context.Context, string, string) ([]byte, string, error) {
+			fakeGithub.GetRepoFileStub = func(context.Context, string, string, string, string) ([]byte, error) {
 				data, _ := base64.StdEncoding.DecodeString(JSONSchema)
-				return data, "test.json", nil
+				return data, nil
 			}
 
 			s := &Server{
@@ -187,14 +198,20 @@ var _ = Describe("Schema Import", func() {
 				PersistentConfig: &config.Config{},
 			}
 
-			req := &protos.ImportGithubRequest{
+			importReq := &protos.ImportGithubRequest{
 				Auth:      &common.Auth{Token: "batchcorp"},
 				Name:      "testing",
 				Type:      protos.SchemaType_SCHEMA_TYPE_JSONSCHEMA,
-				GithubUrl: "https://github.com/batchcorp/jsonschema-test/test.json",
+				GithubUrl: "https://github.com/batchcorp/test",
 			}
 
-			schema, err := s.importGithubJSONSchema(context.Background(), req)
+			req := &protos.ImportGithubSelectRequest{
+				Auth:           &common.Auth{Token: "batchcorp"},
+				SchemaFileName: "test.json",
+				SchemaFileSha:  "testing",
+			}
+
+			schema, err := s.importGithubJSONSchema(context.Background(), importReq, req)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(schema.Versions[0].GetJsonSchemaSettings().Schema).ToNot(BeEmpty())
 			Expect(schema.Versions[0].Files["test.json"]).ToNot(BeEmpty())
@@ -210,7 +227,7 @@ var _ = Describe("Schema Import", func() {
 
 			_, err := p.importGithub(context.Background(), &protos.ImportGithubRequest{
 				Type: protos.SchemaType_SCHEMA_TYPE_UNSET,
-			})
+			}, &protos.ImportGithubSelectRequest{})
 
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(validate.ErrInvalidGithubSchemaType))
@@ -218,7 +235,7 @@ var _ = Describe("Schema Import", func() {
 
 		It("returns a schema", func() {
 			fakeGithub := &githubfakes.FakeIGithub{}
-			fakeGithub.GetRepoArchiveStub = func(context.Context, string, string) ([]byte, error) {
+			fakeGithub.GetRepoArchiveStub = func(context.Context, string, string, string) ([]byte, error) {
 				return base64.StdEncoding.DecodeString(GithubZipFile)
 			}
 
@@ -227,15 +244,19 @@ var _ = Describe("Schema Import", func() {
 				GithubService:    fakeGithub,
 			}
 
-			schema, err := p.importGithub(context.Background(), &protos.ImportGithubRequest{
-				Type: protos.SchemaType_SCHEMA_TYPE_PROTOBUF,
-				Settings: &protos.ImportGithubRequest_ProtobufSettings{
-					ProtobufSettings: &encoding.ProtobufSettings{
-						XProtobufRootDir:    "test",
-						ProtobufRootMessage: "sample.Message",
-					},
+			importReq := &protos.ImportGithubRequest{
+				Type:      protos.SchemaType_SCHEMA_TYPE_PROTOBUF,
+				GithubUrl: "https://github.com/batchcorp/test",
+			}
+
+			req := &protos.ImportGithubSelectRequest{Settings: &protos.ImportGithubSelectRequest_ProtobufSettings{
+				ProtobufSettings: &encoding.ProtobufSettings{
+					XProtobufRootDir:    "test",
+					ProtobufRootMessage: "sample.Message",
 				},
-			})
+			}}
+
+			schema, err := p.importGithub(context.Background(), importReq, req)
 
 			Expect(err).ToNot(HaveOccurred())
 			Expect(schema.Versions[0].GetProtobufSettings().XMessageDescriptor).ToNot(BeEmpty())

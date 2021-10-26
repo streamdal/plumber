@@ -10,11 +10,12 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/ssh/terminal"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/options"
@@ -156,16 +157,18 @@ func getConfig() *config.Config {
 
 	if cfg == nil {
 		cfg = &config.Config{
-			Connections:      make(map[string]*opts.ConnectionOptions),
-			Relays:           make(map[string]*types.Relay),
-			Schemas:          make(map[string]*protos.Schema),
-			Services:         make(map[string]*protos.Service),
-			Reads:            make(map[string]*types.Read),
-			ConnectionsMutex: &sync.RWMutex{},
-			ServicesMutex:    &sync.RWMutex{},
-			ReadsMutex:       &sync.RWMutex{},
-			RelaysMutex:      &sync.RWMutex{},
-			SchemasMutex:     &sync.RWMutex{},
+			Connections:         make(map[string]*opts.ConnectionOptions),
+			Relays:              make(map[string]*types.Relay),
+			Schemas:             make(map[string]*protos.Schema),
+			Services:            make(map[string]*protos.Service),
+			Reads:               make(map[string]*types.Read),
+			ImportRequests:      make(map[string]*protos.ImportGithubRequest),
+			ConnectionsMutex:    &sync.RWMutex{},
+			ServicesMutex:       &sync.RWMutex{},
+			ReadsMutex:          &sync.RWMutex{},
+			RelaysMutex:         &sync.RWMutex{},
+			SchemasMutex:        &sync.RWMutex{},
+			ImportRequestsMutex: &sync.RWMutex{},
 		}
 	}
 

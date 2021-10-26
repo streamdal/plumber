@@ -7,15 +7,17 @@ import (
 	"sync"
 
 	"github.com/batchcorp/plumber/github"
+	githuba "github.com/google/go-github/v37/github"
 )
 
 type FakeIGithub struct {
-	GetRepoArchiveStub        func(context.Context, string, string) ([]byte, error)
+	GetRepoArchiveStub        func(context.Context, string, string, string) ([]byte, error)
 	getRepoArchiveMutex       sync.RWMutex
 	getRepoArchiveArgsForCall []struct {
 		arg1 context.Context
 		arg2 string
 		arg3 string
+		arg4 string
 	}
 	getRepoArchiveReturns struct {
 		result1 []byte
@@ -25,22 +27,22 @@ type FakeIGithub struct {
 		result1 []byte
 		result2 error
 	}
-	GetRepoFileStub        func(context.Context, string, string) ([]byte, string, error)
+	GetRepoFileStub        func(context.Context, string, string, string, string) ([]byte, error)
 	getRepoFileMutex       sync.RWMutex
 	getRepoFileArgsForCall []struct {
 		arg1 context.Context
 		arg2 string
 		arg3 string
+		arg4 string
+		arg5 string
 	}
 	getRepoFileReturns struct {
 		result1 []byte
-		result2 string
-		result3 error
+		result2 error
 	}
 	getRepoFileReturnsOnCall map[int]struct {
 		result1 []byte
-		result2 string
-		result3 error
+		result2 error
 	}
 	GetRepoListStub        func(context.Context, int64, string) ([]string, error)
 	getRepoListMutex       sync.RWMutex
@@ -55,6 +57,22 @@ type FakeIGithub struct {
 	}
 	getRepoListReturnsOnCall map[int]struct {
 		result1 []string
+		result2 error
+	}
+	GetRepoTreeStub        func(context.Context, string, string, string) (*githuba.Tree, error)
+	getRepoTreeMutex       sync.RWMutex
+	getRepoTreeArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+		arg3 string
+		arg4 string
+	}
+	getRepoTreeReturns struct {
+		result1 *githuba.Tree
+		result2 error
+	}
+	getRepoTreeReturnsOnCall map[int]struct {
+		result1 *githuba.Tree
 		result2 error
 	}
 	PostStub        func(string, url.Values) ([]byte, int, error)
@@ -77,20 +95,21 @@ type FakeIGithub struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeIGithub) GetRepoArchive(arg1 context.Context, arg2 string, arg3 string) ([]byte, error) {
+func (fake *FakeIGithub) GetRepoArchive(arg1 context.Context, arg2 string, arg3 string, arg4 string) ([]byte, error) {
 	fake.getRepoArchiveMutex.Lock()
 	ret, specificReturn := fake.getRepoArchiveReturnsOnCall[len(fake.getRepoArchiveArgsForCall)]
 	fake.getRepoArchiveArgsForCall = append(fake.getRepoArchiveArgsForCall, struct {
 		arg1 context.Context
 		arg2 string
 		arg3 string
-	}{arg1, arg2, arg3})
+		arg4 string
+	}{arg1, arg2, arg3, arg4})
 	stub := fake.GetRepoArchiveStub
 	fakeReturns := fake.getRepoArchiveReturns
-	fake.recordInvocation("GetRepoArchive", []interface{}{arg1, arg2, arg3})
+	fake.recordInvocation("GetRepoArchive", []interface{}{arg1, arg2, arg3, arg4})
 	fake.getRepoArchiveMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3)
+		return stub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -104,17 +123,17 @@ func (fake *FakeIGithub) GetRepoArchiveCallCount() int {
 	return len(fake.getRepoArchiveArgsForCall)
 }
 
-func (fake *FakeIGithub) GetRepoArchiveCalls(stub func(context.Context, string, string) ([]byte, error)) {
+func (fake *FakeIGithub) GetRepoArchiveCalls(stub func(context.Context, string, string, string) ([]byte, error)) {
 	fake.getRepoArchiveMutex.Lock()
 	defer fake.getRepoArchiveMutex.Unlock()
 	fake.GetRepoArchiveStub = stub
 }
 
-func (fake *FakeIGithub) GetRepoArchiveArgsForCall(i int) (context.Context, string, string) {
+func (fake *FakeIGithub) GetRepoArchiveArgsForCall(i int) (context.Context, string, string, string) {
 	fake.getRepoArchiveMutex.RLock()
 	defer fake.getRepoArchiveMutex.RUnlock()
 	argsForCall := fake.getRepoArchiveArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
 func (fake *FakeIGithub) GetRepoArchiveReturns(result1 []byte, result2 error) {
@@ -143,25 +162,27 @@ func (fake *FakeIGithub) GetRepoArchiveReturnsOnCall(i int, result1 []byte, resu
 	}{result1, result2}
 }
 
-func (fake *FakeIGithub) GetRepoFile(arg1 context.Context, arg2 string, arg3 string) ([]byte, string, error) {
+func (fake *FakeIGithub) GetRepoFile(arg1 context.Context, arg2 string, arg3 string, arg4 string, arg5 string) ([]byte, error) {
 	fake.getRepoFileMutex.Lock()
 	ret, specificReturn := fake.getRepoFileReturnsOnCall[len(fake.getRepoFileArgsForCall)]
 	fake.getRepoFileArgsForCall = append(fake.getRepoFileArgsForCall, struct {
 		arg1 context.Context
 		arg2 string
 		arg3 string
-	}{arg1, arg2, arg3})
+		arg4 string
+		arg5 string
+	}{arg1, arg2, arg3, arg4, arg5})
 	stub := fake.GetRepoFileStub
 	fakeReturns := fake.getRepoFileReturns
-	fake.recordInvocation("GetRepoFile", []interface{}{arg1, arg2, arg3})
+	fake.recordInvocation("GetRepoFile", []interface{}{arg1, arg2, arg3, arg4, arg5})
 	fake.getRepoFileMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3)
+		return stub(arg1, arg2, arg3, arg4, arg5)
 	}
 	if specificReturn {
-		return ret.result1, ret.result2, ret.result3
+		return ret.result1, ret.result2
 	}
-	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeIGithub) GetRepoFileCallCount() int {
@@ -170,46 +191,43 @@ func (fake *FakeIGithub) GetRepoFileCallCount() int {
 	return len(fake.getRepoFileArgsForCall)
 }
 
-func (fake *FakeIGithub) GetRepoFileCalls(stub func(context.Context, string, string) ([]byte, string, error)) {
+func (fake *FakeIGithub) GetRepoFileCalls(stub func(context.Context, string, string, string, string) ([]byte, error)) {
 	fake.getRepoFileMutex.Lock()
 	defer fake.getRepoFileMutex.Unlock()
 	fake.GetRepoFileStub = stub
 }
 
-func (fake *FakeIGithub) GetRepoFileArgsForCall(i int) (context.Context, string, string) {
+func (fake *FakeIGithub) GetRepoFileArgsForCall(i int) (context.Context, string, string, string, string) {
 	fake.getRepoFileMutex.RLock()
 	defer fake.getRepoFileMutex.RUnlock()
 	argsForCall := fake.getRepoFileArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4, argsForCall.arg5
 }
 
-func (fake *FakeIGithub) GetRepoFileReturns(result1 []byte, result2 string, result3 error) {
+func (fake *FakeIGithub) GetRepoFileReturns(result1 []byte, result2 error) {
 	fake.getRepoFileMutex.Lock()
 	defer fake.getRepoFileMutex.Unlock()
 	fake.GetRepoFileStub = nil
 	fake.getRepoFileReturns = struct {
 		result1 []byte
-		result2 string
-		result3 error
-	}{result1, result2, result3}
+		result2 error
+	}{result1, result2}
 }
 
-func (fake *FakeIGithub) GetRepoFileReturnsOnCall(i int, result1 []byte, result2 string, result3 error) {
+func (fake *FakeIGithub) GetRepoFileReturnsOnCall(i int, result1 []byte, result2 error) {
 	fake.getRepoFileMutex.Lock()
 	defer fake.getRepoFileMutex.Unlock()
 	fake.GetRepoFileStub = nil
 	if fake.getRepoFileReturnsOnCall == nil {
 		fake.getRepoFileReturnsOnCall = make(map[int]struct {
 			result1 []byte
-			result2 string
-			result3 error
+			result2 error
 		})
 	}
 	fake.getRepoFileReturnsOnCall[i] = struct {
 		result1 []byte
-		result2 string
-		result3 error
-	}{result1, result2, result3}
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeIGithub) GetRepoList(arg1 context.Context, arg2 int64, arg3 string) ([]string, error) {
@@ -274,6 +292,73 @@ func (fake *FakeIGithub) GetRepoListReturnsOnCall(i int, result1 []string, resul
 	}
 	fake.getRepoListReturnsOnCall[i] = struct {
 		result1 []string
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeIGithub) GetRepoTree(arg1 context.Context, arg2 string, arg3 string, arg4 string) (*githuba.Tree, error) {
+	fake.getRepoTreeMutex.Lock()
+	ret, specificReturn := fake.getRepoTreeReturnsOnCall[len(fake.getRepoTreeArgsForCall)]
+	fake.getRepoTreeArgsForCall = append(fake.getRepoTreeArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+		arg3 string
+		arg4 string
+	}{arg1, arg2, arg3, arg4})
+	stub := fake.GetRepoTreeStub
+	fakeReturns := fake.getRepoTreeReturns
+	fake.recordInvocation("GetRepoTree", []interface{}{arg1, arg2, arg3, arg4})
+	fake.getRepoTreeMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeIGithub) GetRepoTreeCallCount() int {
+	fake.getRepoTreeMutex.RLock()
+	defer fake.getRepoTreeMutex.RUnlock()
+	return len(fake.getRepoTreeArgsForCall)
+}
+
+func (fake *FakeIGithub) GetRepoTreeCalls(stub func(context.Context, string, string, string) (*githuba.Tree, error)) {
+	fake.getRepoTreeMutex.Lock()
+	defer fake.getRepoTreeMutex.Unlock()
+	fake.GetRepoTreeStub = stub
+}
+
+func (fake *FakeIGithub) GetRepoTreeArgsForCall(i int) (context.Context, string, string, string) {
+	fake.getRepoTreeMutex.RLock()
+	defer fake.getRepoTreeMutex.RUnlock()
+	argsForCall := fake.getRepoTreeArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+}
+
+func (fake *FakeIGithub) GetRepoTreeReturns(result1 *githuba.Tree, result2 error) {
+	fake.getRepoTreeMutex.Lock()
+	defer fake.getRepoTreeMutex.Unlock()
+	fake.GetRepoTreeStub = nil
+	fake.getRepoTreeReturns = struct {
+		result1 *githuba.Tree
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeIGithub) GetRepoTreeReturnsOnCall(i int, result1 *githuba.Tree, result2 error) {
+	fake.getRepoTreeMutex.Lock()
+	defer fake.getRepoTreeMutex.Unlock()
+	fake.GetRepoTreeStub = nil
+	if fake.getRepoTreeReturnsOnCall == nil {
+		fake.getRepoTreeReturnsOnCall = make(map[int]struct {
+			result1 *githuba.Tree
+			result2 error
+		})
+	}
+	fake.getRepoTreeReturnsOnCall[i] = struct {
+		result1 *githuba.Tree
 		result2 error
 	}{result1, result2}
 }
@@ -355,6 +440,8 @@ func (fake *FakeIGithub) Invocations() map[string][][]interface{} {
 	defer fake.getRepoFileMutex.RUnlock()
 	fake.getRepoListMutex.RLock()
 	defer fake.getRepoListMutex.RUnlock()
+	fake.getRepoTreeMutex.RLock()
+	defer fake.getRepoTreeMutex.RUnlock()
 	fake.postMutex.RLock()
 	defer fake.postMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
