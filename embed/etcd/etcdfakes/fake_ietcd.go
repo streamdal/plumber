@@ -138,6 +138,18 @@ type FakeIEtcd struct {
 	publishCreateServiceReturnsOnCall map[int]struct {
 		result1 error
 	}
+	PublishCreateValidationStub        func(context.Context, *protos.Validation) error
+	publishCreateValidationMutex       sync.RWMutex
+	publishCreateValidationArgsForCall []struct {
+		arg1 context.Context
+		arg2 *protos.Validation
+	}
+	publishCreateValidationReturns struct {
+		result1 error
+	}
+	publishCreateValidationReturnsOnCall map[int]struct {
+		result1 error
+	}
 	PublishDeleteConnectionStub        func(context.Context, *opts.ConnectionOptions) error
 	publishDeleteConnectionMutex       sync.RWMutex
 	publishDeleteConnectionArgsForCall []struct {
@@ -186,6 +198,18 @@ type FakeIEtcd struct {
 	publishDeleteServiceReturnsOnCall map[int]struct {
 		result1 error
 	}
+	PublishDeleteValidationStub        func(context.Context, *protos.Validation) error
+	publishDeleteValidationMutex       sync.RWMutex
+	publishDeleteValidationArgsForCall []struct {
+		arg1 context.Context
+		arg2 *protos.Validation
+	}
+	publishDeleteValidationReturns struct {
+		result1 error
+	}
+	publishDeleteValidationReturnsOnCall map[int]struct {
+		result1 error
+	}
 	PublishUpdateConnectionStub        func(context.Context, *opts.ConnectionOptions) error
 	publishUpdateConnectionMutex       sync.RWMutex
 	publishUpdateConnectionArgsForCall []struct {
@@ -232,6 +256,18 @@ type FakeIEtcd struct {
 		result1 error
 	}
 	publishUpdateServiceReturnsOnCall map[int]struct {
+		result1 error
+	}
+	PublishUpdateValidationStub        func(context.Context, *protos.Validation) error
+	publishUpdateValidationMutex       sync.RWMutex
+	publishUpdateValidationArgsForCall []struct {
+		arg1 context.Context
+		arg2 *protos.Validation
+	}
+	publishUpdateValidationReturns struct {
+		result1 error
+	}
+	publishUpdateValidationReturnsOnCall map[int]struct {
 		result1 error
 	}
 	PutStub        func(context.Context, string, string, ...clientv3.OpOption) (*clientv3.PutResponse, error)
@@ -908,6 +944,68 @@ func (fake *FakeIEtcd) PublishCreateServiceReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeIEtcd) PublishCreateValidation(arg1 context.Context, arg2 *protos.Validation) error {
+	fake.publishCreateValidationMutex.Lock()
+	ret, specificReturn := fake.publishCreateValidationReturnsOnCall[len(fake.publishCreateValidationArgsForCall)]
+	fake.publishCreateValidationArgsForCall = append(fake.publishCreateValidationArgsForCall, struct {
+		arg1 context.Context
+		arg2 *protos.Validation
+	}{arg1, arg2})
+	stub := fake.PublishCreateValidationStub
+	fakeReturns := fake.publishCreateValidationReturns
+	fake.recordInvocation("PublishCreateValidation", []interface{}{arg1, arg2})
+	fake.publishCreateValidationMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIEtcd) PublishCreateValidationCallCount() int {
+	fake.publishCreateValidationMutex.RLock()
+	defer fake.publishCreateValidationMutex.RUnlock()
+	return len(fake.publishCreateValidationArgsForCall)
+}
+
+func (fake *FakeIEtcd) PublishCreateValidationCalls(stub func(context.Context, *protos.Validation) error) {
+	fake.publishCreateValidationMutex.Lock()
+	defer fake.publishCreateValidationMutex.Unlock()
+	fake.PublishCreateValidationStub = stub
+}
+
+func (fake *FakeIEtcd) PublishCreateValidationArgsForCall(i int) (context.Context, *protos.Validation) {
+	fake.publishCreateValidationMutex.RLock()
+	defer fake.publishCreateValidationMutex.RUnlock()
+	argsForCall := fake.publishCreateValidationArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIEtcd) PublishCreateValidationReturns(result1 error) {
+	fake.publishCreateValidationMutex.Lock()
+	defer fake.publishCreateValidationMutex.Unlock()
+	fake.PublishCreateValidationStub = nil
+	fake.publishCreateValidationReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishCreateValidationReturnsOnCall(i int, result1 error) {
+	fake.publishCreateValidationMutex.Lock()
+	defer fake.publishCreateValidationMutex.Unlock()
+	fake.PublishCreateValidationStub = nil
+	if fake.publishCreateValidationReturnsOnCall == nil {
+		fake.publishCreateValidationReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.publishCreateValidationReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeIEtcd) PublishDeleteConnection(arg1 context.Context, arg2 *opts.ConnectionOptions) error {
 	fake.publishDeleteConnectionMutex.Lock()
 	ret, specificReturn := fake.publishDeleteConnectionReturnsOnCall[len(fake.publishDeleteConnectionArgsForCall)]
@@ -1156,6 +1254,68 @@ func (fake *FakeIEtcd) PublishDeleteServiceReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeIEtcd) PublishDeleteValidation(arg1 context.Context, arg2 *protos.Validation) error {
+	fake.publishDeleteValidationMutex.Lock()
+	ret, specificReturn := fake.publishDeleteValidationReturnsOnCall[len(fake.publishDeleteValidationArgsForCall)]
+	fake.publishDeleteValidationArgsForCall = append(fake.publishDeleteValidationArgsForCall, struct {
+		arg1 context.Context
+		arg2 *protos.Validation
+	}{arg1, arg2})
+	stub := fake.PublishDeleteValidationStub
+	fakeReturns := fake.publishDeleteValidationReturns
+	fake.recordInvocation("PublishDeleteValidation", []interface{}{arg1, arg2})
+	fake.publishDeleteValidationMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIEtcd) PublishDeleteValidationCallCount() int {
+	fake.publishDeleteValidationMutex.RLock()
+	defer fake.publishDeleteValidationMutex.RUnlock()
+	return len(fake.publishDeleteValidationArgsForCall)
+}
+
+func (fake *FakeIEtcd) PublishDeleteValidationCalls(stub func(context.Context, *protos.Validation) error) {
+	fake.publishDeleteValidationMutex.Lock()
+	defer fake.publishDeleteValidationMutex.Unlock()
+	fake.PublishDeleteValidationStub = stub
+}
+
+func (fake *FakeIEtcd) PublishDeleteValidationArgsForCall(i int) (context.Context, *protos.Validation) {
+	fake.publishDeleteValidationMutex.RLock()
+	defer fake.publishDeleteValidationMutex.RUnlock()
+	argsForCall := fake.publishDeleteValidationArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIEtcd) PublishDeleteValidationReturns(result1 error) {
+	fake.publishDeleteValidationMutex.Lock()
+	defer fake.publishDeleteValidationMutex.Unlock()
+	fake.PublishDeleteValidationStub = nil
+	fake.publishDeleteValidationReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishDeleteValidationReturnsOnCall(i int, result1 error) {
+	fake.publishDeleteValidationMutex.Lock()
+	defer fake.publishDeleteValidationMutex.Unlock()
+	fake.PublishDeleteValidationStub = nil
+	if fake.publishDeleteValidationReturnsOnCall == nil {
+		fake.publishDeleteValidationReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.publishDeleteValidationReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeIEtcd) PublishUpdateConnection(arg1 context.Context, arg2 *opts.ConnectionOptions) error {
 	fake.publishUpdateConnectionMutex.Lock()
 	ret, specificReturn := fake.publishUpdateConnectionReturnsOnCall[len(fake.publishUpdateConnectionArgsForCall)]
@@ -1400,6 +1560,68 @@ func (fake *FakeIEtcd) PublishUpdateServiceReturnsOnCall(i int, result1 error) {
 		})
 	}
 	fake.publishUpdateServiceReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishUpdateValidation(arg1 context.Context, arg2 *protos.Validation) error {
+	fake.publishUpdateValidationMutex.Lock()
+	ret, specificReturn := fake.publishUpdateValidationReturnsOnCall[len(fake.publishUpdateValidationArgsForCall)]
+	fake.publishUpdateValidationArgsForCall = append(fake.publishUpdateValidationArgsForCall, struct {
+		arg1 context.Context
+		arg2 *protos.Validation
+	}{arg1, arg2})
+	stub := fake.PublishUpdateValidationStub
+	fakeReturns := fake.publishUpdateValidationReturns
+	fake.recordInvocation("PublishUpdateValidation", []interface{}{arg1, arg2})
+	fake.publishUpdateValidationMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIEtcd) PublishUpdateValidationCallCount() int {
+	fake.publishUpdateValidationMutex.RLock()
+	defer fake.publishUpdateValidationMutex.RUnlock()
+	return len(fake.publishUpdateValidationArgsForCall)
+}
+
+func (fake *FakeIEtcd) PublishUpdateValidationCalls(stub func(context.Context, *protos.Validation) error) {
+	fake.publishUpdateValidationMutex.Lock()
+	defer fake.publishUpdateValidationMutex.Unlock()
+	fake.PublishUpdateValidationStub = stub
+}
+
+func (fake *FakeIEtcd) PublishUpdateValidationArgsForCall(i int) (context.Context, *protos.Validation) {
+	fake.publishUpdateValidationMutex.RLock()
+	defer fake.publishUpdateValidationMutex.RUnlock()
+	argsForCall := fake.publishUpdateValidationArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIEtcd) PublishUpdateValidationReturns(result1 error) {
+	fake.publishUpdateValidationMutex.Lock()
+	defer fake.publishUpdateValidationMutex.Unlock()
+	fake.PublishUpdateValidationStub = nil
+	fake.publishUpdateValidationReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishUpdateValidationReturnsOnCall(i int, result1 error) {
+	fake.publishUpdateValidationMutex.Lock()
+	defer fake.publishUpdateValidationMutex.Unlock()
+	fake.PublishUpdateValidationStub = nil
+	if fake.publishUpdateValidationReturnsOnCall == nil {
+		fake.publishUpdateValidationReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.publishUpdateValidationReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -1678,6 +1900,8 @@ func (fake *FakeIEtcd) Invocations() map[string][][]interface{} {
 	defer fake.publishCreateSchemaMutex.RUnlock()
 	fake.publishCreateServiceMutex.RLock()
 	defer fake.publishCreateServiceMutex.RUnlock()
+	fake.publishCreateValidationMutex.RLock()
+	defer fake.publishCreateValidationMutex.RUnlock()
 	fake.publishDeleteConnectionMutex.RLock()
 	defer fake.publishDeleteConnectionMutex.RUnlock()
 	fake.publishDeleteRelayMutex.RLock()
@@ -1686,6 +1910,8 @@ func (fake *FakeIEtcd) Invocations() map[string][][]interface{} {
 	defer fake.publishDeleteSchemaMutex.RUnlock()
 	fake.publishDeleteServiceMutex.RLock()
 	defer fake.publishDeleteServiceMutex.RUnlock()
+	fake.publishDeleteValidationMutex.RLock()
+	defer fake.publishDeleteValidationMutex.RUnlock()
 	fake.publishUpdateConnectionMutex.RLock()
 	defer fake.publishUpdateConnectionMutex.RUnlock()
 	fake.publishUpdateRelayMutex.RLock()
@@ -1694,6 +1920,8 @@ func (fake *FakeIEtcd) Invocations() map[string][][]interface{} {
 	defer fake.publishUpdateSchemaMutex.RUnlock()
 	fake.publishUpdateServiceMutex.RLock()
 	defer fake.publishUpdateServiceMutex.RUnlock()
+	fake.publishUpdateValidationMutex.RLock()
+	defer fake.publishUpdateValidationMutex.RUnlock()
 	fake.putMutex.RLock()
 	defer fake.putMutex.RUnlock()
 	fake.saveConfigMutex.RLock()

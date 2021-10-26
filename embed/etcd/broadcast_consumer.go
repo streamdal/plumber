@@ -62,6 +62,12 @@ func (e *Etcd) handleBroadcastWatchResponse(ctx context.Context, resp *clientv3.
 			err = e.doDeleteRelay(ctx, msg)
 		case UpdateConfig:
 			err = e.doUpdateConfig(ctx, msg)
+		case CreateValidation:
+			err = e.doCreateValidation(ctx, msg)
+		case UpdateValidation:
+			err = e.doUpdateValidation(ctx, msg)
+		case DeleteValidation:
+			err = e.doDeleteValidation(ctx, msg)
 		default:
 			e.log.Debugf("unrecognized action '%s' for key '%s' - skipping", msg.Action, string(v.Kv.Key))
 		}
@@ -222,7 +228,7 @@ func (e *Etcd) doCreateRelay(_ context.Context, msg *Message) error {
 	// Set in config map
 	e.PlumberConfig.SetRelay(relayOptions.XRelayId, &types.Relay{Options: relayOptions})
 
-	e.log.Debugf("updated relay options '%s'", relayOptions.XRelayId)
+	e.log.Debugf("created relay '%s'", relayOptions.XRelayId)
 
 	return nil
 }
@@ -250,7 +256,49 @@ func (e *Etcd) doDeleteRelay(_ context.Context, msg *Message) error {
 	// Set in config map
 	e.PlumberConfig.DeleteRelay(relayOptions.XRelayId)
 
-	e.log.Debugf("deleted schema '%s'", relayOptions.XRelayId)
+	e.log.Debugf("deleted relay '%s'", relayOptions.XRelayId)
+
+	return nil
+}
+
+func (e *Etcd) doCreateValidation(_ context.Context, msg *Message) error {
+	validation := &protos.Validation{}
+	if err := proto.Unmarshal(msg.Data, validation); err != nil {
+		return errors.Wrap(err, "unable to unmarshal message into protos.Validation")
+	}
+
+	// Set in config map
+	e.PlumberConfig.SetValidation(validation.XId, validation)
+
+	e.log.Debugf("created validation '%s'", validation.XId)
+
+	return nil
+}
+
+func (e *Etcd) doUpdateValidation(_ context.Context, msg *Message) error {
+	validation := &protos.Validation{}
+	if err := proto.Unmarshal(msg.Data, validation); err != nil {
+		return errors.Wrap(err, "unable to unmarshal message into protos.Validation")
+	}
+
+	// Set in config map
+	e.PlumberConfig.SetValidation(validation.XId, validation)
+
+	e.log.Debugf("updated validation '%s'", validation.XId)
+
+	return nil
+}
+
+func (e *Etcd) doDeleteValidation(_ context.Context, msg *Message) error {
+	validation := &protos.Validation{}
+	if err := proto.Unmarshal(msg.Data, validation); err != nil {
+		return errors.Wrap(err, "unable to unmarshal message into protos.Validation")
+	}
+
+	// Set in config map
+	e.PlumberConfig.DeleteValidation(validation.XId)
+
+	e.log.Debugf("deleted validation '%s'", validation.XId)
 
 	return nil
 }

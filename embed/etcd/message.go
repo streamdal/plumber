@@ -24,6 +24,10 @@ const (
 	UpdateRelay = "UpdateRelay"
 	DeleteRelay = "DeleteRelay"
 
+	CreateValidation = "CreateValidation"
+	UpdateValidation = "UpdateValidation"
+	DeleteValidation = "DeleteValidation"
+
 	UpdateConfig = "UpdateConfig"
 )
 

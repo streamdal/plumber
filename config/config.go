@@ -40,12 +40,14 @@ type Config struct {
 	Services            map[string]*protos.Service             `json:"-"`
 	Reads               map[string]*stypes.Read                `json:"-"`
 	ImportRequests      map[string]*protos.ImportGithubRequest `json:"-"`
+	Validations         map[string]*protos.Validation          `json:"-"`
 	ConnectionsMutex    *sync.RWMutex                          `json:"-"`
 	ServicesMutex       *sync.RWMutex                          `json:"-"`
 	ReadsMutex          *sync.RWMutex                          `json:"-"`
 	RelaysMutex         *sync.RWMutex                          `json:"-"`
 	SchemasMutex        *sync.RWMutex                          `json:"-"`
 	ImportRequestsMutex *sync.RWMutex                          `json:"-"`
+	ValidationsMutex    *sync.RWMutex                          `json:"-"`
 }
 
 // Save is a convenience method of persisting the config to disk via a single call
@@ -86,12 +88,14 @@ func ReadConfig(fileName string) (*Config, error) {
 		RelaysMutex:         &sync.RWMutex{},
 		SchemasMutex:        &sync.RWMutex{},
 		ImportRequestsMutex: &sync.RWMutex{},
+		ValidationsMutex:    &sync.RWMutex{},
 		Connections:         make(map[string]*opts.ConnectionOptions),
 		Relays:              make(map[string]*stypes.Relay),
 		Schemas:             make(map[string]*protos.Schema),
 		Services:            make(map[string]*protos.Service),
 		Reads:               make(map[string]*stypes.Read),
 		ImportRequests:      make(map[string]*protos.ImportGithubRequest),
+		Validations:         make(map[string]*protos.Validation),
 	}
 	if err := json.Unmarshal(data, cfg); err != nil {
 		return nil, errors.Wrapf(err, "could not unmarshal ~/.batchsh/%s", fileName)
@@ -326,4 +330,28 @@ func (c *Config) DeleteImportRequest(importID string) {
 	c.ImportRequestsMutex.Lock()
 	defer c.ImportRequestsMutex.Unlock()
 	delete(c.ImportRequests, importID)
+}
+
+// GetValidation retrieves a schema validation from in-memory map
+func (c *Config) GetValidation(validationID string) *protos.Validation {
+	c.ValidationsMutex.RLock()
+	defer c.ValidationsMutex.RUnlock()
+
+	conn, _ := c.Validations[validationID]
+
+	return conn
+}
+
+// SetValidation saves a schema validation to in-memory map
+func (c *Config) SetValidation(validationID string, conn *protos.Validation) {
+	c.ValidationsMutex.Lock()
+	defer c.ValidationsMutex.Unlock()
+	c.Validations[validationID] = conn
+}
+
+// DeleteValidation removes a schema validation from in-memory map
+func (c *Config) DeleteValidation(validationID string) {
+	c.ValidationsMutex.Lock()
+	defer c.ValidationsMutex.Unlock()
+	delete(c.Validations, validationID)
 }
