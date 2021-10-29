@@ -90,6 +90,24 @@ func (e *Etcd) PublishDeleteRelay(ctx context.Context, relay *opts.RelayOptions)
 	return e.publishRelayMessage(ctx, DeleteSchema, relay)
 }
 
+// PublishCreateValidation publishes a CreateValidation message, which other plumber instances will receive
+// and add the service to their local in-memory maps
+func (e *Etcd) PublishCreateValidation(ctx context.Context, validation *protos.Validation) error {
+	return e.publishValidationMessage(ctx, CreateValidation, validation)
+}
+
+// PublishUpdateValidation publishes an UpdateValidation message, which other plumber instances will receive
+// and update the connection in their local in-memory maps
+func (e *Etcd) PublishUpdateValidation(ctx context.Context, validation *protos.Validation) error {
+	return e.publishValidationMessage(ctx, UpdateValidation, validation)
+}
+
+// PublishDeleteValidation publishes a DeleteValidation message, which other plumber instances will receive
+// and delete from their local in-memory maps
+func (e *Etcd) PublishDeleteValidation(ctx context.Context, validation *protos.Validation) error {
+	return e.publishValidationMessage(ctx, DeleteSchema, validation)
+}
+
 // PublishConfigUpdate publishes a MessageUpdateConfig message, which other plumber instances
 // will receive and update their config with the new token
 func (e *Etcd) PublishConfigUpdate(ctx context.Context, msg *MessageUpdateConfig) error {
@@ -174,6 +192,21 @@ func (e *Etcd) publishRelayMessage(ctx context.Context, action Action, relay *op
 	data, err := proto.Marshal(relay)
 	if err != nil {
 		return errors.Wrapf(err, "unable to publish relay message for '%s'", relay.XRelayId)
+	}
+
+	// Publish delete
+	return e.Broadcast(ctx, &Message{
+		Action:    action,
+		Data:      data,
+		EmittedBy: e.PlumberConfig.PlumberID,
+		EmittedAt: time.Now().UTC(),
+	})
+}
+
+func (e *Etcd) publishValidationMessage(ctx context.Context, action Action, validation *protos.Validation) error {
+	data, err := proto.Marshal(validation)
+	if err != nil {
+		return errors.Wrapf(err, "unable to publish validation message for '%s'", validation.XId)
 	}
 
 	// Publish delete

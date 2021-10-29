@@ -29,6 +29,7 @@ const (
 	CacheSchemasPrefix     = "/plumber-server/schemas"
 	CacheRelaysPrefix      = "/plumber-server/relay"
 	CacheServicesPrefix    = "/plumber-server/services"
+	CacheValidationsPrefix = "/plumber-server/validations"
 	CacheServerConfigKey   = "/plumber-server/server-config"
 )
 
@@ -64,7 +65,10 @@ type IEtcd interface {
 	PublishCreateRelay(ctx context.Context, relay *opts.RelayOptions) error
 	PublishUpdateRelay(ctx context.Context, relay *opts.RelayOptions) error
 	PublishDeleteRelay(ctx context.Context, relay *opts.RelayOptions) error
+	PublishCreateValidation(ctx context.Context, validation *protos.Validation) error
 	PublishConfigUpdate(ctx context.Context, msg *MessageUpdateConfig) error
+	PublishUpdateValidation(ctx context.Context, validation *protos.Validation) error
+	PublishDeleteValidation(ctx context.Context, validation *protos.Validation) error
 
 	Client() *clientv3.Client
 }
@@ -420,23 +424,27 @@ func (e *Etcd) Delete(ctx context.Context, key string, opts ...clientv3.OpOption
 // PopulateCache loads config from etcd
 func (e *Etcd) PopulateCache() error {
 	if err := e.populateServerConfigCache(); err != nil {
-		return err
+		return errors.Wrap(err, "unable to populate server configs from cache")
 	}
 
 	if err := e.populateConnectionCache(); err != nil {
-		return err
+		return errors.Wrap(err, "unable to populate connection configs from cache")
 	}
 
 	if err := e.populateServiceCache(); err != nil {
-		return err
+		return errors.Wrap(err, "unable to populate service configs from cache")
 	}
 
 	if err := e.populateSchemaCache(); err != nil {
-		return err
+		return errors.Wrap(err, "unable to populate schema configs from cache")
 	}
 
 	if err := e.populateRelayCache(); err != nil {
-		return err
+		return errors.Wrap(err, "unable to populate relay configs from cache")
+	}
+
+	if err := e.populateValidationCache(); err != nil {
+		return errors.Wrap(err, "unable to populate schema validation configs from cache")
 	}
 
 	return nil
@@ -591,6 +599,31 @@ func (e *Etcd) populateServiceCache() error {
 	}
 
 	e.log.Debugf("Loaded '%d' services from etcd", count)
+
+	return nil
+}
+
+func (e *Etcd) populateValidationCache() error {
+	resp, err := e.Get(context.Background(), CacheValidationsPrefix, clientv3.WithPrefix())
+	if err != nil {
+		return errors.Wrap(err, "unable to fetch protos.Service messages from etcd")
+	}
+
+	var count int
+
+	for _, v := range resp.Kvs {
+		validation := &protos.Validation{}
+		if err := proto.Unmarshal(v.Value, validation); err != nil {
+			e.log.Errorf("unable to unmarshal protos.Validation message: %s", err)
+			continue
+		}
+
+		count++
+
+		e.PlumberConfig.SetValidation(validation.XId, validation)
+	}
+
+	e.log.Debugf("Loaded '%d' schema validations from etcd", count)
 
 	return nil
 }

@@ -163,12 +163,14 @@ func getConfig() *config.Config {
 			Services:            make(map[string]*protos.Service),
 			Reads:               make(map[string]*types.Read),
 			ImportRequests:      make(map[string]*protos.ImportGithubRequest),
+			Validations:         make(map[string]*protos.Validation),
 			ConnectionsMutex:    &sync.RWMutex{},
 			ServicesMutex:       &sync.RWMutex{},
 			ReadsMutex:          &sync.RWMutex{},
 			RelaysMutex:         &sync.RWMutex{},
 			SchemasMutex:        &sync.RWMutex{},
 			ImportRequestsMutex: &sync.RWMutex{},
+			ValidationsMutex:    &sync.RWMutex{},
 		}
 	}
 
