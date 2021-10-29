@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 
@@ -32,21 +31,48 @@ var (
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . IGithub
 type IGithub interface {
+	CreateBranch(ctx context.Context, token, owner, repo, sha, branchName string) (*github.Reference, error)
+	CreateCommit(ctx context.Context, token, owner, repo, treeSHA, commitName string, parent *github.Commit) (*github.Commit, error)
+	CreatePullRequest(ctx context.Context, token, owner, repo string, opts *PullRequestOpts) (*github.PullRequest, error)
+	CreateTree(ctx context.Context, token, owner, repo, baseTreeSHA string, files []*github.TreeEntry) (*github.Tree, error)
 	GetRepoArchive(ctx context.Context, token, owner, repo string) ([]byte, error)
 	GetRepoFile(ctx context.Context, token, owner, repo, sha string) ([]byte, error)
 	GetRepoList(ctx context.Context, installID int64, token string) ([]string, error)
 	GetRepoTree(ctx context.Context, token, owner, repo string) (*github.Tree, error)
 	Post(url string, values url.Values) ([]byte, int, error)
+	UpdateBranch(ctx context.Context, token, owner, repo, sha, branchName string) (*github.Reference, error)
 }
 
 type Github struct {
-	Client *http.Client
-	log    *logrus.Entry
+	HTTPClient *http.Client
+	log        *logrus.Entry
 }
 
-type AccessTokenResponse struct {
-	BearerToken   string
-	SleepDuration time.Duration
+// PullRequestFile represents a path to a file under a repository and it's contents. If the file path
+// already exists, the existing contents will be modified
+type PullRequestFile struct {
+	// Fill path to the file, including filename
+	Path string
+
+	// Contents of the file
+	Content string
+}
+
+// PullRequestOpts encapsulates all options necessary to create a PR with CreatePullRequest()
+type PullRequestOpts struct {
+	// Branch name, will be prefixed with "plumber_
+	BranchName string
+
+	// Optional, default is "Plumber commit"
+	CommitName string
+
+	// Title of the PR
+	Title string
+
+	// Description for PR
+	Body string
+
+	Files []*PullRequestFile
 }
 
 // RepoListResponse is used to unmarshal a response from api.github.com/user/installations/.../repositories
@@ -58,9 +84,23 @@ type RepoListResponse struct {
 // New returns a configured Github struct
 func New() (*Github, error) {
 	return &Github{
-		Client: &http.Client{},
-		log:    logrus.WithField("pkg", "github/github_handlers.go"),
+		HTTPClient: &http.Client{},
+		log:        logrus.WithField("pkg", "github/github_handlers.go"),
 	}, nil
+}
+
+// GetClient creates a new oAuth client with the given token.
+// TODO: this *might* be refactorable so that the token is passed in to New(), but we will
+// TODO: have to figure out how to re-instantiate the github service when an UpdateConfig
+// TODO: event comes in via etcd, but currently that's not possible due to cyclic-import issues,
+// TODO: EtcdService cannot talk back to PlumberServer. Use a channel maybe?
+func getClient(ctx context.Context, token string) *github.Client {
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: token},
+	)
+
+	tc := oauth2.NewClient(ctx, ts)
+	return github.NewClient(tc)
 }
 
 // Get makes a GET request with an oAuth token and returns the resulting body contents
@@ -72,7 +112,7 @@ func (g *Github) Get(url, oAuthToken string) ([]byte, int, error) {
 
 	req.Header.Set("Authorization", "token "+oAuthToken)
 
-	resp, err := g.Client.Do(req)
+	resp, err := g.HTTPClient.Do(req)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -89,7 +129,7 @@ func (g *Github) Get(url, oAuthToken string) ([]byte, int, error) {
 
 // Post makes a form post and returns the resulting body contents
 func (g *Github) Post(url string, values url.Values) ([]byte, int, error) {
-	resp, err := g.Client.PostForm(url, values)
+	resp, err := g.HTTPClient.PostForm(url, values)
 	if err != nil {
 		return nil, 0, fmt.Errorf("API call to %s failed: %s", url, err)
 	}
@@ -111,7 +151,7 @@ func (g *Github) GetRepoArchive(ctx context.Context, token, owner, repo string) 
 	}
 
 	// Download contents
-	resp, err := g.Client.Get(archiveURL.String())
+	resp, err := g.HTTPClient.Get(archiveURL.String())
 	if err != nil {
 		return nil, errors.Wrapf(err, "unable to import '%s'", repo)
 	}
@@ -128,12 +168,7 @@ func (g *Github) GetRepoArchive(ctx context.Context, token, owner, repo string) 
 
 // GetRepoFile gets a single file from github. Used for Avro and JSONSchema imports
 func (g *Github) GetRepoFile(ctx context.Context, token, owner, repo, sha string) ([]byte, error) {
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: token},
-	)
-
-	tc := oauth2.NewClient(ctx, ts)
-	client := github.NewClient(tc)
+	client := getClient(ctx, token)
 
 	blob, _, err := client.Git.GetBlob(ctx, owner, repo, sha)
 	if err != nil {
@@ -188,12 +223,24 @@ func (g *Github) GetRepoList(ctx context.Context, installID int64, token string)
 }
 
 func (g *Github) GetRepoTree(ctx context.Context, token, owner, repo string) (*github.Tree, error) {
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: token},
-	)
+	client := getClient(ctx, token)
 
-	tc := oauth2.NewClient(ctx, ts)
-	client := github.NewClient(tc)
+	mainBranch, err := g.GetMainBranch(ctx, token, owner, repo)
+	if err != nil {
+		return nil, err
+	}
+
+	tree, _, err := client.Git.GetTree(ctx, owner, repo, mainBranch.Commit.GetSHA(), true)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to get repository file listing")
+	}
+
+	return tree, nil
+}
+
+// GetMainBranch gets the name and latest commit details of the main/master branch for a repository
+func (g *Github) GetMainBranch(ctx context.Context, token, owner, repo string) (*github.Branch, error) {
+	client := getClient(ctx, token)
 
 	repoInfo, _, err := client.Repositories.Get(ctx, owner, repo)
 	if err != nil {
@@ -205,12 +252,142 @@ func (g *Github) GetRepoTree(ctx context.Context, token, owner, repo string) (*g
 		return nil, errors.Wrap(err, "unable to get main branch info")
 	}
 
-	tree, _, err := client.Git.GetTree(ctx, owner, repo, mainBranch.Commit.GetSHA(), true)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to get repository file listing")
+	return mainBranch, nil
+}
+
+// CreateBranch creates a new branch under the repository for the given SHA and branchName
+func (g *Github) CreateBranch(ctx context.Context, token, owner, repo, sha, branchName string) (*github.Reference, error) {
+	client := getClient(ctx, token)
+
+	createOpts := &github.Reference{
+		Ref: github.String("refs/heads/plumber_" + branchName),
+		Object: &github.GitObject{
+			SHA: github.String(sha),
+		},
 	}
 
-	return tree, nil
+	ref, _, err := client.Git.CreateRef(ctx, owner, repo, createOpts)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create github branch")
+	}
+
+	return ref, nil
+}
+
+func (g *Github) UpdateBranch(ctx context.Context, token, owner, repo, sha, branchName string) (*github.Reference, error) {
+	client := getClient(ctx, token)
+
+	updateOpts := &github.Reference{
+		Ref: github.String("refs/heads/plumber_" + branchName),
+		Object: &github.GitObject{
+			SHA: github.String(sha),
+		},
+	}
+
+	ref, _, err := client.Git.UpdateRef(ctx, owner, repo, updateOpts, true)
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to update reference '%s'", *updateOpts.Ref)
+	}
+
+	return ref, nil
+}
+
+func (g *Github) CreateCommit(ctx context.Context, token, owner, repo, treeSHA, commitName string, parent *github.Commit) (*github.Commit, error) {
+	client := getClient(ctx, token)
+
+	commitOpts := &github.Commit{
+		Message: github.String(commitName),
+		Tree:    &github.Tree{SHA: github.String(treeSHA)},
+		Parents: []*github.Commit{parent},
+	}
+
+	commit, _, err := client.Git.CreateCommit(ctx, owner, repo, commitOpts)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create commit")
+	}
+
+	return commit, nil
+}
+
+// CreateTree creates a new file tree.
+func (g *Github) CreateTree(ctx context.Context, token, owner, repo, baseTreeSHA string, files []*github.TreeEntry) (*github.Tree, error) {
+	client := getClient(ctx, token)
+
+	createdTree, _, err := client.Git.CreateTree(ctx, owner, repo, baseTreeSHA, files)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create file tree")
+	}
+
+	return createdTree, nil
+}
+
+func (g *Github) CreatePullRequest(ctx context.Context, token, owner, repo string, opts *PullRequestOpts) (*github.PullRequest, error) {
+	client := getClient(ctx, token)
+
+	// Get the main branch, we need the latest commit SHA
+	mainBranch, err := g.GetMainBranch(ctx, token, owner, repo)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to get mail branch for pull request")
+	}
+
+	// Create a branch for this
+	prBranch, err := g.CreateBranch(ctx, token, owner, repo, mainBranch.GetCommit().GetSHA(), opts.BranchName)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create pull request branch")
+	}
+
+	// Get existing tree
+	tree, err := g.GetRepoTree(ctx, token, owner, repo)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to get repo tree for pull request")
+	}
+
+	newFiles := make([]*github.TreeEntry, 0)
+
+	for _, f := range opts.Files {
+		newFiles = append(newFiles, &github.TreeEntry{
+			Path:    github.String(f.Path),
+			Mode:    github.String("100644"),
+			Type:    github.String("blob"),
+			Content: github.String(f.Content),
+		})
+	}
+
+	newTree, err := g.CreateTree(ctx, token, owner, repo, tree.GetSHA(), newFiles)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create pull request tree")
+	}
+
+	// Prevent github.com/google/go-github/v37/github/git_commits.go:117 from panicking.
+	mainBranch.Commit.Commit.SHA = mainBranch.Commit.SHA
+
+	// Commit tree
+	commit, err := g.CreateCommit(ctx, token, owner, repo, newTree.GetSHA(), opts.CommitName, mainBranch.Commit.Commit)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create pull request commit")
+	}
+
+	// Update ref with new commit SHA
+	_, err = g.UpdateBranch(ctx, token, owner, repo, commit.GetSHA(), opts.BranchName)
+	if err != nil {
+		panic(err)
+	}
+
+	prOpts := &github.NewPullRequest{
+		Title:               github.String(opts.Title),
+		Head:                prBranch.Ref,
+		Base:                mainBranch.Name,
+		Body:                github.String(opts.Body),
+		MaintainerCanModify: github.Bool(true),
+		Draft:               github.Bool(false),
+	}
+
+	pr, _, err := client.PullRequests.Create(ctx, owner, repo, prOpts)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create pull request")
+	}
+
+	return pr, nil
 }
 
 // parseRepoFileURL parses a URL pointing to a specific file within a repository
@@ -235,13 +412,7 @@ func parseRepoURL(in string) (string, string, error) {
 
 // getRepoArchiveLink queries github's API for the link to download a zip of the repository
 func getRepoArchiveLink(ctx context.Context, token, owner, repo string) (*url.URL, error) {
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: token},
-	)
-
-	tc := oauth2.NewClient(ctx, ts)
-
-	client := github.NewClient(tc)
+	client := getClient(ctx, token)
 
 	archiveURL, _, err := client.Repositories.GetArchiveLink(ctx, owner, repo, github.Zipball, nil, true)
 	if err != nil {

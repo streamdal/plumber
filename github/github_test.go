@@ -36,8 +36,8 @@ func NewWithMockResponse(httpCode int, responseBody string) *Github {
 	})
 
 	return &Github{
-		log:    logrus.NewEntry(logger),
-		Client: client,
+		log:        logrus.NewEntry(logger),
+		HTTPClient: client,
 	}
 }
 
@@ -46,7 +46,7 @@ var _ = Describe("Github", func() {
 		It("returns configured struct", func() {
 			g, err := New()
 			Expect(err).ToNot(HaveOccurred())
-			Expect(g.Client).To(BeAssignableToTypeOf(&http.Client{}))
+			Expect(g.HTTPClient).To(BeAssignableToTypeOf(&http.Client{}))
 			Expect(g.log).To(BeAssignableToTypeOf(&logrus.Entry{}))
 		})
 	})
