@@ -10,11 +10,10 @@ import (
 	"path"
 	"sync"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
-
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	stypes "github.com/batchcorp/plumber/server/types"
