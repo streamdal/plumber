@@ -10,6 +10,8 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/ssh/terminal"
@@ -163,7 +165,7 @@ func getConfig() *config.Config {
 			Services:            make(map[string]*protos.Service),
 			Reads:               make(map[string]*types.Read),
 			ImportRequests:      make(map[string]*protos.ImportGithubRequest),
-			Validations:         make(map[string]*protos.Validation),
+			Validations:         make(map[string]*common.Validation),
 			ConnectionsMutex:    &sync.RWMutex{},
 			ServicesMutex:       &sync.RWMutex{},
 			ReadsMutex:          &sync.RWMutex{},

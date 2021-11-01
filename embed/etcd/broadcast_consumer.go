@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber/server/types"
 
@@ -262,7 +264,7 @@ func (e *Etcd) doDeleteRelay(_ context.Context, msg *Message) error {
 }
 
 func (e *Etcd) doCreateValidation(_ context.Context, msg *Message) error {
-	validation := &protos.Validation{}
+	validation := &common.Validation{}
 	if err := proto.Unmarshal(msg.Data, validation); err != nil {
 		return errors.Wrap(err, "unable to unmarshal message into protos.Validation")
 	}
@@ -276,7 +278,7 @@ func (e *Etcd) doCreateValidation(_ context.Context, msg *Message) error {
 }
 
 func (e *Etcd) doUpdateValidation(_ context.Context, msg *Message) error {
-	validation := &protos.Validation{}
+	validation := &common.Validation{}
 	if err := proto.Unmarshal(msg.Data, validation); err != nil {
 		return errors.Wrap(err, "unable to unmarshal message into protos.Validation")
 	}
@@ -290,7 +292,7 @@ func (e *Etcd) doUpdateValidation(_ context.Context, msg *Message) error {
 }
 
 func (e *Etcd) doDeleteValidation(_ context.Context, msg *Message) error {
-	validation := &protos.Validation{}
+	validation := &common.Validation{}
 	if err := proto.Unmarshal(msg.Data, validation); err != nil {
 		return errors.Wrap(err, "unable to unmarshal message into protos.Validation")
 	}

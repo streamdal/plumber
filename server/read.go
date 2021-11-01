@@ -121,7 +121,7 @@ func (s *Server) InferJSONSchema(r *types.Read, readRecord *records.ReadRecord) 
 
 	var inferred *jsonschema.JSONSchema
 	var err error
-	inferred, err = jsonschema.Infer("plumber.local/"+r.ReadOptions.Name+".json", "Inferred schema for "+r.ReadOptions.Name, "", readRecord.Payload)
+	inferred, err = jsonschema.InferFromJSON("plumber.local/"+r.ReadOptions.Name+".json", "Inferred schema for "+r.ReadOptions.Name, "", readRecord.Payload)
 	if err != nil {
 		return errors.Wrap(err, "unable to infer schema from payload")
 	}

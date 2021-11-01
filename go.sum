@@ -54,6 +54,8 @@ github.com/batchcorp/inferschema v0.0.1 h1:aRSfi5W+m8lCgGW0e2ruo8yY8YOATkFjmX383
 github.com/batchcorp/inferschema v0.0.1/go.mod h1:U1qngk0hEunJbWyJkQt1i64XvUEWX2kGTwpmy6Fs/QY=
 github.com/batchcorp/inferschema v0.0.2 h1:Eo6nVIPLL0vxBIRdOjsmegEGl68lE0AFik5KA8QNM1c=
 github.com/batchcorp/inferschema v0.0.2/go.mod h1:U1qngk0hEunJbWyJkQt1i64XvUEWX2kGTwpmy6Fs/QY=
+github.com/batchcorp/inferschema v0.0.4 h1:WKyPOs2Rrs0G5pZFhfmhlhqx+UtHbRLkOZh1gZiQW+E=
+github.com/batchcorp/inferschema v0.0.4/go.mod h1:ow51z8k5eBWvl0LMk/7PTagFwshK7/15qxoguHtSC7g=
 github.com/batchcorp/kong v0.2.17-batch h1:pwH3gGees5iomWRbphKkfNchEwZ9EhXYk3dpLSLQ7qI=
 github.com/batchcorp/kong v0.2.17-batch/go.mod h1:ut4pbR4KLPWzKHbpEHZspWpRqjFr4UiPY3D2xf2tzf8=
 github.com/batchcorp/kong v0.2.17-batch-fix h1:H6sOfst2NcL2T/EZVNLukG7YRimJDHg9DhbRq7gE+KQ=
@@ -96,6 +98,10 @@ github.com/batchcorp/plumber-schemas v0.0.86 h1:uV1RkZtQ7J/M2FlktchyJC+saR8/q7MS
 github.com/batchcorp/plumber-schemas v0.0.86/go.mod h1:YULMKnfZ8X7tglTfUzKXhWc1Bfq6dy5ysIQbvsbCOkY=
 github.com/batchcorp/plumber-schemas v0.0.87 h1:vvMErad1/GsWyLWFcNA86x02XpNL5ZXEhQ8muBVXGX0=
 github.com/batchcorp/plumber-schemas v0.0.87/go.mod h1:YULMKnfZ8X7tglTfUzKXhWc1Bfq6dy5ysIQbvsbCOkY=
+github.com/batchcorp/plumber-schemas v0.0.89 h1:2LVAjUkdBic6+4su4fTEgUVhXnbLstFhOIbVSz1dRCk=
+github.com/batchcorp/plumber-schemas v0.0.89/go.mod h1:YULMKnfZ8X7tglTfUzKXhWc1Bfq6dy5ysIQbvsbCOkY=
+github.com/batchcorp/plumber-schemas v0.0.90 h1:0O1wmXN7BK3XAVr2t8DUdpCJhB1J+6U5CB4+A86swIU=
+github.com/batchcorp/plumber-schemas v0.0.90/go.mod h1:YULMKnfZ8X7tglTfUzKXhWc1Bfq6dy5ysIQbvsbCOkY=
 github.com/batchcorp/rabbit v0.1.9 h1:BzQStzeo0WuvC7+PKYaEBYtn9qqramlaZCN1CxmNM6U=
 github.com/batchcorp/rabbit v0.1.9/go.mod h1:LaAQ6FCNkir0/SbJ9jX3JNNP1ULAU2M3QZN/IwFRwXw=
 github.com/batchcorp/schemas v0.1.8/go.mod h1:OS0jIg50R8wrMJAVwOEirnvpyPKnJlVadifqH4LJlD4=
@@ -359,6 +365,8 @@ github.com/jackc/pgx v3.2.0+incompatible/go.mod h1:0ZGrqGqkRlliWnWB4zKnWtjbSWbGk
 github.com/jhump/protoreflect v1.6.1/go.mod h1:RZQ/lnuN+zqeRVpQigTwO6o0AJUkxbnSnpuG7toUTG4=
 github.com/jhump/protoreflect v1.8.2 h1:k2xE7wcUomeqwY0LDCYA16y4WWfyTcMx5mKhk0d4ua0=
 github.com/jhump/protoreflect v1.8.2/go.mod h1:7GcYQDdMU/O/BBrl/cX6PNHpXh6cenjd8pneu5yW7Tg=
+github.com/jhump/protoreflect v1.10.1 h1:iH+UZfsbRE6vpyZH7asAjTPWJf7RJbpZ9j/N3lDlKs0=
+github.com/jhump/protoreflect v1.10.1/go.mod h1:7GcYQDdMU/O/BBrl/cX6PNHpXh6cenjd8pneu5yW7Tg=
 github.com/jmespath/go-jmespath v0.4.0 h1:BEgLn5cpjn8UN1mAw4NjwDrS35OdebyEtFe+9YPoQUg=
 github.com/jmespath/go-jmespath v0.4.0/go.mod h1:T8mJZnbsbmF+m6zOOFylbeCJqk5+pHWvzYPziyZiYoo=
 github.com/jmespath/go-jmespath/internal/testify v1.5.1 h1:shLQSRRSCCPj3f2gpwzGwWFoC7ycTf1rcQZHOlsJ6N8=

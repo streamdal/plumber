@@ -34,7 +34,7 @@ func (s *Server) GetAllValidations(_ context.Context, req *protos.GetAllValidati
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	validations := make([]*protos.Validation, 0)
+	validations := make([]*common.Validation, 0)
 	for _, v := range s.PersistentConfig.Validations {
 		validations = append(validations, v)
 	}
@@ -145,7 +145,7 @@ func (s *Server) DeleteValidation(ctx context.Context, req *protos.DeleteValidat
 }
 
 // persistValidation saves a validation to memory and etcd
-func (s *Server) persistValidation(ctx context.Context, v *protos.Validation) error {
+func (s *Server) persistValidation(ctx context.Context, v *common.Validation) error {
 	s.PersistentConfig.SetValidation(v.XId, v)
 
 	data, err := proto.Marshal(v)
