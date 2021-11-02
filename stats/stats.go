@@ -291,7 +291,11 @@ func (c *Counter) GetTSHistory(from, to int64) ([]*tstorage.DataPoint, error) {
 // GetTotal aggregates the in-memory and historical total
 func (c *Counter) GetTotal() (float64, error) {
 	points, err := c.GetTSHistory(0, time.Now().UTC().Unix())
-	if !errors.Is(err, tstorage.ErrNoDataPoints) {
+	if err != nil {
+		// Nothing in the time-series, just return current memory value
+		if errors.Is(err, tstorage.ErrNoDataPoints) {
+			return c.Value(), nil
+		}
 		return 0, err
 	}
 
