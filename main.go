@@ -15,14 +15,15 @@ import (
 	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/plumber"
 	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/prometheus"
 	"github.com/batchcorp/plumber/server/types"
-	"github.com/batchcorp/plumber/stats"
 )
 
 func main() {
@@ -60,13 +61,13 @@ func main() {
 		}()
 
 		// Create prometheus counters/gauges
-		stats.InitPrometheusMetrics()
+		prometheus.InitPrometheusMetrics()
 	}
 
 	// Launch a dedicated goroutine if stats display is enabled
 	if cliOpts.Read != nil && cliOpts.Read.XCliOptions != nil {
 		if cliOpts.Read.XCliOptions.StatsEnable {
-			stats.Start(cliOpts.Read.XCliOptions.StatsReportIntervalSec)
+			prometheus.Start(cliOpts.Read.XCliOptions.StatsReportIntervalSec)
 		}
 	}
 
@@ -163,7 +164,7 @@ func getConfig() *config.Config {
 			Services:            make(map[string]*protos.Service),
 			Reads:               make(map[string]*types.Read),
 			ImportRequests:      make(map[string]*protos.ImportGithubRequest),
-			Validations:         make(map[string]*protos.Validation),
+			Validations:         make(map[string]*common.Validation),
 			ConnectionsMutex:    &sync.RWMutex{},
 			ServicesMutex:       &sync.RWMutex{},
 			ReadsMutex:          &sync.RWMutex{},

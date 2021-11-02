@@ -7,3 +7,4 @@ start-*.sh
 .exe
 *.etcd.log
 *.etcd*
+.tsdata

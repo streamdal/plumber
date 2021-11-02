@@ -117,3 +117,10 @@ test/functional: description = Run functional tests
 test/functional: GOFLAGS=
 test/functional:
 	$(GO) test ./... --tags=functional
+
+.PHONE: test/fakes
+test/fakes: description = Generate test fakes
+test/fakes: GOFLAGS=
+test/fakes:
+	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o tools/fake_tstorage.go github.com/nakabonne/tstorage.Storage
+	$(GO) generate ./...

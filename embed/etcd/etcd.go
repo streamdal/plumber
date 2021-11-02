@@ -16,6 +16,7 @@ import (
 	"go.etcd.io/etcd/server/v3/embed"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/config"
@@ -65,10 +66,10 @@ type IEtcd interface {
 	PublishCreateRelay(ctx context.Context, relay *opts.RelayOptions) error
 	PublishUpdateRelay(ctx context.Context, relay *opts.RelayOptions) error
 	PublishDeleteRelay(ctx context.Context, relay *opts.RelayOptions) error
-	PublishCreateValidation(ctx context.Context, validation *protos.Validation) error
+	PublishCreateValidation(ctx context.Context, validation *common.Validation) error
 	PublishConfigUpdate(ctx context.Context, msg *MessageUpdateConfig) error
-	PublishUpdateValidation(ctx context.Context, validation *protos.Validation) error
-	PublishDeleteValidation(ctx context.Context, validation *protos.Validation) error
+	PublishUpdateValidation(ctx context.Context, validation *common.Validation) error
+	PublishDeleteValidation(ctx context.Context, validation *common.Validation) error
 
 	Client() *clientv3.Client
 }
@@ -612,7 +613,7 @@ func (e *Etcd) populateValidationCache() error {
 	var count int
 
 	for _, v := range resp.Kvs {
-		validation := &protos.Validation{}
+		validation := &common.Validation{}
 		if err := proto.Unmarshal(v.Value, validation); err != nil {
 			e.log.Errorf("unable to unmarshal protos.Validation message: %s", err)
 			continue

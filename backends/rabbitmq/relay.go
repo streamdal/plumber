@@ -12,7 +12,7 @@ import (
 	"github.com/batchcorp/rabbit"
 
 	rtypes "github.com/batchcorp/plumber/backends/rabbitmq/types"
-	"github.com/batchcorp/plumber/stats"
+	"github.com/batchcorp/plumber/prometheus"
 )
 
 func (r *RabbitMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
@@ -37,7 +37,7 @@ func (r *RabbitMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, rela
 			return nil
 		}
 
-		stats.Incr("rabbit-relay-consumer", 1)
+		prometheus.Incr("rabbit-relay-consumer", 1)
 
 		r.log.Debugf("Writing message to relay channel: %s", msg.Body)
 
@@ -56,7 +56,7 @@ func (r *RabbitMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, rela
 				OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
 				Error:               err.Error.Error(),
 			}
-			stats.IncrPromCounter("plumber_read_errors", 1)
+			prometheus.IncrPromCounter("plumber_read_errors", 1)
 
 		case <-ctx.Done():
 			r.log.Info("Received shutdown signal, existing relayer")

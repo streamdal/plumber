@@ -5,9 +5,6 @@ import (
 	"net"
 	"time"
 
-	"github.com/batchcorp/plumber/github"
-	"github.com/batchcorp/plumber/monitor"
-
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
@@ -16,7 +13,11 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 
 	"github.com/batchcorp/plumber/embed/etcd"
+	"github.com/batchcorp/plumber/github"
+	"github.com/batchcorp/plumber/monitor"
 	"github.com/batchcorp/plumber/server"
+	"github.com/batchcorp/plumber/stats"
+	"github.com/batchcorp/plumber/util"
 	"github.com/batchcorp/plumber/vcservice"
 )
 
@@ -124,11 +125,18 @@ func (p *Plumber) runServer() error {
 		return errors.Wrap(err, "unable to start GitHub service")
 	}
 
+	statsService, err := stats.New(&stats.Config{
+		FlushInterval:      util.DurationSec(p.CLIOptions.Server.StatsFlushIntervalSeconds),
+		ServiceShutdownCtx: p.ServiceShutdownCtx,
+		TSStoragePath:      p.CLIOptions.Server.StatsDatabasePath,
+	})
+
 	plumberServer := &server.Server{
 		PersistentConfig: p.PersistentConfig,
 		AuthToken:        p.CLIOptions.Server.AuthToken,
 		VCService:        vcService,
 		GithubService:    ghService,
+		StatsService:     statsService,
 		Log:              logrus.WithField("pkg", "plumber/cli_server.go"),
 		Etcd:             p.Etcd,
 		CLIOptions:       p.CLIOptions,

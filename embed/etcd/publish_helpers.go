@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
@@ -92,19 +93,19 @@ func (e *Etcd) PublishDeleteRelay(ctx context.Context, relay *opts.RelayOptions)
 
 // PublishCreateValidation publishes a CreateValidation message, which other plumber instances will receive
 // and add the service to their local in-memory maps
-func (e *Etcd) PublishCreateValidation(ctx context.Context, validation *protos.Validation) error {
+func (e *Etcd) PublishCreateValidation(ctx context.Context, validation *common.Validation) error {
 	return e.publishValidationMessage(ctx, CreateValidation, validation)
 }
 
 // PublishUpdateValidation publishes an UpdateValidation message, which other plumber instances will receive
 // and update the connection in their local in-memory maps
-func (e *Etcd) PublishUpdateValidation(ctx context.Context, validation *protos.Validation) error {
+func (e *Etcd) PublishUpdateValidation(ctx context.Context, validation *common.Validation) error {
 	return e.publishValidationMessage(ctx, UpdateValidation, validation)
 }
 
 // PublishDeleteValidation publishes a DeleteValidation message, which other plumber instances will receive
 // and delete from their local in-memory maps
-func (e *Etcd) PublishDeleteValidation(ctx context.Context, validation *protos.Validation) error {
+func (e *Etcd) PublishDeleteValidation(ctx context.Context, validation *common.Validation) error {
 	return e.publishValidationMessage(ctx, DeleteSchema, validation)
 }
 
@@ -203,7 +204,7 @@ func (e *Etcd) publishRelayMessage(ctx context.Context, action Action, relay *op
 	})
 }
 
-func (e *Etcd) publishValidationMessage(ctx context.Context, action Action, validation *protos.Validation) error {
+func (e *Etcd) publishValidationMessage(ctx context.Context, action Action, validation *common.Validation) error {
 	data, err := proto.Marshal(validation)
 	if err != nil {
 		return errors.Wrapf(err, "unable to publish validation message for '%s'", validation.XId)

@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/pkg/errors"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
 	ktypes "github.com/batchcorp/plumber/backends/kafka/types"
-	"github.com/batchcorp/plumber/stats"
+	"github.com/batchcorp/plumber/prometheus"
 	"github.com/batchcorp/plumber/util"
 )
 
@@ -44,10 +45,10 @@ func (k *Kafka) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 				return nil
 			}
 
-			stats.Mute("kafka-relay-consumer")
-			stats.Mute("kafka-relay-producer")
+			prometheus.Mute("kafka-relay-consumer")
+			prometheus.Mute("kafka-relay-producer")
 
-			stats.IncrPromCounter("plumber_read_errors", 1)
+			prometheus.IncrPromCounter("plumber_read_errors", 1)
 
 			wrappedErr := fmt.Errorf("unable to read kafka message: %s; retrying in %s", err, RetryReadInterval)
 			util.WriteError(k.log, errorCh, wrappedErr)
@@ -57,7 +58,7 @@ func (k *Kafka) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 			continue
 		}
 
-		stats.Incr("kafka-relay-consumer", 1)
+		prometheus.Incr("kafka-relay-consumer", 1)
 
 		k.log.Debugf("Writing Kafka message to relay channel: %s", msg.Value)
 

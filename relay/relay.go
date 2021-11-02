@@ -8,17 +8,18 @@ import (
 	"sync"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
 	"github.com/batchcorp/schemas/build/go/services"
 
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
-	"github.com/batchcorp/plumber/stats"
+	"github.com/batchcorp/plumber/prometheus"
 )
 
 const (
@@ -249,8 +250,8 @@ func (r *Relay) Run(id int32, conn *grpc.ClientConn, outboundCtx, shutdownCtx co
 	flushTicker := time.NewTicker(QueueFlushInterval)
 
 	// These are only here to provide immediate feedback that stats are enabled
-	stats.Incr(r.Config.Type+"-relay-consumer", 0)
-	stats.Incr(r.Config.Type+"-relay-producer", 0)
+	prometheus.Incr(r.Config.Type+"-relay-consumer", 0)
+	prometheus.Incr(r.Config.Type+"-relay-producer", 0)
 
 	var quit bool
 
@@ -373,8 +374,8 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	}
 
 	numMsgs := len(messages)
-	stats.Incr(r.Config.Type+"-relay-producer", numMsgs)
-	stats.IncrPromCounter("plumber_relay_total", numMsgs)
+	prometheus.Incr(r.Config.Type+"-relay-producer", numMsgs)
+	prometheus.IncrPromCounter("plumber_relay_total", numMsgs)
 }
 
 // CallWithRetry will retry a GRPC call until it succeeds or reaches a maximum number of retries defined by MaxGRPCRetries
@@ -384,7 +385,7 @@ func (r *Relay) CallWithRetry(ctx context.Context, method string, publish func(c
 	for i := 1; i <= MaxGRPCRetries; i++ {
 		err = publish(ctx)
 		if err != nil {
-			stats.IncrPromCounter("plumber_grpc_errors", 1)
+			prometheus.IncrPromCounter("plumber_grpc_errors", 1)
 
 			// Paused collection, retries will fail, exit early
 			if strings.Contains(err.Error(), "collection is paused") {
