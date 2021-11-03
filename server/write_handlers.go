@@ -16,6 +16,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
 func (s *Server) Write(ctx context.Context, req *protos.WriteRequest) (*protos.WriteResponse, error) {
@@ -41,14 +42,16 @@ func (s *Server) Write(ctx context.Context, req *protos.WriteRequest) (*protos.W
 
 	// We only need/want to do this once, so generate and pass to generateWriteValue
 
+	if err := s.populateEncodeSchemaDetails(req.Opts); err != nil {
+		return nil, CustomError(common.Code_FAILED_PRECONDITION, err.Error())
+	}
+
 	var md *desc.MessageDescriptor
 
 	if req.Opts.EncodeOptions != nil && req.Opts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_JSONPB {
+		pbOpts := req.Opts.EncodeOptions.ProtobufSettings
 		var mdErr error
-
-		cachedSchemaOptions := s.PersistentConfig.GetSchema(req.Opts.EncodeOptions.SchemaId)
-
-		md, mdErr = pb.GetMessageDescriptor(cachedSchemaOptions, req.Opts.EncodeOptions.ProtobufSettings)
+		md, mdErr = pb.GetMDFromDescriptorBlob(pbOpts.XMessageDescriptor, pbOpts.ProtobufRootMessage)
 		if mdErr != nil {
 			return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to fetch message descriptor: %s", mdErr))
 		}
@@ -85,4 +88,40 @@ func (s *Server) Write(ctx context.Context, req *protos.WriteRequest) (*protos.W
 			RequestId: uuid.NewV4().String(),
 		},
 	}, nil
+}
+
+func (s *Server) populateEncodeSchemaDetails(opts *opts.WriteOptions) error {
+	if opts.EncodeOptions == nil {
+		return nil
+	}
+
+	schemaID := opts.EncodeOptions.SchemaId
+	if schemaID == "" {
+		return nil
+	}
+
+	cachedSchemaOptions := s.PersistentConfig.GetSchema(schemaID)
+	if cachedSchemaOptions == nil {
+		return fmt.Errorf("schema '%s' not found", schemaID)
+	}
+
+	versions := cachedSchemaOptions.GetVersions()
+	latestSchema := versions[len(versions)-1]
+
+	switch opts.EncodeOptions.EncodeType {
+	case encoding.EncodeType_ENCODE_TYPE_JSONPB:
+		// Set the entire struct, since it probably won't be passed if just a schema ID is passed
+		opts.EncodeOptions.ProtobufSettings = &encoding.ProtobufSettings{
+			ProtobufRootMessage: latestSchema.GetProtobufSettings().ProtobufRootMessage,
+			XMessageDescriptor:  latestSchema.GetProtobufSettings().XMessageDescriptor,
+		}
+	case encoding.EncodeType_ENCODE_TYPE_AVRO:
+		// Set the entire struct, since it probably won't be passed if just a schema ID is passed
+		opts.EncodeOptions.AvroSettings = &encoding.AvroSettings{
+			Schema: latestSchema.GetAvroSettings().Schema,
+		}
+		// TODO: thrift
+	}
+
+	return nil
 }
