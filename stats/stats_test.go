@@ -130,20 +130,14 @@ var _ = Describe("Stats counters", func() {
 		})
 
 		Context("RemoveCounter", func() {
-			It("returns an error when counter does not exist", func() {
-				err := s.RemoveCounter(opts.Counter_TYPE_SCHEMA_VIOLATION, opts.Counter_RESOURCE_READ, uuid.NewV4().String())
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(ContainSubstring("unable to delete counter"))
-			})
-
 			It("removes a counter", func() {
 				id := uuid.NewV4().String()
 
-				s.AddCounter(opts.Counter_TYPE_SCHEMA_VIOLATION, opts.Counter_RESOURCE_READ, id)
+				c := s.AddCounter(opts.Counter_TYPE_SCHEMA_VIOLATION, opts.Counter_RESOURCE_READ, id)
 
 				Expect(len(s.counters)).To(Equal(1))
 
-				err := s.RemoveCounter(opts.Counter_TYPE_SCHEMA_VIOLATION, opts.Counter_RESOURCE_READ, id)
+				err := s.RemoveCounter(c)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(len(s.counters)).To(Equal(0))
 			})

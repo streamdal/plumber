@@ -17,7 +17,7 @@ type IStats interface {
 	AddCounter(counterType opts.Counter_Type, resourceType opts.Counter_Resource, resourceID string) *Counter
 	GetAllCounters() map[string]*Counter
 	GetCounter(counterType opts.Counter_Type, resourceType opts.Counter_Resource, resourceID string) (*Counter, error)
-	RemoveCounter(counterType opts.Counter_Type, resourceType opts.Counter_Resource, resourceID string) error
+	RemoveCounter(counter *Counter) error
 }
 
 type Counter struct {
@@ -108,7 +108,7 @@ func (s *Stats) runWatchForShutdown() error {
 	s.countersMtx.RUnlock()
 
 	for _, c := range counters {
-		s.RemoveCounter(c.cfg.Type, c.cfg.Resource, c.cfg.ResourceId)
+		s.RemoveCounter(c)
 	}
 
 	if err := s.storage.Close(); err != nil {
@@ -185,16 +185,11 @@ func (s *Stats) GetAllCounters() map[string]*Counter {
 
 // RemoveCounter will flush a counter's value to persistent storage, stop the
 // associated runFlusher() go routine, and delete the counter from the counters map
-func (s *Stats) RemoveCounter(counterType opts.Counter_Type, resourceType opts.Counter_Resource, resourceID string) error {
-	c, err := s.GetCounter(counterType, resourceType, resourceID)
-	if err != nil {
-		return errors.Wrap(err, "unable to delete counter")
-	}
-
+func (s *Stats) RemoveCounter(c *Counter) error {
 	// Signal flusher goroutine to flush any data we have to time-series db and terminate
 	c.doneCh <- struct{}{}
 
-	id := genCounterID(counterType, resourceType, resourceID)
+	id := genCounterID(c.cfg.Type, c.cfg.Resource, c.cfg.ResourceId)
 
 	s.countersMtx.Lock()
 	delete(s.counters, id)
