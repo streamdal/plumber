@@ -81,7 +81,7 @@ var _ = Describe("Stats counters", func() {
 				cfg := &Config{
 					FlushInterval:      time.Second * 1,
 					ServiceShutdownCtx: context.Background(),
-					TSStoragePath:      "./tsdata",
+					TSStoragePath:      "./.tsdata",
 				}
 
 				err := validateConfig(cfg)
@@ -103,7 +103,11 @@ var _ = Describe("Stats counters", func() {
 			It("adds a counter", func() {
 				Expect(len(s.counters)).To(Equal(0))
 
-				c := s.AddCounter(opts.Counter_TYPE_SCHEMA_VIOLATION, opts.Counter_RESOURCE_READ, uuid.NewV4().String())
+				c := s.AddCounter(&opts.Counter{
+					Resource:   opts.Counter_RESOURCE_READ,
+					Type:       opts.Counter_TYPE_SCHEMA_VIOLATION,
+					ResourceId: uuid.NewV4().String(),
+				})
 
 				Expect(c).To(BeAssignableToTypeOf(&Counter{}))
 				Expect(len(s.counters)).To(Equal(1))
@@ -121,7 +125,11 @@ var _ = Describe("Stats counters", func() {
 			It("gets a counter", func() {
 				id := uuid.NewV4().String()
 
-				want := s.AddCounter(opts.Counter_TYPE_SCHEMA_VIOLATION, opts.Counter_RESOURCE_READ, id)
+				want := s.AddCounter(&opts.Counter{
+					Resource:   opts.Counter_RESOURCE_READ,
+					Type:       opts.Counter_TYPE_SCHEMA_VIOLATION,
+					ResourceId: id,
+				})
 
 				got, err := s.GetCounter(opts.Counter_TYPE_SCHEMA_VIOLATION, opts.Counter_RESOURCE_READ, id)
 				Expect(err).ToNot(HaveOccurred())
@@ -132,8 +140,11 @@ var _ = Describe("Stats counters", func() {
 		Context("RemoveCounter", func() {
 			It("removes a counter", func() {
 				id := uuid.NewV4().String()
-
-				c := s.AddCounter(opts.Counter_TYPE_SCHEMA_VIOLATION, opts.Counter_RESOURCE_READ, id)
+				c := s.AddCounter(&opts.Counter{
+					Resource:   opts.Counter_RESOURCE_READ,
+					Type:       opts.Counter_TYPE_SCHEMA_VIOLATION,
+					ResourceId: id,
+				})
 
 				Expect(len(s.counters)).To(Equal(1))
 
@@ -148,7 +159,11 @@ var _ = Describe("Stats counters", func() {
 				ctx, cancelFunc = context.WithCancel(context.Background())
 				s.Config.ServiceShutdownCtx = ctx
 
-				s.AddCounter(opts.Counter_TYPE_SCHEMA_VIOLATION, opts.Counter_RESOURCE_READ, uuid.NewV4().String())
+				s.AddCounter(&opts.Counter{
+					Resource:   opts.Counter_RESOURCE_READ,
+					Type:       opts.Counter_TYPE_SCHEMA_VIOLATION,
+					ResourceId: uuid.NewV4().String(),
+				})
 				Expect(len(s.counters)).To(Equal(1))
 
 				cancelFunc()
@@ -162,7 +177,11 @@ var _ = Describe("Stats counters", func() {
 	Context("Counter", func() {
 		Context("Incr", func() {
 			It("increments the value", func() {
-				c := s.AddCounter(opts.Counter_TYPE_SCHEMA_VIOLATION, opts.Counter_RESOURCE_READ, uuid.NewV4().String())
+				c := s.AddCounter(&opts.Counter{
+					Resource:   opts.Counter_RESOURCE_READ,
+					Type:       opts.Counter_TYPE_SCHEMA_VIOLATION,
+					ResourceId: uuid.NewV4().String(),
+				})
 				Expect(c.Value()).To(Equal(float64(0)))
 				c.Incr(5)
 				Expect(c.Value()).To(Equal(float64(5)))

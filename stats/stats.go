@@ -14,7 +14,7 @@ import (
 )
 
 type IStats interface {
-	AddCounter(counterType opts.Counter_Type, resourceType opts.Counter_Resource, resourceID string) *Counter
+	AddCounter(cfg *opts.Counter) *Counter
 	GetAllCounters() map[string]*Counter
 	GetCounter(counterType opts.Counter_Type, resourceType opts.Counter_Resource, resourceID string) (*Counter, error)
 	RemoveCounter(counter *Counter) error
@@ -63,6 +63,7 @@ func New(cfg *Config) (*Stats, error) {
 	storage, err := tstorage.NewStorage(
 		tstorage.WithDataPath(cfg.TSStoragePath),
 		tstorage.WithTimestampPrecision(tstorage.Seconds),
+		tstorage.WithRetention(time.Hour*24*7),
 	)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize time series storage")
@@ -126,31 +127,26 @@ func genCounterID(counterType opts.Counter_Type, resourceType opts.Counter_Resou
 }
 
 // AddCounter creates a new counter and launches a runFlusher() goroutine for it
-func (s *Stats) AddCounter(counterType opts.Counter_Type, resourceType opts.Counter_Resource, resourceID string) *Counter {
+func (s *Stats) AddCounter(cfg *opts.Counter) *Counter {
 	s.countersMtx.Lock()
 	defer s.countersMtx.Unlock()
 
 	logger := logrus.WithFields(logrus.Fields{
 		"pkg":           "stats",
-		"resource_type": resourceType.String(),
-		"counter_type":  counterType.String(),
-		"id":            resourceID,
+		"resource_type": cfg.Resource.String(),
+		"counter_type":  cfg.Type.String(),
+		"id":            cfg.ResourceId,
 	})
 
 	c := &Counter{
-		cfg: &opts.Counter{
-			Resource:   resourceType,
-			Type:       counterType,
-			ResourceId: resourceID,
-			Value:      0,
-		},
+		cfg:     cfg,
 		mtx:     &sync.RWMutex{},
 		doneCh:  make(chan struct{}, 1),
 		storage: s.storage,
 		log:     logger,
 	}
 
-	id := genCounterID(counterType, resourceType, resourceID)
+	id := genCounterID(cfg.Type, cfg.Resource, cfg.ResourceId)
 
 	s.counters[id] = c
 
