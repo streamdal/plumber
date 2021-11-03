@@ -128,6 +128,12 @@ func genCounterID(counterType opts.Counter_Type, resourceType opts.Counter_Resou
 
 // AddCounter creates a new counter and launches a runFlusher() goroutine for it
 func (s *Stats) AddCounter(cfg *opts.Counter) *Counter {
+	// Check for existing counter
+	existing, _ := s.GetCounter(cfg.Type, cfg.Resource, cfg.ResourceId)
+	if existing != nil {
+		return existing
+	}
+
 	logger := logrus.WithFields(logrus.Fields{
 		"pkg":           "stats",
 		"resource_type": cfg.Resource.String(),

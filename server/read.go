@@ -32,15 +32,11 @@ func (s *Server) beginRead(ctx context.Context, r *types.Read) {
 	resultsCh := make(chan *records.ReadRecord, 1)
 	errorCh := make(chan *records.ErrorRecord, 1)
 
-	connCounter, err := s.StatsService.GetCounter(opts.Counter_TYPE_MESSAGE_RECEIVED, opts.Counter_RESOURCE_CONNECTION, r.ReadOptions.ConnectionId)
-	if err != nil {
-		connCounter = s.StatsService.AddCounter(&opts.Counter{
-			Resource:   opts.Counter_RESOURCE_CONNECTION,
-			Type:       opts.Counter_TYPE_MESSAGE_RECEIVED,
-			ResourceId: r.ReadOptions.ConnectionId,
-			Persist:    true,
-		})
-	}
+	connCounter := s.StatsService.AddCounter(&opts.Counter{
+		Resource:   opts.Counter_RESOURCE_CONNECTION,
+		Type:       opts.Counter_TYPE_MESSAGE_RECEIVED,
+		ResourceId: r.ReadOptions.ConnectionId,
+	})
 
 	readCounter := s.StatsService.AddCounter(&opts.Counter{
 		Resource:   opts.Counter_RESOURCE_READ,
