@@ -3,6 +3,7 @@ package stats
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -126,6 +127,23 @@ func genCounterID(counterType opts.Counter_Type, resourceType opts.Counter_Resou
 	return fmt.Sprintf("%s-%s-%s", counterType, resourceType, resourceID)
 }
 
+func genCounterName(counterType opts.Counter_Type, resourceType opts.Counter_Resource, resourceID string) string {
+	var t string
+
+	switch counterType {
+	case opts.Counter_TYPE_SCHEMA_VIOLATION:
+		t = "Schema Violations"
+	case opts.Counter_TYPE_MESSAGE_RECEIVED:
+		t = "Messages Received"
+	case opts.Counter_TYPE_MESSAGE_REPLAYED:
+		t = "Messages Replayed"
+	}
+
+	rt := strings.ToTitle(resourceType.String())
+
+	return fmt.Sprintf("%s %s for %s", t, rt, resourceID)
+}
+
 // AddCounter creates a new counter and launches a runFlusher() goroutine for it
 func (s *Stats) AddCounter(cfg *opts.Counter) *Counter {
 	// Check for existing counter
@@ -134,11 +152,14 @@ func (s *Stats) AddCounter(cfg *opts.Counter) *Counter {
 		return existing
 	}
 
+	cfg.Name = genCounterName(cfg.Type, cfg.Resource, cfg.ResourceId)
+
 	logger := logrus.WithFields(logrus.Fields{
 		"pkg":           "stats",
 		"resource_type": cfg.Resource.String(),
 		"counter_type":  cfg.Type.String(),
 		"id":            cfg.ResourceId,
+		"name":          cfg.Name,
 	})
 
 	c := &Counter{
