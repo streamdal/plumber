@@ -5,11 +5,11 @@ go 1.16
 require (
 	cloud.google.com/go/pubsub v1.6.1
 	github.com/aws/aws-sdk-go v1.34.28
-	github.com/batchcorp/inferschema v0.0.2
+	github.com/batchcorp/inferschema v0.0.4
 	github.com/batchcorp/kong v0.2.17-batch-fix
 	github.com/batchcorp/lucene2x v0.0.17
 	github.com/batchcorp/pgoutput v0.3.2 // indirect
-	github.com/batchcorp/plumber-schemas v0.0.87
+	github.com/batchcorp/plumber-schemas v0.0.92
 	github.com/batchcorp/rabbit v0.1.9
 	github.com/batchcorp/schemas v0.2.157
 	github.com/eclipse/paho.mqtt.golang v1.2.0
@@ -17,7 +17,7 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/google/go-github/v37 v37.0.0
 	github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
-	github.com/jhump/protoreflect v1.8.2
+	github.com/jhump/protoreflect v1.10.1
 	github.com/json-iterator/go v1.1.11
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/kataras/tablewriter v0.0.0-20180708051242-e063d29b7c23
@@ -31,7 +31,6 @@ require (
 	github.com/nakabonne/tstorage v0.3.5
 	github.com/nats-io/nats.go v1.13.0
 	github.com/nsqio/go-nsq v1.0.8
-	github.com/nats-io/nats.go v1.13.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.16.0

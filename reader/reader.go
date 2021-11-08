@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/hokaccha/go-prettyjson"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
@@ -14,6 +12,9 @@ import (
 	"github.com/pkg/errors"
 	thrifter "github.com/thrift-iterator/go"
 	"github.com/thrift-iterator/go/general"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
@@ -60,7 +61,7 @@ func Decode(readOpts *opts.ReadOptions, md *desc.MessageDescriptor, message []by
 	// Avro
 	if readOpts.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_AVRO {
 		// SQS doesn't like binary
-		if readOpts.Awssqs.Args.QueueName != "" {
+		if readOpts.Awssqs != nil && readOpts.Awssqs.Args.QueueName != "" {
 			plain, err := base64.StdEncoding.DecodeString(string(message))
 			if err != nil {
 				return nil, errors.Wrap(err, "unable to decode base64 to protobuf")

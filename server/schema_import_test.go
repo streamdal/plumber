@@ -152,6 +152,32 @@ var _ = Describe("Schema Import", func() {
 		})
 	})
 
+	Context("importLocalAvro", func() {
+		It("returns error when no data", func() {
+			_, err := importLocalAvro(&protos.ImportLocalRequest{})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal(ErrEmptyFile.Error()))
+		})
+
+		It("returns a schema", func() {
+			data, _ := base64.StdEncoding.DecodeString(AvroSchema)
+
+			schema, err := importLocalJSONSchema(&protos.ImportLocalRequest{
+				Name:         "Test import",
+				Type:         protos.SchemaType_SCHEMA_TYPE_AVRO,
+				FileContents: data,
+				FileName:     "test.avsc",
+			})
+
+			Expect(err).ToNot(HaveOccurred())
+
+			// Both the initial version and the inferred schema fields should be filled
+			Expect(len(schema.Versions)).To(Equal(1))
+			Expect(len(schema.InferredSchema.Schema)).ToNot(Equal(0))
+			Expect(schema.Versions[0].GetJsonSchemaSettings().Schema).To(Equal(schema.InferredSchema.Schema))
+		})
+	})
+
 	Context("importGithubAvro", func() {
 		It("returns a schema", func() {
 			fakeGithub := &githubfakes.FakeIGithub{}
@@ -182,6 +208,32 @@ var _ = Describe("Schema Import", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(schema.Versions[0].GetAvroSettings().Schema).ToNot(BeEmpty())
 			Expect(schema.Versions[0].Files["test.avsc"]).ToNot(BeEmpty())
+		})
+	})
+
+	Context("importLocalJSONSchema", func() {
+		It("returns error when no data", func() {
+			_, err := importLocalJSONSchema(&protos.ImportLocalRequest{})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal(ErrEmptyFile.Error()))
+		})
+
+		It("returns a schema", func() {
+			data, _ := base64.StdEncoding.DecodeString(JSONSchema)
+
+			schema, err := importLocalJSONSchema(&protos.ImportLocalRequest{
+				Name:         "Test import",
+				Type:         protos.SchemaType_SCHEMA_TYPE_JSONSCHEMA,
+				FileContents: data,
+				FileName:     "test.json",
+			})
+
+			Expect(err).ToNot(HaveOccurred())
+
+			// Both the initial version and the inferred schema fields should be filled
+			Expect(len(schema.Versions)).To(Equal(1))
+			Expect(len(schema.InferredSchema.Schema)).ToNot(Equal(0))
+			Expect(schema.Versions[0].GetJsonSchemaSettings().Schema).To(Equal(schema.InferredSchema.Schema))
 		})
 	})
 

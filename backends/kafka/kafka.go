@@ -12,10 +12,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/util"
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 	"github.com/segmentio/kafka-go/sasl"
@@ -23,6 +19,11 @@ import (
 	"github.com/segmentio/kafka-go/sasl/scram"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh/terminal"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+	"github.com/batchcorp/plumber/util"
 
 	"github.com/batchcorp/plumber/types"
 )
@@ -197,7 +198,7 @@ func connect(dialer *skafka.Dialer, connArgs *args.KafkaConn, topic string, part
 		conn, err := dialer.DialLeader(ctxDeadline, "tcp", brokerAddress, topic, partition)
 		if err != nil {
 			logrus.Errorf("unable to create leader connection to broker '%s' for topicName '%s', "+
-				"trying next broker", topic, brokerAddress)
+				"trying next broker", brokerAddress, topic)
 			continue
 		}
 

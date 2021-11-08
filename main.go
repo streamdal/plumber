@@ -10,6 +10,8 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/ssh/terminal"

@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
