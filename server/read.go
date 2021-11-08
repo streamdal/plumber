@@ -14,6 +14,7 @@ import (
 	"github.com/batchcorp/lucene2x/jsonquery"
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/reader"
@@ -31,6 +32,18 @@ func (s *Server) beginRead(ctx context.Context, r *types.Read) {
 	resultsCh := make(chan *records.ReadRecord, 1)
 	errorCh := make(chan *records.ErrorRecord, 1)
 
+	connCounter := s.StatsService.AddCounter(&opts.Counter{
+		Resource:   opts.Counter_RESOURCE_CONNECTION,
+		Type:       opts.Counter_TYPE_MESSAGE_RECEIVED,
+		ResourceId: r.ReadOptions.ConnectionId,
+	})
+
+	readCounter := s.StatsService.AddCounter(&opts.Counter{
+		Resource:   opts.Counter_RESOURCE_READ,
+		Type:       opts.Counter_TYPE_MESSAGE_RECEIVED,
+		ResourceId: r.ReadOptions.XId,
+	})
+
 	go func() {
 		// Notify the end user since this runs in a goroutine.
 		// TODO: we should test read on CreateRead()
@@ -47,6 +60,10 @@ MAIN:
 
 		select {
 		case readRecord := <-resultsCh:
+
+			readCounter.Incr(1)
+			connCounter.Incr(1)
+
 			// TODO: Implement a decoder pipeline -- decoding mid-flight without
 			//   a pipeline will cause things to slow down starting at 100 msgs/s
 

@@ -4,16 +4,14 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
-
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber/server/types"
-
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	clientv3 "go.etcd.io/etcd/client/v3"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber/server/types"
 )
 
 func (e *Etcd) handleBroadcastWatchResponse(ctx context.Context, resp *clientv3.WatchResponse) error {
@@ -266,7 +264,7 @@ func (e *Etcd) doDeleteRelay(_ context.Context, msg *Message) error {
 func (e *Etcd) doCreateValidation(_ context.Context, msg *Message) error {
 	validation := &common.Validation{}
 	if err := proto.Unmarshal(msg.Data, validation); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into protos.Validation")
+		return errors.Wrap(err, "unable to unmarshal message into common.Validation")
 	}
 
 	// Set in config map
@@ -280,7 +278,7 @@ func (e *Etcd) doCreateValidation(_ context.Context, msg *Message) error {
 func (e *Etcd) doUpdateValidation(_ context.Context, msg *Message) error {
 	validation := &common.Validation{}
 	if err := proto.Unmarshal(msg.Data, validation); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into protos.Validation")
+		return errors.Wrap(err, "unable to unmarshal message into common.Validation")
 	}
 
 	// Set in config map
@@ -294,7 +292,7 @@ func (e *Etcd) doUpdateValidation(_ context.Context, msg *Message) error {
 func (e *Etcd) doDeleteValidation(_ context.Context, msg *Message) error {
 	validation := &common.Validation{}
 	if err := proto.Unmarshal(msg.Data, validation); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into protos.Validation")
+		return errors.Wrap(err, "unable to unmarshal message into common.Validation")
 	}
 
 	// Set in config map

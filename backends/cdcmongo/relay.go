@@ -11,8 +11,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/backends/cdcmongo/types"
-
-	"github.com/batchcorp/plumber/stats"
+	"github.com/batchcorp/plumber/prometheus"
 )
 
 func (m *Mongo) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
@@ -35,7 +34,7 @@ func (m *Mongo) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 			}
 
 			m.log.Errorf("unable to read message from mongo: %s", cs.Err())
-			stats.IncrPromCounter("plumber_read_errors", 1)
+			prometheus.IncrPromCounter("plumber_read_errors", 1)
 			time.Sleep(ReadRetryInterval)
 			continue
 		}
@@ -45,7 +44,7 @@ func (m *Mongo) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 			Options: &types.RelayMessageOptions{},
 		}
 
-		stats.Incr("cdc-mongo-relay-consumer", 1)
+		prometheus.Incr("cdc-mongo-relay-consumer", 1)
 	}
 
 	defer cs.Close(ctx)

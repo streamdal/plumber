@@ -8,8 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
-
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -18,6 +16,7 @@ import (
 	"go.etcd.io/etcd/server/v3/embed"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/config"

@@ -10,21 +10,20 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
-
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/ssh/terminal"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/plumber"
 	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/prometheus"
 	"github.com/batchcorp/plumber/server/types"
-	"github.com/batchcorp/plumber/stats"
 )
 
 func main() {
@@ -62,13 +61,13 @@ func main() {
 		}()
 
 		// Create prometheus counters/gauges
-		stats.InitPrometheusMetrics()
+		prometheus.InitPrometheusMetrics()
 	}
 
 	// Launch a dedicated goroutine if stats display is enabled
 	if cliOpts.Read != nil && cliOpts.Read.XCliOptions != nil {
 		if cliOpts.Read.XCliOptions.StatsEnable {
-			stats.Start(cliOpts.Read.XCliOptions.StatsReportIntervalSec)
+			prometheus.Start(cliOpts.Read.XCliOptions.StatsReportIntervalSec)
 		}
 	}
 

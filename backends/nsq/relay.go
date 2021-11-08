@@ -9,8 +9,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/backends/nsq/types"
-
-	"github.com/batchcorp/plumber/stats"
+	"github.com/batchcorp/plumber/prometheus"
 )
 
 func (n *NSQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
@@ -27,7 +26,7 @@ func (n *NSQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh c
 
 	consumer.AddHandler(nsq.HandlerFunc(func(msg *nsq.Message) error {
 
-		stats.Incr("nsq-relay-consumer", 1)
+		prometheus.Incr("nsq-relay-consumer", 1)
 
 		n.log.Debugf("Writing NSQ message to relay channel: %s", string(msg.Body))
 

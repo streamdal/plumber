@@ -9,7 +9,7 @@ require (
 	github.com/batchcorp/kong v0.2.17-batch-fix
 	github.com/batchcorp/lucene2x v0.0.17
 	github.com/batchcorp/pgoutput v0.3.2 // indirect
-	github.com/batchcorp/plumber-schemas v0.0.90
+	github.com/batchcorp/plumber-schemas v0.0.92
 	github.com/batchcorp/rabbit v0.1.9
 	github.com/batchcorp/schemas v0.2.157
 	github.com/eclipse/paho.mqtt.golang v1.2.0
@@ -28,6 +28,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.10 // indirect
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.3.0
 	github.com/mcuadros/go-lookup v0.0.0-20200831155250-80f87a4fa5ee
+	github.com/nakabonne/tstorage v0.3.5
 	github.com/nats-io/nats.go v1.13.0
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/olekukonko/tablewriter v0.0.5

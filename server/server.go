@@ -19,6 +19,7 @@ import (
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/embed/etcd"
 	"github.com/batchcorp/plumber/github"
+	"github.com/batchcorp/plumber/stats"
 	"github.com/batchcorp/plumber/validate"
 	"github.com/batchcorp/plumber/vcservice"
 )
@@ -28,6 +29,7 @@ type Server struct {
 	PersistentConfig *config.Config
 	VCService        vcservice.IVCService
 	GithubService    github.IGithub
+	StatsService     stats.IStats
 	Etcd             etcd.IEtcd
 	Log              *logrus.Entry
 	CLIOptions       *opts.CLIOptions
