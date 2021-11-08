@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/jhump/protoreflect/desc"
-	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber/backends"
@@ -128,6 +127,44 @@ func (s *Server) StartRead(req *protos.StartReadRequest, srv protos.PlumberServe
 	}
 }
 
+func (s *Server) populateDecodeSchemaDetails(req *protos.CreateReadRequest) error {
+	if req.Read.DecodeOptions == nil {
+		return nil
+	}
+
+	schemaID := req.Read.DecodeOptions.SchemaId
+	if schemaID == "" {
+		return nil
+	}
+
+	cachedSchemaOptions := s.PersistentConfig.GetSchema(schemaID)
+	if cachedSchemaOptions == nil {
+		return fmt.Errorf("schema '%s' not found", schemaID)
+	}
+
+	versions := cachedSchemaOptions.GetVersions()
+	latestSchema := versions[len(versions)-1]
+
+	switch req.Read.DecodeOptions.DecodeType {
+	case encoding.DecodeType_DECODE_TYPE_PROTOBUF:
+		// Set the entire struct, since it probably won't be passed if just a schema ID is passed
+		req.Read.DecodeOptions.ProtobufSettings = &encoding.ProtobufSettings{
+			ProtobufRootMessage: latestSchema.GetProtobufSettings().ProtobufRootMessage,
+			XMessageDescriptor:  latestSchema.GetProtobufSettings().XMessageDescriptor,
+		}
+	case encoding.DecodeType_DECODE_TYPE_AVRO:
+		// Set the entire struct, since it probably won't be passed if just a schema ID is passed
+		req.Read.DecodeOptions.AvroSettings = &encoding.AvroSettings{
+			AvroSchemaFile: latestSchema.GetAvroSettings().AvroSchemaFile,
+			Schema:         latestSchema.GetAvroSettings().Schema,
+		}
+	case encoding.DecodeType_DECODE_TYPE_THRIFT:
+		// TODO: implement eventually
+	}
+
+	return nil
+}
+
 func (s *Server) CreateRead(_ context.Context, req *protos.CreateReadRequest) (*protos.CreateReadResponse, error) {
 	if err := s.validateAuth(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
@@ -155,16 +192,16 @@ func (s *Server) CreateRead(_ context.Context, req *protos.CreateReadRequest) (*
 
 	var md *desc.MessageDescriptor
 
-	if req.Read.DecodeOptions != nil {
-		if req.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_PROTOBUF {
-			var mdErr error
+	if err := s.populateDecodeSchemaDetails(req); err != nil {
+		return nil, CustomError(common.Code_FAILED_PRECONDITION, err.Error())
+	}
 
-			cachedSchemaOptions := s.PersistentConfig.GetSchema(req.Read.DecodeOptions.SchemaId)
-
-			md, mdErr = pb.GetMessageDescriptor(cachedSchemaOptions, req.Read.DecodeOptions.ProtobufSettings)
-			if mdErr != nil {
-				return nil, errors.Wrap(mdErr, "unable to get message descriptor")
-			}
+	// TODO: can we move this elsewhere?
+	if req.Read.DecodeOptions != nil && req.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_PROTOBUF {
+		var mdErr error
+		md, mdErr = pb.GetMDFromDescriptorBlob(req.Read.DecodeOptions.ProtobufSettings.XMessageDescriptor, req.Read.DecodeOptions.ProtobufSettings.ProtobufRootMessage)
+		if mdErr != nil {
+			return nil, CustomError(common.Code_FAILED_PRECONDITION, fmt.Sprintf("unable to get message descriptor: %s", err))
 		}
 	}
 
@@ -195,6 +232,10 @@ func (s *Server) CreateRead(_ context.Context, req *protos.CreateReadRequest) (*
 		},
 		ReadId: req.Read.XId,
 	}, nil
+}
+
+func (s *Server) populateCachedSchema() {
+	//
 }
 
 // TODO: Need to figure out how reads work with clustered plumber - do all nodes

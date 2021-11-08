@@ -32,13 +32,9 @@ import (
 // So, the expectation for the usage of this func is to call it as follows:
 //
 // GetMessageDescriptor(persistentConfig.GetSchema(schemaID), req.Opts.EncodeSettings.ProtobufSettings)
-func GetMessageDescriptor(cachedSchemaOptions *protos.Schema, pbSettings *encoding.ProtobufSettings) (*desc.MessageDescriptor, error) {
+func GetMessageDescriptor(latestVersion *protos.SchemaVersion, pbSettings *encoding.ProtobufSettings) (*desc.MessageDescriptor, error) {
 	// Stored schema settings take precedence
-	if cachedSchemaOptions != nil {
-		latestVersion := getLatestSchemaVersion(cachedSchemaOptions)
-		if latestVersion == nil {
-			return nil, errors.New("no schema version found")
-		}
+	if latestVersion != nil {
 
 		cachedPbSettings := latestVersion.GetProtobufSettings()
 

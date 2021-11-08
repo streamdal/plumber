@@ -105,17 +105,28 @@ func generateWriteValue(data []byte, writeOpts *opts.WriteOptions, md *desc.Mess
 	}
 
 	// Input: AVRO
-	if writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_AVRO &&
-		writeOpts.EncodeOptions.AvroSettings.AvroSchemaFile != "" {
-		data, err := serializers.AvroEncodeWithSchemaFile(writeOpts.EncodeOptions.AvroSettings.AvroSchemaFile, data)
+	if writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_AVRO {
+		var encoded []byte
+		var err error
+
+		avroOpts := writeOpts.EncodeOptions.AvroSettings
+
+		if len(avroOpts.Schema) > 0 {
+			// Schema passed by server either in the request or it
+			// was retrieved from cache and inserted into the request
+			encoded, err = serializers.AvroEncode(avroOpts.Schema, data)
+		} else if avroOpts.AvroSchemaFile != "" {
+			// Local file
+			encoded, err = serializers.AvroEncodeWithSchemaFile(writeOpts.EncodeOptions.AvroSettings.AvroSchemaFile, data)
+		}
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "unable to encode data in avro format")
 		}
 
 		// Since AWS SQS works with strings only, we must convert it to base64
 		if writeOpts.Awssqs != nil && writeOpts.Awssqs.Args.QueueName != "" {
-			encoded := base64.StdEncoding.EncodeToString(data)
-			return []byte(encoded), nil
+			b64 := base64.StdEncoding.EncodeToString(encoded)
+			return []byte(b64), nil
 		}
 
 		return data, nil
