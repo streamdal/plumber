@@ -10,8 +10,6 @@ import (
 	"path"
 	"sync"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
-
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
