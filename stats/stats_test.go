@@ -31,10 +31,10 @@ var _ = Describe("Stats counters", func() {
 			Config: &Config{
 				FlushInterval:      time.Second,
 				ServiceShutdownCtx: ctx,
+				Storage:            &tools.FakeStorage{},
 			},
 			countersMtx: &sync.RWMutex{},
 			counters:    make(map[string]*Counter),
-			storage:     &tools.FakeStorage{},
 			log:         logrus.NewEntry(&logrus.Logger{Out: ioutil.Discard}),
 		}
 	})
@@ -66,7 +66,7 @@ var _ = Describe("Stats counters", func() {
 				Expect(err.Error()).To(Equal(ErrMissingShutdownCtx.Error()))
 			})
 
-			It("validates ErrMissingTSStoragePath", func() {
+			It("validates ErrMissingStorage", func() {
 				cfg := &Config{
 					FlushInterval:      time.Second * 1,
 					ServiceShutdownCtx: context.Background(),
@@ -74,14 +74,14 @@ var _ = Describe("Stats counters", func() {
 
 				err := validateConfig(cfg)
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal(ErrMissingTSStoragePath.Error()))
+				Expect(err.Error()).To(Equal(ErrMissingStorage.Error()))
 			})
 
 			It("passes validation", func() {
 				cfg := &Config{
 					FlushInterval:      time.Second * 1,
 					ServiceShutdownCtx: context.Background(),
-					TSStoragePath:      "./.tsdata",
+					Storage:            &tools.FakeStorage{},
 				}
 
 				err := validateConfig(cfg)

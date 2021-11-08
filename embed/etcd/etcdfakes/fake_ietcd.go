@@ -4,6 +4,7 @@ package etcdfakes
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
@@ -77,6 +78,20 @@ type FakeIEtcd struct {
 	}
 	getReturnsOnCall map[int]struct {
 		result1 *clientv3.GetResponse
+		result2 error
+	}
+	GrantLeaseStub        func(context.Context, int64) (*clientv3.LeaseGrantResponse, error)
+	grantLeaseMutex       sync.RWMutex
+	grantLeaseArgsForCall []struct {
+		arg1 context.Context
+		arg2 int64
+	}
+	grantLeaseReturns struct {
+		result1 *clientv3.LeaseGrantResponse
+		result2 error
+	}
+	grantLeaseReturnsOnCall map[int]struct {
+		result1 *clientv3.LeaseGrantResponse
 		result2 error
 	}
 	PublishConfigUpdateStub        func(context.Context, *etcd.MessageUpdateConfig) error
@@ -284,6 +299,22 @@ type FakeIEtcd struct {
 		result2 error
 	}
 	putReturnsOnCall map[int]struct {
+		result1 *clientv3.PutResponse
+		result2 error
+	}
+	PutWithTTLStub        func(context.Context, string, string, time.Duration) (*clientv3.PutResponse, error)
+	putWithTTLMutex       sync.RWMutex
+	putWithTTLArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+		arg3 string
+		arg4 time.Duration
+	}
+	putWithTTLReturns struct {
+		result1 *clientv3.PutResponse
+		result2 error
+	}
+	putWithTTLReturnsOnCall map[int]struct {
 		result1 *clientv3.PutResponse
 		result2 error
 	}
@@ -631,6 +662,71 @@ func (fake *FakeIEtcd) GetReturnsOnCall(i int, result1 *clientv3.GetResponse, re
 	}
 	fake.getReturnsOnCall[i] = struct {
 		result1 *clientv3.GetResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeIEtcd) GrantLease(arg1 context.Context, arg2 int64) (*clientv3.LeaseGrantResponse, error) {
+	fake.grantLeaseMutex.Lock()
+	ret, specificReturn := fake.grantLeaseReturnsOnCall[len(fake.grantLeaseArgsForCall)]
+	fake.grantLeaseArgsForCall = append(fake.grantLeaseArgsForCall, struct {
+		arg1 context.Context
+		arg2 int64
+	}{arg1, arg2})
+	stub := fake.GrantLeaseStub
+	fakeReturns := fake.grantLeaseReturns
+	fake.recordInvocation("GrantLease", []interface{}{arg1, arg2})
+	fake.grantLeaseMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeIEtcd) GrantLeaseCallCount() int {
+	fake.grantLeaseMutex.RLock()
+	defer fake.grantLeaseMutex.RUnlock()
+	return len(fake.grantLeaseArgsForCall)
+}
+
+func (fake *FakeIEtcd) GrantLeaseCalls(stub func(context.Context, int64) (*clientv3.LeaseGrantResponse, error)) {
+	fake.grantLeaseMutex.Lock()
+	defer fake.grantLeaseMutex.Unlock()
+	fake.GrantLeaseStub = stub
+}
+
+func (fake *FakeIEtcd) GrantLeaseArgsForCall(i int) (context.Context, int64) {
+	fake.grantLeaseMutex.RLock()
+	defer fake.grantLeaseMutex.RUnlock()
+	argsForCall := fake.grantLeaseArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIEtcd) GrantLeaseReturns(result1 *clientv3.LeaseGrantResponse, result2 error) {
+	fake.grantLeaseMutex.Lock()
+	defer fake.grantLeaseMutex.Unlock()
+	fake.GrantLeaseStub = nil
+	fake.grantLeaseReturns = struct {
+		result1 *clientv3.LeaseGrantResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeIEtcd) GrantLeaseReturnsOnCall(i int, result1 *clientv3.LeaseGrantResponse, result2 error) {
+	fake.grantLeaseMutex.Lock()
+	defer fake.grantLeaseMutex.Unlock()
+	fake.GrantLeaseStub = nil
+	if fake.grantLeaseReturnsOnCall == nil {
+		fake.grantLeaseReturnsOnCall = make(map[int]struct {
+			result1 *clientv3.LeaseGrantResponse
+			result2 error
+		})
+	}
+	fake.grantLeaseReturnsOnCall[i] = struct {
+		result1 *clientv3.LeaseGrantResponse
 		result2 error
 	}{result1, result2}
 }
@@ -1694,6 +1790,73 @@ func (fake *FakeIEtcd) PutReturnsOnCall(i int, result1 *clientv3.PutResponse, re
 	}{result1, result2}
 }
 
+func (fake *FakeIEtcd) PutWithTTL(arg1 context.Context, arg2 string, arg3 string, arg4 time.Duration) (*clientv3.PutResponse, error) {
+	fake.putWithTTLMutex.Lock()
+	ret, specificReturn := fake.putWithTTLReturnsOnCall[len(fake.putWithTTLArgsForCall)]
+	fake.putWithTTLArgsForCall = append(fake.putWithTTLArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+		arg3 string
+		arg4 time.Duration
+	}{arg1, arg2, arg3, arg4})
+	stub := fake.PutWithTTLStub
+	fakeReturns := fake.putWithTTLReturns
+	fake.recordInvocation("PutWithTTL", []interface{}{arg1, arg2, arg3, arg4})
+	fake.putWithTTLMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeIEtcd) PutWithTTLCallCount() int {
+	fake.putWithTTLMutex.RLock()
+	defer fake.putWithTTLMutex.RUnlock()
+	return len(fake.putWithTTLArgsForCall)
+}
+
+func (fake *FakeIEtcd) PutWithTTLCalls(stub func(context.Context, string, string, time.Duration) (*clientv3.PutResponse, error)) {
+	fake.putWithTTLMutex.Lock()
+	defer fake.putWithTTLMutex.Unlock()
+	fake.PutWithTTLStub = stub
+}
+
+func (fake *FakeIEtcd) PutWithTTLArgsForCall(i int) (context.Context, string, string, time.Duration) {
+	fake.putWithTTLMutex.RLock()
+	defer fake.putWithTTLMutex.RUnlock()
+	argsForCall := fake.putWithTTLArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+}
+
+func (fake *FakeIEtcd) PutWithTTLReturns(result1 *clientv3.PutResponse, result2 error) {
+	fake.putWithTTLMutex.Lock()
+	defer fake.putWithTTLMutex.Unlock()
+	fake.PutWithTTLStub = nil
+	fake.putWithTTLReturns = struct {
+		result1 *clientv3.PutResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeIEtcd) PutWithTTLReturnsOnCall(i int, result1 *clientv3.PutResponse, result2 error) {
+	fake.putWithTTLMutex.Lock()
+	defer fake.putWithTTLMutex.Unlock()
+	fake.PutWithTTLStub = nil
+	if fake.putWithTTLReturnsOnCall == nil {
+		fake.putWithTTLReturnsOnCall = make(map[int]struct {
+			result1 *clientv3.PutResponse
+			result2 error
+		})
+	}
+	fake.putWithTTLReturnsOnCall[i] = struct {
+		result1 *clientv3.PutResponse
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeIEtcd) SaveConfig(arg1 context.Context, arg2 *config.Config) error {
 	fake.saveConfigMutex.Lock()
 	ret, specificReturn := fake.saveConfigReturnsOnCall[len(fake.saveConfigArgsForCall)]
@@ -1891,6 +2054,8 @@ func (fake *FakeIEtcd) Invocations() map[string][][]interface{} {
 	defer fake.directMutex.RUnlock()
 	fake.getMutex.RLock()
 	defer fake.getMutex.RUnlock()
+	fake.grantLeaseMutex.RLock()
+	defer fake.grantLeaseMutex.RUnlock()
 	fake.publishConfigUpdateMutex.RLock()
 	defer fake.publishConfigUpdateMutex.RUnlock()
 	fake.publishCreateConnectionMutex.RLock()
@@ -1925,6 +2090,8 @@ func (fake *FakeIEtcd) Invocations() map[string][][]interface{} {
 	defer fake.publishUpdateValidationMutex.RUnlock()
 	fake.putMutex.RLock()
 	defer fake.putMutex.RUnlock()
+	fake.putWithTTLMutex.RLock()
+	defer fake.putWithTTLMutex.RUnlock()
 	fake.saveConfigMutex.RLock()
 	defer fake.saveConfigMutex.RUnlock()
 	fake.shutdownMutex.RLock()
