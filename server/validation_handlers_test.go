@@ -30,7 +30,7 @@ var _ = Describe("Validation handlers", func() {
 			PersistentConfig: &config.Config{
 				ValidationsMutex: &sync.RWMutex{},
 				SchemasMutex:     &sync.RWMutex{},
-				Validations:      make(map[string]*protos.Validation),
+				Validations:      make(map[string]*common.Validation),
 				Schemas:          make(map[string]*protos.Schema),
 			},
 			Log: logrus.NewEntry(logger),
@@ -58,7 +58,7 @@ var _ = Describe("Validation handlers", func() {
 		})
 
 		It("returns the validation", func() {
-			v := &protos.Validation{
+			v := &common.Validation{
 				XId: uuid.NewV4().String(),
 			}
 			p.PersistentConfig.SetValidation(v.XId, v)
@@ -84,7 +84,7 @@ var _ = Describe("Validation handlers", func() {
 		})
 
 		It("returns all validations", func() {
-			v := &protos.Validation{
+			v := &common.Validation{
 				XId: uuid.NewV4().String(),
 			}
 			p.PersistentConfig.SetValidation(v.XId, v)
@@ -117,7 +117,7 @@ var _ = Describe("Validation handlers", func() {
 
 			resp, err := p.CreateValidation(context.Background(), &protos.CreateValidationRequest{
 				Auth: &common.Auth{Token: "batchcorp"},
-				Validation: &protos.Validation{
+				Validation: &common.Validation{
 					SchemaId: schemaID,
 				},
 			})
@@ -153,7 +153,7 @@ var _ = Describe("Validation handlers", func() {
 			fakeEtcd := &etcdfakes.FakeIEtcd{}
 			p.Etcd = fakeEtcd
 
-			v := &protos.Validation{
+			v := &common.Validation{
 				XId:      uuid.NewV4().String(),
 				SchemaId: uuid.NewV4().String(),
 			}
@@ -197,7 +197,7 @@ var _ = Describe("Validation handlers", func() {
 			fakeEtcd := &etcdfakes.FakeIEtcd{}
 			p.Etcd = fakeEtcd
 
-			v := &protos.Validation{
+			v := &common.Validation{
 				XId:      uuid.NewV4().String(),
 				SchemaId: uuid.NewV4().String(),
 			}

@@ -13,6 +13,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	stypes "github.com/batchcorp/plumber/server/types"
@@ -40,7 +41,7 @@ type Config struct {
 	Services            map[string]*protos.Service             `json:"-"`
 	Reads               map[string]*stypes.Read                `json:"-"`
 	ImportRequests      map[string]*protos.ImportGithubRequest `json:"-"`
-	Validations         map[string]*protos.Validation          `json:"-"`
+	Validations         map[string]*common.Validation          `json:"-"`
 	ConnectionsMutex    *sync.RWMutex                          `json:"-"`
 	ServicesMutex       *sync.RWMutex                          `json:"-"`
 	ReadsMutex          *sync.RWMutex                          `json:"-"`
@@ -95,7 +96,7 @@ func ReadConfig(fileName string) (*Config, error) {
 		Services:            make(map[string]*protos.Service),
 		Reads:               make(map[string]*stypes.Read),
 		ImportRequests:      make(map[string]*protos.ImportGithubRequest),
-		Validations:         make(map[string]*protos.Validation),
+		Validations:         make(map[string]*common.Validation),
 	}
 	if err := json.Unmarshal(data, cfg); err != nil {
 		return nil, errors.Wrapf(err, "could not unmarshal ~/.batchsh/%s", fileName)
@@ -333,7 +334,7 @@ func (c *Config) DeleteImportRequest(importID string) {
 }
 
 // GetValidation retrieves a schema validation from in-memory map
-func (c *Config) GetValidation(validationID string) *protos.Validation {
+func (c *Config) GetValidation(validationID string) *common.Validation {
 	c.ValidationsMutex.RLock()
 	defer c.ValidationsMutex.RUnlock()
 
@@ -343,7 +344,7 @@ func (c *Config) GetValidation(validationID string) *protos.Validation {
 }
 
 // SetValidation saves a schema validation to in-memory map
-func (c *Config) SetValidation(validationID string, conn *protos.Validation) {
+func (c *Config) SetValidation(validationID string, conn *common.Validation) {
 	c.ValidationsMutex.Lock()
 	defer c.ValidationsMutex.Unlock()
 	c.Validations[validationID] = conn

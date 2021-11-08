@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/jhump/protoreflect/desc"
 	"github.com/tidwall/gjson"
 )
 
@@ -14,7 +15,9 @@ const (
 )
 
 type IInferSchema interface {
-	Infer(id, title, description string, input []byte) (*JSONSchema, error)
+	InferFromAvro(id string, avroSchema []byte) (*JSONSchema, error)
+	InferFromJSON(id, title, description string, input []byte) (*JSONSchema, error)
+	InferFromProtobuf(id, title, description string, md *desc.MessageDescriptor) (*JSONSchema, error)
 	Unmarshal(schema []byte) (*JSONSchema, error)
 }
 
@@ -34,8 +37,8 @@ type Property struct {
 	Type                 string               `json:"type"`
 	Title                string               `json:"title,omitempty"`
 	Description          string               `json:"description,omitempty"`
-	Default              json.RawMessage      `json:"default"`
-	Examples             []json.RawMessage    `json:"examples"`
+	Default              json.RawMessage      `json:"default,omitempty"`
+	Examples             []json.RawMessage    `json:"examples,omitempty"`
 	Properties           map[string]*Property `json:"properties,omitempty"`
 	Items                *AnyOf               `json:"items,omitempty"`
 	AdditionalProperties bool                 `json:"additionalProperties"`
@@ -47,8 +50,8 @@ type AnyOf struct {
 	Properties []*Property `json:"anyOf,omitempty"`
 }
 
-// Infer is the main entrypoint of this package. It accepts a byte slice containing JSON and returns an inferred schema
-func Infer(id, title, description string, input []byte) (*JSONSchema, error) {
+// InferFromJSON is the main entrypoint of this package. It accepts a byte slice containing JSON and returns an inferred schema
+func InferFromJSON(id, title, description string, input []byte) (*JSONSchema, error) {
 	if !gjson.ValidBytes(input) {
 		return nil, errors.New("invalid JSON syntax")
 	}

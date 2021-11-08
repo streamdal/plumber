@@ -2,16 +2,22 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
+	"github.com/batchcorp/inferschema/jsonschema"
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/validate"
+)
+
+var (
+	ErrEmptyFile = errors.New("file contents cannot be empty")
 )
 
 // importGithub imports a github repo or file as a schema
@@ -70,10 +76,28 @@ func (s *Server) importGithubProtobuf(ctx context.Context, importReq *protos.Imp
 	}
 	settings.XMessageDescriptor = mdBlob
 
+	md, err := pb.GetMDFromDescriptorBlob(mdBlob, req.GetProtobufSettings().ProtobufRootMessage)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to get message descriptor")
+	}
+
+	inferred, err := jsonschema.InferFromProtobuf("http://plumber.local/schema.json", "Inferred schema", "Inferred from protobuf", md)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to convert Protobuf schema to JSONSchema")
+	}
+
+	inferredJSON, err := json.Marshal(inferred)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to marshal inferred JSONSchema")
+	}
+
 	return &protos.Schema{
 		Id:   uuid.NewV4().String(),
 		Name: importReq.Name,
 		Type: protos.SchemaType_SCHEMA_TYPE_PROTOBUF,
+		InferredSchema: &encoding.JSONSchemaSettings{
+			Schema: inferredJSON,
+		},
 		Versions: []*protos.SchemaVersion{
 			{
 				Version: 1,
@@ -103,10 +127,23 @@ func (s *Server) importGithubAvro(ctx context.Context, importReq *protos.ImportG
 		return nil, err
 	}
 
+	inferred, err := jsonschema.InferFromAvro("http://plumber.local/schema.json", schemaData)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to convert Protobuf schema to JSONSchema")
+	}
+
+	inferredJSON, err := json.Marshal(inferred)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to marshal inferred JSONSchema")
+	}
+
 	return &protos.Schema{
 		Id:   uuid.NewV4().String(),
 		Name: importReq.Name,
 		Type: protos.SchemaType_SCHEMA_TYPE_AVRO,
+		InferredSchema: &encoding.JSONSchemaSettings{
+			Schema: inferredJSON,
+		},
 		Versions: []*protos.SchemaVersion{
 			{
 				Version: 1,
@@ -142,6 +179,9 @@ func (s *Server) importGithubJSONSchema(ctx context.Context, importReq *protos.I
 		Id:   uuid.NewV4().String(),
 		Name: importReq.Name,
 		Type: protos.SchemaType_SCHEMA_TYPE_JSONSCHEMA,
+		InferredSchema: &encoding.JSONSchemaSettings{
+			Schema: schemaData,
+		},
 		Versions: []*protos.SchemaVersion{
 			{
 				Version: 1,
@@ -210,10 +250,28 @@ func importLocalProtobuf(req *protos.ImportLocalRequest) (*protos.Schema, error)
 
 	settings.XMessageDescriptor = mdBlob
 
+	md, err := pb.GetMDFromDescriptorBlob(mdBlob, req.GetProtobufSettings().ProtobufRootMessage)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to get message descriptor")
+	}
+
+	inferred, err := jsonschema.InferFromProtobuf("http://plumber.local", "Inferred schema", "", md)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to convert Protobuf schema to JSONSchema")
+	}
+
+	inferredJSON, err := json.Marshal(inferred)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to marshal inferred JSONSchema")
+	}
+
 	return &protos.Schema{
 		Id:   uuid.NewV4().String(),
 		Name: req.Name,
 		Type: protos.SchemaType_SCHEMA_TYPE_PROTOBUF,
+		InferredSchema: &encoding.JSONSchemaSettings{
+			Schema: inferredJSON,
+		},
 		Versions: []*protos.SchemaVersion{
 			{
 				Version: 1,
@@ -234,13 +292,26 @@ func importLocalAvro(req *protos.ImportLocalRequest) (*protos.Schema, error) {
 	}
 
 	if len(req.FileContents) == 0 {
-		return nil, errors.New("zip archive cannot be empty")
+		return nil, ErrEmptyFile
+	}
+
+	inferred, err := jsonschema.InferFromAvro("http://plumber.local", req.FileContents)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to convert Avro to JSONSchema")
+	}
+
+	inferredJSON, err := json.Marshal(inferred)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to marshal inferred JSONSchema")
 	}
 
 	return &protos.Schema{
 		Id:   uuid.NewV4().String(),
 		Name: req.Name,
 		Type: protos.SchemaType_SCHEMA_TYPE_AVRO,
+		InferredSchema: &encoding.JSONSchemaSettings{
+			Schema: inferredJSON,
+		},
 		Versions: []*protos.SchemaVersion{
 			{
 				Version: 1,
@@ -264,13 +335,16 @@ func importLocalJSONSchema(req *protos.ImportLocalRequest) (*protos.Schema, erro
 	}
 
 	if len(req.FileContents) == 0 {
-		return nil, errors.New("zip archive cannot be empty")
+		return nil, ErrEmptyFile
 	}
 
 	return &protos.Schema{
 		Id:   uuid.NewV4().String(),
 		Name: req.Name,
 		Type: protos.SchemaType_SCHEMA_TYPE_JSONSCHEMA,
+		InferredSchema: &encoding.JSONSchemaSettings{
+			Schema: req.FileContents,
+		},
 		Versions: []*protos.SchemaVersion{
 			{
 				Version: 1,
