@@ -237,10 +237,6 @@ func (s *Server) CreateRead(_ context.Context, req *protos.CreateReadRequest) (*
 	}, nil
 }
 
-func (s *Server) populateCachedSchema() {
-	//
-}
-
 // TODO: Need to figure out how reads work with clustered plumber - do all nodes
 // perform a read? If so, should StopRead() inform other nodes to stop reading
 // as well?

@@ -121,6 +121,24 @@ func (e *Etcd) PublishDeleteRead(ctx context.Context, read *opts.ReadOptions) er
 	return e.publishReadMessage(ctx, DeleteRead, read)
 }
 
+// PublishCreateComposite publishes a CreateComposite message, which other plumber instances will receive
+// and add the service to their local in-memory maps
+func (e *Etcd) PublishCreateComposite(ctx context.Context, comp *opts.Composite) error {
+	return e.publishCompositeMessage(ctx, CreateComposite, comp)
+}
+
+// PublishUpdateComposite publishes an UpdateComposite message, which other plumber instances will receive
+// and update the connection in their local in-memory maps
+func (e *Etcd) PublishUpdateComposite(ctx context.Context, comp *opts.Composite) error {
+	return e.publishCompositeMessage(ctx, UpdateComposite, comp)
+}
+
+// PublishDeleteComposite publishes a DeleteComposite message, which other plumber instances will receive
+// and delete from their local in-memory maps
+func (e *Etcd) PublishDeleteComposite(ctx context.Context, comp *opts.Composite) error {
+	return e.publishCompositeMessage(ctx, DeleteSchema, comp)
+}
+
 // PublishConfigUpdate publishes a MessageUpdateConfig message, which other plumber instances
 // will receive and update their config with the new token
 func (e *Etcd) PublishConfigUpdate(ctx context.Context, msg *MessageUpdateConfig) error {
@@ -162,7 +180,6 @@ func (e *Etcd) publishServiceMessage(ctx context.Context, action Action, svc *pr
 		return errors.Wrapf(err, "unable to publish service message for '%s'", svc.Id)
 	}
 
-	// Publish delete
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
@@ -177,7 +194,6 @@ func (e *Etcd) publishConnectionMessage(ctx context.Context, action Action, conn
 		return errors.Wrapf(err, "unable to publish connection message for '%s'", conn.XId)
 	}
 
-	// Publish delete
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
@@ -207,7 +223,6 @@ func (e *Etcd) publishRelayMessage(ctx context.Context, action Action, relay *op
 		return errors.Wrapf(err, "unable to publish relay message for '%s'", relay.XRelayId)
 	}
 
-	// Publish delete
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
@@ -222,7 +237,6 @@ func (e *Etcd) publishValidationMessage(ctx context.Context, action Action, vali
 		return errors.Wrapf(err, "unable to publish validation message for '%s'", validation.XId)
 	}
 
-	// Publish delete
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
@@ -237,7 +251,20 @@ func (e *Etcd) publishReadMessage(ctx context.Context, action Action, read *opts
 		return errors.Wrapf(err, "unable to publish read message for '%s'", read.XId)
 	}
 
-	// Publish delete
+	return e.Broadcast(ctx, &Message{
+		Action:    action,
+		Data:      data,
+		EmittedBy: e.PlumberConfig.PlumberID,
+		EmittedAt: time.Now().UTC(),
+	})
+}
+
+func (e *Etcd) publishCompositeMessage(ctx context.Context, action Action, read *opts.Composite) error {
+	data, err := proto.Marshal(read)
+	if err != nil {
+		return errors.Wrapf(err, "unable to publish composite message for '%s'", read.XId)
+	}
+
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,

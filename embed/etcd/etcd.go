@@ -37,6 +37,7 @@ const (
 	CacheValidationsPrefix = "/plumber-server/validations"
 	CacheServerConfigKey   = "/plumber-server/server-config"
 	CacheReadsPrefix       = "/plumber-server/reads"
+	CacheCompositesPrefix  = "/plumber-server/composites"
 )
 
 type HandlerFunc func(context.Context, *clientv3.WatchResponse) error
@@ -71,12 +72,15 @@ type IEtcd interface {
 	PublishCreateRelay(ctx context.Context, relay *opts.RelayOptions) error
 	PublishUpdateRelay(ctx context.Context, relay *opts.RelayOptions) error
 	PublishDeleteRelay(ctx context.Context, relay *opts.RelayOptions) error
-	PublishCreateValidation(ctx context.Context, validation *common.Validation) error
 	PublishConfigUpdate(ctx context.Context, msg *MessageUpdateConfig) error
+	PublishCreateValidation(ctx context.Context, validation *common.Validation) error
 	PublishUpdateValidation(ctx context.Context, validation *common.Validation) error
 	PublishDeleteValidation(ctx context.Context, validation *common.Validation) error
 	PublishCreateRead(ctx context.Context, svc *opts.ReadOptions) error
 	PublishDeleteRead(ctx context.Context, svc *opts.ReadOptions) error
+	PublishCreateComposite(ctx context.Context, validation *opts.Composite) error
+	PublishUpdateComposite(ctx context.Context, validation *opts.Composite) error
+	PublishDeleteComposite(ctx context.Context, validation *opts.Composite) error
 
 	Client() *clientv3.Client
 }
@@ -643,7 +647,7 @@ func (e *Etcd) populateValidationCache() error {
 // populateReadCache loads cached read configs from etcd.
 // This method MUST be called after populateConnectionCache() and populateSchemaCache()
 func (e *Etcd) populateReadCache() error {
-	resp, err := e.Get(context.Background(), CacheRelaysPrefix, clientv3.WithPrefix())
+	resp, err := e.Get(context.Background(), CacheReadsPrefix, clientv3.WithPrefix())
 	if err != nil {
 		return errors.Wrap(err, "unable to fetch opts.ReadOptions messages from etcd")
 	}
@@ -699,6 +703,31 @@ func (e *Etcd) populateReadCache() error {
 	}
 
 	e.log.Debugf("Loaded '%d' reads from etcd", count)
+
+	return nil
+}
+
+func (e *Etcd) populateCompositeCache() error {
+	resp, err := e.Get(context.Background(), CacheCompositesPrefix, clientv3.WithPrefix())
+	if err != nil {
+		return errors.Wrap(err, "unable to fetch opts.Composite messages from etcd")
+	}
+
+	var count int
+
+	for _, v := range resp.Kvs {
+		comp := &opts.Composite{}
+		if err := proto.Unmarshal(v.Value, comp); err != nil {
+			e.log.Errorf("unable to unmarshal opts.Composite message: %s", err)
+			continue
+		}
+
+		count++
+
+		e.PlumberConfig.SetComposite(comp.XId, comp)
+	}
+
+	e.log.Debugf("Loaded '%d' composite views from etcd", count)
 
 	return nil
 }

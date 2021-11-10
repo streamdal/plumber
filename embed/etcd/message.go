@@ -31,6 +31,10 @@ const (
 	CreateRead = "CreateRead"
 	DeleteRead = "DeleteRead"
 
+	CreateComposite = "CreateComposite"
+	UpdateComposite = "UpdateComposite"
+	DeleteComposite = "DeleteComposite"
+
 	UpdateConfig = "UpdateConfig"
 )
 
@@ -40,6 +44,7 @@ var (
 		CreateService, UpdateService, DeleteService,
 		CreateRelay, UpdateRelay, DeleteRelay,
 		UpdateConfig, CreateRead, DeleteRead,
+		CreateComposite, UpdateComposite, DeleteComposite,
 	}
 )
 
