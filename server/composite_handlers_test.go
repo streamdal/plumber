@@ -5,21 +5,19 @@ import (
 	"io/ioutil"
 	"sync"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-
-	"github.com/batchcorp/plumber/server/types"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/config"
-	"github.com/batchcorp/plumber/embed/etcd/etcdfakes"
-	"github.com/batchcorp/plumber/validate"
-
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+
+	"github.com/batchcorp/plumber/config"
+	"github.com/batchcorp/plumber/embed/etcd/etcdfakes"
+	"github.com/batchcorp/plumber/server/types"
+	"github.com/batchcorp/plumber/validate"
 )
 
 var _ = Describe("Composite view handlers", func() {
