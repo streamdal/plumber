@@ -109,6 +109,18 @@ func (e *Etcd) PublishDeleteValidation(ctx context.Context, validation *common.V
 	return e.publishValidationMessage(ctx, DeleteSchema, validation)
 }
 
+// PublishCreateRead publishes a CreateRead message, which other plumber instances will receive
+// and add the service to their local in-memory maps
+func (e *Etcd) PublishCreateRead(ctx context.Context, read *opts.ReadOptions) error {
+	return e.publishReadMessage(ctx, CreateRead, read)
+}
+
+// PublishDeleteRead publishes a DeleteRead message, which other plumber instances will receive
+// and delete from their local in-memory maps
+func (e *Etcd) PublishDeleteRead(ctx context.Context, read *opts.ReadOptions) error {
+	return e.publishReadMessage(ctx, DeleteRead, read)
+}
+
 // PublishConfigUpdate publishes a MessageUpdateConfig message, which other plumber instances
 // will receive and update their config with the new token
 func (e *Etcd) PublishConfigUpdate(ctx context.Context, msg *MessageUpdateConfig) error {
@@ -208,6 +220,21 @@ func (e *Etcd) publishValidationMessage(ctx context.Context, action Action, vali
 	data, err := proto.Marshal(validation)
 	if err != nil {
 		return errors.Wrapf(err, "unable to publish validation message for '%s'", validation.XId)
+	}
+
+	// Publish delete
+	return e.Broadcast(ctx, &Message{
+		Action:    action,
+		Data:      data,
+		EmittedBy: e.PlumberConfig.PlumberID,
+		EmittedAt: time.Now().UTC(),
+	})
+}
+
+func (e *Etcd) publishReadMessage(ctx context.Context, action Action, read *opts.ReadOptions) error {
+	data, err := proto.Marshal(read)
+	if err != nil {
+		return errors.Wrapf(err, "unable to publish read message for '%s'", read.XId)
 	}
 
 	// Publish delete
