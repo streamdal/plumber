@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"io/ioutil"
 	"sync"
 
 	. "github.com/onsi/ginkgo"
@@ -33,7 +34,7 @@ var _ = Describe("Validation handlers", func() {
 				Validations:      make(map[string]*common.Validation),
 				Schemas:          make(map[string]*protos.Schema),
 			},
-			Log: logrus.NewEntry(logger),
+			Log: logrus.NewEntry(&logrus.Logger{Out: ioutil.Discard}),
 		}
 	})
 
