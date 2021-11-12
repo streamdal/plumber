@@ -18,8 +18,6 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 )
 
-var logger = &logrus.Logger{Out: ioutil.Discard}
-
 var _ = Describe("Services", func() {
 
 	var p *Server
@@ -36,7 +34,7 @@ var _ = Describe("Services", func() {
 				Services:      make(map[string]*protos.Service),
 				Schemas:       make(map[string]*protos.Schema),
 			},
-			Log: logrus.NewEntry(logger),
+			Log: logrus.NewEntry(&logrus.Logger{Out: ioutil.Discard}),
 		}
 	})
 
@@ -331,8 +329,8 @@ var _ = Describe("Services", func() {
 			})
 
 			Expect(err).ToNot(HaveOccurred())
-			Expect(len(svc.Repositories)).To(Equal(1))
-			Expect(svc.Repositories[0].Name).To(Equal("plumber"))
+			Expect(svc.Repo).ToNot(BeNil())
+			Expect(svc.Repo.Name).To(Equal("plumber"))
 		})
 	})
 
@@ -357,10 +355,8 @@ var _ = Describe("Services", func() {
 				Id:      svcID,
 				Name:    "testing",
 				OwnerId: uuid.NewV4().String(),
-				Repositories: []*protos.Repository{
-					{
-						XId: repoID,
-					},
+				Repo: &protos.Repository{
+					XId: repoID,
 				},
 			}
 			p.PersistentConfig.SetService(svcID, svc)
@@ -372,7 +368,7 @@ var _ = Describe("Services", func() {
 			})
 
 			Expect(err).ToNot(HaveOccurred())
-			Expect(len(svc.Repositories)).To(Equal(0))
+			Expect(svc.Repo).To(BeNil())
 		})
 	})
 

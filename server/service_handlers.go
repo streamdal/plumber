@@ -288,7 +288,7 @@ func (s *Server) LinkRepoToService(ctx context.Context, req *protos.LinkRepoToSe
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
 
-	svc.Repositories = append(svc.Repositories, repo)
+	svc.Repo = repo
 
 	if err := s.persistService(ctx, svc); err != nil {
 		return nil, CustomError(common.Code_INTERNAL, err.Error())
@@ -343,11 +343,11 @@ func (s *Server) UnlinkRepoFromService(ctx context.Context, req *protos.UnlinkRe
 		return nil, CustomError(common.Code_NOT_FOUND, validate.ErrServiceNotFound.Error())
 	}
 
-	if !serviceHasRepo(svc, req.RepoId) {
+	if svc.Repo == nil || svc.Repo.XId != req.RepoId {
 		return nil, CustomError(common.Code_NOT_FOUND, validate.ErrRepoNotFound.Error())
 	}
 
-	removeRepoFromService(svc, req.RepoId)
+	svc.Repo = nil
 
 	if err := s.persistService(ctx, svc); err != nil {
 		return nil, CustomError(common.Code_INTERNAL, err.Error())
@@ -360,28 +360,4 @@ func (s *Server) UnlinkRepoFromService(ctx context.Context, req *protos.UnlinkRe
 			RequestId: uuid.NewV4().String(),
 		},
 	}, nil
-}
-
-// removeRepoFromService removes a linked repository from a service
-func removeRepoFromService(svc *protos.Service, repoID string) {
-	for i, s := range svc.Repositories {
-		if s.XId != repoID {
-			continue
-		}
-
-		svc.Repositories = append(svc.Repositories[:i], svc.Repositories[i+1:]...)
-
-		return
-	}
-}
-
-// serviceHasRepo checks if a service has the repository linked to it
-func serviceHasRepo(svc *protos.Service, repoID string) bool {
-	for _, r := range svc.Repositories {
-		if r.XId == repoID {
-			return true
-		}
-	}
-
-	return false
 }
