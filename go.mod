@@ -8,7 +8,7 @@ require (
 	github.com/batchcorp/inferschema v0.0.4
 	github.com/batchcorp/kong v0.2.17-batch-fix
 	github.com/batchcorp/lucene2x v0.0.17
-	github.com/batchcorp/pgoutput v0.3.2 // indirect
+	github.com/batchcorp/pgoutput v0.3.2
 	github.com/batchcorp/plumber-schemas v0.0.93
 	github.com/batchcorp/rabbit v0.1.9
 	github.com/batchcorp/schemas v0.2.157
@@ -17,6 +17,7 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/google/go-github/v37 v37.0.0
 	github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
+	github.com/jackc/pgx v3.2.0+incompatible
 	github.com/jhump/protoreflect v1.10.1
 	github.com/json-iterator/go v1.1.11
 	github.com/julienschmidt/httprouter v1.3.0

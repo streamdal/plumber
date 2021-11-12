@@ -64,6 +64,7 @@ github.com/batchcorp/lucene2x/lexer
 github.com/batchcorp/lucene2x/token
 # github.com/batchcorp/pgoutput v0.3.2
 ## explicit
+github.com/batchcorp/pgoutput
 # github.com/batchcorp/plumber-schemas v0.0.93
 ## explicit
 github.com/batchcorp/plumber-schemas/build/go/protos
@@ -170,6 +171,14 @@ github.com/grpc-ecosystem/grpc-gateway/utilities
 # github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
 ## explicit
 github.com/hokaccha/go-prettyjson
+# github.com/jackc/pgx v3.2.0+incompatible
+## explicit
+github.com/jackc/pgx
+github.com/jackc/pgx/chunkreader
+github.com/jackc/pgx/internal/sanitize
+github.com/jackc/pgx/pgio
+github.com/jackc/pgx/pgproto3
+github.com/jackc/pgx/pgtype
 # github.com/jhump/protoreflect v1.10.1
 ## explicit
 github.com/jhump/protoreflect/codec
