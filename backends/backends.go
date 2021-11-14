@@ -14,6 +14,7 @@ import (
 	"github.com/batchcorp/plumber/backends/nats"
 	"github.com/batchcorp/plumber/backends/nsq"
 	"github.com/batchcorp/plumber/backends/rabbitmq"
+	"github.com/batchcorp/plumber/backends/rstreams"
 )
 
 // Backend is the interface that all backends implement; the interface is used
@@ -104,8 +105,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 	//	be, err = rabbitmq_streams.New(cfg)
 	//case *opts.ConnectionOptions_RedisPubsub:
 	//	be, err = rpubsub.New(cfg)
-	//case *opts.ConnectionOptions_RedisStreams:
-	//	be, err = rstreams.New(cfg)
+	case *opts.ConnectionOptions_RedisStreams:
+		be, err = rstreams.New(connOpts)
 	case *opts.ConnectionOptions_Mongo:
 		be, err = cdcmongo.New(connOpts)
 	//case *opts.ConnectionOptions_Postgres:

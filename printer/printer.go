@@ -228,7 +228,7 @@ func printRedisPubSubOptions(cliOpts *opts.CLIOptions) {
 	logrus.Infof("- %-24s%-6v", "Address", cliOpts.Relay.RedisPubsub.XConn.Address)
 	logrus.Infof("- %-24s%-6v", "Channels", cliOpts.Relay.RedisPubsub.Args.Channel)
 	logrus.Infof("- %-24s%-6v", "Username", cliOpts.Relay.RedisPubsub.XConn.Username)
-	logrus.Infof("- %-24s%-6v", "Database", cliOpts.Relay.RedisPubsub.Args.Database)
+	logrus.Infof("- %-24s%-6v", "Database", cliOpts.Relay.RedisPubsub.XConn.Database)
 	logrus.Info("")
 }
 
@@ -240,7 +240,7 @@ func printRedisStreamsOptions(cliOpts *opts.CLIOptions) {
 	logrus.Infof("- %-28s%-6v", "Address", cliOpts.Relay.RedisStreams.XConn.Address)
 	logrus.Infof("- %-28s%-6v", "Streams", cliOpts.Relay.RedisStreams.Args.Stream)
 	logrus.Infof("- %-28s%-6v", "Username", cliOpts.Relay.RedisStreams.XConn.Username)
-	logrus.Infof("- %-28s%-6v", "Database", cliOpts.Relay.RedisStreams.Args.Database)
+	logrus.Infof("- %-28s%-6v", "Database", cliOpts.Relay.RedisStreams.XConn.Database)
 	logrus.Infof("- %-28s%-6v", "Create Streams", cliOpts.Relay.RedisStreams.Args.CreateConsumerConfig.CreateStreams)
 	logrus.Infof("- %-28s%-6v", "consumer Name", cliOpts.Relay.RedisStreams.Args.ConsumerName)
 	logrus.Infof("- %-28s%-6v", "consumer Group", cliOpts.Relay.RedisStreams.Args.ConsumerGroup)
