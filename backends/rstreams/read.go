@@ -134,7 +134,6 @@ func (r *RedisStreams) createConsumerGroups(ctx context.Context, rsArgs *args.Re
 		if rsArgs.CreateConsumerConfig.CreateStreams {
 			_, err = r.client.XGroupCreateMkStream(ctx, stream, rsArgs.ConsumerGroup, offset).Result()
 		} else {
-			fmt.Printf("stream: %s, offset: %s", stream, offset)
 			_, err = r.client.XGroupCreate(ctx, stream, rsArgs.ConsumerGroup, offset).Result()
 		}
 
