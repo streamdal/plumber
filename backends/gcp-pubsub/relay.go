@@ -45,14 +45,11 @@ func Relay(opts *cli.Options, relayCh chan interface{}, shutdownCtx context.Cont
 }
 
 func (r *Relayer) Relay() error {
-	r.log.Infof("Relaying GCP pubsub messages from '%s' queue -> '%s'",
-		r.Options.GCPPubSub.ReadSubscriptionId, r.Options.RelayGRPCAddress)
-
 	r.log.Infof("HTTP server listening on '%s'", r.Options.RelayHTTPListenAddress)
 
 	defer r.Client.Close()
 
-	sub := r.Client.Subscription(r.Options.GCPPubSub.ReadSubscriptionId)
+	var wg sync.WaitGroup
 
 	// Receive launches several goroutines to exec func, need to use a mutex
 	var m sync.Mutex
@@ -74,23 +71,44 @@ func (r *Relayer) Relay() error {
 		}
 	}
 
-	for {
-		if err := sub.Receive(r.ShutdownCtx, readFunc); err != nil {
-			if err == context.Canceled {
-				r.log.Info("Received shutdown signal, existing relayer")
-				return nil
+	for _, subID := range r.Options.GCPPubSub.ReadSubscriptionId {
+		wg.Add(1)
+
+		r.log.Infof("Relaying GCP pubsub messages from '%s' queue -> '%s'",
+			subID, r.Options.RelayGRPCAddress)
+
+		go func(id string) {
+			defer wg.Done()
+			sub := r.Client.Subscription(id)
+			for {
+				// sub.Receive() is not returning context.Canceled for some reason
+				select {
+				case <-r.ShutdownCtx.Done():
+					return
+				default:
+					// NOOP
+				}
+
+				if err := sub.Receive(r.ShutdownCtx, readFunc); err != nil {
+					if err == context.Canceled {
+						r.log.Info("Received shutdown signal, existing relayer")
+						return
+					}
+
+					stats.Mute("gcp-relay-consumer")
+					stats.Mute("gcp-relay-producer")
+
+					stats.IncrPromCounter("plumber_read_errors", 1)
+
+					r.log.WithField("err", err).Error("unable to read message(s) from GCP pubsub")
+					time.Sleep(RetryReadInterval)
+				}
+				println("looped")
 			}
-
-			stats.Mute("gcp-relay-consumer")
-			stats.Mute("gcp-relay-producer")
-
-			stats.IncrPromCounter("plumber_read_errors", 1)
-
-			r.log.WithField("err", err).Error("unable to read message(s) from GCP pubsub")
-			time.Sleep(RetryReadInterval)
-			continue
-		}
+		}(subID)
 	}
+
+	wg.Wait()
 
 	return nil
 }

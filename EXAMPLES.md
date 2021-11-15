@@ -44,7 +44,8 @@
        * [Continuously relay messages for multiple Redis streams to a Batch.sh collection](#continuously-relay-messages-from-multiple-redis-streams-to-a-batchsh-collection)
        * [Continuously relay messages from a Kafka topic (on Confluent) to a Batch.sh collection (via CLI)](#continuously-relay-messages-from-a-kafka-topic-on-confluent-to-a-batchsh-collection-via-cli)
        * [Continuously relay messages from a MQTT topic to a Batch.sh collection](#continuously-relay-messages-from-a-mqtt-topic-to-a-batchsh-collection)
-    * [Continuously relay messages from a KubeMQ queue to a Batch.sh collection](#continuously-relay-messages-from-a-kubemq-queue-to-a-batchsh-collection)
+       * [Continuously relay messages from a KubeMQ queue to a Batch.sh collection](#continuously-relay-messages-from-a-kubemq-queue-to-a-batchsh-collection)
+       * [Continuously relay messages from a GCP-PubSub subscription to a Batch.sh collection](#continuously-relay-messages-from-a-gcp-pubsub-subscription-to-a-batchsh-collection)
   * [Change Data Capture](#change-data-capture)
        * [Continuously relay Postgres change events to a Batch.sh collection](#continuously-relay-postgres-change-events-to-a-batchsh-collection)
        * [Continuously relay MongoDB change stream events to a Batch.sh collection](#continuously-relay-mongodb-change-stream-events-to-a-batchsh-collection)
@@ -176,6 +177,12 @@ plumber read redis-streams --address="localhost:6379" --streams="new-orders"
 
 ```bash
 plumber read gcp-pubsub --project-id=PROJECT_ID --sub-id=SUBSCRIPTION --credentials-file=/path/to/credentials.json
+```
+
+Read from multiple subscriptions at once:
+
+```bash
+plumber read gcp-pubsub --project-id=PROJECT_ID --sub-id=SUBSCRIPTION1 --sub-id=OTHERSUBSCRIPTION --credentials-file=/path/to/credentials.json
 ```
 
 ##### MQTT
@@ -462,6 +469,18 @@ docker run -d --name plumber-kubemq -p 8080:8080 \
     -e PLUMBER_RELAY_KUBEMQ_QUEUE_QUEUE=my-queue \
     -e PLUMBER_RELAY_KUBEMQ_QUEUE_AUTH_TOKEN=.... \
     -e PLUMBER_RELAY_TYPE=kubemq-queue \
+    -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
+    batchcorp/plumber 
+```
+
+##### Continuously relay messages from a GCP PubSub subscription to a Batch.sh collection
+
+```bash
+docker run -d --name plumber-kubemq -p 8080:8080 \
+    -e PLUMBER_RELAY_GCP_CREDENTIALS='{"type":"service_account", ...}' \
+    -e PLUMBER_RELAY_GCP_SUBSCRIPTION_ID=mytopic-sub,othertopic-sub \
+    -e PLUMBER_RELAY_GCP_PROJECT_ID=myproject-12345 \
+    -e PLUMBER_RELAY_TYPE=gcp-pubsub \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
     batchcorp/plumber 
 ```

@@ -41,43 +41,57 @@ func (g *GCPPubSub) Read() error {
 
 	g.log.Info("Listening for message(s) ...")
 
-	sub := g.Client.Subscription(g.Options.GCPPubSub.ReadSubscriptionId)
+	var wg sync.WaitGroup
 
 	// Receive launches several goroutines to exec func, need to use a mutex
 	var m sync.Mutex
 
-	count := 1
+	var count int
 
-	// Standard way to cancel Receive in gcp's pubsub
-	cctx, cancel := context.WithCancel(context.Background())
+	for _, subID := range g.Options.GCPPubSub.ReadSubscriptionId {
+		wg.Add(1)
 
-	if err := sub.Receive(cctx, func(ctx context.Context, msg *pubsub.Message) {
-		m.Lock()
-		defer m.Unlock()
+		go func(id string) {
+			defer wg.Done()
+			sub := g.Client.Subscription(id)
 
-		if g.Options.GCPPubSub.ReadAck {
-			defer msg.Ack()
-		}
+			// Standard way to cancel Receive in gcp's pubsub
+			cctx, cancel := context.WithCancel(context.Background())
 
-		data, err := reader.Decode(g.Options, g.MsgDesc, msg.Data)
-		if err != nil {
-			return
-		}
+			err := sub.Receive(cctx, func(ctx context.Context, msg *pubsub.Message) {
+				count++
+				m.Lock()
+				defer m.Unlock()
 
-		str := string(data)
+				if g.Options.GCPPubSub.ReadAck {
+					defer msg.Ack()
+				}
 
-		str = fmt.Sprintf("%d: ", count) + str
-		count++
+				data, err := reader.Decode(g.Options, g.MsgDesc, msg.Data)
+				if err != nil {
+					return
+				}
 
-		printer.Print(str)
+				str := string(data)
 
-		if !g.Options.ReadFollow {
-			cancel()
-			return
-		}
-	}); err != nil {
-		return errors.Wrap(err, "unable to complete msg receive")
+				str = fmt.Sprintf("%d: ", count) + str
+
+				printer.Print(str)
+
+				if !g.Options.ReadFollow {
+					cancel()
+					return
+				}
+			})
+
+			if err != nil {
+				g.log.Errorf("unable to complete msg receive: %s", err)
+			}
+
+		}(subID)
 	}
+
+	wg.Wait()
 
 	g.log.Debug("Reader exiting")
 
