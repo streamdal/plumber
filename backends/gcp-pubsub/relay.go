@@ -103,7 +103,6 @@ func (r *Relayer) Relay() error {
 					r.log.WithField("err", err).Error("unable to read message(s) from GCP pubsub")
 					time.Sleep(RetryReadInterval)
 				}
-				println("looped")
 			}
 		}(subID)
 	}
