@@ -3,8 +3,6 @@ package backends
 import (
 	"context"
 
-	"github.com/batchcorp/plumber/backends/gcppubsub"
-
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
@@ -12,6 +10,7 @@ import (
 
 	"github.com/batchcorp/plumber/backends/awssns"
 	"github.com/batchcorp/plumber/backends/cdcmongo"
+	"github.com/batchcorp/plumber/backends/gcppubsub"
 	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/backends/nats"
 	"github.com/batchcorp/plumber/backends/nsq"
