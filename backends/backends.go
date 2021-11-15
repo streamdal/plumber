@@ -3,6 +3,8 @@ package backends
 import (
 	"context"
 
+	"github.com/batchcorp/plumber/backends/gcppubsub"
+
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
@@ -86,8 +88,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 	//	be, err = azure.New(cfg)
 	//case *opts.ConnectionOptions_AzureEventHub:
 	//	be, err = azure_eventhub.New(cfg)
-	//case *opts.ConnectionOptions_GcpPubsub:
-	//	be, err = gcppubsub.New(cfg)
+	case *opts.ConnectionOptions_GcpPubsub:
+		be, err = gcppubsub.New(connOpts)
 	//case *opts.ConnectionOptions_Mqtt:
 	//	be, err = mqtt.New(cfg)
 	case *opts.ConnectionOptions_Nats:
