@@ -379,7 +379,7 @@ func TestHandleGCPPubSubFlags_read(t *testing.T) {
 
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(cmd).To(Equal("read gcp-pubsub"))
-	g.Expect(opts.GCPPubSub.ReadSubscriptionId).To(Equal("plumber_sub"))
+	g.Expect(opts.GCPPubSub.ReadSubscriptionId[0]).To(Equal("plumber_sub"))
 	g.Expect(opts.GCPPubSub.ProjectId).To(Equal("plumber_project"))
 	g.Expect(opts.GCPPubSub.ReadAck).To(BeFalse())
 	g.Expect(opts.ReadProtobufDirs).To(Equal([]string{"../test-assets/protos"}))

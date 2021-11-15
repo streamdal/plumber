@@ -239,6 +239,10 @@ func convertSliceArgs(opts *Options) {
 	if len(opts.Kafka.Topics) == 1 && strings.Contains(opts.Kafka.Topics[0], ",") {
 		opts.Kafka.Topics = strings.Split(opts.Kafka.Topics[0], ",")
 	}
+
+	if len(opts.GCPPubSub.ReadSubscriptionId) == 1 && strings.Contains(opts.GCPPubSub.ReadSubscriptionId[0], ",") {
+		opts.GCPPubSub.ReadSubscriptionId = strings.Split(opts.GCPPubSub.ReadSubscriptionId[0], ",")
+	}
 }
 
 func HandleGlobalReadFlags(cmd *kingpin.CmdClause, opts *Options) {

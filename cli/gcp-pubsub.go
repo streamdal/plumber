@@ -13,7 +13,7 @@ type GCPPubSubOptions struct {
 	CredentialsJSON string
 
 	// Read
-	ReadSubscriptionId string
+	ReadSubscriptionId []string
 	ReadAck            bool
 
 	// Write
@@ -67,7 +67,7 @@ func addReadGCPPubSubFlags(cmd *kingpin.CmdClause, opts *Options) {
 	cmd.Flag("sub-id", "Subscription Id").
 		Required().
 		Envar("PLUMBER_RELAY_GCP_SUBSCRIPTION_ID").
-		StringVar(&opts.GCPPubSub.ReadSubscriptionId)
+		StringsVar(&opts.GCPPubSub.ReadSubscriptionId)
 	cmd.Flag("ack", "Whether to acknowledge message receive").
 		Default("true").
 		Envar("PLUMBER_RELAY_GCP_ACK_MESSAGE").
