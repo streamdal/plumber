@@ -12,7 +12,7 @@ require (
 	github.com/batchcorp/pgoutput v0.3.2
 	github.com/batchcorp/plumber-schemas v0.0.93
 	github.com/batchcorp/rabbit v0.1.9
-	github.com/batchcorp/schemas v0.2.157
+	github.com/batchcorp/schemas v0.2.176
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fatih/color v1.12.0 // indirect
 	github.com/golang/protobuf v1.5.2

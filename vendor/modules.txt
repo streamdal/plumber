@@ -82,14 +82,12 @@ github.com/batchcorp/plumber-schemas/build/go/protos/records
 # github.com/batchcorp/rabbit v0.1.9
 ## explicit
 github.com/batchcorp/rabbit
-# github.com/batchcorp/schemas v0.2.157
+# github.com/batchcorp/schemas v0.2.176
 ## explicit
 github.com/batchcorp/schemas/build/go/events
 github.com/batchcorp/schemas/build/go/events/destinations
 github.com/batchcorp/schemas/build/go/events/metrics
-github.com/batchcorp/schemas/build/go/events/records
 github.com/batchcorp/schemas/build/go/events/tasks
-github.com/batchcorp/schemas/build/go/services
 # github.com/beorn7/perks v1.0.1
 github.com/beorn7/perks/quantile
 # github.com/cespare/xxhash/v2 v2.1.1

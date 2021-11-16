@@ -14,9 +14,8 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
 
+	"github.com/batchcorp/collector-schemas/build/go/protos/services"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-
-	"github.com/batchcorp/schemas/build/go/services"
 
 	postgresTypes "github.com/batchcorp/plumber/backends/cdcpostgres/types"
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
