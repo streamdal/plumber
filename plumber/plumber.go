@@ -3,18 +3,20 @@ package plumber
 import (
 	"context"
 	"fmt"
+	"strings"
 
-	"github.com/batchcorp/kong"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber/monitor"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/mcuadros/go-lookup"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"github.com/batchcorp/kong"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/embed/etcd"
+	"github.com/batchcorp/plumber/monitor"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/validate"
@@ -101,16 +103,19 @@ func generateConnectionOptions(cfg *opts.CLIOptions) (*opts.ConnectionOptions, e
 		//},
 	}
 
-	// We are looking for the individual conn located at: cfg.$action.$backendName.XConn
-	lookupStrings := []string{cfg.Global.XAction, cfg.Global.XBackend, "XConn"}
+	// Some backends have a dash, remove it
+	backendName := strings.Replace(cfg.Global.XBackend, "-", "", 1)
 
-	rvKafkaConn, err := lookup.LookupI(cfg, lookupStrings...)
+	// We are looking for the individual conn located at: cfg.$action.$backendName.XConn
+	lookupStrings := []string{cfg.Global.XAction, backendName, "XConn"}
+
+	backendInterface, err := lookup.LookupI(cfg, lookupStrings...)
 	if err != nil {
-		return nil, fmt.Errorf("unable to lookup connection info for backend '%s': %s",
+		return nil, fmt.Errorf("unable to lookup connection info for backendName '%s': %s",
 			cfg.Global.XBackend, err)
 	}
 
-	conn, ok := opts.GenerateConnOpts(cfg.Global.XBackend, rvKafkaConn.Interface())
+	conn, ok := opts.GenerateConnOpts(backendName, backendInterface.Interface())
 	if !ok {
 		return nil, errors.New("unable to generate connection options via proto func")
 	}
