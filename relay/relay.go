@@ -17,6 +17,7 @@ import (
 	"github.com/batchcorp/collector-schemas/build/go/protos/services"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
+	sqsTypes "github.com/batchcorp/plumber/backends/awssqs/types"
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
 	"github.com/batchcorp/plumber/prometheus"
 )
@@ -329,9 +330,9 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	// TODO: Need to get away from the switch type flow ~ds 09.11.21
 
 	switch v := messages[0].(type) {
-	//case *sqsTypes.RelayMessage:
-	//	r.log.Debugf("flushing %d sqs message(s)", len(messages))
-	//	err = r.handleSQS(ctx, conn, messages)
+	case *sqsTypes.RelayMessage:
+		r.log.Debugf("flushing %d sqs message(s)", len(messages))
+		err = r.handleSQS(ctx, conn, messages)
 	//case *rabbitTypes.RelayMessage:
 	//	r.log.Debugf("flushing %d rabbit message(s)", len(messages))
 	//	err = r.handleRabbit(ctx, conn, messages)
