@@ -18,6 +18,7 @@ import (
 
 	"github.com/batchcorp/schemas/build/go/services"
 
+	postgresTypes "github.com/batchcorp/plumber/backends/cdcpostgres/types"
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
 	"github.com/batchcorp/plumber/prometheus"
 )
@@ -354,9 +355,9 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	//case *rstreamsTypes.RelayMessage:
 	//	r.log.Debugf("flushing %d redis-streams message(s)", len(messages))
 	//	err = r.handleRedisStreams(ctx, conn, messages)
-	//case *postgresTypes.RelayMessage:
-	//	r.log.Debugf("flushing %d cdc-postgres message(s)", len(messages))
-	//	err = r.handleCdcPostgres(ctx, conn, messages)
+	case *postgresTypes.RelayMessage:
+		r.log.Debugf("flushing %d cdc-postgres message(s)", len(messages))
+		err = r.handleCdcPostgres(ctx, conn, messages)
 	//case *mqttTypes.RelayMessage:
 	//	r.log.Debugf("flushing %d mqtt message(s)", len(messages))
 	//	err = r.handleMQTT(ctx, conn, messages)

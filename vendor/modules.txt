@@ -51,6 +51,12 @@ github.com/aws/aws-sdk-go/service/sns/snsiface
 github.com/aws/aws-sdk-go/service/sqs
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
+# github.com/batchcorp/collector-schemas v0.0.5
+## explicit
+github.com/batchcorp/collector-schemas/build/go/protos/common
+github.com/batchcorp/collector-schemas/build/go/protos/events
+github.com/batchcorp/collector-schemas/build/go/protos/records
+github.com/batchcorp/collector-schemas/build/go/protos/services
 # github.com/batchcorp/inferschema v0.0.4
 ## explicit
 github.com/batchcorp/inferschema/jsonschema
