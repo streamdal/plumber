@@ -23,7 +23,7 @@ func (m *MQTT) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh 
 		token := m.client.Publish(writeOpts.Mqtt.Args.Topic, byte(int(m.connArgs.QosLevel)), false, msg.Input)
 
 		if !token.WaitTimeout(timeout) {
-			return fmt.Errorf("timed out attempting to publish message after %s", writeOpts.Mqtt.Args.WriteTimeoutSeconds)
+			return fmt.Errorf("timed out attempting to publish message after %d seconds", writeOpts.Mqtt.Args.WriteTimeoutSeconds)
 		}
 
 		if token.Error() != nil {

@@ -25,7 +25,7 @@ func (m *MQTT) DisplayMessage(msg *records.ReadRecord) error {
 	properties := [][]string{
 		{"ID", fmt.Sprintf("%d", record.Id)},
 		{"Topic", record.Topic},
-		{"QoS", string(record.Qos)},
+		{"QoS", fmt.Sprint(record.Qos)},
 		{"Retain", fmt.Sprintf("%t", record.Duplicate)},
 	}
 
