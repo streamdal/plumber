@@ -9,13 +9,18 @@ import (
 	"strings"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
 func DurationSec(durationSec interface{}) time.Duration {
 	if v, ok := durationSec.(int32); ok {
+		return time.Duration(v) * time.Second
+	}
+
+	if v, ok := durationSec.(uint32); ok {
 		return time.Duration(v) * time.Second
 	}
 

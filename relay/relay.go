@@ -15,10 +15,10 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-
 	"github.com/batchcorp/schemas/build/go/services"
 
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
+	mqttTypes "github.com/batchcorp/plumber/backends/mqtt/types"
 	"github.com/batchcorp/plumber/prometheus"
 )
 
@@ -357,9 +357,9 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	//case *postgresTypes.RelayMessage:
 	//	r.log.Debugf("flushing %d cdc-postgres message(s)", len(messages))
 	//	err = r.handleCdcPostgres(ctx, conn, messages)
-	//case *mqttTypes.RelayMessage:
-	//	r.log.Debugf("flushing %d mqtt message(s)", len(messages))
-	//	err = r.handleMQTT(ctx, conn, messages)
+	case *mqttTypes.RelayMessage:
+		r.log.Debugf("flushing %d mqtt message(s)", len(messages))
+		err = r.handleMQTT(ctx, conn, messages)
 	//case *nsqTypes.RelayMessage:
 	//	r.log.Debugf("flushing %d nsq message(s)", len(messages))
 	//	err = r.handleNSQ(ctx, conn, messages)

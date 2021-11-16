@@ -63,7 +63,7 @@ func (n *Nats) Read(_ context.Context, readOpts *opts.ReadOptions, resultsChan c
 
 func validateReadOptions(writeOpts *opts.ReadOptions) error {
 	if writeOpts == nil {
-		return errors.New("write options cannot be nil")
+		return errors.New("read options cannot be nil")
 	}
 
 	if writeOpts.Nats == nil {
