@@ -49,7 +49,10 @@ func (c *CDCPostgres) Relay(ctx context.Context, relayOpts *opts.RelayOptions, r
 			}
 
 			prometheus.Incr("cdc-postgres-relay-consumer", 1)
-			relayCh <- &types.RelayMessage{Value: record}
+			relayCh <- &types.RelayMessage{
+				Value:   record,
+				Options: &types.RelayMessageOptions{},
+			}
 
 		case pgoutput.Update:
 			record, err := handleUpdate(set, &v, changeRecord)
@@ -58,7 +61,10 @@ func (c *CDCPostgres) Relay(ctx context.Context, relayOpts *opts.RelayOptions, r
 			}
 
 			prometheus.Incr("cdc-postgres-relay-consumer", 1)
-			relayCh <- &types.RelayMessage{Value: record}
+			relayCh <- &types.RelayMessage{
+				Value:   record,
+				Options: &types.RelayMessageOptions{},
+			}
 		case pgoutput.Delete:
 			record, err := handleDelete(set, &v, changeRecord)
 			if err != nil {
@@ -66,7 +72,10 @@ func (c *CDCPostgres) Relay(ctx context.Context, relayOpts *opts.RelayOptions, r
 			}
 
 			prometheus.Incr("cdc-postgres-relay-consumer", 1)
-			relayCh <- &types.RelayMessage{Value: record}
+			relayCh <- &types.RelayMessage{
+				Value:   record,
+				Options: &types.RelayMessageOptions{},
+			}
 		}
 		return nil
 	}

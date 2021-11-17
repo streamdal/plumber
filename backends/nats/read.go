@@ -64,20 +64,20 @@ func (n *Nats) Read(_ context.Context, readOpts *opts.ReadOptions, resultsChan c
 	return nil
 }
 
-func validateReadOptions(writeOpts *opts.ReadOptions) error {
-	if writeOpts == nil {
+func validateReadOptions(readOpts *opts.ReadOptions) error {
+	if readOpts == nil {
 		return errors.New("read options cannot be nil")
 	}
 
-	if writeOpts.Nats == nil {
+	if readOpts.Nats == nil {
 		return validate.ErrEmptyBackendGroup
 	}
 
-	if writeOpts.Nats.Args == nil {
+	if readOpts.Nats.Args == nil {
 		return validate.ErrEmptyBackendArgs
 	}
 
-	if writeOpts.Nats.Args.Subject == "" {
+	if readOpts.Nats.Args.Subject == "" {
 		return ErrMissingSubject
 	}
 

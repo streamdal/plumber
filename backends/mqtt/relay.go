@@ -22,7 +22,8 @@ func (m *MQTT) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh 
 	var readFunc = func(client mqtt.Client, msg mqtt.Message) {
 		prometheus.Incr("mqtt-relay-consumer", 1)
 		relayCh <- &types.RelayMessage{
-			Value: msg,
+			Value:   msg,
+			Options: &types.RelayMessageOptions{},
 		}
 	}
 

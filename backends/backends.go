@@ -3,6 +3,8 @@ package backends
 import (
 	"context"
 
+	azureServicebus "github.com/batchcorp/plumber/backends/azure-servicebus"
+
 	"github.com/batchcorp/plumber/backends/rpubsub"
 
 	"github.com/pkg/errors"
@@ -91,8 +93,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 		be, err = awssqs.New(connOpts)
 	case *opts.ConnectionOptions_Awssns:
 		be, err = awssns.New(connOpts)
-	//case *opts.ConnectionOptions_AzureServiceBus:
-	//	be, err = azure.New(connOpts)
+	case *opts.ConnectionOptions_AzureServiceBus:
+		be, err = azureServicebus.New(connOpts)
 	//case *opts.ConnectionOptions_AzureEventHub:
 	//	be, err = azure_eventhub.New(cfg)
 	case *opts.ConnectionOptions_Mqtt:

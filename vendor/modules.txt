@@ -10,6 +10,43 @@ cloud.google.com/go/pubsub
 cloud.google.com/go/pubsub/apiv1
 cloud.google.com/go/pubsub/internal/distribution
 cloud.google.com/go/pubsub/internal/scheduler
+# github.com/Azure/azure-amqp-common-go/v3 v3.2.1
+github.com/Azure/azure-amqp-common-go/v3
+github.com/Azure/azure-amqp-common-go/v3/aad
+github.com/Azure/azure-amqp-common-go/v3/auth
+github.com/Azure/azure-amqp-common-go/v3/cbs
+github.com/Azure/azure-amqp-common-go/v3/conn
+github.com/Azure/azure-amqp-common-go/v3/internal
+github.com/Azure/azure-amqp-common-go/v3/internal/tracing
+github.com/Azure/azure-amqp-common-go/v3/rpc
+github.com/Azure/azure-amqp-common-go/v3/sas
+github.com/Azure/azure-amqp-common-go/v3/uuid
+# github.com/Azure/azure-service-bus-go v0.11.5
+## explicit
+github.com/Azure/azure-service-bus-go
+github.com/Azure/azure-service-bus-go/atom
+github.com/Azure/azure-service-bus-go/internal
+# github.com/Azure/go-amqp v0.16.4
+github.com/Azure/go-amqp
+github.com/Azure/go-amqp/internal/bitmap
+github.com/Azure/go-amqp/internal/buffer
+github.com/Azure/go-amqp/internal/encoding
+github.com/Azure/go-amqp/internal/frames
+# github.com/Azure/go-autorest v14.2.0+incompatible
+github.com/Azure/go-autorest
+# github.com/Azure/go-autorest/autorest v0.11.18
+github.com/Azure/go-autorest/autorest
+github.com/Azure/go-autorest/autorest/azure
+# github.com/Azure/go-autorest/autorest/adal v0.9.13
+github.com/Azure/go-autorest/autorest/adal
+# github.com/Azure/go-autorest/autorest/date v0.3.0
+github.com/Azure/go-autorest/autorest/date
+# github.com/Azure/go-autorest/autorest/to v0.4.0
+github.com/Azure/go-autorest/autorest/to
+# github.com/Azure/go-autorest/logger v0.2.1
+github.com/Azure/go-autorest/logger
+# github.com/Azure/go-autorest/tracing v0.6.0
+github.com/Azure/go-autorest/tracing
 # github.com/aws/aws-sdk-go v1.34.28
 ## explicit
 github.com/aws/aws-sdk-go/aws
@@ -99,6 +136,8 @@ github.com/coreos/go-semver/semver
 github.com/coreos/go-systemd/v22/journal
 # github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.0-20210816181553-5444fa50b93d
 github.com/decred/dcrd/dcrec/secp256k1/v4
+# github.com/devigned/tab v0.1.1
+github.com/devigned/tab
 # github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f
 github.com/dgryski/go-rendezvous
 # github.com/dustin/go-humanize v1.0.0
@@ -229,6 +268,7 @@ github.com/julienschmidt/httprouter
 github.com/kataras/tablewriter
 # github.com/klauspost/compress v1.13.6
 github.com/klauspost/compress
+github.com/klauspost/compress/flate
 github.com/klauspost/compress/fse
 github.com/klauspost/compress/huff0
 github.com/klauspost/compress/internal/snapref
@@ -302,6 +342,8 @@ github.com/maxbrunsfeld/counterfeiter/v6/generator
 github.com/mcuadros/go-lookup
 # github.com/minio/pkg v1.1.3
 github.com/minio/pkg/wildcard
+# github.com/mitchellh/mapstructure v1.3.3
+github.com/mitchellh/mapstructure
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.1
@@ -714,7 +756,7 @@ go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
 go.uber.org/zap/zapgrpc
-# golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
+# golang.org/x/crypto v0.0.0-20211115234514-b4de73f9ece8
 ## explicit
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
@@ -731,6 +773,8 @@ golang.org/x/crypto/openpgp/errors
 golang.org/x/crypto/openpgp/packet
 golang.org/x/crypto/openpgp/s2k
 golang.org/x/crypto/pbkdf2
+golang.org/x/crypto/pkcs12
+golang.org/x/crypto/pkcs12/internal/rc2
 golang.org/x/crypto/ssh/terminal
 # golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 golang.org/x/lint
@@ -763,8 +807,7 @@ golang.org/x/oauth2/jwt
 # golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c
-## explicit
+# golang.org/x/sys v0.0.0-20211116061358-0a5406a5449c
 golang.org/x/sys/execabs
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
@@ -962,5 +1005,11 @@ gopkg.in/natefinch/lumberjack.v2
 gopkg.in/tomb.v1
 # gopkg.in/yaml.v2 v2.4.0
 gopkg.in/yaml.v2
+# nhooyr.io/websocket v1.8.7
+nhooyr.io/websocket
+nhooyr.io/websocket/internal/bpool
+nhooyr.io/websocket/internal/errd
+nhooyr.io/websocket/internal/wsjs
+nhooyr.io/websocket/internal/xsync
 # sigs.k8s.io/yaml v1.2.0
 sigs.k8s.io/yaml

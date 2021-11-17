@@ -48,7 +48,8 @@ func (k *KubeMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayC
 
 		for _, msg := range response.Messages {
 			relayCh <- &types.RelayMessage{
-				Value: msg,
+				Value:   msg,
+				Options: &types.RelayMessageOptions{},
 			}
 
 			prometheus.Incr("kubemq-queue-relay-consumer", 1)
