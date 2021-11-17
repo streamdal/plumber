@@ -71,10 +71,8 @@ github.com/batchcorp/lucene2x/lexer
 github.com/batchcorp/lucene2x/token
 # github.com/batchcorp/pgoutput v0.3.2
 ## explicit
-# github.com/batchcorp/plumber-schemas v0.0.96
 github.com/batchcorp/pgoutput
-# github.com/batchcorp/plumber-schemas v0.0.93
-# github.com/batchcorp/plumber-schemas v0.0.95
+# github.com/batchcorp/plumber-schemas v0.0.96
 ## explicit
 github.com/batchcorp/plumber-schemas/build/go/protos
 github.com/batchcorp/plumber-schemas/build/go/protos/args
@@ -492,6 +490,7 @@ github.com/youmark/pkcs8
 # go.etcd.io/bbolt v1.3.6
 go.etcd.io/bbolt
 # go.etcd.io/etcd/api/v3 v3.5.0
+## explicit
 go.etcd.io/etcd/api/v3/authpb
 go.etcd.io/etcd/api/v3/etcdserverpb
 go.etcd.io/etcd/api/v3/etcdserverpb/gw
