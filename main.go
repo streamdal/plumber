@@ -66,8 +66,8 @@ func main() {
 
 	// Launch a dedicated goroutine if stats display is enabled
 	if cliOpts.Read != nil && cliOpts.Read.XCliOptions != nil {
-		if cliOpts.Read.XCliOptions.StatsEnable {
-			prometheus.Start(cliOpts.Read.XCliOptions.StatsReportIntervalSec)
+		if cliOpts.Relay.StatsEnable {
+			prometheus.Start(cliOpts.Relay.StatsReportIntervalSec)
 		}
 	}
 

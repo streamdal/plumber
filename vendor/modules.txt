@@ -70,7 +70,7 @@ github.com/batchcorp/lucene2x/lexer
 github.com/batchcorp/lucene2x/token
 # github.com/batchcorp/pgoutput v0.3.2
 ## explicit
-# github.com/batchcorp/plumber-schemas v0.0.93
+# github.com/batchcorp/plumber-schemas v0.0.101
 ## explicit
 github.com/batchcorp/plumber-schemas/build/go/protos
 github.com/batchcorp/plumber-schemas/build/go/protos/args
@@ -126,6 +126,7 @@ github.com/goccy/go-json/internal/runtime
 github.com/gogo/protobuf/gogoproto
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/protoc-gen-gogo/descriptor
+github.com/gogo/protobuf/sortkeys
 # github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da
 github.com/golang/groupcache/lru
 # github.com/golang/protobuf v1.5.2
@@ -208,6 +209,12 @@ github.com/klauspost/compress/huff0
 github.com/klauspost/compress/internal/snapref
 github.com/klauspost/compress/zstd
 github.com/klauspost/compress/zstd/internal/xxhash
+# github.com/kubemq-io/kubemq-go v1.7.2
+## explicit
+github.com/kubemq-io/kubemq-go/pkg/uuid
+github.com/kubemq-io/kubemq-go/queues_stream
+# github.com/kubemq-io/protobuf v1.3.1
+github.com/kubemq-io/protobuf/go
 # github.com/lensesio/tableprinter v0.0.0-20201125135848-89e81fc956e7
 ## explicit
 github.com/lensesio/tableprinter

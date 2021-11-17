@@ -10,7 +10,7 @@ require (
 	github.com/batchcorp/kong v0.2.17-batch-fix
 	github.com/batchcorp/lucene2x v0.0.17
 	github.com/batchcorp/pgoutput v0.3.2 // indirect
-	github.com/batchcorp/plumber-schemas v0.0.93
+	github.com/batchcorp/plumber-schemas v0.0.101
 	github.com/batchcorp/rabbit v0.1.9
 	github.com/batchcorp/schemas v0.2.176
 	github.com/eclipse/paho.mqtt.golang v1.2.0
@@ -22,6 +22,7 @@ require (
 	github.com/json-iterator/go v1.1.11
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/kataras/tablewriter v0.0.0-20180708051242-e063d29b7c23
+	github.com/kubemq-io/kubemq-go v1.7.2
 	github.com/lensesio/tableprinter v0.0.0-20201125135848-89e81fc956e7
 	github.com/lestrrat-go/jwx v1.2.6
 	github.com/linkedin/goavro/v2 v2.9.8

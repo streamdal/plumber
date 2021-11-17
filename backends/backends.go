@@ -11,6 +11,7 @@ import (
 	"github.com/batchcorp/plumber/backends/awssns"
 	"github.com/batchcorp/plumber/backends/cdcmongo"
 	"github.com/batchcorp/plumber/backends/kafka"
+	kubemqQueue "github.com/batchcorp/plumber/backends/kubemq-queue"
 	"github.com/batchcorp/plumber/backends/nats"
 	"github.com/batchcorp/plumber/backends/nsq"
 	"github.com/batchcorp/plumber/backends/rabbitmq"
@@ -110,6 +111,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 		be, err = cdcmongo.New(connOpts)
 	//case *opts.ConnectionOptions_Postgres:
 	//	be, err = cdc_postgres.New(cfg)
+	case *opts.ConnectionOptions_KubemqQueue:
+		be, err = kubemqQueue.New(connOpts)
 	default:
 		return nil, errors.New("unknown backend")
 
