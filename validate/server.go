@@ -43,6 +43,12 @@ var (
 
 	ErrInvalidGithubSchemaType = errors.New("only protobuf and avro schemas can be imported from github")
 	ErrSchemaNotFound          = errors.New("schema does not exist")
+
+	// Composite views
+
+	ErrMissingComposite  = errors.New("composite cannot be empty")
+	ErrCompositeReadIDs  = errors.New("you must specify at least 2 read IDs for a composite view")
+	ErrCompositeNotFound = errors.New("composite view does not exist")
 )
 
 func ReadOptionsForServer(readOptions *opts.ReadOptions) error {
@@ -199,6 +205,18 @@ func EncodeOptionsForServer(encodeOptions *encoding.EncodeOptions) error {
 	}
 
 	// TODO: Implement specific encode validations
+
+	return nil
+}
+
+func CompositeOptionsForServer(comp *opts.Composite) error {
+	if comp == nil {
+		return ErrMissingComposite
+	}
+
+	if len(comp.ReadIds) < 2 {
+		return ErrCompositeReadIDs
+	}
 
 	return nil
 }

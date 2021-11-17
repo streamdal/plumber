@@ -49,6 +49,7 @@ github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
 github.com/aws/aws-sdk-go/service/sns
 github.com/aws/aws-sdk-go/service/sns/snsiface
 github.com/aws/aws-sdk-go/service/sqs
+github.com/aws/aws-sdk-go/service/sqs/sqsiface
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
 # github.com/batchcorp/collector-schemas v0.0.5
@@ -70,6 +71,7 @@ github.com/batchcorp/lucene2x/lexer
 github.com/batchcorp/lucene2x/token
 # github.com/batchcorp/pgoutput v0.3.2
 ## explicit
+github.com/batchcorp/pgoutput
 # github.com/batchcorp/plumber-schemas v0.0.100
 ## explicit
 github.com/batchcorp/plumber-schemas/build/go/protos
@@ -89,7 +91,7 @@ github.com/batchcorp/schemas/build/go/events/metrics
 github.com/batchcorp/schemas/build/go/events/tasks
 # github.com/beorn7/perks v1.0.1
 github.com/beorn7/perks/quantile
-# github.com/cespare/xxhash/v2 v2.1.1
+# github.com/cespare/xxhash/v2 v2.1.2
 github.com/cespare/xxhash/v2
 # github.com/coreos/go-semver v0.3.0
 github.com/coreos/go-semver/semver
@@ -97,6 +99,8 @@ github.com/coreos/go-semver/semver
 github.com/coreos/go-systemd/v22/journal
 # github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.0-20210816181553-5444fa50b93d
 github.com/decred/dcrd/dcrec/secp256k1/v4
+# github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f
+github.com/dgryski/go-rendezvous
 # github.com/dustin/go-humanize v1.0.0
 github.com/dustin/go-humanize
 # github.com/eclipse/paho.mqtt.golang v1.2.0
@@ -110,6 +114,16 @@ github.com/fatih/color
 github.com/form3tech-oss/jwt-go
 # github.com/fsnotify/fsnotify v1.4.9
 github.com/fsnotify/fsnotify
+# github.com/go-redis/redis/v8 v8.11.4
+## explicit
+github.com/go-redis/redis/v8
+github.com/go-redis/redis/v8/internal
+github.com/go-redis/redis/v8/internal/hashtag
+github.com/go-redis/redis/v8/internal/hscan
+github.com/go-redis/redis/v8/internal/pool
+github.com/go-redis/redis/v8/internal/proto
+github.com/go-redis/redis/v8/internal/rand
+github.com/go-redis/redis/v8/internal/util
 # github.com/go-stack/stack v1.8.0
 github.com/go-stack/stack
 # github.com/goccy/go-json v0.7.6
@@ -159,7 +173,7 @@ github.com/google/go-cmp/cmp/internal/value
 github.com/google/go-github/v37/github
 # github.com/google/go-querystring v1.0.0
 github.com/google/go-querystring/query
-# github.com/google/uuid v1.1.2
+# github.com/google/uuid v1.2.0
 ## explicit
 github.com/google/uuid
 # github.com/googleapis/gax-go/v2 v2.0.5
@@ -177,6 +191,14 @@ github.com/grpc-ecosystem/grpc-gateway/utilities
 # github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
 ## explicit
 github.com/hokaccha/go-prettyjson
+# github.com/jackc/pgx v3.2.0+incompatible
+## explicit
+github.com/jackc/pgx
+github.com/jackc/pgx/chunkreader
+github.com/jackc/pgx/internal/sanitize
+github.com/jackc/pgx/pgio
+github.com/jackc/pgx/pgproto3
+github.com/jackc/pgx/pgtype
 # github.com/jhump/protoreflect v1.10.1
 ## explicit
 github.com/jhump/protoreflect/codec
@@ -361,6 +383,12 @@ github.com/prometheus/common/model
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
+# github.com/rabbitmq/rabbitmq-stream-go-client v0.1.0-beta
+## explicit
+github.com/rabbitmq/rabbitmq-stream-go-client/pkg/amqp
+github.com/rabbitmq/rabbitmq-stream-go-client/pkg/logs
+github.com/rabbitmq/rabbitmq-stream-go-client/pkg/message
+github.com/rabbitmq/rabbitmq-stream-go-client/pkg/stream
 # github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d
 ## explicit
 github.com/relistan/go-director
@@ -471,6 +499,7 @@ github.com/youmark/pkcs8
 # go.etcd.io/bbolt v1.3.6
 go.etcd.io/bbolt
 # go.etcd.io/etcd/api/v3 v3.5.0
+## explicit
 go.etcd.io/etcd/api/v3/authpb
 go.etcd.io/etcd/api/v3/etcdserverpb
 go.etcd.io/etcd/api/v3/etcdserverpb/gw
@@ -782,6 +811,7 @@ golang.org/x/tools/internal/typesinternal
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
 # google.golang.org/api v0.29.0
+## explicit
 google.golang.org/api/internal
 google.golang.org/api/iterator
 google.golang.org/api/option

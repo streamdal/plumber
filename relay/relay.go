@@ -17,8 +17,12 @@ import (
 	"github.com/batchcorp/collector-schemas/build/go/protos/services"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
+	sqsTypes "github.com/batchcorp/plumber/backends/awssqs/types"
+	postgresTypes "github.com/batchcorp/plumber/backends/cdcpostgres/types"
+	gcpTypes "github.com/batchcorp/plumber/backends/gcppubsub/types"
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
 	mqttTypes "github.com/batchcorp/plumber/backends/mqtt/types"
+	rstreamsTypes "github.com/batchcorp/plumber/backends/rstreams/types"
 	"github.com/batchcorp/plumber/prometheus"
 )
 
@@ -330,9 +334,9 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	// TODO: Need to get away from the switch type flow ~ds 09.11.21
 
 	switch v := messages[0].(type) {
-	//case *sqsTypes.RelayMessage:
-	//	r.log.Debugf("flushing %d sqs message(s)", len(messages))
-	//	err = r.handleSQS(ctx, conn, messages)
+	case *sqsTypes.RelayMessage:
+		r.log.Debugf("flushing %d sqs message(s)", len(messages))
+		err = r.handleSQS(ctx, conn, messages)
 	//case *rabbitTypes.RelayMessage:
 	//	r.log.Debugf("flushing %d rabbit message(s)", len(messages))
 	//	err = r.handleRabbit(ctx, conn, messages)
@@ -342,24 +346,24 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	//case *azureTypes.RelayMessage:
 	//	r.log.Debugf("flushing %d azure message(s)", len(messages))
 	//	err = r.handleAzure(ctx, conn, messages)
-	//case *gcpTypes.RelayMessage:
-	//	r.log.Debugf("flushing %d gcp message(s)", len(messages))
-	//	err = r.handleGCP(ctx, conn, messages)
+	case *gcpTypes.RelayMessage:
+		r.log.Debugf("flushing %d gcp message(s)", len(messages))
+		err = r.handleGCP(ctx, conn, messages)
 	//case *mongoTypes.RelayMessage:
 	//	r.log.Debugf("flushing %d mongo message(s)", len(messages))
 	//	err = r.handleCDCMongo(ctx, conn, messages)
 	//case *redisTypes.RelayMessage:
 	//	r.log.Debugf("flushing %d redis-pubsub message(s)", len(messages))
 	//	err = r.handleRedisPubSub(ctx, conn, messages)
-	//case *rstreamsTypes.RelayMessage:
-	//	r.log.Debugf("flushing %d redis-streams message(s)", len(messages))
-	//	err = r.handleRedisStreams(ctx, conn, messages)
-	//case *postgresTypes.RelayMessage:
-	//	r.log.Debugf("flushing %d cdc-postgres message(s)", len(messages))
-	//	err = r.handleCdcPostgres(ctx, conn, messages)
 	case *mqttTypes.RelayMessage:
 		r.log.Debugf("flushing %d mqtt message(s)", len(messages))
 		err = r.handleMQTT(ctx, conn, messages)
+	case *rstreamsTypes.RelayMessage:
+		r.log.Debugf("flushing %d redis-streams message(s)", len(messages))
+		err = r.handleRedisStreams(ctx, conn, messages)
+	case *postgresTypes.RelayMessage:
+		r.log.Debugf("flushing %d cdc-postgres message(s)", len(messages))
+		err = r.handleCdcPostgres(ctx, conn, messages)
 	//case *nsqTypes.RelayMessage:
 	//	r.log.Debugf("flushing %d nsq message(s)", len(messages))
 	//	err = r.handleNSQ(ctx, conn, messages)

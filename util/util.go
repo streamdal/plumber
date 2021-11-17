@@ -80,11 +80,9 @@ func WriteError(l *logrus.Entry, errorCh chan *records.ErrorRecord, err error) {
 	}
 
 	if errorCh != nil {
-		go func() {
-			errorCh <- &records.ErrorRecord{
-				OccurredAtUnixTsUtc: time.Now().UTC().UnixNano(),
-				Error:               err.Error(),
-			}
-		}()
+		errorCh <- &records.ErrorRecord{
+			OccurredAtUnixTsUtc: time.Now().UTC().UnixNano(),
+			Error:               err.Error(),
+		}
 	}
 }
