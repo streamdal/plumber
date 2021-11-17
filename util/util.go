@@ -86,3 +86,53 @@ func WriteError(l *logrus.Entry, errorCh chan *records.ErrorRecord, err error) {
 		}
 	}
 }
+
+func MapInterfaceToString(input map[string]interface{}) map[string]string {
+	out := make(map[string]string)
+
+	for k, v := range input {
+		out[k] = fmt.Sprintf("%v", v)
+	}
+
+	return out
+}
+
+func DerefTime(t *time.Time) int64 {
+	if t == nil {
+		return 0
+	}
+
+	return t.UTC().Unix()
+}
+
+func DerefUint32(v *uint32) uint32 {
+	if v == nil {
+		return 0
+	}
+
+	return *v
+}
+
+func DerefString(s *string) string {
+	if s == nil {
+		return ""
+	}
+
+	return *s
+}
+
+func DerefInt64(v *int64) int64 {
+	if v == nil {
+		return 0
+	}
+
+	return *v
+}
+
+func DerefInt16(v *int16) int16 {
+	if v == nil {
+		return 0
+	}
+
+	return *v
+}

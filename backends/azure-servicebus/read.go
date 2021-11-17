@@ -3,17 +3,17 @@ package azure_servicebus
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"time"
 
 	servicebus "github.com/Azure/azure-service-bus-go"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
+	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/validate"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-
-	"github.com/batchcorp/plumber/validate"
 )
 
 func (a *AzureServiceBus) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan chan *records.ReadRecord, errorChan chan *records.ErrorRecord) error {
@@ -45,8 +45,8 @@ func (a *AzureServiceBus) Read(ctx context.Context, readOpts *opts.ReadOptions, 
 					CorrelationId:    msg.CorrelationID,
 					Value:            msg.Data,
 					DeliveryCount:    msg.DeliveryCount,
-					SessionId:        derefString(msg.SessionID),
-					GroupSequence:    derefUint32(msg.GroupSequence),
+					SessionId:        util.DerefString(msg.SessionID),
+					GroupSequence:    util.DerefUint32(msg.GroupSequence),
 					Id:               msg.ID,
 					Label:            msg.Label,
 					ReplyTo:          msg.ReplyTo,
@@ -55,7 +55,7 @@ func (a *AzureServiceBus) Read(ctx context.Context, readOpts *opts.ReadOptions, 
 					Ttl:              int64(msg.TTL.Seconds()),
 					LockToken:        msg.LockToken.String(),
 					SystemProperties: makeSystemProperties(msg.SystemProperties),
-					UserProperties:   mapInterfaceToString(msg.UserProperties),
+					UserProperties:   util.MapInterfaceToString(msg.UserProperties),
 					Format:           msg.Format,
 				},
 			},
@@ -82,15 +82,15 @@ func makeSystemProperties(p *servicebus.SystemProperties) *records.AzureSystemPr
 
 	return &records.AzureSystemProperties{
 		LockedUntil:            p.LockedUntil.Unix(),
-		SequenceNumber:         derefInt64(p.SequenceNumber),
-		PartitionId:            int32(derefInt16(p.PartitionID)),
-		PartitionKey:           derefString(p.PartitionKey),
-		EnqueuedTime:           derefTime(p.EnqueuedTime),
-		DeadLetterSource:       derefString(p.DeadLetterSource),
-		ScheduledEnqueueTime:   derefTime(p.ScheduledEnqueueTime),
-		EnqueuedSequenceNumber: derefInt64(p.EnqueuedSequenceNumber),
-		ViaPartitionKey:        derefString(p.ViaPartitionKey),
-		Annotations:            mapInterfaceToString(p.Annotations),
+		SequenceNumber:         util.DerefInt64(p.SequenceNumber),
+		PartitionId:            int32(util.DerefInt16(p.PartitionID)),
+		PartitionKey:           util.DerefString(p.PartitionKey),
+		EnqueuedTime:           util.DerefTime(p.EnqueuedTime),
+		DeadLetterSource:       util.DerefString(p.DeadLetterSource),
+		ScheduledEnqueueTime:   util.DerefTime(p.ScheduledEnqueueTime),
+		EnqueuedSequenceNumber: util.DerefInt64(p.EnqueuedSequenceNumber),
+		ViaPartitionKey:        util.DerefString(p.ViaPartitionKey),
+		Annotations:            util.MapInterfaceToString(p.Annotations),
 	}
 }
 
@@ -136,64 +136,6 @@ func (a *AzureServiceBus) readTopic(ctx context.Context, handler servicebus.Hand
 	}
 
 	return nil
-}
-
-func mapInterfaceToString(input map[string]interface{}) map[string]string {
-	out := make(map[string]string)
-
-	for k, v := range input {
-		out[k] = fmt.Sprintf("%v", v)
-	}
-
-	return out
-}
-
-func derefTime(t *time.Time) int64 {
-	if t == nil {
-		return 0
-	}
-
-	return t.UTC().Unix()
-}
-
-func derefUint32(v *uint32) uint32 {
-	if v == nil {
-		return 0
-	}
-
-	return *v
-}
-
-func derefString(s *string) string {
-	if s == nil {
-		return ""
-	}
-
-	return *s
-}
-
-func derefInt64(v *int64) int64 {
-	if v == nil {
-		return 0
-	}
-
-	return *v
-}
-
-func derefInt32(v *int32) int32 {
-	if v == nil {
-		return 0
-	}
-
-	return *v
-}
-
-func derefInt16(v *int16) int16 {
-	if v == nil {
-		return 0
-	}
-
-	return *v
 }
 
 func validateReadOptions(readOpts *opts.ReadOptions) error {

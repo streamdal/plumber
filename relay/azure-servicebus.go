@@ -3,15 +3,15 @@ package relay
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"google.golang.org/grpc"
 
+	"github.com/batchcorp/plumber/backends/azure-servicebus/types"
+	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/validate"
+
 	"github.com/batchcorp/collector-schemas/build/go/protos/records"
 	"github.com/batchcorp/collector-schemas/build/go/protos/services"
-
-	"github.com/batchcorp/plumber/backends/azure-servicebus/types"
-	"github.com/batchcorp/plumber/validate"
 )
 
 func (r *Relay) handleAzure(ctx context.Context, conn *grpc.ClientConn, messages []interface{}) error {
@@ -56,38 +56,6 @@ func convertMapStringInterface(p map[string]interface{}) map[string]string {
 	return props
 }
 
-func derefTime(t *time.Time) int64 {
-	if t == nil {
-		return int64(0)
-	}
-
-	return t.UnixNano()
-}
-
-func derefString(s *string) string {
-	if s != nil {
-		return *s
-	}
-
-	return ""
-}
-
-func derefInt16(i *int16) int16 {
-	if i != nil {
-		return *i
-	}
-
-	return 0
-}
-
-func derefInt64(i *int64) int64 {
-	if i != nil {
-		return *i
-	}
-
-	return 0
-}
-
 func (r *Relay) convertMessagesToAzureSinkRecords(messages []interface{}) ([]*records.AzureSinkRecord, error) {
 	sinkRecords := make([]*records.AzureSinkRecord, 0)
 
@@ -121,15 +89,15 @@ func (r *Relay) convertMessagesToAzureSinkRecords(messages []interface{}) ([]*re
 
 		if relayMessage.Value.SystemProperties != nil {
 			r.SystemProperties = &records.AzureSystemProperties{
-				LockedUntil:            derefTime(relayMessage.Value.SystemProperties.LockedUntil),
-				SequenceNumber:         derefInt64(relayMessage.Value.SystemProperties.SequenceNumber),
-				PartitionId:            int32(derefInt16(relayMessage.Value.SystemProperties.PartitionID)),
-				PartitionKey:           derefString(relayMessage.Value.SystemProperties.PartitionKey),
-				EnqueuedTime:           derefTime(relayMessage.Value.SystemProperties.EnqueuedTime),
-				DeadLetterSource:       derefString(relayMessage.Value.SystemProperties.DeadLetterSource),
-				ScheduledEnqueueTime:   derefTime(relayMessage.Value.SystemProperties.ScheduledEnqueueTime),
-				EnqueuedSequenceNumber: derefInt64(relayMessage.Value.SystemProperties.EnqueuedSequenceNumber),
-				ViaPartitionKey:        derefString(relayMessage.Value.SystemProperties.ViaPartitionKey),
+				LockedUntil:            util.DerefTime(relayMessage.Value.SystemProperties.LockedUntil),
+				SequenceNumber:         util.DerefInt64(relayMessage.Value.SystemProperties.SequenceNumber),
+				PartitionId:            int32(util.DerefInt16(relayMessage.Value.SystemProperties.PartitionID)),
+				PartitionKey:           util.DerefString(relayMessage.Value.SystemProperties.PartitionKey),
+				EnqueuedTime:           util.DerefTime(relayMessage.Value.SystemProperties.EnqueuedTime),
+				DeadLetterSource:       util.DerefString(relayMessage.Value.SystemProperties.DeadLetterSource),
+				ScheduledEnqueueTime:   util.DerefTime(relayMessage.Value.SystemProperties.ScheduledEnqueueTime),
+				EnqueuedSequenceNumber: util.DerefInt64(relayMessage.Value.SystemProperties.EnqueuedSequenceNumber),
+				ViaPartitionKey:        util.DerefString(relayMessage.Value.SystemProperties.ViaPartitionKey),
 				Annotations:            convertMapStringInterface(relayMessage.Value.SystemProperties.Annotations),
 			}
 		}
