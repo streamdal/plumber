@@ -20,6 +20,7 @@ import (
 	"github.com/batchcorp/plumber/embed/etcd"
 	"github.com/batchcorp/plumber/github"
 	"github.com/batchcorp/plumber/stats"
+	"github.com/batchcorp/plumber/uierrors"
 	"github.com/batchcorp/plumber/validate"
 	"github.com/batchcorp/plumber/vcservice"
 )
@@ -30,6 +31,7 @@ type Server struct {
 	VCService        vcservice.IVCService
 	GithubService    github.IGithub
 	StatsService     stats.IStats
+	ErrorsService    uierrors.IUIErrors
 	Etcd             etcd.IEtcd
 	Log              *logrus.Entry
 	CLIOptions       *opts.CLIOptions

@@ -9,7 +9,9 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/backends/awssns"
+	"github.com/batchcorp/plumber/backends/awssqs"
 	"github.com/batchcorp/plumber/backends/cdcmongo"
+	"github.com/batchcorp/plumber/backends/cdcpostgres"
 	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/backends/nats"
 	"github.com/batchcorp/plumber/backends/nsq"
@@ -78,39 +80,39 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 	case *opts.ConnectionOptions_Kafka:
 		be, err = kafka.New(connOpts)
 	//case *opts.ConnectionOptions_ActiveMq:
-	//	be, err = activemq.New(cfg)
-	//case *opts.ConnectionOptions_Awssqs:
-	//	be, err = awssqs.New(cfg)
+	//	be, err = activemq.New(connOpts)
+	case *opts.ConnectionOptions_Awssqs:
+		be, err = awssqs.New(connOpts)
 	case *opts.ConnectionOptions_Awssns:
 		be, err = awssns.New(connOpts)
 	//case *opts.ConnectionOptions_AzureServiceBus:
-	//	be, err = azure.New(cfg)
+	//	be, err = azure.New(connOpts)
 	//case *opts.ConnectionOptions_AzureEventHub:
-	//	be, err = azure_eventhub.New(cfg)
+	//	be, err = azure_eventhub.New(connOpts)
 	//case *opts.ConnectionOptions_GcpPubsub:
-	//	be, err = gcppubsub.New(cfg)
+	//	be, err = gcppubsub.New(connOpts)
 	//case *opts.ConnectionOptions_Mqtt:
-	//	be, err = mqtt.New(cfg)
+	//	be, err = mqtt.New(connOpts)
 	case *opts.ConnectionOptions_Nats:
 		be, err = nats.New(connOpts)
 	//case *opts.ConnectionOptions_NatsStreaming:
-	//	be, err = nats_streaming.New(cfg)
+	//	be, err = nats_streaming.New(connOpts)
 	case *opts.ConnectionOptions_Nsq:
 		be, err = nsq.New(connOpts)
 	//case *opts.ConnectionOptions_Pulsar:
-	//	be, err = pulsar.New(cfg)
+	//	be, err = pulsar.New(connOpts)
 	case *opts.ConnectionOptions_Rabbit:
 		be, err = rabbitmq.New(connOpts)
 	//case *opts.ConnectionOptions_RabbitStreams:
-	//	be, err = rabbitmq_streams.New(cfg)
+	//	be, err = rabbitmq_streams.New(connOpts)
 	//case *opts.ConnectionOptions_RedisPubsub:
 	//	be, err = rpubsub.New(cfg)
 	case *opts.ConnectionOptions_RedisStreams:
 		be, err = rstreams.New(connOpts)
 	case *opts.ConnectionOptions_Mongo:
 		be, err = cdcmongo.New(connOpts)
-	//case *opts.ConnectionOptions_Postgres:
-	//	be, err = cdc_postgres.New(cfg)
+	case *opts.ConnectionOptions_Postgres:
+		be, err = cdcpostgres.New(connOpts)
 	default:
 		return nil, errors.New("unknown backend")
 
