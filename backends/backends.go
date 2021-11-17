@@ -12,6 +12,7 @@ import (
 	"github.com/batchcorp/plumber/backends/awssqs"
 	"github.com/batchcorp/plumber/backends/cdcmongo"
 	"github.com/batchcorp/plumber/backends/cdcpostgres"
+	"github.com/batchcorp/plumber/backends/gcppubsub"
 	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/backends/nats"
 	"github.com/batchcorp/plumber/backends/nsq"
@@ -88,9 +89,9 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 	//case *opts.ConnectionOptions_AzureServiceBus:
 	//	be, err = azure.New(connOpts)
 	//case *opts.ConnectionOptions_AzureEventHub:
-	//	be, err = azure_eventhub.New(connOpts)
-	//case *opts.ConnectionOptions_GcpPubsub:
-	//	be, err = gcppubsub.New(connOpts)
+	//	be, err = azure_eventhub.New(cfg)
+	case *opts.ConnectionOptions_GcpPubsub:
+		be, err = gcppubsub.New(connOpts)
 	//case *opts.ConnectionOptions_Mqtt:
 	//	be, err = mqtt.New(connOpts)
 	case *opts.ConnectionOptions_Nats:

@@ -19,6 +19,7 @@ import (
 
 	sqsTypes "github.com/batchcorp/plumber/backends/awssqs/types"
 	postgresTypes "github.com/batchcorp/plumber/backends/cdcpostgres/types"
+	gcpTypes "github.com/batchcorp/plumber/backends/gcppubsub/types"
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
 	rstreamsTypes "github.com/batchcorp/plumber/backends/rstreams/types"
 	"github.com/batchcorp/plumber/prometheus"
@@ -344,9 +345,9 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	//case *azureTypes.RelayMessage:
 	//	r.log.Debugf("flushing %d azure message(s)", len(messages))
 	//	err = r.handleAzure(ctx, conn, messages)
-	//case *gcpTypes.RelayMessage:
-	//	r.log.Debugf("flushing %d gcp message(s)", len(messages))
-	//	err = r.handleGCP(ctx, conn, messages)
+	case *gcpTypes.RelayMessage:
+		r.log.Debugf("flushing %d gcp message(s)", len(messages))
+		err = r.handleGCP(ctx, conn, messages)
 	//case *mongoTypes.RelayMessage:
 	//	r.log.Debugf("flushing %d mongo message(s)", len(messages))
 	//	err = r.handleCDCMongo(ctx, conn, messages)
