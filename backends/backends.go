@@ -14,6 +14,7 @@ import (
 	"github.com/batchcorp/plumber/backends/cdcpostgres"
 	"github.com/batchcorp/plumber/backends/gcppubsub"
 	"github.com/batchcorp/plumber/backends/kafka"
+	kubemqQueue "github.com/batchcorp/plumber/backends/kubemq-queue"
 	"github.com/batchcorp/plumber/backends/mqtt"
 	"github.com/batchcorp/plumber/backends/nats"
 	"github.com/batchcorp/plumber/backends/nsq"
@@ -116,6 +117,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 		be, err = rstreams.New(connOpts)
 	case *opts.ConnectionOptions_Mongo:
 		be, err = cdcmongo.New(connOpts)
+	case *opts.ConnectionOptions_KubemqQueue:
+		be, err = kubemqQueue.New(connOpts)
 	case *opts.ConnectionOptions_Postgres:
 		be, err = cdcpostgres.New(connOpts)
 	default:

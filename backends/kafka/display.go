@@ -6,12 +6,13 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/types"
 	"github.com/logrusorgru/aurora"
 	"github.com/pkg/errors"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
 	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber/types"
 )
 
 func (k *Kafka) DisplayMessage(msg *records.ReadRecord) error {

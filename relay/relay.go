@@ -21,6 +21,7 @@ import (
 	postgresTypes "github.com/batchcorp/plumber/backends/cdcpostgres/types"
 	gcpTypes "github.com/batchcorp/plumber/backends/gcppubsub/types"
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
+	kubemqTypes "github.com/batchcorp/plumber/backends/kubemq-queue/types"
 	mqttTypes "github.com/batchcorp/plumber/backends/mqtt/types"
 	rstreamsTypes "github.com/batchcorp/plumber/backends/rstreams/types"
 	"github.com/batchcorp/plumber/prometheus"
@@ -334,6 +335,9 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	// TODO: Need to get away from the switch type flow ~ds 09.11.21
 
 	switch v := messages[0].(type) {
+	case *kubemqTypes.RelayMessage:
+		r.log.Debugf("flushing %d kubemq message(s)", len(messages))
+		err = r.handleKubeMQ(ctx, conn, messages)
 	case *sqsTypes.RelayMessage:
 		r.log.Debugf("flushing %d sqs message(s)", len(messages))
 		err = r.handleSQS(ctx, conn, messages)
