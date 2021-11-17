@@ -122,6 +122,8 @@ func (p *Plumber) runServer() error {
 		//}
 	}
 
+	println(p.PersistentConfig.VCServiceToken)
+
 	ghService, err := github.New()
 	if err != nil {
 		return errors.Wrap(err, "unable to start GitHub service")
