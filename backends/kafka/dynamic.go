@@ -71,15 +71,15 @@ func validateDynamicOptions(dynamicOpts *opts.DynamicOptions) error {
 	}
 
 	if dynamicOpts.Kafka == nil {
-		return errors.New("kafka options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if dynamicOpts.Kafka.Args == nil {
-		return errors.New("kafka args cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	if len(dynamicOpts.Kafka.Args.Topics) == 0 {
-		return errors.New("at least one topic must be provided as an arg")
+		return ErrMissingTopic
 	}
 
 	return nil

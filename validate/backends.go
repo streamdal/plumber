@@ -10,6 +10,11 @@ var (
 	ErrMissingConnCfg  = errors.New("connection object in connection config cannot be nil")
 	ErrMissingConnArgs = errors.New("connection config args cannot be nil")
 
+	// Relay / Display
+
+	ErrMissingMsg      = errors.New("msg cannot be nil")
+	ErrMissingMsgValue = errors.New("msg.Value cannot be nil")
+
 	// Read
 
 	// Write

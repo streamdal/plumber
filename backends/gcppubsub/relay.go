@@ -38,7 +38,8 @@ func (g *GCPPubSub) Relay(ctx context.Context, relayOpts *opts.RelayOptions, rel
 		g.log.Debug("Writing message to relay channel")
 
 		relayCh <- &types.RelayMessage{
-			Value: msg,
+			Value:   msg,
+			Options: &types.RelayMessageOptions{},
 		}
 	}
 
