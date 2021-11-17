@@ -21,6 +21,7 @@ import (
 	postgresTypes "github.com/batchcorp/plumber/backends/cdcpostgres/types"
 	gcpTypes "github.com/batchcorp/plumber/backends/gcppubsub/types"
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
+	mqttTypes "github.com/batchcorp/plumber/backends/mqtt/types"
 	rstreamsTypes "github.com/batchcorp/plumber/backends/rstreams/types"
 	"github.com/batchcorp/plumber/prometheus"
 )
@@ -354,15 +355,15 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	//case *redisTypes.RelayMessage:
 	//	r.log.Debugf("flushing %d redis-pubsub message(s)", len(messages))
 	//	err = r.handleRedisPubSub(ctx, conn, messages)
+	case *mqttTypes.RelayMessage:
+		r.log.Debugf("flushing %d mqtt message(s)", len(messages))
+		err = r.handleMQTT(ctx, conn, messages)
 	case *rstreamsTypes.RelayMessage:
 		r.log.Debugf("flushing %d redis-streams message(s)", len(messages))
 		err = r.handleRedisStreams(ctx, conn, messages)
 	case *postgresTypes.RelayMessage:
 		r.log.Debugf("flushing %d cdc-postgres message(s)", len(messages))
 		err = r.handleCdcPostgres(ctx, conn, messages)
-	//case *mqttTypes.RelayMessage:
-	//	r.log.Debugf("flushing %d mqtt message(s)", len(messages))
-	//	err = r.handleMQTT(ctx, conn, messages)
 	//case *nsqTypes.RelayMessage:
 	//	r.log.Debugf("flushing %d nsq message(s)", len(messages))
 	//	err = r.handleNSQ(ctx, conn, messages)

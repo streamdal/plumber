@@ -20,6 +20,10 @@ func DurationSec(durationSec interface{}) time.Duration {
 		return time.Duration(v) * time.Second
 	}
 
+	if v, ok := durationSec.(uint32); ok {
+		return time.Duration(v) * time.Second
+	}
+
 	if v, ok := durationSec.(int64); ok {
 		return time.Duration(v) * time.Second
 	}
