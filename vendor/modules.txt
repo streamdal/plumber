@@ -51,6 +51,12 @@ github.com/aws/aws-sdk-go/service/sns/snsiface
 github.com/aws/aws-sdk-go/service/sqs
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
+# github.com/batchcorp/collector-schemas v0.0.5
+## explicit
+github.com/batchcorp/collector-schemas/build/go/protos/common
+github.com/batchcorp/collector-schemas/build/go/protos/events
+github.com/batchcorp/collector-schemas/build/go/protos/records
+github.com/batchcorp/collector-schemas/build/go/protos/services
 # github.com/batchcorp/inferschema v0.0.4
 ## explicit
 github.com/batchcorp/inferschema/jsonschema
@@ -64,7 +70,7 @@ github.com/batchcorp/lucene2x/lexer
 github.com/batchcorp/lucene2x/token
 # github.com/batchcorp/pgoutput v0.3.2
 ## explicit
-# github.com/batchcorp/plumber-schemas v0.0.92
+# github.com/batchcorp/plumber-schemas v0.0.93
 ## explicit
 github.com/batchcorp/plumber-schemas/build/go/protos
 github.com/batchcorp/plumber-schemas/build/go/protos/args
@@ -75,14 +81,12 @@ github.com/batchcorp/plumber-schemas/build/go/protos/records
 # github.com/batchcorp/rabbit v0.1.9
 ## explicit
 github.com/batchcorp/rabbit
-# github.com/batchcorp/schemas v0.2.157
+# github.com/batchcorp/schemas v0.2.176
 ## explicit
 github.com/batchcorp/schemas/build/go/events
 github.com/batchcorp/schemas/build/go/events/destinations
 github.com/batchcorp/schemas/build/go/events/metrics
-github.com/batchcorp/schemas/build/go/events/records
 github.com/batchcorp/schemas/build/go/events/tasks
-github.com/batchcorp/schemas/build/go/services
 # github.com/beorn7/perks v1.0.1
 github.com/beorn7/perks/quantile
 # github.com/cespare/xxhash/v2 v2.1.1

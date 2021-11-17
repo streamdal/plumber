@@ -45,8 +45,6 @@ func (s *Server) beginRead(ctx context.Context, r *types.Read) {
 	})
 
 	go func() {
-		// Notify the end user since this runs in a goroutine.
-		// TODO: we should test read on CreateRead()
 		if err := r.Backend.Read(ctx, r.ReadOptions, resultsCh, errorCh); err != nil {
 			errorCh <- &records.ErrorRecord{
 				OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
@@ -105,7 +103,11 @@ MAIN:
 			r.AttachedClientsMutex.RUnlock()
 		case errRecord := <-errorCh:
 			r.Log.Errorf("IMPORTANT: Received an error from reader: %+v", errRecord)
-			// TODO: Send the error somehow to client
+			s.ErrorsService.AddError(&protos.ErrorMessage{
+				Resource:   "read",
+				ResourceId: r.ReadOptions.XId,
+				Error:      errRecord.Error,
+			})
 		case <-r.ContextCxl.Done():
 			r.Log.Info("Read stopped")
 			break MAIN

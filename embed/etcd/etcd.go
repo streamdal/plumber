@@ -30,6 +30,7 @@ import (
 const (
 	BroadcastPath          = "/bus/broadcast"
 	QueuePath              = "/bus/queue"
+	CacheErrorsPrefix      = "/plumber-server/error-messages"
 	CacheConnectionsPrefix = "/plumber-server/connections"
 	CacheSchemasPrefix     = "/plumber-server/schemas"
 	CacheRelaysPrefix      = "/plumber-server/relay"
@@ -47,7 +48,9 @@ type IEtcd interface {
 	// client methods
 
 	Get(ctx context.Context, key string, opts ...clientv3.OpOption) (*clientv3.GetResponse, error)
+	GrantLease(ctx context.Context, ttl int64) (*clientv3.LeaseGrantResponse, error)
 	Put(ctx context.Context, key, val string, opts ...clientv3.OpOption) (*clientv3.PutResponse, error)
+	PutWithTTL(ctx context.Context, key, val string, expires time.Duration) (*clientv3.PutResponse, error)
 	Delete(ctx context.Context, key string, opts ...clientv3.OpOption) (*clientv3.DeleteResponse, error)
 
 	// Server methods
@@ -429,8 +432,21 @@ func (e *Etcd) Put(ctx context.Context, key, val string, opts ...clientv3.OpOpti
 	return e.client.Put(ctx, key, val, opts...)
 }
 
+func (e *Etcd) PutWithTTL(ctx context.Context, key, val string, expires time.Duration) (*clientv3.PutResponse, error) {
+	lease, err := e.GrantLease(ctx, int64(expires.Seconds()))
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create TTL lease")
+	}
+
+	return e.client.Put(ctx, key, val, clientv3.WithLease(lease.ID))
+}
+
 func (e *Etcd) Delete(ctx context.Context, key string, opts ...clientv3.OpOption) (*clientv3.DeleteResponse, error) {
 	return e.client.Delete(ctx, key, opts...)
+}
+
+func (e *Etcd) GrantLease(ctx context.Context, ttl int64) (*clientv3.LeaseGrantResponse, error) {
+	return e.client.Lease.Grant(ctx, ttl)
 }
 
 // PopulateCache loads config from etcd

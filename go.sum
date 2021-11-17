@@ -50,6 +50,8 @@ github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmV
 github.com/armon/go-radix v0.0.0-20180808171621-7fddfc383310/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
 github.com/aws/aws-sdk-go v1.34.28 h1:sscPpn/Ns3i0F4HPEWAVcwdIRaZZCuL7llJ2/60yPIk=
 github.com/aws/aws-sdk-go v1.34.28/go.mod h1:H7NKnBqNVzoTJpGfLrQkkD+ytBA93eiDYi/+8rV9s48=
+github.com/batchcorp/collector-schemas v0.0.5 h1:rNCdbcPs+PrfcSGSxIwP7ncUzi6za8mvKXbz+ICWJBI=
+github.com/batchcorp/collector-schemas v0.0.5/go.mod h1:qSVA1UcrApoLX2mS4cj+aH+IvNwcSfm50vWa0UAN/WU=
 github.com/batchcorp/inferschema v0.0.1 h1:aRSfi5W+m8lCgGW0e2ruo8yY8YOATkFjmX383hQgrNI=
 github.com/batchcorp/inferschema v0.0.1/go.mod h1:U1qngk0hEunJbWyJkQt1i64XvUEWX2kGTwpmy6Fs/QY=
 github.com/batchcorp/inferschema v0.0.2 h1:Eo6nVIPLL0vxBIRdOjsmegEGl68lE0AFik5KA8QNM1c=
@@ -104,11 +106,15 @@ github.com/batchcorp/plumber-schemas v0.0.90 h1:0O1wmXN7BK3XAVr2t8DUdpCJhB1J+6U5
 github.com/batchcorp/plumber-schemas v0.0.90/go.mod h1:YULMKnfZ8X7tglTfUzKXhWc1Bfq6dy5ysIQbvsbCOkY=
 github.com/batchcorp/plumber-schemas v0.0.92 h1:ZxW38++ZF3Buf7JZnRZkp2M8KQn+bgvTCI5ncBSi9HE=
 github.com/batchcorp/plumber-schemas v0.0.92/go.mod h1:YULMKnfZ8X7tglTfUzKXhWc1Bfq6dy5ysIQbvsbCOkY=
+github.com/batchcorp/plumber-schemas v0.0.93 h1:nSy06Cm35kfDk0w+EnoR4OhOegH0pcvuI+9TzEG//SI=
+github.com/batchcorp/plumber-schemas v0.0.93/go.mod h1:YULMKnfZ8X7tglTfUzKXhWc1Bfq6dy5ysIQbvsbCOkY=
 github.com/batchcorp/rabbit v0.1.9 h1:BzQStzeo0WuvC7+PKYaEBYtn9qqramlaZCN1CxmNM6U=
 github.com/batchcorp/rabbit v0.1.9/go.mod h1:LaAQ6FCNkir0/SbJ9jX3JNNP1ULAU2M3QZN/IwFRwXw=
 github.com/batchcorp/schemas v0.1.8/go.mod h1:OS0jIg50R8wrMJAVwOEirnvpyPKnJlVadifqH4LJlD4=
 github.com/batchcorp/schemas v0.2.157 h1:iyhKioYcsQmmhRiuF0owyNB5bzvizCFXLjfT43mr7Rw=
 github.com/batchcorp/schemas v0.2.157/go.mod h1:R6rjH3b0egODh995q5qwGAfQ5fssAPeDf82gTGZS6d4=
+github.com/batchcorp/schemas v0.2.176 h1:/KFOSHFjqKHrbX70io07+6lCgxBYJJJiji28z5BGhgM=
+github.com/batchcorp/schemas v0.2.176/go.mod h1:R6rjH3b0egODh995q5qwGAfQ5fssAPeDf82gTGZS6d4=
 github.com/batchcorp/schemas/util/publish v0.0.0-20200622021112-903044310a85/go.mod h1:zD8BqPOqqGw2wWhGrJx8CguDKKuOPGo1TXOuz5b4OR4=
 github.com/benbjohnson/clock v1.0.3 h1:vkLuvpK4fmtSCuo60+yC63p7y0BmQ8gm5ZXGuBCJyXg=
 github.com/benbjohnson/clock v1.0.3/go.mod h1:bGMdMPoPVvcYyt1gHDf4J2KE153Yf9BuiUKYMaxlTDM=
