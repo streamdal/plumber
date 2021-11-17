@@ -10,6 +10,6 @@
 5. Create replication slot `SELECT * FROM pg_create_logical_replication_slot('plumber_slot', 'pgoutput');` 
 6. Start plumber in read mode
    ```bash
-   plumber read cdc-postgres --slot plumber_slot --publisher batchsh_plumber --database postgres --host localhost:5432 --username postgres --password postgres
+   plumber read postgres --replication-slot-name plumber_slot --publisher-name batchsh_plumber --database postgres --address localhost:5432 --username postgres --password postgres
    ```
 7. Write something to the table `INSERT INTO employees VALUES (1, 'John Doe', 30);`

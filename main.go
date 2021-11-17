@@ -165,6 +165,7 @@ func getConfig() *config.Config {
 			Reads:               make(map[string]*types.Read),
 			ImportRequests:      make(map[string]*protos.ImportGithubRequest),
 			Validations:         make(map[string]*common.Validation),
+			Composites:          make(map[string]*opts.Composite),
 			ConnectionsMutex:    &sync.RWMutex{},
 			ServicesMutex:       &sync.RWMutex{},
 			ReadsMutex:          &sync.RWMutex{},
@@ -172,6 +173,7 @@ func getConfig() *config.Config {
 			SchemasMutex:        &sync.RWMutex{},
 			ImportRequestsMutex: &sync.RWMutex{},
 			ValidationsMutex:    &sync.RWMutex{},
+			CompositesMutex:     &sync.RWMutex{},
 		}
 	}
 

@@ -75,7 +75,7 @@ var _ = Describe("AWS SNS Backend", func() {
 				return nil, expectedErr
 			}
 
-			errorCh := make(chan *records.ErrorRecord)
+			errorCh := make(chan *records.ErrorRecord, 1)
 
 			writeOpts := &opts.WriteOptions{
 				Awssns: &opts.WriteGroupAWSSNSOptions{
