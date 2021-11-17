@@ -3,15 +3,15 @@ package backends
 import (
 	"context"
 
-	"github.com/batchcorp/plumber/backends/awssqs"
-
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/backends/awssns"
+	"github.com/batchcorp/plumber/backends/awssqs"
 	"github.com/batchcorp/plumber/backends/cdcmongo"
+	"github.com/batchcorp/plumber/backends/cdcpostgres"
 	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/backends/nats"
 	"github.com/batchcorp/plumber/backends/nsq"
@@ -110,8 +110,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 	//	be, err = rstreams.New(connOpts)
 	case *opts.ConnectionOptions_Mongo:
 		be, err = cdcmongo.New(connOpts)
-	//case *opts.ConnectionOptions_Postgres:
-	//	be, err = cdc_postgres.New(connOpts)
+	case *opts.ConnectionOptions_Postgres:
+		be, err = cdcpostgres.New(connOpts)
 	default:
 		return nil, errors.New("unknown backend")
 

@@ -68,11 +68,11 @@ func validateRelayOptions(relayOpts *opts.RelayOptions) error {
 	}
 
 	if relayOpts.Nsq == nil {
-		return errors.New("NSQ read options cannot be nil")
+		return errors.New("NSQ relay options cannot be nil")
 	}
 
 	if relayOpts.Nsq.Args == nil {
-		return errors.New("NSQ read option args cannot be nil")
+		return errors.New("NSQ relay option args cannot be nil")
 	}
 
 	return nil
