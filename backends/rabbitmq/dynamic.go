@@ -67,9 +67,5 @@ func validateDynamicOptions(opts *opts.DynamicOptions) error {
 		return errors.New("rabbit args cannot be nil")
 	}
 
-	if len(opts.Kafka.Args.Topics) == 0 {
-		return errors.New("at least one topic must be provided as an arg")
-	}
-
 	return nil
 }

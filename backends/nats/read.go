@@ -33,8 +33,9 @@ func (n *Nats) Read(_ context.Context, readOpts *opts.ReadOptions, resultsChan c
 		if err != nil {
 			errorChan <- &records.ErrorRecord{
 				OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
-				Error:               errors.Wrap(err, "unable to serialize kafka message into JSON").Error(),
+				Error:               errors.Wrap(err, "unable to serialize message into JSON").Error(),
 			}
+			return
 		}
 
 		resultsChan <- &records.ReadRecord{

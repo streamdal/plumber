@@ -33,7 +33,6 @@ type Stats struct {
 	*Config
 	countersMtx *sync.RWMutex
 	counters    map[string]*Counter
-	storage     tstorage.Storage
 	log         *logrus.Entry
 }
 
@@ -44,15 +43,14 @@ type Config struct {
 	// ServiceShutdownCtx is used to signal all counters to flush and then cleanly close the database
 	ServiceShutdownCtx context.Context
 
-	// TSStoragePath is the location to store time-series data for counters
-	TSStoragePath string
+	Storage tstorage.Storage
 }
 
 var (
 	ErrInvalidFlushInterval = errors.New("FlushInterval cannot be 0")
 	ErrCounterNotFound      = errors.New("counter not found")
 	ErrMissingShutdownCtx   = errors.New("ServiceShutdownCtx cannot be nil")
-	ErrMissingTSStoragePath = errors.New("ErrMissingTSStoragePath cannot be empty")
+	ErrMissingStorage       = errors.New("ErrMissingStorage cannot be empty")
 )
 
 // New returns a configured struct for the statistics service
@@ -61,20 +59,10 @@ func New(cfg *Config) (*Stats, error) {
 		return nil, errors.Wrap(err, "unable to validate config")
 	}
 
-	storage, err := tstorage.NewStorage(
-		tstorage.WithDataPath(cfg.TSStoragePath),
-		tstorage.WithTimestampPrecision(tstorage.Seconds),
-		tstorage.WithRetention(time.Hour*24*7),
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to initialize time series storage")
-	}
-
 	s := &Stats{
 		counters:    make(map[string]*Counter),
 		countersMtx: &sync.RWMutex{},
 		Config:      cfg,
-		storage:     storage,
 		log:         logrus.WithField("pkg", "stats"),
 	}
 
@@ -93,8 +81,8 @@ func validateConfig(cfg *Config) error {
 		return ErrMissingShutdownCtx
 	}
 
-	if cfg.TSStoragePath == "" {
-		return ErrMissingTSStoragePath
+	if cfg.Storage == nil {
+		return ErrMissingStorage
 	}
 
 	return nil
@@ -113,7 +101,7 @@ func (s *Stats) runWatchForShutdown() error {
 		s.RemoveCounter(c)
 	}
 
-	if err := s.storage.Close(); err != nil {
+	if err := s.Storage.Close(); err != nil {
 		err = errors.Wrap(err, "unable to safely shutdown stats service database")
 		s.log.Error(err)
 		return err
@@ -166,7 +154,7 @@ func (s *Stats) AddCounter(cfg *opts.Counter) *Counter {
 		cfg:     cfg,
 		mtx:     &sync.RWMutex{},
 		doneCh:  make(chan struct{}, 1),
-		storage: s.storage,
+		storage: s.Storage,
 		log:     logger,
 	}
 
