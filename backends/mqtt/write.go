@@ -10,6 +10,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (m *MQTT) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh chan *records.ErrorRecord, messages ...*records.WriteRecord) error {
@@ -36,15 +37,15 @@ func (m *MQTT) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh 
 
 func validateWriteOptions(writeOpts *opts.WriteOptions) error {
 	if writeOpts == nil {
-		return errors.New("write options cannot be nil")
+		return validate.ErrEmptyWriteOpts
 	}
 
 	if writeOpts.Mqtt == nil {
-		return errors.New("backend group options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if writeOpts.Mqtt.Args == nil {
-		return errors.New("backend arg options cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	if writeOpts.Mqtt.Args.Topic == "" {

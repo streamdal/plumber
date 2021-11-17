@@ -11,6 +11,7 @@ import (
 
 	"github.com/batchcorp/plumber/backends/kubemq-queue/types"
 	"github.com/batchcorp/plumber/prometheus"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (k *KubeMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
@@ -60,15 +61,15 @@ func (k *KubeMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayC
 
 func validateRelayOptions(relayOpts *opts.RelayOptions) error {
 	if relayOpts == nil {
-		return errors.New("relay options cannot be nil")
+		return validate.ErrEmptyRelayOpts
 	}
 
 	if relayOpts.KubemqQueue == nil {
-		return errors.New("backend group options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if relayOpts.KubemqQueue.Args == nil {
-		return errors.New("backend arg options cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	if relayOpts.KubemqQueue.Args.QueueName == "" {

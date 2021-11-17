@@ -43,7 +43,7 @@ func New(opts *opts.ConnectionOptions) (*Nats, error) {
 		connOpts: opts,
 		connArgs: opts.GetNats(),
 		Client:   c,
-		log:      logrus.WithField("backend", "nats"),
+		log:      logrus.WithField("backend", BackendName),
 	}, nil
 }
 

@@ -3,11 +3,14 @@ package kafka
 import (
 	"context"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber/dynamic"
+	"github.com/batchcorp/plumber/validate"
+
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber/dynamic"
 )
 
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
@@ -28,7 +31,7 @@ func (k *Kafka) Dynamic(ctx context.Context, opts *opts.DynamicOptions) error {
 	defer writer.Close()
 
 	// Start up dynamic connection
-	grpc, err := dynamic.New(opts, BackendName)
+	grpc, err := dynamic.New(opts, "Kafka")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
@@ -62,20 +65,20 @@ MAIN:
 	return nil
 }
 
-func validateDynamicOptions(opts *opts.DynamicOptions) error {
-	if opts == nil {
-		return errors.New("dynamic options cannot be nil")
+func validateDynamicOptions(dynamicOpts *opts.DynamicOptions) error {
+	if dynamicOpts == nil {
+		return validate.ErrEmptyDynamicOpts
 	}
 
-	if opts.Kafka == nil {
+	if dynamicOpts.Kafka == nil {
 		return errors.New("kafka options cannot be nil")
 	}
 
-	if opts.Kafka.Args == nil {
+	if dynamicOpts.Kafka.Args == nil {
 		return errors.New("kafka args cannot be nil")
 	}
 
-	if len(opts.Kafka.Args.Topics) == 0 {
+	if len(dynamicOpts.Kafka.Args.Topics) == 0 {
 		return errors.New("at least one topic must be provided as an arg")
 	}
 

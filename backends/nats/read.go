@@ -11,6 +11,8 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (n *Nats) Read(_ context.Context, readOpts *opts.ReadOptions, resultsChan chan *records.ReadRecord, errorChan chan *records.ErrorRecord) error {
@@ -68,11 +70,11 @@ func validateReadOptions(writeOpts *opts.ReadOptions) error {
 	}
 
 	if writeOpts.Nats == nil {
-		return errors.New("backend group options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if writeOpts.Nats.Args == nil {
-		return errors.New("backend arg options cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	if writeOpts.Nats.Args.Subject == "" {

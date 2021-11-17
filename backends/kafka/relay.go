@@ -10,17 +10,14 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
-	ktypes "github.com/batchcorp/plumber/backends/kafka/types"
+	"github.com/batchcorp/plumber/backends/kafka/types"
 	"github.com/batchcorp/plumber/prometheus"
 	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/validate"
 )
 
 const (
 	RetryReadInterval = 5 * time.Second
-)
-
-var (
-	ErrMissingTopic = errors.New("You must specify at least one topic")
 )
 
 // Relay sets up a new Kafka relayer
@@ -62,9 +59,9 @@ func (k *Kafka) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 
 		k.log.Debugf("Writing Kafka message to relay channel: %s", msg.Value)
 
-		relayCh <- &ktypes.RelayMessage{
+		relayCh <- &types.RelayMessage{
 			Value:   &msg,
-			Options: &ktypes.RelayMessageOptions{},
+			Options: &types.RelayMessageOptions{},
 		}
 	}
 }
@@ -72,15 +69,15 @@ func (k *Kafka) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 // validateRelayOptions ensures all required relay options are present
 func validateRelayOptions(relayOpts *opts.RelayOptions) error {
 	if relayOpts == nil {
-		return errors.New("relay opts cannot be nil")
+		return validate.ErrEmptyRelayOpts
 	}
 
 	if relayOpts.Kafka == nil {
-		return errors.New("kafka opts cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if relayOpts.Kafka.Args == nil {
-		return errors.New("kafka args cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	if len(relayOpts.Kafka.Args.Topics) == 0 {

@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/pkg/errors"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber/util"
-	"github.com/pkg/errors"
 )
 
 func ProtobufOptionsForCLI(dirs []string, rootMessage string) error {
@@ -32,7 +33,7 @@ func ProtobufOptionsForCLI(dirs []string, rootMessage string) error {
 
 func RelayOptionsForCLI(relayOpts *opts.RelayOptions) error {
 	if relayOpts == nil {
-		return errors.New("relay options cannot be nil")
+		return ErrEmptyRelayOpts
 	}
 
 	if relayOpts.XCliOptions == nil {
@@ -56,7 +57,7 @@ func ReadOptionsForCLI(readOpts *opts.ReadOptions) error {
 
 func WriteOptionsCLI(writeOpts *opts.WriteOptions) error {
 	if writeOpts == nil {
-		return errors.New("write options cannot be nil")
+		return ErrEmptyWriteOpts
 	}
 
 	if writeOpts.XCliOptions == nil {

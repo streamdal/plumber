@@ -10,8 +10,10 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
 	"github.com/batchcorp/plumber/backends/cdcmongo/types"
 	"github.com/batchcorp/plumber/prometheus"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (m *Mongo) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
@@ -86,15 +88,15 @@ func (m *Mongo) getChangeStreamRelay(ctx context.Context, readOpts *opts.RelayOp
 // validateRelayOptions ensures all required relay options are present
 func validateRelayOptions(relayOpts *opts.RelayOptions) error {
 	if relayOpts == nil {
-		return errors.New("relay opts cannot be nil")
+		return validate.ErrEmptyRelayOpts
 	}
 
 	if relayOpts.Mongo == nil {
-		return errors.New("Mongo read options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if relayOpts.Mongo.Args == nil {
-		return errors.New("Mongo read option args cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	if relayOpts.Mongo.Args.Collection != "" && relayOpts.Mongo.Args.Database == "" {

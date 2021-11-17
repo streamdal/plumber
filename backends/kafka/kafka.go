@@ -23,15 +23,20 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/util"
 
 	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/validate"
 )
 
 const (
 	BackendName = "kafka"
 
 	DefaultBatchSize = 1
+)
+
+var (
+	ErrMissingTopic = errors.New("You must specify at least one topic")
 )
 
 // Kafka holds all attributes required for performing a write to Kafka. This
@@ -70,7 +75,7 @@ func New(connOpts *opts.ConnectionOptions) (*Kafka, error) {
 		connOpts: connOpts,
 		connArgs: connOpts.GetKafka(),
 		dialer:   dialer,
-		log:      logrus.WithField("backend", "kafka"),
+		log:      logrus.WithField("backend", BackendName),
 	}, nil
 }
 
@@ -294,15 +299,15 @@ func newDialer(connArgs *args.KafkaConn) (*skafka.Dialer, error) {
 
 func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 	if connOpts == nil {
-		return errors.New("connection config cannot be nil")
+		return validate.ErrMissingConnOpts
 	}
 
 	if connOpts.Conn == nil {
-		return errors.New("connection object in connection config cannot be nil")
+		return validate.ErrMissingConnCfg
 	}
 
 	if connOpts.GetKafka() == nil {
-		return errors.New("connection config args cannot be nil")
+		return validate.ErrMissingConnArgs
 	}
 
 	return nil

@@ -12,6 +12,8 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (m *MQTT) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan chan *records.ReadRecord, errorChan chan *records.ErrorRecord) error {
@@ -79,11 +81,11 @@ func validateReadOptions(readOpts *opts.ReadOptions) error {
 	}
 
 	if readOpts.Mqtt == nil {
-		return errors.New("backend group options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if readOpts.Mqtt.Args == nil {
-		return errors.New("backend arg options cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	if readOpts.Mqtt.Args.Topic == "" {

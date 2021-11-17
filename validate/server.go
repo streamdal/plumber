@@ -174,7 +174,7 @@ func ServiceForServer(s *protos.Service) error {
 
 func WriteOptionsForServer(writeOpts *opts.WriteOptions) error {
 	if writeOpts == nil {
-		return errors.New("write options cannot be nil")
+		return ErrEmptyWriteOpts
 	}
 
 	if writeOpts.Record == nil {

@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/batchcorp/plumber/validate"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/pkg/errors"
@@ -69,15 +71,15 @@ func (a *AWSSQS) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayC
 
 func validateRelayOptions(opts *opts.RelayOptions) error {
 	if opts == nil {
-		return errors.New("relay opts cannot be nil")
+		return validate.ErrEmptyRelayOpts
 	}
 
 	if opts.Awssqs == nil {
-		return errors.New("aqssqs opts cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if opts.Awssqs.Args == nil {
-		return errors.New("aqssqs args cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	if len(opts.Awssqs.Args.QueueName) == 0 {

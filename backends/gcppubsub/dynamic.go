@@ -9,6 +9,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/dynamic"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (g *GCPPubSub) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) error {
@@ -51,15 +52,15 @@ func (g *GCPPubSub) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOption
 
 func validateDynamicOptions(dynamicOpts *opts.DynamicOptions) error {
 	if dynamicOpts == nil {
-		return errors.New("dynamic options cannot be nil")
+		return validate.ErrEmptyDynamicOpts
 	}
 
 	if dynamicOpts.GcpPubsub == nil {
-		return errors.New("backend group options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if dynamicOpts.GcpPubsub.Args == nil {
-		return errors.New("backend arg options cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	if dynamicOpts.GcpPubsub.Args.TopicId == "" {

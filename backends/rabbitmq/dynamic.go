@@ -3,6 +3,8 @@ package rabbitmq
 import (
 	"context"
 
+	"github.com/batchcorp/plumber/validate"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -26,7 +28,7 @@ func (r *RabbitMQ) Dynamic(ctx context.Context, opts *opts.DynamicOptions) error
 	defer producer.Close()
 
 	// Start up dynamic connection
-	grpc, err := dynamic.New(opts, BackendName)
+	grpc, err := dynamic.New(opts, "RabbitMQ")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
@@ -54,16 +56,16 @@ MAIN:
 	return nil
 }
 
-func validateDynamicOptions(opts *opts.DynamicOptions) error {
-	if opts == nil {
-		return errors.New("dynamic options cannot be nil")
+func validateDynamicOptions(dynamicOpts *opts.DynamicOptions) error {
+	if dynamicOpts == nil {
+		return validate.ErrEmptyDynamicOpts
 	}
 
-	if opts.Rabbit == nil {
+	if dynamicOpts.Rabbit == nil {
 		return errors.New("rabbit options cannot be nil")
 	}
 
-	if opts.Rabbit.Args == nil {
+	if dynamicOpts.Rabbit.Args == nil {
 		return errors.New("rabbit args cannot be nil")
 	}
 

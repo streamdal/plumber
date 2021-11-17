@@ -14,6 +14,9 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
+	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (r *RedisStreams) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan chan *records.ReadRecord, errorChan chan *records.ErrorRecord) error {
@@ -46,7 +49,7 @@ func (r *RedisStreams) Read(ctx context.Context, readOpts *opts.ReadOptions, res
 
 		// We may be reading from multiple streamsResult - read each stream resp
 		for _, stream := range streamsResult {
-			r.handleResult(stream, resultsChan, errorChan, count)
+			r.handleResult(stream, readOpts, resultsChan, errorChan, count)
 		}
 
 		if !readOpts.Continuous {
@@ -57,7 +60,7 @@ func (r *RedisStreams) Read(ctx context.Context, readOpts *opts.ReadOptions, res
 	return nil
 }
 
-func (r *RedisStreams) handleResult(stream redis.XStream, resultsChan chan *records.ReadRecord, errorChan chan *records.ErrorRecord, count int64) {
+func (r *RedisStreams) handleResult(stream redis.XStream, readOpts *opts.ReadOptions, resultsChan chan *records.ReadRecord, errorChan chan *records.ErrorRecord, count int64) {
 	streamName := stream.Stream
 
 	// Each stream result may contain multiple messages
@@ -66,10 +69,11 @@ func (r *RedisStreams) handleResult(stream redis.XStream, resultsChan chan *reco
 		for k, v := range message.Values {
 			stringData, ok := v.(string)
 			if !ok {
-				errorChan <- &records.ErrorRecord{
-					OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
-					Error: fmt.Sprintf("[ID: %s Stream: %s Key: %s] unable to type assert value as string: %s; skipping",
-						message.ID, streamName, k, v),
+				util.WriteError(r.log, errorChan, fmt.Errorf("[ID: %s Stream: %s Key: %s] unable to type assert value as string: %s; skipping",
+					message.ID, streamName, k, v))
+
+				if !readOpts.Continuous {
+					break
 				}
 				continue
 			}
@@ -159,19 +163,19 @@ func generateStreams(streams []string) []string {
 
 func validateReadOptions(readOpts *opts.ReadOptions) error {
 	if readOpts == nil {
-		return errors.New("write options cannot be nil")
+		return errors.New("read options cannot be nil")
 	}
 
 	if readOpts.RedisStreams == nil {
-		return errors.New("backend group options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if readOpts.RedisStreams.Args == nil {
-		return errors.New("backend arg options cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	if len(readOpts.RedisStreams.Args.Stream) == 0 {
-		return errors.New("you must specify at least one stream to read from")
+		return ErrMissingStream
 	}
 
 	return nil

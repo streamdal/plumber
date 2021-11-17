@@ -9,6 +9,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/dynamic"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (r *RedisStreams) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) error {
@@ -17,7 +18,7 @@ func (r *RedisStreams) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOpt
 	}
 
 	// Start up dynamic connection
-	grpc, err := dynamic.New(dynamicOpts, BackendName)
+	grpc, err := dynamic.New(dynamicOpts, "Redis Streams")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
@@ -54,19 +55,19 @@ func (r *RedisStreams) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOpt
 
 func validateDynamicOptions(dynamicOpts *opts.DynamicOptions) error {
 	if dynamicOpts == nil {
-		return errors.New("write options cannot be nil")
+		return validate.ErrEmptyDynamicOpts
 	}
 
 	if dynamicOpts.RedisStreams == nil {
-		return errors.New("backend group options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if dynamicOpts.RedisStreams.Args == nil {
-		return errors.New("backend arg options cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	if len(dynamicOpts.RedisStreams.Args.Streams) == 0 {
-		return errors.New("you must specify at least one stream to write to")
+		return ErrMissingStream
 	}
 
 	return nil

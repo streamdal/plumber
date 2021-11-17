@@ -18,11 +18,15 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	sqsTypes "github.com/batchcorp/plumber/backends/awssqs/types"
+	mongoTypes "github.com/batchcorp/plumber/backends/cdcmongo/types"
 	postgresTypes "github.com/batchcorp/plumber/backends/cdcpostgres/types"
 	gcpTypes "github.com/batchcorp/plumber/backends/gcppubsub/types"
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
 	kubemqTypes "github.com/batchcorp/plumber/backends/kubemq-queue/types"
 	mqttTypes "github.com/batchcorp/plumber/backends/mqtt/types"
+	nsqTypes "github.com/batchcorp/plumber/backends/nsq/types"
+	rabbitTypes "github.com/batchcorp/plumber/backends/rabbitmq/types"
+	rpubsubTypes "github.com/batchcorp/plumber/backends/rpubsub/types"
 	rstreamsTypes "github.com/batchcorp/plumber/backends/rstreams/types"
 	"github.com/batchcorp/plumber/prometheus"
 )
@@ -341,9 +345,9 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	case *sqsTypes.RelayMessage:
 		r.log.Debugf("flushing %d sqs message(s)", len(messages))
 		err = r.handleSQS(ctx, conn, messages)
-	//case *rabbitTypes.RelayMessage:
-	//	r.log.Debugf("flushing %d rabbit message(s)", len(messages))
-	//	err = r.handleRabbit(ctx, conn, messages)
+	case *rabbitTypes.RelayMessage:
+		r.log.Debugf("flushing %d rabbit message(s)", len(messages))
+		err = r.handleRabbit(ctx, conn, messages)
 	case *kafkaTypes.RelayMessage:
 		r.log.Debugf("flushing %d kafka message(s)", len(messages))
 		err = r.handleKafka(ctx, conn, messages)
@@ -353,12 +357,12 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	case *gcpTypes.RelayMessage:
 		r.log.Debugf("flushing %d gcp message(s)", len(messages))
 		err = r.handleGCP(ctx, conn, messages)
-	//case *mongoTypes.RelayMessage:
-	//	r.log.Debugf("flushing %d mongo message(s)", len(messages))
-	//	err = r.handleCDCMongo(ctx, conn, messages)
-	//case *redisTypes.RelayMessage:
-	//	r.log.Debugf("flushing %d redis-pubsub message(s)", len(messages))
-	//	err = r.handleRedisPubSub(ctx, conn, messages)
+	case *mongoTypes.RelayMessage:
+		r.log.Debugf("flushing %d mongo message(s)", len(messages))
+		err = r.handleCDCMongo(ctx, conn, messages)
+	case *rpubsubTypes.RelayMessage:
+		r.log.Debugf("flushing %d redis-pubsub message(s)", len(messages))
+		err = r.handleRedisPubSub(ctx, conn, messages)
 	case *mqttTypes.RelayMessage:
 		r.log.Debugf("flushing %d mqtt message(s)", len(messages))
 		err = r.handleMQTT(ctx, conn, messages)
@@ -368,9 +372,9 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	case *postgresTypes.RelayMessage:
 		r.log.Debugf("flushing %d cdc-postgres message(s)", len(messages))
 		err = r.handleCdcPostgres(ctx, conn, messages)
-	//case *nsqTypes.RelayMessage:
-	//	r.log.Debugf("flushing %d nsq message(s)", len(messages))
-	//	err = r.handleNSQ(ctx, conn, messages)
+	case *nsqTypes.RelayMessage:
+		r.log.Debugf("flushing %d nsq message(s)", len(messages))
+		err = r.handleNSQ(ctx, conn, messages)
 	default:
 		r.log.WithField("type", v).Error("received unknown message type - skipping")
 		return

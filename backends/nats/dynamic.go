@@ -5,9 +5,10 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/batchcorp/plumber/dynamic"
-
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+
+	"github.com/batchcorp/plumber/dynamic"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (n *Nats) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) error {
@@ -16,7 +17,7 @@ func (n *Nats) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) er
 	}
 
 	// Start up dynamic connection
-	grpc, err := dynamic.New(dynamicOpts, BackendName)
+	grpc, err := dynamic.New(dynamicOpts, "Nats")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
@@ -43,15 +44,15 @@ func (n *Nats) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) er
 
 func validateDynamicOptions(dynamicOpts *opts.DynamicOptions) error {
 	if dynamicOpts == nil {
-		return errors.New("write options cannot be nil")
+		return validate.ErrEmptyDynamicOpts
 	}
 
 	if dynamicOpts.Nats == nil {
-		return errors.New("backend group options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if dynamicOpts.Nats.Args == nil {
-		return errors.New("backend arg options cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	if dynamicOpts.Nats.Args.Subject == "" {

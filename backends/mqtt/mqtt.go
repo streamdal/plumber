@@ -19,6 +19,7 @@ import (
 
 	"github.com/batchcorp/plumber/types"
 	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/validate"
 )
 
 const (
@@ -159,16 +160,16 @@ func generateTLSConfig(args *args.MQTTConn) (*tls.Config, error) {
 
 func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 	if connOpts == nil {
-		return errors.New("connection config cannot be nil")
+		return validate.ErrMissingConnOpts
 	}
 
 	if connOpts.Conn == nil {
-		return errors.New("connection object in connection config cannot be nil")
+		return validate.ErrMissingConnCfg
 	}
 
 	mqttOpts := connOpts.GetMqtt()
 	if mqttOpts == nil {
-		return errors.New("connection config args cannot be nil")
+		return validate.ErrMissingConnArgs
 	}
 
 	if strings.HasPrefix(mqttOpts.Address, "ssl") {

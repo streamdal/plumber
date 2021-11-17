@@ -3,8 +3,6 @@ package mqtt
 import (
 	"context"
 
-	"github.com/batchcorp/plumber/prometheus"
-
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/pkg/errors"
 
@@ -12,6 +10,8 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/backends/mqtt/types"
+	"github.com/batchcorp/plumber/prometheus"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (m *MQTT) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
@@ -46,15 +46,15 @@ func (m *MQTT) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh 
 
 func validateRelayOptions(relayOpts *opts.RelayOptions) error {
 	if relayOpts == nil {
-		return errors.New("relay options cannot be nil")
+		return validate.ErrEmptyRelayOpts
 	}
 
 	if relayOpts.Mqtt == nil {
-		return errors.New("backend group options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if relayOpts.Mqtt.Args == nil {
-		return errors.New("backend arg options cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	if relayOpts.Mqtt.Args.Topic == "" {
