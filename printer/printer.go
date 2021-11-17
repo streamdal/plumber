@@ -100,21 +100,6 @@ func PrintRelayOptions(cliOpts *opts.CLIOptions) {
 		return
 	}
 
-	// TODO: Don't think this is needed since moving to kong ~ds 09.11.21
-	//// Because of some funky business with env var handling - we have to do some
-	//// silly things like this to get the RelayType
-	//relayType := cliOpts.Relay.Type
-	//
-	//if relayType == "" {
-	//	splitCmd := strings.Split(cmd, " ")
-	//
-	//	if len(splitCmd) >= 2 {
-	//		relayType = splitCmd[1]
-	//	} else {
-	//		relayType = "N/A"
-	//	}
-	//}
-
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("> Relay Settings")
 	logrus.Info("----------------------------------------------------------------")
@@ -125,7 +110,7 @@ func PrintRelayOptions(cliOpts *opts.CLIOptions) {
 	logrus.Infof("- %-24s%-6d", "Num workers", cliOpts.Relay.NumWorkers)
 	logrus.Infof("- %-24s%-6d", "Batch size", cliOpts.Relay.BatchSize)
 	logrus.Infof("- %-24s%-6v", "Stats enabled", cliOpts.Relay.StatsEnable)
-	logrus.Infof("- %-24s%-6d", "Stats report interval (seconds)", cliOpts.Relay.StatsReportIntervalSec)
+	logrus.Infof("- %-24s%-6s", "Stats report interval", fmt.Sprintf("%d seconds", cliOpts.Relay.StatsReportIntervalSec))
 	logrus.Info("")
 
 	switch cliOpts.Global.XBackend {

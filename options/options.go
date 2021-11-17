@@ -11,8 +11,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/batchcorp/kong"
 	"github.com/pkg/errors"
+
+	"github.com/batchcorp/kong"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
@@ -53,7 +54,7 @@ func New(args []string) (*kong.Context, *opts.CLIOptions, error) {
 	cliOpts.Global.XFullCommand = strings.Join(args, " ")
 
 	if ActionUsesBackend(cliOpts.Global.XAction) {
-		if len(args) >= 3 {
+		if len(args) >= 2 {
 			cliOpts.Global.XBackend = args[1]
 		}
 	}

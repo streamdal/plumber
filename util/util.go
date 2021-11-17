@@ -9,13 +9,18 @@ import (
 	"strings"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
 func DurationSec(durationSec interface{}) time.Duration {
 	if v, ok := durationSec.(int32); ok {
+		return time.Duration(v) * time.Second
+	}
+
+	if v, ok := durationSec.(uint32); ok {
 		return time.Duration(v) * time.Second
 	}
 
@@ -75,11 +80,9 @@ func WriteError(l *logrus.Entry, errorCh chan *records.ErrorRecord, err error) {
 	}
 
 	if errorCh != nil {
-		go func() {
-			errorCh <- &records.ErrorRecord{
-				OccurredAtUnixTsUtc: time.Now().UTC().UnixNano(),
-				Error:               err.Error(),
-			}
-		}()
+		errorCh <- &records.ErrorRecord{
+			OccurredAtUnixTsUtc: time.Now().UTC().UnixNano(),
+			Error:               err.Error(),
+		}
 	}
 }

@@ -44,11 +44,3 @@ func validateReadRecord(msg *records.ReadRecord) error {
 
 	return nil
 }
-
-func generateHeaders(headers []*records.RabbitHeader) [][]string {
-	r := make([][]string, 0)
-	for _, h := range headers {
-		r = append(r, []string{h.Key, h.Value})
-	}
-	return r
-}

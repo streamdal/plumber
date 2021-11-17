@@ -4,6 +4,7 @@ package etcdfakes
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
@@ -79,6 +80,20 @@ type FakeIEtcd struct {
 		result1 *clientv3.GetResponse
 		result2 error
 	}
+	GrantLeaseStub        func(context.Context, int64) (*clientv3.LeaseGrantResponse, error)
+	grantLeaseMutex       sync.RWMutex
+	grantLeaseArgsForCall []struct {
+		arg1 context.Context
+		arg2 int64
+	}
+	grantLeaseReturns struct {
+		result1 *clientv3.LeaseGrantResponse
+		result2 error
+	}
+	grantLeaseReturnsOnCall map[int]struct {
+		result1 *clientv3.LeaseGrantResponse
+		result2 error
+	}
 	PublishConfigUpdateStub        func(context.Context, *etcd.MessageUpdateConfig) error
 	publishConfigUpdateMutex       sync.RWMutex
 	publishConfigUpdateArgsForCall []struct {
@@ -91,6 +106,18 @@ type FakeIEtcd struct {
 	publishConfigUpdateReturnsOnCall map[int]struct {
 		result1 error
 	}
+	PublishCreateCompositeStub        func(context.Context, *opts.Composite) error
+	publishCreateCompositeMutex       sync.RWMutex
+	publishCreateCompositeArgsForCall []struct {
+		arg1 context.Context
+		arg2 *opts.Composite
+	}
+	publishCreateCompositeReturns struct {
+		result1 error
+	}
+	publishCreateCompositeReturnsOnCall map[int]struct {
+		result1 error
+	}
 	PublishCreateConnectionStub        func(context.Context, *opts.ConnectionOptions) error
 	publishCreateConnectionMutex       sync.RWMutex
 	publishCreateConnectionArgsForCall []struct {
@@ -101,6 +128,18 @@ type FakeIEtcd struct {
 		result1 error
 	}
 	publishCreateConnectionReturnsOnCall map[int]struct {
+		result1 error
+	}
+	PublishCreateReadStub        func(context.Context, *opts.ReadOptions) error
+	publishCreateReadMutex       sync.RWMutex
+	publishCreateReadArgsForCall []struct {
+		arg1 context.Context
+		arg2 *opts.ReadOptions
+	}
+	publishCreateReadReturns struct {
+		result1 error
+	}
+	publishCreateReadReturnsOnCall map[int]struct {
 		result1 error
 	}
 	PublishCreateRelayStub        func(context.Context, *opts.RelayOptions) error
@@ -151,6 +190,18 @@ type FakeIEtcd struct {
 	publishCreateValidationReturnsOnCall map[int]struct {
 		result1 error
 	}
+	PublishDeleteCompositeStub        func(context.Context, *opts.Composite) error
+	publishDeleteCompositeMutex       sync.RWMutex
+	publishDeleteCompositeArgsForCall []struct {
+		arg1 context.Context
+		arg2 *opts.Composite
+	}
+	publishDeleteCompositeReturns struct {
+		result1 error
+	}
+	publishDeleteCompositeReturnsOnCall map[int]struct {
+		result1 error
+	}
 	PublishDeleteConnectionStub        func(context.Context, *opts.ConnectionOptions) error
 	publishDeleteConnectionMutex       sync.RWMutex
 	publishDeleteConnectionArgsForCall []struct {
@@ -161,6 +212,18 @@ type FakeIEtcd struct {
 		result1 error
 	}
 	publishDeleteConnectionReturnsOnCall map[int]struct {
+		result1 error
+	}
+	PublishDeleteReadStub        func(context.Context, *opts.ReadOptions) error
+	publishDeleteReadMutex       sync.RWMutex
+	publishDeleteReadArgsForCall []struct {
+		arg1 context.Context
+		arg2 *opts.ReadOptions
+	}
+	publishDeleteReadReturns struct {
+		result1 error
+	}
+	publishDeleteReadReturnsOnCall map[int]struct {
 		result1 error
 	}
 	PublishDeleteRelayStub        func(context.Context, *opts.RelayOptions) error
@@ -209,6 +272,18 @@ type FakeIEtcd struct {
 		result1 error
 	}
 	publishDeleteValidationReturnsOnCall map[int]struct {
+		result1 error
+	}
+	PublishUpdateCompositeStub        func(context.Context, *opts.Composite) error
+	publishUpdateCompositeMutex       sync.RWMutex
+	publishUpdateCompositeArgsForCall []struct {
+		arg1 context.Context
+		arg2 *opts.Composite
+	}
+	publishUpdateCompositeReturns struct {
+		result1 error
+	}
+	publishUpdateCompositeReturnsOnCall map[int]struct {
 		result1 error
 	}
 	PublishUpdateConnectionStub        func(context.Context, *opts.ConnectionOptions) error
@@ -284,6 +359,22 @@ type FakeIEtcd struct {
 		result2 error
 	}
 	putReturnsOnCall map[int]struct {
+		result1 *clientv3.PutResponse
+		result2 error
+	}
+	PutWithTTLStub        func(context.Context, string, string, time.Duration) (*clientv3.PutResponse, error)
+	putWithTTLMutex       sync.RWMutex
+	putWithTTLArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+		arg3 string
+		arg4 time.Duration
+	}
+	putWithTTLReturns struct {
+		result1 *clientv3.PutResponse
+		result2 error
+	}
+	putWithTTLReturnsOnCall map[int]struct {
 		result1 *clientv3.PutResponse
 		result2 error
 	}
@@ -635,6 +726,71 @@ func (fake *FakeIEtcd) GetReturnsOnCall(i int, result1 *clientv3.GetResponse, re
 	}{result1, result2}
 }
 
+func (fake *FakeIEtcd) GrantLease(arg1 context.Context, arg2 int64) (*clientv3.LeaseGrantResponse, error) {
+	fake.grantLeaseMutex.Lock()
+	ret, specificReturn := fake.grantLeaseReturnsOnCall[len(fake.grantLeaseArgsForCall)]
+	fake.grantLeaseArgsForCall = append(fake.grantLeaseArgsForCall, struct {
+		arg1 context.Context
+		arg2 int64
+	}{arg1, arg2})
+	stub := fake.GrantLeaseStub
+	fakeReturns := fake.grantLeaseReturns
+	fake.recordInvocation("GrantLease", []interface{}{arg1, arg2})
+	fake.grantLeaseMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeIEtcd) GrantLeaseCallCount() int {
+	fake.grantLeaseMutex.RLock()
+	defer fake.grantLeaseMutex.RUnlock()
+	return len(fake.grantLeaseArgsForCall)
+}
+
+func (fake *FakeIEtcd) GrantLeaseCalls(stub func(context.Context, int64) (*clientv3.LeaseGrantResponse, error)) {
+	fake.grantLeaseMutex.Lock()
+	defer fake.grantLeaseMutex.Unlock()
+	fake.GrantLeaseStub = stub
+}
+
+func (fake *FakeIEtcd) GrantLeaseArgsForCall(i int) (context.Context, int64) {
+	fake.grantLeaseMutex.RLock()
+	defer fake.grantLeaseMutex.RUnlock()
+	argsForCall := fake.grantLeaseArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIEtcd) GrantLeaseReturns(result1 *clientv3.LeaseGrantResponse, result2 error) {
+	fake.grantLeaseMutex.Lock()
+	defer fake.grantLeaseMutex.Unlock()
+	fake.GrantLeaseStub = nil
+	fake.grantLeaseReturns = struct {
+		result1 *clientv3.LeaseGrantResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeIEtcd) GrantLeaseReturnsOnCall(i int, result1 *clientv3.LeaseGrantResponse, result2 error) {
+	fake.grantLeaseMutex.Lock()
+	defer fake.grantLeaseMutex.Unlock()
+	fake.GrantLeaseStub = nil
+	if fake.grantLeaseReturnsOnCall == nil {
+		fake.grantLeaseReturnsOnCall = make(map[int]struct {
+			result1 *clientv3.LeaseGrantResponse
+			result2 error
+		})
+	}
+	fake.grantLeaseReturnsOnCall[i] = struct {
+		result1 *clientv3.LeaseGrantResponse
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeIEtcd) PublishConfigUpdate(arg1 context.Context, arg2 *etcd.MessageUpdateConfig) error {
 	fake.publishConfigUpdateMutex.Lock()
 	ret, specificReturn := fake.publishConfigUpdateReturnsOnCall[len(fake.publishConfigUpdateArgsForCall)]
@@ -697,6 +853,68 @@ func (fake *FakeIEtcd) PublishConfigUpdateReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeIEtcd) PublishCreateComposite(arg1 context.Context, arg2 *opts.Composite) error {
+	fake.publishCreateCompositeMutex.Lock()
+	ret, specificReturn := fake.publishCreateCompositeReturnsOnCall[len(fake.publishCreateCompositeArgsForCall)]
+	fake.publishCreateCompositeArgsForCall = append(fake.publishCreateCompositeArgsForCall, struct {
+		arg1 context.Context
+		arg2 *opts.Composite
+	}{arg1, arg2})
+	stub := fake.PublishCreateCompositeStub
+	fakeReturns := fake.publishCreateCompositeReturns
+	fake.recordInvocation("PublishCreateComposite", []interface{}{arg1, arg2})
+	fake.publishCreateCompositeMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIEtcd) PublishCreateCompositeCallCount() int {
+	fake.publishCreateCompositeMutex.RLock()
+	defer fake.publishCreateCompositeMutex.RUnlock()
+	return len(fake.publishCreateCompositeArgsForCall)
+}
+
+func (fake *FakeIEtcd) PublishCreateCompositeCalls(stub func(context.Context, *opts.Composite) error) {
+	fake.publishCreateCompositeMutex.Lock()
+	defer fake.publishCreateCompositeMutex.Unlock()
+	fake.PublishCreateCompositeStub = stub
+}
+
+func (fake *FakeIEtcd) PublishCreateCompositeArgsForCall(i int) (context.Context, *opts.Composite) {
+	fake.publishCreateCompositeMutex.RLock()
+	defer fake.publishCreateCompositeMutex.RUnlock()
+	argsForCall := fake.publishCreateCompositeArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIEtcd) PublishCreateCompositeReturns(result1 error) {
+	fake.publishCreateCompositeMutex.Lock()
+	defer fake.publishCreateCompositeMutex.Unlock()
+	fake.PublishCreateCompositeStub = nil
+	fake.publishCreateCompositeReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishCreateCompositeReturnsOnCall(i int, result1 error) {
+	fake.publishCreateCompositeMutex.Lock()
+	defer fake.publishCreateCompositeMutex.Unlock()
+	fake.PublishCreateCompositeStub = nil
+	if fake.publishCreateCompositeReturnsOnCall == nil {
+		fake.publishCreateCompositeReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.publishCreateCompositeReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeIEtcd) PublishCreateConnection(arg1 context.Context, arg2 *opts.ConnectionOptions) error {
 	fake.publishCreateConnectionMutex.Lock()
 	ret, specificReturn := fake.publishCreateConnectionReturnsOnCall[len(fake.publishCreateConnectionArgsForCall)]
@@ -755,6 +973,68 @@ func (fake *FakeIEtcd) PublishCreateConnectionReturnsOnCall(i int, result1 error
 		})
 	}
 	fake.publishCreateConnectionReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishCreateRead(arg1 context.Context, arg2 *opts.ReadOptions) error {
+	fake.publishCreateReadMutex.Lock()
+	ret, specificReturn := fake.publishCreateReadReturnsOnCall[len(fake.publishCreateReadArgsForCall)]
+	fake.publishCreateReadArgsForCall = append(fake.publishCreateReadArgsForCall, struct {
+		arg1 context.Context
+		arg2 *opts.ReadOptions
+	}{arg1, arg2})
+	stub := fake.PublishCreateReadStub
+	fakeReturns := fake.publishCreateReadReturns
+	fake.recordInvocation("PublishCreateRead", []interface{}{arg1, arg2})
+	fake.publishCreateReadMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIEtcd) PublishCreateReadCallCount() int {
+	fake.publishCreateReadMutex.RLock()
+	defer fake.publishCreateReadMutex.RUnlock()
+	return len(fake.publishCreateReadArgsForCall)
+}
+
+func (fake *FakeIEtcd) PublishCreateReadCalls(stub func(context.Context, *opts.ReadOptions) error) {
+	fake.publishCreateReadMutex.Lock()
+	defer fake.publishCreateReadMutex.Unlock()
+	fake.PublishCreateReadStub = stub
+}
+
+func (fake *FakeIEtcd) PublishCreateReadArgsForCall(i int) (context.Context, *opts.ReadOptions) {
+	fake.publishCreateReadMutex.RLock()
+	defer fake.publishCreateReadMutex.RUnlock()
+	argsForCall := fake.publishCreateReadArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIEtcd) PublishCreateReadReturns(result1 error) {
+	fake.publishCreateReadMutex.Lock()
+	defer fake.publishCreateReadMutex.Unlock()
+	fake.PublishCreateReadStub = nil
+	fake.publishCreateReadReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishCreateReadReturnsOnCall(i int, result1 error) {
+	fake.publishCreateReadMutex.Lock()
+	defer fake.publishCreateReadMutex.Unlock()
+	fake.PublishCreateReadStub = nil
+	if fake.publishCreateReadReturnsOnCall == nil {
+		fake.publishCreateReadReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.publishCreateReadReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -1007,6 +1287,68 @@ func (fake *FakeIEtcd) PublishCreateValidationReturnsOnCall(i int, result1 error
 	}{result1}
 }
 
+func (fake *FakeIEtcd) PublishDeleteComposite(arg1 context.Context, arg2 *opts.Composite) error {
+	fake.publishDeleteCompositeMutex.Lock()
+	ret, specificReturn := fake.publishDeleteCompositeReturnsOnCall[len(fake.publishDeleteCompositeArgsForCall)]
+	fake.publishDeleteCompositeArgsForCall = append(fake.publishDeleteCompositeArgsForCall, struct {
+		arg1 context.Context
+		arg2 *opts.Composite
+	}{arg1, arg2})
+	stub := fake.PublishDeleteCompositeStub
+	fakeReturns := fake.publishDeleteCompositeReturns
+	fake.recordInvocation("PublishDeleteComposite", []interface{}{arg1, arg2})
+	fake.publishDeleteCompositeMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIEtcd) PublishDeleteCompositeCallCount() int {
+	fake.publishDeleteCompositeMutex.RLock()
+	defer fake.publishDeleteCompositeMutex.RUnlock()
+	return len(fake.publishDeleteCompositeArgsForCall)
+}
+
+func (fake *FakeIEtcd) PublishDeleteCompositeCalls(stub func(context.Context, *opts.Composite) error) {
+	fake.publishDeleteCompositeMutex.Lock()
+	defer fake.publishDeleteCompositeMutex.Unlock()
+	fake.PublishDeleteCompositeStub = stub
+}
+
+func (fake *FakeIEtcd) PublishDeleteCompositeArgsForCall(i int) (context.Context, *opts.Composite) {
+	fake.publishDeleteCompositeMutex.RLock()
+	defer fake.publishDeleteCompositeMutex.RUnlock()
+	argsForCall := fake.publishDeleteCompositeArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIEtcd) PublishDeleteCompositeReturns(result1 error) {
+	fake.publishDeleteCompositeMutex.Lock()
+	defer fake.publishDeleteCompositeMutex.Unlock()
+	fake.PublishDeleteCompositeStub = nil
+	fake.publishDeleteCompositeReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishDeleteCompositeReturnsOnCall(i int, result1 error) {
+	fake.publishDeleteCompositeMutex.Lock()
+	defer fake.publishDeleteCompositeMutex.Unlock()
+	fake.PublishDeleteCompositeStub = nil
+	if fake.publishDeleteCompositeReturnsOnCall == nil {
+		fake.publishDeleteCompositeReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.publishDeleteCompositeReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeIEtcd) PublishDeleteConnection(arg1 context.Context, arg2 *opts.ConnectionOptions) error {
 	fake.publishDeleteConnectionMutex.Lock()
 	ret, specificReturn := fake.publishDeleteConnectionReturnsOnCall[len(fake.publishDeleteConnectionArgsForCall)]
@@ -1065,6 +1407,68 @@ func (fake *FakeIEtcd) PublishDeleteConnectionReturnsOnCall(i int, result1 error
 		})
 	}
 	fake.publishDeleteConnectionReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishDeleteRead(arg1 context.Context, arg2 *opts.ReadOptions) error {
+	fake.publishDeleteReadMutex.Lock()
+	ret, specificReturn := fake.publishDeleteReadReturnsOnCall[len(fake.publishDeleteReadArgsForCall)]
+	fake.publishDeleteReadArgsForCall = append(fake.publishDeleteReadArgsForCall, struct {
+		arg1 context.Context
+		arg2 *opts.ReadOptions
+	}{arg1, arg2})
+	stub := fake.PublishDeleteReadStub
+	fakeReturns := fake.publishDeleteReadReturns
+	fake.recordInvocation("PublishDeleteRead", []interface{}{arg1, arg2})
+	fake.publishDeleteReadMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIEtcd) PublishDeleteReadCallCount() int {
+	fake.publishDeleteReadMutex.RLock()
+	defer fake.publishDeleteReadMutex.RUnlock()
+	return len(fake.publishDeleteReadArgsForCall)
+}
+
+func (fake *FakeIEtcd) PublishDeleteReadCalls(stub func(context.Context, *opts.ReadOptions) error) {
+	fake.publishDeleteReadMutex.Lock()
+	defer fake.publishDeleteReadMutex.Unlock()
+	fake.PublishDeleteReadStub = stub
+}
+
+func (fake *FakeIEtcd) PublishDeleteReadArgsForCall(i int) (context.Context, *opts.ReadOptions) {
+	fake.publishDeleteReadMutex.RLock()
+	defer fake.publishDeleteReadMutex.RUnlock()
+	argsForCall := fake.publishDeleteReadArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIEtcd) PublishDeleteReadReturns(result1 error) {
+	fake.publishDeleteReadMutex.Lock()
+	defer fake.publishDeleteReadMutex.Unlock()
+	fake.PublishDeleteReadStub = nil
+	fake.publishDeleteReadReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishDeleteReadReturnsOnCall(i int, result1 error) {
+	fake.publishDeleteReadMutex.Lock()
+	defer fake.publishDeleteReadMutex.Unlock()
+	fake.PublishDeleteReadStub = nil
+	if fake.publishDeleteReadReturnsOnCall == nil {
+		fake.publishDeleteReadReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.publishDeleteReadReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -1313,6 +1717,68 @@ func (fake *FakeIEtcd) PublishDeleteValidationReturnsOnCall(i int, result1 error
 		})
 	}
 	fake.publishDeleteValidationReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishUpdateComposite(arg1 context.Context, arg2 *opts.Composite) error {
+	fake.publishUpdateCompositeMutex.Lock()
+	ret, specificReturn := fake.publishUpdateCompositeReturnsOnCall[len(fake.publishUpdateCompositeArgsForCall)]
+	fake.publishUpdateCompositeArgsForCall = append(fake.publishUpdateCompositeArgsForCall, struct {
+		arg1 context.Context
+		arg2 *opts.Composite
+	}{arg1, arg2})
+	stub := fake.PublishUpdateCompositeStub
+	fakeReturns := fake.publishUpdateCompositeReturns
+	fake.recordInvocation("PublishUpdateComposite", []interface{}{arg1, arg2})
+	fake.publishUpdateCompositeMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIEtcd) PublishUpdateCompositeCallCount() int {
+	fake.publishUpdateCompositeMutex.RLock()
+	defer fake.publishUpdateCompositeMutex.RUnlock()
+	return len(fake.publishUpdateCompositeArgsForCall)
+}
+
+func (fake *FakeIEtcd) PublishUpdateCompositeCalls(stub func(context.Context, *opts.Composite) error) {
+	fake.publishUpdateCompositeMutex.Lock()
+	defer fake.publishUpdateCompositeMutex.Unlock()
+	fake.PublishUpdateCompositeStub = stub
+}
+
+func (fake *FakeIEtcd) PublishUpdateCompositeArgsForCall(i int) (context.Context, *opts.Composite) {
+	fake.publishUpdateCompositeMutex.RLock()
+	defer fake.publishUpdateCompositeMutex.RUnlock()
+	argsForCall := fake.publishUpdateCompositeArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIEtcd) PublishUpdateCompositeReturns(result1 error) {
+	fake.publishUpdateCompositeMutex.Lock()
+	defer fake.publishUpdateCompositeMutex.Unlock()
+	fake.PublishUpdateCompositeStub = nil
+	fake.publishUpdateCompositeReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishUpdateCompositeReturnsOnCall(i int, result1 error) {
+	fake.publishUpdateCompositeMutex.Lock()
+	defer fake.publishUpdateCompositeMutex.Unlock()
+	fake.PublishUpdateCompositeStub = nil
+	if fake.publishUpdateCompositeReturnsOnCall == nil {
+		fake.publishUpdateCompositeReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.publishUpdateCompositeReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -1694,6 +2160,73 @@ func (fake *FakeIEtcd) PutReturnsOnCall(i int, result1 *clientv3.PutResponse, re
 	}{result1, result2}
 }
 
+func (fake *FakeIEtcd) PutWithTTL(arg1 context.Context, arg2 string, arg3 string, arg4 time.Duration) (*clientv3.PutResponse, error) {
+	fake.putWithTTLMutex.Lock()
+	ret, specificReturn := fake.putWithTTLReturnsOnCall[len(fake.putWithTTLArgsForCall)]
+	fake.putWithTTLArgsForCall = append(fake.putWithTTLArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+		arg3 string
+		arg4 time.Duration
+	}{arg1, arg2, arg3, arg4})
+	stub := fake.PutWithTTLStub
+	fakeReturns := fake.putWithTTLReturns
+	fake.recordInvocation("PutWithTTL", []interface{}{arg1, arg2, arg3, arg4})
+	fake.putWithTTLMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeIEtcd) PutWithTTLCallCount() int {
+	fake.putWithTTLMutex.RLock()
+	defer fake.putWithTTLMutex.RUnlock()
+	return len(fake.putWithTTLArgsForCall)
+}
+
+func (fake *FakeIEtcd) PutWithTTLCalls(stub func(context.Context, string, string, time.Duration) (*clientv3.PutResponse, error)) {
+	fake.putWithTTLMutex.Lock()
+	defer fake.putWithTTLMutex.Unlock()
+	fake.PutWithTTLStub = stub
+}
+
+func (fake *FakeIEtcd) PutWithTTLArgsForCall(i int) (context.Context, string, string, time.Duration) {
+	fake.putWithTTLMutex.RLock()
+	defer fake.putWithTTLMutex.RUnlock()
+	argsForCall := fake.putWithTTLArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+}
+
+func (fake *FakeIEtcd) PutWithTTLReturns(result1 *clientv3.PutResponse, result2 error) {
+	fake.putWithTTLMutex.Lock()
+	defer fake.putWithTTLMutex.Unlock()
+	fake.PutWithTTLStub = nil
+	fake.putWithTTLReturns = struct {
+		result1 *clientv3.PutResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeIEtcd) PutWithTTLReturnsOnCall(i int, result1 *clientv3.PutResponse, result2 error) {
+	fake.putWithTTLMutex.Lock()
+	defer fake.putWithTTLMutex.Unlock()
+	fake.PutWithTTLStub = nil
+	if fake.putWithTTLReturnsOnCall == nil {
+		fake.putWithTTLReturnsOnCall = make(map[int]struct {
+			result1 *clientv3.PutResponse
+			result2 error
+		})
+	}
+	fake.putWithTTLReturnsOnCall[i] = struct {
+		result1 *clientv3.PutResponse
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeIEtcd) SaveConfig(arg1 context.Context, arg2 *config.Config) error {
 	fake.saveConfigMutex.Lock()
 	ret, specificReturn := fake.saveConfigReturnsOnCall[len(fake.saveConfigArgsForCall)]
@@ -1891,10 +2424,16 @@ func (fake *FakeIEtcd) Invocations() map[string][][]interface{} {
 	defer fake.directMutex.RUnlock()
 	fake.getMutex.RLock()
 	defer fake.getMutex.RUnlock()
+	fake.grantLeaseMutex.RLock()
+	defer fake.grantLeaseMutex.RUnlock()
 	fake.publishConfigUpdateMutex.RLock()
 	defer fake.publishConfigUpdateMutex.RUnlock()
+	fake.publishCreateCompositeMutex.RLock()
+	defer fake.publishCreateCompositeMutex.RUnlock()
 	fake.publishCreateConnectionMutex.RLock()
 	defer fake.publishCreateConnectionMutex.RUnlock()
+	fake.publishCreateReadMutex.RLock()
+	defer fake.publishCreateReadMutex.RUnlock()
 	fake.publishCreateRelayMutex.RLock()
 	defer fake.publishCreateRelayMutex.RUnlock()
 	fake.publishCreateSchemaMutex.RLock()
@@ -1903,8 +2442,12 @@ func (fake *FakeIEtcd) Invocations() map[string][][]interface{} {
 	defer fake.publishCreateServiceMutex.RUnlock()
 	fake.publishCreateValidationMutex.RLock()
 	defer fake.publishCreateValidationMutex.RUnlock()
+	fake.publishDeleteCompositeMutex.RLock()
+	defer fake.publishDeleteCompositeMutex.RUnlock()
 	fake.publishDeleteConnectionMutex.RLock()
 	defer fake.publishDeleteConnectionMutex.RUnlock()
+	fake.publishDeleteReadMutex.RLock()
+	defer fake.publishDeleteReadMutex.RUnlock()
 	fake.publishDeleteRelayMutex.RLock()
 	defer fake.publishDeleteRelayMutex.RUnlock()
 	fake.publishDeleteSchemaMutex.RLock()
@@ -1913,6 +2456,8 @@ func (fake *FakeIEtcd) Invocations() map[string][][]interface{} {
 	defer fake.publishDeleteServiceMutex.RUnlock()
 	fake.publishDeleteValidationMutex.RLock()
 	defer fake.publishDeleteValidationMutex.RUnlock()
+	fake.publishUpdateCompositeMutex.RLock()
+	defer fake.publishUpdateCompositeMutex.RUnlock()
 	fake.publishUpdateConnectionMutex.RLock()
 	defer fake.publishUpdateConnectionMutex.RUnlock()
 	fake.publishUpdateRelayMutex.RLock()
@@ -1925,6 +2470,8 @@ func (fake *FakeIEtcd) Invocations() map[string][][]interface{} {
 	defer fake.publishUpdateValidationMutex.RUnlock()
 	fake.putMutex.RLock()
 	defer fake.putMutex.RUnlock()
+	fake.putWithTTLMutex.RLock()
+	defer fake.putWithTTLMutex.RUnlock()
 	fake.saveConfigMutex.RLock()
 	defer fake.saveConfigMutex.RUnlock()
 	fake.shutdownMutex.RLock()

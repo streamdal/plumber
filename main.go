@@ -65,10 +65,8 @@ func main() {
 	}
 
 	// Launch a dedicated goroutine if stats display is enabled
-	if cliOpts.Read != nil && cliOpts.Read.XCliOptions != nil {
-		if cliOpts.Relay.StatsEnable {
-			prometheus.Start(cliOpts.Relay.StatsReportIntervalSec)
-		}
+	if cliOpts.Relay != nil && cliOpts.Relay.StatsEnable {
+		prometheus.Start(cliOpts.Relay.StatsReportIntervalSec)
 	}
 
 	// Force JSON and don't print logo when NOT in terminal (ie. in container, detached)
@@ -165,6 +163,7 @@ func getConfig() *config.Config {
 			Reads:               make(map[string]*types.Read),
 			ImportRequests:      make(map[string]*protos.ImportGithubRequest),
 			Validations:         make(map[string]*common.Validation),
+			Composites:          make(map[string]*opts.Composite),
 			ConnectionsMutex:    &sync.RWMutex{},
 			ServicesMutex:       &sync.RWMutex{},
 			ReadsMutex:          &sync.RWMutex{},
@@ -172,6 +171,7 @@ func getConfig() *config.Config {
 			SchemasMutex:        &sync.RWMutex{},
 			ImportRequestsMutex: &sync.RWMutex{},
 			ValidationsMutex:    &sync.RWMutex{},
+			CompositesMutex:     &sync.RWMutex{},
 		}
 	}
 

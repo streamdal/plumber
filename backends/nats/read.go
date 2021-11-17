@@ -33,8 +33,9 @@ func (n *Nats) Read(_ context.Context, readOpts *opts.ReadOptions, resultsChan c
 		if err != nil {
 			errorChan <- &records.ErrorRecord{
 				OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
-				Error:               errors.Wrap(err, "unable to serialize kafka message into JSON").Error(),
+				Error:               errors.Wrap(err, "unable to serialize message into JSON").Error(),
 			}
+			return
 		}
 
 		resultsChan <- &records.ReadRecord{
@@ -63,7 +64,7 @@ func (n *Nats) Read(_ context.Context, readOpts *opts.ReadOptions, resultsChan c
 
 func validateReadOptions(writeOpts *opts.ReadOptions) error {
 	if writeOpts == nil {
-		return errors.New("write options cannot be nil")
+		return errors.New("read options cannot be nil")
 	}
 
 	if writeOpts.Nats == nil {

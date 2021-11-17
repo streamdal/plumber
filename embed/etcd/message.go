@@ -28,6 +28,13 @@ const (
 	UpdateValidation = "UpdateValidation"
 	DeleteValidation = "DeleteValidation"
 
+	CreateRead = "CreateRead"
+	DeleteRead = "DeleteRead"
+
+	CreateComposite = "CreateComposite"
+	UpdateComposite = "UpdateComposite"
+	DeleteComposite = "DeleteComposite"
+
 	UpdateConfig = "UpdateConfig"
 )
 
@@ -36,7 +43,8 @@ var (
 		CreateConnection, UpdateConnection, DeleteConnection,
 		CreateService, UpdateService, DeleteService,
 		CreateRelay, UpdateRelay, DeleteRelay,
-		UpdateConfig,
+		UpdateConfig, CreateRead, DeleteRead,
+		CreateComposite, UpdateComposite, DeleteComposite,
 	}
 )
 

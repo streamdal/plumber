@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
@@ -17,21 +19,26 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/config"
+	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/server/types"
 )
 
 const (
 	BroadcastPath          = "/bus/broadcast"
 	QueuePath              = "/bus/queue"
+	CacheErrorsPrefix      = "/plumber-server/error-messages"
 	CacheConnectionsPrefix = "/plumber-server/connections"
 	CacheSchemasPrefix     = "/plumber-server/schemas"
 	CacheRelaysPrefix      = "/plumber-server/relay"
 	CacheServicesPrefix    = "/plumber-server/services"
 	CacheValidationsPrefix = "/plumber-server/validations"
 	CacheServerConfigKey   = "/plumber-server/server-config"
+	CacheReadsPrefix       = "/plumber-server/reads"
+	CacheCompositesPrefix  = "/plumber-server/composites"
 )
 
 type HandlerFunc func(context.Context, *clientv3.WatchResponse) error
@@ -41,7 +48,9 @@ type IEtcd interface {
 	// client methods
 
 	Get(ctx context.Context, key string, opts ...clientv3.OpOption) (*clientv3.GetResponse, error)
+	GrantLease(ctx context.Context, ttl int64) (*clientv3.LeaseGrantResponse, error)
 	Put(ctx context.Context, key, val string, opts ...clientv3.OpOption) (*clientv3.PutResponse, error)
+	PutWithTTL(ctx context.Context, key, val string, expires time.Duration) (*clientv3.PutResponse, error)
 	Delete(ctx context.Context, key string, opts ...clientv3.OpOption) (*clientv3.DeleteResponse, error)
 
 	// Server methods
@@ -66,10 +75,15 @@ type IEtcd interface {
 	PublishCreateRelay(ctx context.Context, relay *opts.RelayOptions) error
 	PublishUpdateRelay(ctx context.Context, relay *opts.RelayOptions) error
 	PublishDeleteRelay(ctx context.Context, relay *opts.RelayOptions) error
-	PublishCreateValidation(ctx context.Context, validation *common.Validation) error
 	PublishConfigUpdate(ctx context.Context, msg *MessageUpdateConfig) error
+	PublishCreateValidation(ctx context.Context, validation *common.Validation) error
 	PublishUpdateValidation(ctx context.Context, validation *common.Validation) error
 	PublishDeleteValidation(ctx context.Context, validation *common.Validation) error
+	PublishCreateRead(ctx context.Context, svc *opts.ReadOptions) error
+	PublishDeleteRead(ctx context.Context, svc *opts.ReadOptions) error
+	PublishCreateComposite(ctx context.Context, validation *opts.Composite) error
+	PublishUpdateComposite(ctx context.Context, validation *opts.Composite) error
+	PublishDeleteComposite(ctx context.Context, validation *opts.Composite) error
 
 	Client() *clientv3.Client
 }
@@ -418,8 +432,21 @@ func (e *Etcd) Put(ctx context.Context, key, val string, opts ...clientv3.OpOpti
 	return e.client.Put(ctx, key, val, opts...)
 }
 
+func (e *Etcd) PutWithTTL(ctx context.Context, key, val string, expires time.Duration) (*clientv3.PutResponse, error) {
+	lease, err := e.GrantLease(ctx, int64(expires.Seconds()))
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create TTL lease")
+	}
+
+	return e.client.Put(ctx, key, val, clientv3.WithLease(lease.ID))
+}
+
 func (e *Etcd) Delete(ctx context.Context, key string, opts ...clientv3.OpOption) (*clientv3.DeleteResponse, error) {
 	return e.client.Delete(ctx, key, opts...)
+}
+
+func (e *Etcd) GrantLease(ctx context.Context, ttl int64) (*clientv3.LeaseGrantResponse, error) {
+	return e.client.Lease.Grant(ctx, ttl)
 }
 
 // PopulateCache loads config from etcd
@@ -446,6 +473,10 @@ func (e *Etcd) PopulateCache() error {
 
 	if err := e.populateValidationCache(); err != nil {
 		return errors.Wrap(err, "unable to populate schema validation configs from cache")
+	}
+
+	if err := e.populateReadCache(); err != nil {
+		return errors.Wrap(err, "unable to populate read configs from cache")
 	}
 
 	return nil
@@ -553,7 +584,7 @@ func (e *Etcd) populateSchemaCache() error {
 func (e *Etcd) populateRelayCache() error {
 	resp, err := e.Get(context.Background(), CacheRelaysPrefix, clientv3.WithPrefix())
 	if err != nil {
-		return errors.Wrap(err, "unable to fetch protos.Relay messages from etcd")
+		return errors.Wrap(err, "unable to fetch opts.RelayOptions messages from etcd")
 	}
 
 	var count int
@@ -625,6 +656,133 @@ func (e *Etcd) populateValidationCache() error {
 	}
 
 	e.log.Debugf("Loaded '%d' schema validations from etcd", count)
+
+	return nil
+}
+
+// populateReadCache loads cached read configs from etcd.
+// This method MUST be called after populateConnectionCache() and populateSchemaCache()
+func (e *Etcd) populateReadCache() error {
+	resp, err := e.Get(context.Background(), CacheReadsPrefix, clientv3.WithPrefix())
+	if err != nil {
+		return errors.Wrap(err, "unable to fetch opts.ReadOptions messages from etcd")
+	}
+
+	var count int
+
+	for _, v := range resp.Kvs {
+		read := &opts.ReadOptions{}
+		if err := proto.Unmarshal(v.Value, read); err != nil {
+			e.log.Errorf("unable to unmarshal opts.ReadOptions message: %s", err)
+			continue
+		}
+
+		var md *desc.MessageDescriptor
+
+		if err := e.populateDecodeSchemaDetails(read); err != nil {
+			e.log.Errorf("unable to create read '%s' from cache: %s", read.XId, err)
+			continue
+		}
+
+		// TODO: can we move this elsewhere?
+		if read.DecodeOptions != nil && read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_PROTOBUF {
+			var mdErr error
+
+			pbSettings := read.DecodeOptions.ProtobufSettings
+
+			md, mdErr = pb.GetMDFromDescriptorBlob(pbSettings.XMessageDescriptor, pbSettings.ProtobufRootMessage)
+			if mdErr != nil {
+				e.log.Errorf("unable to create read '%s' from cache: unable to generate protobuf message descriptor: %s", read.XId, mdErr)
+				continue
+			}
+		}
+
+		read.XActive = false
+
+		ctx, cxl := context.WithCancel(context.Background())
+
+		count++
+
+		cfg := &types.Read{
+			AttachedClientsMutex: &sync.RWMutex{},
+			AttachedClients:      make(map[string]*types.AttachedStream),
+			PlumberID:            e.PlumberConfig.PlumberID,
+			ReadOptions:          read,
+			ContextCxl:           ctx,
+			CancelFunc:           cxl,
+			Backend:              nil, // Will be filled in by StartRead()
+			MsgDesc:              md,
+			Log:                  logrus.WithField("read_id", read.XId),
+		}
+
+		e.PlumberConfig.SetRead(read.XId, cfg)
+	}
+
+	e.log.Debugf("Loaded '%d' reads from etcd", count)
+
+	return nil
+}
+
+func (e *Etcd) populateCompositeCache() error {
+	resp, err := e.Get(context.Background(), CacheCompositesPrefix, clientv3.WithPrefix())
+	if err != nil {
+		return errors.Wrap(err, "unable to fetch opts.Composite messages from etcd")
+	}
+
+	var count int
+
+	for _, v := range resp.Kvs {
+		comp := &opts.Composite{}
+		if err := proto.Unmarshal(v.Value, comp); err != nil {
+			e.log.Errorf("unable to unmarshal opts.Composite message: %s", err)
+			continue
+		}
+
+		count++
+
+		e.PlumberConfig.SetComposite(comp.XId, comp)
+	}
+
+	e.log.Debugf("Loaded '%d' composite views from etcd", count)
+
+	return nil
+}
+
+// TODO: this method is duplicated from server.go, can we combine and stick somewhere else to avoid duplication?
+func (e *Etcd) populateDecodeSchemaDetails(read *opts.ReadOptions) error {
+	if read.DecodeOptions == nil {
+		return nil
+	}
+
+	schemaID := read.DecodeOptions.SchemaId
+	if schemaID == "" {
+		return nil
+	}
+
+	cachedSchemaOptions := e.PlumberConfig.GetSchema(schemaID)
+	if cachedSchemaOptions == nil {
+		return fmt.Errorf("schema '%s' not found", schemaID)
+	}
+
+	versions := cachedSchemaOptions.GetVersions()
+	latestSchema := versions[len(versions)-1]
+
+	switch read.DecodeOptions.DecodeType {
+	case encoding.DecodeType_DECODE_TYPE_PROTOBUF:
+		// Set the entire struct, since it probably won't be passed if just a schema ID is passed
+		read.DecodeOptions.ProtobufSettings = &encoding.ProtobufSettings{
+			ProtobufRootMessage: latestSchema.GetProtobufSettings().ProtobufRootMessage,
+			XMessageDescriptor:  latestSchema.GetProtobufSettings().XMessageDescriptor,
+		}
+	case encoding.DecodeType_DECODE_TYPE_AVRO:
+		// Set the entire struct, since it probably won't be passed if just a schema ID is passed
+		read.DecodeOptions.AvroSettings = &encoding.AvroSettings{
+			AvroSchemaFile: latestSchema.GetAvroSettings().AvroSchemaFile,
+			Schema:         latestSchema.GetAvroSettings().Schema,
+		}
+	case encoding.DecodeType_DECODE_TYPE_THRIFT:
+		// TODO: implement eventually
+	}
 
 	return nil
 }
