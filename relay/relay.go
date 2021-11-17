@@ -20,6 +20,7 @@ import (
 	sqsTypes "github.com/batchcorp/plumber/backends/awssqs/types"
 	postgresTypes "github.com/batchcorp/plumber/backends/cdcpostgres/types"
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
+	rstreamsTypes "github.com/batchcorp/plumber/backends/rstreams/types"
 	"github.com/batchcorp/plumber/prometheus"
 )
 
@@ -352,9 +353,9 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	//case *redisTypes.RelayMessage:
 	//	r.log.Debugf("flushing %d redis-pubsub message(s)", len(messages))
 	//	err = r.handleRedisPubSub(ctx, conn, messages)
-	//case *rstreamsTypes.RelayMessage:
-	//	r.log.Debugf("flushing %d redis-streams message(s)", len(messages))
-	//	err = r.handleRedisStreams(ctx, conn, messages)
+	case *rstreamsTypes.RelayMessage:
+		r.log.Debugf("flushing %d redis-streams message(s)", len(messages))
+		err = r.handleRedisStreams(ctx, conn, messages)
 	case *postgresTypes.RelayMessage:
 		r.log.Debugf("flushing %d cdc-postgres message(s)", len(messages))
 		err = r.handleCdcPostgres(ctx, conn, messages)
