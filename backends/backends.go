@@ -3,15 +3,15 @@ package backends
 import (
 	"context"
 
-	"github.com/batchcorp/plumber/backends/cdcpostgres"
-
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/backends/awssns"
+	"github.com/batchcorp/plumber/backends/awssqs"
 	"github.com/batchcorp/plumber/backends/cdcmongo"
+	"github.com/batchcorp/plumber/backends/cdcpostgres"
 	"github.com/batchcorp/plumber/backends/kafka"
 	"github.com/batchcorp/plumber/backends/nats"
 	"github.com/batchcorp/plumber/backends/nsq"
@@ -80,8 +80,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 		be, err = kafka.New(connOpts)
 	//case *opts.ConnectionOptions_ActiveMq:
 	//	be, err = activemq.New(connOpts)
-	//case *opts.ConnectionOptions_Awssqs:
-	//	be, err = awssqs.New(connOpts)
+	case *opts.ConnectionOptions_Awssqs:
+		be, err = awssqs.New(connOpts)
 	case *opts.ConnectionOptions_Awssns:
 		be, err = awssns.New(connOpts)
 	//case *opts.ConnectionOptions_AzureServiceBus:

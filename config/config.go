@@ -42,6 +42,7 @@ type Config struct {
 	Reads               map[string]*stypes.Read                `json:"-"`
 	ImportRequests      map[string]*protos.ImportGithubRequest `json:"-"`
 	Validations         map[string]*common.Validation          `json:"-"`
+	Composites          map[string]*opts.Composite             `json:"-"`
 	ConnectionsMutex    *sync.RWMutex                          `json:"-"`
 	ServicesMutex       *sync.RWMutex                          `json:"-"`
 	ReadsMutex          *sync.RWMutex                          `json:"-"`
@@ -49,6 +50,7 @@ type Config struct {
 	SchemasMutex        *sync.RWMutex                          `json:"-"`
 	ImportRequestsMutex *sync.RWMutex                          `json:"-"`
 	ValidationsMutex    *sync.RWMutex                          `json:"-"`
+	CompositesMutex     *sync.RWMutex                          `json:"-"`
 }
 
 // Save is a convenience method of persisting the config to disk via a single call
@@ -90,6 +92,7 @@ func ReadConfig(fileName string) (*Config, error) {
 		SchemasMutex:        &sync.RWMutex{},
 		ImportRequestsMutex: &sync.RWMutex{},
 		ValidationsMutex:    &sync.RWMutex{},
+		CompositesMutex:     &sync.RWMutex{},
 		Connections:         make(map[string]*opts.ConnectionOptions),
 		Relays:              make(map[string]*stypes.Relay),
 		Schemas:             make(map[string]*protos.Schema),
@@ -97,6 +100,7 @@ func ReadConfig(fileName string) (*Config, error) {
 		Reads:               make(map[string]*stypes.Read),
 		ImportRequests:      make(map[string]*protos.ImportGithubRequest),
 		Validations:         make(map[string]*common.Validation),
+		Composites:          make(map[string]*opts.Composite),
 	}
 	if err := json.Unmarshal(data, cfg); err != nil {
 		return nil, errors.Wrapf(err, "could not unmarshal ~/.batchsh/%s", fileName)
@@ -355,4 +359,28 @@ func (c *Config) DeleteValidation(validationID string) {
 	c.ValidationsMutex.Lock()
 	defer c.ValidationsMutex.Unlock()
 	delete(c.Validations, validationID)
+}
+
+// GetComposite retrieves a schema validation from in-memory map
+func (c *Config) GetComposite(id string) *opts.Composite {
+	c.CompositesMutex.RLock()
+	defer c.CompositesMutex.RUnlock()
+
+	conn, _ := c.Composites[id]
+
+	return conn
+}
+
+// SetComposite saves a schema validation to in-memory map
+func (c *Config) SetComposite(id string, comp *opts.Composite) {
+	c.CompositesMutex.Lock()
+	defer c.CompositesMutex.Unlock()
+	c.Composites[id] = comp
+}
+
+// DeleteComposite removes a schema validation from in-memory map
+func (c *Config) DeleteComposite(id string) {
+	c.CompositesMutex.Lock()
+	defer c.CompositesMutex.Unlock()
+	delete(c.Composites, id)
 }
