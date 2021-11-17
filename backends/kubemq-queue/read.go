@@ -11,6 +11,8 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (k *KubeMQ) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan chan *records.ReadRecord, errorChan chan *records.ErrorRecord) error {
@@ -94,11 +96,11 @@ func validateReadOptions(readOpts *opts.ReadOptions) error {
 	}
 
 	if readOpts.KubemqQueue == nil {
-		return errors.New("backend group options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if readOpts.KubemqQueue.Args == nil {
-		return errors.New("backend arg options cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	if readOpts.KubemqQueue.Args.QueueName == "" {

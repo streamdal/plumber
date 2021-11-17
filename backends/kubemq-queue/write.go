@@ -9,6 +9,8 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (k *KubeMQ) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh chan *records.ErrorRecord, messages ...*records.WriteRecord) error {
@@ -46,15 +48,15 @@ func (k *KubeMQ) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorC
 
 func validateWriteOptions(writeOpts *opts.WriteOptions) error {
 	if writeOpts == nil {
-		return errors.New("write options cannot be nil")
+		return validate.ErrEmptyWriteOpts
 	}
 
 	if writeOpts.KubemqQueue == nil {
-		return errors.New("backend group options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if writeOpts.KubemqQueue.Args == nil {
-		return errors.New("backend arg options cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	if writeOpts.KubemqQueue.Args.QueueName == "" {

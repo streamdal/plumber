@@ -6,10 +6,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/types"
-
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+
+	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/validate"
 	"github.com/batchcorp/rabbit"
 )
 
@@ -40,7 +41,7 @@ func New(opts *opts.ConnectionOptions) (*RabbitMQ, error) {
 	r := &RabbitMQ{
 		connOpts: opts,
 		connArgs: connArgs,
-		log:      logrus.WithField("backend", "rabbitmq"),
+		log:      logrus.WithField("backend", BackendName),
 	}
 
 	return r, nil
@@ -105,15 +106,15 @@ func (r *RabbitMQ) Test(_ context.Context) error {
 
 func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 	if connOpts == nil {
-		return errors.New("connection config cannot be nil")
+		return validate.ErrMissingConnOpts
 	}
 
 	if connOpts.Conn == nil {
-		return errors.New("connection object in connection config cannot be nil")
+		return validate.ErrMissingConnCfg
 	}
 
 	if connOpts.GetRabbit() == nil {
-		return errors.New("connection config args cannot be nil")
+		return validate.ErrMissingConnArgs
 	}
 
 	return nil

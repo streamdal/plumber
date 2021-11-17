@@ -15,6 +15,8 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (r *RabbitStreams) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan chan *records.ReadRecord, errorChan chan *records.ErrorRecord) error {
@@ -179,15 +181,15 @@ func (r *RabbitStreams) getOffsetOption(readOpts *opts.ReadOptions) stream.Offse
 
 func validateReadOptions(readOpts *opts.ReadOptions) error {
 	if readOpts == nil {
-		return errors.New("write options cannot be nil")
+		return errors.New("read options cannot be nil")
 	}
 
 	if readOpts.RabbitStreams == nil {
-		return errors.New("backend group options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if readOpts.RabbitStreams.Args == nil {
-		return errors.New("backend arg options cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	return nil

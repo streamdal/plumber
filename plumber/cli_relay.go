@@ -1,15 +1,15 @@
 package plumber
 
 import (
-	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/util"
-	"github.com/batchcorp/plumber/validate"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/api"
 	"github.com/batchcorp/plumber/backends"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/relay"
+	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/validate"
 )
 
 // HandleRelayCmd handles CLI relay mode. Container/envar mode is handled by processEnvRelayFlags

@@ -10,6 +10,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (r *RabbitMQ) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh chan *records.ErrorRecord, messages ...*records.WriteRecord) error {
@@ -37,15 +38,15 @@ func (r *RabbitMQ) Write(ctx context.Context, writeOpts *opts.WriteOptions, erro
 
 func validateWriteOptions(opts *opts.WriteOptions) error {
 	if opts == nil {
-		return errors.New("write options cannot be nil")
+		return validate.ErrEmptyWriteOpts
 	}
 
 	if opts.Rabbit == nil {
-		return errors.New("backend group options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if opts.Rabbit.Args == nil {
-		return errors.New("backend arg options cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	return nil

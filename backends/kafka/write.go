@@ -4,13 +4,15 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
 	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/validate"
 )
 
 // Write is the entry point function for performing write operations in Kafka.
@@ -43,15 +45,15 @@ func (k *Kafka) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh
 
 func validateWriteOptions(opts *opts.WriteOptions) error {
 	if opts == nil {
-		return errors.New("write options cannot be nil")
+		return validate.ErrEmptyWriteOpts
 	}
 
 	if opts.Kafka == nil {
-		return errors.New("backend group options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if opts.Kafka.Args == nil {
-		return errors.New("backend arg options cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	if len(opts.Kafka.Args.Topics) == 0 {

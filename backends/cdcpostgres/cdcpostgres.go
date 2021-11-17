@@ -16,6 +16,7 @@ import (
 
 	"github.com/batchcorp/plumber/backends/cdcpostgres/types"
 	plumberTypes "github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/validate"
 )
 
 const BackendName = "cdc-postgres"
@@ -62,22 +63,22 @@ func New(connOpts *opts.ConnectionOptions) (*CDCPostgres, error) {
 		client:   conn,
 		connOpts: connOpts,
 		connArgs: pgOpts,
-		log:      logrus.WithField("backend", "cdc-postgres"),
+		log:      logrus.WithField("backend", BackendName),
 	}, nil
 
 }
 
 func validateBaseConnOpts(opts *opts.ConnectionOptions) error {
 	if opts == nil {
-		return errors.New("connection config cannot be nil")
+		return validate.ErrMissingConnOpts
 	}
 
 	if opts.Conn == nil {
-		return errors.New("connection object in connection config cannot be nil")
+		return validate.ErrMissingConnCfg
 	}
 
 	if opts.GetPostgres() == nil {
-		return errors.New("connection config args cannot be nil")
+		return validate.ErrMissingConnArgs
 	}
 
 	return nil

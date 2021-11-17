@@ -14,6 +14,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/validate"
 )
 
 const BackendName = "NSQ"
@@ -153,16 +154,16 @@ func (n *NSQ) Test(_ context.Context) error {
 
 func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 	if connOpts == nil {
-		return errors.New("connection config cannot be nil")
+		return validate.ErrMissingConnOpts
 	}
 
 	if connOpts.Conn == nil {
-		return errors.New("connection object in connection config cannot be nil")
+		return validate.ErrMissingConnCfg
 	}
 
 	nsqOpts := connOpts.GetNsq()
 	if nsqOpts == nil {
-		return errors.New("connection config args cannot be nil")
+		return validate.ErrMissingConnArgs
 	}
 
 	if len(connOpts.GetNsq().TlsCaCert) > 0 || len(connOpts.GetNsq().TlsClientCert) > 0 || len(connOpts.GetNsq().TlsClientKey) > 0 {

@@ -12,6 +12,7 @@ import (
 
 	"github.com/batchcorp/plumber/backends/cdcpostgres/types"
 	"github.com/batchcorp/plumber/prometheus"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (c *CDCPostgres) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
@@ -82,15 +83,15 @@ func (c *CDCPostgres) Relay(ctx context.Context, relayOpts *opts.RelayOptions, r
 // validateRelayOptions ensures all required relay options are present
 func validateRelayOptions(relayOpts *opts.RelayOptions) error {
 	if relayOpts == nil {
-		return errors.New("relay opts cannot be nil")
+		return validate.ErrEmptyRelayOpts
 	}
 
 	if relayOpts.Postgres == nil {
-		return errors.New("relay options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if relayOpts.Postgres.Args == nil {
-		return errors.New("relay option args cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	return nil

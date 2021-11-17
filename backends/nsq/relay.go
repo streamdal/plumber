@@ -8,8 +8,10 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
 	"github.com/batchcorp/plumber/backends/nsq/types"
 	"github.com/batchcorp/plumber/prometheus"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (n *NSQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
@@ -64,15 +66,15 @@ func (n *NSQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh c
 // validateRelayOptions ensures all required relay options are present
 func validateRelayOptions(relayOpts *opts.RelayOptions) error {
 	if relayOpts == nil {
-		return errors.New("relay opts cannot be nil")
+		return validate.ErrEmptyRelayOpts
 	}
 
 	if relayOpts.Nsq == nil {
-		return errors.New("NSQ relay options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if relayOpts.Nsq.Args == nil {
-		return errors.New("NSQ relay option args cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	return nil

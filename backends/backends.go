@@ -3,6 +3,8 @@ package backends
 import (
 	"context"
 
+	"github.com/batchcorp/plumber/backends/rpubsub"
+
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
@@ -111,8 +113,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 		be, err = rabbitmq.New(connOpts)
 	case *opts.ConnectionOptions_RabbitStreams:
 		be, err = rabbitStreams.New(connOpts)
-	//case *opts.ConnectionOptions_RedisPubsub:
-	//	be, err = rpubsub.New(cfg)
+	case *opts.ConnectionOptions_RedisPubsub:
+		be, err = rpubsub.New(connOpts)
 	case *opts.ConnectionOptions_RedisStreams:
 		be, err = rstreams.New(connOpts)
 	case *opts.ConnectionOptions_Mongo:

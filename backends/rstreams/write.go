@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/batchcorp/plumber/util"
-
 	"github.com/go-redis/redis/v8"
-
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
+	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (r *RedisStreams) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh chan *records.ErrorRecord, messages ...*records.WriteRecord) error {
@@ -40,19 +40,19 @@ func (r *RedisStreams) Write(ctx context.Context, writeOpts *opts.WriteOptions, 
 
 func validateWriteOptions(writeOpts *opts.WriteOptions) error {
 	if writeOpts == nil {
-		return errors.New("write options cannot be nil")
+		return validate.ErrEmptyWriteOpts
 	}
 
 	if writeOpts.RedisStreams == nil {
-		return errors.New("backend group options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if writeOpts.RedisStreams.Args == nil {
-		return errors.New("backend arg options cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	if len(writeOpts.RedisStreams.Args.Streams) == 0 {
-		return errors.New("you must specify at least one stream to write to")
+		return ErrMissingStream
 	}
 
 	return nil

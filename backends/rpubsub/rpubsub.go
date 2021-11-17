@@ -1,4 +1,4 @@
-package rstreams
+package rpubsub
 
 import (
 	"context"
@@ -14,30 +14,26 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-const BackendName = "redis-streams"
+const BackendName = "redis-pubsub"
 
 var (
-	ErrMissingStream   = errors.New("you must specify at least one stream")
+	ErrMissingChannel  = errors.New("you must specify at least one channel")
 	ErrMissingPassword = errors.New("missing password (either use only password or fill out both)")
 )
 
-type RedisStreams struct {
-	// Base connection options / non-backend-specific options
+type RedisPubsub struct {
 	connOpts *opts.ConnectionOptions
-
-	// Backend-specific args
-	connArgs *args.RedisStreamsConn
-
-	client *redis.Client
-	log    *logrus.Entry
+	connArgs *args.RedisPubSubConn
+	client   *redis.Client
+	log      *logrus.Entry
 }
 
-func New(opts *opts.ConnectionOptions) (*RedisStreams, error) {
-	if err := validateBaseConnOpts(opts); err != nil {
+func New(connOpts *opts.ConnectionOptions) (*RedisPubsub, error) {
+	if err := validateBaseConnOpts(connOpts); err != nil {
 		return nil, errors.Wrap(err, "unable to validate connection options")
 	}
 
-	args := opts.GetRedisStreams()
+	args := connOpts.GetRedisPubsub()
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     args.Address,
@@ -46,24 +42,24 @@ func New(opts *opts.ConnectionOptions) (*RedisStreams, error) {
 		DB:       int(args.Database),
 	})
 
-	return &RedisStreams{
-		connOpts: opts,
+	return &RedisPubsub{
+		connOpts: connOpts,
 		connArgs: args,
 		client:   client,
 		log:      logrus.WithField("backend", BackendName),
 	}, nil
 }
 
-func (r *RedisStreams) Name() string {
+func (r *RedisPubsub) Name() string {
 	return BackendName
 }
 
-func (r *RedisStreams) Close(_ context.Context) error {
+func (r *RedisPubsub) Close(_ context.Context) error {
 	r.client.Close()
 	return nil
 }
 
-func (r *RedisStreams) Test(_ context.Context) error {
+func (r *RedisPubsub) Test(_ context.Context) error {
 	return types.NotImplementedErr
 }
 
@@ -76,7 +72,7 @@ func validateBaseConnOpts(opts *opts.ConnectionOptions) error {
 		return validate.ErrMissingConnCfg
 	}
 
-	redisOpts := opts.GetRedisStreams()
+	redisOpts := opts.GetRedisPubsub()
 	if redisOpts == nil {
 		return validate.ErrMissingConnArgs
 	}

@@ -13,6 +13,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (a *AWSSNS) Write(_ context.Context, writeOpts *opts.WriteOptions, errorCh chan *records.ErrorRecord, messages ...*records.WriteRecord) error {
@@ -41,15 +42,15 @@ func (a *AWSSNS) Write(_ context.Context, writeOpts *opts.WriteOptions, errorCh 
 
 func validateWriteOptions(writeOpts *opts.WriteOptions) error {
 	if writeOpts == nil {
-		return errors.New("write options cannot be nil")
+		return validate.ErrEmptyWriteOpts
 	}
 
 	if writeOpts.Awssns == nil {
-		return errors.New("backend group options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if writeOpts.Awssns.Args == nil {
-		return errors.New("backend arg options cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	topic := writeOpts.Awssns.Args.Topic

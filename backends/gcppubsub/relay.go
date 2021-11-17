@@ -13,6 +13,7 @@ import (
 	"github.com/batchcorp/plumber/backends/gcppubsub/types"
 
 	"github.com/batchcorp/plumber/prometheus"
+	"github.com/batchcorp/plumber/validate"
 )
 
 const RetryReadInterval = 5 * time.Second
@@ -74,15 +75,15 @@ func (g *GCPPubSub) Relay(ctx context.Context, relayOpts *opts.RelayOptions, rel
 
 func validateRelayOptions(relayOpts *opts.RelayOptions) error {
 	if relayOpts == nil {
-		return errors.New("write options cannot be nil")
+		return validate.ErrEmptyRelayOpts
 	}
 
 	if relayOpts.GcpPubsub == nil {
-		return errors.New("backend group options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if relayOpts.GcpPubsub.Args == nil {
-		return errors.New("backend arg options cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	if relayOpts.GcpPubsub.Args.SubscriptionId == "" {

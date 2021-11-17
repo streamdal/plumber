@@ -12,6 +12,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/dynamic"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (a *AWSSNS) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) error {
@@ -51,15 +52,15 @@ func (a *AWSSNS) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) 
 
 func validateDynamicOptions(dynamicOpts *opts.DynamicOptions) error {
 	if dynamicOpts == nil {
-		return errors.New("write options cannot be nil")
+		return validate.ErrEmptyDynamicOpts
 	}
 
 	if dynamicOpts.Awssns == nil {
-		return errors.New("backend group options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if dynamicOpts.Awssns.Args == nil {
-		return errors.New("backend arg options cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	topic := dynamicOpts.Awssns.Args.Topic

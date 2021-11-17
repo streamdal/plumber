@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/batchcorp/plumber/validate"
+
 	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
 
@@ -70,15 +72,15 @@ func (r *RabbitMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, rela
 // validateRelayOptions ensures all required relay options are present
 func validateRelayOptions(relayOpts *opts.RelayOptions) error {
 	if relayOpts == nil {
-		return errors.New("relay opts cannot be nil")
+		return validate.ErrEmptyRelayOpts
 	}
 
 	if relayOpts.Rabbit == nil {
-		return errors.New("rabbit opts cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
 	if relayOpts.Rabbit.Args == nil {
-		return errors.New("rabbit args cannot be nil")
+		return validate.ErrEmptyBackendArgs
 	}
 
 	return nil

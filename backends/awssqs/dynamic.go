@@ -9,6 +9,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/dynamic"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (a *AWSSQS) Dynamic(ctx context.Context, opts *opts.DynamicOptions) error {
@@ -26,44 +27,43 @@ func (a *AWSSQS) Dynamic(ctx context.Context, opts *opts.DynamicOptions) error {
 	}
 
 	// Start up dynamic connection
-	grpc, err := dynamic.New(opts, BackendName)
+	grpc, err := dynamic.New(opts, "AWS SQS")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
 
 	go grpc.Start()
 
-MAIN:
 	for {
 		select {
 		case outbound := <-grpc.OutboundMessageCh:
 			// write
 			if err := a.writeMsg(args, string(outbound.Blob), queueURL); err != nil {
 				llog.Errorf("Unable to replay message: %s", err)
-				break MAIN
+				return nil
 			}
 		case <-ctx.Done():
-			break MAIN
+			return nil
 		}
 	}
 
 	return nil
 }
 
-func validateDynamicOptions(opts *opts.DynamicOptions) error {
-	if opts == nil {
-		return errors.New("dynamic options cannot be nil")
+func validateDynamicOptions(dynamicOpts *opts.DynamicOptions) error {
+	if dynamicOpts == nil {
+		return validate.ErrEmptyDynamicOpts
 	}
 
-	if opts.Awssqs == nil {
-		return errors.New("backend group options cannot be nil")
+	if dynamicOpts.Awssqs == nil {
+		return validate.ErrEmptyBackendGroup
 	}
 
-	if opts.Awssqs.Args == nil {
-		return errors.New("backend arg options cannot be nil")
+	if dynamicOpts.Awssqs.Args == nil {
+		return validate.ErrEmptyBackendArgs
 	}
 
-	if opts.Awssqs.Args.QueueName == "" {
+	if dynamicOpts.Awssqs.Args.QueueName == "" {
 		return ErrMissingQueue
 	}
 

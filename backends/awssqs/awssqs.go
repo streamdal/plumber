@@ -13,6 +13,7 @@ import (
 
 	awsTypes "github.com/batchcorp/plumber/backends/awssqs/types"
 	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/validate"
 )
 
 const BackendName = "aws-sqs"
@@ -47,7 +48,7 @@ func New(connOpts *opts.ConnectionOptions) (*AWSSQS, error) {
 		connOpts: connOpts,
 		connArgs: connOpts.GetAwssqs(),
 		Client:   client,
-		log:      logrus.WithField("backend", "awssqs"),
+		log:      logrus.WithField("backend", BackendName),
 	}, nil
 
 }
@@ -67,15 +68,15 @@ func (a *AWSSQS) Test(_ context.Context) error {
 
 func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 	if connOpts == nil {
-		return errors.New("connection config cannot be nil")
+		return validate.ErrMissingConnOpts
 	}
 
 	if connOpts.Conn == nil {
-		return errors.New("connection object in connection config cannot be nil")
+		return validate.ErrMissingConnCfg
 	}
 
 	if connOpts.GetAwssns() == nil {
-		return errors.New("connection config args cannot be nil")
+		return validate.ErrMissingConnArgs
 	}
 
 	return nil
