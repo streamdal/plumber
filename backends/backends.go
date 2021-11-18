@@ -8,6 +8,7 @@ import (
 	"github.com/batchcorp/plumber/backends/activemq"
 	"github.com/batchcorp/plumber/backends/awssns"
 	"github.com/batchcorp/plumber/backends/awssqs"
+	azureEventhub "github.com/batchcorp/plumber/backends/azure-eventhub"
 	azureServicebus "github.com/batchcorp/plumber/backends/azure-servicebus"
 	"github.com/batchcorp/plumber/backends/cdcmongo"
 	"github.com/batchcorp/plumber/backends/cdcpostgres"
@@ -94,8 +95,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 		be, err = awssns.New(connOpts)
 	case *opts.ConnectionOptions_AzureServiceBus:
 		be, err = azureServicebus.New(connOpts)
-	//case *opts.ConnectionOptions_AzureEventHub:
-	//	be, err = azure_eventhub.New(cfg)
+	case *opts.ConnectionOptions_AzureEventHub:
+		be, err = azureEventhub.New(connOpts)
 	case *opts.ConnectionOptions_Mqtt:
 		be, err = mqtt.New(connOpts)
 	case *opts.ConnectionOptions_GcpPubsub:
