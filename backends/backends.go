@@ -3,17 +3,12 @@ package backends
 import (
 	"context"
 
-	azureServicebus "github.com/batchcorp/plumber/backends/azure-servicebus"
-
-	"github.com/batchcorp/plumber/backends/rpubsub"
-
 	"github.com/pkg/errors"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-
+	"github.com/batchcorp/plumber/backends/activemq"
 	"github.com/batchcorp/plumber/backends/awssns"
 	"github.com/batchcorp/plumber/backends/awssqs"
+	azureServicebus "github.com/batchcorp/plumber/backends/azure-servicebus"
 	"github.com/batchcorp/plumber/backends/cdcmongo"
 	"github.com/batchcorp/plumber/backends/cdcpostgres"
 	"github.com/batchcorp/plumber/backends/gcppubsub"
@@ -24,7 +19,11 @@ import (
 	"github.com/batchcorp/plumber/backends/nsq"
 	rabbitStreams "github.com/batchcorp/plumber/backends/rabbit-streams"
 	"github.com/batchcorp/plumber/backends/rabbitmq"
+	"github.com/batchcorp/plumber/backends/rpubsub"
 	"github.com/batchcorp/plumber/backends/rstreams"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
 // Backend is the interface that all backends implement; the interface is used
@@ -87,8 +86,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 	switch connOpts.Conn.(type) {
 	case *opts.ConnectionOptions_Kafka:
 		be, err = kafka.New(connOpts)
-	//case *opts.ConnectionOptions_ActiveMq:
-	//	be, err = activemq.New(connOpts)
+	case *opts.ConnectionOptions_ActiveMq:
+		be, err = activemq.New(connOpts)
 	case *opts.ConnectionOptions_Awssqs:
 		be, err = awssqs.New(connOpts)
 	case *opts.ConnectionOptions_Awssns:
@@ -101,8 +100,6 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 		be, err = mqtt.New(connOpts)
 	case *opts.ConnectionOptions_GcpPubsub:
 		be, err = gcppubsub.New(connOpts)
-	//case *opts.ConnectionOptions_Mqtt:
-	//	be, err = mqtt.New(connOpts)
 	case *opts.ConnectionOptions_Nats:
 		be, err = nats.New(connOpts)
 	//case *opts.ConnectionOptions_NatsStreaming:
