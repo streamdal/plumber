@@ -51,7 +51,7 @@ func (a *AWSSQS) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsCh
 		if err != nil {
 			errorChan <- &records.ErrorRecord{
 				OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
-				Error:               errors.Wrap(err, "unable to serialize kafka message into JSON").Error(),
+				Error:               errors.Wrap(err, "unable to serialize message into JSON").Error(),
 			}
 		}
 

@@ -11,11 +11,11 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
 
+	"github.com/batchcorp/plumber/backends/awssns/types/typesfakes"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-
-	"github.com/batchcorp/plumber/backends/awssns/types/typesfakes"
 )
 
 var _ = Describe("AWS SNS Backend", func() {

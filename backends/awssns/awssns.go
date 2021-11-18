@@ -8,12 +8,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"github.com/batchcorp/plumber/backends/awssns/types"
+	plumberTypes "github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/validate"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-
-	"github.com/batchcorp/plumber/backends/awssns/types"
-	types2 "github.com/batchcorp/plumber/types"
-	"github.com/batchcorp/plumber/validate"
 )
 
 const BackendName = "AWSSNS"
@@ -59,7 +59,7 @@ func (a *AWSSNS) Close(_ context.Context) error {
 }
 
 func (a *AWSSNS) Test(_ context.Context) error {
-	return types2.NotImplementedErr
+	return plumberTypes.NotImplementedErr
 }
 
 func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
