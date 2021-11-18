@@ -6,24 +6,25 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/batchcorp/plumber/util"
-
 	eventhub "github.com/Azure/azure-event-hubs-go/v3"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (a *AzureEventHub) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan chan *records.ReadRecord, errorChan chan *records.ErrorRecord) error {
-	a.log.Info("Listening for message(s) ...")
+	if err := validateReadOptions(readOpts); err != nil {
+		return errors.Wrap(err, "invalid read options")
+	}
 
 	var count int64
 	var hasRead bool
 
 	handler := func(c context.Context, event *eventhub.Event) error {
-		println("called")
 		count++
 		hasRead = true
 
@@ -57,6 +58,9 @@ func (a *AzureEventHub) Read(ctx context.Context, readOpts *opts.ReadOptions, re
 	if err != nil {
 		return errors.Wrap(err, "unable to get azure eventhub partition list")
 	}
+
+	a.log.Info("Listening for message(s) ...")
+
 	for {
 		for _, partitionID := range runtimeInfo.PartitionIDs {
 			// Start receiving messages
@@ -71,7 +75,10 @@ func (a *AzureEventHub) Read(ctx context.Context, readOpts *opts.ReadOptions, re
 			}
 
 			if !readOpts.Continuous && hasRead {
+				// Test hack since we can't instantiate "eventhub.receiver{}"
+				// if listenerHandle != nil {
 				listenerHandle.Close(ctx)
+				//}
 				return nil
 			}
 		}
@@ -92,4 +99,21 @@ func makeSystemPropertiesMap(properties *eventhub.SystemProperties) map[string]s
 		"partition_id":    fmt.Sprintf("%d", util.DerefInt16(properties.PartitionID)),
 		"enqueued_time":   fmt.Sprintf("%d", util.DerefTime(properties.EnqueuedTime)),
 	}
+}
+
+func validateReadOptions(readOpts *opts.ReadOptions) error {
+	if readOpts == nil {
+		return validate.ErrMissingReadOptions
+	}
+
+	if readOpts.AzureEventHub == nil {
+		return validate.ErrEmptyBackendGroup
+	}
+
+	args := readOpts.AzureEventHub.Args
+	if args == nil {
+		return validate.ErrEmptyBackendArgs
+	}
+
+	return nil
 }

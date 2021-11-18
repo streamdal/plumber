@@ -7,7 +7,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/tools"
 	"github.com/batchcorp/plumber/types"
 	"github.com/batchcorp/plumber/validate"
 
@@ -20,7 +19,7 @@ const BackendName = "azure-eventhub"
 type AzureEventHub struct {
 	connOpts *opts.ConnectionOptions
 	connArgs *args.AzureEventHubConn
-	client   tools.IEventhub
+	client   *eventhub.Hub //TODO: tools.IEventhub eventually
 	log      *logrus.Entry
 }
 
