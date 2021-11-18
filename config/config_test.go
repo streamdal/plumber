@@ -3,7 +3,6 @@ package config
 import (
 	"sync"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	uuid "github.com/satori/go.uuid"
@@ -11,6 +10,7 @@ import (
 	"github.com/batchcorp/plumber/server/types"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
 var _ = Describe("Options", func() {

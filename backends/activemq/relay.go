@@ -1,4 +1,4 @@
-package awssns
+package activemq
 
 import (
 	"context"
@@ -9,6 +9,6 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
-func (a *AWSSNS) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan chan *records.ReadRecord, errorChan chan *records.ErrorRecord) error {
+func (a *ActiveMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
 	return types.NotImplementedErr
 }

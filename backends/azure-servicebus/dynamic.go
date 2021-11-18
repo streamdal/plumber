@@ -7,10 +7,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-
 	"github.com/batchcorp/plumber/dynamic"
 	"github.com/batchcorp/plumber/validate"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
 func (a *AzureServiceBus) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) error {

@@ -165,6 +165,10 @@ github.com/go-redis/redis/v8/internal/rand
 github.com/go-redis/redis/v8/internal/util
 # github.com/go-stack/stack v1.8.0
 github.com/go-stack/stack
+# github.com/go-stomp/stomp v2.1.4+incompatible
+## explicit
+github.com/go-stomp/stomp
+github.com/go-stomp/stomp/frame
 # github.com/goccy/go-json v0.7.6
 github.com/goccy/go-json
 github.com/goccy/go-json/internal/decoder
