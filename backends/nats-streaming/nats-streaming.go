@@ -4,13 +4,14 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"io/ioutil"
 	"net/url"
 
 	"github.com/nats-io/nats.go"
-	"github.com/nats-io/nkeys"
 	"github.com/nats-io/stan.go"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"go.etcd.io/etcd/client/pkg/v3/fileutil"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
@@ -45,11 +46,20 @@ func New(connOpts *opts.ConnectionOptions) (*NatsStreaming, error) {
 		return nil, errors.Wrap(err, "unable to parse address")
 	}
 
-	// Credentials can be specified by a .creds file if users do not wish to pass in the address
+	// Credentials can be specified by a .creds file if users do not wish to pass in with the DSN
 	var creds nats.Option
 	if len(args.UserCredentials) > 0 {
-		creds, err = nkeys.ParseDecoratedJWT(args.UserCredentials)
-		//creds = nats.UserCredentials(args.UserCredentials)
+		if fileutil.Exist(string(args.UserCredentials)) {
+			creds = nats.UserCredentials(string(args.UserCredentials))
+		} else {
+			creds = func(o *nats.Options) error {
+				o.UserJWT = func() (string, error) {
+					return string(args.UserCredentials), nil
+				}
+				o.SignatureCB = nil
+				return nil
+			}
+		}
 	}
 
 	var natsClient *nats.Conn
@@ -107,15 +117,29 @@ func (n *NatsStreaming) Test(_ context.Context) error {
 func generateTLSConfig(args *args.NatsStreamingConn) (*tls.Config, error) {
 	certpool := x509.NewCertPool()
 
-	/*	pemCerts, err := ioutil.ReadFile(args.TlsCaCert)
+	var cert tls.Certificate
+	var err error
+
+	if fileutil.Exist(string(args.TlsClientCert)) {
+		// CLI input, read from file
+		pemCerts, err := ioutil.ReadFile(string(args.TlsCaCert))
 		if err == nil {
+			certpool.AppendCertsFromPEM(pemCerts)
 		}
-	*/
-	certpool.AppendCertsFromPEM(args.TlsCaCert)
-	// Import client certificate/key pair
-	cert, err := tls.X509KeyPair(args.TlsClientCert, args.TlsClientKey)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to load ssl keypair")
+
+		// Import client certificate/key pair
+		cert, err = tls.LoadX509KeyPair(string(args.TlsClientCert), string(args.TlsClientKey))
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to load ssl keypair")
+		}
+
+	} else {
+		certpool.AppendCertsFromPEM(args.TlsCaCert)
+		// Import client certificate/key pair
+		cert, err = tls.X509KeyPair(args.TlsClientCert, args.TlsClientKey)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to load ssl keypair")
+		}
 	}
 
 	// Just to print out the client certificate..

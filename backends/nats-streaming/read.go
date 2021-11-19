@@ -70,6 +70,8 @@ func (n *NatsStreaming) Read(ctx context.Context, readOpts *opts.ReadOptions, re
 		return errors.Wrap(err, "unable to read from nats-streaming")
 	}
 
+	n.log.Info("Listening for messages...")
+
 	sub, err := n.stanClient.Subscribe(readOpts.NatsStreaming.Args.Channel, subFunc, subOptions...)
 	if err != nil {
 		return errors.Wrap(err, "unable to create subscription")

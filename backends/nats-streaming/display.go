@@ -22,6 +22,10 @@ func (n *NatsStreaming) DisplayMessage(msg *records.ReadRecord) error {
 
 	properties := make([][]string, 0)
 
+	for k, v := range record.Metadata {
+		properties = append(properties, []string{k, v})
+	}
+
 	receivedAt := time.Unix(msg.ReceivedAtUnixTsUtc, 0)
 
 	printer.PrintTable(properties, msg.Num, receivedAt, msg.Payload)
@@ -38,6 +42,10 @@ func (n *NatsStreaming) DisplayError(msg *records.ErrorRecord) error {
 func validateReadRecord(msg *records.ReadRecord) error {
 	if msg == nil {
 		return errors.New("msg cannot be nil")
+	}
+
+	if msg.GetNatsStreaming() == nil {
+		return errors.New("nats streaming message cannot be nil")
 	}
 
 	return nil
