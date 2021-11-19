@@ -13,13 +13,18 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (p *Pulsar) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan chan *records.ReadRecord, errorChan chan *records.ErrorRecord) error {
+	if err := validateReadOptions(readOpts); err != nil {
+		return errors.Wrap(err, "invalid read options")
+	}
+
 	consumer, err := p.client.Subscribe(pulsar.ConsumerOptions{
 		Topic:            readOpts.Pulsar.Args.Topic,
 		SubscriptionName: readOpts.Pulsar.Args.SubscriptionName,
-		Type:             p.getSubscriptionType(readOpts),
+		Type:             getSubscriptionType(readOpts),
 	})
 	if err != nil {
 		return errors.Wrap(err, "unable to create pulsar subscription")
@@ -33,9 +38,19 @@ func (p *Pulsar) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsCh
 	var count int64
 
 	for {
-		msg, err := consumer.Receive(context.Background())
+		msg, err := consumer.Receive(ctx)
 		if err != nil {
+			if err == context.Canceled {
+				p.log.Debug("context cancelled")
+				return nil
+			}
+
 			util.WriteError(nil, errorChan, errors.Wrap(err, "unable to read pulsar message"))
+
+			if !readOpts.Continuous {
+				return nil
+			}
+			continue
 		}
 
 		consumer.Ack(msg)
@@ -83,15 +98,40 @@ func (p *Pulsar) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsCh
 }
 
 // getSubscriptionType converts string input of the subscription type to pulsar library's equivalent
-func (p *Pulsar) getSubscriptionType(readOpts *opts.ReadOptions) pulsar.SubscriptionType {
+func getSubscriptionType(readOpts *opts.ReadOptions) pulsar.SubscriptionType {
 	switch readOpts.Pulsar.Args.SubscriptionType.String() {
-	case "exclusive":
+	case "EXCLUSIVE":
 		return pulsar.Exclusive
-	case "failover":
+	case "FAILOVER":
 		return pulsar.Failover
-	case "keyshared":
+	case "KEYSHARED":
 		return pulsar.KeyShared
 	default:
 		return pulsar.Shared
 	}
+}
+
+func validateReadOptions(readOpts *opts.ReadOptions) error {
+	if readOpts == nil {
+		return validate.ErrMissingReadOptions
+	}
+
+	if readOpts.Pulsar == nil {
+		return validate.ErrEmptyBackendGroup
+	}
+
+	args := readOpts.Pulsar.Args
+	if args == nil {
+		return validate.ErrEmptyBackendArgs
+	}
+
+	if args.Topic == "" {
+		return ErrEmptyTopic
+	}
+
+	if args.SubscriptionName == "" {
+		return ErrEmptySubscriptionName
+	}
+
+	return nil
 }

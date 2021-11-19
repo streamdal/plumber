@@ -9,9 +9,14 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (p *Pulsar) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh chan *records.ErrorRecord, messages ...*records.WriteRecord) error {
+	if err := validateWriteOptions(writeOpts); err != nil {
+		return errors.Wrap(err, "invalid write options")
+	}
 	producer, err := p.client.CreateProducer(pulsar.ProducerOptions{Topic: writeOpts.Pulsar.Args.Topic})
 	if err != nil {
 		return errors.Wrap(err, "unable to create Pulsar producer")
@@ -23,11 +28,29 @@ func (p *Pulsar) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorC
 			EventTime: time.Now().UTC(),
 		}
 		if _, err := producer.Send(ctx, pm); err != nil {
-			errorCh <- &records.ErrorRecord{
-				Error:               err.Error(),
-				OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
-			}
+			util.WriteError(p.log, errorCh, errors.Wrapf(err, "unable to publish message to Pulsar"))
 		}
+	}
+
+	return nil
+}
+
+func validateWriteOptions(writeOpts *opts.WriteOptions) error {
+	if writeOpts == nil {
+		return validate.ErrEmptyWriteOpts
+	}
+
+	if writeOpts.Pulsar == nil {
+		return validate.ErrEmptyBackendGroup
+	}
+
+	args := writeOpts.Pulsar.Args
+	if args == nil {
+		return validate.ErrEmptyBackendArgs
+	}
+
+	if args.Topic == "" {
+		return ErrEmptyTopic
 	}
 
 	return nil
