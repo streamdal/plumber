@@ -18,6 +18,7 @@ import (
 	"github.com/batchcorp/plumber/backends/mqtt"
 	"github.com/batchcorp/plumber/backends/nats"
 	"github.com/batchcorp/plumber/backends/nsq"
+	"github.com/batchcorp/plumber/backends/pulsar"
 	rabbitStreams "github.com/batchcorp/plumber/backends/rabbit-streams"
 	"github.com/batchcorp/plumber/backends/rabbitmq"
 	"github.com/batchcorp/plumber/backends/rpubsub"
@@ -107,8 +108,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 	//	be, err = nats_streaming.New(connOpts)
 	case *opts.ConnectionOptions_Nsq:
 		be, err = nsq.New(connOpts)
-	//case *opts.ConnectionOptions_Pulsar:
-	//	be, err = pulsar.New(connOpts)
+	case *opts.ConnectionOptions_Pulsar:
+		be, err = pulsar.New(connOpts)
 	case *opts.ConnectionOptions_Rabbit:
 		be, err = rabbitmq.New(connOpts)
 	case *opts.ConnectionOptions_RabbitStreams:

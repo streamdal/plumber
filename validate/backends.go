@@ -6,9 +6,11 @@ var (
 
 	// Connection
 
-	ErrMissingConnOpts = errors.New("connection config cannot be nil")
-	ErrMissingConnCfg  = errors.New("connection object in connection config cannot be nil")
-	ErrMissingConnArgs = errors.New("connection config args cannot be nil")
+	ErrMissingConnOpts   = errors.New("connection config cannot be nil")
+	ErrMissingConnCfg    = errors.New("connection object in connection config cannot be nil")
+	ErrMissingConnArgs   = errors.New("connection config args cannot be nil")
+	ErrMissingClientKey  = errors.New("TLS key cannot be empty if TLS certificate is provided")
+	ErrMissingClientCert = errors.New("TLS certificate cannot be empty if TLS key is provided")
 
 	// Relay / Display
 

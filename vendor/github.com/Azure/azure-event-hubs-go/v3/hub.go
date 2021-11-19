@@ -75,18 +75,18 @@ type (
 	// Sender provides the ability to send a messages
 	Sender interface {
 		Send(ctx context.Context, event *Event, opts ...SendOption) error
-		SendBatch(ctx context.Context, iterator BatchIterator, opts ...BatchOption) error
+		SendBatch(ctx context.Context, batch *EventBatch, opts ...SendOption) error
 	}
 
 	// PartitionedReceiver provides the ability to receive messages from a given partition
 	PartitionedReceiver interface {
-		Receive(ctx context.Context, partitionID string, handler Handler, opts ...ReceiveOption) (*ListenerHandle, error)
+		Receive(ctx context.Context, partitionID string, handler Handler, opts ...ReceiveOption) (ListenerHandle, error)
 	}
 
 	// Manager provides the ability to query management node information about a node
 	Manager interface {
-		GetRuntimeInformation(context.Context) (*HubRuntimeInformation, error)
-		GetPartitionInformation(context.Context, string) (*HubPartitionRuntimeInformation, error)
+		GetRuntimeInformation(context.Context) (HubRuntimeInformation, error)
+		GetPartitionInformation(context.Context, string) (HubPartitionRuntimeInformation, error)
 	}
 
 	// HubOption provides structure for configuring new Event Hub clients. For building new Event Hubs, see
