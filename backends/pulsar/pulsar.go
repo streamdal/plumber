@@ -19,6 +19,11 @@ import (
 
 const BackendName = "pulsar"
 
+var (
+	ErrEmptyTopic            = errors.New("topic cannot be empty")
+	ErrEmptySubscriptionName = errors.New("subscription name cannot be empty")
+)
+
 type Pulsar struct {
 	connOpts *opts.ConnectionOptions
 	connArgs *args.PulsarConn
@@ -31,32 +36,7 @@ func New(connOpts *opts.ConnectionOptions) (*Pulsar, error) {
 		return nil, errors.Wrap(err, "invalid connection options")
 	}
 
-	clientOpts := pulsar.ClientOptions{
-		URL:                        connOpts.GetPulsar().Dsn,
-		OperationTimeout:           30 * time.Second,
-		ConnectionTimeout:          util.DurationSec(connOpts.GetPulsar().ConnectTimeoutSeconds),
-		TLSAllowInsecureConnection: connOpts.GetPulsar().InsecureTls,
-	}
-
-	if len(connOpts.GetPulsar().TlsClientCert) > 0 && len(connOpts.GetPulsar().TlsClientKey) > 0 {
-		if fileutil.Exist(string(connOpts.GetPulsar().TlsClientCert)) {
-			// Certs inputted as files
-			clientOpts.Authentication = pulsar.NewAuthenticationTLS(
-				string(connOpts.GetPulsar().TlsClientCert),
-				string(connOpts.GetPulsar().TlsClientKey),
-			)
-		} else {
-			// Certs inputted as strings
-			clientOpts.Authentication = pulsar.NewAuthenticationFromTLSCertSupplier(func() (*tls.Certificate, error) {
-				return &tls.Certificate{
-					Certificate: [][]byte{connOpts.GetPulsar().TlsClientCert},
-					PrivateKey:  connOpts.GetPulsar().TlsClientKey,
-				}, nil
-			})
-		}
-	}
-
-	client, err := pulsar.NewClient(clientOpts)
+	client, err := pulsar.NewClient(*getClientOptions(connOpts))
 	if err != nil {
 		return nil, errors.Wrap(err, "Could not instantiate Pulsar client")
 	}
@@ -68,6 +48,37 @@ func New(connOpts *opts.ConnectionOptions) (*Pulsar, error) {
 		log:      logrus.WithField("backend", BackendName),
 	}, nil
 
+}
+
+func getClientOptions(connOpts *opts.ConnectionOptions) *pulsar.ClientOptions {
+	args := connOpts.GetPulsar()
+
+	clientOpts := &pulsar.ClientOptions{
+		URL:                        args.Dsn,
+		OperationTimeout:           30 * time.Second,
+		ConnectionTimeout:          util.DurationSec(args.ConnectTimeoutSeconds),
+		TLSAllowInsecureConnection: args.InsecureTls,
+	}
+
+	if len(args.TlsClientCert) > 0 && len(args.TlsClientKey) > 0 {
+		if fileutil.Exist(string(args.TlsClientCert)) {
+			// Certs inputted as files
+			clientOpts.Authentication = pulsar.NewAuthenticationTLS(
+				string(args.TlsClientCert),
+				string(args.TlsClientKey),
+			)
+		} else {
+			// Certs inputted as strings
+			clientOpts.Authentication = pulsar.NewAuthenticationFromTLSCertSupplier(func() (*tls.Certificate, error) {
+				return &tls.Certificate{
+					Certificate: [][]byte{args.TlsClientCert},
+					PrivateKey:  args.TlsClientKey,
+				}, nil
+			})
+		}
+	}
+
+	return clientOpts
 }
 
 func (p *Pulsar) Name() string {
@@ -92,15 +103,24 @@ func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 		return validate.ErrMissingConnCfg
 	}
 
-	if connOpts.GetPulsar() == nil {
+	pulsarOpts := connOpts.GetPulsar()
+	if pulsarOpts == nil {
 		return validate.ErrMissingConnArgs
 	}
 
-	if len(connOpts.GetPulsar().TlsClientCert) > 0 && len(connOpts.GetPulsar().TlsClientKey) == 0 {
+	if pulsarOpts.Dsn == "" {
+		return validate.ErrMissingDSN
+	}
+
+	if pulsarOpts.ConnectTimeoutSeconds <= 0 {
+		return validate.ErrInvalidConnTimeout
+	}
+
+	if len(pulsarOpts.TlsClientCert) > 0 && len(pulsarOpts.TlsClientKey) == 0 {
 		return validate.ErrMissingClientKey
 	}
 
-	if len(connOpts.GetPulsar().TlsClientKey) > 0 && len(connOpts.GetPulsar().TlsClientCert) == 0 {
+	if len(pulsarOpts.TlsClientKey) > 0 && len(pulsarOpts.TlsClientCert) == 0 {
 		return validate.ErrMissingClientCert
 	}
 
