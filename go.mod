@@ -38,6 +38,7 @@ require (
 	github.com/mcuadros/go-lookup v0.0.0-20200831155250-80f87a4fa5ee
 	github.com/nakabonne/tstorage v0.3.5
 	github.com/nats-io/nats.go v1.13.0
+	github.com/nats-io/stan.go v0.10.2
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.16.5

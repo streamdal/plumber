@@ -380,6 +380,10 @@ github.com/nats-io/nats.go/util
 github.com/nats-io/nkeys
 # github.com/nats-io/nuid v1.0.1
 github.com/nats-io/nuid
+# github.com/nats-io/stan.go v0.10.2
+## explicit
+github.com/nats-io/stan.go
+github.com/nats-io/stan.go/pb
 # github.com/nsqio/go-nsq v1.0.8
 ## explicit
 github.com/nsqio/go-nsq
