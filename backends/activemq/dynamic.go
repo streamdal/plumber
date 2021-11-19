@@ -6,10 +6,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber/dynamic"
 	"github.com/batchcorp/plumber/validate"
-
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
 func (a *ActiveMQ) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) error {
@@ -40,6 +39,7 @@ func (a *ActiveMQ) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions
 			llog.Debugf("Replayed message to ActiveMQ '%s' for replay '%s'", destination, outbound.ReplayId)
 		case <-ctx.Done():
 			a.log.Warning("context cancelled")
+			return nil
 		}
 	}
 
