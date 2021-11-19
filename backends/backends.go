@@ -3,6 +3,8 @@ package backends
 import (
 	"context"
 
+	natsStreaming "github.com/batchcorp/plumber/backends/nats-streaming"
+
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber/backends/activemq"
@@ -104,8 +106,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 		be, err = gcppubsub.New(connOpts)
 	case *opts.ConnectionOptions_Nats:
 		be, err = nats.New(connOpts)
-	//case *opts.ConnectionOptions_NatsStreaming:
-	//	be, err = nats_streaming.New(connOpts)
+	case *opts.ConnectionOptions_NatsStreaming:
+		be, err = natsStreaming.New(connOpts)
 	case *opts.ConnectionOptions_Nsq:
 		be, err = nsq.New(connOpts)
 	case *opts.ConnectionOptions_Pulsar:
