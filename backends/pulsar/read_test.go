@@ -14,22 +14,64 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/backends/pulsar/pulsarfakes"
+	"github.com/batchcorp/plumber/validate"
 )
 
 var _ = Describe("Pulsar Backend", func() {
+	var readOpts *opts.ReadOptions
 
-	readOpts := &opts.ReadOptions{
-		Continuous: false,
-		Pulsar: &opts.ReadGroupPulsarOptions{
-			Args: &args.PulsarReadArgs{
-				Topic:            "test",
-				SubscriptionName: "test",
-				SubscriptionType: args.SubscriptionType_SHARED,
+	BeforeEach(func() {
+		readOpts = &opts.ReadOptions{
+			Pulsar: &opts.ReadGroupPulsarOptions{
+				Args: &args.PulsarReadArgs{
+					Topic:            "test",
+					SubscriptionName: "test",
+					SubscriptionType: args.SubscriptionType_SHARED,
+				},
 			},
-		},
-	}
+		}
+	})
+
+	Context("validateReadOptions", func() {
+		It("validates nil read options", func() {
+			err := validateReadOptions(nil)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(Equal(validate.ErrMissingReadOptions))
+		})
+		It("validates missing backend group", func() {
+			readOpts.Pulsar = nil
+			err := validateReadOptions(readOpts)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(Equal(validate.ErrEmptyBackendGroup))
+		})
+		It("validates missing backend args", func() {
+			readOpts.Pulsar.Args = nil
+			err := validateReadOptions(readOpts)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(Equal(validate.ErrEmptyBackendArgs))
+		})
+		It("validates empty topic", func() {
+			readOpts.Pulsar.Args.Topic = ""
+			err := validateReadOptions(readOpts)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(Equal(ErrEmptyTopic))
+		})
+		It("validates empty subscription name", func() {
+			readOpts.Pulsar.Args.SubscriptionName = ""
+			err := validateReadOptions(readOpts)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(Equal(ErrEmptySubscriptionName))
+		})
+	})
 
 	Context("Read", func() {
+		It("validates read options", func() {
+			p := &Pulsar{}
+			err := p.Read(context.Background(), nil, nil, nil)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring(validate.ErrMissingReadOptions.Error()))
+		})
+
 		It("writes to error channel on failure to receive", func() {
 			testErr := errors.New("test err")
 
@@ -104,5 +146,4 @@ var _ = Describe("Pulsar Backend", func() {
 			Expect(getSubscriptionType(readOpts)).To(Equal(pulsar.KeyShared))
 		})
 	})
-
 })

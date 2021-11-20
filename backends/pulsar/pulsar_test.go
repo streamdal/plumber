@@ -1,6 +1,7 @@
 package pulsar
 
 import (
+	"github.com/apache/pulsar-client-go/pulsar"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -27,6 +28,32 @@ var _ = Describe("Pulsar Backend", func() {
 		It("returns not implemented", func() {
 			p := &Pulsar{}
 			Expect(p.Test(nil)).To(Equal(types.NotImplementedErr))
+		})
+	})
+
+	Context("Name", func() {
+		It("returns backend name", func() {
+			p := &Pulsar{}
+			Expect(p.Name()).To(Equal("pulsar"))
+		})
+	})
+
+	Context("getClientOptions", func() {
+		It("handles TLS certs as strings", func() {
+			connOpts := &opts.ConnectionOptions{
+				Conn: &opts.ConnectionOptions_Pulsar{
+					Pulsar: &args.PulsarConn{
+						Dsn:                   "localhost",
+						ConnectTimeoutSeconds: 1,
+						TlsClientKey:          []byte(`---testcert---`),
+						TlsClientCert:         []byte(`---testcert---`),
+					},
+				},
+			}
+
+			cfg := getClientOptions(connOpts)
+
+			Expect(cfg).To(BeAssignableToTypeOf(&pulsar.ClientOptions{}))
 		})
 	})
 
@@ -93,6 +120,35 @@ var _ = Describe("Pulsar Backend", func() {
 			err := validateBaseConnOpts(connOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(validate.ErrMissingClientCert))
+		})
+		It("validates connect timeout", func() {
+			connOpts := &opts.ConnectionOptions{
+				Conn: &opts.ConnectionOptions_Pulsar{
+					Pulsar: &args.PulsarConn{
+						Dsn:                   "test",
+						TlsClientCert:         nil,
+						TlsClientKey:          []byte(`test`),
+						ConnectTimeoutSeconds: 0,
+					},
+				},
+			}
+			err := validateBaseConnOpts(connOpts)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(Equal(validate.ErrInvalidConnTimeout))
+		})
+		It("passes validation", func() {
+			connOpts := &opts.ConnectionOptions{
+				Conn: &opts.ConnectionOptions_Pulsar{
+					Pulsar: &args.PulsarConn{
+						Dsn:                   "test",
+						TlsClientCert:         []byte(`test`),
+						TlsClientKey:          []byte(`test`),
+						ConnectTimeoutSeconds: 1,
+					},
+				},
+			}
+			err := validateBaseConnOpts(connOpts)
+			Expect(err).ToNot(HaveOccurred())
 		})
 	})
 })

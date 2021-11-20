@@ -64,5 +64,9 @@ func validateDynamicOptions(dynamicOpts *opts.DynamicOptions) error {
 		return validate.ErrEmptyBackendArgs
 	}
 
+	if dynamicOpts.Pulsar.Args.Topic == "" {
+		return ErrEmptyTopic
+	}
+
 	return nil
 }

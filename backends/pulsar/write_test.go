@@ -14,16 +14,58 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/backends/pulsar/pulsarfakes"
+	"github.com/batchcorp/plumber/validate"
 )
 
 var _ = Describe("Pulsar Backend", func() {
+	var writeOpts *opts.WriteOptions
 
-	writeOpts := &opts.WriteOptions{
-		Pulsar: &opts.WriteGroupPulsarOptions{
-			Args: &args.PulsarWriteArgs{Topic: "testing"},
-		},
-	}
+	BeforeEach(func() {
+		writeOpts = &opts.WriteOptions{
+			Pulsar: &opts.WriteGroupPulsarOptions{
+				Args: &args.PulsarWriteArgs{Topic: "testing"},
+			},
+		}
+	})
+
+	Context("validateWriteOptions", func() {
+		It("validates nil dynamic options", func() {
+			err := validateWriteOptions(nil)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(Equal(validate.ErrEmptyWriteOpts))
+		})
+		It("validates nil backend group", func() {
+			writeOpts.Pulsar = nil
+			err := validateWriteOptions(writeOpts)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(Equal(validate.ErrEmptyBackendGroup))
+		})
+		It("validates empty backend args", func() {
+			writeOpts.Pulsar.Args = nil
+			err := validateWriteOptions(writeOpts)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(Equal(validate.ErrEmptyBackendArgs))
+		})
+		It("validates empty topic", func() {
+			writeOpts.Pulsar.Args.Topic = ""
+			err := validateWriteOptions(writeOpts)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(Equal(ErrEmptyTopic))
+		})
+		It("passes validation", func() {
+			err := validateWriteOptions(writeOpts)
+			Expect(err).ToNot(HaveOccurred())
+		})
+	})
+
 	Context("Write", func() {
+		It("validates write options", func() {
+			p := &Pulsar{}
+			err := p.Write(context.Background(), nil, nil, nil)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring(validate.ErrEmptyWriteOpts.Error()))
+		})
+
 		It("returns error when producer fails to create", func() {
 			testErr := errors.New("test err")
 
