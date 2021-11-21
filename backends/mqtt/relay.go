@@ -32,15 +32,8 @@ func (m *MQTT) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh 
 		return err
 	}
 
-	for {
-		select {
-		case <-ctx.Done():
-			m.log.Info("Received shutdown signal, existing relayer")
-			return nil
-		default:
-			// noop
-		}
-	}
+	<-ctx.Done()
+	m.log.Info("Received shutdown signal, existing relayer")
 
 	return nil
 }
@@ -59,7 +52,7 @@ func validateRelayOptions(relayOpts *opts.RelayOptions) error {
 	}
 
 	if relayOpts.Mqtt.Args.Topic == "" {
-		return errors.New("topic cannot be empty")
+		return ErrEmptyTopic
 	}
 
 	return nil

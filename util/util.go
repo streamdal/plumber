@@ -136,3 +136,8 @@ func DerefInt16(v *int16) int16 {
 
 	return *v
 }
+
+func FileExists(path []byte) bool {
+	_, err := os.Stat(string(path))
+	return err == nil
+}

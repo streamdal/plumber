@@ -32,6 +32,8 @@ var (
 	ErrMissingTLSKey  = errors.New("--tls-client-key-file cannot be blank if using ssl")
 	ErrMissingTlsCert = errors.New("--tls-client-cert-file cannot be blank if using ssl")
 	ErrMissingTLSCA   = errors.New("--tls-ca-file cannot be blank if using ssl")
+	ErrWriteTimeout   = errors.New("write timeout must be greater than 0")
+	ErrEmptyTopic     = errors.New("Topic cannot be empty")
 )
 
 type MQTT struct {
@@ -131,15 +133,29 @@ func createClientOptions(args *args.MQTTConn, uri *url.URL) (*pahomqtt.ClientOpt
 func generateTLSConfig(args *args.MQTTConn) (*tls.Config, error) {
 	certpool := x509.NewCertPool()
 
-	pemCerts, err := ioutil.ReadFile(args.TlsOptions.CaFile)
-	if err == nil {
-		certpool.AppendCertsFromPEM(pemCerts)
-	}
-
 	// Import client certificate/key pair
-	cert, err := tls.LoadX509KeyPair(args.TlsOptions.CertFile, args.TlsOptions.KeyFile)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to load ssl keypair")
+	var cert tls.Certificate
+	var err error
+
+	if util.FileExists(args.TlsOptions.ClientCert) {
+		// CLI input, read from file
+		pemCerts, err := ioutil.ReadFile(string(args.TlsOptions.ClientCert))
+		if err == nil {
+			certpool.AppendCertsFromPEM(pemCerts)
+		}
+
+		cert, err = tls.LoadX509KeyPair(string(args.TlsOptions.ClientCert), string(args.TlsOptions.ClientKey))
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to load ssl keypair")
+		}
+	} else {
+		// Server input
+		certpool.AppendCertsFromPEM(args.TlsOptions.CaFile)
+
+		cert, err = tls.X509KeyPair(args.TlsOptions.ClientCert, args.TlsOptions.ClientKey)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to load ssl keypair")
+		}
 	}
 
 	// Just to print out the client certificate..
@@ -173,15 +189,15 @@ func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 	}
 
 	if strings.HasPrefix(mqttOpts.Address, "ssl") {
-		if mqttOpts.TlsOptions.KeyFile == "" {
+		if len(mqttOpts.TlsOptions.ClientKey) == 0 {
 			return ErrMissingTLSKey
 		}
 
-		if mqttOpts.TlsOptions.CertFile == "" {
+		if len(mqttOpts.TlsOptions.ClientCert) == 0 {
 			return ErrMissingTlsCert
 		}
 
-		if mqttOpts.TlsOptions.CaFile == "" {
+		if len(mqttOpts.TlsOptions.CaFile) == 0 {
 			return ErrMissingTLSCA
 		}
 	}
