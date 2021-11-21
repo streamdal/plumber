@@ -8,7 +8,6 @@ import (
 	"github.com/apache/pulsar-client-go/pulsar"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"go.etcd.io/etcd/client/pkg/v3/fileutil"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
@@ -61,7 +60,7 @@ func getClientOptions(connOpts *opts.ConnectionOptions) *pulsar.ClientOptions {
 	}
 
 	if len(args.TlsClientCert) > 0 && len(args.TlsClientKey) > 0 {
-		if fileutil.Exist(string(args.TlsClientCert)) {
+		if util.FileExists(args.TlsClientCert) {
 			// Certs inputted as files
 			clientOpts.Authentication = pulsar.NewAuthenticationTLS(
 				string(args.TlsClientCert),

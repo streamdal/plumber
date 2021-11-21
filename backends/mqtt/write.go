@@ -15,7 +15,7 @@ import (
 
 func (m *MQTT) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh chan *records.ErrorRecord, messages ...*records.WriteRecord) error {
 	if err := validateWriteOptions(writeOpts); err != nil {
-		return errors.New("unable to validate write options")
+		return errors.Wrap(err, "unable to validate write options")
 	}
 
 	timeout := util.DurationSec(writeOpts.Mqtt.Args.WriteTimeoutSeconds)
@@ -24,11 +24,15 @@ func (m *MQTT) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh 
 		token := m.client.Publish(writeOpts.Mqtt.Args.Topic, byte(int(m.connArgs.QosLevel)), false, msg.Input)
 
 		if !token.WaitTimeout(timeout) {
-			return fmt.Errorf("timed out attempting to publish message after %d seconds", writeOpts.Mqtt.Args.WriteTimeoutSeconds)
+			err := fmt.Errorf("timed out attempting to publish message after %d seconds", writeOpts.Mqtt.Args.WriteTimeoutSeconds)
+			util.WriteError(m.log, errorCh, err)
+			return err
 		}
 
 		if token.Error() != nil {
-			return errors.Wrap(token.Error(), "unable to complete publish")
+			err := errors.Wrap(token.Error(), "unable to complete publish")
+			util.WriteError(m.log, errorCh, err)
+			return err
 		}
 	}
 
@@ -44,12 +48,17 @@ func validateWriteOptions(writeOpts *opts.WriteOptions) error {
 		return validate.ErrEmptyBackendGroup
 	}
 
-	if writeOpts.Mqtt.Args == nil {
+	args := writeOpts.Mqtt.Args
+	if args == nil {
 		return validate.ErrEmptyBackendArgs
 	}
 
-	if writeOpts.Mqtt.Args.Topic == "" {
-		return errors.New("Topic cannot be empty")
+	if args.Topic == "" {
+		return ErrEmptyTopic
+	}
+
+	if args.WriteTimeoutSeconds <= 0 {
+		return ErrWriteTimeout
 	}
 
 	return nil

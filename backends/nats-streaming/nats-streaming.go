@@ -11,11 +11,11 @@ import (
 	"github.com/nats-io/stan.go"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"go.etcd.io/etcd/client/pkg/v3/fileutil"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
 	"github.com/batchcorp/plumber/validate"
 )
 
@@ -49,7 +49,7 @@ func New(connOpts *opts.ConnectionOptions) (*NatsStreaming, error) {
 	// Credentials can be specified by a .creds file if users do not wish to pass in with the DSN
 	var creds nats.Option
 	if len(args.UserCredentials) > 0 {
-		if fileutil.Exist(string(args.UserCredentials)) {
+		if util.FileExists(args.UserCredentials) {
 			creds = nats.UserCredentials(string(args.UserCredentials))
 		} else {
 			creds = func(o *nats.Options) error {
@@ -120,14 +120,13 @@ func generateTLSConfig(args *args.NatsStreamingConn) (*tls.Config, error) {
 	var cert tls.Certificate
 	var err error
 
-	if fileutil.Exist(string(args.TlsClientCert)) {
+	if util.FileExists(args.TlsClientCert) {
 		// CLI input, read from file
 		pemCerts, err := ioutil.ReadFile(string(args.TlsCaCert))
 		if err == nil {
 			certpool.AppendCertsFromPEM(pemCerts)
 		}
 
-		// Import client certificate/key pair
 		cert, err = tls.LoadX509KeyPair(string(args.TlsClientCert), string(args.TlsClientKey))
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to load ssl keypair")
@@ -135,7 +134,7 @@ func generateTLSConfig(args *args.NatsStreamingConn) (*tls.Config, error) {
 
 	} else {
 		certpool.AppendCertsFromPEM(args.TlsCaCert)
-		// Import client certificate/key pair
+
 		cert, err = tls.X509KeyPair(args.TlsClientCert, args.TlsClientKey)
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to load ssl keypair")

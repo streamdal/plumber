@@ -3,7 +3,6 @@ package mqtt
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -63,8 +62,6 @@ func (m *MQTT) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan
 
 	m.log.Info("Listening for messages...")
 
-	fmt.Printf("QOS: %d\n", m.connArgs.QosLevel)
-
 	token := m.client.Subscribe(readOpts.Mqtt.Args.Topic, byte(m.connArgs.QosLevel), readFunc)
 	if err := token.Error(); err != nil {
 		return err
@@ -77,19 +74,20 @@ func (m *MQTT) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan
 
 func validateReadOptions(readOpts *opts.ReadOptions) error {
 	if readOpts == nil {
-		return errors.New("read options cannot be nil")
+		return validate.ErrMissingReadOptions
 	}
 
 	if readOpts.Mqtt == nil {
 		return validate.ErrEmptyBackendGroup
 	}
 
-	if readOpts.Mqtt.Args == nil {
+	args := readOpts.Mqtt.Args
+	if args == nil {
 		return validate.ErrEmptyBackendArgs
 	}
 
-	if readOpts.Mqtt.Args.Topic == "" {
-		return errors.New("topic cannot be empty")
+	if args.Topic == "" {
+		return ErrEmptyTopic
 	}
 
 	return nil
