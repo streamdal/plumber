@@ -12,27 +12,23 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (a *AzureEventHub) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) error {
+func (a *AzureEventHub) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
 	if err := validateDynamicOptions(dynamicOpts); err != nil {
 		return errors.Wrap(err, "invalid dynamic options")
 	}
 
 	llog := logrus.WithField("pkg", "azure-eventhub/dynamic")
 
-	// Start up dynamic connection
-	grpc, err := dynamic.New(dynamicOpts, "Azure Event Hub")
-	if err != nil {
-		return errors.Wrap(err, "could not establish connection to Batch")
-	}
-
-	go grpc.Start()
+	go dynamicSvc.Start("Azure Event Hub")
 
 	sendOpts := make([]eventhub.SendOption, 0)
+
+	outboundCh := dynamicSvc.Read()
 
 	// Continually loop looking for messages on the channel.
 	for {
 		select {
-		case outbound := <-grpc.OutboundMessageCh:
+		case outbound := <-outboundCh:
 
 			event := eventhub.NewEvent(outbound.Blob)
 			if dynamicOpts.AzureEventHub.Args.PartitionKey != "" {

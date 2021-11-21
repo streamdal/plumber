@@ -15,25 +15,21 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
-func (a *AWSSNS) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) error {
+func (a *AWSSNS) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
 	if err := validateDynamicOptions(dynamicOpts); err != nil {
 		return errors.Wrap(err, "unable to validate dynamic options")
 	}
 
-	// Start up dynamic connection
-	grpc, err := dynamic.New(dynamicOpts, "AWS SNS")
-	if err != nil {
-		return errors.Wrap(err, "could not establish connection to Batch")
-	}
-
-	go grpc.Start()
+	go dynamicSvc.Start("AWS SNS")
 
 	topic := dynamicOpts.Awssns.Args.Topic
+
+	outboundCh := dynamicSvc.Read()
 
 	// Continually loop looking for messages on the channel.
 	for {
 		select {
-		case outbound := <-grpc.OutboundMessageCh:
+		case outbound := <-outboundCh:
 			_, err := a.Service.Publish(&sns.PublishInput{
 				Message:  aws.String(string(outbound.Blob)),
 				TopicArn: aws.String(topic),

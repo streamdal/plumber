@@ -11,25 +11,21 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (n *Nats) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) error {
+func (n *Nats) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
 	if err := validateDynamicOptions(dynamicOpts); err != nil {
 		return errors.Wrap(err, "unable to validate dynamic options")
 	}
 
-	// Start up dynamic connection
-	grpc, err := dynamic.New(dynamicOpts, "Nats")
-	if err != nil {
-		return errors.Wrap(err, "could not establish connection to Batch")
-	}
-
-	go grpc.Start()
+	go dynamicSvc.Start("Nats")
 
 	subject := dynamicOpts.Nats.Args.Subject
+
+	outboundCh := dynamicSvc.Read()
 
 	// Continually loop looking for messages on the channel.
 	for {
 		select {
-		case outbound := <-grpc.OutboundMessageCh:
+		case outbound := <-outboundCh:
 			if err := n.Client.Publish(subject, outbound.Blob); err != nil {
 				n.log.Errorf("Unable to replay message: %s", err)
 				break

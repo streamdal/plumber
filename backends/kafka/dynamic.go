@@ -15,7 +15,7 @@ import (
 
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
 // which are then written to the message bus.
-func (k *Kafka) Dynamic(ctx context.Context, opts *opts.DynamicOptions) error {
+func (k *Kafka) Dynamic(ctx context.Context, opts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
 	llog := logrus.WithField("pkg", "kafka/dynamic")
 
 	if err := validateDynamicOptions(opts); err != nil {
@@ -30,19 +30,15 @@ func (k *Kafka) Dynamic(ctx context.Context, opts *opts.DynamicOptions) error {
 
 	defer writer.Close()
 
-	// Start up dynamic connection
-	grpc, err := dynamic.New(opts, "Kafka")
-	if err != nil {
-		return errors.Wrap(err, "could not establish connection to Batch")
-	}
+	go dynamicSvc.Start("Kafka")
 
-	go grpc.Start()
+	outboundCh := dynamicSvc.Read()
 
 	// Continually loop looking for messages on the channel.
 MAIN:
 	for {
 		select {
-		case outbound := <-grpc.OutboundMessageCh:
+		case outbound := <-outboundCh:
 			for _, topic := range opts.Kafka.Args.Topics {
 				if err := writer.WriteMessages(ctx, skafka.Message{
 					Topic: topic,

@@ -12,7 +12,7 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (a *AWSSQS) Dynamic(ctx context.Context, opts *opts.DynamicOptions) error {
+func (a *AWSSQS) Dynamic(ctx context.Context, opts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
 	llog := logrus.WithField("pkg", "awssqs/dynamic")
 
 	if err := validateDynamicOptions(opts); err != nil {
@@ -26,17 +26,13 @@ func (a *AWSSQS) Dynamic(ctx context.Context, opts *opts.DynamicOptions) error {
 		return errors.Wrap(err, "unable to get queue url")
 	}
 
-	// Start up dynamic connection
-	grpc, err := dynamic.New(opts, "AWS SQS")
-	if err != nil {
-		return errors.Wrap(err, "could not establish connection to Batch")
-	}
+	go dynamicSvc.Start("AWS SQS")
 
-	go grpc.Start()
+	outboundCh := dynamicSvc.Read()
 
 	for {
 		select {
-		case outbound := <-grpc.OutboundMessageCh:
+		case outbound := <-outboundCh:
 			// write
 			if err := a.writeMsg(args, string(outbound.Blob), queueURL); err != nil {
 				llog.Errorf("Unable to replay message: %s", err)

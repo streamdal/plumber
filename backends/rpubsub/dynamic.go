@@ -12,25 +12,21 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (r *RedisPubsub) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) error {
+func (r *RedisPubsub) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
 	if err := validateDynamicOptions(dynamicOpts); err != nil {
 		return errors.Wrap(err, "invalid dynamic options")
 	}
 
 	llog := logrus.WithField("pkg", "rabbitmq/dynamic")
 
-	// Start up dynamic connection
-	grpc, err := dynamic.New(dynamicOpts, "Redis PubSub")
-	if err != nil {
-		return errors.Wrap(err, "could not establish connection to Batch")
-	}
+	go dynamicSvc.Start("Redis PubSub")
 
-	go grpc.Start()
+	outboundCh := dynamicSvc.Read()
 
 	// Continually loop looking for messages on the channel.
 	for {
 		select {
-		case outbound := <-grpc.OutboundMessageCh:
+		case outbound := <-outboundCh:
 			for _, ch := range dynamicOpts.RedisPubsub.Args.Channel {
 				err := r.client.Publish(context.Background(), ch, outbound.Blob).Err()
 				if err != nil {
