@@ -13,7 +13,7 @@ import (
 	"github.com/batchcorp/plumber/dynamic"
 )
 
-func (r *RabbitMQ) Dynamic(ctx context.Context, opts *opts.DynamicOptions) error {
+func (r *RabbitMQ) Dynamic(ctx context.Context, opts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
 	llog := logrus.WithField("pkg", "rabbitmq/dynamic")
 
 	if err := validateDynamicOptions(opts); err != nil {
@@ -27,19 +27,15 @@ func (r *RabbitMQ) Dynamic(ctx context.Context, opts *opts.DynamicOptions) error
 
 	defer producer.Close()
 
-	// Start up dynamic connection
-	grpc, err := dynamic.New(opts, "RabbitMQ")
-	if err != nil {
-		return errors.Wrap(err, "could not establish connection to Batch")
-	}
+	go dynamicSvc.Start("RabbitMQ")
 
-	go grpc.Start()
+	outboundCh := dynamicSvc.Read()
 
 	// Continually loop looking for messages on the channel.
 MAIN:
 	for {
 		select {
-		case outbound := <-grpc.OutboundMessageCh:
+		case outbound := <-outboundCh:
 			if err := producer.Publish(ctx, opts.Rabbit.Args.RoutingKey, outbound.Blob); err != nil {
 				llog.Errorf("Unable to replay message: %s", err)
 				break MAIN

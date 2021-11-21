@@ -13,27 +13,23 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (m *MQTT) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) error {
+func (m *MQTT) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
 	if err := validateDynamicOptions(dynamicOpts); err != nil {
 		return errors.Wrap(err, "invalid dynamic options")
 	}
 
 	llog := logrus.WithField("pkg", "mqtt/dynamic")
 
-	// Start up dynamic connection
-	grpc, err := dynamic.New(dynamicOpts, "MQTT")
-	if err != nil {
-		return errors.Wrap(err, "could not establish connection to Batch")
-	}
-
-	go grpc.Start()
+	go dynamicSvc.Start("MQTT")
 
 	timeout := util.DurationSec(dynamicOpts.Mqtt.Args.WriteTimeoutSeconds)
 	topic := dynamicOpts.Mqtt.Args.Topic
 
+	outboundCh := dynamicSvc.Read()
+
 	for {
 		select {
-		case outbound := <-grpc.OutboundMessageCh:
+		case outbound := <-outboundCh:
 			token := m.client.Publish(topic, byte(int(m.connArgs.QosLevel)), false, outbound.Blob)
 
 			if !token.WaitTimeout(timeout) {
@@ -51,9 +47,6 @@ func (m *MQTT) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) er
 			return nil
 		}
 	}
-
-	return nil
-
 }
 
 func validateDynamicOptions(dynamicOpts *opts.DynamicOptions) error {

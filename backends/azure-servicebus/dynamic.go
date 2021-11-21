@@ -13,7 +13,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
-func (a *AzureServiceBus) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) error {
+func (a *AzureServiceBus) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
 	if err := validateDynamicOptions(dynamicOpts); err != nil {
 		return errors.Wrap(err, "invalid dynamic options")
 	}
@@ -40,18 +40,14 @@ func (a *AzureServiceBus) Dynamic(ctx context.Context, dynamicOpts *opts.Dynamic
 		defer topic.Close(ctx)
 	}
 
-	// Start up dynamic connection
-	grpc, err := dynamic.New(dynamicOpts, "Azure Service Bus")
-	if err != nil {
-		return errors.Wrap(err, "could not establish connection to Batch")
-	}
+	go dynamicSvc.Start("Azure Service Bus")
 
-	go grpc.Start()
+	outboundCh := dynamicSvc.Read()
 
 	// Continually loop looking for messages on the channel.
 	for {
 		select {
-		case outbound := <-grpc.OutboundMessageCh:
+		case outbound := <-outboundCh:
 			msg := serviceBus.NewMessage(outbound.Blob)
 
 			if queue != nil {

@@ -4,6 +4,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber/backends"
+	"github.com/batchcorp/plumber/dynamic"
 )
 
 // HandleDynamicCmd handles dynamic replay destination mode commands
@@ -13,8 +14,14 @@ func (p *Plumber) HandleDynamicCmd() error {
 		return errors.Wrap(err, "unable to instantiate backend")
 	}
 
+	// Start up dynamic connection
+	dynamicSvc, err := dynamic.New(p.CLIOptions.Dynamic, "MQTT")
+	if err != nil {
+		return errors.Wrap(err, "could not establish connection to Batch")
+	}
+
 	// Blocks until completion
-	if err := backend.Dynamic(p.ServiceShutdownCtx, p.CLIOptions.Dynamic); err != nil {
+	if err := backend.Dynamic(p.ServiceShutdownCtx, p.CLIOptions.Dynamic, dynamicSvc); err != nil {
 		return errors.Wrap(err, "error(s) during dynamic run")
 	}
 

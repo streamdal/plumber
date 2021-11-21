@@ -3,8 +3,6 @@ package backends
 import (
 	"context"
 
-	natsStreaming "github.com/batchcorp/plumber/backends/nats-streaming"
-
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber/backends/activemq"
@@ -19,12 +17,14 @@ import (
 	kubemqQueue "github.com/batchcorp/plumber/backends/kubemq-queue"
 	"github.com/batchcorp/plumber/backends/mqtt"
 	"github.com/batchcorp/plumber/backends/nats"
+	natsStreaming "github.com/batchcorp/plumber/backends/nats-streaming"
 	"github.com/batchcorp/plumber/backends/nsq"
 	"github.com/batchcorp/plumber/backends/pulsar"
 	rabbitStreams "github.com/batchcorp/plumber/backends/rabbit-streams"
 	"github.com/batchcorp/plumber/backends/rabbitmq"
 	"github.com/batchcorp/plumber/backends/rpubsub"
 	"github.com/batchcorp/plumber/backends/rstreams"
+	"github.com/batchcorp/plumber/dynamic"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
@@ -60,7 +60,7 @@ type Backend interface {
 
 	// Dynamic enables plumber to become a "dynamic replay destination".
 	// This is a blocking call.
-	Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) error
+	Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error
 
 	// Relay will hook into a message bus as a consumer and relay all messages
 	// to the relayCh; if an error channel is provided, any errors will be piped

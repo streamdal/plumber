@@ -25,6 +25,12 @@ const (
 	ReconnectSleep = time.Second * 5
 )
 
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . IDynamic
+type IDynamic interface {
+	Start(bus string)
+	Read() chan *events.Outbound
+}
+
 type Client struct {
 	Client            services.DProxyClient
 	Conn              *grpc.ClientConn
@@ -37,7 +43,7 @@ type Client struct {
 }
 
 // New validates CLI options and returns a new Client struct
-func New(opts *opts.DynamicOptions, bus string) (*Client, error) {
+func New(opts *opts.DynamicOptions, bus string) (IDynamic, error) {
 	if err := validateDynamicOptions(opts); err != nil {
 		return nil, errors.Wrap(err, "unable to validate dynamic options")
 	}
@@ -107,9 +113,13 @@ func getDialOptions(opts *opts.DynamicOptions) []grpc.DialOption {
 	return dialOpts
 }
 
+func (d *Client) Read() chan *events.Outbound {
+	return d.OutboundMessageCh
+}
+
 // Start is called by a backend's Dynamic() method. It authorizes the connection and begins reading a GRPC stream of
 // responses consisting of DynamicReplay protobuf messages
-func (d *Client) Start() {
+func (d *Client) Start(bus string) {
 	d.log.Debug("Starting new dynamic destination client")
 	var err error
 	var stream services.DProxy_ConnectClient
@@ -117,7 +127,7 @@ func (d *Client) Start() {
 	for {
 		if stream == nil {
 			// TODO: exponential backoff
-			stream, err = d.authorize()
+			stream, err = d.authorize(bus)
 			if err != nil {
 				d.log.Error(err)
 				stream = nil
@@ -151,13 +161,13 @@ func (d *Client) Start() {
 }
 
 // authorize opens a GRPC connection to dProxy. It is called by Start
-func (d *Client) authorize() (services.DProxy_ConnectClient, error) {
+func (d *Client) authorize(bus string) (services.DProxy_ConnectClient, error) {
 	authRequest := &events.DynamicReplay{
 		Type: events.DynamicReplay_AUTH_REQUEST,
 		Payload: &events.DynamicReplay_AuthRequest{
 			AuthRequest: &events.AuthRequest{
 				Token:      d.Token,
-				MessageBus: d.MessageBus,
+				MessageBus: bus,
 			},
 		},
 	}

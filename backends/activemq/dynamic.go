@@ -11,26 +11,22 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (a *ActiveMQ) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) error {
+func (a *ActiveMQ) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
 	if err := validateDynamicOptions(dynamicOpts); err != nil {
 		return errors.Wrap(err, "invalid dynamic options")
 	}
 
 	llog := logrus.WithField("pkg", "activemq/dynamic")
 
-	// Start up dynamic connection
-	grpc, err := dynamic.New(dynamicOpts, "ActiveMQ")
-	if err != nil {
-		return errors.Wrap(err, "could not establish connection to Batch")
-	}
-
-	go grpc.Start()
+	go dynamicSvc.Start("ActiveMQ")
 
 	destination := getDestinationWrite(dynamicOpts.Activemq.Args)
 
+	outboundCh := dynamicSvc.Read()
+
 	for {
 		select {
-		case outbound := <-grpc.OutboundMessageCh:
+		case outbound := <-outboundCh:
 			if err := a.client.Send(destination, "", outbound.Blob, nil); err != nil {
 				llog.Errorf("Unable to replay message: %s", err)
 				break

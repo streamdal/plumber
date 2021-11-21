@@ -12,24 +12,20 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (g *GCPPubSub) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) error {
+func (g *GCPPubSub) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
 	if err := validateDynamicOptions(dynamicOpts); err != nil {
 		return errors.New("unable to validate write options")
 	}
 
-	// Start up dynamic connection
-	grpc, err := dynamic.New(dynamicOpts, "GCP PUbSub")
-	if err != nil {
-		return errors.Wrap(err, "could not establish connection to Batch")
-	}
-
-	go grpc.Start()
+	go dynamicSvc.Start("GCP PubSub")
 
 	t := g.client.Topic(dynamicOpts.GcpPubsub.Args.TopicId)
 
+	outboundCh := dynamicSvc.Read()
+
 	for {
 		select {
-		case outbound := <-grpc.OutboundMessageCh:
+		case outbound := <-outboundCh:
 			result := t.Publish(ctx, &pubsub.Message{
 				Data: outbound.Blob,
 			})

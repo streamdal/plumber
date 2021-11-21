@@ -12,7 +12,7 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (p *Pulsar) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) error {
+func (p *Pulsar) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
 	if err := validateDynamicOptions(dynamicOpts); err != nil {
 		return errors.Wrap(err, "invalid dynamic options")
 	}
@@ -24,20 +24,17 @@ func (p *Pulsar) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) 
 		return errors.Wrap(err, "unable to create Pulsar producer")
 	}
 
-	// Start up dynamic connection
-	grpc, err := dynamic.New(dynamicOpts, "Apache Pulsar")
-	if err != nil {
-		return errors.Wrap(err, "could not establish connection to Batch")
-	}
+	go dynamicSvc.Start("Apache Pulsar")
 
-	go grpc.Start()
+	outboundCh := dynamicSvc.Read()
 
 	for {
 		select {
-		case outbound := <-grpc.OutboundMessageCh:
+		case outbound := <-outboundCh:
 			if _, err := producer.Send(ctx, &pulsar.ProducerMessage{Payload: outbound.Blob}); err != nil {
-				llog.Errorf("Unable to replay message: %s", err)
-				break
+				err = errors.Wrap(err, "Unable to replay message")
+				llog.Error(err)
+				return err
 			}
 
 			llog.Debugf("Replayed message to Pulsar topic '%s' for replay '%s'",
@@ -47,8 +44,6 @@ func (p *Pulsar) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) 
 			return nil
 		}
 	}
-
-	return nil
 }
 
 func validateDynamicOptions(dynamicOpts *opts.DynamicOptions) error {

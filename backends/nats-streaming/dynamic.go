@@ -13,25 +13,21 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (n *NatsStreaming) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) error {
+func (n *NatsStreaming) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
 	if err := validateDynamicOptions(dynamicOpts); err != nil {
 		return errors.Wrap(err, "invalid dynamic options")
 	}
 
 	llog := logrus.WithField("pkg", "nats-streaming/dynamic")
 
-	// Start up dynamic connection
-	grpc, err := dynamic.New(dynamicOpts, "Nats Streaming")
-	if err != nil {
-		return errors.Wrap(err, "could not establish connection to Batch")
-	}
+	go dynamicSvc.Start("Nats Streaming")
 
-	go grpc.Start()
+	outboundCh := dynamicSvc.Read()
 
 	// Continually loop looking for messages on the channel.
 	for {
 		select {
-		case outbound := <-grpc.OutboundMessageCh:
+		case outbound := <-outboundCh:
 			if err := n.stanClient.Publish(dynamicOpts.NatsStreaming.Args.Channel, outbound.Blob); err != nil {
 				llog.Errorf("Unable to replay message: %s", err)
 				break
