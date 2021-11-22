@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/batchcorp/plumber/util"
+
 	"github.com/batchcorp/plumber/validate"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -37,7 +39,7 @@ func (a *AWSSQS) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayC
 		default:
 			// NOOP
 		}
-		msg, err := a.Client.ReceiveMessage(&sqs.ReceiveMessageInput{
+		msg, err := a.client.ReceiveMessage(&sqs.ReceiveMessageInput{
 			// We intentionally do not set VisibilityTimeout as we aren't doing anything special with the message
 			WaitTimeSeconds:         aws.Int64(args.WaitTimeSeconds),
 			QueueUrl:                queueURL,
@@ -57,16 +59,14 @@ func (a *AWSSQS) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayC
 			relayCh <- &types.RelayMessage{
 				Value: m,
 				Options: &types.RelayMessageOptions{
-					Service:    a.Client,
-					QueueURL:   *queueURL,
+					Service:    a.client,
+					QueueURL:   util.DerefString(queueURL),
 					AutoDelete: args.AutoDelete,
 				},
 			}
 			prometheus.Incr("awssqs-relay-consumer", 1)
 		}
 	}
-
-	return nil
 }
 
 func validateRelayOptions(opts *opts.RelayOptions) error {
@@ -78,11 +78,20 @@ func validateRelayOptions(opts *opts.RelayOptions) error {
 		return validate.ErrEmptyBackendGroup
 	}
 
-	if opts.Awssqs.Args == nil {
+	args := opts.Awssqs.Args
+	if args == nil {
 		return validate.ErrEmptyBackendArgs
 	}
 
-	if len(opts.Awssqs.Args.QueueName) == 0 {
+	if args.MaxNumMessages < 1 || args.MaxNumMessages > 10 {
+		return ErrInvalidMaxNumMessages
+	}
+
+	if args.WaitTimeSeconds < 0 || args.WaitTimeSeconds > 20 {
+		return ErrInvalidWaitTime
+	}
+
+	if args.QueueName == "" {
 		return ErrMissingQueue
 	}
 

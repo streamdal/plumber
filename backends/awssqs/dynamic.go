@@ -2,9 +2,9 @@ package awssqs
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
@@ -13,11 +13,11 @@ import (
 )
 
 func (a *AWSSQS) Dynamic(ctx context.Context, opts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
-	llog := logrus.WithField("pkg", "awssqs/dynamic")
-
 	if err := validateDynamicOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate dynamic options")
 	}
+
+	llog := a.log.WithField("pkg", "awssqs/dynamic")
 
 	args := opts.Awssqs.Args
 
@@ -35,8 +35,9 @@ func (a *AWSSQS) Dynamic(ctx context.Context, opts *opts.DynamicOptions, dynamic
 		case outbound := <-outboundCh:
 			// write
 			if err := a.writeMsg(args, string(outbound.Blob), queueURL); err != nil {
-				llog.Errorf("Unable to replay message: %s", err)
-				return nil
+				err = fmt.Errorf("Unable to replay message: %s", err)
+				llog.Error(err)
+				return err
 			}
 		case <-ctx.Done():
 			return nil
