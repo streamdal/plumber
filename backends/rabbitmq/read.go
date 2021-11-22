@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/batchcorp/plumber/validate"
+
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"github.com/streadway/amqp"
@@ -20,12 +22,14 @@ func (r *RabbitMQ) Read(ctx context.Context, readOpts *opts.ReadOptions, results
 		return errors.Wrap(err, "unable to validate read config")
 	}
 
-	consumer, err := r.newRabbitForRead(readOpts.Rabbit.Args)
-	if err != nil {
-		return errors.Wrap(err, "unable to create new rabbit consumer")
+	// Check if nil to allow unit testing injection into struct
+	if r.client == nil {
+		consumer, err := r.newRabbitForRead(readOpts.Rabbit.Args)
+		if err != nil {
+			return errors.Wrap(err, "unable to create new rabbit consumer")
+		}
+		r.client = consumer
 	}
-
-	defer consumer.Close()
 
 	errCh := make(chan *rabbit.ConsumeError)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -34,7 +38,7 @@ func (r *RabbitMQ) Read(ctx context.Context, readOpts *opts.ReadOptions, results
 
 	r.log.Info("Listening for messages...")
 
-	go consumer.Consume(ctx, errCh, func(msg amqp.Delivery) error {
+	go r.client.Consume(ctx, errCh, func(msg amqp.Delivery) error {
 		count++
 
 		serializedMsg, err := json.Marshal(msg)
@@ -89,8 +93,6 @@ func (r *RabbitMQ) Read(ctx context.Context, readOpts *opts.ReadOptions, results
 			return nil
 		}
 	}
-
-	return nil
 }
 
 func convertAMQPHeadersToProto(table amqp.Table) []*records.RabbitHeader {
@@ -106,12 +108,29 @@ func convertAMQPHeadersToProto(table amqp.Table) []*records.RabbitHeader {
 }
 
 func validateReadOptions(readOpts *opts.ReadOptions) error {
-	if readOpts.Rabbit == nil {
-		return errors.New("rabbit read options cannot be nil")
+	if readOpts == nil {
+		return validate.ErrMissingReadOptions
 	}
 
-	if readOpts.Rabbit.Args == nil {
-		return errors.New("rabbit read option args cannot be nil")
+	if readOpts.Rabbit == nil {
+		return validate.ErrEmptyBackendGroup
+	}
+
+	args := readOpts.Rabbit.Args
+	if args == nil {
+		return validate.ErrEmptyBackendArgs
+	}
+
+	if args.ExchangeName == "" {
+		return ErrEmptyExchangeName
+	}
+
+	if args.QueueName == "" {
+		return ErrEmptyQueueName
+	}
+
+	if args.BindingKey == "" {
+		return ErrEmptyBindingKey
 	}
 
 	return nil

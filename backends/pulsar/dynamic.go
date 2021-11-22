@@ -5,7 +5,6 @@ import (
 
 	"github.com/apache/pulsar-client-go/pulsar"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber/dynamic"
@@ -17,7 +16,7 @@ func (p *Pulsar) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, 
 		return errors.Wrap(err, "invalid dynamic options")
 	}
 
-	llog := logrus.WithField("pkg", "pulsar/dynamic")
+	llog := p.log.WithField("pkg", "pulsar/dynamic")
 
 	producer, err := p.client.CreateProducer(pulsar.ProducerOptions{Topic: dynamicOpts.Pulsar.Args.Topic})
 	if err != nil {
@@ -40,7 +39,7 @@ func (p *Pulsar) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, 
 			llog.Debugf("Replayed message to Pulsar topic '%s' for replay '%s'",
 				dynamicOpts.Pulsar.Args.Topic, outbound.ReplayId)
 		case <-ctx.Done():
-			p.log.Warning("context cancelled")
+			llog.Warning("context cancelled")
 			return nil
 		}
 	}

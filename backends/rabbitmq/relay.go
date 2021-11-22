@@ -4,17 +4,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/batchcorp/plumber/validate"
-
 	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/rabbit"
 
 	rtypes "github.com/batchcorp/plumber/backends/rabbitmq/types"
 	"github.com/batchcorp/plumber/prometheus"
+	"github.com/batchcorp/plumber/validate"
+	"github.com/batchcorp/rabbit"
 )
 
 func (r *RabbitMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
@@ -22,16 +21,19 @@ func (r *RabbitMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, rela
 		return errors.Wrap(err, "unable to verify options")
 	}
 
-	consumer, err := r.newRabbitForRead(relayOpts.Rabbit.Args)
-	if err != nil {
-		return errors.Wrap(err, "unable to create new rabbit consumer")
-	}
+	// Check if nil to allow unit testing injection into struct
+	if r.client == nil {
+		consumer, err := r.newRabbitForRead(relayOpts.Rabbit.Args)
+		if err != nil {
+			return errors.Wrap(err, "unable to create new rabbit consumer")
+		}
 
-	defer consumer.Close()
+		r.client = consumer
+	}
 
 	errCh := make(chan *rabbit.ConsumeError)
 
-	go consumer.Consume(ctx, errCh, func(msg amqp.Delivery) error {
+	go r.client.Consume(ctx, errCh, func(msg amqp.Delivery) error {
 
 		if msg.Body == nil {
 			// Ignore empty messages
@@ -79,8 +81,21 @@ func validateRelayOptions(relayOpts *opts.RelayOptions) error {
 		return validate.ErrEmptyBackendGroup
 	}
 
-	if relayOpts.Rabbit.Args == nil {
+	args := relayOpts.Rabbit.Args
+	if args == nil {
 		return validate.ErrEmptyBackendArgs
+	}
+
+	if args.ExchangeName == "" {
+		return ErrEmptyExchangeName
+	}
+
+	if args.QueueName == "" {
+		return ErrEmptyQueueName
+	}
+
+	if args.BindingKey == "" {
+		return ErrEmptyBindingKey
 	}
 
 	return nil

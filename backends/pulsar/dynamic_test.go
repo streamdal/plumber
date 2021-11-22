@@ -88,7 +88,10 @@ var _ = Describe("Pulsar Backend", func() {
 				return nil, testErr
 			}
 
-			p := &Pulsar{client: fakeClient}
+			p := &Pulsar{
+				client: fakeClient,
+				log:    logrus.NewEntry(&logrus.Logger{Out: ioutil.Discard}),
+			}
 
 			err := p.Dynamic(context.Background(), dynamicOpts, fakeDynamic)
 			Expect(err).To(HaveOccurred())
@@ -107,7 +110,7 @@ var _ = Describe("Pulsar Backend", func() {
 
 			ctx, cancel := context.WithCancel(context.Background())
 			go func() {
-				time.Sleep(time.Millisecond * 200)
+				time.Sleep(time.Millisecond * 500)
 				cancel()
 			}()
 
@@ -117,6 +120,10 @@ var _ = Describe("Pulsar Backend", func() {
 			}
 
 			err := p.Dynamic(ctx, dynamicOpts, fakeDynamic)
+
+			// Allow start goroutine to launch
+			time.Sleep(time.Millisecond * 100)
+
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Unable to replay message"))
 			Expect(fakeDynamic.StartCallCount()).To(Equal(1))
@@ -136,7 +143,7 @@ var _ = Describe("Pulsar Backend", func() {
 
 			ctx, cancel := context.WithCancel(context.Background())
 			go func() {
-				time.Sleep(time.Millisecond * 200)
+				time.Sleep(time.Millisecond * 500)
 				cancel()
 			}()
 
