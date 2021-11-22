@@ -5,20 +5,17 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/streadway/amqp"
-
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/rabbit"
-
-	"github.com/batchcorp/plumber/validate"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
+	"github.com/streadway/amqp"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/backends/rabbitmq/rabbitfakes"
+	"github.com/batchcorp/plumber/validate"
+	"github.com/batchcorp/rabbit"
 )
 
 var _ = Describe("RabbitMQ Backend", func() {
