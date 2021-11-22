@@ -68,7 +68,7 @@ func (a *AWSSQS) writeMsg(args *args.AWSSQSWriteArgs, body string, queueURL *str
 		input.MessageAttributes = nil
 	}
 
-	if _, err := a.Client.SendMessage(input); err != nil {
+	if _, err := a.client.SendMessage(input); err != nil {
 		return err
 	}
 
@@ -84,7 +84,7 @@ func (a *AWSSQS) getQueueURL(queueName, remoteAccountID string) (*string, error)
 		input.QueueOwnerAWSAccountId = aws.String(remoteAccountID)
 	}
 
-	resultURL, err := a.Client.GetQueueUrl(input)
+	resultURL, err := a.client.GetQueueUrl(input)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok && aerr.Code() == sqs.ErrCodeQueueDoesNotExist {
 			return nil, errors.Wrap(aerr, "unable to find queue name")

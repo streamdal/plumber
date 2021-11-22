@@ -5,13 +5,13 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
-	awsTypes "github.com/batchcorp/plumber/backends/awssqs/types"
 	"github.com/batchcorp/plumber/types"
 	"github.com/batchcorp/plumber/validate"
 )
@@ -19,7 +19,11 @@ import (
 const BackendName = "aws-sqs"
 
 var (
-	ErrMissingQueue = errors.New("SQS Queue name cannot be empty")
+	ErrMissingQueue              = errors.New("SQS Queue name cannot be empty")
+	ErrInvalidMaxNumMessages     = errors.New("max number of messages must be between 1 and 10")
+	ErrInvalidWaitTime           = errors.New("wait time seconds must be between 0 and 20")
+	ErrMissingAwsSecretAccessKey = errors.New("AWS Secret Access Key cannot be empty")
+	ErrMissingRegion             = errors.New("AWS Region cannot be empty")
 )
 
 type AWSSQS struct {
@@ -29,7 +33,7 @@ type AWSSQS struct {
 	// Backend-specific args
 	connArgs *args.AWSSQSConn
 
-	Client awsTypes.ISQSAPI
+	client sqsiface.SQSAPI
 	log    *logrus.Entry
 }
 
@@ -38,6 +42,7 @@ func New(connOpts *opts.ConnectionOptions) (*AWSSQS, error) {
 		return nil, errors.Wrap(err, "unable to validate options")
 	}
 
+	// TODO: needs to accept key and region via string
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 	}))
@@ -47,7 +52,7 @@ func New(connOpts *opts.ConnectionOptions) (*AWSSQS, error) {
 	return &AWSSQS{
 		connOpts: connOpts,
 		connArgs: connOpts.GetAwssqs(),
-		Client:   client,
+		client:   client,
 		log:      logrus.WithField("backend", BackendName),
 	}, nil
 
@@ -75,8 +80,17 @@ func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 		return validate.ErrMissingConnCfg
 	}
 
-	if connOpts.GetAwssns() == nil {
+	args := connOpts.GetAwssqs()
+	if args == nil {
 		return validate.ErrMissingConnArgs
+	}
+
+	if args.AwsSecretAccessKey == "" {
+		return ErrMissingAwsSecretAccessKey
+	}
+
+	if args.AwsRegion == "" {
+		return ErrMissingRegion
 	}
 
 	return nil

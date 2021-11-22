@@ -5,22 +5,24 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/batchcorp/plumber/util"
+
+	"github.com/batchcorp/plumber/validate"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
 func (a *AWSSQS) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan chan *records.ReadRecord, errorChan chan *records.ErrorRecord) error {
-
-	args := readOpts.Awssqs.Args
-	if err := validateReadOptions(args); err != nil {
-		return errors.Wrap(err, "unable to validate read options")
+	if err := validateReadOptions(readOpts); err != nil {
+		return errors.Wrap(err, "invalid read options")
 	}
+	args := readOpts.Awssqs.Args
 
 	queueURL, err := a.getQueueURL(args.QueueName, args.RemoteAccountId)
 	if err != nil {
@@ -32,7 +34,7 @@ func (a *AWSSQS) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsCh
 	var count int64
 
 	for {
-		msg, err := a.Client.ReceiveMessage(&sqs.ReceiveMessageInput{
+		msg, err := a.client.ReceiveMessage(&sqs.ReceiveMessageInput{
 			// We intentionally do not set VisibilityTimeout as we aren't doing anything special with the message
 			WaitTimeSeconds:         aws.Int64(args.WaitTimeSeconds),
 			QueueUrl:                queueURL,
@@ -65,9 +67,9 @@ func (a *AWSSQS) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsCh
 				XRaw:                serializedMsg,
 				Record: &records.ReadRecord_Awssqs{
 					Awssqs: &records.AWSSQS{
-						Id:              *m.MessageId,
+						Id:              util.DerefString(m.MessageId),
 						Timestamp:       time.Now().UTC().Unix(),
-						RecipientHandle: *m.ReceiptHandle,
+						RecipientHandle: util.DerefString(m.ReceiptHandle),
 						Attributes:      convertPointerMap(m.Attributes),
 						Value:           []byte(*m.Body),
 					},
@@ -76,7 +78,7 @@ func (a *AWSSQS) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsCh
 
 			// Cleanup
 			if args.AutoDelete {
-				if _, err := a.Client.DeleteMessage(&sqs.DeleteMessageInput{
+				if _, err := a.client.DeleteMessage(&sqs.DeleteMessageInput{
 					QueueUrl:      queueURL,
 					ReceiptHandle: m.ReceiptHandle,
 				}); err != nil {
@@ -112,13 +114,26 @@ func convertPointerMap(input map[string]*string) map[string]string {
 	return out
 }
 
-func validateReadOptions(args *args.AWSSQSReadArgs) error {
+func validateReadOptions(readOpts *opts.ReadOptions) error {
+	if readOpts == nil {
+		return validate.ErrMissingReadOptions
+	}
+
+	if readOpts.Awssqs == nil {
+		return validate.ErrEmptyBackendGroup
+	}
+
+	args := readOpts.Awssqs.Args
+	if args == nil {
+		return validate.ErrEmptyBackendArgs
+	}
+
 	if args.MaxNumMessages < 1 || args.MaxNumMessages > 10 {
-		return errors.New("--max-num-messages must be between 1 and 10")
+		return ErrInvalidMaxNumMessages
 	}
 
 	if args.WaitTimeSeconds < 0 || args.WaitTimeSeconds > 20 {
-		return errors.New("--wait-time-seconds must be between 0 and 20")
+		return ErrInvalidWaitTime
 	}
 
 	if args.QueueName == "" {

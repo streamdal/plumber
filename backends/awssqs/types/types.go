@@ -11,12 +11,7 @@ type RelayMessage struct {
 }
 
 type RelayMessageOptions struct {
-	Service    ISQSAPI
+	Service    sqsiface.SQSAPI
 	QueueURL   string
 	AutoDelete bool
-}
-
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . ISQSAPI
-type ISQSAPI interface {
-	sqsiface.SQSAPI
 }
