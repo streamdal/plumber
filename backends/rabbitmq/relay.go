@@ -22,16 +22,19 @@ func (r *RabbitMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, rela
 		return errors.Wrap(err, "unable to verify options")
 	}
 
-	consumer, err := r.newRabbitForRead(relayOpts.Rabbit.Args)
-	if err != nil {
-		return errors.Wrap(err, "unable to create new rabbit consumer")
-	}
+	// Check if nil to allow unit testing injection into struct
+	if r.client == nil {
+		consumer, err := r.newRabbitForRead(relayOpts.Rabbit.Args)
+		if err != nil {
+			return errors.Wrap(err, "unable to create new rabbit consumer")
+		}
 
-	defer consumer.Close()
+		r.client = consumer
+	}
 
 	errCh := make(chan *rabbit.ConsumeError)
 
-	go consumer.Consume(ctx, errCh, func(msg amqp.Delivery) error {
+	go r.client.Consume(ctx, errCh, func(msg amqp.Delivery) error {
 
 		if msg.Body == nil {
 			// Ignore empty messages
@@ -79,8 +82,21 @@ func validateRelayOptions(relayOpts *opts.RelayOptions) error {
 		return validate.ErrEmptyBackendGroup
 	}
 
-	if relayOpts.Rabbit.Args == nil {
+	args := relayOpts.Rabbit.Args
+	if args == nil {
 		return validate.ErrEmptyBackendArgs
+	}
+
+	if args.ExchangeName == "" {
+		return ErrEmptyExchangeName
+	}
+
+	if args.QueueName == "" {
+		return ErrEmptyQueueName
+	}
+
+	if args.BindingKey == "" {
+		return ErrEmptyBindingKey
 	}
 
 	return nil

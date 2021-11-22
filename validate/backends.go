@@ -13,6 +13,7 @@ var (
 	ErrMissingClientCert  = errors.New("TLS certificate cannot be empty if TLS key is provided")
 	ErrMissingDSN         = errors.New("DSN cannot be empty")
 	ErrInvalidConnTimeout = errors.New("connection timeout must be greater than zero")
+	ErrMissingAddress     = errors.New("address cannot be empty")
 
 	// Relay / Display
 

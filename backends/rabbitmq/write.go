@@ -18,17 +18,19 @@ func (r *RabbitMQ) Write(ctx context.Context, writeOpts *opts.WriteOptions, erro
 		return errors.Wrap(err, "unable to verify write options")
 	}
 
-	producer, err := r.newRabbitForWrite(writeOpts.Rabbit.Args)
-	if err != nil {
-		return errors.Wrap(err, "unable to create new producer")
+	// Check if nil to allow unit testing injection into struct
+	if r.client == nil {
+		producer, err := r.newRabbitForWrite(writeOpts.Rabbit.Args)
+		if err != nil {
+			return errors.Wrap(err, "unable to create new producer")
+		}
+		r.client = producer
 	}
-
-	defer producer.Close()
 
 	rk := writeOpts.Rabbit.Args.RoutingKey
 
 	for _, msg := range messages {
-		if err := producer.Publish(ctx, rk, []byte(msg.Input)); err != nil {
+		if err := r.client.Publish(ctx, rk, []byte(msg.Input)); err != nil {
 			util.WriteError(r.log, errorCh, fmt.Errorf("unable to write message to '%s': %s", rk, err))
 		}
 	}
@@ -45,8 +47,17 @@ func validateWriteOptions(opts *opts.WriteOptions) error {
 		return validate.ErrEmptyBackendGroup
 	}
 
-	if opts.Rabbit.Args == nil {
+	args := opts.Rabbit.Args
+	if args == nil {
 		return validate.ErrEmptyBackendArgs
+	}
+
+	if args.RoutingKey == "" {
+		return ErrEmptyRoutingKey
+	}
+
+	if args.ExchangeName == "" {
+		return ErrEmptyExchangeName
 	}
 
 	return nil

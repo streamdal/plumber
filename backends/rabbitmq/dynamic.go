@@ -6,7 +6,6 @@ import (
 	"github.com/batchcorp/plumber/validate"
 
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
@@ -14,42 +13,41 @@ import (
 )
 
 func (r *RabbitMQ) Dynamic(ctx context.Context, opts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
-	llog := logrus.WithField("pkg", "rabbitmq/dynamic")
-
 	if err := validateDynamicOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate dynamic options")
 	}
 
-	producer, err := r.newRabbitForWrite(opts.Rabbit.Args)
-	if err != nil {
-		return errors.Wrap(err, "unable to create rabbitmq producer")
-	}
+	llog := r.log.WithField("pkg", "rabbitmq/dynamic")
 
-	defer producer.Close()
+	// Nil check so that this can be injected into the struct for testing
+	if r.client == nil {
+		producer, err := r.newRabbitForWrite(opts.Rabbit.Args)
+		if err != nil {
+			return errors.Wrap(err, "unable to create rabbitmq producer")
+		}
+
+		r.client = producer
+	}
 
 	go dynamicSvc.Start("RabbitMQ")
 
 	outboundCh := dynamicSvc.Read()
 
 	// Continually loop looking for messages on the channel.
-MAIN:
 	for {
 		select {
 		case outbound := <-outboundCh:
-			if err := producer.Publish(ctx, opts.Rabbit.Args.RoutingKey, outbound.Blob); err != nil {
-				llog.Errorf("Unable to replay message: %s", err)
-				break MAIN
+			if err := r.client.Publish(ctx, opts.Rabbit.Args.RoutingKey, outbound.Blob); err != nil {
+				err = errors.Wrap(err, "Unable to reply message")
+				llog.Error(err)
+				return err
 			}
 
 		case <-ctx.Done():
 			r.log.Warning("context cancelled")
-			break MAIN
+			return nil
 		}
 	}
-
-	r.log.Debug("dynamic exiting")
-
-	return nil
 }
 
 func validateDynamicOptions(dynamicOpts *opts.DynamicOptions) error {
@@ -58,11 +56,20 @@ func validateDynamicOptions(dynamicOpts *opts.DynamicOptions) error {
 	}
 
 	if dynamicOpts.Rabbit == nil {
-		return errors.New("rabbit options cannot be nil")
+		return validate.ErrEmptyBackendGroup
 	}
 
-	if dynamicOpts.Rabbit.Args == nil {
-		return errors.New("rabbit args cannot be nil")
+	args := dynamicOpts.Rabbit.Args
+	if args == nil {
+		return validate.ErrEmptyBackendArgs
+	}
+
+	if args.RoutingKey == "" {
+		return ErrEmptyRoutingKey
+	}
+
+	if args.ExchangeName == "" {
+		return ErrEmptyExchangeName
 	}
 
 	return nil

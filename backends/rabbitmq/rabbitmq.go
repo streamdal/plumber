@@ -18,22 +18,26 @@ const (
 	BackendName = "rabbitmq"
 )
 
+var (
+	ErrEmptyRoutingKey   = errors.New("routing key cannot be empty")
+	ErrEmptyExchangeName = errors.New("exchange name cannot be empty")
+	ErrEmptyQueueName    = errors.New("queue name cannot be empty")
+	ErrEmptyBindingKey   = errors.New("binding key cannot be empty")
+)
+
 // RabbitMQ holds all attributes required for performing a read/write operations
 // in RabbitMQ. This struct should be instantiated via the rabbitmq.Read(..) or
 // rabbitmq.Write(..) functions.
 type RabbitMQ struct {
-	// Base connection options / non-backend-specific options
 	connOpts *opts.ConnectionOptions
-
-	// Backend-specific args
 	connArgs *args.RabbitConn
-
-	log *logrus.Entry
+	client   rabbit.IRabbit
+	log      *logrus.Entry
 }
 
 func New(opts *opts.ConnectionOptions) (*RabbitMQ, error) {
 	if err := validateBaseConnOpts(opts); err != nil {
-		return nil, errors.Wrap(err, "unable to validate options")
+		return nil, errors.Wrap(err, "invalid connection options")
 	}
 
 	connArgs := opts.GetRabbit()
@@ -47,7 +51,7 @@ func New(opts *opts.ConnectionOptions) (*RabbitMQ, error) {
 	return r, nil
 }
 
-func (r *RabbitMQ) newRabbitForRead(readArgs *args.RabbitReadArgs) (*rabbit.Rabbit, error) {
+func (r *RabbitMQ) newRabbitForRead(readArgs *args.RabbitReadArgs) (rabbit.IRabbit, error) {
 	rmq, err := rabbit.New(&rabbit.Options{
 		URL:            r.connArgs.Address,
 		QueueName:      readArgs.QueueName,
@@ -70,7 +74,7 @@ func (r *RabbitMQ) newRabbitForRead(readArgs *args.RabbitReadArgs) (*rabbit.Rabb
 	return rmq, nil
 }
 
-func (r *RabbitMQ) newRabbitForWrite(writeArgs *args.RabbitWriteArgs) (*rabbit.Rabbit, error) {
+func (r *RabbitMQ) newRabbitForWrite(writeArgs *args.RabbitWriteArgs) (rabbit.IRabbit, error) {
 	rmq, err := rabbit.New(&rabbit.Options{
 		URL:                r.connArgs.Address,
 		ExchangeName:       writeArgs.ExchangeName,
@@ -97,6 +101,11 @@ func (r *RabbitMQ) Name() string {
 }
 
 func (r *RabbitMQ) Close(_ context.Context) error {
+	// Since these are instantiated inside the Write/Read/Relay methods,
+	// there is chance that r.client might be nil
+	if r.client != nil {
+		return r.client.Close()
+	}
 	return nil
 }
 
@@ -113,8 +122,13 @@ func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 		return validate.ErrMissingConnCfg
 	}
 
-	if connOpts.GetRabbit() == nil {
+	args := connOpts.GetRabbit()
+	if args == nil {
 		return validate.ErrMissingConnArgs
+	}
+
+	if args.Address == "" {
+		return validate.ErrMissingAddress
 	}
 
 	return nil
