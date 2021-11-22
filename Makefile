@@ -130,4 +130,5 @@ test/fakes:
 	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/pulsar/pulsarfakes/fake_messageid.go github.com/apache/pulsar-client-go/pulsar.MessageID
 	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/mqtt/mqttfakes/fake_mqtt.go github.com/eclipse/paho.mqtt.golang.Client
 	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/rabbitmq/rabbitfakes/fake_rabbit.go github.com/batchcorp/rabbit.IRabbit
+	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/awssns/snsfakes/fake_sns.go github.com/aws/aws-sdk-go/service/sns/snsiface.SNSAPI
 	$(GO) generate ./...

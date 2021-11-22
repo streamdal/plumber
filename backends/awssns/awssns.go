@@ -5,10 +5,10 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/aws/aws-sdk-go/service/sns/snsiface"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/backends/awssns/types"
 	plumberTypes "github.com/batchcorp/plumber/types"
 	"github.com/batchcorp/plumber/validate"
 
@@ -27,7 +27,7 @@ type AWSSNS struct {
 	// Backend-specific args
 	connArgs *args.AWSSNSConn
 
-	Service  types.ISNSAPI
+	Service  snsiface.SNSAPI
 	QueueURL string
 	log      *logrus.Entry
 }

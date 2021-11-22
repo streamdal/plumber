@@ -3,6 +3,7 @@ package awssns
 import (
 	"context"
 	"errors"
+	"io/ioutil"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -11,11 +12,10 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/backends/awssns/types/typesfakes"
-
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+	"github.com/batchcorp/plumber/backends/awssns/snsfakes"
 )
 
 var _ = Describe("AWS SNS Backend", func() {
@@ -70,7 +70,7 @@ var _ = Describe("AWS SNS Backend", func() {
 	Context("Write", func() {
 		It("Returns error on failure to publish", func() {
 			expectedErr := errors.New("fake error")
-			fakeSNS := &typesfakes.FakeISNSAPI{}
+			fakeSNS := &snsfakes.FakeSNSAPI{}
 			fakeSNS.PublishStub = func(*sns.PublishInput) (*sns.PublishOutput, error) {
 				return nil, expectedErr
 			}
@@ -94,6 +94,7 @@ var _ = Describe("AWS SNS Backend", func() {
 			a := &AWSSNS{
 				connOpts: connOpts,
 				Service:  fakeSNS,
+				log:      logrus.NewEntry(&logrus.Logger{Out: ioutil.Discard}),
 			}
 
 			writeRecord := &records.WriteRecord{
@@ -111,7 +112,7 @@ var _ = Describe("AWS SNS Backend", func() {
 		})
 
 		It("Succeeds", func() {
-			fakeSNS := &typesfakes.FakeISNSAPI{}
+			fakeSNS := &snsfakes.FakeSNSAPI{}
 			fakeSNS.PublishStub = func(*sns.PublishInput) (*sns.PublishOutput, error) {
 				return &sns.PublishOutput{MessageId: aws.String("testing")}, nil
 			}
@@ -133,7 +134,7 @@ var _ = Describe("AWS SNS Backend", func() {
 			a := &AWSSNS{
 				connOpts: connOpts,
 				Service:  fakeSNS,
-				log:      logrus.NewEntry(logrus.New()),
+				log:      logrus.NewEntry(&logrus.Logger{Out: ioutil.Discard}),
 			}
 
 			writeRecord := &records.WriteRecord{
