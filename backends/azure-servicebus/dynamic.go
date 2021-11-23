@@ -65,6 +65,9 @@ func (a *AzureServiceBus) Dynamic(ctx context.Context, dynamicOpts *opts.Dynamic
 			}
 
 			llog.Debugf("Replayed message to Azure Service Bus for replay '%s'", outbound.ReplayId)
+		case <-ctx.Done():
+			llog.Warning("context cancelled")
+			return nil
 		}
 	}
 

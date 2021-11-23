@@ -32,8 +32,8 @@ var _ = Describe("RabbitMQ Backend", func() {
 		}
 	})
 
-	Context("validateDynamicOptions", func() {
-		It("validates nil dynamic options", func() {
+	Context("validateWriteOptions", func() {
+		It("validates nil write options", func() {
 			err := validateWriteOptions(nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(validate.ErrEmptyWriteOpts))

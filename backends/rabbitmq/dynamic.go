@@ -43,7 +43,7 @@ func (r *RabbitMQ) Dynamic(ctx context.Context, opts *opts.DynamicOptions, dynam
 			}
 
 		case <-ctx.Done():
-			r.log.Warning("context cancelled")
+			llog.Warning("context cancelled")
 			return nil
 		}
 	}

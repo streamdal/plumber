@@ -40,6 +40,7 @@ func (a *AWSSQS) Dynamic(ctx context.Context, opts *opts.DynamicOptions, dynamic
 				return err
 			}
 		case <-ctx.Done():
+			llog.Warning("context cancelled")
 			return nil
 		}
 	}

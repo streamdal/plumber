@@ -158,8 +158,8 @@ var _ = Describe("MQTT Backend", func() {
 		})
 		It("validates MQTT presence", func() {
 			connOpts = &opts.ConnectionOptions{
-				Conn: &opts.ConnectionOptions_Pulsar{
-					Pulsar: nil,
+				Conn: &opts.ConnectionOptions_Mqtt{
+					Mqtt: nil,
 				},
 			}
 			err := validateBaseConnOpts(connOpts)
@@ -167,25 +167,25 @@ var _ = Describe("MQTT Backend", func() {
 			Expect(err).To(Equal(validate.ErrMissingConnArgs))
 		})
 		It("validates TLS key", func() {
-			mqtt := connOpts.GetMqtt()
-			mqtt.Address = "ssl://localhost"
-			mqtt.TlsOptions.ClientKey = nil
+			args := connOpts.GetMqtt()
+			args.Address = "ssl://localhost"
+			args.TlsOptions.ClientKey = nil
 			err := validateBaseConnOpts(connOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(ErrMissingTLSKey))
 		})
 		It("validates TLS Cert", func() {
-			mqtt := connOpts.GetMqtt()
-			mqtt.Address = "ssl://localhost"
-			mqtt.TlsOptions.ClientCert = nil
+			args := connOpts.GetMqtt()
+			args.Address = "ssl://localhost"
+			args.TlsOptions.ClientCert = nil
 			err := validateBaseConnOpts(connOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(ErrMissingTlsCert))
 		})
 		It("validates TLS Certificate Authority", func() {
-			mqtt := connOpts.GetMqtt()
-			mqtt.Address = "ssl://localhost"
-			mqtt.TlsOptions.CaFile = nil
+			args := connOpts.GetMqtt()
+			args.Address = "ssl://localhost"
+			args.TlsOptions.CaFile = nil
 			err := validateBaseConnOpts(connOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(ErrMissingTLSCA))

@@ -17,6 +17,8 @@ func (r *RedisStreams) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOpt
 		return errors.Wrap(err, "unable to validate dynamic options")
 	}
 
+	llog := r.log.WithField("pkg", "rstreams/dynamic")
+
 	go dynamicSvc.Start("Redis Streams")
 
 	outboundCh := dynamicSvc.Read()
@@ -41,7 +43,7 @@ func (r *RedisStreams) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOpt
 					streamName, dynamicOpts.RedisStreams.Args.Key, outbound.ReplayId)
 			}
 		case <-ctx.Done():
-			r.log.Warning("context cancelled")
+			llog.Warning("context cancelled")
 			return nil
 		}
 	}

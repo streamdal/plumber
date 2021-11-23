@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber/dynamic"
@@ -16,7 +15,7 @@ func (a *ActiveMQ) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions
 		return errors.Wrap(err, "invalid dynamic options")
 	}
 
-	llog := logrus.WithField("pkg", "activemq/dynamic")
+	llog := a.log.WithField("pkg", "activemq/dynamic")
 
 	go dynamicSvc.Start("ActiveMQ")
 
