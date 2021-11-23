@@ -42,8 +42,6 @@ func (r *RedisPubsub) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOpti
 		}
 
 	}
-
-	return nil
 }
 
 func validateDynamicOptions(dynamicOpts *opts.DynamicOptions) error {

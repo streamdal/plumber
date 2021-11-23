@@ -112,5 +112,9 @@ func validateWriteOptions(writeOpts *opts.WriteOptions) error {
 		return errors.New("stream name cannot be empty")
 	}
 
+	if writeOpts.RabbitStreams.Args.Stream == "" {
+		return ErrEmptyStream
+	}
+
 	return nil
 }

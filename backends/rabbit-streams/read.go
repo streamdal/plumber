@@ -192,6 +192,10 @@ func validateReadOptions(readOpts *opts.ReadOptions) error {
 		return validate.ErrEmptyBackendArgs
 	}
 
+	if readOpts.RabbitStreams.Args.Stream == "" {
+		return ErrEmptyStream
+	}
+
 	return nil
 }
 

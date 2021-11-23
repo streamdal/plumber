@@ -18,6 +18,10 @@ import (
 
 const BackendName = "rabbitmq-streams"
 
+var (
+	ErrEmptyStream = errors.New("stream cannot be empty")
+)
+
 type RabbitStreams struct {
 	// Base connection options / non-backend-specific options
 	connOpts *opts.ConnectionOptions
