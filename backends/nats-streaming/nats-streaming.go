@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"io/ioutil"
 	"net/url"
+	"strings"
 
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/stan.go"
@@ -22,7 +23,10 @@ import (
 const BackendName = "nats-streaming"
 
 var (
-	ErrMissingChannel    = errors.New("channel cannot be empty")
+	ErrMissingTLSKey     = errors.New("--tls-client-key-file cannot be blank if using ssl")
+	ErrMissingTlsCert    = errors.New("--tls-client-cert-file cannot be blank if using ssl")
+	ErrMissingTLSCA      = errors.New("--tls-ca-file cannot be blank if using ssl")
+	ErrEmptyChannel      = errors.New("channel cannot be empty")
 	ErrInvalidReadOption = errors.New("You may only specify one read option of --last, --all, --seq, --since")
 )
 
@@ -120,22 +124,22 @@ func generateTLSConfig(args *args.NatsStreamingConn) (*tls.Config, error) {
 	var cert tls.Certificate
 	var err error
 
-	if util.FileExists(args.TlsClientCert) {
+	if util.FileExists(args.TlsOptions.ClientCert) {
 		// CLI input, read from file
-		pemCerts, err := ioutil.ReadFile(string(args.TlsCaCert))
+		pemCerts, err := ioutil.ReadFile(string(args.TlsOptions.CaFile))
 		if err == nil {
 			certpool.AppendCertsFromPEM(pemCerts)
 		}
 
-		cert, err = tls.LoadX509KeyPair(string(args.TlsClientCert), string(args.TlsClientKey))
+		cert, err = tls.LoadX509KeyPair(string(args.TlsOptions.ClientCert), string(args.TlsOptions.ClientKey))
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to load ssl keypair")
 		}
 
 	} else {
-		certpool.AppendCertsFromPEM(args.TlsCaCert)
+		certpool.AppendCertsFromPEM(args.TlsOptions.CaFile)
 
-		cert, err = tls.X509KeyPair(args.TlsClientCert, args.TlsClientKey)
+		cert, err = tls.X509KeyPair(args.TlsOptions.ClientCert, args.TlsOptions.ClientKey)
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to load ssl keypair")
 		}
@@ -152,7 +156,7 @@ func generateTLSConfig(args *args.NatsStreamingConn) (*tls.Config, error) {
 		RootCAs:            certpool,
 		ClientAuth:         tls.NoClientCert,
 		ClientCAs:          nil,
-		InsecureSkipVerify: args.InsecureTls,
+		InsecureSkipVerify: args.TlsOptions.SkipVerify,
 		Certificates:       []tls.Certificate{cert},
 		MinVersion:         tls.VersionTLS12,
 	}, nil
@@ -167,8 +171,23 @@ func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 		return validate.ErrMissingConnCfg
 	}
 
-	if connOpts.GetNatsStreaming() == nil {
+	args := connOpts.GetNatsStreaming()
+	if args == nil {
 		return validate.ErrMissingConnArgs
+	}
+
+	if strings.HasPrefix(args.Dsn, "tls") {
+		if len(args.TlsOptions.ClientKey) == 0 {
+			return ErrMissingTLSKey
+		}
+
+		if len(args.TlsOptions.ClientCert) == 0 {
+			return ErrMissingTlsCert
+		}
+
+		if len(args.TlsOptions.CaFile) == 0 {
+			return ErrMissingTLSCA
+		}
 	}
 
 	return nil
