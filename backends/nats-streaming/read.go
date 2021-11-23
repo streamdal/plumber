@@ -25,7 +25,7 @@ func (n *NatsStreaming) Read(ctx context.Context, readOpts *opts.ReadOptions, re
 	var count int64
 
 	// stan.Subscribe is async, use channel to wait to exit
-	doneCh := make(chan struct{})
+	doneCh := make(chan struct{}, 1)
 	defer close(doneCh)
 
 	var subFunc = func(msg *stan.Msg) {
@@ -131,13 +131,17 @@ func validateReadOptions(readOpts *opts.ReadOptions) error {
 		return validate.ErrMissingReadOptions
 	}
 
-	if readOpts.Activemq == nil {
+	if readOpts.NatsStreaming == nil {
 		return validate.ErrEmptyBackendGroup
 	}
 
 	args := readOpts.NatsStreaming.Args
 	if args == nil {
 		return validate.ErrEmptyBackendArgs
+	}
+
+	if args.Channel == "" {
+		return ErrEmptyChannel
 	}
 
 	if args.ReadSequenceNumber > 0 {

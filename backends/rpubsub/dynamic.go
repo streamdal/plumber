@@ -17,7 +17,7 @@ func (r *RedisPubsub) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOpti
 		return errors.Wrap(err, "invalid dynamic options")
 	}
 
-	llog := logrus.WithField("pkg", "rabbitmq/dynamic")
+	llog := logrus.WithField("pkg", "rpubsub/dynamic")
 
 	go dynamicSvc.Start("Redis PubSub")
 
@@ -37,7 +37,7 @@ func (r *RedisPubsub) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOpti
 				llog.Debugf("Replayed message to Redis PubSub channel '%s' for replay '%s'", ch, outbound.ReplayId)
 			}
 		case <-ctx.Done():
-			r.log.Warning("context cancelled")
+			llog.Warning("context cancelled")
 			return nil
 		}
 

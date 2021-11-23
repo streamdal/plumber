@@ -20,6 +20,8 @@ func (a *AWSSNS) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, 
 		return errors.Wrap(err, "unable to validate dynamic options")
 	}
 
+	llog := a.log.WithField("pkg", "activemq/dynamic")
+
 	go dynamicSvc.Start("AWS SNS")
 
 	topic := dynamicOpts.Awssns.Args.Topic
@@ -35,11 +37,14 @@ func (a *AWSSNS) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, 
 				TopicArn: aws.String(topic),
 			})
 			if err != nil {
-				a.log.Errorf("Unable to replay message: %s", err)
+				llog.Errorf("Unable to replay message: %s", err)
 				break
 			}
 
-			a.log.Debugf("Replayed message to AWSSNS topic '%s' for replay '%s'", topic, outbound.ReplayId)
+			llog.Debugf("Replayed message to AWSSNS topic '%s' for replay '%s'", topic, outbound.ReplayId)
+		case <-ctx.Done():
+			llog.Warning("context cancelled")
+			return nil
 		}
 	}
 

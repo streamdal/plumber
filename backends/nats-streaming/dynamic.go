@@ -2,8 +2,7 @@ package nats_streaming
 
 import (
 	"context"
-
-	"github.com/sirupsen/logrus"
+	"fmt"
 
 	"github.com/batchcorp/plumber/dynamic"
 
@@ -18,7 +17,7 @@ func (n *NatsStreaming) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOp
 		return errors.Wrap(err, "invalid dynamic options")
 	}
 
-	llog := logrus.WithField("pkg", "nats-streaming/dynamic")
+	llog := n.log.WithField("pkg", "nats-streaming/dynamic")
 
 	go dynamicSvc.Start("Nats Streaming")
 
@@ -29,16 +28,18 @@ func (n *NatsStreaming) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOp
 		select {
 		case outbound := <-outboundCh:
 			if err := n.stanClient.Publish(dynamicOpts.NatsStreaming.Args.Channel, outbound.Blob); err != nil {
-				llog.Errorf("Unable to replay message: %s", err)
-				break
+				err = fmt.Errorf("unable to replay message: %s", err)
+				llog.Error(err)
+				return err
 			}
 
 			llog.Debugf("Replayed message to NATS streaming channel '%s' for replay '%s'",
 				dynamicOpts.NatsStreaming.Args.Channel, outbound.ReplayId)
+		case <-ctx.Done():
+			llog.Warning("context cancelled")
+			return nil
 		}
 	}
-
-	return nil
 }
 
 func validateDynamicOptions(dynamicOpts *opts.DynamicOptions) error {
@@ -55,7 +56,7 @@ func validateDynamicOptions(dynamicOpts *opts.DynamicOptions) error {
 	}
 
 	if dynamicOpts.NatsStreaming.Args.Channel == "" {
-		return ErrMissingChannel
+		return ErrEmptyChannel
 	}
 
 	return nil

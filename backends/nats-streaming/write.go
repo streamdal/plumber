@@ -41,7 +41,7 @@ func validateWriteOptions(writeOpts *opts.WriteOptions) error {
 	}
 
 	if writeOpts.NatsStreaming.Args.Channel == "" {
-		return ErrMissingChannel
+		return ErrEmptyChannel
 	}
 
 	return nil

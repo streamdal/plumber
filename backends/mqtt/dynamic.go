@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber/dynamic"
@@ -18,7 +17,7 @@ func (m *MQTT) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dy
 		return errors.Wrap(err, "invalid dynamic options")
 	}
 
-	llog := logrus.WithField("pkg", "mqtt/dynamic")
+	llog := m.log.WithField("pkg", "mqtt/dynamic")
 
 	go dynamicSvc.Start("MQTT")
 

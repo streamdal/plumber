@@ -219,10 +219,12 @@ func newReadOptions() *opts.ReadOptions {
 		},
 		NatsStreaming: &opts.ReadGroupNatsStreamingOptions{
 			XConn: &args.NatsStreamingConn{
-				TlsCaCert:       make([]byte, 0),
-				TlsClientCert:   make([]byte, 0),
-				TlsClientKey:    make([]byte, 0),
 				UserCredentials: make([]byte, 0),
+				TlsOptions: &args.NatsStreamingTLSOptions{
+					CaFile:     make([]byte, 0),
+					ClientCert: make([]byte, 0),
+					ClientKey:  make([]byte, 0),
+				},
 			},
 			Args: &args.NatsStreamingReadArgs{},
 		},
@@ -325,10 +327,12 @@ func newWriteOptions() *opts.WriteOptions {
 		},
 		NatsStreaming: &opts.WriteGroupNatsStreamingOptions{
 			XConn: &args.NatsStreamingConn{
-				TlsCaCert:       make([]byte, 0),
-				TlsClientCert:   make([]byte, 0),
-				TlsClientKey:    make([]byte, 0),
 				UserCredentials: make([]byte, 0),
+				TlsOptions: &args.NatsStreamingTLSOptions{
+					CaFile:     make([]byte, 0),
+					ClientCert: make([]byte, 0),
+					ClientKey:  make([]byte, 0),
+				},
 			},
 			Args: &args.NatsStreamingWriteArgs{},
 		},
@@ -485,10 +489,12 @@ func newDynamicOptions() *opts.DynamicOptions {
 		},
 		NatsStreaming: &opts.DynamicGroupNatsStreamingOptions{
 			XConn: &args.NatsStreamingConn{
-				TlsCaCert:       make([]byte, 0),
-				TlsClientCert:   make([]byte, 0),
-				TlsClientKey:    make([]byte, 0),
 				UserCredentials: make([]byte, 0),
+				TlsOptions: &args.NatsStreamingTLSOptions{
+					CaFile:     make([]byte, 0),
+					ClientCert: make([]byte, 0),
+					ClientKey:  make([]byte, 0),
+				},
 			},
 			Args: &args.NatsStreamingWriteArgs{},
 		},

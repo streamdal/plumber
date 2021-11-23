@@ -16,6 +16,8 @@ func (n *Nats) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dy
 		return errors.Wrap(err, "unable to validate dynamic options")
 	}
 
+	llog := n.log.WithField("pkg", "nats/dynamic")
+
 	go dynamicSvc.Start("Nats")
 
 	subject := dynamicOpts.Nats.Args.Subject
@@ -32,6 +34,9 @@ func (n *Nats) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dy
 			}
 
 			n.log.Debugf("Replayed message to Nats topic '%s' for replay '%s'", subject, outbound.ReplayId)
+		case <-ctx.Done():
+			llog.Warning("context cancelled")
+			return nil
 		}
 	}
 
