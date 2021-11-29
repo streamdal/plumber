@@ -16,7 +16,7 @@ import (
 
 func (n *NSQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
 	if err := validateRelayOptions(relayOpts); err != nil {
-		return errors.Wrap(err, "unable to verify options")
+		return errors.Wrap(err, "unable to validate relay options")
 	}
 
 	consumer, err := nsq.NewConsumer(relayOpts.Nsq.Args.Topic, relayOpts.Nsq.Args.Channel, n.config)

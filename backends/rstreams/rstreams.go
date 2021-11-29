@@ -22,14 +22,10 @@ var (
 )
 
 type RedisStreams struct {
-	// Base connection options / non-backend-specific options
 	connOpts *opts.ConnectionOptions
-
-	// Backend-specific args
 	connArgs *args.RedisStreamsConn
-
-	client *redis.Client
-	log    *logrus.Entry
+	client   *redis.Client
+	log      *logrus.Entry
 }
 
 func New(opts *opts.ConnectionOptions) (*RedisStreams, error) {

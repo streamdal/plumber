@@ -1,4 +1,4 @@
-package rpubsub
+package rstreams
 
 import (
 	"context"
@@ -13,20 +13,20 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-var _ = Describe("Redis PubSub Backend", func() {
-	var r *RedisPubsub
+var _ = Describe("Redis Streams Backend", func() {
+	var m *RedisStreams
 	var readOpts *opts.ReadOptions
 
 	BeforeEach(func() {
-		r = &RedisPubsub{
-			connArgs: &args.RedisPubSubConn{},
+		m = &RedisStreams{
+			connArgs: &args.RedisStreamsConn{},
 			log:      logrus.NewEntry(&logrus.Logger{Out: ioutil.Discard}),
 		}
 
 		readOpts = &opts.ReadOptions{
-			RedisPubsub: &opts.ReadGroupRedisPubSubOptions{
-				Args: &args.RedisPubSubReadArgs{
-					Channel: []string{"test"},
+			RedisStreams: &opts.ReadGroupRedisStreamsOptions{
+				Args: &args.RedisStreamsReadArgs{
+					Stream: []string{"test"},
 				},
 			},
 		}
@@ -39,30 +39,30 @@ var _ = Describe("Redis PubSub Backend", func() {
 			Expect(err).To(Equal(validate.ErrMissingReadOptions))
 		})
 		It("validates missing backend group", func() {
-			readOpts.RedisPubsub = nil
+			readOpts.RedisStreams = nil
 			err := validateReadOptions(readOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(validate.ErrEmptyBackendGroup))
 		})
 		It("validates missing backend args", func() {
-			readOpts.RedisPubsub.Args = nil
+			readOpts.RedisStreams.Args = nil
 			err := validateReadOptions(readOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(validate.ErrEmptyBackendArgs))
 		})
-		It("validates missing backend channel", func() {
-			readOpts.RedisPubsub.Args.Channel = nil
+		It("validates missing backend stream", func() {
+			readOpts.RedisStreams.Args.Stream = nil
 			err := validateReadOptions(readOpts)
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(Equal(ErrMissingChannel))
+			Expect(err).To(Equal(ErrMissingStream))
 		})
 	})
 
 	Context("Read", func() {
 		It("validates read options", func() {
-			err := r.Relay(context.Background(), nil, nil, nil)
+			err := m.Read(context.Background(), nil, nil, nil)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring(validate.ErrEmptyRelayOpts.Error()))
+			Expect(err.Error()).To(ContainSubstring(validate.ErrMissingReadOptions.Error()))
 		})
 	})
 })

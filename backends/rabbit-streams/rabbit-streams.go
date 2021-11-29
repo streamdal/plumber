@@ -19,7 +19,10 @@ import (
 const BackendName = "rabbitmq-streams"
 
 var (
-	ErrEmptyStream = errors.New("stream cannot be empty")
+	ErrEmptyStream     = errors.New("stream cannot be empty")
+	ErrEmptyDSN        = errors.New("DSN cannot be empty")
+	ErrEmptyStreamSize = errors.New("You must specify --declare-stream-size if you specify" +
+		" the --declare-stream option")
 )
 
 type RabbitStreams struct {
@@ -88,22 +91,14 @@ func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 		return validate.ErrMissingConnCfg
 	}
 
-	gcpOpts := connOpts.GetRabbitStreams()
-	if gcpOpts == nil {
+	args := connOpts.GetRabbitStreams()
+	if args == nil {
 		return validate.ErrMissingConnArgs
+	}
+
+	if args.Dsn == "" {
+		return ErrEmptyDSN
 	}
 
 	return nil
 }
-
-//func validateDeclareStreamOptions(opts *opts.ConnectionOptions) error {
-//	if !opts.GetRabbitStreams().Re {
-//		return nil
-//	}
-//
-//	if opts.RabbitMQStreams.DeclareStreamSize == "" {
-//		return ErrMissingDeclareSize
-//	}
-//
-//	return nil
-//}

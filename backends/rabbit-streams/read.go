@@ -181,7 +181,7 @@ func (r *RabbitStreams) getOffsetOption(readOpts *opts.ReadOptions) stream.Offse
 
 func validateReadOptions(readOpts *opts.ReadOptions) error {
 	if readOpts == nil {
-		return errors.New("read options cannot be nil")
+		return validate.ErrMissingReadOptions
 	}
 
 	if readOpts.RabbitStreams == nil {
@@ -205,8 +205,7 @@ func validateDeclareStreamArgs(args *args.RabbitStreamsReadArgs) error {
 	}
 
 	if args.DeclareStreamSize == "" {
-		return errors.New("You must specify --declare-stream-size if you specify" +
-			" the --declare-stream option")
+		return ErrEmptyStreamSize
 	}
 
 	return nil

@@ -1,4 +1,4 @@
-package rpubsub
+package rstreams
 
 import (
 	"context"
@@ -13,53 +13,53 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-var _ = Describe("Redis PubSub Backend", func() {
-	var r *RedisPubsub
-	var readOpts *opts.ReadOptions
+var _ = Describe("Redis Streams Backend", func() {
+	var r *RedisStreams
+	var relayOpts *opts.RelayOptions
 
 	BeforeEach(func() {
-		r = &RedisPubsub{
-			connArgs: &args.RedisPubSubConn{},
+		r = &RedisStreams{
+			connArgs: &args.RedisStreamsConn{},
 			log:      logrus.NewEntry(&logrus.Logger{Out: ioutil.Discard}),
 		}
 
-		readOpts = &opts.ReadOptions{
-			RedisPubsub: &opts.ReadGroupRedisPubSubOptions{
-				Args: &args.RedisPubSubReadArgs{
-					Channel: []string{"test"},
+		relayOpts = &opts.RelayOptions{
+			RedisStreams: &opts.RelayGroupRedisStreamsOptions{
+				Args: &args.RedisStreamsReadArgs{
+					Stream: []string{"test"},
 				},
 			},
 		}
 	})
 
-	Context("validateReadOptions", func() {
-		It("validates nil read options", func() {
-			err := validateReadOptions(nil)
+	Context("validateRelayOptions", func() {
+		It("validates nil relay options", func() {
+			err := validateRelayOptions(nil)
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(Equal(validate.ErrMissingReadOptions))
+			Expect(err).To(Equal(validate.ErrEmptyRelayOpts))
 		})
 		It("validates missing backend group", func() {
-			readOpts.RedisPubsub = nil
-			err := validateReadOptions(readOpts)
+			relayOpts.RedisStreams = nil
+			err := validateRelayOptions(relayOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(validate.ErrEmptyBackendGroup))
 		})
 		It("validates missing backend args", func() {
-			readOpts.RedisPubsub.Args = nil
-			err := validateReadOptions(readOpts)
+			relayOpts.RedisStreams.Args = nil
+			err := validateRelayOptions(relayOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(validate.ErrEmptyBackendArgs))
 		})
-		It("validates missing backend channel", func() {
-			readOpts.RedisPubsub.Args.Channel = nil
-			err := validateReadOptions(readOpts)
+		It("validates missing backend stream", func() {
+			relayOpts.RedisStreams.Args.Stream = nil
+			err := validateRelayOptions(relayOpts)
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(Equal(ErrMissingChannel))
+			Expect(err).To(Equal(ErrMissingStream))
 		})
 	})
 
-	Context("Read", func() {
-		It("validates read options", func() {
+	Context("Relay", func() {
+		It("validates relay options", func() {
 			err := r.Relay(context.Background(), nil, nil, nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(validate.ErrEmptyRelayOpts.Error()))

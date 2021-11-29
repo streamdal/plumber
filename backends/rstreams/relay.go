@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/batchcorp/plumber/validate"
+
 	"github.com/go-redis/redis/v8"
 	"github.com/pkg/errors"
 
@@ -19,6 +21,10 @@ import (
 const RetryReadInterval = 5 * time.Second
 
 func (r *RedisStreams) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
+	if err := validateRelayOptions(relayOpts); err != nil {
+		return errors.Wrap(err, "unable to validate relay options")
+	}
+
 	for {
 		streamsResult, err := r.client.XReadGroup(ctx, &redis.XReadGroupArgs{
 			Group:    relayOpts.RedisStreams.Args.ConsumerGroup,
@@ -85,6 +91,26 @@ func (r *RedisStreams) Relay(ctx context.Context, relayOpts *opts.RelayOptions, 
 				}
 			}
 		}
+	}
+}
+
+// validateRelayOptions ensures all required relay options are present
+func validateRelayOptions(relayOpts *opts.RelayOptions) error {
+	if relayOpts == nil {
+		return validate.ErrEmptyRelayOpts
+	}
+
+	if relayOpts.RedisStreams == nil {
+		return validate.ErrEmptyBackendGroup
+	}
+
+	args := relayOpts.RedisStreams.Args
+	if args == nil {
+		return validate.ErrEmptyBackendArgs
+	}
+
+	if len(args.Stream) == 0 {
+		return ErrMissingStream
 	}
 
 	return nil

@@ -163,7 +163,7 @@ func generateStreams(streams []string) []string {
 
 func validateReadOptions(readOpts *opts.ReadOptions) error {
 	if readOpts == nil {
-		return errors.New("read options cannot be nil")
+		return validate.ErrMissingReadOptions
 	}
 
 	if readOpts.RedisStreams == nil {
