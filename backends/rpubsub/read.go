@@ -78,7 +78,7 @@ func (r *RedisPubsub) Read(ctx context.Context, readOpts *opts.ReadOptions, resu
 
 func validateReadOptions(readOpts *opts.ReadOptions) error {
 	if readOpts == nil {
-		return errors.New("read options cannot be nil")
+		return validate.ErrMissingReadOptions
 	}
 
 	if readOpts.RedisPubsub == nil {
