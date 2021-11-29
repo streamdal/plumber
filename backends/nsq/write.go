@@ -32,8 +32,6 @@ func (n *NSQ) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh c
 			util.WriteError(n.log.Entry, errorCh, fmt.Errorf("unable to write message to '%s': %s", topic, err))
 			continue
 		}
-
-		n.log.Infof("Successfully wrote message to '%s'", topic)
 	}
 
 	return nil

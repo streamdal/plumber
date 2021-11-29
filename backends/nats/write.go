@@ -27,8 +27,6 @@ func (n *Nats) Write(_ context.Context, writeOpts *opts.WriteOptions, errorCh ch
 			util.WriteError(n.log, errorCh, fmt.Errorf("unable to publish message to subject '%s': %s", subject, err))
 			continue
 		}
-
-		n.log.Infof("Successfully wrote message to '%s'", subject)
 		return nil
 	}
 

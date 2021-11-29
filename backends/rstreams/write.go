@@ -20,7 +20,7 @@ func (r *RedisStreams) Write(ctx context.Context, writeOpts *opts.WriteOptions, 
 	}
 
 	for _, value := range messages {
-		for _, streamName := range writeOpts.RedisStreams.Args.Streams {
+		for _, streamName := range writeOpts.RedisStreams.Args.Stream {
 			_, err := r.client.XAdd(ctx, &redis.XAddArgs{
 				Stream: streamName,
 				ID:     writeOpts.RedisStreams.Args.WriteId,
@@ -51,7 +51,7 @@ func validateWriteOptions(writeOpts *opts.WriteOptions) error {
 		return validate.ErrEmptyBackendArgs
 	}
 
-	if len(writeOpts.RedisStreams.Args.Streams) == 0 {
+	if len(writeOpts.RedisStreams.Args.Stream) == 0 {
 		return ErrMissingStream
 	}
 
