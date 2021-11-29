@@ -144,7 +144,7 @@ github.com/batchcorp/lucene2x/token
 # github.com/batchcorp/pgoutput v0.3.2
 ## explicit
 github.com/batchcorp/pgoutput
-# github.com/batchcorp/plumber-schemas v0.0.107
+# github.com/batchcorp/plumber-schemas v0.0.108
 ## explicit
 github.com/batchcorp/plumber-schemas/build/go/protos
 github.com/batchcorp/plumber-schemas/build/go/protos/args
@@ -157,10 +157,6 @@ github.com/batchcorp/plumber-schemas/build/go/protos/records
 github.com/batchcorp/rabbit
 # github.com/batchcorp/schemas v0.2.176
 ## explicit
-github.com/batchcorp/schemas/build/go/events
-github.com/batchcorp/schemas/build/go/events/destinations
-github.com/batchcorp/schemas/build/go/events/metrics
-github.com/batchcorp/schemas/build/go/events/tasks
 # github.com/beorn7/perks v1.0.1
 github.com/beorn7/perks/quantile
 # github.com/cespare/xxhash/v2 v2.1.2

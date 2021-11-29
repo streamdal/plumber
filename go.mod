@@ -13,9 +13,9 @@ require (
 	github.com/batchcorp/kong v0.2.17-batch-fix
 	github.com/batchcorp/lucene2x v0.0.17
 	github.com/batchcorp/pgoutput v0.3.2
-	github.com/batchcorp/plumber-schemas v0.0.107
+	github.com/batchcorp/plumber-schemas v0.0.108
 	github.com/batchcorp/rabbit v0.1.9
-	github.com/batchcorp/schemas v0.2.176
+	github.com/batchcorp/schemas v0.2.176 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fatih/color v1.12.0 // indirect
 	github.com/go-redis/redis/v8 v8.11.4

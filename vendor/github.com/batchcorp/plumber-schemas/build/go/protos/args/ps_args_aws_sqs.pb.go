@@ -21,8 +21,8 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type AWSSQSConn struct {
-	// @gotags: kong:"en=AWS_DEFAULT_REGION,hidden,required"
-	AwsRegion string `protobuf:"bytes,1,opt,name=aws_region,json=awsRegion,proto3" json:"aws_region,omitempty" kong:"en=AWS_DEFAULT_REGION,hidden,required"`
+	// @gotags: kong:"env=AWS_DEFAULT_REGION,hidden,required"
+	AwsRegion string `protobuf:"bytes,1,opt,name=aws_region,json=awsRegion,proto3" json:"aws_region,omitempty" kong:"env=AWS_DEFAULT_REGION,hidden,required"`
 	// @gotags: kong:"env=AWS_ACCESS_KEY_ID,hidden,required"
 	AwsAccessKeyId string `protobuf:"bytes,2,opt,name=aws_access_key_id,json=awsAccessKeyId,proto3" json:"aws_access_key_id,omitempty" kong:"env=AWS_ACCESS_KEY_ID,hidden,required"`
 	// @gotags: kong:"env=AWS_SECRET_ACCESS_KEY,hidden,required"
