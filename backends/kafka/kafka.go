@@ -106,10 +106,10 @@ func NewReaderForRead(dialer *skafka.Dialer, connArgs *args.KafkaConn, readArgs 
 	}
 
 	if readArgs.UseConsumerGroup {
-		rc.GroupTopics = readArgs.Topics
+		rc.GroupTopics = readArgs.Topic
 		rc.GroupID = readArgs.ConsumerGroupName
 	} else {
-		rc.Topic = readArgs.Topics[0]
+		rc.Topic = readArgs.Topic[0]
 	}
 
 	r := skafka.NewReader(rc)
@@ -136,10 +136,10 @@ func NewReaderForRelay(dialer *skafka.Dialer, connArgs *args.KafkaConn, relayArg
 	}
 
 	if relayArgs.UseConsumerGroup {
-		rc.GroupTopics = relayArgs.Topics
+		rc.GroupTopics = relayArgs.Topic
 		rc.GroupID = relayArgs.ConsumerGroupName
 	} else {
-		rc.Topic = relayArgs.Topics[0]
+		rc.Topic = relayArgs.Topic[0]
 	}
 
 	r := skafka.NewReader(rc)

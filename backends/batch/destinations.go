@@ -138,7 +138,7 @@ func (b *Batch) getDestinationMetadata(destType string) map[string]interface{} {
 
 func (b *Batch) getDestinationMetadataKafka() map[string]interface{} {
 	return map[string]interface{}{
-		"topic":        b.Opts.Batch.Create.Destination.Kafka.Args.Topics[0],
+		"topic":        b.Opts.Batch.Create.Destination.Kafka.Args.Topic[0],
 		"address":      b.Opts.Batch.Create.Destination.Kafka.XConn.Address,
 		"use_tls":      b.Opts.Batch.Create.Destination.Kafka.XConn.UseTls,
 		"insecure_tls": b.Opts.Batch.Create.Destination.Kafka.XConn.InsecureTls,

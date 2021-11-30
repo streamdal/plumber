@@ -139,7 +139,7 @@ func printKafkaOptions(cliOpts *opts.CLIOptions) {
 	logrus.Info("----------------------------------------------------------------")
 	logrus.Info("")
 	logrus.Infof("- %-24s%-6v", "Brokers", strings.Join(cliOpts.Relay.Kafka.XConn.Address, ", "))
-	logrus.Infof("- %-24s%-6v", "Topics", strings.Join(cliOpts.Relay.Kafka.Args.Topics, ", "))
+	logrus.Infof("- %-24s%-6v", "Topics", strings.Join(cliOpts.Relay.Kafka.Args.Topic, ", "))
 	logrus.Infof("- %-24s%-6v", "ConsumerGroup", cliOpts.Relay.Kafka.Args.ConsumerGroupName)
 	logrus.Infof("- %-24s%-6v", "CommitInterval (seconds)", cliOpts.Relay.Kafka.Args.CommitIntervalSeconds)
 	logrus.Infof("- %-24s%-6v", "MaxWait (seconds)", cliOpts.Relay.Kafka.Args.MaxWaitSeconds)

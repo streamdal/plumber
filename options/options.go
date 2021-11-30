@@ -193,7 +193,7 @@ func newReadOptions() *opts.ReadOptions {
 				Address: make([]string, 0),
 			},
 			Args: &args.KafkaReadArgs{
-				Topics: make([]string, 0),
+				Topic: make([]string, 0),
 			},
 		},
 		Activemq: &opts.ReadGroupActiveMQOptions{
@@ -401,7 +401,7 @@ func newRelayOptions() *opts.RelayOptions {
 				Address: make([]string, 0),
 			},
 			Args: &args.KafkaRelayArgs{
-				Topics: make([]string, 0),
+				Topic: make([]string, 0),
 			},
 		},
 		Awssqs: &opts.RelayGroupAWSSQSOptions{
@@ -556,7 +556,7 @@ func newBatchOptions() *opts.BatchOptions {
 					XConn: &args.KafkaConn{},
 					Args: &args.KafkaWriteArgs{
 						Headers: make(map[string]string, 0),
-						Topics:  make([]string, 0),
+						Topic:   make([]string, 0),
 					},
 				},
 				Rabbit: &opts.WriteGroupRabbitOptions{

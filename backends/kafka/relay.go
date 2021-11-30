@@ -80,7 +80,7 @@ func validateRelayOptions(relayOpts *opts.RelayOptions) error {
 		return validate.ErrEmptyBackendArgs
 	}
 
-	if len(relayOpts.Kafka.Args.Topics) == 0 {
+	if len(relayOpts.Kafka.Args.Topic) == 0 {
 		return ErrMissingTopic
 	}
 

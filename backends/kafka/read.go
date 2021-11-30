@@ -110,7 +110,7 @@ func (k *Kafka) performSampledRead(
 		return errors.New("lag cannot be nil with sampled reads")
 	}
 
-	topic := readOpts.Kafka.Args.Topics[0]
+	topic := readOpts.Kafka.Args.Topic[0]
 
 	// TODO: This should probably be refreshed once in a while
 	partitions, err := lag.discoverPartitions(topic)
