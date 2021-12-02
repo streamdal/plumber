@@ -119,8 +119,11 @@ INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
 INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
 ```
 
-#### See [EXAMPLES.md](https://github.com/batchcorp/plumber/blob/master/docs/EXAMPLES.md) for more usage examples
-#### See [ENV.md](https://github.com/batchcorp/plumber/blob/master/docs/ENV.md) for list of supported environment variables
+## Documentation
+
+* [docs/examples.md](https://github.com/batchcorp/plumber/blob/master/docs/examples.md) for more usage examples
+* [docs/env.md](https://github.com/batchcorp/plumber/blob/master/docs/env.md) for list of supported environment variables
+* [docs/metrics.md](https://github.com/batchcorp/plumber/blob/master/docs/env.md) for information on metrics that plumber exposes
 
 ## Getting Help
 

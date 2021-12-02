@@ -47,7 +47,6 @@
        * [Continuously relay MongoDB change stream events to a Batch.sh collection](#continuously-relay-mongodb-change-stream-events-to-a-batchsh-collection)
   * [Advanced Usage](#advanced-usage)
        * [Decoding protobuf encoded messages and viewing them live](#decoding-protobuf-encoded-messages-and-viewing-them-live)
-       * [Prometheus Metrics](#prometheus-metrics)
 
 ## Consuming
 
@@ -490,31 +489,4 @@ $ plumber read kafka --topic=orders --avro-schema=some_schema.avsc
 <sub>
 If your schemas are located in multiple places, you can specify `--protobuf-dir`
 multiple times. Treat it the same as you would `protoc -I`.
-</sub> 
-
-##### Prometheus Metrics
-
-In relay mode, plumber will launch a http server exposing Prometheus metrics running at http://localhost:8080/metrics
-
-Prometheus metrics can be pulled from Plumber by adding a new source to your `prometheus.yml` config
-
-```yaml
-scrape_configs:
-- job_name: plumber
-  scrape_interval: 5s
-  static_configs:
-  - targets:
-    - your-hostname:8080
-```
-
-You may modify the listen address/port using the `PLUMBER_RELAY_HTTP_LISTEN_ADDRESS` environment variable or
-the `--listen-address` flag.
-
-The following metrics are available in addition to all golang metrics
-
-| Metric | Type | Description |
-|----|----|----|
-| plumber_relay_rate | gauge | Current rare of messages being relayed to Batch.sh (5 second interval) |
-| plumber_relay_total | counter | Total number of events relayed to Batch.sh | 
-| plumber_read_errors | counter | Number of errors when reading messages |
-| plumber_grpc_errors | counter | Number of errors when making GRPC calls |
+</sub>

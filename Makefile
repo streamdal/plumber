@@ -73,7 +73,7 @@ clean:
 .PHONY: generate/docs
 generate/docs: description = Generate documentation
 generate/docs:
-	go run tools/generate-docs/main.go env > docs/ENV.md
+	go run tools/docs-generator/main.go -type env -output markdown > docs/env.md
 
 ### Docker
 
