@@ -4,13 +4,13 @@
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
-| PLUMBER_SERVER_NODE_ID | Unique ID that identifies this plumber node | plumber1 | true |
-| PLUMBER_SERVER_CLUSTER_ID | ID of the plumber cluster (has to be the same across all nodes) | aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa | true |
+| PLUMBER_SERVER_NODE_ID | Unique ID that identifies this plumber node | plumber1 | **true** |
+| PLUMBER_SERVER_CLUSTER_ID | ID of the plumber cluster (has to be the same across all nodes) | aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa | **true** |
 | PLUMBER_SERVER_GRPC_LISTEN_ADDRESS | Host:port that the gRPC server will bind to | 127.0.0.1:9090 | false |
-| PLUMBER_SERVER_AUTH_TOKEN | All gRPC requests require this auth token to be set | batchcorp | true |
-| PLUMBER_SERVER_INITIAL_CLUSTER | InitialCluster should contain comma separated list of key=value pairs of host:port entries for ALL peers in the cluster. (Example: server1=http://192.168.1.10:2380 | plumber1=http://127.0.0.1:2380 | true |
+| PLUMBER_SERVER_AUTH_TOKEN | All gRPC requests require this auth token to be set | batchcorp | **true** |
+| PLUMBER_SERVER_INITIAL_CLUSTER | InitialCluster should contain comma separated list of key=value pairs of host:port entries for ALL peers in the cluster. (Example: server1=http://192.168.1.10:2380 | plumber1=http://127.0.0.1:2380 | **true** |
 | PLUMBER_SERVER_ADVERTISE_PEER_URL | Address of _this_ plumber instance etcd server interface. Example: http://local-ip:2380 | http://127.0.0.1:2380 | false |
-| PLUMBER_SERVER_ADVERTISE_CLIENT_URL | Address of _this_ plumber instance etcd client interface. Example: http://local-ip:2379 | http://127.0.0.1:2379 | true |
+| PLUMBER_SERVER_ADVERTISE_CLIENT_URL | Address of _this_ plumber instance etcd client interface. Example: http://local-ip:2379 | http://127.0.0.1:2379 | **true** |
 | PLUMBER_SERVER_LISTENER_PEER_URL | Address that _this_ plumber instance etcd server should listen on. Example: http://local-ip:2380 | http://127.0.0.1:2380 | false |
 | PLUMBER_SERVER_LISTENER_CLIENT_URL | Address that _this_ plumber instance etcd client should listen on. Example: http://local-ip:2379 | http://127.0.0.1:2379 | false |
 | PLUMBER_SERVER_PEER_TOKEN | Secret token that ALL cluster members should use/share. If this token does not match on one of the plumber instances | secret | false |
@@ -20,7 +20,7 @@
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
 | PLUMBER_RELAY_HTTP_LISTEN_ADDRESS | What address to bind the built-in HTTP server to | localhost:9191 | false |
-| PLUMBER_RELAY_TOKEN | Secret collection token |  | true |
+| PLUMBER_RELAY_TOKEN | Secret collection token |  | **true** |
 | PLUMBER_RELAY_BATCH_SIZE | How many messages to send in a single batch | 1000 | false |
 | PLUMBER_RELAY_BATCH_MAX_RETRY | How many times plumber will try re-sending a batch | 3 | false |
 | PLUMBER_RELAY_NUM_WORKERS |  | 10 | false |
@@ -34,17 +34,17 @@
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
-| AWS_DEFAULT_REGION |  |  | true |
-| AWS_ACCESS_KEY_ID |  |  | true |
-| AWS_SECRET_ACCESS_KEY |  |  | true |
+| AWS_DEFAULT_REGION |  |  | **true** |
+| AWS_ACCESS_KEY_ID |  |  | **true** |
+| AWS_SECRET_ACCESS_KEY |  |  | **true** |
 
 ### Aws_sqs
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
-| AWS_DEFAULT_REGION |  |  | true |
-| AWS_ACCESS_KEY_ID |  |  | true |
-| AWS_SECRET_ACCESS_KEY |  |  | true |
+| AWS_DEFAULT_REGION |  |  | **true** |
+| AWS_ACCESS_KEY_ID |  |  | **true** |
+| AWS_SECRET_ACCESS_KEY |  |  | **true** |
 | PLUMBER_RELAY_SQS_QUEUE_NAME | Queue name |  | false |
 | PLUMBER_RELAY_SQS_REMOTE_ACCOUNT_ID | Remote AWS account ID |  | false |
 | PLUMBER_RELAY_SQS_MAX_NUM_MESSAGES | Max number of messages to read | 1 | false |
@@ -56,39 +56,39 @@
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
-| EVENTHUB_CONNECTION_STRING | Connection string |  | true |
+| EVENTHUB_CONNECTION_STRING | Connection string |  | **true** |
 
 ### Azure_service_bus
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
-| SERVICEBUS_CONNECTION_STRING | Connection string |  | true |
-| PLUMBER_RELAY_AZURE_QUEUE_NAME | Queue name |  | true |
-| PLUMBER_RELAY_AZURE_TOPIC_NAME | Topic name |  | true |
-| PLUMBER_RELAY_AZURE_SUBSCRIPTION | Subscription name |  | true |
+| SERVICEBUS_CONNECTION_STRING | Connection string |  | **true** |
+| PLUMBER_RELAY_AZURE_QUEUE_NAME | Queue name |  | **true** |
+| PLUMBER_RELAY_AZURE_TOPIC_NAME | Topic name |  | **true** |
+| PLUMBER_RELAY_AZURE_SUBSCRIPTION | Subscription name |  | **true** |
 
 ### Gcp_pubsub
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
-| PLUMBER_RELAY_GCP_PROJECT_ID | Project ID |  | true |
+| PLUMBER_RELAY_GCP_PROJECT_ID | Project ID |  | **true** |
 | PLUMBER_RELAY_GCP_CREDENTIALS | GCP Credentials in JSON format |  | false |
 | GOOGLE_APPLICATION_CREDENTIALS | Path to GCP credentials JSON file |  | false |
-| PLUMBER_RELAY_GCP_SUBSCRIPTION_ID | Subscription ID |  | true |
+| PLUMBER_RELAY_GCP_SUBSCRIPTION_ID | Subscription ID |  | **true** |
 | PLUMBER_RELAY_GCP_ACK_MESSAGE | Whether to acknowledge message receive | true | false |
 
 ### Kafka
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
-| PLUMBER_RELAY_KAFKA_ADDRESS | Kafka broker address (you may specify this flag multiple times | localhost:9092 | true |
+| PLUMBER_RELAY_KAFKA_ADDRESS | Kafka broker address (you may specify this flag multiple times | localhost:9092 | **true** |
 | PLUMBER_RELAY_TIMEOUT_SECONDS | Connect timeout | 10 | false |
 | PLUMBER_RELAY_USE_TLS | Enable TLS usage |  | false |
 | PLUMBER_RELAY_KAFKA_INSECURE_TLS | Allow insecure TLS usage |  | false |
 | PLUMBER_RELAY_KAFKA_SASL_TYPE | SASL authentication type (options: none | none | false |
 | PLUMBER_RELAY_KAFKA_USERNAME | SASL Username |  | false |
 | PLUMBER_RELAY_KAFKA_PASSWORD | SASL Password. If omitted |  | false |
-| PLUMBER_RELAY_KAFKA_TOPIC | Topic(s) to read |  | true |
+| PLUMBER_RELAY_KAFKA_TOPIC | Topic(s) to read |  | **true** |
 | PLUMBER_RELAY_KAFKA_READ_OFFSET | Specify what offset the consumer should read from (only works if --use-consumer-group is false) | 0 | false |
 | PLUMBER_RELAY_KAFKA_USE_CONSUMER_GROUP | Whether plumber should use a consumer group | true | false |
 | PLUMBER_RELAY_KAFKA_GROUP_ID | Specify a specific group-id to use when reading from kafka | plumber | false |
@@ -103,7 +103,7 @@
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
-| PLUMBER_RELAY_KUBEMQ_QUEUE_ADDRESS | Dial string for KubeMQ server | localhost:50000 | true |
+| PLUMBER_RELAY_KUBEMQ_QUEUE_ADDRESS | Dial string for KubeMQ server | localhost:50000 | **true** |
 | PLUMBER_RELAY_KUBEMQ_QUEUE_AUTH_TOKEN | Client JWT authentication token |  | false |
 | PLUMBER_RELAY_KUBEMQ_QUEUE_TLS_CERT_FILE | KubeMQ client cert file |  | false |
 | PLUMBER_RELAY_KUBEMQ_QUEUE_CLIENT_ID | KubeMQ client ID | plumber | false |
@@ -126,11 +126,11 @@
 | PLUMBER_RELAY_MQTT_TLS_CLIENT_CERT | Client cert file (only needed if addr is ssl://) |  | false |
 | PLUMBER_RELAY_MQTT_TLS_CLIENT_KEY | Client key file (only needed if addr is ssl://) |  | false |
 | PLUMBER_RELAY_MQTT_SKIP_VERIFY_TLS | Whether to verify server certificate |  | false |
-| PLUMBER_RELAY_MQTT_ADDRESS | MQTT address | tcp://localhost:1883 | true |
+| PLUMBER_RELAY_MQTT_ADDRESS | MQTT address | tcp://localhost:1883 | **true** |
 | PLUMBER_RELAY_MQTT_CONNECT_TIMEOUT | How long to attempt to connect for | 5 | false |
 | PLUMBER_RELAY_MQTT_CLIENT_ID | Client id presented to MQTT broker | plumber | false |
 | PLUMBER_RELAY_MQTT_QOS | QoS level to use for pub/sub (options: at_most_once | at_most_once | false |
-| PLUMBER_RELAY_MQTT_TOPIC | Topic to read message(s) from |  | true |
+| PLUMBER_RELAY_MQTT_TOPIC | Topic to read message(s) from |  | **true** |
 | PLUMBER_RELAY_MQTT_READ_TIMEOUT_SECONDS | How long to attempt to read message(s) | 0 | false |
 
 ### Nats_streaming
@@ -155,33 +155,33 @@
 | PLUMBER_RELAY_NSQ_TLS_KEY_FILE |  |  | false |
 | PLUMBER_RELAY_NSQ_AUTH_SECRET | Authentication secret |  | false |
 | PLUMBER_RELAY_NSQ_CLIENT_ID | Client ID to identify as | plumber | false |
-| PLUMBER_RELAY_NSQ_TOPIC | NSQ topic to read from |  | true |
-| PLUMBER_RELAY_NSQ_CHANNEL | Output channel |  | true |
+| PLUMBER_RELAY_NSQ_TOPIC | NSQ topic to read from |  | **true** |
+| PLUMBER_RELAY_NSQ_CHANNEL | Output channel |  | **true** |
 
 ### Postgres
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
-| PLUMBER_RELAY_CDCPOSTGRES_HOSTNAME | Postgres server hostname |  | true |
-| PLUMBER_RELAY_CDCPOSTGRES_USERNAME | Postgres port | 5432 | true |
-| PLUMBER_RELAY_CDCPOSTGRES_USERNAME | Postgres username |  | true |
+| PLUMBER_RELAY_CDCPOSTGRES_HOSTNAME | Postgres server hostname |  | **true** |
+| PLUMBER_RELAY_CDCPOSTGRES_USERNAME | Postgres port | 5432 | **true** |
+| PLUMBER_RELAY_CDCPOSTGRES_USERNAME | Postgres username |  | **true** |
 | PLUMBER_RELAY_CDCPOSTGRES_PASSWORD | Postgres server password |  | false |
-| PLUMBER_RELAY_CDCPOSTGRES_DATABASE | Postgres server database name |  | true |
+| PLUMBER_RELAY_CDCPOSTGRES_DATABASE | Postgres server database name |  | **true** |
 | PLUMBER_RELAY_CDCPOSTGRES_USE_TLS | Enable TLS usage |  | false |
 | PLUMBER_RELAY_CDCPOSTGRES_SKIP_VERIFY_TLS | Whether to verify server certificate |  | false |
-| PLUMBER_RELAY_CDCPOSTGRES_SLOT | CDC replication slot name |  | true |
-| PLUMBER_RELAY_CDCPOSTGRES_PUBLISHER | CDC publisher name |  | true |
+| PLUMBER_RELAY_CDCPOSTGRES_SLOT | CDC replication slot name |  | **true** |
+| PLUMBER_RELAY_CDCPOSTGRES_PUBLISHER | CDC publisher name |  | **true** |
 
 ### Rabbit
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
-| PLUMBER_RELAY_RABBIT_ADDRESS | Destination host address (full DSN) | amqp://localhost | true |
+| PLUMBER_RELAY_RABBIT_ADDRESS | Destination host address (full DSN) | amqp://localhost | **true** |
 | PLUMBER_RELAY_RABBIT_USE_TLS | Force TLS usage (regardless of DSN) |  | false |
 | PLUMBER_RELAY_RABBIT_SKIP_VERIFY_TLS | Whether to verify server TLS certificate |  | false |
-| PLUMBER_RELAY_RABBIT_EXCHANGE | Name of the exchange |  | true |
-| PLUMBER_RELAY_RABBIT_QUEUE | Name of the queue where messages will be routed to |  | true |
-| PLUMBER_RELAY_RABBIT_ROUTING_KEY | Binding key for topic based exchanges |  | true |
+| PLUMBER_RELAY_RABBIT_EXCHANGE | Name of the exchange |  | **true** |
+| PLUMBER_RELAY_RABBIT_QUEUE | Name of the queue where messages will be routed to |  | **true** |
+| PLUMBER_RELAY_RABBIT_ROUTING_KEY | Binding key for topic based exchanges |  | **true** |
 | PLUMBER_RELAY_RABBIT_QUEUE_EXCLUSIVE | Whether plumber should be the only one using the queue |  | false |
 | PLUMBER_RELAY_RABBIT_QUEUE_DECLARE | Whether to create/declare the queue (if it does not exist) | true | false |
 | PLUMBER_RELAY_RABBIT_QUEUE_DURABLE | Whether the queue should survive after disconnect |  | false |
@@ -197,20 +197,20 @@
 | PLUMBER_RELAY_REDIS_PUBSUB_USERNAME | Optional username to auth with (redis >= v6.0.0) |  | false |
 | PLUMBER_RELAY_REDIS_PUBSUB_PASSWORD | Optional password to auth with (redis >= v6.0.0) |  | false |
 | PLUMBER_RELAY_REDIS_PUBSUB_DATABASE | Database (0-16) |  | false |
-| PLUMBER_RELAY_REDIS_PUBSUB_CHANNELS | Comma separated list of channels to read from |  | true |
+| PLUMBER_RELAY_REDIS_PUBSUB_CHANNELS | Comma separated list of channels to read from |  | **true** |
 
 ### Redis_streams
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
-| PLUMBER_RELAY_REDIS_STREAMS_ADDRESS | Address of redis server | localhost:6379 | true |
+| PLUMBER_RELAY_REDIS_STREAMS_ADDRESS | Address of redis server | localhost:6379 | **true** |
 | PLUMBER_RELAY_REDIS_STREAMS_USERNAME | Username (redis >= v6.0.0) |  | false |
 | PLUMBER_RELAY_REDIS_STREAMS_PASSWORD | Password (redis >= v6.0.0) |  | false |
 | PLUMBER_RELAY_REDIS_PUBSUB_DATABASE | Database (0-16) |  | false |
 | PLUMBER_RELAY_REDIS_STREAMS_CREATE_STREAMS | Create the streams if creating a new consumer group |  | false |
 | PLUMBER_RELAY_REDIS_STREAMS_RECREATE_CONSUMER_GROUP | Recreate this consumer group if it does not exist |  | false |
-| PLUMBER_RELAY_REDIS_STREAMS_START_ID | What offset to start reading at (options: latest | latest | true |
-| PLUMBER_RELAY_REDIS_STREAMS_STREAMS | Streams to read from |  | true |
+| PLUMBER_RELAY_REDIS_STREAMS_START_ID | What offset to start reading at (options: latest | latest | **true** |
+| PLUMBER_RELAY_REDIS_STREAMS_STREAMS | Streams to read from |  | **true** |
 | PLUMBER_RELAY_REDIS_STREAMS_CONSUMER_GROUP | Consumer group name | plumber | false |
 | PLUMBER_RELAY_REDIS_STREAMS_CONSUMER_NAME | Consumer name | plumber-consumer-1 | false |
 | PLUMBER_RELAY_REDIS_STREAMS_COUNT | Number of records to read from stream(s) per read | 10 | false |
