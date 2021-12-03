@@ -81,8 +81,8 @@ type RelayOptions struct {
 	StatsReportIntervalSec int32 `protobuf:"varint,7,opt,name=stats_report_interval_sec,json=statsReportIntervalSec,proto3" json:"stats_report_interval_sec,omitempty" kong:"group=stats,help='How often to print stats',default=5"`
 	// @gotags: kong:"help='Alternative collector to relay events to',name='grpc-address',env='PLUMBER_RELAY_GRPC_ADDRESS',default='grpc-collector.batch.sh:9000'"
 	XBatchshGrpcAddress string `protobuf:"bytes,1000,opt,name=_batchsh_grpc_address,json=BatchshGrpcAddress,proto3" json:"_batchsh_grpc_address,omitempty" kong:"help='Alternative collector to relay events to',name='grpc-address',env='PLUMBER_RELAY_GRPC_ADDRESS',default='grpc-collector.batch.sh:9000'"`
-	// @gotags: kong:"help='Whether to use TLS with collector',name=grpc-disable-tls,env='PLUMBER_RELAY_GRPC_DISABLE_TLS',default=true"
-	XBatchshGrpcDisableTls bool `protobuf:"varint,1001,opt,name=_batchsh_grpc_disable_tls,json=BatchshGrpcDisableTls,proto3" json:"_batchsh_grpc_disable_tls,omitempty" kong:"help='Whether to use TLS with collector',name=grpc-disable-tls,env='PLUMBER_RELAY_GRPC_DISABLE_TLS',default=true"`
+	// @gotags: kong:"help='Whether to use TLS with collector',name=grpc-disable-tls,env='PLUMBER_RELAY_GRPC_DISABLE_TLS',default=false"
+	XBatchshGrpcDisableTls bool `protobuf:"varint,1001,opt,name=_batchsh_grpc_disable_tls,json=BatchshGrpcDisableTls,proto3" json:"_batchsh_grpc_disable_tls,omitempty" kong:"help='Whether to use TLS with collector',name=grpc-disable-tls,env='PLUMBER_RELAY_GRPC_DISABLE_TLS',default=false"`
 	// @gotags: kong:"help='How long to wait before giving up talking to the gRPC collector',name='grpc-timeout-seconds',env='PLUMBER_RELAY_GRPC_TIMEOUT',default=5"
 	XBatchshGrpcTimeoutSeconds int32 `protobuf:"varint,1002,opt,name=_batchsh_grpc_timeout_seconds,json=BatchshGrpcTimeoutSeconds,proto3" json:"_batchsh_grpc_timeout_seconds,omitempty" kong:"help='How long to wait before giving up talking to the gRPC collector',name='grpc-timeout-seconds',env='PLUMBER_RELAY_GRPC_TIMEOUT',default=5"`
 	// ID of the created relay entry; populated by plumber.
