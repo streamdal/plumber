@@ -3,6 +3,8 @@ package awssqs
 import (
 	"context"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
@@ -42,16 +44,21 @@ func New(connOpts *opts.ConnectionOptions) (*AWSSQS, error) {
 		return nil, errors.Wrap(err, "unable to validate options")
 	}
 
-	// TODO: needs to accept key and region via string
-	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		SharedConfigState: session.SharedConfigEnable,
-	}))
+	connArgs := connOpts.GetAwssqs()
+
+	sess, err := session.NewSession(&aws.Config{
+		Region:      aws.String(connArgs.AwsRegion),
+		Credentials: credentials.NewStaticCredentials(connArgs.AwsAccessKeyId, connArgs.AwsSecretAccessKey, ""),
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to initialize aws session")
+	}
 
 	client := sqs.New(sess)
 
 	return &AWSSQS{
 		connOpts: connOpts,
-		connArgs: connOpts.GetAwssqs(),
+		connArgs: connArgs,
 		client:   client,
 		log:      logrus.WithField("backend", BackendName),
 	}, nil

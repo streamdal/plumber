@@ -3,6 +3,8 @@ package awssns
 import (
 	"context"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/aws/aws-sdk-go/service/sns/snsiface"
@@ -37,13 +39,19 @@ func New(connOpts *opts.ConnectionOptions) (*AWSSNS, error) {
 		return nil, errors.Wrap(err, "unable to validate options")
 	}
 
-	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		SharedConfigState: session.SharedConfigEnable,
-	}))
+	connArgs := connOpts.GetAwssns()
+
+	sess, err := session.NewSession(&aws.Config{
+		Region:      aws.String(connArgs.AwsRegion),
+		Credentials: credentials.NewStaticCredentials(connArgs.AwsAccessKeyId, connArgs.AwsSecretAccessKey, ""),
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to initialize aws session")
+	}
 
 	return &AWSSNS{
 		connOpts: connOpts,
-		connArgs: connOpts.GetAwssns(),
+		connArgs: connArgs,
 		Service:  sns.New(sess),
 		log:      logrus.WithField("backend", BackendName),
 	}, nil
