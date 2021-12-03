@@ -23,7 +23,7 @@ func (a *AWSSQS) Write(_ context.Context, writeOpts *opts.WriteOptions, errorCh 
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	args := writeOpts.Awssqs.Args
+	args := writeOpts.AwsSqs.Args
 
 	queueURL, err := a.getQueueURL(args.QueueName, args.RemoteAccountId)
 	if err != nil {
@@ -101,15 +101,15 @@ func validateWriteOptions(writeOpts *opts.WriteOptions) error {
 		return validate.ErrEmptyWriteOpts
 	}
 
-	if writeOpts.Awssqs == nil {
+	if writeOpts.AwsSqs == nil {
 		return validate.ErrEmptyBackendGroup
 	}
 
-	if writeOpts.Awssqs.Args == nil {
+	if writeOpts.AwsSqs.Args == nil {
 		return validate.ErrEmptyBackendArgs
 	}
 
-	if writeOpts.Awssqs.Args.QueueName == "" {
+	if writeOpts.AwsSqs.Args.QueueName == "" {
 		return ErrMissingQueue
 	}
 

@@ -24,7 +24,7 @@ var _ = Describe("AWS SNS Backend", func() {
 	Context("validateWriteOptions", func() {
 		It("Returns error on missing --topic flag", func() {
 			writeOpts := &opts.WriteOptions{
-				Awssns: &opts.WriteGroupAWSSNSOptions{
+				AwsSns: &opts.WriteGroupAWSSNSOptions{
 					Args: &args.AWSSNSWriteArgs{
 						Topic: "",
 					},
@@ -39,7 +39,7 @@ var _ = Describe("AWS SNS Backend", func() {
 
 		It("Returns error on invalid ARN", func() {
 			writeOpts := &opts.WriteOptions{
-				Awssns: &opts.WriteGroupAWSSNSOptions{
+				AwsSns: &opts.WriteGroupAWSSNSOptions{
 					Args: &args.AWSSNSWriteArgs{
 						Topic: "invalid arn",
 					},
@@ -54,7 +54,7 @@ var _ = Describe("AWS SNS Backend", func() {
 
 		It("Returns nil on valid config", func() {
 			writeOpts := &opts.WriteOptions{
-				Awssns: &opts.WriteGroupAWSSNSOptions{
+				AwsSns: &opts.WriteGroupAWSSNSOptions{
 					Args: &args.AWSSNSWriteArgs{
 						Topic: "arn:aws:sns:us-east-2:123456789012:MyTopic",
 					},
@@ -78,7 +78,7 @@ var _ = Describe("AWS SNS Backend", func() {
 			errorCh := make(chan *records.ErrorRecord, 1)
 
 			writeOpts := &opts.WriteOptions{
-				Awssns: &opts.WriteGroupAWSSNSOptions{
+				AwsSns: &opts.WriteGroupAWSSNSOptions{
 					Args: &args.AWSSNSWriteArgs{
 						Topic: "arn:aws:sns:us-east-2:123456789012:MyTopic",
 					},
@@ -86,8 +86,8 @@ var _ = Describe("AWS SNS Backend", func() {
 			}
 
 			connOpts := &opts.ConnectionOptions{
-				Conn: &opts.ConnectionOptions_Awssns{
-					Awssns: &args.AWSSNSConn{},
+				Conn: &opts.ConnectionOptions_AwsSns{
+					AwsSns: &args.AWSSNSConn{},
 				},
 			}
 
@@ -118,7 +118,7 @@ var _ = Describe("AWS SNS Backend", func() {
 			}
 
 			writeOpts := &opts.WriteOptions{
-				Awssns: &opts.WriteGroupAWSSNSOptions{
+				AwsSns: &opts.WriteGroupAWSSNSOptions{
 					Args: &args.AWSSNSWriteArgs{
 						Topic: "arn:aws:sns:us-east-2:123456789012:MyTopic",
 					},
@@ -126,8 +126,8 @@ var _ = Describe("AWS SNS Backend", func() {
 			}
 
 			connOpts := &opts.ConnectionOptions{
-				Conn: &opts.ConnectionOptions_Awssns{
-					Awssns: &args.AWSSNSConn{},
+				Conn: &opts.ConnectionOptions_AwsSns{
+					AwsSns: &args.AWSSNSConn{},
 				},
 			}
 

@@ -124,7 +124,7 @@ func generateWriteValue(data []byte, writeOpts *opts.WriteOptions, md *desc.Mess
 		}
 
 		// Since AWS SQS works with strings only, we must convert it to base64
-		if writeOpts.Awssqs != nil && writeOpts.Awssqs.Args.QueueName != "" {
+		if writeOpts.AwsSqs != nil && writeOpts.AwsSqs.Args.QueueName != "" {
 			b64 := base64.StdEncoding.EncodeToString(encoded)
 			return []byte(b64), nil
 		}
@@ -146,7 +146,7 @@ func generateWriteValue(data []byte, writeOpts *opts.WriteOptions, md *desc.Mess
 		}
 
 		// Since AWS SQS works with strings only, we must convert it to base64
-		if writeOpts.Awssqs != nil && writeOpts.Awssqs.Args.QueueName != "" {
+		if writeOpts.AwsSqs != nil && writeOpts.AwsSqs.Args.QueueName != "" {
 			encoded := base64.StdEncoding.EncodeToString(data)
 			return []byte(encoded), nil
 		}

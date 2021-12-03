@@ -95,7 +95,7 @@ func generateTLSConfig(opts *opts.ConnectionOptions) (*tls.Config, error) {
 	// No client certs
 	if len(nsqOpts.TlsClientCert) == 0 {
 		return &tls.Config{
-			InsecureSkipVerify: nsqOpts.InsecureTls,
+			InsecureSkipVerify: nsqOpts.TlsSkipVerify,
 		}, nil
 	}
 
@@ -123,7 +123,7 @@ func generateTLSConfig(opts *opts.ConnectionOptions) (*tls.Config, error) {
 		RootCAs:            certpool,
 		ClientAuth:         tls.NoClientCert,
 		ClientCAs:          nil,
-		InsecureSkipVerify: nsqOpts.InsecureTls,
+		InsecureSkipVerify: nsqOpts.TlsSkipVerify,
 		Certificates:       []tls.Certificate{cert},
 	}, nil
 }

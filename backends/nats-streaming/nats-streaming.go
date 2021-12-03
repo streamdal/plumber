@@ -124,22 +124,22 @@ func generateTLSConfig(args *args.NatsStreamingConn) (*tls.Config, error) {
 	var cert tls.Certificate
 	var err error
 
-	if util.FileExists(args.TlsOptions.ClientCert) {
+	if util.FileExists(args.TlsOptions.TlsClientCert) {
 		// CLI input, read from file
-		pemCerts, err := ioutil.ReadFile(string(args.TlsOptions.CaFile))
+		pemCerts, err := ioutil.ReadFile(string(args.TlsOptions.TlsCaCert))
 		if err == nil {
 			certpool.AppendCertsFromPEM(pemCerts)
 		}
 
-		cert, err = tls.LoadX509KeyPair(string(args.TlsOptions.ClientCert), string(args.TlsOptions.ClientKey))
+		cert, err = tls.LoadX509KeyPair(string(args.TlsOptions.TlsClientCert), string(args.TlsOptions.TlsClientKey))
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to load ssl keypair")
 		}
 
 	} else {
-		certpool.AppendCertsFromPEM(args.TlsOptions.CaFile)
+		certpool.AppendCertsFromPEM(args.TlsOptions.TlsCaCert)
 
-		cert, err = tls.X509KeyPair(args.TlsOptions.ClientCert, args.TlsOptions.ClientKey)
+		cert, err = tls.X509KeyPair(args.TlsOptions.TlsClientCert, args.TlsOptions.TlsClientKey)
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to load ssl keypair")
 		}
@@ -156,7 +156,7 @@ func generateTLSConfig(args *args.NatsStreamingConn) (*tls.Config, error) {
 		RootCAs:            certpool,
 		ClientAuth:         tls.NoClientCert,
 		ClientCAs:          nil,
-		InsecureSkipVerify: args.TlsOptions.SkipVerify,
+		InsecureSkipVerify: args.TlsOptions.TlsSkipVerify,
 		Certificates:       []tls.Certificate{cert},
 		MinVersion:         tls.VersionTLS12,
 	}, nil
@@ -177,15 +177,15 @@ func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 	}
 
 	if strings.HasPrefix(args.Dsn, "tls") {
-		if len(args.TlsOptions.ClientKey) == 0 {
+		if len(args.TlsOptions.TlsClientKey) == 0 {
 			return ErrMissingTLSKey
 		}
 
-		if len(args.TlsOptions.ClientCert) == 0 {
+		if len(args.TlsOptions.TlsClientCert) == 0 {
 			return ErrMissingTlsCert
 		}
 
-		if len(args.TlsOptions.CaFile) == 0 {
+		if len(args.TlsOptions.TlsCaCert) == 0 {
 			return ErrMissingTLSCA
 		}
 	}

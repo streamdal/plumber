@@ -26,7 +26,7 @@ func (r *RedisStreams) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOpt
 	for {
 		select {
 		case outbound := <-outboundCh:
-			for _, streamName := range dynamicOpts.RedisStreams.Args.Stream {
+			for _, streamName := range dynamicOpts.RedisStreams.Args.Streams {
 				_, err := r.client.XAdd(ctx, &redis.XAddArgs{
 					Stream: streamName,
 					ID:     dynamicOpts.RedisStreams.Args.WriteId,
@@ -64,7 +64,7 @@ func validateDynamicOptions(dynamicOpts *opts.DynamicOptions) error {
 		return validate.ErrEmptyBackendArgs
 	}
 
-	if len(dynamicOpts.RedisStreams.Args.Stream) == 0 {
+	if len(dynamicOpts.RedisStreams.Args.Streams) == 0 {
 		return ErrMissingStream
 	}
 

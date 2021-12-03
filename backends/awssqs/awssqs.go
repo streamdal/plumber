@@ -44,7 +44,7 @@ func New(connOpts *opts.ConnectionOptions) (*AWSSQS, error) {
 		return nil, errors.Wrap(err, "unable to validate options")
 	}
 
-	connArgs := connOpts.GetAwssqs()
+	connArgs := connOpts.GetAwsSqs()
 
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(connArgs.AwsRegion),
@@ -87,7 +87,7 @@ func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 		return validate.ErrMissingConnCfg
 	}
 
-	args := connOpts.GetAwssqs()
+	args := connOpts.GetAwsSqs()
 	if args == nil {
 		return validate.ErrMissingConnArgs
 	}

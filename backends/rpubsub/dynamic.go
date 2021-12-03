@@ -27,7 +27,7 @@ func (r *RedisPubsub) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOpti
 	for {
 		select {
 		case outbound := <-outboundCh:
-			for _, ch := range dynamicOpts.RedisPubsub.Args.Channel {
+			for _, ch := range dynamicOpts.RedisPubsub.Args.Channels {
 				err := r.client.Publish(context.Background(), ch, outbound.Blob).Err()
 				if err != nil {
 					llog.Errorf("Unable to replay message: %s", err)
@@ -57,7 +57,7 @@ func validateDynamicOptions(dynamicOpts *opts.DynamicOptions) error {
 		return validate.ErrEmptyBackendArgs
 	}
 
-	if len(dynamicOpts.RedisPubsub.Args.Channel) == 0 {
+	if len(dynamicOpts.RedisPubsub.Args.Channels) == 0 {
 		return ErrMissingChannel
 	}
 

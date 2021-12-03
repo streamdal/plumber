@@ -14,8 +14,8 @@ var _ = Describe("AWSSQS Backend", func() {
 
 	BeforeEach(func() {
 		connOpts = &opts.ConnectionOptions{
-			Conn: &opts.ConnectionOptions_Awssqs{
-				Awssqs: &args.AWSSQSConn{
+			Conn: &opts.ConnectionOptions_AwsSqs{
+				AwsSqs: &args.AWSSQSConn{
 					AwsRegion:          "us-east-1",
 					AwsSecretAccessKey: "test",
 				},
@@ -36,8 +36,8 @@ var _ = Describe("AWSSQS Backend", func() {
 		})
 		It("validates AWSSQS presence", func() {
 			connOpts = &opts.ConnectionOptions{
-				Conn: &opts.ConnectionOptions_Awssqs{
-					Awssqs: nil,
+				Conn: &opts.ConnectionOptions_AwsSqs{
+					AwsSqs: nil,
 				},
 			}
 			err := validateBaseConnOpts(connOpts)
@@ -45,13 +45,13 @@ var _ = Describe("AWSSQS Backend", func() {
 			Expect(err).To(Equal(validate.ErrMissingConnArgs))
 		})
 		It("validates AWS secret access key", func() {
-			connOpts.GetAwssqs().AwsSecretAccessKey = ""
+			connOpts.GetAwsSqs().AwsSecretAccessKey = ""
 			err := validateBaseConnOpts(connOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(ErrMissingAwsSecretAccessKey))
 		})
 		It("validates AWS region", func() {
-			connOpts.GetAwssqs().AwsRegion = ""
+			connOpts.GetAwsSqs().AwsRegion = ""
 			err := validateBaseConnOpts(connOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(ErrMissingRegion))

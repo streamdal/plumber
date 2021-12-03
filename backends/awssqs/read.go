@@ -22,7 +22,7 @@ func (a *AWSSQS) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsCh
 	if err := validateReadOptions(readOpts); err != nil {
 		return errors.Wrap(err, "invalid read options")
 	}
-	args := readOpts.Awssqs.Args
+	args := readOpts.AwsSqs.Args
 
 	queueURL, err := a.getQueueURL(args.QueueName, args.RemoteAccountId)
 	if err != nil {
@@ -65,8 +65,8 @@ func (a *AWSSQS) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsCh
 				ReceivedAtUnixTsUtc: time.Now().UTC().Unix(),
 				Payload:             []byte(*m.Body),
 				XRaw:                serializedMsg,
-				Record: &records.ReadRecord_Awssqs{
-					Awssqs: &records.AWSSQS{
+				Record: &records.ReadRecord_AwsSqs{
+					AwsSqs: &records.AWSSQS{
 						Id:              util.DerefString(m.MessageId),
 						Timestamp:       time.Now().UTC().Unix(),
 						RecipientHandle: util.DerefString(m.ReceiptHandle),
@@ -119,11 +119,11 @@ func validateReadOptions(readOpts *opts.ReadOptions) error {
 		return validate.ErrMissingReadOptions
 	}
 
-	if readOpts.Awssqs == nil {
+	if readOpts.AwsSqs == nil {
 		return validate.ErrEmptyBackendGroup
 	}
 
-	args := readOpts.Awssqs.Args
+	args := readOpts.AwsSqs.Args
 	if args == nil {
 		return validate.ErrEmptyBackendArgs
 	}

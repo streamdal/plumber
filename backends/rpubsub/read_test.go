@@ -26,7 +26,7 @@ var _ = Describe("Redis PubSub Backend", func() {
 		readOpts = &opts.ReadOptions{
 			RedisPubsub: &opts.ReadGroupRedisPubSubOptions{
 				Args: &args.RedisPubSubReadArgs{
-					Channel: []string{"test"},
+					Channels: []string{"test"},
 				},
 			},
 		}
@@ -51,7 +51,7 @@ var _ = Describe("Redis PubSub Backend", func() {
 			Expect(err).To(Equal(validate.ErrEmptyBackendArgs))
 		})
 		It("validates missing backend channel", func() {
-			readOpts.RedisPubsub.Args.Channel = nil
+			readOpts.RedisPubsub.Args.Channels = nil
 			err := validateReadOptions(readOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(ErrMissingChannel))

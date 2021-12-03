@@ -41,7 +41,7 @@ func Decode(readOpts *opts.ReadOptions, md *desc.MessageDescriptor, message []by
 		}
 
 		// SQS doesn't like binary
-		if readOpts.Awssqs.Args.QueueName != "" {
+		if readOpts.AwsSqs.Args.QueueName != "" {
 			// Our implementation of 'protobuf-over-sqs' encodes protobuf in b64
 			plain, err := base64.StdEncoding.DecodeString(string(message))
 			if err != nil {
@@ -61,7 +61,7 @@ func Decode(readOpts *opts.ReadOptions, md *desc.MessageDescriptor, message []by
 	// Avro
 	if readOpts.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_AVRO {
 		// SQS doesn't like binary
-		if readOpts.Awssqs != nil && readOpts.Awssqs.Args.QueueName != "" {
+		if readOpts.AwsSqs != nil && readOpts.AwsSqs.Args.QueueName != "" {
 			plain, err := base64.StdEncoding.DecodeString(string(message))
 			if err != nil {
 				return nil, errors.Wrap(err, "unable to decode base64 to protobuf")

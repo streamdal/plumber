@@ -24,7 +24,7 @@ func (a *AWSSNS) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, 
 
 	go dynamicSvc.Start("AWS SNS")
 
-	topic := dynamicOpts.Awssns.Args.Topic
+	topic := dynamicOpts.AwsSns.Args.Topic
 
 	outboundCh := dynamicSvc.Read()
 
@@ -56,15 +56,15 @@ func validateDynamicOptions(dynamicOpts *opts.DynamicOptions) error {
 		return validate.ErrEmptyDynamicOpts
 	}
 
-	if dynamicOpts.Awssns == nil {
+	if dynamicOpts.AwsSns == nil {
 		return validate.ErrEmptyBackendGroup
 	}
 
-	if dynamicOpts.Awssns.Args == nil {
+	if dynamicOpts.AwsSns.Args == nil {
 		return validate.ErrEmptyBackendArgs
 	}
 
-	topic := dynamicOpts.Awssns.Args.Topic
+	topic := dynamicOpts.AwsSns.Args.Topic
 
 	if topic == "" {
 		return ErrMissingTopicARN

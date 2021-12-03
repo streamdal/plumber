@@ -553,7 +553,7 @@ var _ = Describe("Functional", func() {
 					writeCmd := exec.Command(
 						binary,
 						"write",
-						"awssqs",
+						"aws-sqs",
 						"--queue-name", queueName,
 						"--input", testMessage,
 					)
@@ -570,7 +570,7 @@ var _ = Describe("Functional", func() {
 					readCmd := exec.Command(
 						binary,
 						"read",
-						"awssqs",
+						"aws-sqs",
 						"--queue-name", queueName,
 						"--auto-delete",
 					)
@@ -588,7 +588,7 @@ var _ = Describe("Functional", func() {
 					writeCmd := exec.Command(
 						binary,
 						"write",
-						"awssqs",
+						"aws-sqs",
 						"--queue-name", queueName,
 						"--encode-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
@@ -607,7 +607,7 @@ var _ = Describe("Functional", func() {
 					readCmd := exec.Command(
 						binary,
 						"read",
-						"awssqs",
+						"aws-sqs",
 						"--queue-name", queueName,
 						"--decode-type", "protobuf",
 						"--protobuf-dirs", protoSchemasDir,
@@ -631,7 +631,7 @@ var _ = Describe("Functional", func() {
 					writeCmd := exec.Command(
 						binary,
 						"write",
-						"awssqs",
+						"aws-sqs",
 						"--queue-name", queueName,
 						"--input", testMessage,
 						"--avro-schema-file", "./test-assets/avro/test.avsc",
@@ -649,7 +649,7 @@ var _ = Describe("Functional", func() {
 					readCmd := exec.Command(
 						binary,
 						"read",
-						"awssqs",
+						"aws-sqs",
 						"--queue-name", queueName,
 						"--auto-delete",
 						"--avro-schema-file", "./test-assets/avro/test.avsc",

@@ -63,7 +63,7 @@ func (r *RabbitMQ) newRabbitForRead(readArgs *args.RabbitReadArgs) (rabbit.IRabb
 		AutoAck:        readArgs.AutoAck,
 		ConsumerTag:    readArgs.ConsumerTag,
 		UseTLS:         r.connArgs.UseTls,
-		SkipVerifyTLS:  r.connArgs.InsecureTls,
+		SkipVerifyTLS:  r.connArgs.TlsSkipVerify,
 		Mode:           rabbit.Consumer,
 	})
 
@@ -85,7 +85,7 @@ func (r *RabbitMQ) newRabbitForWrite(writeArgs *args.RabbitWriteArgs) (rabbit.IR
 		ExchangeType:       writeArgs.ExchangeType,
 		AppID:              writeArgs.AppId,
 		UseTLS:             r.connArgs.UseTls,
-		SkipVerifyTLS:      r.connArgs.InsecureTls,
+		SkipVerifyTLS:      r.connArgs.TlsSkipVerify,
 		Mode:               rabbit.Producer,
 	})
 

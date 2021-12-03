@@ -23,7 +23,7 @@ var _ = Describe("AWSSQS Backend", func() {
 
 	BeforeEach(func() {
 		writeOpts = &opts.WriteOptions{
-			Awssqs: &opts.WriteGroupAWSSQSOptions{
+			AwsSqs: &opts.WriteGroupAWSSQSOptions{
 				Args: &args.AWSSQSWriteArgs{
 					QueueName:              "testing.fifo",
 					MessageDeduplicationId: "test",
@@ -43,19 +43,19 @@ var _ = Describe("AWSSQS Backend", func() {
 			Expect(err).To(Equal(validate.ErrEmptyWriteOpts))
 		})
 		It("validates nil backend group", func() {
-			writeOpts.Awssqs = nil
+			writeOpts.AwsSqs = nil
 			err := validateWriteOptions(writeOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(validate.ErrEmptyBackendGroup))
 		})
 		It("validates empty backend args", func() {
-			writeOpts.Awssqs.Args = nil
+			writeOpts.AwsSqs.Args = nil
 			err := validateWriteOptions(writeOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(validate.ErrEmptyBackendArgs))
 		})
 		It("validates empty topic", func() {
-			writeOpts.Awssqs.Args.QueueName = ""
+			writeOpts.AwsSqs.Args.QueueName = ""
 			err := validateWriteOptions(writeOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(ErrMissingQueue))
@@ -105,7 +105,7 @@ var _ = Describe("AWSSQS Backend", func() {
 			}
 
 			// For coverage reasons
-			writeOpts.Awssqs.Args.Attributes = nil
+			writeOpts.AwsSqs.Args.Attributes = nil
 
 			errorsCh := make(chan *records.ErrorRecord, 1)
 

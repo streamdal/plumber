@@ -29,7 +29,7 @@ func (r *RedisStreams) Relay(ctx context.Context, relayOpts *opts.RelayOptions, 
 		streamsResult, err := r.client.XReadGroup(ctx, &redis.XReadGroupArgs{
 			Group:    relayOpts.RedisStreams.Args.ConsumerGroup,
 			Consumer: relayOpts.RedisStreams.Args.ConsumerName,
-			Streams:  generateStreams(relayOpts.RedisStreams.Args.Stream),
+			Streams:  generateStreams(relayOpts.RedisStreams.Args.Streams),
 			Count:    int64(relayOpts.RedisStreams.Args.Count),
 			Block:    0,
 			NoAck:    false,
@@ -109,7 +109,7 @@ func validateRelayOptions(relayOpts *opts.RelayOptions) error {
 		return validate.ErrEmptyBackendArgs
 	}
 
-	if len(args.Stream) == 0 {
+	if len(args.Streams) == 0 {
 		return ErrMissingStream
 	}
 

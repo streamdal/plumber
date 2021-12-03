@@ -19,7 +19,7 @@ func (r *RedisPubsub) Write(ctx context.Context, writeOpts *opts.WriteOptions, e
 	}
 
 	for _, msg := range messages {
-		for _, ch := range writeOpts.RedisPubsub.Args.Channel {
+		for _, ch := range writeOpts.RedisPubsub.Args.Channels {
 			cmd := r.client.Publish(ctx, ch, msg.Input)
 			if cmd.Err() != nil {
 				util.WriteError(nil, errorCh, fmt.Errorf("unable to publish redis pubsub message: %s", cmd.Err()))
@@ -43,7 +43,7 @@ func validateWriteOptions(writeOpts *opts.WriteOptions) error {
 		return validate.ErrEmptyBackendArgs
 	}
 
-	if len(writeOpts.RedisPubsub.Args.Channel) == 0 {
+	if len(writeOpts.RedisPubsub.Args.Channels) == 0 {
 		return ErrMissingChannel
 	}
 

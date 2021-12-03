@@ -27,7 +27,7 @@ var _ = Describe("Redis PubSub Backend", func() {
 		dynamicOpts = &opts.DynamicOptions{
 			RedisPubsub: &opts.DynamicGroupRedisPubSubOptions{
 				Args: &args.RedisPubSubWriteArgs{
-					Channel: []string{"test"},
+					Channels: []string{"test"},
 				},
 			},
 		}

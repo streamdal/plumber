@@ -19,7 +19,7 @@ func (a *AWSSQS) Dynamic(ctx context.Context, opts *opts.DynamicOptions, dynamic
 
 	llog := a.log.WithField("pkg", "awssqs/dynamic")
 
-	args := opts.Awssqs.Args
+	args := opts.AwsSqs.Args
 
 	queueURL, err := a.getQueueURL(args.QueueName, args.RemoteAccountId)
 	if err != nil {
@@ -53,15 +53,15 @@ func validateDynamicOptions(dynamicOpts *opts.DynamicOptions) error {
 		return validate.ErrEmptyDynamicOpts
 	}
 
-	if dynamicOpts.Awssqs == nil {
+	if dynamicOpts.AwsSqs == nil {
 		return validate.ErrEmptyBackendGroup
 	}
 
-	if dynamicOpts.Awssqs.Args == nil {
+	if dynamicOpts.AwsSqs.Args == nil {
 		return validate.ErrEmptyBackendArgs
 	}
 
-	if dynamicOpts.Awssqs.Args.QueueName == "" {
+	if dynamicOpts.AwsSqs.Args.QueueName == "" {
 		return ErrMissingQueue
 	}
 

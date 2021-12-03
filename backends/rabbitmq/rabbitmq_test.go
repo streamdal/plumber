@@ -21,9 +21,9 @@ var _ = Describe("RabbitMQ Backend", func() {
 		connOpts = &opts.ConnectionOptions{
 			Conn: &opts.ConnectionOptions_Rabbit{
 				Rabbit: &args.RabbitConn{
-					Address:     "amqp://localhost:5672",
-					UseTls:      false,
-					InsecureTls: false,
+					Address:       "amqp://localhost:5672",
+					UseTls:        false,
+					TlsSkipVerify: false,
 				},
 			},
 		}

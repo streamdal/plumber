@@ -37,7 +37,7 @@ func (k *Kafka) NewLag(readArgs *args.KafkaReadArgs) (*Lag, error) {
 		return nil, errors.Wrap(err, "unable to validate read options for lag")
 	}
 
-	conns, err := ConnectAllTopics(k.dialer, k.connArgs, readArgs.Topic)
+	conns, err := ConnectAllTopics(k.dialer, k.connArgs, readArgs.Topics)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create initial connections")
 	}
@@ -56,7 +56,7 @@ func validateReadArgs(readArgs *args.KafkaReadArgs) error {
 		return errors.New("read args cannot be nil")
 	}
 
-	if len(readArgs.Topic) == 0 {
+	if len(readArgs.Topics) == 0 {
 		return errors.New("at least one topic must be set")
 	}
 
@@ -197,7 +197,7 @@ func (l *Lag) getConsumerGroupLag(ctx context.Context) ([]*types.TopicStats, err
 	topicPartitionMap := make(map[string][]skafka.Partition)
 
 	// Build partition list for _all_ topics
-	for _, topic := range l.readArgs.Topic {
+	for _, topic := range l.readArgs.Topics {
 		partitionList, err := l.discoverPartitions(topic)
 		if err != nil {
 			return nil, fmt.Errorf("unable to discover partition list for topic '%s': %s", topic, err)

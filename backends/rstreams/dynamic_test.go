@@ -26,7 +26,7 @@ var _ = Describe("Redis Streams Backend", func() {
 		dynamicOpts = &opts.DynamicOptions{
 			RedisStreams: &opts.DynamicGroupRedisStreamsOptions{
 				Args: &args.RedisStreamsWriteArgs{
-					Stream: []string{"test"},
+					Streams: []string{"test"},
 				},
 			},
 		}
@@ -51,7 +51,7 @@ var _ = Describe("Redis Streams Backend", func() {
 			Expect(err).To(Equal(validate.ErrEmptyBackendArgs))
 		})
 		It("validates missing stream", func() {
-			dynamicOpts.RedisStreams.Args.Stream = nil
+			dynamicOpts.RedisStreams.Args.Streams = nil
 			err := validateDynamicOptions(dynamicOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(ErrMissingStream))

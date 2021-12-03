@@ -23,7 +23,7 @@ var _ = Describe("AWSSQS Backend", func() {
 
 	BeforeEach(func() {
 		readOpts = &opts.ReadOptions{
-			Awssqs: &opts.ReadGroupAWSSQSOptions{
+			AwsSqs: &opts.ReadGroupAWSSQSOptions{
 				Args: &args.AWSSQSReadArgs{
 					QueueName:               "test",
 					RemoteAccountId:         "test",
@@ -43,33 +43,33 @@ var _ = Describe("AWSSQS Backend", func() {
 			Expect(err).To(Equal(validate.ErrMissingReadOptions))
 		})
 		It("validates missing backend group", func() {
-			readOpts.Awssqs = nil
+			readOpts.AwsSqs = nil
 			err := validateReadOptions(readOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(validate.ErrEmptyBackendGroup))
 		})
 		It("validates missing backend args", func() {
-			readOpts.Awssqs.Args = nil
+			readOpts.AwsSqs.Args = nil
 			err := validateReadOptions(readOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(validate.ErrEmptyBackendArgs))
 		})
 		It("validates empty topic", func() {
-			readOpts.Awssqs.Args.QueueName = ""
+			readOpts.AwsSqs.Args.QueueName = ""
 			err := validateReadOptions(readOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(ErrMissingQueue))
 		})
 
 		It("validates wait time seconds", func() {
-			readOpts.Awssqs.Args.WaitTimeSeconds = -1
+			readOpts.AwsSqs.Args.WaitTimeSeconds = -1
 			err := validateReadOptions(readOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(ErrInvalidWaitTime))
 		})
 
 		It("validates max num messages", func() {
-			readOpts.Awssqs.Args.MaxNumMessages = 0
+			readOpts.AwsSqs.Args.MaxNumMessages = 0
 			err := validateReadOptions(readOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(ErrInvalidMaxNumMessages))

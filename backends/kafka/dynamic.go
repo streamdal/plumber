@@ -39,7 +39,7 @@ MAIN:
 	for {
 		select {
 		case outbound := <-outboundCh:
-			for _, topic := range opts.Kafka.Args.Topic {
+			for _, topic := range opts.Kafka.Args.Topics {
 				if err := writer.WriteMessages(ctx, skafka.Message{
 					Topic: topic,
 					Key:   []byte(opts.Kafka.Args.Key),
@@ -74,7 +74,7 @@ func validateDynamicOptions(dynamicOpts *opts.DynamicOptions) error {
 		return validate.ErrEmptyBackendArgs
 	}
 
-	if len(dynamicOpts.Kafka.Args.Topic) == 0 {
+	if len(dynamicOpts.Kafka.Args.Topics) == 0 {
 		return ErrMissingTopic
 	}
 

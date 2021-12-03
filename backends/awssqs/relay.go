@@ -24,7 +24,7 @@ func (a *AWSSQS) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayC
 		return errors.Wrap(err, "unable to verify relay options")
 	}
 
-	args := relayOpts.Awssqs.Args
+	args := relayOpts.AwsSqs.Args
 
 	queueURL, err := a.getQueueURL(args.QueueName, args.RemoteAccountId)
 	if err != nil {
@@ -74,11 +74,11 @@ func validateRelayOptions(opts *opts.RelayOptions) error {
 		return validate.ErrEmptyRelayOpts
 	}
 
-	if opts.Awssqs == nil {
+	if opts.AwsSqs == nil {
 		return validate.ErrEmptyBackendGroup
 	}
 
-	args := opts.Awssqs.Args
+	args := opts.AwsSqs.Args
 	if args == nil {
 		return validate.ErrEmptyBackendArgs
 	}

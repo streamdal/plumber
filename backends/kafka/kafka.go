@@ -106,10 +106,10 @@ func NewReaderForRead(dialer *skafka.Dialer, connArgs *args.KafkaConn, readArgs 
 	}
 
 	if readArgs.UseConsumerGroup {
-		rc.GroupTopics = readArgs.Topic
+		rc.GroupTopics = readArgs.Topics
 		rc.GroupID = readArgs.ConsumerGroupName
 	} else {
-		rc.Topic = readArgs.Topic[0]
+		rc.Topic = readArgs.Topics[0]
 	}
 
 	r := skafka.NewReader(rc)
@@ -136,10 +136,10 @@ func NewReaderForRelay(dialer *skafka.Dialer, connArgs *args.KafkaConn, relayArg
 	}
 
 	if relayArgs.UseConsumerGroup {
-		rc.GroupTopics = relayArgs.Topic
+		rc.GroupTopics = relayArgs.Topics
 		rc.GroupID = relayArgs.ConsumerGroupName
 	} else {
-		rc.Topic = relayArgs.Topic[0]
+		rc.Topic = relayArgs.Topics[0]
 	}
 
 	r := skafka.NewReader(rc)
@@ -281,7 +281,7 @@ func newDialer(connArgs *args.KafkaConn) (*skafka.Dialer, error) {
 		Timeout: time.Duration(connArgs.TimeoutSeconds) * time.Second,
 	}
 
-	if connArgs.InsecureTls {
+	if connArgs.TlsSkipVerify {
 		dialer.TLS = &tls.Config{
 			InsecureSkipVerify: true,
 		}

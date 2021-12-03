@@ -49,7 +49,7 @@ func New(connOpts *opts.ConnectionOptions) (*CDCPostgres, error) {
 	if pgOpts.UseTls {
 		config.TLSConfig = &tls.Config{}
 
-		if pgOpts.InsecureTls {
+		if pgOpts.TlsSkipVerify {
 			config.TLSConfig.InsecureSkipVerify = true
 		}
 	}

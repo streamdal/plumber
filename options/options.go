@@ -193,14 +193,14 @@ func newReadOptions() *opts.ReadOptions {
 				Address: make([]string, 0),
 			},
 			Args: &args.KafkaReadArgs{
-				Topic: make([]string, 0),
+				Topics: make([]string, 0),
 			},
 		},
 		Activemq: &opts.ReadGroupActiveMQOptions{
 			XConn: &args.ActiveMQConn{},
 			Args:  &args.ActiveMQReadArgs{},
 		},
-		Awssqs: &opts.ReadGroupAWSSQSOptions{
+		AwsSqs: &opts.ReadGroupAWSSQSOptions{
 			XConn: &args.AWSSQSConn{},
 			Args:  &args.AWSSQSReadArgs{},
 		},
@@ -221,9 +221,9 @@ func newReadOptions() *opts.ReadOptions {
 			XConn: &args.NatsStreamingConn{
 				UserCredentials: make([]byte, 0),
 				TlsOptions: &args.NatsStreamingTLSOptions{
-					CaFile:     make([]byte, 0),
-					ClientCert: make([]byte, 0),
-					ClientKey:  make([]byte, 0),
+					TlsCaCert:     make([]byte, 0),
+					TlsClientCert: make([]byte, 0),
+					TlsClientKey:  make([]byte, 0),
 				},
 			},
 			Args: &args.NatsStreamingReadArgs{},
@@ -276,13 +276,13 @@ func newReadOptions() *opts.ReadOptions {
 		RedisPubsub: &opts.ReadGroupRedisPubSubOptions{
 			XConn: &args.RedisPubSubConn{},
 			Args: &args.RedisPubSubReadArgs{
-				Channel: make([]string, 0),
+				Channels: make([]string, 0),
 			},
 		},
 		RedisStreams: &opts.ReadGroupRedisStreamsOptions{
 			XConn: &args.RedisStreamsConn{},
 			Args: &args.RedisStreamsReadArgs{
-				Stream:               make([]string, 0),
+				Streams:              make([]string, 0),
 				CreateConsumerConfig: &args.CreateConsumerConfig{},
 			},
 		},
@@ -312,7 +312,7 @@ func newWriteOptions() *opts.WriteOptions {
 			XConn: &args.ActiveMQConn{},
 			Args:  &args.ActiveMQWriteArgs{},
 		},
-		Awssqs: &opts.WriteGroupAWSSQSOptions{
+		AwsSqs: &opts.WriteGroupAWSSQSOptions{
 			XConn: &args.AWSSQSConn{},
 			Args:  &args.AWSSQSWriteArgs{},
 		},
@@ -329,9 +329,9 @@ func newWriteOptions() *opts.WriteOptions {
 			XConn: &args.NatsStreamingConn{
 				UserCredentials: make([]byte, 0),
 				TlsOptions: &args.NatsStreamingTLSOptions{
-					CaFile:     make([]byte, 0),
-					ClientCert: make([]byte, 0),
-					ClientKey:  make([]byte, 0),
+					TlsCaCert:     make([]byte, 0),
+					TlsClientCert: make([]byte, 0),
+					TlsClientKey:  make([]byte, 0),
 				},
 			},
 			Args: &args.NatsStreamingWriteArgs{},
@@ -401,10 +401,10 @@ func newRelayOptions() *opts.RelayOptions {
 				Address: make([]string, 0),
 			},
 			Args: &args.KafkaRelayArgs{
-				Topic: make([]string, 0),
+				Topics: make([]string, 0),
 			},
 		},
-		Awssqs: &opts.RelayGroupAWSSQSOptions{
+		AwsSqs: &opts.RelayGroupAWSSQSOptions{
 			XConn: &args.AWSSQSConn{},
 			Args:  &args.AWSSQSRelayArgs{},
 		},
@@ -445,13 +445,13 @@ func newRelayOptions() *opts.RelayOptions {
 		RedisPubsub: &opts.RelayGroupRedisPubSubOptions{
 			XConn: &args.RedisPubSubConn{},
 			Args: &args.RedisPubSubReadArgs{
-				Channel: make([]string, 0),
+				Channels: make([]string, 0),
 			},
 		},
 		RedisStreams: &opts.RelayGroupRedisStreamsOptions{
 			XConn: &args.RedisStreamsConn{},
 			Args: &args.RedisStreamsReadArgs{
-				Stream:               make([]string, 0),
+				Streams:              make([]string, 0),
 				CreateConsumerConfig: &args.CreateConsumerConfig{},
 			},
 		},
@@ -474,7 +474,7 @@ func newDynamicOptions() *opts.DynamicOptions {
 			XConn: &args.ActiveMQConn{},
 			Args:  &args.ActiveMQWriteArgs{},
 		},
-		Awssqs: &opts.DynamicGroupAWSSQSOptions{
+		AwsSqs: &opts.DynamicGroupAWSSQSOptions{
 			XConn: &args.AWSSQSConn{},
 			Args:  &args.AWSSQSWriteArgs{},
 		},
@@ -491,9 +491,9 @@ func newDynamicOptions() *opts.DynamicOptions {
 			XConn: &args.NatsStreamingConn{
 				UserCredentials: make([]byte, 0),
 				TlsOptions: &args.NatsStreamingTLSOptions{
-					CaFile:     make([]byte, 0),
-					ClientCert: make([]byte, 0),
-					ClientKey:  make([]byte, 0),
+					TlsCaCert:     make([]byte, 0),
+					TlsClientCert: make([]byte, 0),
+					TlsClientKey:  make([]byte, 0),
 				},
 			},
 			Args: &args.NatsStreamingWriteArgs{},
@@ -556,7 +556,7 @@ func newBatchOptions() *opts.BatchOptions {
 					XConn: &args.KafkaConn{},
 					Args: &args.KafkaWriteArgs{
 						Headers: make(map[string]string, 0),
-						Topic:   make([]string, 0),
+						Topics:  make([]string, 0),
 					},
 				},
 				Rabbit: &opts.WriteGroupRabbitOptions{
@@ -567,7 +567,7 @@ func newBatchOptions() *opts.BatchOptions {
 					XConn: &args.KubeMQQueueConn{},
 					Args:  &args.KubeMQQueueWriteArgs{},
 				},
-				Awssqs: &opts.WriteGroupAWSSQSOptions{
+				AwsSqs: &opts.WriteGroupAWSSQSOptions{
 					XConn: &args.AWSSQSConn{},
 					Args: &args.AWSSQSWriteArgs{
 						Attributes: make(map[string]string, 0),

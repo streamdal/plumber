@@ -16,7 +16,7 @@ func (a *AWSSQS) DisplayMessage(msg *records.ReadRecord) error {
 		return errors.Wrap(err, "unable to validate read record")
 	}
 
-	record := msg.GetAwssqs()
+	record := msg.GetAwsSqs()
 
 	properties := [][]string{
 		{"Message ID", record.Id},
@@ -44,7 +44,7 @@ func validateReadRecord(msg *records.ReadRecord) error {
 		return errors.New("msg cannot be nil")
 	}
 
-	if msg.GetAwssqs().Value == nil {
+	if msg.GetAwsSqs().Value == nil {
 		return errors.New("message value cannot be nil")
 	}
 

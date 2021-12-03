@@ -138,10 +138,10 @@ func (b *Batch) getDestinationMetadata(destType string) map[string]interface{} {
 
 func (b *Batch) getDestinationMetadataKafka() map[string]interface{} {
 	return map[string]interface{}{
-		"topic":        b.Opts.Batch.Create.Destination.Kafka.Args.Topic[0],
+		"topic":        b.Opts.Batch.Create.Destination.Kafka.Args.Topics[0],
 		"address":      b.Opts.Batch.Create.Destination.Kafka.XConn.Address,
 		"use_tls":      b.Opts.Batch.Create.Destination.Kafka.XConn.UseTls,
-		"insecure_tls": b.Opts.Batch.Create.Destination.Kafka.XConn.InsecureTls,
+		"insecure_tls": b.Opts.Batch.Create.Destination.Kafka.XConn.TlsSkipVerify,
 		"sasl_type":    b.Opts.Batch.Create.Destination.Kafka.XConn.SaslType,
 		"username":     b.Opts.Batch.Create.Destination.Kafka.XConn.SaslUsername,
 		"password":     b.Opts.Batch.Create.Destination.Kafka.XConn.SaslPassword,
@@ -162,8 +162,8 @@ func (b *Batch) getDestinationMetadataHTTP() map[string]interface{} {
 
 func (b *Batch) getDestinationMetadataSQS() map[string]interface{} {
 	return map[string]interface{}{
-		"aws_account_id": b.Opts.Batch.Create.Destination.Awssqs.Args.RemoteAccountId,
-		"queue_name":     b.Opts.Batch.Create.Destination.Awssqs.Args.QueueName,
+		"aws_account_id": b.Opts.Batch.Create.Destination.AwsSqs.Args.RemoteAccountId,
+		"queue_name":     b.Opts.Batch.Create.Destination.AwsSqs.Args.QueueName,
 	}
 }
 

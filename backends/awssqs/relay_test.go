@@ -34,7 +34,7 @@ var _ = Describe("AWSSQS Backend", func() {
 		}
 
 		relayOpts = &opts.RelayOptions{
-			Awssqs: &opts.RelayGroupAWSSQSOptions{
+			AwsSqs: &opts.RelayGroupAWSSQSOptions{
 				Args: &args.AWSSQSRelayArgs{
 					QueueName:               "test",
 					RemoteAccountId:         "test",
@@ -54,33 +54,33 @@ var _ = Describe("AWSSQS Backend", func() {
 			Expect(err).To(Equal(validate.ErrEmptyRelayOpts))
 		})
 		It("validates missing backend group", func() {
-			relayOpts.Awssqs = nil
+			relayOpts.AwsSqs = nil
 			err := validateRelayOptions(relayOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(validate.ErrEmptyBackendGroup))
 		})
 		It("validates missing backend args", func() {
-			relayOpts.Awssqs.Args = nil
+			relayOpts.AwsSqs.Args = nil
 			err := validateRelayOptions(relayOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(validate.ErrEmptyBackendArgs))
 		})
 		It("validates empty topic", func() {
-			relayOpts.Awssqs.Args.QueueName = ""
+			relayOpts.AwsSqs.Args.QueueName = ""
 			err := validateRelayOptions(relayOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(ErrMissingQueue))
 		})
 
 		It("validates wait time seconds", func() {
-			relayOpts.Awssqs.Args.WaitTimeSeconds = -1
+			relayOpts.AwsSqs.Args.WaitTimeSeconds = -1
 			err := validateRelayOptions(relayOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(ErrInvalidWaitTime))
 		})
 
 		It("validates max num messages", func() {
-			relayOpts.Awssqs.Args.MaxNumMessages = 0
+			relayOpts.AwsSqs.Args.MaxNumMessages = 0
 			err := validateRelayOptions(relayOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(ErrInvalidMaxNumMessages))

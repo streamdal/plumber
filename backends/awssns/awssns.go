@@ -3,6 +3,8 @@ package awssns
 import (
 	"context"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -14,7 +16,6 @@ import (
 	plumberTypes "github.com/batchcorp/plumber/types"
 	"github.com/batchcorp/plumber/validate"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
@@ -39,7 +40,7 @@ func New(connOpts *opts.ConnectionOptions) (*AWSSNS, error) {
 		return nil, errors.Wrap(err, "unable to validate options")
 	}
 
-	connArgs := connOpts.GetAwssns()
+	connArgs := connOpts.GetAwsSns()
 
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(connArgs.AwsRegion),
@@ -79,7 +80,7 @@ func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 		return validate.ErrMissingConnCfg
 	}
 
-	if connOpts.GetAwssns() == nil {
+	if connOpts.GetAwsSns() == nil {
 		return validate.ErrMissingConnArgs
 	}
 

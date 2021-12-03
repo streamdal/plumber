@@ -26,7 +26,7 @@ var _ = Describe("Redis Streams Backend", func() {
 		writeOpts = &opts.WriteOptions{
 			RedisStreams: &opts.WriteGroupRedisStreamsOptions{
 				Args: &args.RedisStreamsWriteArgs{
-					Stream: []string{"test"},
+					Streams: []string{"test"},
 				},
 			},
 		}

@@ -25,14 +25,14 @@ func (k *Kafka) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh
 		return errors.Wrap(err, "unable to verify write options")
 	}
 
-	writer, err := NewWriter(k.dialer, k.connArgs, writeOpts.Kafka.Args.Topic...)
+	writer, err := NewWriter(k.dialer, k.connArgs, writeOpts.Kafka.Args.Topics...)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new writer")
 	}
 
 	defer writer.Close()
 
-	for _, topic := range writeOpts.Kafka.Args.Topic {
+	for _, topic := range writeOpts.Kafka.Args.Topics {
 		for _, msg := range messages {
 			if err := k.write(ctx, writer, writeOpts.Kafka.Args, topic, []byte(writeOpts.Kafka.Args.Key), []byte(msg.Input)); err != nil {
 				util.WriteError(k.log, errorCh, fmt.Errorf("unable to write message to topic '%s': %s", topic, err))
@@ -56,7 +56,7 @@ func validateWriteOptions(opts *opts.WriteOptions) error {
 		return validate.ErrEmptyBackendArgs
 	}
 
-	if len(opts.Kafka.Args.Topic) == 0 {
+	if len(opts.Kafka.Args.Topics) == 0 {
 		return errors.New("at least one topic must be defined")
 	}
 

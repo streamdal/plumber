@@ -121,7 +121,7 @@ func generateTLSConfig(opts *args.NatsConn) (*tls.Config, error) {
 		RootCAs:            certpool,
 		ClientAuth:         tls.NoClientCert,
 		ClientCAs:          nil,
-		InsecureSkipVerify: opts.InsecureTls,
+		InsecureSkipVerify: opts.TlsSkipVerify,
 		Certificates:       []tls.Certificate{cert},
 		MinVersion:         tls.VersionTLS12,
 	}, nil

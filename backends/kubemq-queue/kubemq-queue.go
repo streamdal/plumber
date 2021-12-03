@@ -43,7 +43,7 @@ func New(opts *opts.ConnectionOptions) (*KubeMQ, error) {
 
 	var client *queuesStream.QueuesStreamClient
 
-	if args.TlsCertFile == "" {
+	if args.TlsClientCert == "" {
 		client, err = queuesStream.NewQueuesStreamClient(context.Background(),
 			queuesStream.WithAddress(host, port),
 			queuesStream.WithClientId(args.ClientId),
@@ -52,7 +52,7 @@ func New(opts *opts.ConnectionOptions) (*KubeMQ, error) {
 		client, err = queuesStream.NewQueuesStreamClient(context.Background(),
 			queuesStream.WithAddress(host, port),
 			queuesStream.WithClientId(args.ClientId),
-			queuesStream.WithCredentials(args.TlsCertFile, ""),
+			queuesStream.WithCredentials(args.TlsClientCert, ""),
 			queuesStream.WithAuthToken(args.AuthToken))
 	}
 	if err != nil {

@@ -21,7 +21,7 @@ func (a *AWSSNS) Write(_ context.Context, writeOpts *opts.WriteOptions, errorCh 
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	topic := writeOpts.Awssns.Args.Topic
+	topic := writeOpts.AwsSns.Args.Topic
 
 	for _, msg := range messages {
 		result, err := a.Service.Publish(&sns.PublishInput{
@@ -45,15 +45,15 @@ func validateWriteOptions(writeOpts *opts.WriteOptions) error {
 		return validate.ErrEmptyWriteOpts
 	}
 
-	if writeOpts.Awssns == nil {
+	if writeOpts.AwsSns == nil {
 		return validate.ErrEmptyBackendGroup
 	}
 
-	if writeOpts.Awssns.Args == nil {
+	if writeOpts.AwsSns.Args == nil {
 		return validate.ErrEmptyBackendArgs
 	}
 
-	topic := writeOpts.Awssns.Args.Topic
+	topic := writeOpts.AwsSns.Args.Topic
 
 	if topic == "" {
 		return ErrMissingTopicARN

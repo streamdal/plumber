@@ -37,7 +37,7 @@ func (r *RedisStreams) Read(ctx context.Context, readOpts *opts.ReadOptions, res
 		streamsResult, err := r.client.XReadGroup(ctx, &redis.XReadGroupArgs{
 			Group:    readOpts.RedisStreams.Args.ConsumerGroup,
 			Consumer: readOpts.RedisStreams.Args.ConsumerName,
-			Streams:  generateStreams(readOpts.RedisStreams.Args.Stream),
+			Streams:  generateStreams(readOpts.RedisStreams.Args.Streams),
 			Count:    int64(readOpts.RedisStreams.Args.Count),
 			Block:    0,
 			NoAck:    false,
@@ -121,7 +121,7 @@ func (r *RedisStreams) createConsumerGroups(ctx context.Context, rsArgs *args.Re
 		offset = rsArgs.CreateConsumerConfig.OffsetStart.String()
 	}
 
-	for _, stream := range rsArgs.Stream {
+	for _, stream := range rsArgs.Streams {
 		if rsArgs.CreateConsumerConfig != nil && rsArgs.CreateConsumerConfig.RecreateConsumerGroup {
 			logrus.Debugf("deleting consumer group '%s'", rsArgs.ConsumerGroup)
 
@@ -174,7 +174,7 @@ func validateReadOptions(readOpts *opts.ReadOptions) error {
 		return validate.ErrEmptyBackendArgs
 	}
 
-	if len(readOpts.RedisStreams.Args.Stream) == 0 {
+	if len(readOpts.RedisStreams.Args.Streams) == 0 {
 		return ErrMissingStream
 	}
 

@@ -26,7 +26,7 @@ func (r *RedisPubsub) Relay(ctx context.Context, relayOpts *opts.RelayOptions, r
 		return errors.Wrap(err, "invalid relay options")
 	}
 
-	ps := r.client.Subscribe(ctx, relayOpts.RedisPubsub.Args.Channel...)
+	ps := r.client.Subscribe(ctx, relayOpts.RedisPubsub.Args.Channels...)
 	defer ps.Unsubscribe(ctx)
 
 	for {
@@ -78,7 +78,7 @@ func validateRelayOptions(relayOpts *opts.RelayOptions) error {
 		return validate.ErrEmptyBackendArgs
 	}
 
-	if len(relayOpts.RedisPubsub.Args.Channel) == 0 {
+	if len(relayOpts.RedisPubsub.Args.Channels) == 0 {
 		return ErrMissingChannel
 	}
 

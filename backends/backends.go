@@ -92,9 +92,9 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 		be, err = kafka.New(connOpts)
 	case *opts.ConnectionOptions_ActiveMq:
 		be, err = activemq.New(connOpts)
-	case *opts.ConnectionOptions_Awssqs:
+	case *opts.ConnectionOptions_AwsSqs:
 		be, err = awssqs.New(connOpts)
-	case *opts.ConnectionOptions_Awssns:
+	case *opts.ConnectionOptions_AwsSns:
 		be, err = awssns.New(connOpts)
 	case *opts.ConnectionOptions_AzureServiceBus:
 		be, err = azureServicebus.New(connOpts)

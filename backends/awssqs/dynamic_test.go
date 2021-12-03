@@ -24,7 +24,7 @@ var _ = Describe("AWSSQS Backend", func() {
 
 	BeforeEach(func() {
 		dynamicOpts = &opts.DynamicOptions{
-			Awssqs: &opts.DynamicGroupAWSSQSOptions{
+			AwsSqs: &opts.DynamicGroupAWSSQSOptions{
 				Args: &args.AWSSQSWriteArgs{
 					QueueName:              "testing.fifo",
 					MessageDeduplicationId: "test",
@@ -44,19 +44,19 @@ var _ = Describe("AWSSQS Backend", func() {
 			Expect(err).To(Equal(validate.ErrEmptyDynamicOpts))
 		})
 		It("validates nil backend group", func() {
-			dynamicOpts.Awssqs = nil
+			dynamicOpts.AwsSqs = nil
 			err := validateDynamicOptions(dynamicOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(validate.ErrEmptyBackendGroup))
 		})
 		It("validates empty backend args", func() {
-			dynamicOpts.Awssqs.Args = nil
+			dynamicOpts.AwsSqs.Args = nil
 			err := validateDynamicOptions(dynamicOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(validate.ErrEmptyBackendArgs))
 		})
 		It("validates empty topic", func() {
-			dynamicOpts.Awssqs.Args.QueueName = ""
+			dynamicOpts.AwsSqs.Args.QueueName = ""
 			err := validateDynamicOptions(dynamicOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(ErrMissingQueue))

@@ -23,7 +23,7 @@ func (r *RedisPubsub) Read(ctx context.Context, readOpts *opts.ReadOptions, resu
 
 	var count int64
 
-	ps := r.client.Subscribe(ctx, readOpts.RedisPubsub.Args.Channel...)
+	ps := r.client.Subscribe(ctx, readOpts.RedisPubsub.Args.Channels...)
 	defer ps.Unsubscribe(ctx)
 
 	r.log.Info("Listening for message(s) ...")
@@ -89,7 +89,7 @@ func validateReadOptions(readOpts *opts.ReadOptions) error {
 		return validate.ErrEmptyBackendArgs
 	}
 
-	if len(readOpts.RedisPubsub.Args.Channel) == 0 {
+	if len(readOpts.RedisPubsub.Args.Channels) == 0 {
 		return ErrMissingChannel
 	}
 

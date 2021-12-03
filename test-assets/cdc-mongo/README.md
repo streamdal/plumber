@@ -14,7 +14,7 @@
       })
       ```
    2. Create database `use plumbertest`
-6. Start plumber: `go run main.go read cdc-mongo --database plumbertest --follow`
+6. Start plumber: `plumber read mongo --database plumbertest --follow`
 7. Back in `mongo` console, insert some data
    ```
    db.plumbertest.insert({name:"Mark",company:"Batch.sh"})

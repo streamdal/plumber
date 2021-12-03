@@ -56,7 +56,7 @@ func getClientOptions(connOpts *opts.ConnectionOptions) *pulsar.ClientOptions {
 		URL:                        args.Dsn,
 		OperationTimeout:           30 * time.Second,
 		ConnectionTimeout:          util.DurationSec(args.ConnectTimeoutSeconds),
-		TLSAllowInsecureConnection: args.InsecureTls,
+		TLSAllowInsecureConnection: args.TlsSkipVerify,
 	}
 
 	if len(args.TlsClientCert) > 0 && len(args.TlsClientKey) > 0 {

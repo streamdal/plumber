@@ -26,7 +26,7 @@ var _ = Describe("Redis Streams Backend", func() {
 		readOpts = &opts.ReadOptions{
 			RedisStreams: &opts.ReadGroupRedisStreamsOptions{
 				Args: &args.RedisStreamsReadArgs{
-					Stream: []string{"test"},
+					Streams: []string{"test"},
 				},
 			},
 		}
@@ -51,7 +51,7 @@ var _ = Describe("Redis Streams Backend", func() {
 			Expect(err).To(Equal(validate.ErrEmptyBackendArgs))
 		})
 		It("validates missing backend stream", func() {
-			readOpts.RedisStreams.Args.Stream = nil
+			readOpts.RedisStreams.Args.Streams = nil
 			err := validateReadOptions(readOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(ErrMissingStream))
