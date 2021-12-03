@@ -5,12 +5,18 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 
 	"github.com/batchcorp/collector-schemas/build/go/protos/records"
 	"github.com/batchcorp/collector-schemas/build/go/protos/services"
 
 	"github.com/batchcorp/plumber/backends/nsq/types"
+)
+
+var (
+	ErrNSQMissingChannel = errors.New("NSQ channel cannot be empty")
+	ErrNSQMissingTopic   = errors.New("NSQ topic cannot be empty")
 )
 
 // handleNSQ sends a NSQ relay message to the GRPC server
@@ -38,6 +44,14 @@ func (r *Relay) validateNSQMessage(msg *types.RelayMessage) error {
 
 	if msg.Value == nil {
 		return errMissingMessageValue
+	}
+
+	if msg.Options.Topic == "" {
+		return ErrNSQMissingTopic
+	}
+
+	if msg.Options.Channel == "" {
+		return ErrNSQMissingChannel
 	}
 
 	return nil

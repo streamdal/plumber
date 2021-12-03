@@ -33,8 +33,11 @@ func (n *NSQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh c
 		n.log.Debugf("Writing NSQ message to relay channel: %s", string(msg.Body))
 
 		relayCh <- &types.RelayMessage{
-			Value:   msg,
-			Options: &types.RelayMessageOptions{},
+			Value: msg,
+			Options: &types.RelayMessageOptions{
+				Channel: relayOpts.Nsq.Args.Channel,
+				Topic:   relayOpts.Nsq.Args.Topic,
+			},
 		}
 
 		return nil
