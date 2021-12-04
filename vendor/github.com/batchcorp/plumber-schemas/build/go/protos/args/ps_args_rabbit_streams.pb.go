@@ -186,8 +186,8 @@ type RabbitStreamsReadArgs struct {
 	Stream string `protobuf:"bytes,1,opt,name=stream,proto3" json:"stream,omitempty" kong:"help='Stream name',required"`
 	// @gotags: kong:"help='Declare the stream if it does not exist'"
 	DeclareStream bool `protobuf:"varint,2,opt,name=declare_stream,json=declareStream,proto3" json:"declare_stream,omitempty" kong:"help='Declare the stream if it does not exist'"`
-	// @gotags: kong:"help='Stream capacity to declare (required if declare_stream is true; ex: 1024k, 10mb, 3gb'"
-	DeclareStreamSize string `protobuf:"bytes,3,opt,name=declare_stream_size,json=declareStreamSize,proto3" json:"declare_stream_size,omitempty" kong:"help='Stream capacity to declare (required if declare_stream is true; ex: 1024k, 10mb, 3gb'"`
+	// @gotags: kong:"help='Stream capacity to declare (required if declare_stream is true; ex: 1024k; 10mb; 3gb)'"
+	DeclareStreamSize string `protobuf:"bytes,3,opt,name=declare_stream_size,json=declareStreamSize,proto3" json:"declare_stream_size,omitempty" kong:"help='Stream capacity to declare (required if declare_stream is true; ex: 1024k; 10mb; 3gb)'"`
 	// TODO: Will this break? Might just need to be a string.
 	// @gotags: kong:"help='Offset to start reading at',embed"
 	OffsetOptions        *RabbitStreamsOffsetOptions `protobuf:"bytes,4,opt,name=offset_options,json=offsetOptions,proto3" json:"offset_options,omitempty" kong:"help='Offset to start reading at',embed"`
