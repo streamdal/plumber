@@ -13,7 +13,7 @@
 | PLUMBER_SERVER_ADVERTISE_CLIENT_URL | Address of _this_ plumber instance etcd client interface. Example: http://local-ip:2379 | http://127.0.0.1:2379 | **true** |
 | PLUMBER_SERVER_LISTENER_PEER_URL | Address that _this_ plumber instance etcd server should listen on. Example: http://local-ip:2380 | http://127.0.0.1:2380 | false |
 | PLUMBER_SERVER_LISTENER_CLIENT_URL | Address that _this_ plumber instance etcd client should listen on. Example: http://local-ip:2379 | http://127.0.0.1:2379 | false |
-| PLUMBER_SERVER_PEER_TOKEN | Secret token that ALL cluster members should use/share. If this token does not match on one of the plumber instances | secret | false |
+| PLUMBER_SERVER_PEER_TOKEN | Secret token that ALL cluster members should use/share. This node will NOT be able to join the cluster IF this token does not match on one of the plumber instances. | secret | false |
 
 ## Relay
 
@@ -25,7 +25,7 @@
 | PLUMBER_RELAY_BATCH_MAX_RETRY | How many times plumber will try re-sending a batch | 3 | false |
 | PLUMBER_RELAY_NUM_WORKERS |  | 10 | false |
 | PLUMBER_RELAY_GRPC_ADDRESS | Alternative collector to relay events to | grpc-collector.batch.sh:9000 | false |
-| PLUMBER_RELAY_GRPC_DISABLE_TLS | Whether to use TLS with collector | true | false |
+| PLUMBER_RELAY_GRPC_DISABLE_TLS | Whether to use TLS with collector | false | false |
 | PLUMBER_RELAY_GRPC_TIMEOUT | How long to wait before giving up talking to the gRPC collector | 5 | false |
 
 ## Backends
@@ -81,13 +81,13 @@
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
-| PLUMBER_RELAY_KAFKA_ADDRESS | Kafka broker address (you may specify this flag multiple times | localhost:9092 | **true** |
+| PLUMBER_RELAY_KAFKA_ADDRESS | Kafka broker address (you may specify this flag multiple times) | localhost:9092 | **true** |
 | PLUMBER_RELAY_TIMEOUT_SECONDS | Connect timeout | 10 | false |
 | PLUMBER_RELAY_USE_TLS | Enable TLS usage |  | false |
 | PLUMBER_RELAY_KAFKA_INSECURE_TLS | Allow insecure TLS usage |  | false |
-| PLUMBER_RELAY_KAFKA_SASL_TYPE | SASL authentication type (options: none | none | false |
+| PLUMBER_RELAY_KAFKA_SASL_TYPE | SASL authentication type (options: none plain scram) | none | false |
 | PLUMBER_RELAY_KAFKA_USERNAME | SASL Username |  | false |
-| PLUMBER_RELAY_KAFKA_PASSWORD | SASL Password. If omitted |  | false |
+| PLUMBER_RELAY_KAFKA_PASSWORD | SASL Password. You will be prompted for the password if omitted |  | false |
 | PLUMBER_RELAY_KAFKA_TOPIC | Topic(s) to read |  | **true** |
 | PLUMBER_RELAY_KAFKA_READ_OFFSET | Specify what offset the consumer should read from (only works if --use-consumer-group is false) | 0 | false |
 | PLUMBER_RELAY_KAFKA_USE_CONSUMER_GROUP | Whether plumber should use a consumer group | true | false |
@@ -105,7 +105,7 @@
 | ------------------------ | --------------- | ----------- | ------------ |
 | PLUMBER_RELAY_KUBEMQ_QUEUE_ADDRESS | Dial string for KubeMQ server | localhost:50000 | **true** |
 | PLUMBER_RELAY_KUBEMQ_QUEUE_AUTH_TOKEN | Client JWT authentication token |  | false |
-| PLUMBER_RELAY_KUBEMQ_QUEUE_TLS_CERT_FILE | KubeMQ client cert file |  | false |
+| PLUMBER_RELAY_KUBEMQ_QUEUE_TLS_CLIENT_CERT | KubeMQ client cert file |  | false |
 | PLUMBER_RELAY_KUBEMQ_QUEUE_CLIENT_ID | KubeMQ client ID | plumber | false |
 | PLUMBER_RELAY_KUBEMQ_QUEUE_QUEUE | KubeMQ queue name |  | false |
 
@@ -122,7 +122,7 @@
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
-| PLUMBER_RELAY_MQTT_TLS_CA_FILE | CA file (only needed if addr is ssl://) |  | false |
+| PLUMBER_RELAY_MQTT_TLS_CA_CERT | CA cert (only needed if addr is ssl://) |  | false |
 | PLUMBER_RELAY_MQTT_TLS_CLIENT_CERT | Client cert file (only needed if addr is ssl://) |  | false |
 | PLUMBER_RELAY_MQTT_TLS_CLIENT_KEY | Client key file (only needed if addr is ssl://) |  | false |
 | PLUMBER_RELAY_MQTT_SKIP_VERIFY_TLS | Whether to verify server certificate |  | false |
@@ -137,7 +137,7 @@
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
-| PLUMBER_RELAY_NATS_STREAMING_TLS_CA_FILE | CA file (only needed if addr is tls:// |  | false |
+| PLUMBER_RELAY_NATS_STREAMING_TLS_CA_CERT | CA file (only needed if addr is tls:// |  | false |
 | PLUMBER_RELAY_NATS_STREAMING_TLS_CLIENT_CERT | Client cert file (only needed if addr is tls:// |  | false |
 | PLUMBER_RELAY_NATS_STREAMING_TLS_CLIENT_KEY | Client key file (only needed if addr is tls:// |  | false |
 | PLUMBER_RELAY_NATS_STREAMING_SKIP_VERIFY_TLS | Whether to verify server certificate |  | false |
@@ -150,9 +150,9 @@
 | PLUMBER_RELAY_NSQ_LOOKUPD_ADDRESS | Address of LookupD server (Ex: localhost:4161) |  | false |
 | PLUMBER_RELAY_NSQ_USE_TLS | Enable TLS usage |  | false |
 | PLUMBER_RELAY_NSQ_SKIP_VERIFY_TLS | Whether to verify server certificate |  | false |
-| PLUMBER_RELAY_NSQ_TLS_CA_FILE | CA file |  | false |
-| PLUMBER_RELAY_NSQ_TLS_CERT_FILE |  |  | false |
-| PLUMBER_RELAY_NSQ_TLS_KEY_FILE |  |  | false |
+| PLUMBER_RELAY_NSQ_TLS_CA_CERT | CA file |  | false |
+| PLUMBER_RELAY_NSQ_TLS_CLIENT_CERT | Client cert file |  | false |
+| PLUMBER_RELAY_NSQ_TLS_CLIENT_KEY | Client key file |  | false |
 | PLUMBER_RELAY_NSQ_AUTH_SECRET | Authentication secret |  | false |
 | PLUMBER_RELAY_NSQ_CLIENT_ID | Client ID to identify as | plumber | false |
 | PLUMBER_RELAY_NSQ_TOPIC | NSQ topic to read from |  | **true** |
@@ -209,7 +209,7 @@
 | PLUMBER_RELAY_REDIS_PUBSUB_DATABASE | Database (0-16) |  | false |
 | PLUMBER_RELAY_REDIS_STREAMS_CREATE_STREAMS | Create the streams if creating a new consumer group |  | false |
 | PLUMBER_RELAY_REDIS_STREAMS_RECREATE_CONSUMER_GROUP | Recreate this consumer group if it does not exist |  | false |
-| PLUMBER_RELAY_REDIS_STREAMS_START_ID | What offset to start reading at (options: latest | latest | **true** |
+| PLUMBER_RELAY_REDIS_STREAMS_START_ID | What offset to start reading at (options: latest oldest) | latest | **true** |
 | PLUMBER_RELAY_REDIS_STREAMS_STREAMS | Streams to read from |  | **true** |
 | PLUMBER_RELAY_REDIS_STREAMS_CONSUMER_GROUP | Consumer group name | plumber | false |
 | PLUMBER_RELAY_REDIS_STREAMS_CONSUMER_NAME | Consumer name | plumber-consumer-1 | false |

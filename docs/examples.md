@@ -66,7 +66,7 @@ plumber read aws-sqs --queue-name=orders --max-num-messages=10 --auto-delete
 Continuously read messages
 
 ```
-plumber read aws-sqs --queue-name=orders --follow
+plumber read aws-sqs --queue-name=orders --continuous
 ```
 
 Poll for new messages for X seconds
@@ -83,13 +83,13 @@ plumber read rabbit
     --exchange=testex \
     --queue=testqueue \
     --routing-key="orders.#"
-    --follow
+    --continuous
 ```
 
 ##### RabbitMQ Streams
 
 ```
-plumber read rabbit-streams --address rabbitmq-stream://guest:guest@localhost:5552 --stream new_orders --offset last
+plumber read rabbit-streams --dsn rabbitmq-stream://guest:guest@localhost:5552 --stream new_orders --offset last
 ```
 
 ##### Kafka
@@ -97,23 +97,29 @@ plumber read rabbit-streams --address rabbitmq-stream://guest:guest@localhost:55
 Read a single message
 
 ```
-plumber read kafka --topic orders --address="broker1.domain.com:9092"
+plumber read kafka --topics orders --address="broker1.domain.com:9092"
 ```
 
 You may specify multiple brokers by specifying the `--address` flag multiple times
 
 ```
-plumber read kafka --topic orders \
+plumber read kafka --topics orders \
     --address="broker1.domain.com:9092" \
     --address="broker2.domain.com:9092" \
     --address="broker3.domain.com:9092" \
-    --follow
+    --continuous
 ```
 
 Continuously read messages
 
 ```
-plumber read kafka --topic orders --address="broker1.domain.com:9092" --follow
+plumber read kafka --topics orders --address="broker1.domain.com:9092" --continuous
+```
+
+To read from multiple topics, specify multiple topics delimited with a comma (without spaces):
+
+```
+plumber read kafka --topics one,two -f --pretty
 ```
 
 ##### Azure Service Bus
@@ -123,7 +129,7 @@ Reading from a topic
 ```bash
 export SERVICEBUS_CONNECTION_STRING="Endpoint=sb://plumbertopictest.servicebus.windows.net/;SharedAccessKeyName=...."
 
-plumber read azure --topic="new-orders" --subscription="copy-of-new-orders"
+plumber read azure-service-bus --topic="new-orders" --subscription="copy-of-new-orders"
 ```
 
 Reading from a queue
@@ -131,7 +137,7 @@ Reading from a queue
 ```bash
 export SERVICEBUS_CONNECTION_STRING="Endpoint=sb://plumbertopictest.servicebus.windows.net/;SharedAccessKeyName=...."
 
-plumber read azure --queue "new-orders"
+plumber read azure-service-bus --queue "new-orders"
 ```
 
 ##### Azure Event Hub
@@ -141,7 +147,7 @@ Read first available message from any partition
 ```bash
 export EVENTHUB_CONNECTION_STRING="Endpoint=sb://plumbertest.servicebus.windows.net/;SharedAccessKeyName=...;SharedAccessKey=....=;EntityPath=...""
 
-plumber read azure-eventhub
+plumber read azure-event-hub
 ```
 
 ##### NATS
@@ -195,10 +201,10 @@ plumber read nsq --lookupd-address localhost:4161 --topic orders --channel newor
 #### Thrift Decoding
 
 Plumber can decode thrift output, and display it as nested JSON. The key is the field's ID, and the
-value is the actual value in the message. Add the `--json` flag for human readable output
+value is the actual value in the message. Add the `--pretty` flag to colorize output.
 
 ```bash
-plumber read kafka --topic orders --thrift --json
+plumber read kafka --topics orders --decode-type thrift --pretty
 
 {
   "1": 54392501,
@@ -216,25 +222,25 @@ plumber read kafka --topic orders --thrift --json
 ##### AWS SQS
 
 ```
-plumber write aws-sqs --queue-name=NewOrders --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+plumber write aws-sqs --queue-name=NewOrders --input="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ##### RabbitMQ
 
 ```
-plumber write rabbit --address="aqmp://rabbit.yourdomain.net:5672" --exchange=NewOrders --routing-key="orders.oregon.coffee" --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+plumber write rabbit --address="aqmp://rabbit.yourdomain.net:5672" --exchange=NewOrders --routing-key="orders.oregon.coffee" --input="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ##### RabbitMQ Streams
 
 ```
-plumber write rabbit-streams --address rabbitmq-stream://guest:guest@localhost:5552 --stream new_orders --input-data "{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+plumber write rabbit-streams --dsn rabbitmq-stream://guest:guest@localhost:5552 --stream new_orders --input '{"order_id": "A-3458-654-1", "status": "processed"}'
 ```
 
 ##### Kafka
 
 ```
-plumber write kafka --address="localhost:9092" --topic=neworders --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+plumber write kafka --address localhost:9092 --topics neworders --input '{"order_id": "A-3458-654-1", "status": "processed"}'
 ```
 
 You may specify multiple brokers by specifying the `--address` flag multiple times.
@@ -242,17 +248,17 @@ You may specify multiple brokers by specifying the `--address` flag multiple tim
 To read from more than one topic, you may specify multiple `--topic` flags.
 
 ```
-plumber write kafka --topic neworders \
+plumber write kafka --topics neworders \
     --address "broker1.domain.com:9092" \
     --address "broker2.domain.com:9092" \
     --address "broker3.domain.com:9092" \
-    --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+    --input="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ##### AWS SNS
 
 ```bash
-plumber write aws-sns --topic="arn:aws:sns:us-east-2:123456789012:MyTopic" --input-data="A new is ready for processing!"
+plumber write aws-sns --topic="arn:aws:sns:us-east-2:123456789012:MyTopic" --input="New event is ready for processing!"
 ```
 
 ##### Azure Service Bus
@@ -262,7 +268,7 @@ Publishing to a topic
 ```bash
 export SERVICEBUS_CONNECTION_STRING="Endpoint=sb://plumbertopictest.servicebus.windows.net/;SharedAccessKeyName=...."
 
-plumber write azure --topic="new-orders" --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+plumber write azure --topic="new-orders" --input="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 Publishing to a queue
@@ -270,7 +276,7 @@ Publishing to a queue
 ```bash
 export SERVICEBUS_CONNECTION_STRING="Endpoint=sb://plumbertopictest.servicebus.windows.net/;SharedAccessKeyName=...."
 
-plumber write azure --queue="new-orders" --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+plumber write azure --queue="new-orders" --input="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ##### Azure Event Hub
@@ -280,7 +286,7 @@ Publish to random partition
 ```bash
 export EVENTHUB_CONNECTION_STRING="Endpoint=sb://plumbertest.servicebus.windows.net/;SharedAccessKeyName=...;SharedAccessKey=....=;EntityPath=...""
 
-plumber write azure-eventhub --input-data "{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}" --message-id "neworder123"
+plumber write azure-eventhub --input "{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}" --message-id "neworder123"
 ```
 
 Publish to specific partition key
@@ -288,54 +294,54 @@ Publish to specific partition key
 ```bash
 export EVENTHUB_CONNECTION_STRING="Endpoint=sb://plumbertest.servicebus.windows.net/;SharedAccessKeyName=...;SharedAccessKey=....=;EntityPath=...""
 
-plumber write azure-eventhub --input-data "{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}" --message-id "neworder123" --partition-key "neworders"
+plumber write azure-eventhub --input "{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}" --message-id "neworder123" --partition-key "neworders"
 ```
 
 ##### NATS
 
 ```bash
-plumber write nats --address="nats://user:pass@nats.test.io:4222" --subject "test-subject" --input-data "Hello World"
+plumber write nats --address="nats://user:pass@nats.test.io:4222" --subject "test-subject" --input "Hello World"
 ```
 
 ##### NATS Streaming
 
 ```bash
-plumber write nats-streaming --address="nats://user:pass@nats.test.io:4222" --channel "orders" --cluster-id "test-cluster" --client-id "plumber-producer" --input-data "{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+plumber write nats-streaming --address="nats://user:pass@nats.test.io:4222" --channel "orders" --cluster-id "test-cluster" --client-id "plumber-producer" --input "{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ##### Redis PubSub
 
 ```bash
-plumber write redis-pubsub --address="localhost:6379" --channels="new-orders" --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+plumber write redis-pubsub --address="localhost:6379" --channels="new-orders" --input="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ##### Redis Streams
 
 ```bash
-plumber write redis-streams --address="localhost:6379" --streams="new-orders" --key foo --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+plumber write redis-streams --address="localhost:6379" --streams="new-orders" --key foo --input="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ##### GCP Pub/Sub
 
 ```bash
-plumber write gcp-pubsub --topic-id=TOPIC --project-id=PROJECT_ID --input-data='{"Sensor":"Room J","Temp":19}' 
+plumber write gcp-pubsub --topic-id=TOPIC --project-id=PROJECT_ID --input='{"Sensor":"Room J","Temp":19}' 
 ```
 
 ##### MQTT
 
 ```bash
-plumber write mqtt --address tcp://localhost:1883 --topic iotdata -qos 1 --input-data "{\"id\": 123, \"temperature\": 15}"
+plumber write mqtt --address tcp://localhost:1883 --topic iotdata -qos 1 --input "{\"id\": 123, \"temperature\": 15}"
 ```
 ##### Apache Pulsar
 
 ```bash
-plumber write pulsar --topic NEWORDERS --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+plumber write pulsar --topic NEWORDERS --input="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ##### NSQ
 
 ```bash
-plumger write nsq --nsqd-address localhost:4050 --topic orders --input-data="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+plumger write nsq --nsqd-address localhost:4050 --topic orders --input="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ## Relay Mode
@@ -371,7 +377,7 @@ docker run -d --name plumber-azure -p 8080:8080 \
     -e SERVICEBUS_CONNECTION_STRING="Endpoint=sb://mybus.servicebus.windows.net/;SharedAccessKeyName..."
     -e PLUMBER_RELAY_AZURE_QUEUE_NAME=neworders \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
-    batchcorp/plumber azure
+    batchcorp/plumber azure-service-bus
 ```
 
 ##### Continuously relay messages from an Azure topic to a Batch.sh collection
@@ -382,7 +388,7 @@ docker run -d --name plumber-azure -p 8080:8080 \
     -e PLUMBER_RELAY_AZURE_TOPIC_NAME=neworders \
     -e PLUMBER_RELAY_AZURE_SUBSCRIPTION=some-sub \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
-    batchcorp/plumber azure
+    batchcorp/plumber azure-service-bus
 ```
 
 ##### Continuously relay messages from multiple Redis channels to a Batch.sh collection
@@ -436,9 +442,9 @@ docker run -d --name plumber-mqtt -p 8080:8080 \
 ##### Continuously relay Postgres change events to a Batch.sh collection
 
 See documentation at https://docs.batch.sh/event-ingestion/change-data-capture/postgresql for instructions on setting
-up PostgreSQL CDC
+up PostgreSQL CDC.
 
-##### Continuously relay Monbodb change stream events to a Batch.sh collection
+##### Continuously relay MongoDB change stream events to a Batch.sh collection
 
 ```bash
 docker run -d --name plumber-cdc-mongo -p 8080:8080 \
@@ -456,9 +462,23 @@ For more advanced mongo usage, see documentation at https://docs.batch.sh/event-
 
 ##### Decoding protobuf encoded messages and viewing them live
 
+Protobuf is supported for both encode and decode for _all_ backends. There are
+three flags that must be specified for protobuf:
+
+1. `--encode-type` for writes or `--decode-type` for reads
+2. `--protobuf-dirs` pointing to a directory that contains your `.proto` files
+3. `--protobuf-root-message` which indicates what type plumber should attempt to encode/decode output/input
+
+NOTE: `--protobuf-root-message` must specify the _FULL_ path to the type. Ie. 
+`events.MyType` (`MyType` is not enough!).
+
 ```bash
 $ plumber read rabbit --address="amqp://localhost" --exchange events --routing-key \# \
-  --protobuf-dir ~/schemas --protobuf-root-message pkg.Message --follow
+  --decode-type protobuf \
+  --protobuf-dir ~/schemas \ 
+  --protobuf-root-message pkg.Message \
+  --continuous
+  
 1: {"some-attribute": 123, "numbers" : [1, 2, 3]}
 2: {"some-attribute": 424, "numbers" : [325]}
 3: {"some-attribute": 49, "numbers" : [958, 288, 289, 290]}
@@ -476,14 +496,16 @@ slice to the message bus.
 
 ```bash
 $ plumber write rabbit --exchange events --routing-key foo.bar  \
-  --protobuf-dir ~/schemas --protobuf-root-message pkg.Message \
-  --input-file ~/fakes/some-jsonpb-file.json --input-type jsonpb
+  --protobuf-dir ~/schemas \
+  --protobuf-root-message pkg.Message \
+  --input-file ~/fakes/some-jsonpb-file.json \ 
+  --encode-type jsonpb
 ```
 
 ##### Using Avro schemas when reading or writing
 ```bash
-$ plumber write kafka --topic=orders --avro-schema=some_schema.avsc --input-file=your_data.json
-$ plumber read kafka --topic=orders --avro-schema=some_schema.avsc
+$ plumber write kafka --topic=orders --avro-schema-file=some_schema.avsc --input-file=your_data.json
+$ plumber read kafka --topic=orders --avro-schema-file=some_schema.avsc
 ```
 
 <sub>
