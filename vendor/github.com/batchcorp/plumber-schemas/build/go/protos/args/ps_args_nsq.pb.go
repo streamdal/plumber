@@ -31,10 +31,10 @@ type NSQConn struct {
 	TlsSkipVerify bool `protobuf:"varint,4,opt,name=tls_skip_verify,json=tlsSkipVerify,proto3" json:"tls_skip_verify,omitempty" kong:"help='Whether to verify server certificate',env='PLUMBER_RELAY_NSQ_SKIP_VERIFY_TLS'"`
 	// @gotags: kong:"help='CA file',env='PLUMBER_RELAY_NSQ_TLS_CA_CERT'"
 	TlsCaCert []byte `protobuf:"bytes,5,opt,name=tls_ca_cert,json=tlsCaCert,proto3" json:"tls_ca_cert,omitempty" kong:"help='CA file',env='PLUMBER_RELAY_NSQ_TLS_CA_CERT'"`
-	// @gotags: kong:"help='',env='PLUMBER_RELAY_NSQ_TLS_CLIENT_CERT'"
-	TlsClientCert []byte `protobuf:"bytes,6,opt,name=tls_client_cert,json=tlsClientCert,proto3" json:"tls_client_cert,omitempty" kong:"help='',env='PLUMBER_RELAY_NSQ_TLS_CLIENT_CERT'"`
-	// @gotags: kong:"help='',env='PLUMBER_RELAY_NSQ_TLS_CLIENT_KEY'"
-	TlsClientKey []byte `protobuf:"bytes,7,opt,name=tls_client_key,json=tlsClientKey,proto3" json:"tls_client_key,omitempty" kong:"help='',env='PLUMBER_RELAY_NSQ_TLS_CLIENT_KEY'"`
+	// @gotags: kong:"help='Client cert file',env='PLUMBER_RELAY_NSQ_TLS_CLIENT_CERT'"
+	TlsClientCert []byte `protobuf:"bytes,6,opt,name=tls_client_cert,json=tlsClientCert,proto3" json:"tls_client_cert,omitempty" kong:"help='Client cert file',env='PLUMBER_RELAY_NSQ_TLS_CLIENT_CERT'"`
+	// @gotags: kong:"help='Client key file',env='PLUMBER_RELAY_NSQ_TLS_CLIENT_KEY'"
+	TlsClientKey []byte `protobuf:"bytes,7,opt,name=tls_client_key,json=tlsClientKey,proto3" json:"tls_client_key,omitempty" kong:"help='Client key file',env='PLUMBER_RELAY_NSQ_TLS_CLIENT_KEY'"`
 	// @gotags: kong:"help='Authentication secret',env='PLUMBER_RELAY_NSQ_AUTH_SECRET'"
 	AuthSecret string `protobuf:"bytes,8,opt,name=auth_secret,json=authSecret,proto3" json:"auth_secret,omitempty" kong:"help='Authentication secret',env='PLUMBER_RELAY_NSQ_AUTH_SECRET'"`
 	// @gotags: kong:"help='Client ID to identify as',env='PLUMBER_RELAY_NSQ_CLIENT_ID',default=plumber"
