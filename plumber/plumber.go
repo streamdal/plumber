@@ -131,7 +131,8 @@ func (p *Plumber) Run() {
 
 	switch p.CLIOptions.Global.XAction {
 	case "server":
-		err = p.RunServer()
+		logrus.Fatal("server mode not implemented")
+		//err = p.RunServer()
 	case "batch":
 		err = p.HandleBatchCmd()
 	case "read":
@@ -142,7 +143,8 @@ func (p *Plumber) Run() {
 		printer.PrintRelayOptions(p.CLIOptions)
 		err = p.HandleRelayCmd()
 	case "dynamic":
-		err = p.HandleDynamicCmd()
+		logrus.Fatal("dynamic mode not implemented")
+		//err = p.HandleDynamicCmd()
 	default:
 		logrus.Fatalf("unrecognized command: %s", p.CLIOptions.Global.XAction)
 	}
