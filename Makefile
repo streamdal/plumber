@@ -68,6 +68,13 @@ clean: description = Remove existing build artifacts
 clean:
 	$(RM) ./build/$(BINARY)-*
 
+### Generation
+
+.PHONY: generate/docs
+generate/docs: description = Generate documentation
+generate/docs:
+	go run tools/docs-generator/main.go -type env -output markdown > docs/env.md
+
 ### Docker
 
 docker/build: description = Build docker image

@@ -232,8 +232,8 @@ type ReadOptions struct {
 	// with the (untouched) value.
 	// @gotags: kong:"embed,group=decode"
 	DecodeOptions *encoding.DecodeOptions `protobuf:"bytes,5,opt,name=decode_options,json=decodeOptions,proto3" json:"decode_options,omitempty" kong:"embed,group=decode"`
-	// @gotags: kong:"help='Convert output before it is printed to STDOUT (options: unset, base64, gzip)',type=pbenum,pbenum_strip_prefix=CONVERT_OPTION_,pbenum_lowercase,default=unset"
-	ConvertOutput ConvertOption `protobuf:"varint,6,opt,name=convert_output,json=convertOutput,proto3,enum=protos.opts.ConvertOption" json:"convert_output,omitempty" kong:"help='Convert output before it is printed to STDOUT (options: unset, base64, gzip)',type=pbenum,pbenum_strip_prefix=CONVERT_OPTION_,pbenum_lowercase,default=unset"`
+	// @gotags: kong:"help='Convert output before it is printed to STDOUT (options: unset; base64; gzip)',type=pbenum,pbenum_strip_prefix=CONVERT_OPTION_,pbenum_lowercase,default=unset"
+	ConvertOutput ConvertOption `protobuf:"varint,6,opt,name=convert_output,json=convertOutput,proto3,enum=protos.opts.ConvertOption" json:"convert_output,omitempty" kong:"help='Convert output before it is printed to STDOUT (options: unset; base64; gzip)',type=pbenum,pbenum_strip_prefix=CONVERT_OPTION_,pbenum_lowercase,default=unset"`
 	// @gotags: kong:"-"
 	Filter *ReadFilterOptions `protobuf:"bytes,7,opt,name=filter,proto3" json:"filter,omitempty" kong:"-"`
 	// Whether to infer a JSON schema from this read. Ignored if schema_id is populated. Desktop use only
@@ -272,8 +272,8 @@ type ReadOptions struct {
 	Mqtt *ReadGroupMQTTOptions `protobuf:"bytes,110,opt,name=mqtt,proto3" json:"mqtt,omitempty" kong:"cmd,help='MQTT'"`
 	// @gotags: kong:"cmd,help='Azure Service Bus'"
 	AzureServiceBus *ReadGroupAzureServiceBusOptions `protobuf:"bytes,111,opt,name=azure_service_bus,json=azureServiceBus,proto3" json:"azure_service_bus,omitempty" kong:"cmd,help='Azure Service Bus'"`
-	// @gotags: kong:"cmd,help=''"
-	AzureEventHub *ReadGroupAzureEventHubOptions `protobuf:"bytes,112,opt,name=azure_event_hub,json=azureEventHub,proto3" json:"azure_event_hub,omitempty" kong:"cmd,help=''"`
+	// @gotags: kong:"cmd,help='Azure Event Hub'"
+	AzureEventHub *ReadGroupAzureEventHubOptions `protobuf:"bytes,112,opt,name=azure_event_hub,json=azureEventHub,proto3" json:"azure_event_hub,omitempty" kong:"cmd,help='Azure Event Hub'"`
 	// @gotags: kong:"cmd,help='Google Cloud Platform Pub/Sub'"
 	GcpPubsub *ReadGroupGCPPubSubOptions `protobuf:"bytes,113,opt,name=gcp_pubsub,json=gcpPubsub,proto3" json:"gcp_pubsub,omitempty" kong:"cmd,help='Google Cloud Platform Pub/Sub'"`
 	// @gotags: kong:"cmd,help='KubeMQ Queue'"

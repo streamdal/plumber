@@ -1,8 +1,4 @@
-
-<img src="https://github.com/batchcorp/plumber/blob/master/assets/gopher.png?raw=true" align="right" />
-
-plumber
-=======
+![Brief Demo](./assets/plumber_logo_full.png)
 
 [![Master build status](https://github.com/batchcorp/plumber/workflows/master/badge.svg)](https://github.com/batchcorp/plumber/actions/workflows/master-test.yaml) [![Go Report Card](https://goreportcard.com/badge/github.com/batchcorp/plumber)](https://goreportcard.com/report/github.com/batchcorp/plumber)
 
@@ -12,24 +8,26 @@ in message systems like Kafka, RabbitMQ , GCP PubSub and
 
 The tool enables you to:
 
-* See what's passing through your message systems
-* Pipe data from one place to another
-* Decode protobuf data in real-time
-* Capture and relay data to [Batch platform](https://batch.sh)
+* Safely view the contents of your data streams
+* Write plain or encoded data to any system
+* Route data from one place to another
+* Decode protobuf/avro/thrift/JSON data in real-time
+* Relay data to the [Batch platform](https://batch.sh)
 * Ship change data capture events to [Batch platform](https://batch.sh)
 * [Replay events into a message system on your local network](https://docs.batch.sh/what-are/what-are-destinations/plumber-as-a-destination)
+* And _many_ other features (for a full list: `plumber -h`)
 
 <sub>\[1] It's like `curl` for messaging systems.</sub>
 
 ## Why do you need it?
 
 Messaging systems are black boxes - gaining visibility into what is passing
-through them is an involved process that requires you to write consumer code
-that you will likely throw away.
+through them is an involved process that requires you to write brittle consumer
+code that you will eventually throw away.
 
 `plumber` enables you to stop wasting time writing throw-away code - use it to
-look into your queues, use it to connect disparate systems together or use it
-for debugging your event driven systems.
+look into your queues and data streams, use it to connect disparate systems 
+together or use it for debugging your event driven systems.
 
 ## Demo
 
@@ -63,56 +61,38 @@ $ mv plumber /usr/local/bin/plumber
 
 ### Write messages
 
-```
-$ plumber write kafka --address="localhost:9092" --topic foo --input-data '{"hello":"world"}'
-
-INFO[0000]
-█▀█ █   █ █ █▀▄▀█ █▄▄ █▀▀ █▀█
-█▀▀ █▄▄ █▄█ █ ▀ █ █▄█ ██▄ █▀▄
-INFO[0000] Connected to kafka broker 'localhost:9092'
-INFO[0000] Successfully wrote message to topic 'foo'     pkg=kafka/write.go
+```bash
+❯ plumber write kafka --topics test --input foo
+INFO[0000] Successfully wrote message to topic 'test'    backend=kafka
+INFO[0000] Successfully wrote '1' message(s)             pkg=plumber
 ```
 
-<sub>NOTE: If you want to write JSON either surround the `input-data` in single
-quotes or use `input-file`.
-
-### Read messages
+### Read message(s)
 
 ```bash
-$ plumber read kafka --topic foo --address="localhost:9092" --follow --json
+❯ plumber read kafka --topics test
+INFO[0000] Initializing (could take a minute or two) ...  backend=kafka
 
-INFO[0000]
-█▀█ █   █ █ █▀▄▀█ █▄▄ █▀▀ █▀█
-█▀▀ █▄▄ █▄█ █ ▀ █ █▄█ ██▄ █▀▄
-INFO[0000] Connected to kafka broker 'localhost:9092'
-INFO[0000] Initializing (could take a minute or two) ...  pkg=kafka/read.go
-
-------------- [Count: 1 Received at: 2021-06-17T22:54:55Z] -------------------
+------------- [Count: 1 Received at: 2021-11-30T12:51:32-08:00] -------------------
 
 +----------------------+------------------------------------------+
 | Key                  |                                     NONE |
-| Topic                |                                      foo |
-| Offset               |                                       12 |
+| topic                |                                     test |
+| Offset               |                                        8 |
 | Partition            |                                        0 |
 | Header(s)            |                                     NONE |
 +----------------------+------------------------------------------+
 
-{
-  "hello": "world"
-}
+foo
 ```
+
+NOTE: Add `-f` to perform a continuous read (like `tail -f`)
 
 ### Write messages via pipe
 
-Write a single message
+**Write multiple messages**
 
-```bash
-$ echo "some data" | plumber write kafka --topic foo
-
-INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
-```
-
-Write multiple messages separated by newlines. Each line will be a message
+NOTE: Multiple messages are separated by a newline.
 
 ```bash
 $ cat mydata.txt
@@ -120,31 +100,30 @@ line1
 line2
 line3
 
-$ cat mydata.txt | plumber write kafka --topic foo
+$ cat mydata.txt | plumber write kafka --topics foo
 
 INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
 INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
 INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
 ```
 
-Write each element of a JSON array as a message
+**Write each element of a JSON array as a message**
 
 ```bash
 $ cat mydata.json
 [{"key": "value1"},{"key": "value2"}]
 
-$ cat mydata.json | plumber write kafka --topic foo --json-array
+$ cat mydata.json | plumber write kafka --topics foo --json-array
 
 INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
 INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
 ```
 
+## Documentation
 
-<IMG>
-
-
-#### See [EXAMPLES.md](https://github.com/batchcorp/plumber/blob/master/EXAMPLES.md) for more usage examples
-#### See [ENV.md](https://github.com/batchcorp/plumber/blob/master/ENV.md) for list of supported environment variables
+* [docs/examples.md](https://github.com/batchcorp/plumber/blob/master/docs/examples.md) for more usage examples
+* [docs/env.md](https://github.com/batchcorp/plumber/blob/master/docs/env.md) for list of supported environment variables
+* [docs/metrics.md](https://github.com/batchcorp/plumber/blob/master/docs/env.md) for information on metrics that plumber exposes
 
 ## Getting Help
 
@@ -152,31 +131,39 @@ A full list of available flags can be displayed by using the `--help` flag after
 different parts of the command:
 
 ```bash
-$ plumber read rabbit --help
-$ plumber read mqtt --help
-$ plumber write kafka --help
-$ plumber relay --help
+$ plumber --help
+$ plumber read --help
+$ plumber read kafka --help
 ```
 
 ## Features
 
-* Dynamic protobuf & avro encode & decode
-* Dynamic Thrift IDL decoding
-* Gzip compress & decompress
+* Encode & decode for multiple formats
+  * Protobuf
+  * Avro
+  * Thrift
+  * Flatbuffer
+  * GZip
+  * JSON
+  * JSONPB (protobuf serialized as JSON)
+  * Base64
 * `--follow` support (ie. `tail -f`)
-* Observe, relay and archive messaging data
 * Support for **most** messaging systems
+* Supports writing via string, file or pipe
+* Observe, relay and archive messaging data
 * Single-binary, zero-config, easy-install
 
 ## Hmm, what is this Batch thing?
 
 We are distributed system enthusiasts that started a company called
-[Batch](https://batch.sh). We focus on improving workflows that involve
-messaging systems - specifically, we enable message observability, backups and
-outage recovery via message replays.
+[Batch](https://batch.sh). 
+
+Our company focuses on solving data stream observability for complex systems
+and workflows. Our goal is to allow _everyone_ to build asynchronous systems,
+without the fear of introducing too much complexity.
 
 While working on our company, we built a tool for reading and writing messages
-from our message systems and realized that there is a serious lack of tooling
+from our messaging systems and realized that there is a serious lack of tooling
 in this space.
 
 We wanted a swiss army knife type of tool for working with messaging systems
@@ -206,18 +193,22 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 * MongoDB CDC (Change Data Capture)
 * Apache Pulsar
 * NSQ
+* KubeMQ
 
 NOTE: If your messaging tech is not supported - submit an issue and we'll do
 our best to make it happen!
 
-## Dynamic Replay Destination (NEW!)
+## Dynamic Replay Destination
 
-Plumber can now act as a replay destination. Dynamic replay mode allows you to run 
-an instance of plumber, on your local network, which will receive messages for a replay.
-This mitigates the need make firewall changes to replay messages from a Batch collection
-back to your message bus.
+Plumber can now act as a replay destination. Dynamic replay mode allows you to
+run an instance of plumber, on your local network, which will then be available
+in the Batch platform as a _replay destination_.
 
-See https://docs.batch.sh/what-are/what-are-destinations/plumber-as-a-destination for full documentation
+This mitigates the need make firewall changes to replay messages from a Batch
+collection back to your message bus.
+
+See https://docs.batch.sh/what-are/what-are-destinations/plumber-as-a-destination
+for full documentation
 
 ## High Availability
 When running `plumber` in relay mode in production, you will want to run at

@@ -170,8 +170,8 @@ type AWSSQSWriteArgs struct {
 	RemoteAccountId string `protobuf:"bytes,2,opt,name=remote_account_id,json=remoteAccountId,proto3" json:"remote_account_id,omitempty" kong:"help='Remote AWS account ID',optional"`
 	// @gotags: kong:"help='How many seconds to delay message delivery by',default=0"
 	DelaySeconds int64 `protobuf:"varint,3,opt,name=delay_seconds,json=delaySeconds,proto3" json:"delay_seconds,omitempty" kong:"help='How many seconds to delay message delivery by',default=0"`
-	// @gotags: kong:"help='Add optional attributes to outgoing message (k=v, delimited by ;)'"
-	Attributes map[string]string `protobuf:"bytes,4,rep,name=attributes,proto3" json:"attributes,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3" kong:"help='Add optional attributes to outgoing message (k=v, delimited by ;)'"`
+	// @gotags: kong:"help='Add optional attributes to outgoing message (assign: k=v delimit: ;)'"
+	Attributes map[string]string `protobuf:"bytes,4,rep,name=attributes,proto3" json:"attributes,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3" kong:"help='Add optional attributes to outgoing message (assign: k=v delimit: ;)'"`
 	// @gotags: kong:"help='Message Group ID. For FIFO queues only'"
 	MessageGroupId string `protobuf:"bytes,5,opt,name=message_group_id,json=messageGroupId,proto3" json:"message_group_id,omitempty" kong:"help='Message Group ID. For FIFO queues only'"`
 	// @gotags: kong:"help='Required when publishing to a FIFO queue that does not have content based deduplication enabled'"

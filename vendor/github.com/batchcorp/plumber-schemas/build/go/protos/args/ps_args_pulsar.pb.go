@@ -132,8 +132,8 @@ type PulsarReadArgs struct {
 	Topic string `protobuf:"bytes,1,opt,name=topic,proto3" json:"topic,omitempty" kong:"help='Topic to read messages from',required"`
 	// @gotags: kong:"help='Subscription name',required"
 	SubscriptionName string `protobuf:"bytes,2,opt,name=subscription_name,json=subscriptionName,proto3" json:"subscription_name,omitempty" kong:"help='Subscription name',required"`
-	// @gotags: kong:"help='Subscription type (options: shared, exclusive, failover, keyshared)',default=shared,type=pbenum,pbenum_lowercase"
-	SubscriptionType     SubscriptionType `protobuf:"varint,3,opt,name=subscription_type,json=subscriptionType,proto3,enum=protos.args.SubscriptionType" json:"subscription_type,omitempty" kong:"help='Subscription type (options: shared, exclusive, failover, keyshared)',default=shared,type=pbenum,pbenum_lowercase"`
+	// @gotags: kong:"help='Subscription type (options: shared exclusive failover keyshared)',default=shared,type=pbenum,pbenum_lowercase"
+	SubscriptionType     SubscriptionType `protobuf:"varint,3,opt,name=subscription_type,json=subscriptionType,proto3,enum=protos.args.SubscriptionType" json:"subscription_type,omitempty" kong:"help='Subscription type (options: shared exclusive failover keyshared)',default=shared,type=pbenum,pbenum_lowercase"`
 	XXX_NoUnkeyedLiteral struct{}         `json:"-"`
 	XXX_unrecognized     []byte           `json:"-"`
 	XXX_sizecache        int32            `json:"-"`
