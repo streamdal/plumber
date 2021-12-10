@@ -3,20 +3,21 @@ package cdcpostgres
 import (
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/printer"
 )
 
-func (c *CDCPostgres) DisplayMessage(msg *records.ReadRecord) error {
+func (c *CDCPostgres) DisplayMessage(cliOpts *opts.CLIOptions, msg *records.ReadRecord) error {
 	if err := validateReadRecord(msg); err != nil {
 		return errors.Wrap(err, "unable to validate read record")
 	}
 
 	receivedAt := time.Unix(msg.ReceivedAtUnixTsUtc, 0)
 
-	printer.PrintTable([][]string{}, msg.Num, receivedAt, msg.Payload)
+	printer.PrintTable(cliOpts, msg.Num, receivedAt, msg.Payload, [][]string{})
 
 	return nil
 }

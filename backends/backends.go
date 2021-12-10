@@ -68,7 +68,7 @@ type Backend interface {
 	Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error
 
 	// DisplayMessage will parse a Read record and print (pretty) output to STDOUT
-	DisplayMessage(msg *records.ReadRecord) error
+	DisplayMessage(cliOpts *opts.CLIOptions, msg *records.ReadRecord) error
 
 	// DisplayError will parse an Error record and print (pretty) output to STDOUT
 	DisplayError(msg *records.ErrorRecord) error

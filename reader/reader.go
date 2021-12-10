@@ -2,10 +2,8 @@ package reader
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 
-	"github.com/hokaccha/go-prettyjson"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
 	jsoniter "github.com/json-iterator/go"
@@ -17,7 +15,6 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/pb"
-	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/serializers"
 	"github.com/batchcorp/plumber/util"
 )
@@ -103,20 +100,6 @@ func Decode(readOpts *opts.ReadOptions, md *desc.MessageDescriptor, message []by
 
 	if convertErr != nil {
 		return nil, errors.Wrap(convertErr, "unable to complete conversion")
-	}
-
-	// Pretty output
-
-	if readOpts.XCliOptions != nil && readOpts.XCliOptions.Pretty {
-		// Only do pretty output for JSON (for now)
-		if json.Valid(data) {
-			colorized, err := prettyjson.Format(data)
-			if err != nil {
-				printer.Error(fmt.Sprintf("unable to colorize JSON output: %s", err))
-			} else {
-				data = colorized
-			}
-		}
 	}
 
 	return data, nil

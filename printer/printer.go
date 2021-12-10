@@ -1,10 +1,12 @@
 package printer
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/hokaccha/go-prettyjson"
 	"github.com/logrusorgru/aurora"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
@@ -26,10 +28,6 @@ func Print(str string) {
 	fmt.Printf("%s\n", str)
 }
 
-func Printf(str string, args ...interface{}) {
-	fmt.Printf(str+"\n", args...)
-}
-
 func PrintLogo() {
 	logo := `
 █▀█ █   █ █ █▀▄▀█ █▄▄ █▀▀ █▀█
@@ -39,7 +37,65 @@ func PrintLogo() {
 	logrus.Info(logo)
 }
 
-func PrintTable(properties [][]string, count int64, receivedAt time.Time, data []byte) {
+func PrintTable(cliOpts *opts.CLIOptions, count int64, receivedAt time.Time, data []byte, properties [][]string) {
+	pretty := displayPrettyOutput(cliOpts)
+
+	if displayJSONOutput(cliOpts) {
+		displayJSON(count, receivedAt, data, properties, pretty)
+	} else {
+		displayTabular(count, receivedAt, data, properties, pretty)
+	}
+}
+
+func displayPrettyOutput(cliOpts *opts.CLIOptions) bool {
+	if cliOpts == nil {
+		return false
+	}
+
+	if cliOpts.Read == nil {
+		return false
+	}
+
+	if cliOpts.Read.XCliOptions == nil {
+		return false
+	}
+
+	return cliOpts.Read.XCliOptions.Pretty
+}
+
+type JSONOutput struct {
+	Count      int64      `json:"count"`
+	ReceivedAt time.Time  `json:"received_at"`
+	Data       string     `json:"data"`
+	Properties [][]string `json:"properties"`
+}
+
+func displayJSON(count int64, receivedAt time.Time, data []byte, properties [][]string, pretty bool) {
+	output := &JSONOutput{
+		Count:      count,
+		ReceivedAt: receivedAt,
+		Data:       string(data),
+		Properties: properties,
+	}
+
+	data, err := json.Marshal(output)
+	if err != nil {
+		logrus.Errorf("unable to marshal output as JSON: %s", err)
+	}
+
+	if pretty {
+		colorized, err := prettyjson.Format(data)
+		if err != nil {
+			Error(fmt.Sprintf("unable to colorize JSON output: %s", err))
+		} else {
+			data = colorized
+		}
+	}
+
+	fmt.Println(string(data))
+}
+
+func displayTabular(count int64, receivedAt time.Time, data []byte, properties [][]string, pretty bool) {
 	fullHeader := fmt.Sprintf("\n------------- [Count: %d Received at: %s] -------------------\n\n",
 		aurora.Cyan(count), aurora.Yellow(receivedAt.Format(time.RFC3339)).String())
 
@@ -79,15 +135,42 @@ func PrintTable(properties [][]string, count int64, receivedAt time.Time, data [
 		fmt.Println(tableString.String())
 	}
 
+	if pretty {
+		colorized, err := prettyjson.Format(data)
+		if err != nil {
+			Error(fmt.Sprintf("unable to colorize JSON output: %s", err))
+		} else {
+			data = colorized
+		}
+	}
+
 	// Display value
 	if len(data) != 0 {
 		Print(string(data))
 	}
+
+}
+
+// Helper for determining if plumber is set to display output as JSON
+func displayJSONOutput(cliOpts *opts.CLIOptions) bool {
+	if cliOpts == nil {
+		return false
+	}
+
+	if cliOpts.Read == nil {
+		return false
+	}
+
+	if cliOpts.Read.XCliOptions == nil {
+		return false
+	}
+
+	return cliOpts.Read.XCliOptions.Json
 }
 
 // PrintTableProperties prints only properties (no data or count)
 func PrintTableProperties(properties [][]string, timestamp time.Time) {
-	PrintTable(properties, 0, timestamp, nil)
+	PrintTable(nil, 0, timestamp, nil, properties)
 }
 
 func DefaultDisplayError(msg *records.ErrorRecord) {

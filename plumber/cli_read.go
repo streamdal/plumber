@@ -53,7 +53,7 @@ MAIN:
 
 			msg.Payload = decoded
 
-			err = backend.DisplayMessage(msg)
+			err = backend.DisplayMessage(p.CLIOptions, msg)
 		case errorMsg := <-errorCh:
 			err = backend.DisplayError(errorMsg)
 		}

@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/printer"
 )
 
-func (r *RabbitStreams) DisplayMessage(msg *records.ReadRecord) error {
+func (r *RabbitStreams) DisplayMessage(cliOpts *opts.CLIOptions, msg *records.ReadRecord) error {
 	if err := validateReadRecord(msg); err != nil {
 		return errors.Wrap(err, "unable to validate read record")
 	}
@@ -42,7 +43,7 @@ func (r *RabbitStreams) DisplayMessage(msg *records.ReadRecord) error {
 		properties = append(properties, []string{k, v})
 	}
 
-	printer.PrintTable(properties, msg.Num, receivedAt, msg.Payload)
+	printer.PrintTable(cliOpts, msg.Num, receivedAt, msg.Payload, properties)
 
 	return nil
 }
