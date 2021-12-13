@@ -7,9 +7,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
-	"github.com/tidwall/gjson"
 
-	"github.com/batchcorp/lucene2x/jsonquery"
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
@@ -74,18 +72,18 @@ MAIN:
 			s.InferJSONSchema(r, readRecord)
 
 			// Message is JSON, perform query if needed
-			filter := r.ReadOptions.GetFilter()
-			if filter != nil && gjson.ValidBytes(decodedPayload) {
-				found, err := jsonquery.Find(decodedPayload, filter.Query)
-				if err != nil {
-					r.Log.Errorf("Could not query payload, message ignored: %s", err)
-					continue
-				}
-				if !found {
-					r.Log.Debug("Message did not match filter, dropping")
-					continue
-				}
-			}
+			//filter := r.ReadOptions.GetFilter()
+			//if filter != nil && gjson.ValidBytes(decodedPayload) {
+			//	found, err := jsonquery.Find(decodedPayload, filter.Query)
+			//	if err != nil {
+			//		r.Log.Errorf("Could not query payload, message ignored: %s", err)
+			//		continue
+			//	}
+			//	if !found {
+			//		r.Log.Debug("Message did not match filter, dropping")
+			//		continue
+			//	}
+			//}
 
 			// Update read record with (maybe) decoded payload
 			readRecord.Payload = decodedPayload
