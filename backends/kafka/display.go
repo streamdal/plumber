@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/logrusorgru/aurora"
 	"github.com/pkg/errors"
 
@@ -15,7 +16,7 @@ import (
 	"github.com/batchcorp/plumber/types"
 )
 
-func (k *Kafka) DisplayMessage(msg *records.ReadRecord) error {
+func (k *Kafka) DisplayMessage(cliOpts *opts.CLIOptions, msg *records.ReadRecord) error {
 	if err := validateReadRecord(msg); err != nil {
 		return errors.Wrap(err, "unable to validate read record")
 	}
@@ -26,7 +27,7 @@ func (k *Kafka) DisplayMessage(msg *records.ReadRecord) error {
 	if _, ok := msg.Metadata["lag"]; ok {
 		err = k.displayLag(msg)
 	} else {
-		err = k.displayRecord(msg)
+		err = k.displayRecord(cliOpts, msg)
 	}
 
 	return err
@@ -45,7 +46,7 @@ func (k *Kafka) DisplayError(msg *records.ErrorRecord) error {
 	return nil
 }
 
-func (k *Kafka) displayRecord(msg *records.ReadRecord) error {
+func (k *Kafka) displayRecord(cliOpts *opts.CLIOptions, msg *records.ReadRecord) error {
 	record := msg.GetKafka()
 	if record == nil {
 		return errors.New("BUG: record in message is nil")
@@ -80,7 +81,7 @@ func (k *Kafka) displayRecord(msg *records.ReadRecord) error {
 
 	receivedAt := time.Unix(msg.ReceivedAtUnixTsUtc, 0)
 
-	printer.PrintTable(properties, msg.Num, receivedAt, msg.Payload)
+	printer.PrintTable(cliOpts, msg.Num, receivedAt, msg.Payload, properties)
 
 	return nil
 }

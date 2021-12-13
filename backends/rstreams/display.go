@@ -3,6 +3,7 @@ package rstreams
 import (
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
@@ -10,7 +11,7 @@ import (
 )
 
 // DisplayMessage will parse a Read record and print (pretty) output to STDOUT
-func (r *RedisStreams) DisplayMessage(msg *records.ReadRecord) error {
+func (r *RedisStreams) DisplayMessage(cliOpts *opts.CLIOptions, msg *records.ReadRecord) error {
 	if err := validateReadRecord(msg); err != nil {
 		return errors.Wrap(err, "unable to validate read record")
 	}
@@ -24,7 +25,7 @@ func (r *RedisStreams) DisplayMessage(msg *records.ReadRecord) error {
 
 	receivedAt := time.Unix(msg.ReceivedAtUnixTsUtc, 0)
 
-	printer.PrintTable(properties, msg.Num, receivedAt, msg.Payload)
+	printer.PrintTable(cliOpts, msg.Num, receivedAt, msg.Payload, properties)
 
 	return nil
 }
