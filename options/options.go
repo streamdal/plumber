@@ -45,6 +45,11 @@ func New(args []string) (*kong.Context, *opts.CLIOptions, error) {
 		return nil, nil, errors.Wrap(err, "unable to create new kong instance")
 	}
 
+	// Default behavior when no commands or flags are specified
+	if len(args) == 0 {
+		args = []string{"-h"}
+	}
+
 	kongCtx, err := k.Parse(args)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "unable to parse CLI options")
