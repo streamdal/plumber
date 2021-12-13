@@ -9,7 +9,6 @@ require (
 	github.com/apache/pulsar-client-go v0.7.0
 	github.com/aws/aws-sdk-go v1.34.28
 	github.com/batchcorp/collector-schemas v0.0.5
-	github.com/batchcorp/inferschema v0.0.4
 	github.com/batchcorp/kong v0.2.17-batch-fix
 	github.com/batchcorp/lucene2x v0.0.17
 	github.com/batchcorp/pgoutput v0.3.2

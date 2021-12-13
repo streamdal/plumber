@@ -130,9 +130,6 @@ github.com/batchcorp/collector-schemas/build/go/protos/common
 github.com/batchcorp/collector-schemas/build/go/protos/events
 github.com/batchcorp/collector-schemas/build/go/protos/records
 github.com/batchcorp/collector-schemas/build/go/protos/services
-# github.com/batchcorp/inferschema v0.0.4
-## explicit
-github.com/batchcorp/inferschema/jsonschema
 # github.com/batchcorp/kong v0.2.17-batch-fix
 ## explicit
 github.com/batchcorp/kong

@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
 	"github.com/golang/protobuf/proto"
@@ -10,7 +9,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 	"github.com/tidwall/gjson"
 
-	"github.com/batchcorp/inferschema/jsonschema"
 	"github.com/batchcorp/lucene2x/jsonquery"
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
@@ -118,72 +116,72 @@ MAIN:
 }
 
 func (s *Server) InferJSONSchema(r *types.Read, readRecord *records.ReadRecord) error {
-	inferOpts := r.ReadOptions.InferSchemaOptions
-	if inferOpts == nil {
-		return nil
-	}
-
-	var isNewSchema bool
-	var schema *protos.Schema
-
-	if inferOpts.SchemaId != "" {
-		// TODO: figure this out. We need to only get this once and store on the read, otherwise we will
-		// TODO: be making an extra mutex hit for every single message on the read
-		schema = s.PersistentConfig.GetSchema(inferOpts.SchemaId)
-	}
-
-	// Either the schema was not found, or we're making a fresh new one
-	if schema == nil {
-		isNewSchema = true
-		schema = createJSONSchemaDef(r.ReadOptions.Name, "") // TODO: ownerID
-	}
-
-	var inferred *jsonschema.JSONSchema
-	var err error
-	inferred, err = jsonschema.InferFromJSON("plumber.local/"+r.ReadOptions.Name+".json", "Inferred schema for "+r.ReadOptions.Name, "", readRecord.Payload)
-	if err != nil {
-		return errors.Wrap(err, "unable to infer schema from payload")
-	}
-
-	latestVersion := getLatestSchemaVersion(schema)
-
-	if latestVersion != nil {
-		currentSchema, err := jsonschema.Unmarshal(latestVersion.GetJsonSchemaSettings().Schema)
-		if err != nil {
-			return errors.Wrap(err, "unable to unmarshal existing JSONSchema schema")
-		}
-
-		mergedSchema, err := jsonschema.Merge(*currentSchema, *inferred)
-		if err != nil {
-			return errors.Wrap(err, "could not update JSONSchema schema")
-		}
-
-		inferred = mergedSchema
-	}
-
-	schemaBytes, err := json.Marshal(inferred)
-	if err != nil {
-		return errors.Wrap(err, "unable to marshal inferred schema to JSON")
-	}
-
-	newVersion := &protos.SchemaVersion{
-		Files: map[string]string{
-			"schema.json": string(schemaBytes),
-		},
-		Status:  protos.SchemaStatus_SCHEMA_STATUS_PROPOSED,
-		Version: latestVersion.Version + 1,
-		Settings: &protos.SchemaVersion_JsonSchemaSettings{
-			JsonSchemaSettings: &encoding.JSONSchemaSettings{
-				Schema: schemaBytes,
-			},
-		},
-	}
-
-	schema.Versions = append(schema.Versions, newVersion)
-	s.PersistentConfig.SetSchema(schema.Id, schema)
-
-	// Running in goroutine since this can take a bit
-	go s.persistSchema(r.ContextCxl, isNewSchema, schema)
+	//inferOpts := r.ReadOptions.InferSchemaOptions
+	//if inferOpts == nil {
+	//	return nil
+	//}
+	//
+	//var isNewSchema bool
+	//var schema *protos.Schema
+	//
+	//if inferOpts.SchemaId != "" {
+	//	// TODO: figure this out. We need to only get this once and store on the read, otherwise we will
+	//	// TODO: be making an extra mutex hit for every single message on the read
+	//	schema = s.PersistentConfig.GetSchema(inferOpts.SchemaId)
+	//}
+	//
+	//// Either the schema was not found, or we're making a fresh new one
+	//if schema == nil {
+	//	isNewSchema = true
+	//	schema = createJSONSchemaDef(r.ReadOptions.Name, "") // TODO: ownerID
+	//}
+	//
+	//var inferred *jsonschema.JSONSchema
+	//var err error
+	//inferred, err = jsonschema.InferFromJSON("plumber.local/"+r.ReadOptions.Name+".json", "Inferred schema for "+r.ReadOptions.Name, "", readRecord.Payload)
+	//if err != nil {
+	//	return errors.Wrap(err, "unable to infer schema from payload")
+	//}
+	//
+	//latestVersion := getLatestSchemaVersion(schema)
+	//
+	//if latestVersion != nil {
+	//	currentSchema, err := jsonschema.Unmarshal(latestVersion.GetJsonSchemaSettings().Schema)
+	//	if err != nil {
+	//		return errors.Wrap(err, "unable to unmarshal existing JSONSchema schema")
+	//	}
+	//
+	//	mergedSchema, err := jsonschema.Merge(*currentSchema, *inferred)
+	//	if err != nil {
+	//		return errors.Wrap(err, "could not update JSONSchema schema")
+	//	}
+	//
+	//	inferred = mergedSchema
+	//}
+	//
+	//schemaBytes, err := json.Marshal(inferred)
+	//if err != nil {
+	//	return errors.Wrap(err, "unable to marshal inferred schema to JSON")
+	//}
+	//
+	//newVersion := &protos.SchemaVersion{
+	//	Files: map[string]string{
+	//		"schema.json": string(schemaBytes),
+	//	},
+	//	Status:  protos.SchemaStatus_SCHEMA_STATUS_PROPOSED,
+	//	Version: latestVersion.Version + 1,
+	//	Settings: &protos.SchemaVersion_JsonSchemaSettings{
+	//		JsonSchemaSettings: &encoding.JSONSchemaSettings{
+	//			Schema: schemaBytes,
+	//		},
+	//	},
+	//}
+	//
+	//schema.Versions = append(schema.Versions, newVersion)
+	//s.PersistentConfig.SetSchema(schema.Id, schema)
+	//
+	//// Running in goroutine since this can take a bit
+	//go s.persistSchema(r.ContextCxl, isNewSchema, schema)
 
 	return nil
 }

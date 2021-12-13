@@ -8,7 +8,6 @@ import (
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
-	"github.com/batchcorp/inferschema/jsonschema"
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 
@@ -76,15 +75,16 @@ func (s *Server) importGithubProtobuf(ctx context.Context, importReq *protos.Imp
 	}
 	settings.XMessageDescriptor = mdBlob
 
-	md, err := pb.GetMDFromDescriptorBlob(mdBlob, req.GetProtobufSettings().ProtobufRootMessage)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to get message descriptor")
-	}
+	//md, err := pb.GetMDFromDescriptorBlob(mdBlob, req.GetProtobufSettings().ProtobufRootMessage)
+	//if err != nil {
+	//	return nil, errors.Wrap(err, "unable to get message descriptor")
+	//}
 
-	inferred, err := jsonschema.InferFromProtobuf("http://plumber.local/schema.json", "Inferred schema", "Inferred from protobuf", md)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to convert Protobuf schema to JSONSchema")
-	}
+	//inferred, err := jsonschema.InferFromProtobuf("http://plumber.local/schema.json", "Inferred schema", "Inferred from protobuf", md)
+	//if err != nil {
+	//	return nil, errors.Wrap(err, "unable to convert Protobuf schema to JSONSchema")
+	//}
+	var inferred []byte
 
 	inferredJSON, err := json.Marshal(inferred)
 	if err != nil {
@@ -127,10 +127,11 @@ func (s *Server) importGithubAvro(ctx context.Context, importReq *protos.ImportG
 		return nil, err
 	}
 
-	inferred, err := jsonschema.InferFromAvro("http://plumber.local/schema.json", schemaData)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to convert Protobuf schema to JSONSchema")
-	}
+	//inferred, err := jsonschema.InferFromAvro("http://plumber.local/schema.json", schemaData)
+	//if err != nil {
+	//	return nil, errors.Wrap(err, "unable to convert Protobuf schema to JSONSchema")
+	//}
+	var inferred []byte
 
 	inferredJSON, err := json.Marshal(inferred)
 	if err != nil {
@@ -250,15 +251,16 @@ func importLocalProtobuf(req *protos.ImportLocalRequest) (*protos.Schema, error)
 
 	settings.XMessageDescriptor = mdBlob
 
-	md, err := pb.GetMDFromDescriptorBlob(mdBlob, req.GetProtobufSettings().ProtobufRootMessage)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to get message descriptor")
-	}
+	//md, err := pb.GetMDFromDescriptorBlob(mdBlob, req.GetProtobufSettings().ProtobufRootMessage)
+	//if err != nil {
+	//	return nil, errors.Wrap(err, "unable to get message descriptor")
+	//}
 
-	inferred, err := jsonschema.InferFromProtobuf("http://plumber.local", "Inferred schema", "", md)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to convert Protobuf schema to JSONSchema")
-	}
+	//inferred, err := jsonschema.InferFromProtobuf("http://plumber.local", "Inferred schema", "", md)
+	//if err != nil {
+	//	return nil, errors.Wrap(err, "unable to convert Protobuf schema to JSONSchema")
+	//}
+	var inferred []byte
 
 	inferredJSON, err := json.Marshal(inferred)
 	if err != nil {
@@ -295,10 +297,11 @@ func importLocalAvro(req *protos.ImportLocalRequest) (*protos.Schema, error) {
 		return nil, ErrEmptyFile
 	}
 
-	inferred, err := jsonschema.InferFromAvro("http://plumber.local", req.FileContents)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to convert Avro to JSONSchema")
-	}
+	//inferred, err := jsonschema.InferFromAvro("http://plumber.local", req.FileContents)
+	//if err != nil {
+	//	return nil, errors.Wrap(err, "unable to convert Avro to JSONSchema")
+	//}
+	var inferred []byte
 
 	inferredJSON, err := json.Marshal(inferred)
 	if err != nil {
