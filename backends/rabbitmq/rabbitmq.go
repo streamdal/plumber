@@ -53,10 +53,14 @@ func New(opts *opts.ConnectionOptions) (*RabbitMQ, error) {
 
 func (r *RabbitMQ) newRabbitForRead(readArgs *args.RabbitReadArgs) (rabbit.IRabbit, error) {
 	rmq, err := rabbit.New(&rabbit.Options{
-		URL:            r.connArgs.Address,
-		QueueName:      readArgs.QueueName,
-		ExchangeName:   readArgs.ExchangeName,
-		RoutingKey:     readArgs.BindingKey,
+		URLs:      []string{r.connArgs.Address},
+		QueueName: readArgs.QueueName,
+		Bindings: []rabbit.Binding{
+			{
+				BindingKeys:  []string{readArgs.BindingKey},
+				ExchangeName: readArgs.ExchangeName,
+			},
+		},
 		QueueExclusive: readArgs.QueueExclusive,
 		QueueDurable:   readArgs.QueueDurable,
 		QueueDeclare:   readArgs.QueueDeclare,
@@ -65,6 +69,7 @@ func (r *RabbitMQ) newRabbitForRead(readArgs *args.RabbitReadArgs) (rabbit.IRabb
 		UseTLS:         r.connArgs.UseTls,
 		SkipVerifyTLS:  r.connArgs.TlsSkipVerify,
 		Mode:           rabbit.Consumer,
+		QueueArgs:      mapToTable(readArgs.QueueArg),
 	})
 
 	if err != nil {
@@ -76,17 +81,21 @@ func (r *RabbitMQ) newRabbitForRead(readArgs *args.RabbitReadArgs) (rabbit.IRabb
 
 func (r *RabbitMQ) newRabbitForWrite(writeArgs *args.RabbitWriteArgs) (rabbit.IRabbit, error) {
 	rmq, err := rabbit.New(&rabbit.Options{
-		URL:                r.connArgs.Address,
-		ExchangeName:       writeArgs.ExchangeName,
-		RoutingKey:         writeArgs.RoutingKey,
-		ExchangeDeclare:    writeArgs.ExchangeDeclare,
-		ExchangeDurable:    writeArgs.ExchangeDurable,
-		ExchangeAutoDelete: writeArgs.ExchangeAutoDelete,
-		ExchangeType:       writeArgs.ExchangeType,
-		AppID:              writeArgs.AppId,
-		UseTLS:             r.connArgs.UseTls,
-		SkipVerifyTLS:      r.connArgs.TlsSkipVerify,
-		Mode:               rabbit.Producer,
+		URLs: []string{r.connArgs.Address},
+		Bindings: []rabbit.Binding{
+			{
+				ExchangeName:       writeArgs.ExchangeName,
+				ExchangeDeclare:    writeArgs.ExchangeDeclare,
+				ExchangeDurable:    writeArgs.ExchangeDurable,
+				ExchangeAutoDelete: writeArgs.ExchangeAutoDelete,
+				ExchangeType:       writeArgs.ExchangeType,
+				BindingKeys:        []string{writeArgs.RoutingKey},
+			},
+		},
+		AppID:         writeArgs.AppId,
+		UseTLS:        r.connArgs.UseTls,
+		SkipVerifyTLS: r.connArgs.TlsSkipVerify,
+		Mode:          rabbit.Producer,
 	})
 
 	if err != nil {
@@ -132,4 +141,20 @@ func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 	}
 
 	return nil
+}
+
+// mapToTable converts kong map[string]string to map[string]interface{}, which is the expected
+// type of args for rabbit lib
+func mapToTable(m map[string]string) map[string]interface{} {
+	out := make(map[string]interface{})
+
+	if m == nil {
+		return out
+	}
+
+	for k, v := range m {
+		out[k] = v
+	}
+
+	return out
 }

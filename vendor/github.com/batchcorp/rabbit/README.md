@@ -7,7 +7,7 @@ with some bells and whistles.
 
 * Support for auto-reconnect
 * Support for context (ie. cancel/timeout)
-* ???
+* Support for using multiple binding keys
 
 # Motivation
 
@@ -37,7 +37,7 @@ func main() {
         URL:          "amqp://localhost",
         QueueName:    "my-queue",
         ExchangeName: "messages",
-        RoutingKey:   "messages",
+        BindingKeys:   []string{"messages"},
     })
     if err != nil {
         log.Fatalf("unable to instantiate rabbit: %s", err)
@@ -47,7 +47,7 @@ func main() {
     data := []byte("pumpkins")
 
     // Publish something
-    if err := r.Publish(ctx, routingKey, data); err != nil {
+    if err := r.Publish(context.Background(), routingKey, data); err != nil {
         log.Fatalf("unable to publish message: ")
     }
 
