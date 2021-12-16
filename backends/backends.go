@@ -17,6 +17,7 @@ import (
 	kubemqQueue "github.com/batchcorp/plumber/backends/kubemq-queue"
 	"github.com/batchcorp/plumber/backends/mqtt"
 	"github.com/batchcorp/plumber/backends/nats"
+	natsJetstream "github.com/batchcorp/plumber/backends/nats-jetstream"
 	natsStreaming "github.com/batchcorp/plumber/backends/nats-streaming"
 	"github.com/batchcorp/plumber/backends/nsq"
 	"github.com/batchcorp/plumber/backends/pulsar"
@@ -126,6 +127,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 		be, err = kubemqQueue.New(connOpts)
 	case *opts.ConnectionOptions_Postgres:
 		be, err = cdcpostgres.New(connOpts)
+	case *opts.ConnectionOptions_NatsJetstream:
+		be, err = natsJetstream.New(connOpts)
 	default:
 		return nil, errors.New("unknown backend")
 
