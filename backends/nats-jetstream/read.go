@@ -68,16 +68,16 @@ func (n *NatsJetstream) Read(ctx context.Context, readOpts *opts.ReadOptions, re
 	return nil
 }
 
-func validateReadOptions(writeOpts *opts.ReadOptions) error {
-	if writeOpts == nil {
+func validateReadOptions(readOpts *opts.ReadOptions) error {
+	if readOpts == nil {
 		return validate.ErrMissingReadOptions
 	}
 
-	if writeOpts.NatsJetstream == nil {
+	if readOpts.NatsJetstream == nil {
 		return validate.ErrEmptyBackendGroup
 	}
 
-	args := writeOpts.NatsJetstream.Args
+	args := readOpts.NatsJetstream.Args
 	if args == nil {
 		return validate.ErrEmptyBackendArgs
 	}
