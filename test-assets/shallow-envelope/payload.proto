@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package shallow;
+
+// Message is what goes into Envelope's Data field
+message Payload {
+  string name = 1;
+}

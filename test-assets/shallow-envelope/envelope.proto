@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package shallow;
+
+// Represents a shallow envelope
+message Envelope {
+  string id = 1;
+  bytes data = 2;
+}
