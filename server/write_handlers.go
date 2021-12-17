@@ -46,19 +46,21 @@ func (s *Server) Write(ctx context.Context, req *protos.WriteRequest) (*protos.W
 		return nil, CustomError(common.Code_FAILED_PRECONDITION, err.Error())
 	}
 
-	var md *desc.MessageDescriptor
+	mds := make(map[string]*desc.MessageDescriptor)
 
 	if req.Opts.EncodeOptions != nil && req.Opts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_JSONPB {
 		pbOpts := req.Opts.EncodeOptions.ProtobufSettings
-		var mdErr error
-		md, mdErr = pb.GetMDFromDescriptorBlob(pbOpts.XMessageDescriptor, pbOpts.ProtobufRootMessage)
+
+		md, mdErr := pb.GetMDFromDescriptorBlob(pbOpts.XMessageDescriptor, pbOpts.ProtobufRootMessage)
 		if mdErr != nil {
 			return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to fetch message descriptor: %s", mdErr))
 		}
+
+		mds["envelope"] = md
 	}
 
 	// Okay if md is nil
-	records, err := writer.GenerateWriteValue(req.Opts, md)
+	records, err := writer.GenerateWriteValue(req.Opts, mds)
 	if err != nil {
 		return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to generate write records: %s", err))
 	}

@@ -45,7 +45,7 @@ type Plumber struct {
 	Etcd    *etcd.Etcd
 	RelayCh chan interface{}
 
-	cliMD       *desc.MessageDescriptor
+	cliMD       map[string]*desc.MessageDescriptor
 	cliConnOpts *opts.ConnectionOptions
 
 	// Only filled out when running in server mode
@@ -69,7 +69,7 @@ func New(cfg *Config) (*Plumber, error) {
 	// If backend is filled out, we are in CLI-mode, performing an action that
 	// will need a connection and possibly a pb message descriptor.
 	if cfg.CLIOptions.Global.XBackend != "" {
-		md, err := GenerateMessageDescriptor(cfg.CLIOptions)
+		mds, err := GenerateMessageDescriptors(cfg.CLIOptions)
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to populate protobuf message descriptors")
 		}
@@ -79,7 +79,7 @@ func New(cfg *Config) (*Plumber, error) {
 			return nil, errors.Wrap(err, "unable to generate connection config")
 		}
 
-		p.cliMD = md
+		p.cliMD = mds
 		p.cliConnOpts = connCfg
 	}
 
@@ -154,13 +154,16 @@ func (p *Plumber) Run() {
 	}
 }
 
-func GenerateMessageDescriptor(cliOpts *opts.CLIOptions) (*desc.MessageDescriptor, error) {
+func GenerateMessageDescriptors(cliOpts *opts.CLIOptions) (map[string]*desc.MessageDescriptor, error) {
+	descriptors := make(map[string]*desc.MessageDescriptor)
+
 	if cliOpts.Read != nil && cliOpts.Read.DecodeOptions != nil {
 		if cliOpts.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_PROTOBUF {
 			logrus.Debug("attempting to find decoding protobuf descriptors")
 
-			pbDirs := cliOpts.Read.DecodeOptions.ProtobufSettings.ProtobufDirs
-			pbRootMessage := cliOpts.Read.DecodeOptions.ProtobufSettings.ProtobufRootMessage
+			pbSettings := cliOpts.Read.DecodeOptions.ProtobufSettings
+			pbDirs := pbSettings.ProtobufDirs
+			pbRootMessage := pbSettings.ProtobufRootMessage
 
 			if err := validate.ProtobufOptionsForCLI(pbDirs, pbRootMessage); err != nil {
 				return nil, errors.Wrap(err, "unable to validate protobuf settings for decode")
@@ -170,8 +173,17 @@ func GenerateMessageDescriptor(cliOpts *opts.CLIOptions) (*desc.MessageDescripto
 			if err != nil {
 				return nil, errors.Wrap(err, "unable to find root message descriptor for decode")
 			}
+			descriptors["envelope"] = md
 
-			return md, nil
+			if pbSettings.ProtobufEnvelopeType == encoding.EnvelopeType_ENVELOPE_TYPE_SHALLOW {
+				md, err := pb.FindMessageDescriptor(pbDirs, pbSettings.ShallowEnvelopeMessage)
+				if err != nil {
+					return nil, errors.Wrap(err, "unable to find shallow envelope payload message descriptor for decode")
+				}
+				descriptors["payload"] = md
+			}
+
+			return descriptors, nil
 		}
 
 	}
@@ -180,8 +192,9 @@ func GenerateMessageDescriptor(cliOpts *opts.CLIOptions) (*desc.MessageDescripto
 		if cliOpts.Write != nil && cliOpts.Write.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_JSONPB {
 			logrus.Debug("attempting to find encoding protobuf descriptors")
 
-			pbDirs := cliOpts.Write.EncodeOptions.ProtobufSettings.ProtobufDirs
-			pbRootMessage := cliOpts.Write.EncodeOptions.ProtobufSettings.ProtobufRootMessage
+			pbSettings := cliOpts.Write.EncodeOptions.ProtobufSettings
+			pbDirs := pbSettings.ProtobufDirs
+			pbRootMessage := pbSettings.ProtobufRootMessage
 
 			if err := validate.ProtobufOptionsForCLI(pbDirs, pbRootMessage); err != nil {
 				return nil, errors.Wrap(err, "unable to validate protobuf settings for encode")
@@ -191,8 +204,17 @@ func GenerateMessageDescriptor(cliOpts *opts.CLIOptions) (*desc.MessageDescripto
 			if err != nil {
 				return nil, errors.Wrap(err, "unable to find root message descriptor for encode")
 			}
+			descriptors["envelope"] = md
 
-			return md, nil
+			if pbSettings.ProtobufEnvelopeType == encoding.EnvelopeType_ENVELOPE_TYPE_SHALLOW {
+				md, err := pb.FindMessageDescriptor(pbDirs, pbSettings.ShallowEnvelopeMessage)
+				if err != nil {
+					return nil, errors.Wrap(err, "unable to find shallow envelope payload message descriptor for decode")
+				}
+				descriptors["payload"] = md
+			}
+
+			return descriptors, nil
 		}
 	}
 
