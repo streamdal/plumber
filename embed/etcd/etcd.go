@@ -6,11 +6,9 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
@@ -23,7 +21,6 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/config"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/server/types"
 )
 
@@ -671,51 +668,31 @@ func (e *Etcd) populateReadCache() error {
 	var count int
 
 	for _, v := range resp.Kvs {
-		read := &opts.ReadOptions{}
-		if err := proto.Unmarshal(v.Value, read); err != nil {
+		readOpts := &opts.ReadOptions{}
+		if err := proto.Unmarshal(v.Value, readOpts); err != nil {
 			e.log.Errorf("unable to unmarshal opts.ReadOptions message: %s", err)
 			continue
 		}
 
-		var md *desc.MessageDescriptor
-
-		if err := e.populateDecodeSchemaDetails(read); err != nil {
-			e.log.Errorf("unable to create read '%s' from cache: %s", read.XId, err)
+		if err := e.populateDecodeSchemaDetails(readOpts); err != nil {
+			e.log.Errorf("unable to create readOpts '%s' from cache: %s", readOpts.XId, err)
 			continue
 		}
 
-		// TODO: can we move this elsewhere?
-		if read.DecodeOptions != nil && read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_PROTOBUF {
-			var mdErr error
-
-			pbSettings := read.DecodeOptions.ProtobufSettings
-
-			md, mdErr = pb.GetMDFromDescriptorBlob(pbSettings.XMessageDescriptor, pbSettings.ProtobufRootMessage)
-			if mdErr != nil {
-				e.log.Errorf("unable to create read '%s' from cache: unable to generate protobuf message descriptor: %s", read.XId, mdErr)
-				continue
-			}
-		}
-
-		read.XActive = false
-
-		ctx, cxl := context.WithCancel(context.Background())
+		readOpts.XActive = false
 
 		count++
 
-		cfg := &types.Read{
-			AttachedClientsMutex: &sync.RWMutex{},
-			AttachedClients:      make(map[string]*types.AttachedStream),
-			PlumberID:            e.PlumberConfig.PlumberID,
-			ReadOptions:          read,
-			ContextCxl:           ctx,
-			CancelFunc:           cxl,
-			Backend:              nil, // Will be filled in by StartRead()
-			MsgDesc:              md,
-			Log:                  logrus.WithField("read_id", read.XId),
+		read, err := types.NewRead(&types.ReadConfig{
+			ReadOptions: readOpts,
+			PlumberID:   e.PlumberConfig.PlumberID,
+			Backend:     nil, // intentionally nil
+		})
+		if err != nil {
+			return err
 		}
 
-		e.PlumberConfig.SetRead(read.XId, cfg)
+		e.PlumberConfig.SetRead(readOpts.XId, read)
 	}
 
 	e.log.Debugf("Loaded '%d' reads from etcd", count)

@@ -4,8 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/jhump/protoreflect/desc"
-
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -15,7 +13,6 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/reader"
 	"github.com/batchcorp/plumber/server/types"
 )
@@ -65,11 +62,7 @@ MAIN:
 			//   a pipeline will cause things to slow down starting at 100 msgs/s
 
 			// Decode the msg
-			// TODO: support shallow envelope
-			mds := map[pb.MDType]*desc.MessageDescriptor{
-				pb.MDEnvelope: r.MsgDesc,
-			}
-			decodedPayload, err := reader.Decode(r.ReadOptions, mds, readRecord.Payload)
+			decodedPayload, err := reader.Decode(r.ReadOptions, r.MessageDescriptors, readRecord.Payload)
 			if err != nil {
 				// TODO: need to send the err back to the client somehow
 				r.Log.Errorf("unable to decode msg for backend '%s': %s", r.Backend.Name(), err)
