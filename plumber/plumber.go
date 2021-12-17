@@ -45,7 +45,7 @@ type Plumber struct {
 	Etcd    *etcd.Etcd
 	RelayCh chan interface{}
 
-	cliMD       map[string]*desc.MessageDescriptor
+	cliMD       map[pb.MDType]*desc.MessageDescriptor
 	cliConnOpts *opts.ConnectionOptions
 
 	// Only filled out when running in server mode
@@ -154,8 +154,8 @@ func (p *Plumber) Run() {
 	}
 }
 
-func GenerateMessageDescriptors(cliOpts *opts.CLIOptions) (map[string]*desc.MessageDescriptor, error) {
-	descriptors := make(map[string]*desc.MessageDescriptor)
+func GenerateMessageDescriptors(cliOpts *opts.CLIOptions) (map[pb.MDType]*desc.MessageDescriptor, error) {
+	descriptors := make(map[pb.MDType]*desc.MessageDescriptor)
 
 	if cliOpts.Read != nil && cliOpts.Read.DecodeOptions != nil {
 		if cliOpts.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_PROTOBUF {
@@ -173,14 +173,14 @@ func GenerateMessageDescriptors(cliOpts *opts.CLIOptions) (map[string]*desc.Mess
 			if err != nil {
 				return nil, errors.Wrap(err, "unable to find root message descriptor for decode")
 			}
-			descriptors["envelope"] = md
+			descriptors[pb.MDEnvelope] = md
 
 			if pbSettings.ProtobufEnvelopeType == encoding.EnvelopeType_ENVELOPE_TYPE_SHALLOW {
 				md, err := pb.FindMessageDescriptor(pbDirs, pbSettings.ShallowEnvelopeMessage)
 				if err != nil {
 					return nil, errors.Wrap(err, "unable to find shallow envelope payload message descriptor for decode")
 				}
-				descriptors["payload"] = md
+				descriptors[pb.MDPayload] = md
 			}
 
 			return descriptors, nil
@@ -204,14 +204,14 @@ func GenerateMessageDescriptors(cliOpts *opts.CLIOptions) (map[string]*desc.Mess
 			if err != nil {
 				return nil, errors.Wrap(err, "unable to find root message descriptor for encode")
 			}
-			descriptors["envelope"] = md
+			descriptors[pb.MDEnvelope] = md
 
 			if pbSettings.ProtobufEnvelopeType == encoding.EnvelopeType_ENVELOPE_TYPE_SHALLOW {
 				md, err := pb.FindMessageDescriptor(pbDirs, pbSettings.ShallowEnvelopeMessage)
 				if err != nil {
 					return nil, errors.Wrap(err, "unable to find shallow envelope payload message descriptor for decode")
 				}
-				descriptors["payload"] = md
+				descriptors[pb.MDPayload] = md
 			}
 
 			return descriptors, nil

@@ -17,12 +17,13 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
+	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/serializers"
 )
 
 // GenerateWriteValue generates a slice of WriteRecords that can be passed to
 // backends to perform a write.
-func GenerateWriteValue(writeOpts *opts.WriteOptions, mds map[string]*desc.MessageDescriptor) ([]*records.WriteRecord, error) {
+func GenerateWriteValue(writeOpts *opts.WriteOptions, mds map[pb.MDType]*desc.MessageDescriptor) ([]*records.WriteRecord, error) {
 	writeValues := make([]*records.WriteRecord, 0)
 
 	if writeOpts == nil {
@@ -97,7 +98,7 @@ func GenerateWriteValue(writeOpts *opts.WriteOptions, mds map[string]*desc.Messa
 }
 
 // generateWriteValue will transform input data into the required format for transmission
-func generateWriteValue(data []byte, writeOpts *opts.WriteOptions, mds map[string]*desc.MessageDescriptor) ([]byte, error) {
+func generateWriteValue(data []byte, writeOpts *opts.WriteOptions, mds map[pb.MDType]*desc.MessageDescriptor) ([]byte, error) {
 	// Input: Plain / unset
 	if writeOpts.EncodeOptions == nil ||
 		writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_UNSET {
@@ -140,15 +141,15 @@ func generateWriteValue(data []byte, writeOpts *opts.WriteOptions, mds map[strin
 		if len(mds) == 0 {
 			return nil, errors.New("message descriptors cannot be empty")
 		}
-		if _, ok := mds["envelope"]; !ok {
+		if _, ok := mds[pb.MDEnvelope]; !ok {
 			return nil, errors.New("envelope message descriptor cannot be nil")
 		}
 
-		envelope := dynamic.NewMessage(mds["envelope"])
+		envelope := dynamic.NewMessage(mds[pb.MDEnvelope])
 
 		var payload *dynamic.Message
 		if writeOpts.EncodeOptions.GetProtobufSettings().ProtobufEnvelopeType == encoding.EnvelopeType_ENVELOPE_TYPE_SHALLOW {
-			payload = dynamic.NewMessage(mds["payload"])
+			payload = dynamic.NewMessage(mds[pb.MDPayload])
 		}
 
 		// Shallow envelope field ID, will default to 0 and be ignored if not shallow envelope

@@ -15,6 +15,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
+	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/reader"
 	"github.com/batchcorp/plumber/server/types"
 )
@@ -65,8 +66,8 @@ MAIN:
 
 			// Decode the msg
 			// TODO: support shallow envelope
-			mds := map[string]*desc.MessageDescriptor{
-				"envelope": r.MsgDesc,
+			mds := map[pb.MDType]*desc.MessageDescriptor{
+				pb.MDEnvelope: r.MsgDesc,
 			}
 			decodedPayload, err := reader.Decode(r.ReadOptions, mds, readRecord.Payload)
 			if err != nil {

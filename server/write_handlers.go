@@ -46,7 +46,7 @@ func (s *Server) Write(ctx context.Context, req *protos.WriteRequest) (*protos.W
 		return nil, CustomError(common.Code_FAILED_PRECONDITION, err.Error())
 	}
 
-	mds := make(map[string]*desc.MessageDescriptor)
+	mds := make(map[pb.MDType]*desc.MessageDescriptor)
 
 	if req.Opts.EncodeOptions != nil && req.Opts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_JSONPB {
 		pbOpts := req.Opts.EncodeOptions.ProtobufSettings
@@ -56,7 +56,7 @@ func (s *Server) Write(ctx context.Context, req *protos.WriteRequest) (*protos.W
 			return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to fetch message descriptor: %s", mdErr))
 		}
 
-		mds["envelope"] = md
+		mds[pb.MDEnvelope] = md
 	}
 
 	// Okay if md is nil

@@ -20,7 +20,7 @@ import (
 )
 
 // Decode will attempt to decode the payload IF decode options are present
-func Decode(readOpts *opts.ReadOptions, mds map[string]*desc.MessageDescriptor, message []byte) ([]byte, error) {
+func Decode(readOpts *opts.ReadOptions, mds map[pb.MDType]*desc.MessageDescriptor, message []byte) ([]byte, error) {
 	if readOpts == nil {
 		return nil, errors.New("read options cannot be nil")
 	}
@@ -38,7 +38,7 @@ func Decode(readOpts *opts.ReadOptions, mds map[string]*desc.MessageDescriptor, 
 			return nil, errors.New("protobuf settings cannot be nil")
 		}
 
-		if _, ok := mds["envelope"]; !ok {
+		if _, ok := mds[pb.MDEnvelope]; !ok {
 			return nil, errors.New("envelope message descriptor cannot be nil if decode type is protobuf")
 		}
 
@@ -53,13 +53,13 @@ func Decode(readOpts *opts.ReadOptions, mds map[string]*desc.MessageDescriptor, 
 		}
 		var payload *dynamic.Message
 		if protoOpts.ProtobufEnvelopeType == encoding.EnvelopeType_ENVELOPE_TYPE_SHALLOW {
-			payload = dynamic.NewMessage(mds["payload"])
+			payload = dynamic.NewMessage(mds[pb.MDPayload])
 			if payload == nil {
 				return nil, errors.New("BUG: cannot create dynamic message for shallow envelope payload")
 			}
 		}
 
-		envelope := dynamic.NewMessage(mds["envelope"])
+		envelope := dynamic.NewMessage(mds[pb.MDEnvelope])
 		if envelope == nil {
 			return nil, errors.New("BUG: cannot create dynamic message for envelope")
 		}
