@@ -44,7 +44,7 @@ func validateReadRecord(msg *records.ReadRecord) error {
 		return errors.New("msg cannot be nil")
 	}
 
-	if msg.GetNatsJetstream().Value == nil {
+	if msg.GetNatsJetstream() == nil {
 		return errors.New("message value cannot be nil")
 	}
 
