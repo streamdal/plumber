@@ -139,7 +139,7 @@ $ plumber read kafka --help
 ## Features
 
 * Encode & decode for multiple formats
-  * Protobuf (Deep and Shallow envelope)
+  * Protobuf (Deep and [Shallow envelope](https://www.confluent.io/blog/spring-kafka-protobuf-part-1-event-data-modeling/#shallow-envelope))
   * Avro
   * Thrift
   * Flatbuffer
