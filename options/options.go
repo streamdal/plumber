@@ -233,6 +233,17 @@ func newReadOptions() *opts.ReadOptions {
 			},
 			Args: &args.NatsStreamingReadArgs{},
 		},
+		NatsJetstream: &opts.ReadGroupNatsJetstreamOptions{
+			XConn: &args.NatsJetstreamConn{
+				UserCredentials: make([]byte, 0),
+				TlsOptions: &args.NatsJetstreamTLSOptions{
+					TlsCaCert:     make([]byte, 0),
+					TlsClientCert: make([]byte, 0),
+					TlsClientKey:  make([]byte, 0),
+				},
+			},
+			Args: &args.NatsJetstreamReadArgs{},
+		},
 		Nsq: &opts.ReadGroupNSQOptions{
 			XConn: &args.NSQConn{
 				TlsCaCert:     make([]byte, 0),
@@ -340,6 +351,17 @@ func newWriteOptions() *opts.WriteOptions {
 				},
 			},
 			Args: &args.NatsStreamingWriteArgs{},
+		},
+		NatsJetstream: &opts.WriteGroupNatsJetstreamOptions{
+			XConn: &args.NatsJetstreamConn{
+				UserCredentials: make([]byte, 0),
+				TlsOptions: &args.NatsJetstreamTLSOptions{
+					TlsCaCert:     make([]byte, 0),
+					TlsClientCert: make([]byte, 0),
+					TlsClientKey:  make([]byte, 0),
+				},
+			},
+			Args: &args.NatsJetstreamWriteArgs{},
 		},
 		Nsq: &opts.WriteGroupNSQOptions{
 			XConn: &args.NSQConn{

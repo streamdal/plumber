@@ -18,8 +18,6 @@ func (n *Nats) Write(_ context.Context, writeOpts *opts.WriteOptions, errorCh ch
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	defer n.Client.Close()
-
 	subject := writeOpts.Nats.Args.Subject
 
 	for _, msg := range messages {
