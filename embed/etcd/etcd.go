@@ -689,7 +689,7 @@ func (e *Etcd) populateReadCache() error {
 			Backend:     nil, // intentionally nil
 		})
 		if err != nil {
-			return err
+			return errors.Wrap(err, "cannot create new read")
 		}
 
 		e.PlumberConfig.SetRead(readOpts.XId, read)
