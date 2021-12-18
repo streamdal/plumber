@@ -6,8 +6,8 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
 	"github.com/batchcorp/plumber/printer"
 )
 
@@ -42,6 +42,10 @@ func (n *NatsJetstream) DisplayError(msg *records.ErrorRecord) error {
 func validateReadRecord(msg *records.ReadRecord) error {
 	if msg == nil {
 		return errors.New("msg cannot be nil")
+	}
+
+	if msg.GetNatsJetstream().Value == nil {
+		return errors.New("message value cannot be nil")
 	}
 
 	return nil
