@@ -3,12 +3,13 @@ package plumber
 import (
 	"context"
 
+	"github.com/pkg/errors"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 	"github.com/batchcorp/plumber/validate"
-	"github.com/pkg/errors"
 )
 
 // HandleReadCmd handles CLI read mode
@@ -42,7 +43,7 @@ MAIN:
 
 			decoded, decodeErr := reader.Decode(p.CLIOptions.Read, p.cliMD, msg.Payload)
 			if decodeErr != nil {
-				printer.Errorf("unable to decode message payload for backend '%s': %s", backend.Name(), err)
+				printer.Errorf("unable to decode message payload for backend '%s': %s", backend.Name(), decodeErr)
 
 				if !p.CLIOptions.Read.Continuous {
 					break MAIN

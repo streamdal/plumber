@@ -62,7 +62,7 @@ MAIN:
 			//   a pipeline will cause things to slow down starting at 100 msgs/s
 
 			// Decode the msg
-			decodedPayload, err := reader.Decode(r.ReadOptions, r.MsgDesc, readRecord.Payload)
+			decodedPayload, err := reader.Decode(r.ReadOptions, r.MessageDescriptors, readRecord.Payload)
 			if err != nil {
 				// TODO: need to send the err back to the client somehow
 				r.Log.Errorf("unable to decode msg for backend '%s': %s", r.Backend.Name(), err)

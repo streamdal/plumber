@@ -1,6 +1,7 @@
 package pb
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -49,17 +50,87 @@ func FindMessageDescriptor(protobufDirs []string, protobufRootMessage string) (*
 
 // DecodeProtobufToJSON is a wrapper for decoding/unmarshalling []byte of
 // protobuf into a dynamic.Message and then marshalling that into JSON.
-func DecodeProtobufToJSON(m *dynamic.Message, data []byte) ([]byte, error) {
-	if err := proto.Unmarshal(data, m); err != nil {
+func DecodeProtobufToJSON(envelope, payload *dynamic.Message, data []byte, payloadFieldID int32) ([]byte, error) {
+	if err := proto.Unmarshal(data, envelope); err != nil {
 		return nil, fmt.Errorf("unable to unmarshal protobuf to dynamic message: %s", err)
 	}
 
-	jsonData, err := m.MarshalJSONIndent()
-	if err != nil {
-		return nil, fmt.Errorf("unable to marshal decoded message to JSON: %s", err)
+	// Deep envelope
+	if payload == nil {
+		jsonData, err := envelope.MarshalJSONIndent()
+		if err != nil {
+			return nil, fmt.Errorf("unable to marshal decoded message to JSON: %s", err)
+		}
+
+		return jsonData, nil
 	}
 
-	return jsonData, nil
+	// Shallow envelope, we need to decode the fieldID with the payload message
+	if err := proto.Unmarshal(data, envelope); err != nil {
+		return nil, fmt.Errorf("unable to unmarshal protobuf to dynamic message: %s", err)
+	}
+
+	untypedPayload := envelope.GetFieldByNumber(int(payloadFieldID))
+
+	payloadData, ok := untypedPayload.([]byte)
+	if !ok {
+		return nil, errors.New("BUG: unable to type assert payload field to []byte")
+	}
+
+	// Get field contents
+	if err := proto.Unmarshal(payloadData, payload); err != nil {
+		return nil, errors.Wrap(err, "unable to unmarshal shallow envelope payload into dynamic message")
+	}
+
+	payloadFD := envelope.FindFieldDescriptor(payloadFieldID)
+	if payloadFD == nil {
+		return nil, fmt.Errorf("unable to find field descriptor for fieldID '%d'", payloadFieldID)
+	}
+	mapName := payloadFD.GetJSONName()
+
+	out, err := mergePayloadIntoEnvelope(envelope, payload, mapName)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+func mergePayloadIntoEnvelope(envelope, payload *dynamic.Message, mapName string) ([]byte, error) {
+	envelopeJSONData, err := envelope.MarshalJSON()
+	if err != nil {
+		err = errors.Wrap(err, "unable to marshal dynamic message into JSON")
+		return nil, err
+	}
+
+	wholeEvent := make(map[string]interface{})
+	if err := json.Unmarshal(envelopeJSONData, &wholeEvent); err != nil {
+		err = errors.Wrap(err, "unable to unmarshal envelope into map")
+		return nil, err
+	}
+
+	payloadJSONData, err := payload.MarshalJSON()
+	if err != nil {
+		err = errors.Wrap(err, "unable to marshal payload message into JSON")
+		return nil, err
+	}
+
+	payloadEvent := make(map[string]interface{})
+	if err := json.Unmarshal(payloadJSONData, &payloadEvent); err != nil {
+		err = errors.Wrap(err, "unable to unmarshal envelope into map")
+		return nil, err
+	}
+
+	wholeEvent[mapName] = payloadEvent
+
+	// Marshal back into []byte
+	out, err := json.Marshal(wholeEvent)
+	if err != nil {
+		err = errors.Wrap(err, "unable to marshal resulting event into JSON")
+		return nil, err
+	}
+
+	return out, nil
 }
 
 func FindMessageDescriptorInFDS(fds []*desc.FileDescriptor, rootMessage string) (*desc.MessageDescriptor, error) {

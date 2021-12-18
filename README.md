@@ -139,7 +139,7 @@ $ plumber read kafka --help
 ## Features
 
 * Encode & decode for multiple formats
-  * Protobuf
+  * Protobuf (Deep and [Shallow envelope](https://www.confluent.io/blog/spring-kafka-protobuf-part-1-event-data-modeling/#shallow-envelope))
   * Avro
   * Thrift
   * Flatbuffer
@@ -147,7 +147,7 @@ $ plumber read kafka --help
   * JSON
   * JSONPB (protobuf serialized as JSON)
   * Base64
-* `--follow` support (ie. `tail -f`)
+* `--continuous` support (ie. `tail -f`)
 * Support for **most** messaging systems
 * Supports writing via string, file or pipe
 * Observe, relay and archive messaging data

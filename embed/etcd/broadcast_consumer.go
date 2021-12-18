@@ -4,20 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sync"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	clientv3 "go.etcd.io/etcd/client/v3"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/server/types"
 )
 
@@ -315,49 +310,30 @@ func (e *Etcd) doDeleteValidation(_ context.Context, msg *Message) error {
 }
 
 func (e *Etcd) doCreateRead(_ context.Context, msg *Message) error {
-	read := &opts.ReadOptions{}
-	if err := proto.Unmarshal(msg.Data, read); err != nil {
+	readOpts := &opts.ReadOptions{}
+	if err := proto.Unmarshal(msg.Data, readOpts); err != nil {
 		return errors.Wrap(err, "unable to unmarshal message into opts.ReadOptions")
 	}
 
-	var md *desc.MessageDescriptor
-
-	if err := e.populateDecodeSchemaDetails(read); err != nil {
-		return fmt.Errorf("unable to create read '%s' from cache: %s", read.XId, err)
+	if err := e.populateDecodeSchemaDetails(readOpts); err != nil {
+		return fmt.Errorf("unable to create readOpts '%s' from cache: %s", readOpts.XId, err)
 	}
 
-	// TODO: can we move this elsewhere?
-	if read.DecodeOptions != nil && read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_PROTOBUF {
-		var mdErr error
+	readOpts.XActive = false
 
-		pbSettings := read.DecodeOptions.ProtobufSettings
-
-		md, mdErr = pb.GetMDFromDescriptorBlob(pbSettings.XMessageDescriptor, pbSettings.ProtobufRootMessage)
-		if mdErr != nil {
-			return fmt.Errorf("unable to create read '%s' from cache: unable to generate protobuf message descriptor: %s", read.XId, mdErr)
-		}
-	}
-
-	read.XActive = false
-
-	ctx, cxl := context.WithCancel(context.Background())
-
-	cfg := &types.Read{
-		AttachedClientsMutex: &sync.RWMutex{},
-		AttachedClients:      make(map[string]*types.AttachedStream),
-		PlumberID:            e.PlumberConfig.PlumberID,
-		ReadOptions:          read,
-		ContextCxl:           ctx,
-		CancelFunc:           cxl,
-		Backend:              nil, // Will be filled in by StartRead()
-		MsgDesc:              md,
-		Log:                  logrus.WithField("read_id", read.XId),
+	read, err := types.NewRead(&types.ReadConfig{
+		ReadOptions: readOpts,
+		PlumberID:   e.PlumberConfig.PlumberID,
+		Backend:     nil, // intentionally nil
+	})
+	if err != nil {
+		return err
 	}
 
 	// Set in config map
-	e.PlumberConfig.SetRead(read.XId, cfg)
+	e.PlumberConfig.SetRead(readOpts.XId, read)
 
-	e.log.Debugf("created read '%s'", read.XId)
+	e.log.Debugf("created readOpts '%s'", readOpts.XId)
 
 	return nil
 }

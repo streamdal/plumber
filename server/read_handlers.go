@@ -3,10 +3,8 @@ package server
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
-	"github.com/jhump/protoreflect/desc"
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
@@ -16,7 +14,6 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/backends"
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/server/types"
 	"github.com/batchcorp/plumber/validate"
 )
@@ -190,42 +187,22 @@ func (s *Server) CreateRead(_ context.Context, req *protos.CreateReadRequest) (*
 	// Reader needs a unique ID that frontend can reference
 	req.Read.XId = uuid.NewV4().String()
 
-	var md *desc.MessageDescriptor
-
 	if err := s.populateDecodeSchemaDetails(req.Read); err != nil {
 		return nil, CustomError(common.Code_FAILED_PRECONDITION, err.Error())
 	}
 
-	// TODO: can we move this elsewhere?
-	if req.Read.DecodeOptions != nil && req.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_PROTOBUF {
-		var mdErr error
-
-		pbSettings := req.Read.DecodeOptions.ProtobufSettings
-
-		md, mdErr = pb.GetMDFromDescriptorBlob(pbSettings.XMessageDescriptor, pbSettings.ProtobufRootMessage)
-		if mdErr != nil {
-			return nil, CustomError(common.Code_FAILED_PRECONDITION, fmt.Sprintf("unable to get message descriptor: %s", err))
-		}
-	}
-
-	ctx, cancelFunc := context.WithCancel(context.Background())
-
-	// Launch read and record
-	read := &types.Read{
-		AttachedClients:      make(map[string]*types.AttachedStream, 0),
-		AttachedClientsMutex: &sync.RWMutex{},
-		PlumberID:            s.PersistentConfig.PlumberID,
-		ReadOptions:          req.Read,
-		ContextCxl:           ctx,
-		CancelFunc:           cancelFunc,
-		Backend:              be,
-		MsgDesc:              md,
-		Log:                  s.Log.WithField("read_id", req.Read.XId),
+	read, err := types.NewRead(&types.ReadConfig{
+		ReadOptions: req.Read,
+		PlumberID:   s.PersistentConfig.PlumberID,
+		Backend:     be,
+	})
+	if err != nil {
+		return nil, CustomError(common.Code_FAILED_PRECONDITION, fmt.Sprintf("unable to create read: %s", err))
 	}
 
 	s.PersistentConfig.SetRead(req.Read.XId, read)
 
-	go s.beginRead(ctx, read)
+	go s.beginRead(read.ContextCxl, read)
 
 	return &protos.CreateReadResponse{
 		Status: &common.Status{

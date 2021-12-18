@@ -47,6 +47,8 @@
        * [Continuously relay MongoDB change stream events to a Batch.sh collection](#continuously-relay-mongodb-change-stream-events-to-a-batchsh-collection)
   * [Advanced Usage](#advanced-usage)
        * [Decoding protobuf encoded messages and viewing them live](#decoding-protobuf-encoded-messages-and-viewing-them-live)
+       * [Shallow envelope protobuf messages](#shallow-envelope-protobuf-messages)
+       * [Using Avro schemas when reading or writing](#using-avro-schemas-when-reading-or-writing)
 
 ## Consuming
 
@@ -80,9 +82,9 @@ plumber read aws-sqs --queue-name=orders --wait-time-seconds=20
 ```
 plumber read rabbit
     --address="amqp://localhost:5672" \
-    --exchange=testex \
+    --exchange-name=testex \
     --queue=testqueue \
-    --routing-key="orders.#"
+    --binding-key="orders.#"
     --continuous
 ```
 
@@ -460,7 +462,7 @@ For more advanced mongo usage, see documentation at https://docs.batch.sh/event-
 
 ## Advanced Usage
 
-##### Decoding protobuf encoded messages and viewing them live
+#### Decoding protobuf encoded messages and viewing them live
 
 Protobuf is supported for both encode and decode for _all_ backends. There are
 three flags that must be specified for protobuf:
@@ -473,9 +475,9 @@ NOTE: `--protobuf-root-message` must specify the _FULL_ path to the type. Ie.
 `events.MyType` (`MyType` is not enough!).
 
 ```bash
-$ plumber read rabbit --address="amqp://localhost" --exchange events --routing-key \# \
+$ plumber read rabbit --address="amqp://localhost" --exchange events --binding-key \# \
   --decode-type protobuf \
-  --protobuf-dir ~/schemas \ 
+  --protobuf-dirs ~/schemas \ 
   --protobuf-root-message pkg.Message \
   --continuous
   
@@ -496,19 +498,69 @@ slice to the message bus.
 
 ```bash
 $ plumber write rabbit --exchange events --routing-key foo.bar  \
-  --protobuf-dir ~/schemas \
+  --protobuf-dirs ~/schemas \
   --protobuf-root-message pkg.Message \
   --input-file ~/fakes/some-jsonpb-file.json \ 
   --encode-type jsonpb
 ```
 
-##### Using Avro schemas when reading or writing
+#### Shallow envelope protobuf messages
+
+Plumber supports ["shallow envelope"](https://www.confluent.io/blog/spring-kafka-protobuf-part-1-event-data-modeling/#shallow-envelope) protobuf messages consisting of one type of protobuf message used to decode
+the message itself, and another type of message used to decode the protobuf contents of a payload field inside the envelope. The payload field must be of `bytes` type.
+
+To read/write shallow envelope messages with plumber, you will need to specify the following additional flags:
+
+1. `--protobuf-envelope-type shallow` - To indicate that the message is a shallow envelope
+2. `--shallow-envelope-field-number` - Protobuf field number of the envelope's field which contains the encoded protobuf data
+3. `--shallow-envelope-message` - The protobuf message name used to encode the data in the field
+
+
+Example protobuf we will read/write with:
+
+```protobuf
+syntax = "proto3";
+
+package shallow;
+
+// Represents a shallow envelope
+message Envelope {
+  string id = 1;
+  bytes data = 2;
+}
+
+// Message is what goes into Envelope's Data field
+message Payload {
+  string name = 1;
+}
+```
+##### Writing shallow envelope
+
 ```bash
-$ plumber write kafka --topic=orders --avro-schema-file=some_schema.avsc --input-file=your_data.json
-$ plumber read kafka --topic=orders --avro-schema-file=some_schema.avsc
+plumber write kafka --topics testing \
+  --protobuf-dirs test-assets/shallow-envelope/ \
+  --protobuf-root-message shallow.Envelope \
+  --input-file test-assets/shallow-envelope/example-payload.json \
+  --protobuf-envelope-type shallow \
+  --shallow-envelope-message shallow.Payload \
+  --shallow-envelope-field-number=2 \
+  --encode-type jsonpb
 ```
 
-<sub>
-If your schemas are located in multiple places, you can specify `--protobuf-dir`
-multiple times. Treat it the same as you would `protoc -I`.
-</sub>
+#### Reading shallow envelope
+
+```bash
+plumber read kafka --topics testing \
+  --protobuf-dirs test-assets/shallow-envelope/ \
+  --protobuf-root-message shallow.Envelope \
+  --protobuf-envelope-type shallow \
+  --shallow-envelope-message shallow.Payload \
+  --shallow-envelope-field-number=2 \
+  --decode-type protobuf
+```
+
+#### Using Avro schemas when reading or writing
+```bash
+$ plumber write kafka --topics=orders --avro-schema-file=some_schema.avsc --input-file=your_data.json
+$ plumber read kafka --topics=orders --avro-schema-file=some_schema.avsc
+```
