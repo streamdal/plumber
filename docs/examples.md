@@ -506,7 +506,7 @@ $ plumber write rabbit --exchange events --routing-key foo.bar  \
 
 #### Shallow envelope protobuf messages
 
-Plumber supports "shallow envelope" protobuf messages consisting of one type of protobuf message used to decode
+Plumber supports ["shallow envelope"](https://www.confluent.io/blog/spring-kafka-protobuf-part-1-event-data-modeling/#shallow-envelope) protobuf messages consisting of one type of protobuf message used to decode
 the message itself, and another type of message used to decode the protobuf contents of a field inside the envelope.
 
 To read/write shallow envelope messages with plumber, you will need to specify the following additional flags:
