@@ -5,7 +5,7 @@ BINARY   = plumber
 
 GO = CGO_ENABLED=$(CGO_ENABLED) GONOPROXY=github.com/batchcorp GOFLAGS=-mod=vendor go
 CGO_ENABLED ?= 0
-GO_BUILD_FLAGS = -ldflags '-X "github.com/batchcorp/plumber/cli.version=${VERSION}"'
+GO_BUILD_FLAGS = -ldflags '-X "github.com/batchcorp/plumber/options.VERSION=${VERSION}"'
 
 # Pattern #1 example: "example : description = Description for example target"
 # Pattern #2 example: "### Example separator text
