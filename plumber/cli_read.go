@@ -2,6 +2,7 @@ package plumber
 
 import (
 	"context"
+	"os"
 
 	"github.com/pkg/errors"
 
@@ -30,6 +31,7 @@ func (p *Plumber) HandleReadCmd() error {
 	go func() {
 		if err := backend.Read(context.Background(), p.CLIOptions.Read, resultCh, errorCh); err != nil {
 			p.log.Errorf("unable to complete read for backend '%s': %s", backend.Name(), err)
+			os.Exit(0) // Exit out of plumber, since we can't continue
 		}
 	}()
 

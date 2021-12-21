@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber/backends/activemq"
+	"github.com/batchcorp/plumber/backends/awskinesis"
 	"github.com/batchcorp/plumber/backends/awssns"
 	"github.com/batchcorp/plumber/backends/awssqs"
 	azureEventhub "github.com/batchcorp/plumber/backends/azure-eventhub"
@@ -129,6 +130,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 		be, err = cdcpostgres.New(connOpts)
 	case *opts.ConnectionOptions_NatsJetstream:
 		be, err = natsJetstream.New(connOpts)
+	case *opts.ConnectionOptions_AwsKinesis:
+		be, err = awskinesis.New(connOpts)
 	default:
 		return nil, errors.New("unknown backend")
 

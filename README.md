@@ -180,6 +180,7 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 * RabbitMQ Streams 
 * Google Cloud Platform PubSub
 * MQTT
+* Amazon Kinesis Streams **(NEW)**
 * Amazon SQS
 * Amazon SNS (Publishing)
 * ActiveMQ (STOMP protocol)

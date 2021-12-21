@@ -48,13 +48,13 @@ var _ = Describe("AWSSQS Backend", func() {
 			connOpts.GetAwsSqs().AwsSecretAccessKey = ""
 			err := validateBaseConnOpts(connOpts)
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(Equal(ErrMissingAwsSecretAccessKey))
+			Expect(err).To(Equal(validate.ErrMissingAWSSecretAccessKey))
 		})
 		It("validates AWS region", func() {
 			connOpts.GetAwsSqs().AwsRegion = ""
 			err := validateBaseConnOpts(connOpts)
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(Equal(ErrMissingRegion))
+			Expect(err).To(Equal(validate.ErrMissingAWSRegion))
 		})
 	})
 
