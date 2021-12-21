@@ -2,8 +2,10 @@ package relay
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"time"
+	"unicode/utf8"
 
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
@@ -87,9 +89,17 @@ func convertKafkaHeaders(kafkaHeaders []skafka.Header) []*records.KafkaHeader {
 	sinkRecordHeaders := make([]*records.KafkaHeader, 0)
 
 	for _, h := range kafkaHeaders {
+		v := string(h.Value)
+
+		// gRPC will fail the call if the value isn't valid utf-8
+		// TODO: ship original header value so they can be sent back correctly in a replay
+		if !utf8.ValidString(v) {
+			v = base64.StdEncoding.EncodeToString(h.Value)
+		}
+
 		sinkRecordHeaders = append(sinkRecordHeaders, &records.KafkaHeader{
 			Key:   h.Key,
-			Value: string(h.Value),
+			Value: v,
 		})
 	}
 
