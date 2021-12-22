@@ -219,7 +219,7 @@ func canRetry(err error) bool {
 
 func validateReadOptions(readOpts *opts.ReadOptions) error {
 	if readOpts == nil {
-		return errors.New("read options cannot be nil")
+		return validate.ErrMissingReadOptions
 	}
 
 	if readOpts.AwsKinesis == nil {
@@ -239,13 +239,7 @@ func validateReadOptions(readOpts *opts.ReadOptions) error {
 		// If no shard is specified, then we will read from all shards
 		// However this won't work if reading via a sequence number, as those are unique to a shard
 		if args.ReadSequenceNumber != "" || args.ReadAfterSequenceNumber != "" {
-			return errors.New("shard must be specified when reading by sequence number")
-		}
-	}
-
-	if args.ReadSequenceNumber != "" || args.ReadAfterSequenceNumber != "" {
-		if args.Shard == "" {
-			return ErrEmptyShard
+			return ErrEmptyShardWithSequence
 		}
 	}
 

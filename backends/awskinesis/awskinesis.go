@@ -20,9 +20,10 @@ import (
 const BackendName = "kinesis"
 
 var (
-	ErrEmptyPartitionKey = errors.New("partition key cannot be empty")
-	ErrEmptyStream       = errors.New("stream cannot be empty")
-	ErrEmptyShard        = errors.New("shard cannot be empty")
+	ErrEmptyPartitionKey      = errors.New("partition key cannot be empty")
+	ErrEmptyStream            = errors.New("stream cannot be empty")
+	ErrEmptyShard             = errors.New("shard cannot be empty")
+	ErrEmptyShardWithSequence = errors.New("when reading from all shards, you cannot specify a sequence number")
 )
 
 type Kinesis struct {
