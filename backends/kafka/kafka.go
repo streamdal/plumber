@@ -7,10 +7,12 @@ package kafka
 import (
 	"context"
 	"crypto/tls"
+	"encoding/base64"
 	"fmt"
 	"strings"
 	"syscall"
 	"time"
+	"unicode/utf8"
 
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
@@ -267,9 +269,16 @@ func convertKafkaHeadersToProto(original []skafka.Header) []*records.KafkaHeader
 	converted := make([]*records.KafkaHeader, 0)
 
 	for _, o := range original {
+		v := string(o.Value)
+
+		// gRPC will fail the call if the value isn't valid utf-8
+		if !utf8.ValidString(v) {
+			v = base64.StdEncoding.EncodeToString(o.Value)
+		}
+
 		converted = append(converted, &records.KafkaHeader{
 			Key:   o.Key,
-			Value: string(o.Value),
+			Value: v,
 		})
 	}
 
