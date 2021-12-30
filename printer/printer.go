@@ -126,7 +126,7 @@ func displayTabular(count int64, receivedAt time.Time, data []byte, properties [
 	}
 
 	table.SetColMinWidth(0, 20)
-	table.SetColMinWidth(1, 40)
+	table.SetColMinWidth(1, 60)
 	// First column align left, second column align right
 	table.SetColumnAlignment([]int{tablewriter.ALIGN_LEFT, tablewriter.ALIGN_RIGHT})
 	table.Render()

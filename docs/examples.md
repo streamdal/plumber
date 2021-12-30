@@ -17,6 +17,7 @@
        * [Apache Pulsar](#apache-pulsar)
        * [NSQ](#nsq)
        * [Thrift Decoding](#thrift-decoding)
+       * [AWS Kinesis](#aws-kinesis)
   * [Publishing](#publishing)
        * [AWS SQS](#aws-sqs-1)
        * [AWS SNS](#aws-sns)
@@ -33,6 +34,7 @@
        * [MQTT](#mqtt-1)
        * [Apache Pulsar](#apache-pulsar-1)
        * [NSQ](#nsq-1)
+       * [AWS Kinesis](#aws-kinesis-1)
   * [Relay Mode](#relay-mode)
        * [Continuously relay messages from your RabbitMQ instance to a Batch.sh collection](#continuously-relay-messages-from-your-rabbitmq-instance-to-a-batchsh-collection)
        * [Continuously relay messages from an SQS queue to a Batch.sh collection](#continuously-relay-messages-from-an-sqs-queue-to-a-batchsh-collection)
@@ -219,6 +221,18 @@ plumber read kafka --topics orders --decode-type thrift --pretty
 }
 ```
 
+#### AWS Kinesis
+
+Reading from a single shard
+```bash
+plumber read kinesis --stream orders --shard shardId-000000000000 --latest --max-records 10
+```
+
+Read from all shards
+```bash
+plumber read kinesis --stream orders --continuous
+```
+
 ## Publishing
 
 ##### AWS SQS
@@ -343,7 +357,13 @@ plumber write pulsar --topic NEWORDERS --input="{\"order_id\": \"A-3458-654-1\",
 ##### NSQ
 
 ```bash
-plumger write nsq --nsqd-address localhost:4050 --topic orders --input="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+plumber write nsq --nsqd-address localhost:4050 --topic orders --input="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+```
+
+##### AWS Kinesis
+
+```bash
+plumber write kinesis --stream teststream --partition-key orders --input "{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ## Relay Mode

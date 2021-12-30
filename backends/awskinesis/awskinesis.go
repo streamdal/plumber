@@ -1,46 +1,44 @@
-package awssns
+package awskinesis
 
 import (
 	"context"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sns"
-	"github.com/aws/aws-sdk-go/service/sns/snsiface"
+	"github.com/aws/aws-sdk-go/service/kinesis"
+	"github.com/aws/aws-sdk-go/service/kinesis/kinesisiface"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	plumberTypes "github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/types"
 	"github.com/batchcorp/plumber/validate"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
-const BackendName = "AWSSNS"
+const BackendName = "kinesis"
 
-var ErrMissingTopicARN = errors.New("--topic cannot be empty")
+var (
+	ErrEmptyPartitionKey      = errors.New("partition key cannot be empty")
+	ErrEmptyStream            = errors.New("stream cannot be empty")
+	ErrEmptyShard             = errors.New("shard cannot be empty")
+	ErrEmptyShardWithSequence = errors.New("when reading from all shards, you cannot specify a sequence number")
+)
 
-type AWSSNS struct {
-	// Base connection options / non-backend-specific options
-	connOpts *opts.ConnectionOptions
-
-	// Backend-specific args
-	connArgs *args.AWSSNSConn
-
-	Service  snsiface.SNSAPI
-	QueueURL string
-	log      *logrus.Entry
+type Kinesis struct {
+	connOpts  *opts.ConnectionOptions
+	client    kinesisiface.KinesisAPI
+	readCount uint64
+	log       *logrus.Entry
 }
 
-func New(connOpts *opts.ConnectionOptions) (*AWSSNS, error) {
+func New(connOpts *opts.ConnectionOptions) (*Kinesis, error) {
 	if err := validateBaseConnOpts(connOpts); err != nil {
-		return nil, errors.Wrap(err, "unable to validate options")
+		return nil, errors.Wrap(err, "invalid connection options")
 	}
 
-	connArgs := connOpts.GetAwsSns()
+	connArgs := connOpts.GetAwsKinesis()
 
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(connArgs.AwsRegion),
@@ -50,25 +48,24 @@ func New(connOpts *opts.ConnectionOptions) (*AWSSNS, error) {
 		return nil, errors.Wrap(err, "unable to initialize aws session")
 	}
 
-	return &AWSSNS{
+	return &Kinesis{
 		connOpts: connOpts,
-		connArgs: connArgs,
-		Service:  sns.New(sess),
+		client:   kinesis.New(sess),
 		log:      logrus.WithField("backend", BackendName),
 	}, nil
-
 }
 
-func (a *AWSSNS) Name() string {
+func (k *Kinesis) Name() string {
 	return BackendName
 }
 
-func (a *AWSSNS) Close(_ context.Context) error {
+func (k *Kinesis) Close(_ context.Context) error {
+	// Not needed. AWS clients are REST calls
 	return nil
 }
 
-func (a *AWSSNS) Test(_ context.Context) error {
-	return plumberTypes.NotImplementedErr
+func (k *Kinesis) Test(_ context.Context) error {
+	return types.NotImplementedErr
 }
 
 func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
@@ -80,7 +77,7 @@ func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 		return validate.ErrMissingConnCfg
 	}
 
-	args := connOpts.GetAwsSns()
+	args := connOpts.GetAwsKinesis()
 	if args == nil {
 		return validate.ErrMissingConnArgs
 	}

@@ -21,11 +21,9 @@ import (
 const BackendName = "aws-sqs"
 
 var (
-	ErrMissingQueue              = errors.New("SQS Queue name cannot be empty")
-	ErrInvalidMaxNumMessages     = errors.New("max number of messages must be between 1 and 10")
-	ErrInvalidWaitTime           = errors.New("wait time seconds must be between 0 and 20")
-	ErrMissingAwsSecretAccessKey = errors.New("AWS Secret Access Key cannot be empty")
-	ErrMissingRegion             = errors.New("AWS Region cannot be empty")
+	ErrMissingQueue          = errors.New("SQS Queue name cannot be empty")
+	ErrInvalidMaxNumMessages = errors.New("max number of messages must be between 1 and 10")
+	ErrInvalidWaitTime       = errors.New("wait time seconds must be between 0 and 20")
 )
 
 type AWSSQS struct {
@@ -93,11 +91,15 @@ func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 	}
 
 	if args.AwsSecretAccessKey == "" {
-		return ErrMissingAwsSecretAccessKey
+		return validate.ErrMissingAWSSecretAccessKey
 	}
 
 	if args.AwsRegion == "" {
-		return ErrMissingRegion
+		return validate.ErrMissingAWSRegion
+	}
+
+	if args.AwsAccessKeyId == "" {
+		return validate.ErrMissingAWSAccessKeyID
 	}
 
 	return nil

@@ -306,6 +306,10 @@ func newReadOptions() *opts.ReadOptions {
 			XConn: &args.PostgresConn{},
 			Args:  &args.PostgresReadArgs{},
 		},
+		AwsKinesis: &opts.ReadGroupAWSKinesisOptions{
+			XConn: &args.AWSKinesisConn{},
+			Args:  &args.AWSKinesisReadArgs{},
+		},
 	}
 }
 
@@ -415,6 +419,10 @@ func newWriteOptions() *opts.WriteOptions {
 		RedisStreams: &opts.WriteGroupRedisStreamsOptions{
 			XConn: &args.RedisStreamsConn{},
 			Args:  &args.RedisStreamsWriteArgs{},
+		},
+		AwsKinesis: &opts.WriteGroupAWSKinesisOptions{
+			XConn: &args.AWSKinesisConn{},
+			Args:  &args.AWSKinesisWriteArgs{},
 		},
 	}
 
@@ -566,6 +574,10 @@ func newDynamicOptions() *opts.DynamicOptions {
 		RedisStreams: &opts.DynamicGroupRedisStreamsOptions{
 			XConn: &args.RedisStreamsConn{},
 			Args:  &args.RedisStreamsWriteArgs{},
+		},
+		AwsKinesis: &opts.DynamicGroupAWSKinesisOptions{
+			XConn: &args.AWSKinesisConn{},
+			Args:  &args.AWSKinesisWriteArgs{},
 		},
 	}
 }
