@@ -23,8 +23,8 @@ const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 type PostgresConn struct {
 	// @gotags: kong:"help='Postgres server hostname',env='PLUMBER_RELAY_CDCPOSTGRES_HOSTNAME',required"
 	Address string `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty" kong:"help='Postgres server hostname',env='PLUMBER_RELAY_CDCPOSTGRES_HOSTNAME',required"`
-	// @gotags: kong:"help='Postgres port',env='PLUMBER_RELAY_CDCPOSTGRES_USERNAME',default=5432,required"
-	Port uint32 `protobuf:"varint,2,opt,name=port,proto3" json:"port,omitempty" kong:"help='Postgres port',env='PLUMBER_RELAY_CDCPOSTGRES_USERNAME',default=5432,required"`
+	// @gotags: kong:"help='Postgres port',env='PLUMBER_RELAY_CDCPOSTGRES_PORT',default=5432,required"
+	Port uint32 `protobuf:"varint,2,opt,name=port,proto3" json:"port,omitempty" kong:"help='Postgres port',env='PLUMBER_RELAY_CDCPOSTGRES_PORT',default=5432,required"`
 	// @gotags: kong:"help='Postgres username',env='PLUMBER_RELAY_CDCPOSTGRES_USERNAME',required"
 	Username string `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty" kong:"help='Postgres username',env='PLUMBER_RELAY_CDCPOSTGRES_USERNAME',required"`
 	// @gotags: kong:"help='Postgres server password',env='PLUMBER_RELAY_CDCPOSTGRES_PASSWORD'"
