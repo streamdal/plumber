@@ -5,6 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
+
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
@@ -44,10 +45,22 @@ func New(connOpts *opts.ConnectionOptions) (*AWSSQS, error) {
 
 	connArgs := connOpts.GetAwsSqs()
 
-	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(connArgs.AwsRegion),
-		Credentials: credentials.NewStaticCredentials(connArgs.AwsAccessKeyId, connArgs.AwsSecretAccessKey, ""),
-	})
+	var sess *session.Session
+	var err error
+
+	if connArgs.AwsSecretAccessKey != "" {
+		sess, err = session.NewSession(&aws.Config{
+			Region:      aws.String(connArgs.AwsRegion),
+			Credentials: credentials.NewStaticCredentials(connArgs.AwsAccessKeyId, connArgs.AwsSecretAccessKey, ""),
+		})
+	} else {
+		// Use creds stored in ~/.aws/credentials
+		// https://github.com/batchcorp/plumber/issues/218
+		sess = session.Must(session.NewSessionWithOptions(session.Options{
+			SharedConfigState: session.SharedConfigEnable,
+		}))
+	}
+
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to initialize aws session")
 	}
@@ -88,6 +101,12 @@ func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 	args := connOpts.GetAwsSqs()
 	if args == nil {
 		return validate.ErrMissingConnArgs
+	}
+
+	// No need to go further, if profile is set, assume we don't need other args
+	// AWS SDK will pick up the profile creds from ~/.aws/credentials
+	if args.AwsProfile != "" {
+		return nil
 	}
 
 	if args.AwsSecretAccessKey == "" {
