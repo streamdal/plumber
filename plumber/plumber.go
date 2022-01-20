@@ -3,11 +3,15 @@ package plumber
 import (
 	"context"
 	"fmt"
+	"runtime"
 	"strings"
+
+	"github.com/batchcorp/plumber/options"
 
 	"github.com/jhump/protoreflect/desc"
 	"github.com/mcuadros/go-lookup"
 	"github.com/pkg/errors"
+	"github.com/posthog/posthog-go"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/kong"
@@ -27,6 +31,8 @@ var (
 	ErrMissingMainShutdownFunc = errors.New("MainShutdownFunc cannot be nil")
 	ErrMissingMainContext      = errors.New("MainContext cannot be nil")
 	ErrMissingOptions          = errors.New("CLIOptions cannot be nil")
+
+	ANALYTICS_KEY = "unset"
 )
 
 // Config contains configurable options for instantiating a new Plumber
@@ -37,6 +43,7 @@ type Config struct {
 	MainShutdownCtx    context.Context
 	CLIOptions         *opts.CLIOptions
 	KongCtx            *kong.Context
+	PostHog            posthog.Client
 }
 
 type Plumber struct {
@@ -81,6 +88,22 @@ func New(cfg *Config) (*Plumber, error) {
 
 		p.cliMD = mds
 		p.cliConnOpts = connCfg
+	}
+
+	var phClient posthog.Client
+
+	if p.PersistentConfig.EnableAnalytics == "true" {
+		logrus.Debug("enabling analytics")
+
+		// TODO: inject key in build process
+		phClient, _ = posthog.NewWithConfig(
+			ANALYTICS_KEY,
+			posthog.Config{
+				// TODO: set as our own hosted version
+				Endpoint: "https://app.posthog.com",
+			},
+		)
+		defer phClient.Close()
 	}
 
 	return p, nil
@@ -253,4 +276,23 @@ func validateConfig(cfg *Config) error {
 	}
 
 	return nil
+}
+
+// logMetricWrite captures a metric for the backend name
+func (p *Plumber) sendAnalytic(operation, backendName string) {
+	// User didn't enable analytics
+	if p.PostHog == nil {
+		return
+	}
+
+	p.PostHog.Enqueue(posthog.Capture{
+		DistinctId: p.Config.PersistentConfig.PlumberID,
+		Event:      operation,
+		Properties: map[string]interface{}{
+			"version":         options.VERSION,
+			"os":              runtime.GOOS,
+			"backend":         backendName,
+			"$geoip_disabled": true,
+		},
+	})
 }

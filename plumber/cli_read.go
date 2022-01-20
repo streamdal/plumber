@@ -27,6 +27,8 @@ func (p *Plumber) HandleReadCmd() error {
 	resultCh := make(chan *records.ReadRecord, 1)
 	errorCh := make(chan *records.ErrorRecord, 1)
 
+	p.sendAnalytic("read", backend.Name())
+
 	// backend.Read() blocks
 	go func() {
 		if err := backend.Read(context.Background(), p.CLIOptions.Read, resultCh, errorCh); err != nil {

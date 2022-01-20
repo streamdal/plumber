@@ -27,6 +27,8 @@ func (p *Plumber) HandleRelayCmd() error {
 		return errors.Wrap(err, "unable to start relay service")
 	}
 
+	p.sendAnalytic("relay", backend.Name())
+
 	// Blocks until ctx is cancelled
 	if err := backend.Relay(p.ServiceShutdownCtx, p.CLIOptions.Relay, p.RelayCh, nil); err != nil {
 		return errors.Wrap(err, "unable to start relay backend")

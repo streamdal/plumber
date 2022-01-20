@@ -4,11 +4,12 @@ import (
 	"context"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/validate"
 	"github.com/pkg/errors"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
 	"github.com/batchcorp/plumber/backends"
+	"github.com/batchcorp/plumber/validate"
 	"github.com/batchcorp/plumber/writer"
 )
 
@@ -32,6 +33,8 @@ func (p *Plumber) HandleWriteCmd() error {
 	defer cancel()
 
 	errorCh := make(chan *records.ErrorRecord, 1)
+
+	p.sendAnalytic("write", backend.Name())
 
 	go func() {
 		if err := backend.Write(ctx, p.CLIOptions.Write, errorCh, value...); err != nil {

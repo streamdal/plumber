@@ -34,6 +34,7 @@ type Config struct {
 	VCServiceToken  string `json:"vc_service_token"`    // entire vc-service JWT
 	GitHubToken     string `json:"github_bearer_token"` // retrieved from vc-service JWT contents
 	GitHubInstallID int64  `json:"install_id"`
+	EnableAnalytics string `json:"enable_analytics"` // using string because empty value is considered unanswered
 
 	Connections         map[string]*opts.ConnectionOptions     `json:"-"`
 	Relays              map[string]*stypes.Relay               `json:"-"`

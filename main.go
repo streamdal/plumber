@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"os/signal"
@@ -69,15 +70,21 @@ func main() {
 		prometheus.Start(cliOpts.Relay.StatsReportIntervalSec)
 	}
 
+	cfg := getConfig()
+
 	// Force JSON and don't print logo when NOT in terminal (ie. in container, detached)
 	if !terminal.IsTerminal(int(os.Stderr.Fd())) {
 		logrus.SetFormatter(&logrus.JSONFormatter{})
 	} else {
 		printer.PrintLogo()
+
+		// Prompt analytics only in CLI mode
+		// It is disabled otherwise
+		setupAnalytics(cfg)
 	}
 
 	p, err := plumber.New(&plumber.Config{
-		PersistentConfig:   getConfig(),
+		PersistentConfig:   cfg,
 		ServiceShutdownCtx: serviceCtx,
 		MainShutdownFunc:   mainShutdownFunc,
 		MainShutdownCtx:    mainCtx,
@@ -90,6 +97,59 @@ func main() {
 	}
 
 	p.Run()
+}
+
+func setupAnalytics(cfg *config.Config) {
+	// Value is already saved to config.json, nothing to do here
+	if cfg.EnableAnalytics != "" {
+		return
+	}
+
+	// Ask user if they want to enable
+	answer := promptForAnalytics(os.Stdin)
+
+	if answer == "true" {
+		logrus.Info("Analytics enabled")
+	} else {
+		logrus.Info("Analytics disabled")
+	}
+
+	cfg.EnableAnalytics = answer
+	cfg.Save()
+}
+
+// readUsername reads a password from stdin
+func promptForAnalytics(stdin io.Reader) string {
+	fmt.Println("\n\nEnable analytics?")
+	fmt.Println("------------------------------------------------------------------------------------")
+	fmt.Println("Plumber can send anonymous usage analytics to Batch.sh to help us better understand")
+	fmt.Println("how our users are using our software. This information is anonymous, and only")
+	fmt.Println("contains the following information:")
+	fmt.Println("")
+	fmt.Println(" * Plumber version")
+	fmt.Println(" * Operating system")
+	fmt.Println(" * Operation performed: read,write,relay,batch")
+	fmt.Println(" * Backend used: kafka, rabbitmq, etc")
+	fmt.Println("")
+	fmt.Println("------------------------------------------------------------------------------------")
+	fmt.Print("\n\nDo you wish to send usage analytics to Batch.sh? (y/N)")
+
+	// int typecast is needed for windows
+	reader := bufio.NewReader(stdin)
+	answer, err := reader.ReadString('\n')
+	if err != nil {
+		return "false"
+	}
+
+	s := strings.TrimSpace(answer)
+	switch s {
+	case "y", "Y":
+		return "true"
+	case "n", "N":
+		fallthrough
+	default:
+		return "false"
+	}
 }
 
 // readFromStdin reads data piped into stdin
