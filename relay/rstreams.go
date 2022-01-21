@@ -40,11 +40,11 @@ func (r *Relay) handleRedisStreams(ctx context.Context, conn *grpc.ClientConn, m
 // validateRedisRelayMessage ensures all necessary values are present for a RedisPubSub relay message
 func (r *Relay) validateRedisStreamsRelayMessage(msg *types.RelayMessage) error {
 	if msg == nil {
-		return errMissingMessage
+		return ErrMissingMessage
 	}
 
 	if msg.Value == nil {
-		return errMissingMessageValue
+		return ErrMissingMessageValue
 	}
 
 	if msg.ID == "" {

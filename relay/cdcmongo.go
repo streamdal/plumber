@@ -34,11 +34,11 @@ func (r *Relay) handleCDCMongo(ctx context.Context, conn *grpc.ClientConn, messa
 // validateCDCMongoMessage ensures all necessary values are present for a mongo message
 func (r *Relay) validateCDCMongoMessage(msg *types.RelayMessage) error {
 	if msg == nil {
-		return errMissingMessage
+		return ErrMissingMessage
 	}
 
 	if msg.Value == nil {
-		return errMissingMessageValue
+		return ErrMissingMessageValue
 	}
 
 	return nil

@@ -25,6 +25,9 @@ import (
 	kafkaTypes "github.com/batchcorp/plumber/backends/kafka/types"
 	kubemqTypes "github.com/batchcorp/plumber/backends/kubemq-queue/types"
 	mqttTypes "github.com/batchcorp/plumber/backends/mqtt/types"
+	natsJetStreamTypes "github.com/batchcorp/plumber/backends/nats-jetstream/types"
+	natsStreamingTypes "github.com/batchcorp/plumber/backends/nats-streaming/types"
+	natsTypes "github.com/batchcorp/plumber/backends/nats/types"
 	nsqTypes "github.com/batchcorp/plumber/backends/nsq/types"
 	rabbitTypes "github.com/batchcorp/plumber/backends/rabbitmq/types"
 	rpubsubTypes "github.com/batchcorp/plumber/backends/rpubsub/types"
@@ -58,6 +61,9 @@ var (
 	ErrMissingServiceShutdownCtx = errors.New("ServiceShutdownCtx cannot be nil")
 	ErrMissingGRPCAddress        = errors.New("GRPCAddress cannot be empty")
 	ErrMissingRelayCh            = errors.New("RelayCh cannot be nil")
+	ErrMissingMessage            = errors.New("msg cannot be nil")
+	ErrMissingMessageValue       = errors.New("msg.Value cannot be nil")
+	ErrMissingMessageOptions     = errors.New("msg.Options cannot be nil")
 )
 
 type IRelayBackend interface {
@@ -376,6 +382,15 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 	case *nsqTypes.RelayMessage:
 		r.log.Debugf("flushing %d nsq message(s)", len(messages))
 		err = r.handleNSQ(ctx, conn, messages)
+	case *natsTypes.RelayMessage:
+		r.log.Debugf("flushing %d nats message(s)", len(messages))
+		err = r.handleNATS(ctx, conn, messages)
+	case *natsStreamingTypes.RelayMessage:
+		r.log.Debugf("flushing %d nats message(s)", len(messages))
+		err = r.handleNATSStreaming(ctx, conn, messages)
+	case *natsJetStreamTypes.RelayMessage:
+		r.log.Debugf("flushing %d nats message(s)", len(messages))
+		err = r.handleNATSJetStream(ctx, conn, messages)
 	default:
 		r.log.WithField("type", v).Error("received unknown message type - skipping")
 		return

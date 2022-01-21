@@ -21,14 +21,14 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type NatsJetstreamTLSOptions struct {
-	// @gotags: kong:"help='CA file (only needed if addr is tls://*)',env=PLUMBER_RELAY_NATS_JETSTREAM_TLS_CA_CERT"
-	TlsCaCert []byte `protobuf:"bytes,1,opt,name=tls_ca_cert,json=tlsCaCert,proto3" json:"tls_ca_cert,omitempty" kong:"help='CA file (only needed if addr is tls://*)',env=PLUMBER_RELAY_NATS_JETSTREAM_TLS_CA_CERT"`
-	// @gotags: kong:"help='Client cert file (only needed if addr is tls://*)',env=PLUMBER_RELAY_NATS_JETSTREAM_TLS_CLIENT_CERT"
-	TlsClientCert []byte `protobuf:"bytes,2,opt,name=tls_client_cert,json=tlsClientCert,proto3" json:"tls_client_cert,omitempty" kong:"help='Client cert file (only needed if addr is tls://*)',env=PLUMBER_RELAY_NATS_JETSTREAM_TLS_CLIENT_CERT"`
-	// @gotags: kong:"help='Client key file (only needed if addr is tls://*)',env=PLUMBER_RELAY_NATS_JETSTREAM_TLS_CLIENT_KEY"
-	TlsClientKey []byte `protobuf:"bytes,3,opt,name=tls_client_key,json=tlsClientKey,proto3" json:"tls_client_key,omitempty" kong:"help='Client key file (only needed if addr is tls://*)',env=PLUMBER_RELAY_NATS_JETSTREAM_TLS_CLIENT_KEY"`
-	// @gotags: kong:"help='Whether to verify server certificate',env=PLUMBER_RELAY_NATS_JETSTREAM_SKIP_VERIFY_TLS"
-	TlsSkipVerify        bool     `protobuf:"varint,4,opt,name=tls_skip_verify,json=tlsSkipVerify,proto3" json:"tls_skip_verify,omitempty" kong:"help='Whether to verify server certificate',env=PLUMBER_RELAY_NATS_JETSTREAM_SKIP_VERIFY_TLS"`
+	// @gotags: kong:"help='CA file (only needed if addr is tls://*)',env='PLUMBER_RELAY_NATS_JETSTREAM_TLS_CA_CERT'"
+	TlsCaCert []byte `protobuf:"bytes,1,opt,name=tls_ca_cert,json=tlsCaCert,proto3" json:"tls_ca_cert,omitempty" kong:"help='CA file (only needed if addr is tls://*)',env='PLUMBER_RELAY_NATS_JETSTREAM_TLS_CA_CERT'"`
+	// @gotags: kong:"help='Client cert file (only needed if addr is tls://*)',env='PLUMBER_RELAY_NATS_JETSTREAM_TLS_CLIENT_CERT'"
+	TlsClientCert []byte `protobuf:"bytes,2,opt,name=tls_client_cert,json=tlsClientCert,proto3" json:"tls_client_cert,omitempty" kong:"help='Client cert file (only needed if addr is tls://*)',env='PLUMBER_RELAY_NATS_JETSTREAM_TLS_CLIENT_CERT'"`
+	// @gotags: kong:"help='Client key file (only needed if addr is tls://*)',env='PLUMBER_RELAY_NATS_JETSTREAM_TLS_CLIENT_KEY'"
+	TlsClientKey []byte `protobuf:"bytes,3,opt,name=tls_client_key,json=tlsClientKey,proto3" json:"tls_client_key,omitempty" kong:"help='Client key file (only needed if addr is tls://*)',env='PLUMBER_RELAY_NATS_JETSTREAM_TLS_CLIENT_KEY'"`
+	// @gotags: kong:"help='Whether to verify server certificate',env='PLUMBER_RELAY_NATS_JETSTREAM_SKIP_VERIFY_TLS'"
+	TlsSkipVerify        bool     `protobuf:"varint,4,opt,name=tls_skip_verify,json=tlsSkipVerify,proto3" json:"tls_skip_verify,omitempty" kong:"help='Whether to verify server certificate',env='PLUMBER_RELAY_NATS_JETSTREAM_SKIP_VERIFY_TLS'"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -88,12 +88,12 @@ func (m *NatsJetstreamTLSOptions) GetTlsSkipVerify() bool {
 }
 
 type NatsJetstreamConn struct {
-	// @gotags: kong:"help='Dial string for NATS server. Ex: nats://localhost:4222',default='nats://localhost:4222'"
-	Dsn string `protobuf:"bytes,1,opt,name=dsn,proto3" json:"dsn,omitempty" kong:"help='Dial string for NATS server. Ex: nats://localhost:4222',default='nats://localhost:4222'"`
-	// @gotags: kong:"help='NATS .creds file containing authentication credentials'"
-	UserCredentials []byte `protobuf:"bytes,2,opt,name=user_credentials,json=userCredentials,proto3" json:"user_credentials,omitempty" kong:"help='NATS .creds file containing authentication credentials'"`
-	// @gotags: kong:"help='User specified client ID to connect with',default=plumber"
-	ClientId string `protobuf:"bytes,3,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty" kong:"help='User specified client ID to connect with',default=plumber"`
+	// @gotags: kong:"help='Dial string for NATS server. Ex: nats://localhost:4222',default='nats://localhost:4222',env='PLUMBER_RELAY_NATS_JETSTREAM_DSN'"
+	Dsn string `protobuf:"bytes,1,opt,name=dsn,proto3" json:"dsn,omitempty" kong:"help='Dial string for NATS server. Ex: nats://localhost:4222',default='nats://localhost:4222',env='PLUMBER_RELAY_NATS_JETSTREAM_DSN'"`
+	// @gotags: kong:"help='NATS .creds file containing authentication credentials',env='PLUMBER_RELAY_NATS_JETSTREAM_CREDENTIALS'"
+	UserCredentials []byte `protobuf:"bytes,2,opt,name=user_credentials,json=userCredentials,proto3" json:"user_credentials,omitempty" kong:"help='NATS .creds file containing authentication credentials',env='PLUMBER_RELAY_NATS_JETSTREAM_CREDENTIALS'"`
+	// @gotags: kong:"help='User specified client ID to connect with',default=plumber,env='PLUMBER_RELAY_NATS_JETSTREAM_CLIENT_ID'"
+	ClientId string `protobuf:"bytes,3,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty" kong:"help='User specified client ID to connect with',default=plumber,env='PLUMBER_RELAY_NATS_JETSTREAM_CLIENT_ID'"`
 	// @gotags: kong:"embed"
 	TlsOptions           *NatsJetstreamTLSOptions `protobuf:"bytes,4,opt,name=tls_options,json=tlsOptions,proto3" json:"tls_options,omitempty" kong:"embed"`
 	XXX_NoUnkeyedLiteral struct{}                 `json:"-"`
@@ -155,8 +155,8 @@ func (m *NatsJetstreamConn) GetTlsOptions() *NatsJetstreamTLSOptions {
 }
 
 type NatsJetstreamReadArgs struct {
-	// @gotags: kong:"help='NATS JetStream stream name. Ex: orders.>'"
-	Stream               string   `protobuf:"bytes,1,opt,name=stream,proto3" json:"stream,omitempty" kong:"help='NATS JetStream stream name. Ex: orders.>'"`
+	// @gotags: kong:"help='NATS JetStream stream name. Ex: orders.>',env='PLUMBER_RELAY_NATS_JETSTREAM_STREAM'"
+	Stream               string   `protobuf:"bytes,1,opt,name=stream,proto3" json:"stream,omitempty" kong:"help='NATS JetStream stream name. Ex: orders.>',env='PLUMBER_RELAY_NATS_JETSTREAM_STREAM'"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`

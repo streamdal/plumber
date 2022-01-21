@@ -39,11 +39,11 @@ func (r *Relay) handleNSQ(ctx context.Context, conn *grpc.ClientConn, messages [
 // validateNSQMessage ensures all necessary values are present for a NSQ relay message
 func (r *Relay) validateNSQMessage(msg *types.RelayMessage) error {
 	if msg == nil {
-		return errMissingMessage
+		return ErrMissingMessage
 	}
 
 	if msg.Value == nil {
-		return errMissingMessageValue
+		return ErrMissingMessageValue
 	}
 
 	if msg.Options.Topic == "" {

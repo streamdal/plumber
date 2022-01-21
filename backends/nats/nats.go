@@ -99,13 +99,13 @@ func newClient(opts *args.NatsConn) (*nats.Conn, error) {
 func generateTLSConfig(opts *args.NatsConn) (*tls.Config, error) {
 	certpool := x509.NewCertPool()
 
-	pemCerts, err := ioutil.ReadFile(string(opts.TlsCaCert))
+	pemCerts, err := ioutil.ReadFile(string(opts.TlsOptions.TlsCaCert))
 	if err == nil {
 		certpool.AppendCertsFromPEM(pemCerts)
 	}
 
 	// Import client certificate/key pair
-	cert, err := tls.LoadX509KeyPair(string(opts.TlsClientCert), string(opts.TlsClientKey))
+	cert, err := tls.LoadX509KeyPair(string(opts.TlsOptions.TlsClientCert), string(opts.TlsOptions.TlsClientKey))
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to load ssl keypair")
 	}
@@ -121,7 +121,7 @@ func generateTLSConfig(opts *args.NatsConn) (*tls.Config, error) {
 		RootCAs:            certpool,
 		ClientAuth:         tls.NoClientCert,
 		ClientCAs:          nil,
-		InsecureSkipVerify: opts.TlsSkipVerify,
+		InsecureSkipVerify: opts.TlsOptions.TlsSkipVerify,
 		Certificates:       []tls.Certificate{cert},
 		MinVersion:         tls.VersionTLS12,
 	}, nil

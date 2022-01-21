@@ -33,11 +33,11 @@ func (r *Relay) handleMQTT(ctx context.Context, conn *grpc.ClientConn, messages 
 // validateMQTTMessage ensures all necessary values are present for a MQTT relay message
 func (r *Relay) validateMQTTMessage(msg *types.RelayMessage) error {
 	if msg == nil {
-		return errMissingMessage
+		return ErrMissingMessage
 	}
 
 	if msg.Value == nil {
-		return errMissingMessageValue
+		return ErrMissingMessageValue
 	}
 
 	return nil
