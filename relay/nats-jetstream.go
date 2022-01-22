@@ -15,7 +15,7 @@ import (
 func (r *Relay) handleNATSJetStream(ctx context.Context, conn *grpc.ClientConn, messages []interface{}) error {
 	sinkRecords, err := r.convertMessagesToNATSJetStreamRecords(messages)
 	if err != nil {
-		return fmt.Errorf("unable to convert messages to kafka sink records: %s", err)
+		return fmt.Errorf("unable to convert messages to nats-jetstream sink records: %s", err)
 	}
 
 	client := services.NewGRPCCollectorClient(conn)
