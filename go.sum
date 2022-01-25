@@ -111,6 +111,8 @@ github.com/aws/aws-sdk-go v1.34.28 h1:sscPpn/Ns3i0F4HPEWAVcwdIRaZZCuL7llJ2/60yPI
 github.com/aws/aws-sdk-go v1.34.28/go.mod h1:H7NKnBqNVzoTJpGfLrQkkD+ytBA93eiDYi/+8rV9s48=
 github.com/batchcorp/collector-schemas v0.0.5 h1:rNCdbcPs+PrfcSGSxIwP7ncUzi6za8mvKXbz+ICWJBI=
 github.com/batchcorp/collector-schemas v0.0.5/go.mod h1:qSVA1UcrApoLX2mS4cj+aH+IvNwcSfm50vWa0UAN/WU=
+github.com/batchcorp/collector-schemas v0.0.8 h1:KZms0vNwoaI6tZBKCn5PyXjDjm+S5IjwRGgzApxX+vo=
+github.com/batchcorp/collector-schemas v0.0.8/go.mod h1:qSVA1UcrApoLX2mS4cj+aH+IvNwcSfm50vWa0UAN/WU=
 github.com/batchcorp/inferschema v0.0.1 h1:aRSfi5W+m8lCgGW0e2ruo8yY8YOATkFjmX383hQgrNI=
 github.com/batchcorp/inferschema v0.0.1/go.mod h1:U1qngk0hEunJbWyJkQt1i64XvUEWX2kGTwpmy6Fs/QY=
 github.com/batchcorp/inferschema v0.0.2 h1:Eo6nVIPLL0vxBIRdOjsmegEGl68lE0AFik5KA8QNM1c=
