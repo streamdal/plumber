@@ -33,11 +33,11 @@ func (r *Relay) handleKubeMQ(ctx context.Context, conn *grpc.ClientConn, message
 // validateKubeMQRelayMessage ensures all necessary values are present for a kubemq relay message
 func (r *Relay) validateKubeMQRelayMessage(msg *types.RelayMessage) error {
 	if msg == nil {
-		return errMissingMessage
+		return ErrMissingMessage
 	}
 
 	if msg.Value == nil {
-		return errMissingMessageValue
+		return ErrMissingMessageValue
 	}
 
 	return nil

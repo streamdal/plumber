@@ -215,10 +215,12 @@ func newReadOptions() *opts.ReadOptions {
 		},
 		Nats: &opts.ReadGroupNatsOptions{
 			XConn: &args.NatsConn{
-				TlsCaCert:       make([]byte, 0),
-				TlsClientCert:   make([]byte, 0),
-				TlsClientKey:    make([]byte, 0),
 				UserCredentials: make([]byte, 0),
+				TlsOptions: &args.NatsTLSOptions{
+					TlsCaCert:     make([]byte, 0),
+					TlsClientCert: make([]byte, 0),
+					TlsClientKey:  make([]byte, 0),
+				},
 			},
 			Args: &args.NatsReadArgs{},
 		},
@@ -338,10 +340,12 @@ func newWriteOptions() *opts.WriteOptions {
 		},
 		Nats: &opts.WriteGroupNatsOptions{
 			XConn: &args.NatsConn{
-				TlsCaCert:       make([]byte, 0),
-				TlsClientCert:   make([]byte, 0),
-				TlsClientKey:    make([]byte, 0),
 				UserCredentials: make([]byte, 0),
+				TlsOptions: &args.NatsTLSOptions{
+					TlsCaCert:     make([]byte, 0),
+					TlsClientCert: make([]byte, 0),
+					TlsClientKey:  make([]byte, 0),
+				},
 			},
 			Args: &args.NatsWriteArgs{},
 		},
@@ -515,10 +519,12 @@ func newDynamicOptions() *opts.DynamicOptions {
 		},
 		Nats: &opts.DynamicGroupNatsOptions{
 			XConn: &args.NatsConn{
-				TlsCaCert:       make([]byte, 0),
-				TlsClientCert:   make([]byte, 0),
-				TlsClientKey:    make([]byte, 0),
 				UserCredentials: make([]byte, 0),
+				TlsOptions: &args.NatsTLSOptions{
+					TlsCaCert:     make([]byte, 0),
+					TlsClientCert: make([]byte, 0),
+					TlsClientKey:  make([]byte, 0),
+				},
 			},
 			Args: &args.NatsWriteArgs{},
 		},

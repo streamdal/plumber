@@ -7,7 +7,6 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 	"google.golang.org/grpc"
 
@@ -15,11 +14,6 @@ import (
 	"github.com/batchcorp/collector-schemas/build/go/protos/services"
 
 	"github.com/batchcorp/plumber/backends/kafka/types"
-)
-
-var (
-	errMissingMessage      = errors.New("msg cannot be nil")
-	errMissingMessageValue = errors.New("msg.Value cannot be nil")
 )
 
 // handleKafka sends a Kafka relay message to the GRPC server
@@ -42,11 +36,11 @@ func (r *Relay) handleKafka(ctx context.Context, conn *grpc.ClientConn, messages
 // validateKafkaRelayMessage ensures all necessary values are present for a Kafka relay message
 func (r *Relay) validateKafkaRelayMessage(msg *types.RelayMessage) error {
 	if msg == nil {
-		return errMissingMessage
+		return ErrMissingMessage
 	}
 
 	if msg.Value == nil {
-		return errMissingMessageValue
+		return ErrMissingMessageValue
 	}
 
 	return nil

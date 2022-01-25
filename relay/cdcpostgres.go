@@ -35,11 +35,11 @@ func (r *Relay) handleCdcPostgres(ctx context.Context, conn *grpc.ClientConn, me
 // validateCDCPostgresRelayMessage ensures all necessary values are present for a cdc-postgres relay message
 func (r *Relay) validateCDCPostgresRelayMessage(msg *types.RelayMessage) error {
 	if msg == nil {
-		return errMissingMessage
+		return ErrMissingMessage
 	}
 
 	if msg.Value == nil {
-		return errMissingMessageValue
+		return ErrMissingMessageValue
 	}
 
 	return nil

@@ -21,14 +21,14 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type NatsStreamingTLSOptions struct {
-	// @gotags: kong:"help='CA file (only needed if addr is tls://*)',env=PLUMBER_RELAY_NATS_STREAMING_TLS_CA_CERT"
-	TlsCaCert []byte `protobuf:"bytes,1,opt,name=tls_ca_cert,json=tlsCaCert,proto3" json:"tls_ca_cert,omitempty" kong:"help='CA file (only needed if addr is tls://*)',env=PLUMBER_RELAY_NATS_STREAMING_TLS_CA_CERT"`
-	// @gotags: kong:"help='Client cert file (only needed if addr is tls://*)',env=PLUMBER_RELAY_NATS_STREAMING_TLS_CLIENT_CERT"
-	TlsClientCert []byte `protobuf:"bytes,2,opt,name=tls_client_cert,json=tlsClientCert,proto3" json:"tls_client_cert,omitempty" kong:"help='Client cert file (only needed if addr is tls://*)',env=PLUMBER_RELAY_NATS_STREAMING_TLS_CLIENT_CERT"`
-	// @gotags: kong:"help='Client key file (only needed if addr is tls://*)',env=PLUMBER_RELAY_NATS_STREAMING_TLS_CLIENT_KEY"
-	TlsClientKey []byte `protobuf:"bytes,3,opt,name=tls_client_key,json=tlsClientKey,proto3" json:"tls_client_key,omitempty" kong:"help='Client key file (only needed if addr is tls://*)',env=PLUMBER_RELAY_NATS_STREAMING_TLS_CLIENT_KEY"`
-	// @gotags: kong:"help='Whether to verify server certificate',env=PLUMBER_RELAY_NATS_STREAMING_SKIP_VERIFY_TLS"
-	TlsSkipVerify        bool     `protobuf:"varint,4,opt,name=tls_skip_verify,json=tlsSkipVerify,proto3" json:"tls_skip_verify,omitempty" kong:"help='Whether to verify server certificate',env=PLUMBER_RELAY_NATS_STREAMING_SKIP_VERIFY_TLS"`
+	// @gotags: kong:"help='CA file (only needed if addr is tls://*)',env='PLUMBER_RELAY_NATS_STREAMING_TLS_CA_CERT'"
+	TlsCaCert []byte `protobuf:"bytes,1,opt,name=tls_ca_cert,json=tlsCaCert,proto3" json:"tls_ca_cert,omitempty" kong:"help='CA file (only needed if addr is tls://*)',env='PLUMBER_RELAY_NATS_STREAMING_TLS_CA_CERT'"`
+	// @gotags: kong:"help='Client cert file (only needed if addr is tls://*)',env='PLUMBER_RELAY_NATS_STREAMING_TLS_CLIENT_CERT'"
+	TlsClientCert []byte `protobuf:"bytes,2,opt,name=tls_client_cert,json=tlsClientCert,proto3" json:"tls_client_cert,omitempty" kong:"help='Client cert file (only needed if addr is tls://*)',env='PLUMBER_RELAY_NATS_STREAMING_TLS_CLIENT_CERT'"`
+	// @gotags: kong:"help='Client key file (only needed if addr is tls://*)',env='PLUMBER_RELAY_NATS_STREAMING_TLS_CLIENT_KEY'"
+	TlsClientKey []byte `protobuf:"bytes,3,opt,name=tls_client_key,json=tlsClientKey,proto3" json:"tls_client_key,omitempty" kong:"help='Client key file (only needed if addr is tls://*)',env='PLUMBER_RELAY_NATS_STREAMING_TLS_CLIENT_KEY'"`
+	// @gotags: kong:"help='Whether to verify server certificate',env='PLUMBER_RELAY_NATS_STREAMING_SKIP_VERIFY_TLS'"
+	TlsSkipVerify        bool     `protobuf:"varint,4,opt,name=tls_skip_verify,json=tlsSkipVerify,proto3" json:"tls_skip_verify,omitempty" kong:"help='Whether to verify server certificate',env='PLUMBER_RELAY_NATS_STREAMING_SKIP_VERIFY_TLS'"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -88,14 +88,14 @@ func (m *NatsStreamingTLSOptions) GetTlsSkipVerify() bool {
 }
 
 type NatsStreamingConn struct {
-	// @gotags: kong:"help='Dial string for NATS server. Ex: nats://localhost:4222',default='nats://localhost:4222'"
-	Dsn string `protobuf:"bytes,1,opt,name=dsn,proto3" json:"dsn,omitempty" kong:"help='Dial string for NATS server. Ex: nats://localhost:4222',default='nats://localhost:4222'"`
-	// @gotags: kong:"help='NATS .creds file containing authentication credentials'"
-	UserCredentials []byte `protobuf:"bytes,2,opt,name=user_credentials,json=userCredentials,proto3" json:"user_credentials,omitempty" kong:"help='NATS .creds file containing authentication credentials'"`
-	// @gotags: kong:"help='Cluster ID of the Nats server',required"
-	ClusterId string `protobuf:"bytes,3,opt,name=cluster_id,json=clusterId,proto3" json:"cluster_id,omitempty" kong:"help='Cluster ID of the Nats server',required"`
-	// @gotags: kong:"help='User specified client ID to connect with',default=plumber"
-	ClientId string `protobuf:"bytes,4,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty" kong:"help='User specified client ID to connect with',default=plumber"`
+	// @gotags: kong:"help='Dial string for NATS server. Ex: nats://localhost:4222',default='nats://localhost:4222',env='PLUMBER_RELAY_NATS_STREAMING_DSN'"
+	Dsn string `protobuf:"bytes,1,opt,name=dsn,proto3" json:"dsn,omitempty" kong:"help='Dial string for NATS server. Ex: nats://localhost:4222',default='nats://localhost:4222',env='PLUMBER_RELAY_NATS_STREAMING_DSN'"`
+	// @gotags: kong:"help='NATS .creds file containing authentication credentials',env='PLUMBER_RELAY_NATS_STREAMING_CREDENTIALS'"
+	UserCredentials []byte `protobuf:"bytes,2,opt,name=user_credentials,json=userCredentials,proto3" json:"user_credentials,omitempty" kong:"help='NATS .creds file containing authentication credentials',env='PLUMBER_RELAY_NATS_STREAMING_CREDENTIALS'"`
+	// @gotags: kong:"help='Cluster ID of the Nats server',required,env='PLUMBER_RELAY_NATS_STREAMING_CLUSTER_ID'"
+	ClusterId string `protobuf:"bytes,3,opt,name=cluster_id,json=clusterId,proto3" json:"cluster_id,omitempty" kong:"help='Cluster ID of the Nats server',required,env='PLUMBER_RELAY_NATS_STREAMING_CLUSTER_ID'"`
+	// @gotags: kong:"help='User specified client ID to connect with',default='plumber',env='PLUMBER_RELAY_NATS_STREAMING_CLIENT_ID'"
+	ClientId string `protobuf:"bytes,4,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty" kong:"help='User specified client ID to connect with',default='plumber',env='PLUMBER_RELAY_NATS_STREAMING_CLIENT_ID'"`
 	// @gotags: kong:"embed"
 	TlsOptions           *NatsStreamingTLSOptions `protobuf:"bytes,5,opt,name=tls_options,json=tlsOptions,proto3" json:"tls_options,omitempty" kong:"embed"`
 	XXX_NoUnkeyedLiteral struct{}                 `json:"-"`
@@ -164,18 +164,18 @@ func (m *NatsStreamingConn) GetTlsOptions() *NatsStreamingTLSOptions {
 }
 
 type NatsStreamingReadArgs struct {
-	// @gotags: kong:"help='NATS stream channel. Ex: orders'"
-	Channel string `protobuf:"bytes,1,opt,name=channel,proto3" json:"channel,omitempty" kong:"help='NATS stream channel. Ex: orders'"`
-	// @gotags: kong:"help='Create a durable subscription with this name for the given channel'"
-	DurableName string `protobuf:"bytes,2,opt,name=durable_name,json=durableName,proto3" json:"durable_name,omitempty" kong:"help='Create a durable subscription with this name for the given channel'"`
-	// @gotags: kong:"help='Deliver starting with last published message',xor=nats_delivery_option"
-	ReadLastAvailable bool `protobuf:"varint,3,opt,name=read_last_available,json=readLastAvailable,proto3" json:"read_last_available,omitempty" kong:"help='Deliver starting with last published message',xor=nats_delivery_option"`
-	// @gotags: kong:"help='Deliver messages starting at sequence number',xor=nats_delivery_option"
-	ReadSequenceNumber uint32 `protobuf:"varint,4,opt,name=read_sequence_number,json=readSequenceNumber,proto3" json:"read_sequence_number,omitempty" kong:"help='Deliver messages starting at sequence number',xor=nats_delivery_option"`
-	// @gotags: kong:"help='Deliver messages in last interval (e.g. 1s, 1h)',xor=nats_delivery_option"
-	ReadSince string `protobuf:"bytes,5,opt,name=read_since,json=readSince,proto3" json:"read_since,omitempty" kong:"help='Deliver messages in last interval (e.g. 1s, 1h)',xor=nats_delivery_option"`
-	// @gotags: kong:"help='Deliver all available messages',xor=nats_delivery_option"
-	ReadAll              bool     `protobuf:"varint,6,opt,name=read_all,json=readAll,proto3" json:"read_all,omitempty" kong:"help='Deliver all available messages',xor=nats_delivery_option"`
+	// @gotags: kong:"help='NATS stream channel. Ex: orders',env='PLUMBER_RELAY_NATS_STREAMING_CHANNEL"
+	Channel string `protobuf:"bytes,1,opt,name=channel,proto3" json:"channel,omitempty" kong:"help='NATS stream channel. Ex: orders',env='PLUMBER_RELAY_NATS_STREAMING_CHANNEL"`
+	// @gotags: kong:"help='Create a durable subscription with this name for the given channel',env='PLUMBER_RELAY_NATS_STREAMING_DURABLE_SUBSCRIPTION_NAME'"
+	DurableName string `protobuf:"bytes,2,opt,name=durable_name,json=durableName,proto3" json:"durable_name,omitempty" kong:"help='Create a durable subscription with this name for the given channel',env='PLUMBER_RELAY_NATS_STREAMING_DURABLE_SUBSCRIPTION_NAME'"`
+	// @gotags: kong:"help='Deliver starting with last published message',xor=nats_delivery_option,env='PLUMBER_RELAY_NATS_STREAMING_READ_LAST'"
+	ReadLastAvailable bool `protobuf:"varint,3,opt,name=read_last_available,json=readLastAvailable,proto3" json:"read_last_available,omitempty" kong:"help='Deliver starting with last published message',xor=nats_delivery_option,env='PLUMBER_RELAY_NATS_STREAMING_READ_LAST'"`
+	// @gotags: kong:"help='Deliver messages starting at sequence number',xor=nats_delivery_option,env='PLUMBER_RELAY_NATS_STREAMING_READ_SEQUENCE'"
+	ReadSequenceNumber uint32 `protobuf:"varint,4,opt,name=read_sequence_number,json=readSequenceNumber,proto3" json:"read_sequence_number,omitempty" kong:"help='Deliver messages starting at sequence number',xor=nats_delivery_option,env='PLUMBER_RELAY_NATS_STREAMING_READ_SEQUENCE'"`
+	// @gotags: kong:"help='Deliver messages in last interval (e.g. 1s, 1h)',xor=nats_delivery_option,env='PLUMBER_RELAY_NATS_STREAMING_READ_SINCE'"
+	ReadSince string `protobuf:"bytes,5,opt,name=read_since,json=readSince,proto3" json:"read_since,omitempty" kong:"help='Deliver messages in last interval (e.g. 1s, 1h)',xor=nats_delivery_option,env='PLUMBER_RELAY_NATS_STREAMING_READ_SINCE'"`
+	// @gotags: kong:"help='Deliver all available messages',xor=nats_delivery_option,env='PLUMBER_RELAY_NATS_STREAMING_READ_ALL'"
+	ReadAll              bool     `protobuf:"varint,6,opt,name=read_all,json=readAll,proto3" json:"read_all,omitempty" kong:"help='Deliver all available messages',xor=nats_delivery_option,env='PLUMBER_RELAY_NATS_STREAMING_READ_ALL'"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`

@@ -113,9 +113,9 @@ func (r *RedisStreams) createConsumerGroups(ctx context.Context, rsArgs *args.Re
 
 	var offset string
 	switch rsArgs.CreateConsumerConfig.OffsetStart {
-	case args.OffsetStart_Oldest:
+	case args.OffsetStart_OLDEST:
 		offset = "0"
-	case args.OffsetStart_Latest:
+	case args.OffsetStart_LATEST:
 		offset = "$"
 	default:
 		offset = rsArgs.CreateConsumerConfig.OffsetStart.String()
