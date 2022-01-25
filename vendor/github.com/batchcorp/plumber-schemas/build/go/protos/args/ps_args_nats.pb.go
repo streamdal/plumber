@@ -79,8 +79,8 @@ func (m *NatsConn) GetTlsOptions() *NatsTLSOptions {
 }
 
 type NatsTLSOptions struct {
-	// @gotags: kong:"help='Whether to verify server certificate',env='PLUMBER_RELAY_NATS_VERIFY_CERT'"
-	TlsSkipVerify bool `protobuf:"varint,1,opt,name=tls_skip_verify,json=tlsSkipVerify,proto3" json:"tls_skip_verify,omitempty" kong:"help='Whether to verify server certificate',env='PLUMBER_RELAY_NATS_VERIFY_CERT'"`
+	// @gotags: kong:"help='Whether to verify server certificate',env='PLUMBER_RELAY_NATS_SKIP_VERIFY_TLS'"
+	TlsSkipVerify bool `protobuf:"varint,1,opt,name=tls_skip_verify,json=tlsSkipVerify,proto3" json:"tls_skip_verify,omitempty" kong:"help='Whether to verify server certificate',env='PLUMBER_RELAY_NATS_SKIP_VERIFY_TLS'"`
 	// @gotags: kong:"help='CA file (only needed if addr is tls://)',env='PLUMBER_RELAY_NATS_TLS_CA_CERT'"
 	TlsCaCert []byte `protobuf:"bytes,2,opt,name=tls_ca_cert,json=tlsCaCert,proto3" json:"tls_ca_cert,omitempty" kong:"help='CA file (only needed if addr is tls://)',env='PLUMBER_RELAY_NATS_TLS_CA_CERT'"`
 	// @gotags: kong:"help='Client cert file (only needed if addr is tls://)',env='PLUMBER_RELAY_NATS_TLS_CLIENT_CERT'"
