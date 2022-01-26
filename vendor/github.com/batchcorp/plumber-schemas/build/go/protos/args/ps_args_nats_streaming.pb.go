@@ -164,8 +164,8 @@ func (m *NatsStreamingConn) GetTlsOptions() *NatsStreamingTLSOptions {
 }
 
 type NatsStreamingReadArgs struct {
-	// @gotags: kong:"help='NATS stream channel. Ex: orders',env='PLUMBER_RELAY_NATS_STREAMING_CHANNEL"
-	Channel string `protobuf:"bytes,1,opt,name=channel,proto3" json:"channel,omitempty" kong:"help='NATS stream channel. Ex: orders',env='PLUMBER_RELAY_NATS_STREAMING_CHANNEL"`
+	// @gotags: kong:"help='NATS stream channel. Ex: orders',env='PLUMBER_RELAY_NATS_STREAMING_CHANNEL'"
+	Channel string `protobuf:"bytes,1,opt,name=channel,proto3" json:"channel,omitempty" kong:"help='NATS stream channel. Ex: orders',env='PLUMBER_RELAY_NATS_STREAMING_CHANNEL'"`
 	// @gotags: kong:"help='Create a durable subscription with this name for the given channel',env='PLUMBER_RELAY_NATS_STREAMING_DURABLE_SUBSCRIPTION_NAME'"
 	DurableName string `protobuf:"bytes,2,opt,name=durable_name,json=durableName,proto3" json:"durable_name,omitempty" kong:"help='Create a durable subscription with this name for the given channel',env='PLUMBER_RELAY_NATS_STREAMING_DURABLE_SUBSCRIPTION_NAME'"`
 	// @gotags: kong:"help='Deliver starting with last published message',xor=nats_delivery_option,env='PLUMBER_RELAY_NATS_STREAMING_READ_LAST'"
