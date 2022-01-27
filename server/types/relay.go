@@ -29,6 +29,8 @@ type Relay struct {
 
 // StartRelay starts a configured relay, it's workers, and the GRPC workers
 func (r *Relay) StartRelay() error {
+	r.log = logrus.WithField("pkg", "types/relay")
+
 	relayCh := make(chan interface{}, 1)
 	localErrCh := make(chan *records.ErrorRecord, 1)
 

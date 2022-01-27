@@ -131,8 +131,7 @@ func (p *Plumber) Run() {
 
 	switch p.CLIOptions.Global.XAction {
 	case "server":
-		logrus.Fatal("server mode not implemented")
-		//err = p.RunServer()
+		err = p.RunServer()
 	case "batch":
 		err = p.HandleBatchCmd()
 	case "read":

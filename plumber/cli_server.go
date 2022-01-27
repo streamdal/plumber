@@ -83,6 +83,8 @@ func (p *Plumber) startEtcd() error {
 
 	p.Etcd = e
 
+	p.log.Debugf("embedded etcd listener address: %s", p.Config.CLIOptions.Server.ListenerClientUrl)
+
 	if err := e.PopulateCache(); err != nil {
 		p.log.Errorf("Unable to load data from etcd: %s", err)
 	}

@@ -34,6 +34,8 @@ import (
 const (
 	BackendName = "kafka"
 
+	DefaultConsumerGroupName = "plumber-server"
+
 	DefaultBatchSize = 1
 )
 
@@ -138,8 +140,14 @@ func NewReaderForRelay(dialer *skafka.Dialer, connArgs *args.KafkaConn, relayArg
 	}
 
 	if relayArgs.UseConsumerGroup {
+		if relayArgs.ConsumerGroupName == "" {
+			relayArgs.ConsumerGroupName = DefaultConsumerGroupName
+		} else {
+			rc.GroupID = relayArgs.ConsumerGroupName
+		}
+
 		rc.GroupTopics = relayArgs.Topics
-		rc.GroupID = relayArgs.ConsumerGroupName
+
 	} else {
 		rc.Topic = relayArgs.Topics[0]
 	}
