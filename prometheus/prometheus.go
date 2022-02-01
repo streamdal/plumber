@@ -12,6 +12,15 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	PlumberRelayRate        = "plumber_relay_rate"
+	PlumberRelayErrors      = "plumber_relay_errors"
+	PlumberRelayTotalEvents = "plumber_relay_total_events"
+	PlumberReadErrors       = "plumber_read_errors"
+	PlumberGRPCErrors       = "plumber_grpc_errors"
+	PlumberRelayWorkers     = "plumber_relay_workers"
+)
+
 var (
 	ReportInterval = 10 * time.Second
 
@@ -63,23 +72,33 @@ func InitPrometheusMetrics() {
 	prometheusMutex.Lock()
 	defer prometheusMutex.Unlock()
 
-	prometheusGauges["plumber_relay_rate"] = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "plumber_relay_rate",
+	prometheusGauges[PlumberRelayRate] = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: PlumberRelayRate,
 		Help: "Current rare of messages being relayed to Batch.sh",
 	})
 
-	prometheusCounters["plumber_relay_total"] = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "plumber_relay_total",
+	prometheusCounters[PlumberRelayTotalEvents] = promauto.NewCounter(prometheus.CounterOpts{
+		Name: PlumberRelayTotalEvents,
 		Help: "Total number of events relayed to Batch.sh",
 	})
 
-	prometheusCounters["plumber_read_errors"] = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "plumber_read_errors",
+	prometheusCounters[PlumberRelayWorkers] = promauto.NewCounter(prometheus.CounterOpts{
+		Name: PlumberRelayWorkers,
+		Help: "Number of active relays",
+	})
+
+	prometheusCounters[PlumberRelayErrors] = promauto.NewCounter(prometheus.CounterOpts{
+		Name: PlumberRelayErrors,
+		Help: "Total number of errors while relaying events to Batch.sh",
+	})
+
+	prometheusCounters[PlumberReadErrors] = promauto.NewCounter(prometheus.CounterOpts{
+		Name: PlumberReadErrors,
 		Help: "Number of errors when reading messages",
 	})
 
-	prometheusCounters["plumber_grpc_errors"] = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "plumber_grpc_errors",
+	prometheusCounters[PlumberGRPCErrors] = promauto.NewCounter(prometheus.CounterOpts{
+		Name: PlumberGRPCErrors,
 		Help: "Number of errors when making GRPC calls",
 	})
 }
@@ -111,6 +130,14 @@ func Incr(name string, value int) {
 	defer mutex.Unlock()
 
 	counters[name] += value
+}
+
+// Decr decrements a counter by the given amount
+func Decr(name string, value int) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	counters[name] -= value
 }
 
 // Mute stops reporting given stats

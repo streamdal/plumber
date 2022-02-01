@@ -5,7 +5,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/batchcorp/plumber/actions"
+	"github.com/batchcorp/plumber/api"
+	"github.com/batchcorp/plumber/options"
 	"github.com/nakabonne/tstorage"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -62,6 +63,13 @@ func (p *Plumber) RunServer() error {
 		break
 	}
 
+	// Launch HTTP server
+	go func() {
+		if err := api.Start(p.CLIOptions.Relay.XCliOptions.HttpListenAddress, options.VERSION); err != nil {
+			logrus.Fatalf("unable to start API server: %s", err)
+		}
+	}()
+
 	p.log.Info("starting gRPC server")
 
 	// Blocks
@@ -73,7 +81,7 @@ func (p *Plumber) RunServer() error {
 }
 
 func (p *Plumber) startEtcd() error {
-	e, err := etcd.New(p.Config.CLIOptions.Server, p.PersistentConfig)
+	e, err := etcd.New(p.Config.CLIOptions.Server, p.PersistentConfig, p.Actions)
 	if err != nil {
 		return errors.Wrap(err, "unable to instantiate etcd")
 	}
@@ -152,16 +160,12 @@ func (p *Plumber) runServer() error {
 		return errors.Wrap(err, "unable to create uierrors service")
 	}
 
-	a, err := actions.New(&actions.Config{
-		PersistentConfig: p.PersistentConfig,
-	})
-
 	if err != nil {
 		return errors.Wrap(err, "unable to create actions service")
 	}
 
 	plumberServer := &server.Server{
-		Actions:          a,
+		Actions:          p.Actions,
 		PersistentConfig: p.PersistentConfig,
 		AuthToken:        p.CLIOptions.Server.AuthToken,
 		VCService:        vcService,

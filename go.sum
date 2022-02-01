@@ -111,6 +111,8 @@ github.com/aws/aws-sdk-go v1.34.28 h1:sscPpn/Ns3i0F4HPEWAVcwdIRaZZCuL7llJ2/60yPI
 github.com/aws/aws-sdk-go v1.34.28/go.mod h1:H7NKnBqNVzoTJpGfLrQkkD+ytBA93eiDYi/+8rV9s48=
 github.com/batchcorp/collector-schemas v0.0.5 h1:rNCdbcPs+PrfcSGSxIwP7ncUzi6za8mvKXbz+ICWJBI=
 github.com/batchcorp/collector-schemas v0.0.5/go.mod h1:qSVA1UcrApoLX2mS4cj+aH+IvNwcSfm50vWa0UAN/WU=
+github.com/batchcorp/collector-schemas v0.0.9 h1:csdqk8dzvZI3mKkpPwQx8DAVdtQPAxaL0Nk0w9m82HY=
+github.com/batchcorp/collector-schemas v0.0.9/go.mod h1:qSVA1UcrApoLX2mS4cj+aH+IvNwcSfm50vWa0UAN/WU=
 github.com/batchcorp/inferschema v0.0.1 h1:aRSfi5W+m8lCgGW0e2ruo8yY8YOATkFjmX383hQgrNI=
 github.com/batchcorp/inferschema v0.0.1/go.mod h1:U1qngk0hEunJbWyJkQt1i64XvUEWX2kGTwpmy6Fs/QY=
 github.com/batchcorp/inferschema v0.0.2 h1:Eo6nVIPLL0vxBIRdOjsmegEGl68lE0AFik5KA8QNM1c=
@@ -226,6 +228,10 @@ github.com/batchcorp/plumber-schemas v0.0.123 h1:5/cq83sHWPZeO2QBlSSmWSmIe6RE6nD
 github.com/batchcorp/plumber-schemas v0.0.123/go.mod h1:YULMKnfZ8X7tglTfUzKXhWc1Bfq6dy5ysIQbvsbCOkY=
 github.com/batchcorp/plumber-schemas v0.0.130 h1:2xdYD0KpHWVGNCW8X9UPE7y5qvrtvVUZ2e54V7lMgWI=
 github.com/batchcorp/plumber-schemas v0.0.130/go.mod h1:YULMKnfZ8X7tglTfUzKXhWc1Bfq6dy5ysIQbvsbCOkY=
+github.com/batchcorp/plumber-schemas v0.0.131 h1:vkfmh4N2k+2qBP9iXRjhyQjL0WETnwSND4z1D+ALV/0=
+github.com/batchcorp/plumber-schemas v0.0.131/go.mod h1:YULMKnfZ8X7tglTfUzKXhWc1Bfq6dy5ysIQbvsbCOkY=
+github.com/batchcorp/plumber-schemas v0.0.132 h1:xejoIubUmVoUMCveeJkjpt4LcB3CK7FMuilhYBzXnDU=
+github.com/batchcorp/plumber-schemas v0.0.132/go.mod h1:YULMKnfZ8X7tglTfUzKXhWc1Bfq6dy5ysIQbvsbCOkY=
 github.com/batchcorp/rabbit v0.1.9 h1:BzQStzeo0WuvC7+PKYaEBYtn9qqramlaZCN1CxmNM6U=
 github.com/batchcorp/rabbit v0.1.9/go.mod h1:LaAQ6FCNkir0/SbJ9jX3JNNP1ULAU2M3QZN/IwFRwXw=
 github.com/batchcorp/rabbit v0.1.16 h1:TqyToURClYCPNiBzMOF0Cj87X1i9vLLZn0nG8PzawcE=

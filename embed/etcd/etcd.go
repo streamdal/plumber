@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/batchcorp/plumber/actions"
+	"github.com/batchcorp/plumber/prometheus"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -594,22 +595,23 @@ func (e *Etcd) populateRelayCache() error {
 	var count int
 
 	for _, v := range resp.Kvs {
-		relay := &opts.RelayOptions{}
-		if err := proto.Unmarshal(v.Value, relay); err != nil {
+		relayOptions := &opts.RelayOptions{}
+		if err := proto.Unmarshal(v.Value, relayOptions); err != nil {
 			e.log.Errorf("unable to unmarshal opts.RelayOptions message: %s", err)
 			continue
 		}
 
-		count++
+		if _, err := e.Actions.CreateRelay(context.Background(), relayOptions); err != nil {
+			e.log.Errorf("unable to create relay for '%s': %s", relayOptions.XRelayId, err)
+			continue
+		}
 
-		e.PersistentConfig.SetRelay(relay.XRelayId, &types.Relay{
-			Active:  false,
-			Id:      relay.XRelayId,
-			Options: relay,
-		})
+		prometheus.Incr(prometheus.PlumberRelayWorkers, 1)
+
+		count++
 	}
 
-	e.log.Debugf("Loaded '%d' relays from etcd", count)
+	e.log.Infof("Created '%d' relays from etcd", count)
 
 	return nil
 }

@@ -35,6 +35,8 @@ func Start(listenAddress, version string) error {
 	router.HandlerFunc("GET", "/version", a.versionHandler)
 	router.Handler("GET", "/metrics", promhttp.Handler())
 
+	a.log.Infof("starting API server on %s", listenAddress)
+
 	return http.ListenAndServe(listenAddress, router)
 }
 

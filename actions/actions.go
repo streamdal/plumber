@@ -2,6 +2,7 @@ package actions
 
 import (
 	"context"
+	"time"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber/backends"
@@ -72,7 +73,7 @@ func (a *Actions) CreateRelay(ctx context.Context, relayOpts *opts.RelayOptions)
 		Options:    relayOpts,
 	}
 
-	if err := r.StartRelay(); err != nil {
+	if err := r.StartRelay(time.Millisecond * 100); err != nil {
 		return nil, errors.Wrap(err, "unable to start relay")
 	}
 

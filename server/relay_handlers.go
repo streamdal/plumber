@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/batchcorp/plumber/prometheus"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -21,23 +22,56 @@ func (s *Server) GetAllRelays(_ context.Context, req *protos.GetAllRelaysRequest
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
+	var numActive int
+	var numInactive int
+
 	RelayOptions := make([]*opts.RelayOptions, 0)
 	for _, v := range s.PersistentConfig.Relays {
+		if v.Active {
+			numActive += 1
+		} else {
+			numInactive += 1
+		}
+
+		v.Options.XActive = v.Active
 		RelayOptions = append(RelayOptions, v.Options)
 	}
+
+	msg := fmt.Sprintf("found '%d' active and '%d' inactive relays", numActive, numInactive)
 
 	return &protos.GetAllRelaysResponse{
 		Status: &common.Status{
 			Code:      common.Code_OK,
+			Message:   msg,
 			RequestId: uuid.NewV4().String(),
 		},
 		Opts: RelayOptions,
 	}, nil
 }
 
-// TODO: Implement
 func (s *Server) GetRelay(ctx context.Context, request *protos.GetRelayRequest) (*protos.GetRelayResponse, error) {
-	panic("implement me")
+	if err := s.validateAuth(request.Auth); err != nil {
+		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
+	}
+
+	if request.RelayId == "" {
+		return nil, CustomError(common.Code_INVALID_ARGUMENT, "id cannot be empty")
+	}
+
+	relay := s.PersistentConfig.GetRelay(request.RelayId)
+	if relay == nil {
+		return nil, CustomError(common.Code_NOT_FOUND, fmt.Sprintf("relay %s not found", request.RelayId))
+	}
+
+	relay.Options.XActive = relay.Active
+
+	return &protos.GetRelayResponse{
+		Status: &common.Status{
+			Code:      common.Code_OK,
+			RequestId: uuid.NewV4().String(),
+		},
+		Opts: relay.Options,
+	}, nil
 }
 
 func (s *Server) CreateRelay(ctx context.Context, req *protos.CreateRelayRequest) (*protos.CreateRelayResponse, error) {
@@ -76,6 +110,8 @@ func (s *Server) CreateRelay(ctx context.Context, req *protos.CreateRelayRequest
 		s.rollbackCreateRelay(ctx, req.Opts)
 		s.Log.Error(err)
 	}
+
+	prometheus.Incr(prometheus.PlumberRelayWorkers, 1)
 
 	s.Log.Infof("Relay '%s' started", r.Id)
 
@@ -121,7 +157,7 @@ func (s *Server) UpdateRelay(_ context.Context, req *protos.UpdateRelayRequest) 
 	relay.CancelCtx = ctx
 	relay.CancelFunc = cancelFunc
 
-	if err := relay.StartRelay(); err != nil {
+	if err := relay.StartRelay(5 * time.Second); err != nil {
 		return nil, errors.Wrap(err, "unable to start relay")
 	}
 
@@ -198,6 +234,8 @@ func (s *Server) StopRelay(_ context.Context, req *protos.StopRelayRequest) (*pr
 
 	// TODO: Need to emit message for other instances to stop relay
 
+	prometheus.Decr(prometheus.PlumberRelayWorkers, 1)
+
 	s.Log.Infof("Relay '%s' stopped", relay.Id)
 
 	return &protos.StopRelayResponse{
@@ -227,11 +265,13 @@ func (s *Server) ResumeRelay(ctx context.Context, req *protos.ResumeRelayRequest
 	relay.CancelCtx = ctx
 	relay.CancelFunc = cancelFunc
 
-	if err := relay.StartRelay(); err != nil {
+	if err := relay.StartRelay(5 * time.Second); err != nil {
 		return nil, errors.Wrap(err, "unable to start relay")
 	}
 
 	// TODO: Emit message to resume relay
+
+	prometheus.Decr(prometheus.PlumberRelayWorkers, 1)
 
 	s.Log.Infof("Relay '%s' started", relay.Id)
 
@@ -272,6 +312,8 @@ func (s *Server) DeleteRelay(ctx context.Context, req *protos.DeleteRelayRequest
 	if err := s.Etcd.PublishDeleteRelay(ctx, relay.Options); err != nil {
 		s.Log.Error(err)
 	}
+
+	prometheus.Decr(prometheus.PlumberRelayWorkers, 1)
 
 	return &protos.DeleteRelayResponse{
 		Status: &common.Status{

@@ -22,6 +22,8 @@ func (e *Etcd) handleBroadcastWatchResponse(ctx context.Context, resp *clientv3.
 	}
 
 	for _, v := range resp.Events {
+		e.log.Debugf("got a new '%s' etcd message: %s", v.Type, string(v.Kv.Value))
+
 		// We only care about creations
 		if v.Type != clientv3.EventTypePut {
 			continue

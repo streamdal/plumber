@@ -10,6 +10,7 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/batchcorp/plumber/actions"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/ssh/terminal"
@@ -76,13 +77,22 @@ func main() {
 		printer.PrintLogo()
 	}
 
+	persistentConfig := getConfig()
+
+	// Actions contains server-related methods that are used by both the gRPC
+	// server and the etcd consumer.
+	a, err := actions.New(&actions.Config{
+		PersistentConfig: persistentConfig,
+	})
+
 	p, err := plumber.New(&plumber.Config{
-		PersistentConfig:   getConfig(),
+		PersistentConfig:   persistentConfig,
 		ServiceShutdownCtx: serviceCtx,
 		MainShutdownFunc:   mainShutdownFunc,
 		MainShutdownCtx:    mainCtx,
 		KongCtx:            kongCtx,
 		CLIOptions:         cliOpts,
+		Actions:            a,
 	})
 
 	if err != nil {
