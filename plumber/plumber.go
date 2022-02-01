@@ -27,6 +27,8 @@ var (
 	ErrMissingMainShutdownFunc = errors.New("MainShutdownFunc cannot be nil")
 	ErrMissingMainContext      = errors.New("MainContext cannot be nil")
 	ErrMissingOptions          = errors.New("CLIOptions cannot be nil")
+	ErrMissingPersistentConfig = errors.New("PersistentConfig cannot be nil")
+	ErrMissingKongCtx          = errors.New("KongCtx cannot be nil")
 )
 
 // Config contains configurable options for instantiating a new Plumber
@@ -249,6 +251,14 @@ func validateConfig(cfg *Config) error {
 
 	if cfg.MainShutdownFunc == nil {
 		return ErrMissingMainShutdownFunc
+	}
+
+	if cfg.PersistentConfig == nil {
+		return ErrMissingPersistentConfig
+	}
+
+	if cfg.KongCtx == nil {
+		return ErrMissingKongCtx
 	}
 
 	return nil

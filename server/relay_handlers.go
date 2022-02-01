@@ -13,10 +13,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
-	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/embed/etcd"
-	"github.com/batchcorp/plumber/server/types"
-	"github.com/batchcorp/plumber/validate"
 )
 
 func (s *Server) GetAllRelays(_ context.Context, req *protos.GetAllRelaysRequest) (*protos.GetAllRelaysResponse, error) {
@@ -38,25 +35,24 @@ func (s *Server) GetAllRelays(_ context.Context, req *protos.GetAllRelaysRequest
 	}, nil
 }
 
+// TODO: Implement
+func (s *Server) GetRelay(ctx context.Context, request *protos.GetRelayRequest) (*protos.GetRelayResponse, error) {
+	panic("implement me")
+}
+
 func (s *Server) CreateRelay(ctx context.Context, req *protos.CreateRelayRequest) (*protos.CreateRelayResponse, error) {
 	if err := s.validateAuth(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	if err := validate.RelayOptionsForServer(req.Opts); err != nil {
-		return nil, CustomError(common.Code_ABORTED, fmt.Sprintf("unable to validate relay options: %s", err))
-	}
+	// New relay, create new ID
+	req.Opts.XRelayId = uuid.NewV4().String()
 
-	// Get stored connection information
-	conn := s.PersistentConfig.GetConnection(req.Opts.ConnectionId)
-	if conn == nil {
-		return nil, CustomError(common.Code_NOT_FOUND, validate.ErrConnectionNotFound.Error())
-	}
-
-	// Try to create a backend from given connection options
-	be, err := backends.New(conn)
+	// Create & start relay
+	r, err := s.Actions.CreateRelay(ctx, req.Opts)
 	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, fmt.Sprintf("unable to create backend: %s", err))
+		s.rollbackCreateRelay(ctx, req.Opts)
+		return nil, CustomError(common.Code_ABORTED, fmt.Sprintf("unable to create relay: %s", err))
 	}
 
 	// Save to etcd
@@ -71,33 +67,15 @@ func (s *Server) CreateRelay(ctx context.Context, req *protos.CreateRelayRequest
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
 
-	// Used to shutdown relays on StopRelay() gRPC call
-	shutdownCtx, shutdownFunc := context.WithCancel(context.Background())
-
-	r := &types.Relay{
-		Id:         uuid.NewV4().String(),
-		Backend:    be,
-		CancelFunc: shutdownFunc,
-		CancelCtx:  shutdownCtx,
-		Options:    req.Opts,
-	}
-
-	// Save to memory
-	s.PersistentConfig.SetRelay(r.Id, r)
-
-	// Publish CreateSchema event
+	// Publish CreateRelay event
+	// NOTE: For Kafka, if create relay options specify to NOT use a consumer
+	// group, other instances will just ignore the message.
+	//
+	// No consumer group == no load balancing between plumber instances.
 	if err := s.Etcd.PublishCreateRelay(ctx, r.Options); err != nil {
 		s.rollbackCreateRelay(ctx, req.Opts)
 		s.Log.Error(err)
 	}
-
-	if err := r.StartRelay(); err != nil {
-		s.rollbackCreateRelay(ctx, req.Opts)
-		return nil, errors.Wrap(err, "unable to start relay")
-	}
-
-	r.Options.XRelayId = r.Id
-	r.Active = true
 
 	s.Log.Infof("Relay '%s' started", r.Id)
 
@@ -218,6 +196,8 @@ func (s *Server) StopRelay(_ context.Context, req *protos.StopRelayRequest) (*pr
 	relay.CancelFunc()
 	relay.Active = false
 
+	// TODO: Need to emit message for other instances to stop relay
+
 	s.Log.Infof("Relay '%s' stopped", relay.Id)
 
 	return &protos.StopRelayResponse{
@@ -250,6 +230,8 @@ func (s *Server) ResumeRelay(ctx context.Context, req *protos.ResumeRelayRequest
 	if err := relay.StartRelay(); err != nil {
 		return nil, errors.Wrap(err, "unable to start relay")
 	}
+
+	// TODO: Emit message to resume relay
 
 	s.Log.Infof("Relay '%s' started", relay.Id)
 

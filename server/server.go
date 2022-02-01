@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/batchcorp/plumber/actions"
 	"github.com/lestrrat-go/jwx/jwt"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -26,6 +27,7 @@ import (
 )
 
 type Server struct {
+	Actions          *actions.Actions
 	AuthToken        string
 	PersistentConfig *config.Config
 	VCService        vcservice.IVCService

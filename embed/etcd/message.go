@@ -23,6 +23,14 @@ const (
 	CreateRelay = "CreateRelay"
 	UpdateRelay = "UpdateRelay"
 	DeleteRelay = "DeleteRelay"
+	StopRelay   = "StopRelay"
+	ResumeRelay = "ResumeRelay"
+
+	CreateDynamic = "CreateDynamic"
+	UpdateDynamic = "UpdateDynamic"
+	DeleteDynamic = "DeleteDynamic"
+	StopDynamic   = "StopDynamic"
+	ResumeDynamic = "ResumeDynamic"
 
 	CreateValidation = "CreateValidation"
 	UpdateValidation = "UpdateValidation"
@@ -42,7 +50,8 @@ var (
 	ValidActions = []Action{
 		CreateConnection, UpdateConnection, DeleteConnection,
 		CreateService, UpdateService, DeleteService,
-		CreateRelay, UpdateRelay, DeleteRelay,
+		CreateRelay, UpdateRelay, DeleteRelay, StopRelay, ResumeRelay,
+		CreateDynamic, UpdateDynamic, DeleteDynamic, StopDynamic, ResumeDynamic,
 		UpdateConfig, CreateRead, DeleteRead,
 		CreateComposite, UpdateComposite, DeleteComposite,
 	}

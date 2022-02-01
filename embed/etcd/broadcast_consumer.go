@@ -38,38 +38,67 @@ func (e *Etcd) handleBroadcastWatchResponse(ctx context.Context, resp *clientv3.
 
 		// Add actions here that the consumer should respond to
 		switch msg.Action {
+		// Connection
 		case CreateConnection:
 			err = e.doCreateConnection(ctx, msg)
 		case UpdateConnection:
 			err = e.doUpdateConnection(ctx, msg)
 		case DeleteConnection:
 			err = e.doDeleteConnection(ctx, msg)
+
+		// Service
 		case CreateService:
 			err = e.doCreateService(ctx, msg)
 		case UpdateService:
 			err = e.doUpdateService(ctx, msg)
 		case DeleteService:
 			err = e.doDeleteService(ctx, msg)
+
+		// Schema
 		case CreateSchema:
 			err = e.doCreateSchema(ctx, msg)
 		case UpdateSchema:
 			err = e.doUpdateSchema(ctx, msg)
 		case DeleteSchema:
 			err = e.doDeleteSchema(ctx, msg)
+
+		// Relay
 		case CreateRelay:
 			err = e.doCreateRelay(ctx, msg)
 		case UpdateRelay:
 			err = e.doUpdateRelay(ctx, msg)
 		case DeleteRelay:
 			err = e.doDeleteRelay(ctx, msg)
+		case StopRelay:
+			err = e.doStopRelay(ctx, msg)
+		case ResumeRelay:
+			err = e.doResumeRelay(ctx, msg)
+
+		// Dynamic
+		case CreateDynamic:
+			err = e.doCreateDynamic(ctx, msg)
+		case UpdateDynamic:
+			err = e.doUpdateDynamic(ctx, msg)
+		case DeleteDynamic:
+			err = e.doDeleteDynamic(ctx, msg)
+		case StopDynamic:
+			err = e.doStopDynamic(ctx, msg)
+		case ResumeDynamic:
+			err = e.doResumeDynamic(ctx, msg)
+
+		// Config
 		case UpdateConfig:
 			err = e.doUpdateConfig(ctx, msg)
+
+		// Validation
 		case CreateValidation:
 			err = e.doCreateValidation(ctx, msg)
 		case UpdateValidation:
 			err = e.doUpdateValidation(ctx, msg)
 		case DeleteValidation:
 			err = e.doDeleteValidation(ctx, msg)
+
+		// Read
 		case CreateRead:
 			err = e.doCreateRead(ctx, msg)
 		case DeleteRead:
@@ -98,7 +127,7 @@ func (e *Etcd) doCreateConnection(_ context.Context, msg *Message) error {
 	}
 
 	// Save connection to in-memory map
-	e.PlumberConfig.SetConnection(connOpts.XId, connOpts)
+	e.PersistentConfig.SetConnection(connOpts.XId, connOpts)
 
 	e.log.Debugf("created connection '%s'", connOpts.Name)
 
@@ -114,7 +143,7 @@ func (e *Etcd) doUpdateConnection(_ context.Context, msg *Message) error {
 	}
 
 	// Update connection in in-memory map
-	e.PlumberConfig.SetConnection(connOpts.XId, connOpts)
+	e.PersistentConfig.SetConnection(connOpts.XId, connOpts)
 
 	e.log.Debugf("updated connection '%s'", connOpts.Name)
 
@@ -132,11 +161,11 @@ func (e *Etcd) doDeleteConnection(_ context.Context, msg *Message) error {
 	}
 
 	// Delete connOptsection
-	e.PlumberConfig.DeleteConnection(connOpts.XId)
+	e.PersistentConfig.DeleteConnection(connOpts.XId)
 
 	e.log.Debugf("deleted connection '%s'", connOpts.Name)
 
-	// TODO: stop reads/relays from this connection?
+	// TODO: stop reads/relays from this connection
 
 	return nil
 }
@@ -148,7 +177,7 @@ func (e *Etcd) doCreateService(_ context.Context, msg *Message) error {
 	}
 
 	// Set in config map
-	e.PlumberConfig.SetService(svc.Id, svc)
+	e.PersistentConfig.SetService(svc.Id, svc)
 
 	e.log.Debugf("updated service '%s'", svc.Name)
 
@@ -162,7 +191,7 @@ func (e *Etcd) doUpdateService(_ context.Context, msg *Message) error {
 	}
 
 	// Set in config map
-	e.PlumberConfig.SetService(svc.Id, svc)
+	e.PersistentConfig.SetService(svc.Id, svc)
 
 	e.log.Debugf("updated service '%s'", svc.Name)
 
@@ -176,7 +205,7 @@ func (e *Etcd) doDeleteService(_ context.Context, msg *Message) error {
 	}
 
 	// Set in config map
-	e.PlumberConfig.DeleteService(svc.Id)
+	e.PersistentConfig.DeleteService(svc.Id)
 
 	e.log.Debugf("deleted service '%s'", svc.Name)
 
@@ -190,7 +219,7 @@ func (e *Etcd) doCreateSchema(_ context.Context, msg *Message) error {
 	}
 
 	// Set in config map
-	e.PlumberConfig.SetSchema(schema.Id, schema)
+	e.PersistentConfig.SetSchema(schema.Id, schema)
 
 	e.log.Debugf("updated schema '%s'", schema.Name)
 
@@ -204,7 +233,7 @@ func (e *Etcd) doUpdateSchema(_ context.Context, msg *Message) error {
 	}
 
 	// Set in config map
-	e.PlumberConfig.SetSchema(schema.Id, schema)
+	e.PersistentConfig.SetSchema(schema.Id, schema)
 
 	e.log.Debugf("updated schema '%s'", schema.Name)
 
@@ -218,53 +247,36 @@ func (e *Etcd) doDeleteSchema(_ context.Context, msg *Message) error {
 	}
 
 	// Set in config map
-	e.PlumberConfig.DeleteSchema(svc.Id)
+	e.PersistentConfig.DeleteSchema(svc.Id)
 
 	e.log.Debugf("deleted schema '%s'", svc.Name)
 
 	return nil
 }
 
-func (e *Etcd) doCreateRelay(_ context.Context, msg *Message) error {
-	relayOptions := &opts.RelayOptions{}
-	if err := proto.Unmarshal(msg.Data, relayOptions); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into protos.Relay")
-	}
-
-	// Set in config map
-	e.PlumberConfig.SetRelay(relayOptions.XRelayId, &types.Relay{Options: relayOptions})
-
-	e.log.Debugf("created relay '%s'", relayOptions.XRelayId)
-
-	return nil
+// TODO: Implement
+func (e *Etcd) doCreateDynamic(_ context.Context, msg *Message) error {
+	panic("implement me")
 }
 
-func (e *Etcd) doUpdateRelay(_ context.Context, msg *Message) error {
-	relayOptions := &opts.RelayOptions{}
-	if err := proto.Unmarshal(msg.Data, relayOptions); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into protos.Relay")
-	}
-
-	// Set in config map
-	e.PlumberConfig.SetRelay(relayOptions.XRelayId, &types.Relay{Options: relayOptions})
-
-	e.log.Debugf("updated relay '%s'", relayOptions.XRelayId)
-
-	return nil
+// TODO: Implement
+func (e *Etcd) doDeleteDynamic(_ context.Context, msg *Message) error {
+	panic("implement me")
 }
 
-func (e *Etcd) doDeleteRelay(_ context.Context, msg *Message) error {
-	relayOptions := &opts.RelayOptions{}
-	if err := proto.Unmarshal(msg.Data, relayOptions); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into protos.Relay")
-	}
+// TODO: Implement
+func (e *Etcd) doUpdateDynamic(_ context.Context, msg *Message) error {
+	panic("implement me")
+}
 
-	// Set in config map
-	e.PlumberConfig.DeleteRelay(relayOptions.XRelayId)
+// TODO: Implement
+func (e *Etcd) doStopDynamic(_ context.Context, msg *Message) error {
+	panic("implement me")
+}
 
-	e.log.Debugf("deleted relay '%s'", relayOptions.XRelayId)
-
-	return nil
+// TODO: Implement
+func (e *Etcd) doResumeDynamic(_ context.Context, msg *Message) error {
+	panic("implement me")
 }
 
 func (e *Etcd) doCreateValidation(_ context.Context, msg *Message) error {
@@ -274,7 +286,7 @@ func (e *Etcd) doCreateValidation(_ context.Context, msg *Message) error {
 	}
 
 	// Set in config map
-	e.PlumberConfig.SetValidation(validation.XId, validation)
+	e.PersistentConfig.SetValidation(validation.XId, validation)
 
 	e.log.Debugf("created validation '%s'", validation.XId)
 
@@ -288,7 +300,7 @@ func (e *Etcd) doUpdateValidation(_ context.Context, msg *Message) error {
 	}
 
 	// Set in config map
-	e.PlumberConfig.SetValidation(validation.XId, validation)
+	e.PersistentConfig.SetValidation(validation.XId, validation)
 
 	e.log.Debugf("updated validation '%s'", validation.XId)
 
@@ -302,7 +314,7 @@ func (e *Etcd) doDeleteValidation(_ context.Context, msg *Message) error {
 	}
 
 	// Set in config map
-	e.PlumberConfig.DeleteValidation(validation.XId)
+	e.PersistentConfig.DeleteValidation(validation.XId)
 
 	e.log.Debugf("deleted validation '%s'", validation.XId)
 
@@ -323,7 +335,7 @@ func (e *Etcd) doCreateRead(_ context.Context, msg *Message) error {
 
 	read, err := types.NewRead(&types.ReadConfig{
 		ReadOptions: readOpts,
-		PlumberID:   e.PlumberConfig.PlumberID,
+		PlumberID:   e.PersistentConfig.PlumberID,
 		Backend:     nil, // intentionally nil
 	})
 	if err != nil {
@@ -331,7 +343,7 @@ func (e *Etcd) doCreateRead(_ context.Context, msg *Message) error {
 	}
 
 	// Set in config map
-	e.PlumberConfig.SetRead(readOpts.XId, read)
+	e.PersistentConfig.SetRead(readOpts.XId, read)
 
 	e.log.Debugf("created readOpts '%s'", readOpts.XId)
 
@@ -345,7 +357,7 @@ func (e *Etcd) doDeleteRead(_ context.Context, msg *Message) error {
 	}
 
 	// Set in config map
-	e.PlumberConfig.DeleteRead(read.XId)
+	e.PersistentConfig.DeleteRead(read.XId)
 
 	e.log.Debugf("deleted read '%s'", read.XId)
 
@@ -359,8 +371,8 @@ func (e *Etcd) doUpdateConfig(_ context.Context, msg *Message) error {
 	}
 
 	// Set in config map
-	e.PlumberConfig.VCServiceToken = updateCfg.VCServiceToken
-	e.PlumberConfig.GitHubToken = updateCfg.GithubToken
+	e.PersistentConfig.VCServiceToken = updateCfg.VCServiceToken
+	e.PersistentConfig.GitHubToken = updateCfg.GithubToken
 
 	e.log.Debugf("updated config via MessageUpdateConfig")
 

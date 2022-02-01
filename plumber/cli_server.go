@@ -5,6 +5,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/batchcorp/plumber/actions"
 	"github.com/nakabonne/tstorage"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -124,8 +125,6 @@ func (p *Plumber) runServer() error {
 		//}
 	}
 
-	println(p.PersistentConfig.VCServiceToken)
-
 	ghService, err := github.New()
 	if err != nil {
 		return errors.Wrap(err, "unable to start GitHub service")
@@ -153,7 +152,16 @@ func (p *Plumber) runServer() error {
 		return errors.Wrap(err, "unable to create uierrors service")
 	}
 
+	a, err := actions.New(&actions.Config{
+		PersistentConfig: p.PersistentConfig,
+	})
+
+	if err != nil {
+		return errors.Wrap(err, "unable to create actions service")
+	}
+
 	plumberServer := &server.Server{
+		Actions:          a,
 		PersistentConfig: p.PersistentConfig,
 		AuthToken:        p.CLIOptions.Server.AuthToken,
 		VCService:        vcService,

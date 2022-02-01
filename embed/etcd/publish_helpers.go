@@ -153,7 +153,7 @@ func (e *Etcd) PublishConfigUpdate(ctx context.Context, msg *MessageUpdateConfig
 	return e.Broadcast(ctx, &Message{
 		Action:    UpdateConfig,
 		Data:      data,
-		EmittedBy: e.PlumberConfig.PlumberID,
+		EmittedBy: e.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
@@ -183,7 +183,7 @@ func (e *Etcd) publishServiceMessage(ctx context.Context, action Action, svc *pr
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: e.PlumberConfig.PlumberID,
+		EmittedBy: e.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
@@ -197,7 +197,7 @@ func (e *Etcd) publishConnectionMessage(ctx context.Context, action Action, conn
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: e.PlumberConfig.PlumberID,
+		EmittedBy: e.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
@@ -212,7 +212,7 @@ func (e *Etcd) publishSchemaMessage(ctx context.Context, action Action, svc *pro
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: e.PlumberConfig.PlumberID,
+		EmittedBy: e.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
@@ -226,7 +226,7 @@ func (e *Etcd) publishRelayMessage(ctx context.Context, action Action, relay *op
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: e.PlumberConfig.PlumberID,
+		EmittedBy: e.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
@@ -240,7 +240,7 @@ func (e *Etcd) publishValidationMessage(ctx context.Context, action Action, vali
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: e.PlumberConfig.PlumberID,
+		EmittedBy: e.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
@@ -254,7 +254,7 @@ func (e *Etcd) publishReadMessage(ctx context.Context, action Action, read *opts
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: e.PlumberConfig.PlumberID,
+		EmittedBy: e.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
@@ -268,7 +268,7 @@ func (e *Etcd) publishCompositeMessage(ctx context.Context, action Action, read 
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: e.PlumberConfig.PlumberID,
+		EmittedBy: e.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }

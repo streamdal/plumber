@@ -24,8 +24,8 @@ const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 type DynamicOptions struct {
 	// @gotags: kong:"help='API token to use for dynamic destination (create here: https://console.batch.sh/account/security)',required"
 	ApiToken string `protobuf:"bytes,1,opt,name=api_token,json=apiToken,proto3" json:"api_token,omitempty" kong:"help='API token to use for dynamic destination (create here: https://console.batch.sh/account/security)',required"`
-	// @gotags: kong:"help='Dynamic destination collector address',default='dproxy.batch.sh:443'"
-	XGrpcAddress string `protobuf:"bytes,2,opt,name=_grpc_address,json=GrpcAddress,proto3" json:"_grpc_address,omitempty" kong:"help='Dynamic destination collector address',default='dproxy.batch.sh:443'"`
+	// @gotags: kong:"help='Dynamic destination API address',default='dproxy.batch.sh:443'"
+	XGrpcAddress string `protobuf:"bytes,2,opt,name=_grpc_address,json=GrpcAddress,proto3" json:"_grpc_address,omitempty" kong:"help='Dynamic destination API address',default='dproxy.batch.sh:443'"`
 	// @gotags: kong:"help='Dynamic destination collector initial connection timeout',default=5"
 	XGrpcTimeoutSeconds uint32 `protobuf:"varint,3,opt,name=_grpc_timeout_seconds,json=GrpcTimeoutSeconds,proto3" json:"_grpc_timeout_seconds,omitempty" kong:"help='Dynamic destination collector initial connection timeout',default=5"`
 	// @gotags: kong:"help='Use gRPC insecure mode when talking to Batch'"

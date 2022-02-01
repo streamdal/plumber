@@ -35,7 +35,7 @@ func (a *AWSSQS) Dynamic(ctx context.Context, opts *opts.DynamicOptions, dynamic
 		case outbound := <-outboundCh:
 			// write
 			if err := a.writeMsg(args, string(outbound.Blob), queueURL); err != nil {
-				err = fmt.Errorf("Unable to replay message: %s", err)
+				err = fmt.Errorf("unable to replay message: %s", err)
 				llog.Error(err)
 				return err
 			}

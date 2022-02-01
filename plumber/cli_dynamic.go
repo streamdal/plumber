@@ -15,7 +15,7 @@ func (p *Plumber) HandleDynamicCmd() error {
 	}
 
 	// Start up dynamic connection
-	dynamicSvc, err := dynamic.New(p.CLIOptions.Dynamic, "MQTT")
+	dynamicSvc, err := dynamic.New(p.CLIOptions.Dynamic, backend.Name())
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
