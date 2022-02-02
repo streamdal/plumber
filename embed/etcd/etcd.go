@@ -60,26 +60,41 @@ type IEtcd interface {
 	Shutdown(force bool) error
 	Start(serviceCtx context.Context) error
 
-	// Message Publish helpers
-
+	// Service events
 	PublishCreateService(ctx context.Context, svc *protos.Service) error
 	PublishUpdateService(ctx context.Context, svc *protos.Service) error
 	PublishDeleteService(ctx context.Context, svc *protos.Service) error
+
+	// Connection events
 	PublishCreateConnection(ctx context.Context, conn *opts.ConnectionOptions) error
 	PublishUpdateConnection(ctx context.Context, conn *opts.ConnectionOptions) error
 	PublishDeleteConnection(ctx context.Context, conn *opts.ConnectionOptions) error
+
+	// Schema events
 	PublishCreateSchema(ctx context.Context, schema *protos.Schema) error
 	PublishUpdateSchema(ctx context.Context, schema *protos.Schema) error
 	PublishDeleteSchema(ctx context.Context, schema *protos.Schema) error
+
+	// Relay events
 	PublishCreateRelay(ctx context.Context, relay *opts.RelayOptions) error
 	PublishUpdateRelay(ctx context.Context, relay *opts.RelayOptions) error
 	PublishDeleteRelay(ctx context.Context, relay *opts.RelayOptions) error
+	PublishStopRelay(ctx context.Context, relay *opts.RelayOptions) error
+	PublishResumeRelay(ctx context.Context, relay *opts.RelayOptions) error
+
+	// Config events
 	PublishConfigUpdate(ctx context.Context, msg *MessageUpdateConfig) error
+
+	// Validation events
 	PublishCreateValidation(ctx context.Context, validation *common.Validation) error
 	PublishUpdateValidation(ctx context.Context, validation *common.Validation) error
 	PublishDeleteValidation(ctx context.Context, validation *common.Validation) error
+
+	// Read events
 	PublishCreateRead(ctx context.Context, svc *opts.ReadOptions) error
 	PublishDeleteRead(ctx context.Context, svc *opts.ReadOptions) error
+
+	// Composite events
 	PublishCreateComposite(ctx context.Context, validation *opts.Composite) error
 	PublishUpdateComposite(ctx context.Context, validation *opts.Composite) error
 	PublishDeleteComposite(ctx context.Context, validation *opts.Composite) error
@@ -606,7 +621,7 @@ func (e *Etcd) populateRelayCache() error {
 			continue
 		}
 
-		prometheus.Incr(prometheus.PlumberRelayWorkers, 1)
+		prometheus.IncrPromGauge(prometheus.PlumberRelayWorkers)
 
 		count++
 	}

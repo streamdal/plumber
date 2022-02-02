@@ -2,12 +2,14 @@ package etcd
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber/server/types"
-	"github.com/batchcorp/plumber/validate"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
+
+	"github.com/batchcorp/plumber/server/types"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (e *Etcd) doCreateRelay(ctx context.Context, msg *Message) error {
@@ -33,14 +35,48 @@ func (e *Etcd) doCreateRelay(ctx context.Context, msg *Message) error {
 	return nil
 }
 
-// TODO: Implement
-func (e *Etcd) doStopRelay(_ context.Context, msg *Message) error {
-	panic("implement me")
+func (e *Etcd) doStopRelay(ctx context.Context, msg *Message) error {
+	// Only unmarshalling to get XRelayId - we'll be operating off of what's in
+	// our cache.
+	relayOptions := &opts.RelayOptions{}
+	if err := proto.Unmarshal(msg.Data, relayOptions); err != nil {
+		return errors.Wrap(err, "unable to unmarshal message into protos.Relay")
+	}
+
+	if relayOptions.XRelayId == "" {
+		return errors.New("relay id in options cannot be empty")
+	}
+
+	relay, err := e.Actions.StopRelay(ctx, relayOptions.XRelayId)
+	if err != nil {
+		return fmt.Errorf("unable to stop relay '%s': %s", relayOptions.XRelayId, err)
+	}
+
+	// Save to config map
+	e.PersistentConfig.SetRelay(relayOptions.XRelayId, relay)
+
+	// Don't need to update in etcd - the instance that received the request has
+	// already done it
+
+	return nil
 }
 
 // TODO: Implement
 func (e *Etcd) doResumeRelay(_ context.Context, msg *Message) error {
-	panic("implement me")
+	// Only unmarshalling to get XRelayId - we'll be operating off of what's in
+	// our cache.
+	relayOptions := &opts.RelayOptions{}
+	if err := proto.Unmarshal(msg.Data, relayOptions); err != nil {
+		return errors.Wrap(err, "unable to unmarshal message into protos.Relay")
+	}
+
+	if relayOptions.XRelayId == "" {
+		return errors.New("relay id in options cannot be empty")
+	}
+
+	// TODO: need more here
+
+	return nil
 }
 
 func (e *Etcd) doUpdateRelay(_ context.Context, msg *Message) error {

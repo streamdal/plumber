@@ -77,14 +77,14 @@ func InitPrometheusMetrics() {
 		Help: "Current rare of messages being relayed to Batch.sh",
 	})
 
+	prometheusGauges[PlumberRelayWorkers] = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: PlumberRelayWorkers,
+		Help: "Number of active relays",
+	})
+
 	prometheusCounters[PlumberRelayTotalEvents] = promauto.NewCounter(prometheus.CounterOpts{
 		Name: PlumberRelayTotalEvents,
 		Help: "Total number of events relayed to Batch.sh",
-	})
-
-	prometheusCounters[PlumberRelayWorkers] = promauto.NewCounter(prometheus.CounterOpts{
-		Name: PlumberRelayWorkers,
-		Help: "Number of active relays",
 	})
 
 	prometheusCounters[PlumberRelayErrors] = promauto.NewCounter(prometheus.CounterOpts{
@@ -110,6 +110,26 @@ func IncrPromCounter(key string, amount int) {
 	_, ok := prometheusCounters[key]
 	if ok {
 		prometheusCounters[key].Add(float64(amount))
+	}
+}
+
+// IncrPromGauge decrements a prometheus gauge by 1
+func IncrPromGauge(key string) {
+	prometheusMutex.Lock()
+	defer prometheusMutex.Unlock()
+	_, ok := prometheusGauges[key]
+	if ok {
+		prometheusGauges[key].Inc()
+	}
+}
+
+// DecrPromGauge decrements a prometheus gauge by 1
+func DecrPromGauge(key string) {
+	prometheusMutex.Lock()
+	defer prometheusMutex.Unlock()
+	_, ok := prometheusGauges[key]
+	if ok {
+		prometheusGauges[key].Dec()
 	}
 }
 

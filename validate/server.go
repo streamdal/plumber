@@ -36,6 +36,12 @@ var (
 	ErrMissingReadOptions  = errors.New("missing Read options")
 	ErrMissingReadType     = errors.New("you must provide at least one read argument message")
 
+	// Relay
+
+	ErrRelayNotFound      = errors.New("relay not found")
+	ErrRelayNotActive     = errors.New("relay not active")
+	ErrRelayAlreadyActive = errors.New("relay already active")
+
 	// Services
 
 	ErrMissingName     = errors.New("name cannot be empty")

@@ -88,7 +88,19 @@ func (e *Etcd) PublishUpdateRelay(ctx context.Context, relay *opts.RelayOptions)
 // PublishDeleteRelay publishes a DeleteRelay message, which other plumber instances will receive
 // and delete from their local in-memory maps
 func (e *Etcd) PublishDeleteRelay(ctx context.Context, relay *opts.RelayOptions) error {
-	return e.publishRelayMessage(ctx, DeleteSchema, relay)
+	return e.publishRelayMessage(ctx, DeleteRelay, relay)
+}
+
+// PublishStopRelay broadcasts a StopRelay message which will cause all plumber
+// instances to stop the relay and remove it from their in-memory cache.
+func (e *Etcd) PublishStopRelay(ctx context.Context, relay *opts.RelayOptions) error {
+	return e.publishRelayMessage(ctx, StopRelay, relay)
+}
+
+// PublishResumeRelay broadcasts a ResumeRelay message which will cause all plumber
+// instances to start a stopped relay and add it to their in-memory cache.
+func (e *Etcd) PublishResumeRelay(ctx context.Context, relay *opts.RelayOptions) error {
+	return e.publishRelayMessage(ctx, ResumeRelay, relay)
 }
 
 // PublishCreateValidation publishes a CreateValidation message, which other plumber instances will receive
