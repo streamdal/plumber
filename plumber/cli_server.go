@@ -5,12 +5,13 @@ import (
 	"net"
 	"time"
 
-	"github.com/batchcorp/plumber/api"
-	"github.com/batchcorp/plumber/options"
 	"github.com/nakabonne/tstorage"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+
+	"github.com/batchcorp/plumber/api"
+	"github.com/batchcorp/plumber/options"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 
@@ -133,7 +134,7 @@ func (p *Plumber) runServer() error {
 	}
 
 	storage, err := tstorage.NewStorage(
-		tstorage.WithDataPath("./.plumber/"+p.CLIOptions.Server.StatsDatabasePath),
+		tstorage.WithDataPath(p.CLIOptions.Server.StoragePath+"/"+p.CLIOptions.Server.StatsDatabasePath),
 		tstorage.WithTimestampPrecision(tstorage.Seconds),
 		tstorage.WithRetention(time.Hour*24*7),
 	)
