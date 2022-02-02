@@ -133,7 +133,7 @@ func (p *Plumber) runServer() error {
 	}
 
 	storage, err := tstorage.NewStorage(
-		tstorage.WithDataPath(p.CLIOptions.Server.StatsDatabasePath),
+		tstorage.WithDataPath("./.plumber/"+p.CLIOptions.Server.StatsDatabasePath),
 		tstorage.WithTimestampPrecision(tstorage.Seconds),
 		tstorage.WithRetention(time.Hour*24*7),
 	)

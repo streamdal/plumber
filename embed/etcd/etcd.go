@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net"
 	"net/url"
 	"strings"
 	"time"
 
-	"github.com/batchcorp/plumber/actions"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -21,6 +21,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
+	"github.com/batchcorp/plumber/actions"
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/server/types"
 )
@@ -377,15 +378,59 @@ func (e *Etcd) Shutdown(force bool) error {
 	return nil
 }
 
+// resolveEtcdURL is needed because the etcd library requires IPs to be passed, not hostnames
+func resolveEtcdURL(u *url.URL) ([]url.URL, error) {
+	host, _, err := net.SplitHostPort(u.Host)
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to split host from port for etcd url: '%s'", u.String())
+	}
+
+	// IP address, no need to resolve
+	if net.ParseIP(host) != nil {
+		return []url.URL{*u}, nil
+	}
+
+	// Resolve hostname
+	advertisePeerURL, err := net.LookupIP(host)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to resolve advertise peer URL")
+	}
+
+	return []url.URL{url.URL{
+		Host:   net.JoinHostPort(advertisePeerURL[0].String(), u.Port()),
+		Scheme: u.Scheme,
+	}}, nil
+}
+
 func (e *Etcd) launchEmbeddedEtcd(_ context.Context) (*embed.Etcd, error) {
 	cfg := embed.NewConfig()
 
+	advertisePeerURL, err := resolveEtcdURL(e.urls.AdvertisePeerURL)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to resolve advertise peer URL")
+	}
+
+	listenerPeerURL, err := resolveEtcdURL(e.urls.ListenerPeerURL)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to resolve listener peer URL")
+	}
+
+	listenerClientURL, err := resolveEtcdURL(e.urls.ListenerClientURL)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to resolve listener client URL")
+	}
+
+	advertiseClientURL, err := resolveEtcdURL(e.urls.AdvertiseClientURL)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to resolve advertise client URL")
+	}
+
 	cfg.Name = e.serverOptions.NodeId
-	cfg.Dir = e.serverOptions.NodeId + ".etcd"
-	cfg.LPUrls = []url.URL{*e.urls.ListenerPeerURL}
-	cfg.LCUrls = []url.URL{*e.urls.ListenerClientURL}
-	cfg.APUrls = []url.URL{*e.urls.AdvertisePeerURL}
-	cfg.ACUrls = []url.URL{*e.urls.AdvertiseClientURL}
+	cfg.Dir = fmt.Sprintf("./.plumber/%s.etcd", e.serverOptions.NodeId)
+	cfg.LPUrls = listenerPeerURL
+	cfg.LCUrls = listenerClientURL
+	cfg.APUrls = advertisePeerURL
+	cfg.ACUrls = advertiseClientURL
 	cfg.InitialCluster = e.serverOptions.InitialCluster
 	cfg.LogOutputs = []string{fmt.Sprintf("./%s.etcd.log", e.serverOptions.NodeId)}
 
