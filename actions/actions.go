@@ -3,6 +3,8 @@
 //
 // This pkg generally houses server-related methods. It should NOT be used for
 // performing etcd related functionality (to avoid circular import issues).
+//
+// NOTE: We should only emit relay worker metrics _only_ from here.
 
 package actions
 

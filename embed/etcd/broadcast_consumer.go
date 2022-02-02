@@ -36,6 +36,11 @@ func (e *Etcd) handleBroadcastWatchResponse(ctx context.Context, resp *clientv3.
 			continue
 		}
 
+		if msg.EmittedBy == e.PersistentConfig.PlumberID {
+			e.log.Debugf("ignoring message emitted by self")
+			continue
+		}
+
 		var err error
 
 		// Add actions here that the consumer should respond to

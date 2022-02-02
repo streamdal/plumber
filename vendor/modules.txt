@@ -141,7 +141,7 @@ github.com/batchcorp/kong
 # github.com/batchcorp/pgoutput v0.3.2
 ## explicit
 github.com/batchcorp/pgoutput
-# github.com/batchcorp/plumber-schemas v0.0.132
+# github.com/batchcorp/plumber-schemas v0.0.134
 ## explicit
 github.com/batchcorp/plumber-schemas/build/go/protos
 github.com/batchcorp/plumber-schemas/build/go/protos/args

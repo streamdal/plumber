@@ -9,7 +9,6 @@ import (
 	"github.com/batchcorp/plumber/options"
 	"github.com/nakabonne/tstorage"
 	"github.com/pkg/errors"
-	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
@@ -65,7 +64,7 @@ func (p *Plumber) RunServer() error {
 
 	// Launch HTTP server
 	go func() {
-		if err := api.Start(p.CLIOptions.Relay.XCliOptions.HttpListenAddress, options.VERSION); err != nil {
+		if err := api.Start(p.CLIOptions.Server.HttpListenAddress, options.VERSION); err != nil {
 			logrus.Fatalf("unable to start API server: %s", err)
 		}
 	}()
@@ -111,13 +110,8 @@ func (p *Plumber) runServer() error {
 
 	grpcServer := grpc.NewServer(opts...)
 
-	// Each plumber instance needs an ID. Set one and save
-	if p.PersistentConfig.PlumberID == "" {
-		p.PersistentConfig.PlumberID = uuid.NewV4().String()
-		if err := p.PersistentConfig.Save(); err != nil {
-			p.log.Fatalf("unable to save persistent config: %s", err)
-		}
-	}
+	// Each plumber node needs a unique ID
+	p.PersistentConfig.PlumberID = p.CLIOptions.Server.NodeId
 
 	// Only start if we have an authentication token for the service
 	var vcService vcservice.IVCService

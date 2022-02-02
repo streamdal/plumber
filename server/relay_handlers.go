@@ -82,6 +82,9 @@ func (s *Server) CreateRelay(ctx context.Context, req *protos.CreateRelayRequest
 	// New relay, create new ID
 	req.Opts.XRelayId = uuid.NewV4().String()
 
+	// This is a new relay so we want actions.CreateRelay to also start it
+	req.Opts.XActive = true
+
 	// Create & start relay
 	r, err := s.Actions.CreateRelay(ctx, req.Opts)
 	if err != nil {
@@ -187,7 +190,7 @@ func (s *Server) UpdateRelay(_ context.Context, req *protos.UpdateRelayRequest) 
 		return nil, CustomError(common.Code_ABORTED, fullErr)
 	}
 
-	s.Log.Infof("Relay '%s' started", relay.Id)
+	s.Log.Infof("Relay '%s' updated", relay.Id)
 
 	relay.Active = true
 
@@ -287,7 +290,7 @@ func (s *Server) ResumeRelay(ctx context.Context, req *protos.ResumeRelayRequest
 		return nil, CustomError(common.Code_ABORTED, fullErr)
 	}
 
-	s.Log.Infof("Relay '%s' started", relay.Id)
+	s.Log.Infof("Relay '%s' resumed", relay.Id)
 
 	return &protos.ResumeRelayResponse{
 		Status: &common.Status{

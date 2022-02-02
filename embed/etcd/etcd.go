@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/batchcorp/plumber/actions"
-	"github.com/batchcorp/plumber/prometheus"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -620,8 +619,6 @@ func (e *Etcd) populateRelayCache() error {
 			e.log.Errorf("unable to create relay for '%s': %s", relayOptions.XRelayId, err)
 			continue
 		}
-
-		prometheus.IncrPromGauge(prometheus.PlumberRelayWorkers)
 
 		count++
 	}
