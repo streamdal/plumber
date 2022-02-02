@@ -402,6 +402,49 @@ func resolveEtcdURL(u *url.URL) ([]url.URL, error) {
 	}}, nil
 }
 
+func resolveInitialClusterURL(input string) (string, error) {
+	if input == "" {
+		return "", errors.New("initial cluster cannot be empty")
+	}
+
+	// Split initial cluster into a slice of URLs
+	clusterString := make([]string, 0)
+	parts := strings.Split(input, ",")
+	for _, v := range parts {
+		defParts := strings.Split(v, "=")
+
+		if len(defParts) != 2 {
+			return "", errors.New("invalid initial cluster definition")
+		}
+
+		etcdURL, err := url.Parse(defParts[1])
+		if err != nil {
+			return "", errors.Wrapf(err, "unable to parse etcd URL: '%s'", defParts[1])
+		}
+
+		host, port, err := net.SplitHostPort(etcdURL.Host)
+		if err != nil {
+			return "", errors.Wrapf(err, "unable to split host from port for etcd url: '%s'", defParts[1])
+		}
+
+		// IP address, no need to resolve
+		if net.ParseIP(host) != nil {
+			clusterString = append(clusterString, fmt.Sprintf("%s=%s", defParts[0], defParts[1]))
+			continue
+		}
+
+		// Resolve hostname
+		advertisePeerURL, err := net.LookupIP(host)
+		if err != nil {
+			return "", errors.Wrap(err, "unable to resolve advertise peer URL")
+		}
+
+		clusterString = append(clusterString, fmt.Sprintf("%s=%s://%s:%s", defParts[0], etcdURL.Scheme, advertisePeerURL[0].String(), port))
+	}
+
+	return strings.Join(clusterString, ","), nil
+}
+
 func (e *Etcd) launchEmbeddedEtcd(_ context.Context) (*embed.Etcd, error) {
 	cfg := embed.NewConfig()
 
@@ -426,12 +469,19 @@ func (e *Etcd) launchEmbeddedEtcd(_ context.Context) (*embed.Etcd, error) {
 	}
 
 	cfg.Name = e.serverOptions.NodeId
-	cfg.Dir = fmt.Sprintf("./.plumber/%s.etcd", e.serverOptions.NodeId)
+	cfg.Dir = fmt.Sprintf("%s/%s.etcd", e.serverOptions.StoragePath, e.serverOptions.NodeId)
 	cfg.LPUrls = listenerPeerURL
 	cfg.LCUrls = listenerClientURL
 	cfg.APUrls = advertisePeerURL
 	cfg.ACUrls = advertiseClientURL
-	cfg.InitialCluster = e.serverOptions.InitialCluster
+
+	initialClusterURL, err := resolveInitialClusterURL(e.serverOptions.InitialCluster)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to resolve initial cluster URL")
+	}
+
+	cfg.InitialCluster = initialClusterURL
+
 	cfg.LogOutputs = []string{fmt.Sprintf("./%s.etcd.log", e.serverOptions.NodeId)}
 
 	embeddedEtcd, err := embed.StartEtcd(cfg)
