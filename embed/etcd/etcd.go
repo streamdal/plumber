@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/batchcorp/plumber/actions"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -58,26 +59,41 @@ type IEtcd interface {
 	Shutdown(force bool) error
 	Start(serviceCtx context.Context) error
 
-	// Message Publish helpers
-
+	// Service events
 	PublishCreateService(ctx context.Context, svc *protos.Service) error
 	PublishUpdateService(ctx context.Context, svc *protos.Service) error
 	PublishDeleteService(ctx context.Context, svc *protos.Service) error
+
+	// Connection events
 	PublishCreateConnection(ctx context.Context, conn *opts.ConnectionOptions) error
 	PublishUpdateConnection(ctx context.Context, conn *opts.ConnectionOptions) error
 	PublishDeleteConnection(ctx context.Context, conn *opts.ConnectionOptions) error
+
+	// Schema events
 	PublishCreateSchema(ctx context.Context, schema *protos.Schema) error
 	PublishUpdateSchema(ctx context.Context, schema *protos.Schema) error
 	PublishDeleteSchema(ctx context.Context, schema *protos.Schema) error
+
+	// Relay events
 	PublishCreateRelay(ctx context.Context, relay *opts.RelayOptions) error
 	PublishUpdateRelay(ctx context.Context, relay *opts.RelayOptions) error
 	PublishDeleteRelay(ctx context.Context, relay *opts.RelayOptions) error
+	PublishStopRelay(ctx context.Context, relay *opts.RelayOptions) error
+	PublishResumeRelay(ctx context.Context, relay *opts.RelayOptions) error
+
+	// Config events
 	PublishConfigUpdate(ctx context.Context, msg *MessageUpdateConfig) error
+
+	// Validation events
 	PublishCreateValidation(ctx context.Context, validation *common.Validation) error
 	PublishUpdateValidation(ctx context.Context, validation *common.Validation) error
 	PublishDeleteValidation(ctx context.Context, validation *common.Validation) error
+
+	// Read events
 	PublishCreateRead(ctx context.Context, svc *opts.ReadOptions) error
 	PublishDeleteRead(ctx context.Context, svc *opts.ReadOptions) error
+
+	// Composite events
 	PublishCreateComposite(ctx context.Context, validation *opts.Composite) error
 	PublishUpdateComposite(ctx context.Context, validation *opts.Composite) error
 	PublishDeleteComposite(ctx context.Context, validation *opts.Composite) error
@@ -86,7 +102,8 @@ type IEtcd interface {
 }
 
 type Etcd struct {
-	PlumberConfig *config.Config
+	PersistentConfig *config.Config
+	Actions          *actions.Actions
 
 	server             *embed.Etcd
 	client             *clientv3.Client
@@ -111,7 +128,7 @@ var (
 	ServerAlreadyStartedErr = errors.New("server already started")
 )
 
-func New(serverOptions *opts.ServerOptions, plumberConfig *config.Config) (*Etcd, error) {
+func New(serverOptions *opts.ServerOptions, plumberConfig *config.Config, a *actions.Actions) (*Etcd, error) {
 	if err := validateOptions(serverOptions); err != nil {
 		return nil, errors.Wrap(err, "unable to validate options")
 	}
@@ -121,11 +138,16 @@ func New(serverOptions *opts.ServerOptions, plumberConfig *config.Config) (*Etcd
 		return nil, errors.Wrap(err, "unable to parse etcd URLs")
 	}
 
+	if a == nil {
+		return nil, errors.New("actions cannot be nil")
+	}
+
 	return &Etcd{
-		serverOptions: serverOptions,
-		urls:          urls,
-		PlumberConfig: plumberConfig,
-		log:           logrus.WithField("pkg", "etcd"),
+		Actions:          a,
+		serverOptions:    serverOptions,
+		urls:             urls,
+		PersistentConfig: plumberConfig,
+		log:              logrus.WithField("pkg", "etcd"),
 	}, nil
 }
 
@@ -496,9 +518,9 @@ func (e *Etcd) populateServerConfigCache() error {
 	}
 
 	// These config values on the ones saved in etcd
-	e.PlumberConfig.VCServiceToken = cfg.VCServiceToken
-	e.PlumberConfig.GitHubToken = cfg.GitHubToken
-	e.PlumberConfig.GitHubInstallID = cfg.GitHubInstallID
+	e.PersistentConfig.VCServiceToken = cfg.VCServiceToken
+	e.PersistentConfig.GitHubToken = cfg.GitHubToken
+	e.PersistentConfig.GitHubInstallID = cfg.GitHubInstallID
 
 	// These values are the ones saved in config.json
 
@@ -506,23 +528,23 @@ func (e *Etcd) populateServerConfigCache() error {
 	// TODO: embedded etcd, so that needs to be handled somehow
 
 	// Wrapped in if block in case config is still stored in config.json
-	if e.PlumberConfig.UserID == "" {
-		e.PlumberConfig.UserID = cfg.UserID
+	if e.PersistentConfig.UserID == "" {
+		e.PersistentConfig.UserID = cfg.UserID
 	}
 
 	// Wrapped in if block in case config is still stored in config.json
-	if e.PlumberConfig.PlumberID == "" {
-		e.PlumberConfig.PlumberID = cfg.PlumberID
+	if e.PersistentConfig.PlumberID == "" {
+		e.PersistentConfig.PlumberID = cfg.PlumberID
 	}
 
 	// Wrapped in if block in case config is still stored in config.json
-	if e.PlumberConfig.TeamID == "" {
-		e.PlumberConfig.TeamID = cfg.TeamID
+	if e.PersistentConfig.TeamID == "" {
+		e.PersistentConfig.TeamID = cfg.TeamID
 	}
 
 	// Wrapped in if block in case config is still stored in config.json
-	if e.PlumberConfig.Token == "" {
-		e.PlumberConfig.Token = cfg.Token
+	if e.PersistentConfig.Token == "" {
+		e.PersistentConfig.Token = cfg.Token
 	}
 
 	return nil
@@ -545,7 +567,7 @@ func (e *Etcd) populateConnectionCache() error {
 
 		count++
 
-		e.PlumberConfig.SetConnection(conn.XId, conn)
+		e.PersistentConfig.SetConnection(conn.XId, conn)
 	}
 
 	e.log.Debugf("Loaded '%d' connections from etcd", count)
@@ -570,7 +592,7 @@ func (e *Etcd) populateSchemaCache() error {
 
 		count++
 
-		e.PlumberConfig.SetSchema(schema.Id, schema)
+		e.PersistentConfig.SetSchema(schema.Id, schema)
 	}
 
 	e.log.Debugf("Loaded '%d' schemas from etcd", count)
@@ -587,22 +609,21 @@ func (e *Etcd) populateRelayCache() error {
 	var count int
 
 	for _, v := range resp.Kvs {
-		relay := &opts.RelayOptions{}
-		if err := proto.Unmarshal(v.Value, relay); err != nil {
+		relayOptions := &opts.RelayOptions{}
+		if err := proto.Unmarshal(v.Value, relayOptions); err != nil {
 			e.log.Errorf("unable to unmarshal opts.RelayOptions message: %s", err)
 			continue
 		}
 
-		count++
+		if _, err := e.Actions.CreateRelay(context.Background(), relayOptions); err != nil {
+			e.log.Errorf("unable to create relay for '%s': %s", relayOptions.XRelayId, err)
+			continue
+		}
 
-		e.PlumberConfig.SetRelay(relay.XRelayId, &types.Relay{
-			Active:  false,
-			Id:      relay.XRelayId,
-			Options: relay,
-		})
+		count++
 	}
 
-	e.log.Debugf("Loaded '%d' relays from etcd", count)
+	e.log.Infof("Created '%d' relays from etcd", count)
 
 	return nil
 }
@@ -624,7 +645,7 @@ func (e *Etcd) populateServiceCache() error {
 
 		count++
 
-		e.PlumberConfig.SetService(svc.Id, svc)
+		e.PersistentConfig.SetService(svc.Id, svc)
 	}
 
 	e.log.Debugf("Loaded '%d' services from etcd", count)
@@ -649,7 +670,7 @@ func (e *Etcd) populateValidationCache() error {
 
 		count++
 
-		e.PlumberConfig.SetValidation(validation.XId, validation)
+		e.PersistentConfig.SetValidation(validation.XId, validation)
 	}
 
 	e.log.Debugf("Loaded '%d' schema validations from etcd", count)
@@ -685,14 +706,14 @@ func (e *Etcd) populateReadCache() error {
 
 		read, err := types.NewRead(&types.ReadConfig{
 			ReadOptions: readOpts,
-			PlumberID:   e.PlumberConfig.PlumberID,
+			PlumberID:   e.PersistentConfig.PlumberID,
 			Backend:     nil, // intentionally nil
 		})
 		if err != nil {
 			return errors.Wrap(err, "cannot create new read")
 		}
 
-		e.PlumberConfig.SetRead(readOpts.XId, read)
+		e.PersistentConfig.SetRead(readOpts.XId, read)
 	}
 
 	e.log.Debugf("Loaded '%d' reads from etcd", count)
@@ -717,7 +738,7 @@ func (e *Etcd) populateCompositeCache() error {
 
 		count++
 
-		e.PlumberConfig.SetComposite(comp.XId, comp)
+		e.PersistentConfig.SetComposite(comp.XId, comp)
 	}
 
 	e.log.Debugf("Loaded '%d' composite views from etcd", count)
@@ -736,7 +757,7 @@ func (e *Etcd) populateDecodeSchemaDetails(read *opts.ReadOptions) error {
 		return nil
 	}
 
-	cachedSchemaOptions := e.PlumberConfig.GetSchema(schemaID)
+	cachedSchemaOptions := e.PersistentConfig.GetSchema(schemaID)
 	if cachedSchemaOptions == nil {
 		return fmt.Errorf("schema '%s' not found", schemaID)
 	}

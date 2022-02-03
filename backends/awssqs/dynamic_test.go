@@ -101,7 +101,7 @@ var _ = Describe("AWSSQS Backend", func() {
 
 			err := p.Dynamic(context.Background(), dynamicOpts, fakeDynamic)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("Unable to replay message"))
+			Expect(err.Error()).To(ContainSubstring("unable to replay message"))
 			Expect(fakeDynamic.ReadCallCount()).To(Equal(1))
 			Expect(fakeSQS.SendMessageCallCount()).To(Equal(1))
 		})

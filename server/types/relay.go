@@ -28,7 +28,9 @@ type Relay struct {
 }
 
 // StartRelay starts a configured relay, it's workers, and the GRPC workers
-func (r *Relay) StartRelay() error {
+func (r *Relay) StartRelay(delay time.Duration) error {
+	r.log = logrus.WithField("pkg", "types/relay")
+
 	relayCh := make(chan interface{}, 1)
 	localErrCh := make(chan *records.ErrorRecord, 1)
 
@@ -68,9 +70,9 @@ func (r *Relay) StartRelay() error {
 		r.log.Debugf("relay id '%s' exiting", r.Id)
 	}()
 
-	timeAfterCh := time.After(10 * time.Second)
+	timeAfterCh := time.After(delay)
 
-	// Will block for =< 10s
+	// Will block for =< delay
 	select {
 	case <-timeAfterCh:
 		r.log.Debugf("relay id '%s' success after 10s wait", r.Id)

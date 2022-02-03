@@ -274,6 +274,30 @@ type FakeIEtcd struct {
 	publishDeleteValidationReturnsOnCall map[int]struct {
 		result1 error
 	}
+	PublishResumeRelayStub        func(context.Context, *opts.RelayOptions) error
+	publishResumeRelayMutex       sync.RWMutex
+	publishResumeRelayArgsForCall []struct {
+		arg1 context.Context
+		arg2 *opts.RelayOptions
+	}
+	publishResumeRelayReturns struct {
+		result1 error
+	}
+	publishResumeRelayReturnsOnCall map[int]struct {
+		result1 error
+	}
+	PublishStopRelayStub        func(context.Context, *opts.RelayOptions) error
+	publishStopRelayMutex       sync.RWMutex
+	publishStopRelayArgsForCall []struct {
+		arg1 context.Context
+		arg2 *opts.RelayOptions
+	}
+	publishStopRelayReturns struct {
+		result1 error
+	}
+	publishStopRelayReturnsOnCall map[int]struct {
+		result1 error
+	}
 	PublishUpdateCompositeStub        func(context.Context, *opts.Composite) error
 	publishUpdateCompositeMutex       sync.RWMutex
 	publishUpdateCompositeArgsForCall []struct {
@@ -1721,6 +1745,130 @@ func (fake *FakeIEtcd) PublishDeleteValidationReturnsOnCall(i int, result1 error
 	}{result1}
 }
 
+func (fake *FakeIEtcd) PublishResumeRelay(arg1 context.Context, arg2 *opts.RelayOptions) error {
+	fake.publishResumeRelayMutex.Lock()
+	ret, specificReturn := fake.publishResumeRelayReturnsOnCall[len(fake.publishResumeRelayArgsForCall)]
+	fake.publishResumeRelayArgsForCall = append(fake.publishResumeRelayArgsForCall, struct {
+		arg1 context.Context
+		arg2 *opts.RelayOptions
+	}{arg1, arg2})
+	stub := fake.PublishResumeRelayStub
+	fakeReturns := fake.publishResumeRelayReturns
+	fake.recordInvocation("PublishResumeRelay", []interface{}{arg1, arg2})
+	fake.publishResumeRelayMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIEtcd) PublishResumeRelayCallCount() int {
+	fake.publishResumeRelayMutex.RLock()
+	defer fake.publishResumeRelayMutex.RUnlock()
+	return len(fake.publishResumeRelayArgsForCall)
+}
+
+func (fake *FakeIEtcd) PublishResumeRelayCalls(stub func(context.Context, *opts.RelayOptions) error) {
+	fake.publishResumeRelayMutex.Lock()
+	defer fake.publishResumeRelayMutex.Unlock()
+	fake.PublishResumeRelayStub = stub
+}
+
+func (fake *FakeIEtcd) PublishResumeRelayArgsForCall(i int) (context.Context, *opts.RelayOptions) {
+	fake.publishResumeRelayMutex.RLock()
+	defer fake.publishResumeRelayMutex.RUnlock()
+	argsForCall := fake.publishResumeRelayArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIEtcd) PublishResumeRelayReturns(result1 error) {
+	fake.publishResumeRelayMutex.Lock()
+	defer fake.publishResumeRelayMutex.Unlock()
+	fake.PublishResumeRelayStub = nil
+	fake.publishResumeRelayReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishResumeRelayReturnsOnCall(i int, result1 error) {
+	fake.publishResumeRelayMutex.Lock()
+	defer fake.publishResumeRelayMutex.Unlock()
+	fake.PublishResumeRelayStub = nil
+	if fake.publishResumeRelayReturnsOnCall == nil {
+		fake.publishResumeRelayReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.publishResumeRelayReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishStopRelay(arg1 context.Context, arg2 *opts.RelayOptions) error {
+	fake.publishStopRelayMutex.Lock()
+	ret, specificReturn := fake.publishStopRelayReturnsOnCall[len(fake.publishStopRelayArgsForCall)]
+	fake.publishStopRelayArgsForCall = append(fake.publishStopRelayArgsForCall, struct {
+		arg1 context.Context
+		arg2 *opts.RelayOptions
+	}{arg1, arg2})
+	stub := fake.PublishStopRelayStub
+	fakeReturns := fake.publishStopRelayReturns
+	fake.recordInvocation("PublishStopRelay", []interface{}{arg1, arg2})
+	fake.publishStopRelayMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIEtcd) PublishStopRelayCallCount() int {
+	fake.publishStopRelayMutex.RLock()
+	defer fake.publishStopRelayMutex.RUnlock()
+	return len(fake.publishStopRelayArgsForCall)
+}
+
+func (fake *FakeIEtcd) PublishStopRelayCalls(stub func(context.Context, *opts.RelayOptions) error) {
+	fake.publishStopRelayMutex.Lock()
+	defer fake.publishStopRelayMutex.Unlock()
+	fake.PublishStopRelayStub = stub
+}
+
+func (fake *FakeIEtcd) PublishStopRelayArgsForCall(i int) (context.Context, *opts.RelayOptions) {
+	fake.publishStopRelayMutex.RLock()
+	defer fake.publishStopRelayMutex.RUnlock()
+	argsForCall := fake.publishStopRelayArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIEtcd) PublishStopRelayReturns(result1 error) {
+	fake.publishStopRelayMutex.Lock()
+	defer fake.publishStopRelayMutex.Unlock()
+	fake.PublishStopRelayStub = nil
+	fake.publishStopRelayReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishStopRelayReturnsOnCall(i int, result1 error) {
+	fake.publishStopRelayMutex.Lock()
+	defer fake.publishStopRelayMutex.Unlock()
+	fake.PublishStopRelayStub = nil
+	if fake.publishStopRelayReturnsOnCall == nil {
+		fake.publishStopRelayReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.publishStopRelayReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeIEtcd) PublishUpdateComposite(arg1 context.Context, arg2 *opts.Composite) error {
 	fake.publishUpdateCompositeMutex.Lock()
 	ret, specificReturn := fake.publishUpdateCompositeReturnsOnCall[len(fake.publishUpdateCompositeArgsForCall)]
@@ -2456,6 +2604,10 @@ func (fake *FakeIEtcd) Invocations() map[string][][]interface{} {
 	defer fake.publishDeleteServiceMutex.RUnlock()
 	fake.publishDeleteValidationMutex.RLock()
 	defer fake.publishDeleteValidationMutex.RUnlock()
+	fake.publishResumeRelayMutex.RLock()
+	defer fake.publishResumeRelayMutex.RUnlock()
+	fake.publishStopRelayMutex.RLock()
+	defer fake.publishStopRelayMutex.RUnlock()
 	fake.publishUpdateCompositeMutex.RLock()
 	defer fake.publishUpdateCompositeMutex.RUnlock()
 	fake.publishUpdateConnectionMutex.RLock()

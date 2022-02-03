@@ -8,6 +8,11 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
+const (
+	GRPCCollectorAddress      = "grpc-collector.batch.sh:9000"
+	GRPCDefaultTimeoutSeconds = 5
+)
+
 var (
 	// Backend
 
@@ -30,6 +35,12 @@ var (
 	ErrMissingConnectionID = errors.New("missing connection ID")
 	ErrMissingReadOptions  = errors.New("missing Read options")
 	ErrMissingReadType     = errors.New("you must provide at least one read argument message")
+
+	// Relay
+
+	ErrRelayNotFound      = errors.New("relay not found")
+	ErrRelayNotActive     = errors.New("relay not active")
+	ErrRelayAlreadyActive = errors.New("relay already active")
 
 	// Services
 
@@ -90,8 +101,27 @@ func SamplingOptionsForServer(sampleOptions *opts.ReadSampleOptions) error {
 	return nil
 }
 
-// TODO: Implement
 func RelayOptionsForServer(relayOptions *opts.RelayOptions) error {
+	if relayOptions == nil {
+		return errors.New("relay options cannot be nil")
+	}
+
+	if relayOptions.CollectionToken == "" {
+		return errors.New("collection token cannot be empty")
+	}
+
+	if relayOptions.ConnectionId == "" {
+		return errors.New("connection id cannot be empty")
+	}
+
+	if relayOptions.XBatchshGrpcAddress == "" {
+		relayOptions.XBatchshGrpcAddress = GRPCCollectorAddress
+	}
+
+	if relayOptions.XBatchshGrpcTimeoutSeconds == 0 {
+		relayOptions.XBatchshGrpcTimeoutSeconds = GRPCDefaultTimeoutSeconds
+	}
+
 	return nil
 }
 

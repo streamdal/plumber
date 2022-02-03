@@ -88,7 +88,19 @@ func (e *Etcd) PublishUpdateRelay(ctx context.Context, relay *opts.RelayOptions)
 // PublishDeleteRelay publishes a DeleteRelay message, which other plumber instances will receive
 // and delete from their local in-memory maps
 func (e *Etcd) PublishDeleteRelay(ctx context.Context, relay *opts.RelayOptions) error {
-	return e.publishRelayMessage(ctx, DeleteSchema, relay)
+	return e.publishRelayMessage(ctx, DeleteRelay, relay)
+}
+
+// PublishStopRelay broadcasts a StopRelay message which will cause all plumber
+// instances to stop the relay and remove it from their in-memory cache.
+func (e *Etcd) PublishStopRelay(ctx context.Context, relay *opts.RelayOptions) error {
+	return e.publishRelayMessage(ctx, StopRelay, relay)
+}
+
+// PublishResumeRelay broadcasts a ResumeRelay message which will cause all plumber
+// instances to start a stopped relay and add it to their in-memory cache.
+func (e *Etcd) PublishResumeRelay(ctx context.Context, relay *opts.RelayOptions) error {
+	return e.publishRelayMessage(ctx, ResumeRelay, relay)
 }
 
 // PublishCreateValidation publishes a CreateValidation message, which other plumber instances will receive
@@ -153,7 +165,7 @@ func (e *Etcd) PublishConfigUpdate(ctx context.Context, msg *MessageUpdateConfig
 	return e.Broadcast(ctx, &Message{
 		Action:    UpdateConfig,
 		Data:      data,
-		EmittedBy: e.PlumberConfig.PlumberID,
+		EmittedBy: e.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
@@ -183,7 +195,7 @@ func (e *Etcd) publishServiceMessage(ctx context.Context, action Action, svc *pr
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: e.PlumberConfig.PlumberID,
+		EmittedBy: e.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
@@ -197,7 +209,7 @@ func (e *Etcd) publishConnectionMessage(ctx context.Context, action Action, conn
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: e.PlumberConfig.PlumberID,
+		EmittedBy: e.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
@@ -212,7 +224,7 @@ func (e *Etcd) publishSchemaMessage(ctx context.Context, action Action, svc *pro
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: e.PlumberConfig.PlumberID,
+		EmittedBy: e.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
@@ -226,7 +238,7 @@ func (e *Etcd) publishRelayMessage(ctx context.Context, action Action, relay *op
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: e.PlumberConfig.PlumberID,
+		EmittedBy: e.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
@@ -240,7 +252,7 @@ func (e *Etcd) publishValidationMessage(ctx context.Context, action Action, vali
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: e.PlumberConfig.PlumberID,
+		EmittedBy: e.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
@@ -254,7 +266,7 @@ func (e *Etcd) publishReadMessage(ctx context.Context, action Action, read *opts
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: e.PlumberConfig.PlumberID,
+		EmittedBy: e.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
@@ -268,7 +280,7 @@ func (e *Etcd) publishCompositeMessage(ctx context.Context, action Action, read 
 	return e.Broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: e.PlumberConfig.PlumberID,
+		EmittedBy: e.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }

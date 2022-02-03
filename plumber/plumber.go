@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/batchcorp/plumber/actions"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/mcuadros/go-lookup"
 	"github.com/pkg/errors"
@@ -27,11 +28,15 @@ var (
 	ErrMissingMainShutdownFunc = errors.New("MainShutdownFunc cannot be nil")
 	ErrMissingMainContext      = errors.New("MainContext cannot be nil")
 	ErrMissingOptions          = errors.New("CLIOptions cannot be nil")
+	ErrMissingPersistentConfig = errors.New("PersistentConfig cannot be nil")
+	ErrMissingKongCtx          = errors.New("KongCtx cannot be nil")
+	ErrMissingActions          = errors.New("Actions cannot be nil")
 )
 
 // Config contains configurable options for instantiating a new Plumber
 type Config struct {
 	PersistentConfig   *config.Config
+	Actions            *actions.Actions
 	ServiceShutdownCtx context.Context
 	MainShutdownFunc   context.CancelFunc
 	MainShutdownCtx    context.Context
@@ -131,8 +136,7 @@ func (p *Plumber) Run() {
 
 	switch p.CLIOptions.Global.XAction {
 	case "server":
-		logrus.Fatal("server mode not implemented")
-		//err = p.RunServer()
+		err = p.RunServer()
 	case "batch":
 		err = p.HandleBatchCmd()
 	case "read":
@@ -250,6 +254,18 @@ func validateConfig(cfg *Config) error {
 
 	if cfg.MainShutdownFunc == nil {
 		return ErrMissingMainShutdownFunc
+	}
+
+	if cfg.PersistentConfig == nil {
+		return ErrMissingPersistentConfig
+	}
+
+	if cfg.KongCtx == nil {
+		return ErrMissingKongCtx
+	}
+
+	if cfg.Actions == nil {
+		return ErrMissingActions
 	}
 
 	return nil

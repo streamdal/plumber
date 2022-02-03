@@ -5,9 +5,10 @@ import (
 	"net"
 	"time"
 
+	"github.com/batchcorp/plumber/api"
+	"github.com/batchcorp/plumber/options"
 	"github.com/nakabonne/tstorage"
 	"github.com/pkg/errors"
-	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
@@ -61,6 +62,13 @@ func (p *Plumber) RunServer() error {
 		break
 	}
 
+	// Launch HTTP server
+	go func() {
+		if err := api.Start(p.CLIOptions.Server.HttpListenAddress, options.VERSION); err != nil {
+			logrus.Fatalf("unable to start API server: %s", err)
+		}
+	}()
+
 	p.log.Info("starting gRPC server")
 
 	// Blocks
@@ -72,7 +80,7 @@ func (p *Plumber) RunServer() error {
 }
 
 func (p *Plumber) startEtcd() error {
-	e, err := etcd.New(p.Config.CLIOptions.Server, p.PersistentConfig)
+	e, err := etcd.New(p.Config.CLIOptions.Server, p.PersistentConfig, p.Actions)
 	if err != nil {
 		return errors.Wrap(err, "unable to instantiate etcd")
 	}
@@ -82,6 +90,8 @@ func (p *Plumber) startEtcd() error {
 	}
 
 	p.Etcd = e
+
+	p.log.Debugf("embedded etcd listener address: %s", p.Config.CLIOptions.Server.ListenerClientUrl)
 
 	if err := e.PopulateCache(); err != nil {
 		p.log.Errorf("Unable to load data from etcd: %s", err)
@@ -100,13 +110,8 @@ func (p *Plumber) runServer() error {
 
 	grpcServer := grpc.NewServer(opts...)
 
-	// Each plumber instance needs an ID. Set one and save
-	if p.PersistentConfig.PlumberID == "" {
-		p.PersistentConfig.PlumberID = uuid.NewV4().String()
-		if err := p.PersistentConfig.Save(); err != nil {
-			p.log.Fatalf("unable to save persistent config: %s", err)
-		}
-	}
+	// Each plumber node needs a unique ID
+	p.PersistentConfig.PlumberID = p.CLIOptions.Server.NodeId
 
 	// Only start if we have an authentication token for the service
 	var vcService vcservice.IVCService
@@ -121,8 +126,6 @@ func (p *Plumber) runServer() error {
 		//	return errors.Wrap(err, "unable to create VCService service instance")
 		//}
 	}
-
-	println(p.PersistentConfig.VCServiceToken)
 
 	ghService, err := github.New()
 	if err != nil {
@@ -151,7 +154,12 @@ func (p *Plumber) runServer() error {
 		return errors.Wrap(err, "unable to create uierrors service")
 	}
 
+	if err != nil {
+		return errors.Wrap(err, "unable to create actions service")
+	}
+
 	plumberServer := &server.Server{
+		Actions:          p.Actions,
 		PersistentConfig: p.PersistentConfig,
 		AuthToken:        p.CLIOptions.Server.AuthToken,
 		VCService:        vcService,

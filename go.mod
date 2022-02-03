@@ -8,10 +8,10 @@ require (
 	github.com/Azure/azure-service-bus-go v0.11.5
 	github.com/apache/pulsar-client-go v0.7.0
 	github.com/aws/aws-sdk-go v1.34.28
-	github.com/batchcorp/collector-schemas v0.0.8
+	github.com/batchcorp/collector-schemas v0.0.9
 	github.com/batchcorp/kong v0.2.17-batch-fix
 	github.com/batchcorp/pgoutput v0.3.2
-	github.com/batchcorp/plumber-schemas v0.0.129
+	github.com/batchcorp/plumber-schemas v0.0.134
 	github.com/batchcorp/rabbit v0.1.17
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fatih/color v1.12.0 // indirect

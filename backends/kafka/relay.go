@@ -39,7 +39,7 @@ func (k *Kafka) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 			// Shutdown cancelled, exit so we don't spam logs with context cancelled errors
 			if err == context.Canceled {
 				k.log.Info("Received shutdown signal, exiting relayer")
-				return nil
+				break
 			}
 
 			prometheus.Mute("kafka-relay-consumer")
@@ -64,6 +64,10 @@ func (k *Kafka) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 			Options: &types.RelayMessageOptions{},
 		}
 	}
+
+	k.log.Debugf("relayer for '%s' exiting", relayOpts.XRelayId)
+
+	return nil
 }
 
 // validateRelayOptions ensures all required relay options are present
