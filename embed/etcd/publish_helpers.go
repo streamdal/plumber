@@ -151,6 +151,36 @@ func (e *Etcd) PublishDeleteComposite(ctx context.Context, comp *opts.Composite)
 	return e.publishCompositeMessage(ctx, DeleteSchema, comp)
 }
 
+// PublishCreateDynamic publishes a CreateDynamic message, which other plumber instances will receive
+// and add the service to their local in-memory maps
+func (e *Etcd) PublishCreateDynamic(ctx context.Context, dynamicOptions *opts.DynamicOptions) error {
+	return e.publishDynamicMessage(ctx, CreateDynamic, dynamicOptions)
+}
+
+// PublishUpdateDynamic publishes an UpdateDynamic message, which other plumber instances will receive
+// and update the connection in their local in-memory maps
+func (e *Etcd) PublishUpdateDynamic(ctx context.Context, dynamicOptions *opts.DynamicOptions) error {
+	return e.publishDynamicMessage(ctx, UpdateDynamic, dynamicOptions)
+}
+
+// PublishDeleteDynamic publishes a DeleteDynamic message, which other plumber instances will receive
+// and delete from their local in-memory maps
+func (e *Etcd) PublishDeleteDynamic(ctx context.Context, dynamicOptions *opts.DynamicOptions) error {
+	return e.publishDynamicMessage(ctx, DeleteDynamic, dynamicOptions)
+}
+
+// PublishStopDynamic broadcasts a StopDynamic message which will cause all plumber
+// instances to stop the relay and remove it from their in-memory cache.
+func (e *Etcd) PublishStopDynamic(ctx context.Context, dynamicOptions *opts.DynamicOptions) error {
+	return e.publishDynamicMessage(ctx, StopDynamic, dynamicOptions)
+}
+
+// PublishResumeDynamic broadcasts a ResumeDynamic message which will cause all plumber
+// instances to start a stopped relay and add it to their in-memory cache.
+func (e *Etcd) PublishResumeDynamic(ctx context.Context, dynamicOptions *opts.DynamicOptions) error {
+	return e.publishDynamicMessage(ctx, ResumeDynamic, dynamicOptions)
+}
+
 // PublishConfigUpdate publishes a MessageUpdateConfig message, which other plumber instances
 // will receive and update their config with the new token
 func (e *Etcd) PublishConfigUpdate(ctx context.Context, msg *MessageUpdateConfig) error {
@@ -271,10 +301,24 @@ func (e *Etcd) publishReadMessage(ctx context.Context, action Action, read *opts
 	})
 }
 
-func (e *Etcd) publishCompositeMessage(ctx context.Context, action Action, read *opts.Composite) error {
-	data, err := proto.Marshal(read)
+func (e *Etcd) publishCompositeMessage(ctx context.Context, action Action, composite *opts.Composite) error {
+	data, err := proto.Marshal(composite)
 	if err != nil {
-		return errors.Wrapf(err, "unable to publish composite message for '%s'", read.XId)
+		return errors.Wrapf(err, "unable to publish composite message for '%s'", composite.XId)
+	}
+
+	return e.Broadcast(ctx, &Message{
+		Action:    action,
+		Data:      data,
+		EmittedBy: e.PersistentConfig.PlumberID,
+		EmittedAt: time.Now().UTC(),
+	})
+}
+
+func (e *Etcd) publishDynamicMessage(ctx context.Context, action Action, dynamicOptions *opts.DynamicOptions) error {
+	data, err := proto.Marshal(dynamicOptions)
+	if err != nil {
+		return errors.Wrapf(err, "unable to publish dynamic message for '%s'", dynamicOptions.XDynamicId)
 	}
 
 	return e.Broadcast(ctx, &Message{

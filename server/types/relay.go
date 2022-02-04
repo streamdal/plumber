@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/util"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/relay"
 )
@@ -75,7 +76,7 @@ func (r *Relay) StartRelay(delay time.Duration) error {
 	// Will block for =< delay
 	select {
 	case <-timeAfterCh:
-		r.log.Debugf("relay id '%s' success after 10s wait", r.Id)
+		r.log.Debugf("relay id '%s' success after %s wait", r.Id, delay.String())
 		break
 	case err := <-localErrCh:
 		return fmt.Errorf("relay startup failed for id '%s': %s", r.Id, err.Error)

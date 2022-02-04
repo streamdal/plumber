@@ -10,7 +10,6 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/batchcorp/plumber/actions"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/ssh/terminal"
@@ -19,6 +18,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
+	"github.com/batchcorp/plumber/actions"
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/plumber"
@@ -174,6 +174,7 @@ func getConfig() *config.Config {
 			ImportRequests:      make(map[string]*protos.ImportGithubRequest),
 			Validations:         make(map[string]*common.Validation),
 			Composites:          make(map[string]*opts.Composite),
+			DynamicReplays:      make(map[string]*types.Dynamic),
 			ConnectionsMutex:    &sync.RWMutex{},
 			ServicesMutex:       &sync.RWMutex{},
 			ReadsMutex:          &sync.RWMutex{},
@@ -182,6 +183,7 @@ func getConfig() *config.Config {
 			ImportRequestsMutex: &sync.RWMutex{},
 			ValidationsMutex:    &sync.RWMutex{},
 			CompositesMutex:     &sync.RWMutex{},
+			DynamicReplaysMutex: &sync.RWMutex{},
 		}
 	}
 

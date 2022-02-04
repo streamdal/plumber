@@ -20,6 +20,9 @@ func (p *Plumber) HandleDynamicCmd() error {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
 
+	// Clean up gRPC connection
+	defer dynamicSvc.Close()
+
 	// Blocks until completion
 	if err := backend.Dynamic(p.ServiceShutdownCtx, p.CLIOptions.Dynamic, dynamicSvc); err != nil {
 		return errors.Wrap(err, "error(s) during dynamic run")

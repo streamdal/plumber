@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/batchcorp/plumber/actions"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -21,6 +20,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
+	"github.com/batchcorp/plumber/actions"
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/server/types"
 )
@@ -37,6 +37,7 @@ const (
 	CacheServerConfigKey   = "/plumber-server/server-config"
 	CacheReadsPrefix       = "/plumber-server/reads"
 	CacheCompositesPrefix  = "/plumber-server/composites"
+	CacheDynamicPrefix     = "/plumber-server/dynamics"
 )
 
 type HandlerFunc func(context.Context, *clientv3.WatchResponse) error
@@ -97,6 +98,13 @@ type IEtcd interface {
 	PublishCreateComposite(ctx context.Context, validation *opts.Composite) error
 	PublishUpdateComposite(ctx context.Context, validation *opts.Composite) error
 	PublishDeleteComposite(ctx context.Context, validation *opts.Composite) error
+
+	// Dynamic Replays
+	PublishCreateDynamic(ctx context.Context, dynamicOptions *opts.DynamicOptions) error
+	PublishUpdateDynamic(ctx context.Context, dynamicOptions *opts.DynamicOptions) error
+	PublishStopDynamic(ctx context.Context, dynamicOptions *opts.DynamicOptions) error
+	PublishResumeDynamic(ctx context.Context, dynamicOptions *opts.DynamicOptions) error
+	PublishDeleteDynamic(ctx context.Context, dynamicOptions *opts.DynamicOptions) error
 
 	Client() *clientv3.Client
 }

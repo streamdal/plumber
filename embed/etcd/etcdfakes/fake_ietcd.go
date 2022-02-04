@@ -130,6 +130,18 @@ type FakeIEtcd struct {
 	publishCreateConnectionReturnsOnCall map[int]struct {
 		result1 error
 	}
+	PublishCreateDynamicStub        func(context.Context, *opts.DynamicOptions) error
+	publishCreateDynamicMutex       sync.RWMutex
+	publishCreateDynamicArgsForCall []struct {
+		arg1 context.Context
+		arg2 *opts.DynamicOptions
+	}
+	publishCreateDynamicReturns struct {
+		result1 error
+	}
+	publishCreateDynamicReturnsOnCall map[int]struct {
+		result1 error
+	}
 	PublishCreateReadStub        func(context.Context, *opts.ReadOptions) error
 	publishCreateReadMutex       sync.RWMutex
 	publishCreateReadArgsForCall []struct {
@@ -214,6 +226,18 @@ type FakeIEtcd struct {
 	publishDeleteConnectionReturnsOnCall map[int]struct {
 		result1 error
 	}
+	PublishDeleteDynamicStub        func(context.Context, *opts.DynamicOptions) error
+	publishDeleteDynamicMutex       sync.RWMutex
+	publishDeleteDynamicArgsForCall []struct {
+		arg1 context.Context
+		arg2 *opts.DynamicOptions
+	}
+	publishDeleteDynamicReturns struct {
+		result1 error
+	}
+	publishDeleteDynamicReturnsOnCall map[int]struct {
+		result1 error
+	}
 	PublishDeleteReadStub        func(context.Context, *opts.ReadOptions) error
 	publishDeleteReadMutex       sync.RWMutex
 	publishDeleteReadArgsForCall []struct {
@@ -274,6 +298,18 @@ type FakeIEtcd struct {
 	publishDeleteValidationReturnsOnCall map[int]struct {
 		result1 error
 	}
+	PublishResumeDynamicStub        func(context.Context, *opts.DynamicOptions) error
+	publishResumeDynamicMutex       sync.RWMutex
+	publishResumeDynamicArgsForCall []struct {
+		arg1 context.Context
+		arg2 *opts.DynamicOptions
+	}
+	publishResumeDynamicReturns struct {
+		result1 error
+	}
+	publishResumeDynamicReturnsOnCall map[int]struct {
+		result1 error
+	}
 	PublishResumeRelayStub        func(context.Context, *opts.RelayOptions) error
 	publishResumeRelayMutex       sync.RWMutex
 	publishResumeRelayArgsForCall []struct {
@@ -284,6 +320,18 @@ type FakeIEtcd struct {
 		result1 error
 	}
 	publishResumeRelayReturnsOnCall map[int]struct {
+		result1 error
+	}
+	PublishStopDynamicStub        func(context.Context, *opts.DynamicOptions) error
+	publishStopDynamicMutex       sync.RWMutex
+	publishStopDynamicArgsForCall []struct {
+		arg1 context.Context
+		arg2 *opts.DynamicOptions
+	}
+	publishStopDynamicReturns struct {
+		result1 error
+	}
+	publishStopDynamicReturnsOnCall map[int]struct {
 		result1 error
 	}
 	PublishStopRelayStub        func(context.Context, *opts.RelayOptions) error
@@ -320,6 +368,18 @@ type FakeIEtcd struct {
 		result1 error
 	}
 	publishUpdateConnectionReturnsOnCall map[int]struct {
+		result1 error
+	}
+	PublishUpdateDynamicStub        func(context.Context, *opts.DynamicOptions) error
+	publishUpdateDynamicMutex       sync.RWMutex
+	publishUpdateDynamicArgsForCall []struct {
+		arg1 context.Context
+		arg2 *opts.DynamicOptions
+	}
+	publishUpdateDynamicReturns struct {
+		result1 error
+	}
+	publishUpdateDynamicReturnsOnCall map[int]struct {
 		result1 error
 	}
 	PublishUpdateRelayStub        func(context.Context, *opts.RelayOptions) error
@@ -1001,6 +1061,68 @@ func (fake *FakeIEtcd) PublishCreateConnectionReturnsOnCall(i int, result1 error
 	}{result1}
 }
 
+func (fake *FakeIEtcd) PublishCreateDynamic(arg1 context.Context, arg2 *opts.DynamicOptions) error {
+	fake.publishCreateDynamicMutex.Lock()
+	ret, specificReturn := fake.publishCreateDynamicReturnsOnCall[len(fake.publishCreateDynamicArgsForCall)]
+	fake.publishCreateDynamicArgsForCall = append(fake.publishCreateDynamicArgsForCall, struct {
+		arg1 context.Context
+		arg2 *opts.DynamicOptions
+	}{arg1, arg2})
+	stub := fake.PublishCreateDynamicStub
+	fakeReturns := fake.publishCreateDynamicReturns
+	fake.recordInvocation("PublishCreateDynamic", []interface{}{arg1, arg2})
+	fake.publishCreateDynamicMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIEtcd) PublishCreateDynamicCallCount() int {
+	fake.publishCreateDynamicMutex.RLock()
+	defer fake.publishCreateDynamicMutex.RUnlock()
+	return len(fake.publishCreateDynamicArgsForCall)
+}
+
+func (fake *FakeIEtcd) PublishCreateDynamicCalls(stub func(context.Context, *opts.DynamicOptions) error) {
+	fake.publishCreateDynamicMutex.Lock()
+	defer fake.publishCreateDynamicMutex.Unlock()
+	fake.PublishCreateDynamicStub = stub
+}
+
+func (fake *FakeIEtcd) PublishCreateDynamicArgsForCall(i int) (context.Context, *opts.DynamicOptions) {
+	fake.publishCreateDynamicMutex.RLock()
+	defer fake.publishCreateDynamicMutex.RUnlock()
+	argsForCall := fake.publishCreateDynamicArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIEtcd) PublishCreateDynamicReturns(result1 error) {
+	fake.publishCreateDynamicMutex.Lock()
+	defer fake.publishCreateDynamicMutex.Unlock()
+	fake.PublishCreateDynamicStub = nil
+	fake.publishCreateDynamicReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishCreateDynamicReturnsOnCall(i int, result1 error) {
+	fake.publishCreateDynamicMutex.Lock()
+	defer fake.publishCreateDynamicMutex.Unlock()
+	fake.PublishCreateDynamicStub = nil
+	if fake.publishCreateDynamicReturnsOnCall == nil {
+		fake.publishCreateDynamicReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.publishCreateDynamicReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeIEtcd) PublishCreateRead(arg1 context.Context, arg2 *opts.ReadOptions) error {
 	fake.publishCreateReadMutex.Lock()
 	ret, specificReturn := fake.publishCreateReadReturnsOnCall[len(fake.publishCreateReadArgsForCall)]
@@ -1435,6 +1557,68 @@ func (fake *FakeIEtcd) PublishDeleteConnectionReturnsOnCall(i int, result1 error
 	}{result1}
 }
 
+func (fake *FakeIEtcd) PublishDeleteDynamic(arg1 context.Context, arg2 *opts.DynamicOptions) error {
+	fake.publishDeleteDynamicMutex.Lock()
+	ret, specificReturn := fake.publishDeleteDynamicReturnsOnCall[len(fake.publishDeleteDynamicArgsForCall)]
+	fake.publishDeleteDynamicArgsForCall = append(fake.publishDeleteDynamicArgsForCall, struct {
+		arg1 context.Context
+		arg2 *opts.DynamicOptions
+	}{arg1, arg2})
+	stub := fake.PublishDeleteDynamicStub
+	fakeReturns := fake.publishDeleteDynamicReturns
+	fake.recordInvocation("PublishDeleteDynamic", []interface{}{arg1, arg2})
+	fake.publishDeleteDynamicMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIEtcd) PublishDeleteDynamicCallCount() int {
+	fake.publishDeleteDynamicMutex.RLock()
+	defer fake.publishDeleteDynamicMutex.RUnlock()
+	return len(fake.publishDeleteDynamicArgsForCall)
+}
+
+func (fake *FakeIEtcd) PublishDeleteDynamicCalls(stub func(context.Context, *opts.DynamicOptions) error) {
+	fake.publishDeleteDynamicMutex.Lock()
+	defer fake.publishDeleteDynamicMutex.Unlock()
+	fake.PublishDeleteDynamicStub = stub
+}
+
+func (fake *FakeIEtcd) PublishDeleteDynamicArgsForCall(i int) (context.Context, *opts.DynamicOptions) {
+	fake.publishDeleteDynamicMutex.RLock()
+	defer fake.publishDeleteDynamicMutex.RUnlock()
+	argsForCall := fake.publishDeleteDynamicArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIEtcd) PublishDeleteDynamicReturns(result1 error) {
+	fake.publishDeleteDynamicMutex.Lock()
+	defer fake.publishDeleteDynamicMutex.Unlock()
+	fake.PublishDeleteDynamicStub = nil
+	fake.publishDeleteDynamicReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishDeleteDynamicReturnsOnCall(i int, result1 error) {
+	fake.publishDeleteDynamicMutex.Lock()
+	defer fake.publishDeleteDynamicMutex.Unlock()
+	fake.PublishDeleteDynamicStub = nil
+	if fake.publishDeleteDynamicReturnsOnCall == nil {
+		fake.publishDeleteDynamicReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.publishDeleteDynamicReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeIEtcd) PublishDeleteRead(arg1 context.Context, arg2 *opts.ReadOptions) error {
 	fake.publishDeleteReadMutex.Lock()
 	ret, specificReturn := fake.publishDeleteReadReturnsOnCall[len(fake.publishDeleteReadArgsForCall)]
@@ -1745,6 +1929,68 @@ func (fake *FakeIEtcd) PublishDeleteValidationReturnsOnCall(i int, result1 error
 	}{result1}
 }
 
+func (fake *FakeIEtcd) PublishResumeDynamic(arg1 context.Context, arg2 *opts.DynamicOptions) error {
+	fake.publishResumeDynamicMutex.Lock()
+	ret, specificReturn := fake.publishResumeDynamicReturnsOnCall[len(fake.publishResumeDynamicArgsForCall)]
+	fake.publishResumeDynamicArgsForCall = append(fake.publishResumeDynamicArgsForCall, struct {
+		arg1 context.Context
+		arg2 *opts.DynamicOptions
+	}{arg1, arg2})
+	stub := fake.PublishResumeDynamicStub
+	fakeReturns := fake.publishResumeDynamicReturns
+	fake.recordInvocation("PublishResumeDynamic", []interface{}{arg1, arg2})
+	fake.publishResumeDynamicMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIEtcd) PublishResumeDynamicCallCount() int {
+	fake.publishResumeDynamicMutex.RLock()
+	defer fake.publishResumeDynamicMutex.RUnlock()
+	return len(fake.publishResumeDynamicArgsForCall)
+}
+
+func (fake *FakeIEtcd) PublishResumeDynamicCalls(stub func(context.Context, *opts.DynamicOptions) error) {
+	fake.publishResumeDynamicMutex.Lock()
+	defer fake.publishResumeDynamicMutex.Unlock()
+	fake.PublishResumeDynamicStub = stub
+}
+
+func (fake *FakeIEtcd) PublishResumeDynamicArgsForCall(i int) (context.Context, *opts.DynamicOptions) {
+	fake.publishResumeDynamicMutex.RLock()
+	defer fake.publishResumeDynamicMutex.RUnlock()
+	argsForCall := fake.publishResumeDynamicArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIEtcd) PublishResumeDynamicReturns(result1 error) {
+	fake.publishResumeDynamicMutex.Lock()
+	defer fake.publishResumeDynamicMutex.Unlock()
+	fake.PublishResumeDynamicStub = nil
+	fake.publishResumeDynamicReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishResumeDynamicReturnsOnCall(i int, result1 error) {
+	fake.publishResumeDynamicMutex.Lock()
+	defer fake.publishResumeDynamicMutex.Unlock()
+	fake.PublishResumeDynamicStub = nil
+	if fake.publishResumeDynamicReturnsOnCall == nil {
+		fake.publishResumeDynamicReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.publishResumeDynamicReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeIEtcd) PublishResumeRelay(arg1 context.Context, arg2 *opts.RelayOptions) error {
 	fake.publishResumeRelayMutex.Lock()
 	ret, specificReturn := fake.publishResumeRelayReturnsOnCall[len(fake.publishResumeRelayArgsForCall)]
@@ -1803,6 +2049,68 @@ func (fake *FakeIEtcd) PublishResumeRelayReturnsOnCall(i int, result1 error) {
 		})
 	}
 	fake.publishResumeRelayReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishStopDynamic(arg1 context.Context, arg2 *opts.DynamicOptions) error {
+	fake.publishStopDynamicMutex.Lock()
+	ret, specificReturn := fake.publishStopDynamicReturnsOnCall[len(fake.publishStopDynamicArgsForCall)]
+	fake.publishStopDynamicArgsForCall = append(fake.publishStopDynamicArgsForCall, struct {
+		arg1 context.Context
+		arg2 *opts.DynamicOptions
+	}{arg1, arg2})
+	stub := fake.PublishStopDynamicStub
+	fakeReturns := fake.publishStopDynamicReturns
+	fake.recordInvocation("PublishStopDynamic", []interface{}{arg1, arg2})
+	fake.publishStopDynamicMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIEtcd) PublishStopDynamicCallCount() int {
+	fake.publishStopDynamicMutex.RLock()
+	defer fake.publishStopDynamicMutex.RUnlock()
+	return len(fake.publishStopDynamicArgsForCall)
+}
+
+func (fake *FakeIEtcd) PublishStopDynamicCalls(stub func(context.Context, *opts.DynamicOptions) error) {
+	fake.publishStopDynamicMutex.Lock()
+	defer fake.publishStopDynamicMutex.Unlock()
+	fake.PublishStopDynamicStub = stub
+}
+
+func (fake *FakeIEtcd) PublishStopDynamicArgsForCall(i int) (context.Context, *opts.DynamicOptions) {
+	fake.publishStopDynamicMutex.RLock()
+	defer fake.publishStopDynamicMutex.RUnlock()
+	argsForCall := fake.publishStopDynamicArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIEtcd) PublishStopDynamicReturns(result1 error) {
+	fake.publishStopDynamicMutex.Lock()
+	defer fake.publishStopDynamicMutex.Unlock()
+	fake.PublishStopDynamicStub = nil
+	fake.publishStopDynamicReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishStopDynamicReturnsOnCall(i int, result1 error) {
+	fake.publishStopDynamicMutex.Lock()
+	defer fake.publishStopDynamicMutex.Unlock()
+	fake.PublishStopDynamicStub = nil
+	if fake.publishStopDynamicReturnsOnCall == nil {
+		fake.publishStopDynamicReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.publishStopDynamicReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -1989,6 +2297,68 @@ func (fake *FakeIEtcd) PublishUpdateConnectionReturnsOnCall(i int, result1 error
 		})
 	}
 	fake.publishUpdateConnectionReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishUpdateDynamic(arg1 context.Context, arg2 *opts.DynamicOptions) error {
+	fake.publishUpdateDynamicMutex.Lock()
+	ret, specificReturn := fake.publishUpdateDynamicReturnsOnCall[len(fake.publishUpdateDynamicArgsForCall)]
+	fake.publishUpdateDynamicArgsForCall = append(fake.publishUpdateDynamicArgsForCall, struct {
+		arg1 context.Context
+		arg2 *opts.DynamicOptions
+	}{arg1, arg2})
+	stub := fake.PublishUpdateDynamicStub
+	fakeReturns := fake.publishUpdateDynamicReturns
+	fake.recordInvocation("PublishUpdateDynamic", []interface{}{arg1, arg2})
+	fake.publishUpdateDynamicMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIEtcd) PublishUpdateDynamicCallCount() int {
+	fake.publishUpdateDynamicMutex.RLock()
+	defer fake.publishUpdateDynamicMutex.RUnlock()
+	return len(fake.publishUpdateDynamicArgsForCall)
+}
+
+func (fake *FakeIEtcd) PublishUpdateDynamicCalls(stub func(context.Context, *opts.DynamicOptions) error) {
+	fake.publishUpdateDynamicMutex.Lock()
+	defer fake.publishUpdateDynamicMutex.Unlock()
+	fake.PublishUpdateDynamicStub = stub
+}
+
+func (fake *FakeIEtcd) PublishUpdateDynamicArgsForCall(i int) (context.Context, *opts.DynamicOptions) {
+	fake.publishUpdateDynamicMutex.RLock()
+	defer fake.publishUpdateDynamicMutex.RUnlock()
+	argsForCall := fake.publishUpdateDynamicArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIEtcd) PublishUpdateDynamicReturns(result1 error) {
+	fake.publishUpdateDynamicMutex.Lock()
+	defer fake.publishUpdateDynamicMutex.Unlock()
+	fake.PublishUpdateDynamicStub = nil
+	fake.publishUpdateDynamicReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIEtcd) PublishUpdateDynamicReturnsOnCall(i int, result1 error) {
+	fake.publishUpdateDynamicMutex.Lock()
+	defer fake.publishUpdateDynamicMutex.Unlock()
+	fake.PublishUpdateDynamicStub = nil
+	if fake.publishUpdateDynamicReturnsOnCall == nil {
+		fake.publishUpdateDynamicReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.publishUpdateDynamicReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -2580,6 +2950,8 @@ func (fake *FakeIEtcd) Invocations() map[string][][]interface{} {
 	defer fake.publishCreateCompositeMutex.RUnlock()
 	fake.publishCreateConnectionMutex.RLock()
 	defer fake.publishCreateConnectionMutex.RUnlock()
+	fake.publishCreateDynamicMutex.RLock()
+	defer fake.publishCreateDynamicMutex.RUnlock()
 	fake.publishCreateReadMutex.RLock()
 	defer fake.publishCreateReadMutex.RUnlock()
 	fake.publishCreateRelayMutex.RLock()
@@ -2594,6 +2966,8 @@ func (fake *FakeIEtcd) Invocations() map[string][][]interface{} {
 	defer fake.publishDeleteCompositeMutex.RUnlock()
 	fake.publishDeleteConnectionMutex.RLock()
 	defer fake.publishDeleteConnectionMutex.RUnlock()
+	fake.publishDeleteDynamicMutex.RLock()
+	defer fake.publishDeleteDynamicMutex.RUnlock()
 	fake.publishDeleteReadMutex.RLock()
 	defer fake.publishDeleteReadMutex.RUnlock()
 	fake.publishDeleteRelayMutex.RLock()
@@ -2604,14 +2978,20 @@ func (fake *FakeIEtcd) Invocations() map[string][][]interface{} {
 	defer fake.publishDeleteServiceMutex.RUnlock()
 	fake.publishDeleteValidationMutex.RLock()
 	defer fake.publishDeleteValidationMutex.RUnlock()
+	fake.publishResumeDynamicMutex.RLock()
+	defer fake.publishResumeDynamicMutex.RUnlock()
 	fake.publishResumeRelayMutex.RLock()
 	defer fake.publishResumeRelayMutex.RUnlock()
+	fake.publishStopDynamicMutex.RLock()
+	defer fake.publishStopDynamicMutex.RUnlock()
 	fake.publishStopRelayMutex.RLock()
 	defer fake.publishStopRelayMutex.RUnlock()
 	fake.publishUpdateCompositeMutex.RLock()
 	defer fake.publishUpdateCompositeMutex.RUnlock()
 	fake.publishUpdateConnectionMutex.RLock()
 	defer fake.publishUpdateConnectionMutex.RUnlock()
+	fake.publishUpdateDynamicMutex.RLock()
+	defer fake.publishUpdateDynamicMutex.RUnlock()
 	fake.publishUpdateRelayMutex.RLock()
 	defer fake.publishUpdateRelayMutex.RUnlock()
 	fake.publishUpdateSchemaMutex.RLock()

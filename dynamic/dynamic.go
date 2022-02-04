@@ -29,6 +29,7 @@ const (
 type IDynamic interface {
 	Start(bus string)
 	Read() chan *events.Outbound
+	Close() error
 }
 
 type Client struct {
@@ -86,11 +87,17 @@ func validateDynamicOptions(opts *opts.DynamicOptions) error {
 	return nil
 }
 
+func (d *Client) Close() error {
+	return d.Conn.Close()
+}
+
 func (d *Client) reconnect() error {
 	conn, err := grpc.Dial(d.Options.XGrpcAddress, getDialOptions(d.Options)...)
 	if err != nil {
 		return errors.Wrapf(err, "unable to open connection to %s", d.Options.XGrpcAddress)
 	}
+
+	d.Conn = conn
 
 	d.Client = services.NewDProxyClient(conn)
 	return nil

@@ -43,6 +43,7 @@ type Config struct {
 	ImportRequests      map[string]*protos.ImportGithubRequest `json:"-"`
 	Validations         map[string]*common.Validation          `json:"-"`
 	Composites          map[string]*opts.Composite             `json:"-"`
+	DynamicReplays      map[string]*stypes.Dynamic             `json:"-"`
 	ConnectionsMutex    *sync.RWMutex                          `json:"-"`
 	ServicesMutex       *sync.RWMutex                          `json:"-"`
 	ReadsMutex          *sync.RWMutex                          `json:"-"`
@@ -51,6 +52,7 @@ type Config struct {
 	ImportRequestsMutex *sync.RWMutex                          `json:"-"`
 	ValidationsMutex    *sync.RWMutex                          `json:"-"`
 	CompositesMutex     *sync.RWMutex                          `json:"-"`
+	DynamicReplaysMutex *sync.RWMutex                          `json:"-"`
 }
 
 // Save is a convenience method of persisting the config to disk via a single call
@@ -101,6 +103,7 @@ func ReadConfig(fileName string) (*Config, error) {
 		ImportRequests:      make(map[string]*protos.ImportGithubRequest),
 		Validations:         make(map[string]*common.Validation),
 		Composites:          make(map[string]*opts.Composite),
+		DynamicReplays:      make(map[string]*stypes.Dynamic),
 	}
 	if err := json.Unmarshal(data, cfg); err != nil {
 		return nil, errors.Wrapf(err, "could not unmarshal ~/.batchsh/%s", fileName)
@@ -383,4 +386,29 @@ func (c *Config) DeleteComposite(id string) {
 	c.CompositesMutex.Lock()
 	defer c.CompositesMutex.Unlock()
 	delete(c.Composites, id)
+}
+
+// GetDynamic returns an in-progress read from the DynamicReplays map
+func (c *Config) GetDynamic(dynamicID string) *stypes.Dynamic {
+	c.DynamicReplaysMutex.RLock()
+	defer c.DynamicReplaysMutex.RUnlock()
+
+	r, _ := c.DynamicReplays[dynamicID]
+
+	return r
+}
+
+// SetDynamic adds an in-progress read to the DynamicReplays map
+func (c *Config) SetDynamic(dynamicID string, dynamicReplay *stypes.Dynamic) {
+	c.DynamicReplaysMutex.Lock()
+	defer c.DynamicReplaysMutex.Unlock()
+
+	c.DynamicReplays[dynamicID] = dynamicReplay
+}
+
+// DeleteDynamic removes a dynamic replay from in-memory map
+func (c *Config) DeleteDynamic(dynamicID string) {
+	c.DynamicReplaysMutex.Lock()
+	defer c.DynamicReplaysMutex.Unlock()
+	delete(c.Services, dynamicID)
 }
