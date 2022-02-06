@@ -7,11 +7,12 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/batchcorp/plumber/actions"
 	"github.com/lestrrat-go/jwx/jwt"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber/actions"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
@@ -88,7 +89,7 @@ func (s *Server) SetServerOptions(ctx context.Context, req *protos.SetServerOpti
 	s.PersistentConfig.GitHubInstallID = installID
 
 	// Save to etcd
-	if err := s.Etcd.SaveConfig(ctx, s.PersistentConfig); err != nil {
+	if err := s.PersistentConfig.Save(); err != nil {
 		return nil, errors.Wrap(err, "unable to save updated config values")
 	}
 

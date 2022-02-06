@@ -1,22 +1,21 @@
 package types
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"time"
 
-	"github.com/batchcorp/plumber/util"
-
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-
+	"github.com/golang/protobuf/jsonpb"
 	"github.com/pkg/errors"
-
-	"github.com/batchcorp/plumber/dynamic"
-
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
 	"github.com/batchcorp/plumber/backends"
+	"github.com/batchcorp/plumber/dynamic"
+	"github.com/batchcorp/plumber/util"
 )
 
 type Dynamic struct {
@@ -91,4 +90,30 @@ func (d *Dynamic) Close() {
 
 	// This gets re-set on ResumeDynamic
 	d.Backend = nil
+}
+
+// MarshalJSON marshals a dynamic replay to JSON
+func (d *Dynamic) MarshalJSON() ([]byte, error) {
+	buf := bytes.NewBuffer([]byte(``))
+
+	m := jsonpb.Marshaler{}
+	if err := m.Marshal(buf, d.Options); err != nil {
+		return nil, errors.Wrap(err, "could not marshal opts.DynamicOptions")
+	}
+
+	return buf.Bytes(), nil
+}
+
+// UnmarshalJSON unmarshals JSON into a dynamic replay struct
+func (d *Dynamic) UnmarshalJSON(v []byte) error {
+	dynamic := &opts.DynamicOptions{}
+	if err := jsonpb.Unmarshal(bytes.NewBuffer(v), dynamic); err != nil {
+		return errors.Wrap(err, "unable to unmarshal stored dynamic replay")
+	}
+
+	d.Options = dynamic
+	d.Id = dynamic.XDynamicId
+	d.Active = dynamic.XActive
+
+	return nil
 }

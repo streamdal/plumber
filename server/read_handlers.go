@@ -177,7 +177,7 @@ func (s *Server) CreateRead(_ context.Context, req *protos.CreateReadRequest) (*
 	}
 
 	// Try to create a backend from given connection options
-	be, err := backends.New(conn)
+	be, err := backends.New(conn.Connection)
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, fmt.Sprintf("unable to create backend: %s", err))
 	}
@@ -275,7 +275,7 @@ func (s *Server) ResumeRead(_ context.Context, req *protos.ResumeReadRequest) (*
 	}
 
 	// Try to create a backend from given connection options
-	be, err := backends.New(conn)
+	be, err := backends.New(conn.Connection)
 	if err != nil {
 		cancelFunc()
 		return nil, CustomError(common.Code_ABORTED, fmt.Sprintf("unable to create backend: %s", err))

@@ -67,7 +67,7 @@ func (a *Actions) CreateRelay(ctx context.Context, relayOpts *opts.RelayOptions)
 	}
 
 	// Try to create a backend from given connection options
-	be, err := backends.New(conn)
+	be, err := backends.New(conn.Connection)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create backend")
 	}

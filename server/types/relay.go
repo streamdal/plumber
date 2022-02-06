@@ -1,19 +1,21 @@
 package types
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"time"
 
+	"github.com/golang/protobuf/jsonpb"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/backends"
-	"github.com/batchcorp/plumber/util"
 
+	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/relay"
+	"github.com/batchcorp/plumber/util"
 )
 
 type Relay struct {
@@ -81,6 +83,32 @@ func (r *Relay) StartRelay(delay time.Duration) error {
 	case err := <-localErrCh:
 		return fmt.Errorf("relay startup failed for id '%s': %s", r.Id, err.Error)
 	}
+
+	return nil
+}
+
+// MarshalJSON marshals a dynamic replay to JSON
+func (r *Relay) MarshalJSON() ([]byte, error) {
+	buf := bytes.NewBuffer([]byte(``))
+
+	m := jsonpb.Marshaler{}
+	if err := m.Marshal(buf, r.Options); err != nil {
+		return nil, errors.Wrap(err, "could not marshal opts.RelayOptions")
+	}
+
+	return buf.Bytes(), nil
+}
+
+// UnmarshalJSON unmarshals JSON into a dynamic replay struct
+func (r *Relay) UnmarshalJSON(v []byte) error {
+	relay := &opts.RelayOptions{}
+	if err := jsonpb.Unmarshal(bytes.NewBuffer(v), relay); err != nil {
+		return errors.Wrap(err, "unable to unmarshal stored relay")
+	}
+
+	r.Options = relay
+	r.Id = relay.XRelayId
+	r.Active = relay.XActive
 
 	return nil
 }

@@ -25,7 +25,7 @@ func (a *Actions) CreateDynamic(ctx context.Context, dynamicOpts *opts.DynamicOp
 	}
 
 	// Try to create a backend from given connection options
-	be, err := backends.New(conn)
+	be, err := backends.New(conn.Connection)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create backend")
 	}
@@ -77,7 +77,7 @@ func (a *Actions) ResumeDynamic(ctx context.Context, dynamicID string) (*types.D
 		return nil, validate.ErrConnectionNotFound
 	}
 
-	be, err := backends.New(conn)
+	be, err := backends.New(conn.Connection)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create backend connection")
 	}
@@ -142,7 +142,7 @@ func (a *Actions) UpdateDynamic(ctx context.Context, dynamicID string, dynamicOp
 		return nil, validate.ErrConnectionNotFound
 	}
 
-	be, err := backends.New(conn)
+	be, err := backends.New(conn.Connection)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create backend connection")
 	}
