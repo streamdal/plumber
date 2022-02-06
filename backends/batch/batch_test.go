@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/batchcorp/plumber/server/types"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -44,7 +46,7 @@ func BatchWithMockResponse(httpCode int, responseBody string) *Batch {
 		Client: client,
 		Opts:   options.NewCLIOptions(),
 		PersistentConfig: &config.Config{
-			Connections: make(map[string]*opts.ConnectionOptions),
+			Connections: make(map[string]*types.Connection),
 		},
 	}
 }
