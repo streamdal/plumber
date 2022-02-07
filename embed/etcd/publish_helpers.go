@@ -184,6 +184,8 @@ func (e *Etcd) PublishResumeDynamic(ctx context.Context, dynamicOptions *opts.Dy
 // PublishConfigUpdate publishes a MessageUpdateConfig message, which other plumber instances
 // will receive and update their config with the new token
 func (e *Etcd) PublishConfigUpdate(ctx context.Context, msg *MessageUpdateConfig) error {
+	return nil // TODO: remove
+
 	if err := validateMessageUpdateConfig(msg); err != nil {
 		return errors.Wrap(err, "unable to validate MessageUpdateConfig")
 	}
@@ -217,6 +219,8 @@ func validateMessageUpdateConfig(msg *MessageUpdateConfig) error {
 }
 
 func (e *Etcd) publishServiceMessage(ctx context.Context, action Action, svc *protos.Service) error {
+	return nil // TODO: remove
+
 	data, err := proto.Marshal(svc)
 	if err != nil {
 		return errors.Wrapf(err, "unable to publish service message for '%s'", svc.Id)
@@ -231,6 +235,8 @@ func (e *Etcd) publishServiceMessage(ctx context.Context, action Action, svc *pr
 }
 
 func (e *Etcd) publishConnectionMessage(ctx context.Context, action Action, conn *opts.ConnectionOptions) error {
+	return nil // TODO: remove
+
 	data, err := proto.Marshal(conn)
 	if err != nil {
 		return errors.Wrapf(err, "unable to publish connection message for '%s'", conn.XId)
@@ -245,6 +251,8 @@ func (e *Etcd) publishConnectionMessage(ctx context.Context, action Action, conn
 }
 
 func (e *Etcd) publishSchemaMessage(ctx context.Context, action Action, svc *protos.Schema) error {
+	return nil // TODO: remove
+
 	data, err := proto.Marshal(svc)
 	if err != nil {
 		return errors.Wrapf(err, "unable to publish schema message for '%s'", svc.Id)
@@ -260,6 +268,8 @@ func (e *Etcd) publishSchemaMessage(ctx context.Context, action Action, svc *pro
 }
 
 func (e *Etcd) publishRelayMessage(ctx context.Context, action Action, relay *opts.RelayOptions) error {
+	return nil // TODO: remove
+
 	data, err := proto.Marshal(relay)
 	if err != nil {
 		return errors.Wrapf(err, "unable to publish relay message for '%s'", relay.XRelayId)
@@ -274,6 +284,8 @@ func (e *Etcd) publishRelayMessage(ctx context.Context, action Action, relay *op
 }
 
 func (e *Etcd) publishValidationMessage(ctx context.Context, action Action, validation *common.Validation) error {
+	return nil // TODO: remove
+
 	data, err := proto.Marshal(validation)
 	if err != nil {
 		return errors.Wrapf(err, "unable to publish validation message for '%s'", validation.XId)
@@ -288,6 +300,8 @@ func (e *Etcd) publishValidationMessage(ctx context.Context, action Action, vali
 }
 
 func (e *Etcd) publishReadMessage(ctx context.Context, action Action, read *opts.ReadOptions) error {
+	return nil // TODO: remove
+
 	data, err := proto.Marshal(read)
 	if err != nil {
 		return errors.Wrapf(err, "unable to publish read message for '%s'", read.XId)
@@ -302,6 +316,8 @@ func (e *Etcd) publishReadMessage(ctx context.Context, action Action, read *opts
 }
 
 func (e *Etcd) publishCompositeMessage(ctx context.Context, action Action, composite *opts.Composite) error {
+	return nil // TODO: remove
+
 	data, err := proto.Marshal(composite)
 	if err != nil {
 		return errors.Wrapf(err, "unable to publish composite message for '%s'", composite.XId)
@@ -316,6 +332,8 @@ func (e *Etcd) publishCompositeMessage(ctx context.Context, action Action, compo
 }
 
 func (e *Etcd) publishDynamicMessage(ctx context.Context, action Action, dynamicOptions *opts.DynamicOptions) error {
+	return nil // TODO: remove
+
 	data, err := proto.Marshal(dynamicOptions)
 	if err != nil {
 		return errors.Wrapf(err, "unable to publish dynamic message for '%s'", dynamicOptions.XDynamicId)

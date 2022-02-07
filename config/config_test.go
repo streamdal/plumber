@@ -17,25 +17,27 @@ var _ = Describe("Options", func() {
 	Context("Connections", func() {
 		cfg := &Config{
 			ConnectionsMutex: &sync.RWMutex{},
-			Connections:      make(map[string]*opts.ConnectionOptions),
+			Connections:      make(map[string]*types.Connection),
 		}
 		It("Can save/get/delete", func() {
 			id := uuid.NewV4().String()
 
-			conn := &opts.ConnectionOptions{
-				XId: id,
+			conn := &types.Connection{
+				Connection: &opts.ConnectionOptions{
+					XId: id,
+				},
 			}
 
 			// Save
-			cfg.SetConnection(conn.XId, conn)
+			cfg.SetConnection(conn.Connection.XId, conn)
 
 			// Get
-			stored := cfg.GetConnection(conn.XId)
+			stored := cfg.GetConnection(conn.Connection.XId)
 			Expect(stored).To(Equal(conn))
 
 			// Delete
-			cfg.DeleteConnection(conn.XId)
-			notThere := cfg.GetConnection(conn.XId)
+			cfg.DeleteConnection(conn.Connection.XId)
+			notThere := cfg.GetConnection(conn.Connection.XId)
 			Expect(notThere).To(BeNil())
 		})
 	})

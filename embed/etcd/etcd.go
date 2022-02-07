@@ -233,6 +233,8 @@ func (e *Etcd) Client() *clientv3.Client {
 }
 
 func (e *Etcd) Start(serviceCtx context.Context) error {
+	return nil
+
 	if e.started {
 		return ServerAlreadyStartedErr
 	}
@@ -330,6 +332,8 @@ func (e *Etcd) createClient(host string) (*clientv3.Client, error) {
 }
 
 func (e *Etcd) Broadcast(ctx context.Context, msg *Message) error {
+	return nil
+
 	path := BroadcastPath + "/" + uuid.NewV4().String()
 
 	return e.writeMessage(ctx, path, msg)
@@ -510,6 +514,8 @@ func (e *Etcd) PopulateCache() error {
 }
 
 func (e *Etcd) populateServerConfigCache() error {
+	return nil
+
 	resp, err := e.Get(context.Background(), CacheServerConfigKey)
 	if err != nil {
 		return errors.Wrap(err, "unable to fetch server config from etcd")
@@ -559,31 +565,35 @@ func (e *Etcd) populateServerConfigCache() error {
 }
 
 func (e *Etcd) populateConnectionCache() error {
-	resp, err := e.Get(context.Background(), CacheConnectionsPrefix, clientv3.WithPrefix())
-	if err != nil {
-		return errors.Wrap(err, "unable to fetch protos.Connection messages from etcd")
-	}
-
-	var count int
-
-	for _, v := range resp.Kvs {
-		conn := &opts.ConnectionOptions{}
-		if err := proto.Unmarshal(v.Value, conn); err != nil {
-			e.log.Errorf("unable to unmarshal protos.Connection message: %s", err)
-			continue
-		}
-
-		count++
-
-		e.PersistentConfig.SetConnection(conn.XId, conn)
-	}
-
-	e.log.Debugf("Loaded '%d' connections from etcd", count)
+	//return nil
+	//
+	//resp, err := e.Get(context.Background(), CacheConnectionsPrefix, clientv3.WithPrefix())
+	//if err != nil {
+	//	return errors.Wrap(err, "unable to fetch protos.Connection messages from etcd")
+	//}
+	//
+	//var count int
+	//
+	//for _, v := range resp.Kvs {
+	//	conn := &opts.ConnectionOptions{}
+	//	if err := proto.Unmarshal(v.Value, conn); err != nil {
+	//		e.log.Errorf("unable to unmarshal protos.Connection message: %s", err)
+	//		continue
+	//	}
+	//
+	//	count++
+	//
+	//	e.PersistentConfig.SetConnection(conn.XId, conn
+	//}
+	//
+	//e.log.Debugf("Loaded '%d' connections from etcd", count)
 
 	return nil
 }
 
 func (e *Etcd) populateSchemaCache() error {
+	return nil
+
 	resp, err := e.Get(context.Background(), CacheSchemasPrefix, clientv3.WithPrefix())
 	if err != nil {
 		return errors.Wrap(err, "unable to fetch protos.Schema messages from etcd")
@@ -609,6 +619,8 @@ func (e *Etcd) populateSchemaCache() error {
 }
 
 func (e *Etcd) populateRelayCache() error {
+	return nil
+
 	resp, err := e.Get(context.Background(), CacheRelaysPrefix, clientv3.WithPrefix())
 	if err != nil {
 		return errors.Wrap(err, "unable to fetch opts.RelayOptions messages from etcd")
@@ -637,6 +649,8 @@ func (e *Etcd) populateRelayCache() error {
 }
 
 func (e *Etcd) populateServiceCache() error {
+	return nil
+
 	resp, err := e.Get(context.Background(), CacheServicesPrefix, clientv3.WithPrefix())
 	if err != nil {
 		return errors.Wrap(err, "unable to fetch protos.Service messages from etcd")
@@ -662,6 +676,8 @@ func (e *Etcd) populateServiceCache() error {
 }
 
 func (e *Etcd) populateValidationCache() error {
+	return nil
+
 	resp, err := e.Get(context.Background(), CacheValidationsPrefix, clientv3.WithPrefix())
 	if err != nil {
 		return errors.Wrap(err, "unable to fetch protos.Service messages from etcd")
@@ -689,6 +705,8 @@ func (e *Etcd) populateValidationCache() error {
 // populateReadCache loads cached read configs from etcd.
 // This method MUST be called after populateConnectionCache() and populateSchemaCache()
 func (e *Etcd) populateReadCache() error {
+	return nil
+
 	resp, err := e.Get(context.Background(), CacheReadsPrefix, clientv3.WithPrefix())
 	if err != nil {
 		return errors.Wrap(err, "unable to fetch opts.ReadOptions messages from etcd")
@@ -730,6 +748,8 @@ func (e *Etcd) populateReadCache() error {
 }
 
 func (e *Etcd) populateCompositeCache() error {
+	return nil
+
 	resp, err := e.Get(context.Background(), CacheCompositesPrefix, clientv3.WithPrefix())
 	if err != nil {
 		return errors.Wrap(err, "unable to fetch opts.Composite messages from etcd")
@@ -756,6 +776,8 @@ func (e *Etcd) populateCompositeCache() error {
 
 // TODO: this method is duplicated from server.go, can we combine and stick somewhere else to avoid duplication?
 func (e *Etcd) populateDecodeSchemaDetails(read *opts.ReadOptions) error {
+	return nil
+
 	if read.DecodeOptions == nil {
 		return nil
 	}

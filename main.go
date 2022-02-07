@@ -46,6 +46,10 @@ func main() {
 	serviceCtx, serviceShutdownFunc := context.WithCancel(context.Background())
 	mainCtx, mainShutdownFunc := context.WithCancel(context.Background())
 
+	persistentConfig := getConfig()
+	// Save config automatically on exit
+	defer persistentConfig.Save()
+
 	// We only want to intercept interrupt signals in relay or server mode
 	if cliOpts.Global.XAction == "relay" || cliOpts.Global.XAction == "server" {
 		logrus.Debug("Intercepting signals")
@@ -56,6 +60,7 @@ func main() {
 
 		go func() {
 			sig := <-c
+			logrus.Info("Shutting down plumber server...")
 			logrus.Debugf("Received system call: %+v", sig)
 
 			serviceShutdownFunc()
@@ -76,8 +81,6 @@ func main() {
 	} else {
 		printer.PrintLogo()
 	}
-
-	persistentConfig := getConfig()
 
 	// Actions contains server-related methods that are used by both the gRPC
 	// server and the etcd consumer.
@@ -166,7 +169,7 @@ func getConfig() *config.Config {
 
 	if cfg == nil {
 		cfg = &config.Config{
-			Connections:         make(map[string]*opts.ConnectionOptions),
+			Connections:         make(map[string]*types.Connection),
 			Relays:              make(map[string]*types.Relay),
 			Schemas:             make(map[string]*protos.Schema),
 			Services:            make(map[string]*protos.Service),
