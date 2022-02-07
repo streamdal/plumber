@@ -83,3 +83,13 @@ services:
       /bin/bash -c
       "bin/apply-config-from-env.py conf/standalone.conf
       && bin/pulsar standalone"
+
+  natsjs:
+    image: nats:2.7.1-alpine3.15
+    ports:
+      - "4222:4222" # NATS Port
+      - "6222:6222"
+      - "8222:8222" # HTTP Monitor
+    volumes:
+      - ${PWD}/data/jetstream:/data/jetstream
+      - ${PWD}/assets/nats-server.conf:/etc/nats/nats-server.conf
