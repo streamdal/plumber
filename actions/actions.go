@@ -12,14 +12,15 @@ import (
 	"context"
 	"time"
 
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/prometheus"
 	"github.com/batchcorp/plumber/server/types"
 	"github.com/batchcorp/plumber/validate"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
 type Actions struct {
@@ -66,7 +67,7 @@ func (a *Actions) CreateRelay(ctx context.Context, relayOpts *opts.RelayOptions)
 	}
 
 	// Try to create a backend from given connection options
-	be, err := backends.New(conn)
+	be, err := backends.New(conn.Connection)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create backend")
 	}
@@ -129,7 +130,7 @@ func (a *Actions) StopRelay(ctx context.Context, relayID string) (*types.Relay, 
 	return relay, nil
 }
 
-func (a *Actions) ResumeReplay(ctx context.Context, relayID string) (*types.Relay, error) {
+func (a *Actions) ResumeRelay(ctx context.Context, relayID string) (*types.Relay, error) {
 	if relayID == "" {
 		return nil, errors.New("relayID cannot be empty")
 	}

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/batchcorp/plumber/validate"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -15,6 +14,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/embed/etcd"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (s *Server) GetAllRelays(_ context.Context, req *protos.GetAllRelaysRequest) (*protos.GetAllRelaysResponse, error) {
@@ -63,6 +63,7 @@ func (s *Server) GetRelay(ctx context.Context, request *protos.GetRelayRequest) 
 		return nil, CustomError(common.Code_NOT_FOUND, fmt.Sprintf("relay %s not found", request.RelayId))
 	}
 
+	// TODO: figure out why we have two active flags and explain here in a comment
 	relay.Options.XActive = relay.Active
 
 	return &protos.GetRelayResponse{
@@ -257,7 +258,7 @@ func (s *Server) ResumeRelay(ctx context.Context, req *protos.ResumeRelayRequest
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	relay, err := s.Actions.ResumeReplay(ctx, req.RelayId)
+	relay, err := s.Actions.ResumeRelay(ctx, req.RelayId)
 	if err != nil {
 		if err == validate.ErrRelayNotFound {
 			return nil, CustomError(common.Code_NOT_FOUND, err.Error())
@@ -282,7 +283,7 @@ func (s *Server) ResumeRelay(ctx context.Context, req *protos.ResumeRelayRequest
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
 
-	// Publish ResumeReplay event
+	// Publish ResumeRelay event
 	if err := s.Etcd.PublishResumeRelay(ctx, relay.Options); err != nil {
 		fullErr := fmt.Sprintf("unable to publish resume relay event for relay id '%s': %s", relay.Options.XRelayId, err)
 		s.Log.Error(fullErr)

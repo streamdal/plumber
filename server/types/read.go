@@ -1,10 +1,12 @@
 package types
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"sync"
 
+	"github.com/golang/protobuf/jsonpb"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -118,4 +120,28 @@ func createMessageDescriptors(readOpts *opts.ReadOptions) (map[pb.MDType]*desc.M
 	}
 
 	return mds, nil
+}
+
+// MarshalJSON marshals a dynamic replay to JSON
+func (r *Read) MarshalJSON() ([]byte, error) {
+	buf := bytes.NewBuffer([]byte(``))
+
+	m := jsonpb.Marshaler{}
+	if err := m.Marshal(buf, r.ReadOptions); err != nil {
+		return nil, errors.Wrap(err, "could not marshal opts.ReadOptions")
+	}
+
+	return buf.Bytes(), nil
+}
+
+// UnmarshalJSON unmarshals JSON into a dynamic replay struct
+func (r *Read) UnmarshalJSON(v []byte) error {
+	dynamic := &opts.ReadOptions{}
+	if err := jsonpb.Unmarshal(bytes.NewBuffer(v), dynamic); err != nil {
+		return errors.Wrap(err, "unable to unmarshal stored read")
+	}
+
+	r.ReadOptions = dynamic
+
+	return nil
 }

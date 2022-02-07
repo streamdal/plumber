@@ -35,14 +35,15 @@ type Config struct {
 	GitHubToken     string `json:"github_bearer_token"` // retrieved from vc-service JWT contents
 	GitHubInstallID int64  `json:"install_id"`
 
-	Connections         map[string]*opts.ConnectionOptions     `json:"-"`
-	Relays              map[string]*stypes.Relay               `json:"-"`
-	Schemas             map[string]*protos.Schema              `json:"-"`
-	Services            map[string]*protos.Service             `json:"-"`
-	Reads               map[string]*stypes.Read                `json:"-"`
-	ImportRequests      map[string]*protos.ImportGithubRequest `json:"-"`
-	Validations         map[string]*common.Validation          `json:"-"`
-	Composites          map[string]*opts.Composite             `json:"-"`
+	Connections         map[string]*stypes.Connection          `json:"connections"`
+	Relays              map[string]*stypes.Relay               `json:"relays"`
+	Schemas             map[string]*protos.Schema              `json:"schemas"`
+	Services            map[string]*protos.Service             `json:"services"`
+	Reads               map[string]*stypes.Read                `json:"reads"`
+	ImportRequests      map[string]*protos.ImportGithubRequest `json:"github_import_requests"`
+	Validations         map[string]*common.Validation          `json:"validations"`
+	Composites          map[string]*opts.Composite             `json:"composites"`
+	DynamicReplays      map[string]*stypes.Dynamic             `json:"dynamic_replays"`
 	ConnectionsMutex    *sync.RWMutex                          `json:"-"`
 	ServicesMutex       *sync.RWMutex                          `json:"-"`
 	ReadsMutex          *sync.RWMutex                          `json:"-"`
@@ -51,17 +52,11 @@ type Config struct {
 	ImportRequestsMutex *sync.RWMutex                          `json:"-"`
 	ValidationsMutex    *sync.RWMutex                          `json:"-"`
 	CompositesMutex     *sync.RWMutex                          `json:"-"`
+	DynamicReplaysMutex *sync.RWMutex                          `json:"-"`
 }
 
 // Save is a convenience method of persisting the config to disk via a single call
 func (c *Config) Save() error {
-	tmpCfg := *c
-
-	// Don't want to save these to a file, they live in etcd
-	tmpCfg.GitHubToken = ""
-	tmpCfg.VCServiceToken = ""
-	tmpCfg.GitHubInstallID = 0
-
 	data, err := json.Marshal(c)
 	if err != nil {
 		return errors.Wrap(err, "unable to marshal config to JSON")
@@ -93,7 +88,7 @@ func ReadConfig(fileName string) (*Config, error) {
 		ImportRequestsMutex: &sync.RWMutex{},
 		ValidationsMutex:    &sync.RWMutex{},
 		CompositesMutex:     &sync.RWMutex{},
-		Connections:         make(map[string]*opts.ConnectionOptions),
+		Connections:         make(map[string]*stypes.Connection),
 		Relays:              make(map[string]*stypes.Relay),
 		Schemas:             make(map[string]*protos.Schema),
 		Services:            make(map[string]*protos.Service),
@@ -101,6 +96,7 @@ func ReadConfig(fileName string) (*Config, error) {
 		ImportRequests:      make(map[string]*protos.ImportGithubRequest),
 		Validations:         make(map[string]*common.Validation),
 		Composites:          make(map[string]*opts.Composite),
+		DynamicReplays:      make(map[string]*stypes.Dynamic),
 	}
 	if err := json.Unmarshal(data, cfg); err != nil {
 		return nil, errors.Wrapf(err, "could not unmarshal ~/.batchsh/%s", fileName)
@@ -293,7 +289,7 @@ func (c *Config) DeleteSchema(schemaID string) {
 }
 
 // GetConnection retrieves a connection from in-memory map
-func (c *Config) GetConnection(connID string) *opts.ConnectionOptions {
+func (c *Config) GetConnection(connID string) *stypes.Connection {
 	c.ConnectionsMutex.RLock()
 	defer c.ConnectionsMutex.RUnlock()
 
@@ -303,7 +299,7 @@ func (c *Config) GetConnection(connID string) *opts.ConnectionOptions {
 }
 
 // SetConnection saves a connection to in-memory map
-func (c *Config) SetConnection(connID string, conn *opts.ConnectionOptions) {
+func (c *Config) SetConnection(connID string, conn *stypes.Connection) {
 	c.ConnectionsMutex.Lock()
 	defer c.ConnectionsMutex.Unlock()
 	c.Connections[connID] = conn
@@ -383,4 +379,29 @@ func (c *Config) DeleteComposite(id string) {
 	c.CompositesMutex.Lock()
 	defer c.CompositesMutex.Unlock()
 	delete(c.Composites, id)
+}
+
+// GetDynamic returns an in-progress read from the DynamicReplays map
+func (c *Config) GetDynamic(dynamicID string) *stypes.Dynamic {
+	c.DynamicReplaysMutex.RLock()
+	defer c.DynamicReplaysMutex.RUnlock()
+
+	r, _ := c.DynamicReplays[dynamicID]
+
+	return r
+}
+
+// SetDynamic adds an in-progress read to the DynamicReplays map
+func (c *Config) SetDynamic(dynamicID string, dynamicReplay *stypes.Dynamic) {
+	c.DynamicReplaysMutex.Lock()
+	defer c.DynamicReplaysMutex.Unlock()
+
+	c.DynamicReplays[dynamicID] = dynamicReplay
+}
+
+// DeleteDynamic removes a dynamic replay from in-memory map
+func (c *Config) DeleteDynamic(dynamicID string) {
+	c.DynamicReplaysMutex.Lock()
+	defer c.DynamicReplaysMutex.Unlock()
+	delete(c.Services, dynamicID)
 }

@@ -10,7 +10,6 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/batchcorp/plumber/actions"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/ssh/terminal"
@@ -19,6 +18,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
+	"github.com/batchcorp/plumber/actions"
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/plumber"
@@ -46,6 +46,10 @@ func main() {
 	serviceCtx, serviceShutdownFunc := context.WithCancel(context.Background())
 	mainCtx, mainShutdownFunc := context.WithCancel(context.Background())
 
+	persistentConfig := getConfig()
+	// Save config automatically on exit
+	defer persistentConfig.Save()
+
 	// We only want to intercept interrupt signals in relay or server mode
 	if cliOpts.Global.XAction == "relay" || cliOpts.Global.XAction == "server" {
 		logrus.Debug("Intercepting signals")
@@ -56,6 +60,7 @@ func main() {
 
 		go func() {
 			sig := <-c
+			logrus.Info("Shutting down plumber server...")
 			logrus.Debugf("Received system call: %+v", sig)
 
 			serviceShutdownFunc()
@@ -76,8 +81,6 @@ func main() {
 	} else {
 		printer.PrintLogo()
 	}
-
-	persistentConfig := getConfig()
 
 	// Actions contains server-related methods that are used by both the gRPC
 	// server and the etcd consumer.
@@ -166,7 +169,7 @@ func getConfig() *config.Config {
 
 	if cfg == nil {
 		cfg = &config.Config{
-			Connections:         make(map[string]*opts.ConnectionOptions),
+			Connections:         make(map[string]*types.Connection),
 			Relays:              make(map[string]*types.Relay),
 			Schemas:             make(map[string]*protos.Schema),
 			Services:            make(map[string]*protos.Service),
@@ -174,6 +177,7 @@ func getConfig() *config.Config {
 			ImportRequests:      make(map[string]*protos.ImportGithubRequest),
 			Validations:         make(map[string]*common.Validation),
 			Composites:          make(map[string]*opts.Composite),
+			DynamicReplays:      make(map[string]*types.Dynamic),
 			ConnectionsMutex:    &sync.RWMutex{},
 			ServicesMutex:       &sync.RWMutex{},
 			ReadsMutex:          &sync.RWMutex{},
@@ -182,6 +186,7 @@ func getConfig() *config.Config {
 			ImportRequestsMutex: &sync.RWMutex{},
 			ValidationsMutex:    &sync.RWMutex{},
 			CompositesMutex:     &sync.RWMutex{},
+			DynamicReplaysMutex: &sync.RWMutex{},
 		}
 	}
 

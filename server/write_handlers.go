@@ -33,7 +33,7 @@ func (s *Server) Write(ctx context.Context, req *protos.WriteRequest) (*protos.W
 		return nil, CustomError(common.Code_NOT_FOUND, validate.ErrConnectionNotFound.Error())
 	}
 
-	be, err := backends.New(conn)
+	be, err := backends.New(conn.Connection)
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, fmt.Sprintf("unable to create backend: %s", err))
 	}

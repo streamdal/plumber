@@ -124,35 +124,35 @@ func (e *Etcd) handleBroadcastWatchResponse(ctx context.Context, resp *clientv3.
 }
 
 func (e *Etcd) doCreateConnection(_ context.Context, msg *Message) error {
-	e.log.Debugf("running doCreateConnection handler for msg emitted by %s", msg.EmittedBy)
-
-	// TODO: Validate the message
-
-	connOpts := &opts.ConnectionOptions{}
-	if err := proto.Unmarshal(msg.Data, connOpts); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into protos.Connection")
-	}
-
-	// Save connection to in-memory map
-	e.PersistentConfig.SetConnection(connOpts.XId, connOpts)
-
-	e.log.Debugf("created connection '%s'", connOpts.Name)
+	//e.log.Debugf("running doCreateConnection handler for msg emitted by %s", msg.EmittedBy)
+	//
+	//// TODO: Validate the message
+	//
+	//connOpts := &opts.ConnectionOptions{}
+	//if err := proto.Unmarshal(msg.Data, connOpts); err != nil {
+	//	return errors.Wrap(err, "unable to unmarshal message into protos.Connection")
+	//}
+	//
+	//// Save connection to in-memory map
+	//e.PersistentConfig.SetConnection(connOpts.XId, connOpts)
+	//
+	//e.log.Debugf("created connection '%s'", connOpts.Name)
 
 	return nil
 }
 
 func (e *Etcd) doUpdateConnection(_ context.Context, msg *Message) error {
-	e.log.Debugf("running doCreateConnection handler for msg emitted by %s", msg.EmittedBy)
-
-	connOpts := &opts.ConnectionOptions{}
-	if err := proto.Unmarshal(msg.Data, connOpts); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into protos.Connection")
-	}
-
-	// Update connection in in-memory map
-	e.PersistentConfig.SetConnection(connOpts.XId, connOpts)
-
-	e.log.Debugf("updated connection '%s'", connOpts.Name)
+	//e.log.Debugf("running doCreateConnection handler for msg emitted by %s", msg.EmittedBy)
+	//
+	//connOpts := &opts.ConnectionOptions{}
+	//if err := proto.Unmarshal(msg.Data, connOpts); err != nil {
+	//	return errors.Wrap(err, "unable to unmarshal message into protos.Connection")
+	//}
+	//
+	//// Update connection in in-memory map
+	//e.PersistentConfig.SetConnection(connOpts.XId, connOpts)
+	//
+	//e.log.Debugf("updated connection '%s'", connOpts.Name)
 
 	// TODO: some way to signal reads/relays to restart? How will GRPC streams handle this?
 

@@ -250,3 +250,9 @@ func CompositeOptionsForServer(comp *opts.Composite) error {
 
 	return nil
 }
+
+func DynamicOptionsForServer(dynamicOptions *opts.DynamicOptions) error {
+	// TODO: Implement specific dynamic validations
+
+	return nil
+}

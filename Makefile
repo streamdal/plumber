@@ -129,17 +129,17 @@ test/functional:
 test/fakes: description = Generate test fakes
 test/fakes: GOFLAGS=
 test/fakes:
-	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o tools/fake_tstorage.go github.com/nakabonne/tstorage.Storage
-	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/pulsar/pulsarfakes/fake_pulsar.go github.com/apache/pulsar-client-go/pulsar.Client
-	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/pulsar/pulsarfakes/fake_producer.go github.com/apache/pulsar-client-go/pulsar.Producer
-	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/pulsar/pulsarfakes/fake_consumer.go github.com/apache/pulsar-client-go/pulsar.Consumer
-	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/pulsar/pulsarfakes/fake_message.go github.com/apache/pulsar-client-go/pulsar.Message
-	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/pulsar/pulsarfakes/fake_messageid.go github.com/apache/pulsar-client-go/pulsar.MessageID
-	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/mqtt/mqttfakes/fake_mqtt.go github.com/eclipse/paho.mqtt.golang.Client
-	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/rabbitmq/rabbitfakes/fake_rabbit.go github.com/batchcorp/rabbit.IRabbit
-	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/awssns/snsfakes/fake_sns.go github.com/aws/aws-sdk-go/service/sns/snsiface.SNSAPI
-	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/awssqs/sqsfakes/fake_sqs.go github.com/aws/aws-sdk-go/service/sqs/sqsiface.SQSAPI
-	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/awskinesis/kinesisfakes/fake_kinesis.go github.com/aws/aws-sdk-go/service/kinesis/kinesisiface.KinesisAPI
-	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/nats-streaming/stanfakes/fake_stan.go github.com/nats-io/stan.go.Conn
-	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/nats-streaming/stanfakes/fake_subscription.go github.com/nats-io/stan.go.Subscription
+	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o tools/fake_tstorage.go github.com/nakabonne/tstorage.Storage &
+	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/pulsar/pulsarfakes/fake_pulsar.go github.com/apache/pulsar-client-go/pulsar.Client &
+	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/pulsar/pulsarfakes/fake_producer.go github.com/apache/pulsar-client-go/pulsar.Producer &
+	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/pulsar/pulsarfakes/fake_consumer.go github.com/apache/pulsar-client-go/pulsar.Consumer &
+	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/pulsar/pulsarfakes/fake_message.go github.com/apache/pulsar-client-go/pulsar.Message &
+	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/pulsar/pulsarfakes/fake_messageid.go github.com/apache/pulsar-client-go/pulsar.MessageID &
+	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/mqtt/mqttfakes/fake_mqtt.go github.com/eclipse/paho.mqtt.golang.Client &
+	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/rabbitmq/rabbitfakes/fake_rabbit.go github.com/batchcorp/rabbit.IRabbit &
+	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/awssns/snsfakes/fake_sns.go github.com/aws/aws-sdk-go/service/sns/snsiface.SNSAPI &
+	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/awssqs/sqsfakes/fake_sqs.go github.com/aws/aws-sdk-go/service/sqs/sqsiface.SQSAPI &
+	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/awskinesis/kinesisfakes/fake_kinesis.go github.com/aws/aws-sdk-go/service/kinesis/kinesisiface.KinesisAPI &
+	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/nats-streaming/stanfakes/fake_stan.go github.com/nats-io/stan.go.Conn &
+	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/nats-streaming/stanfakes/fake_subscription.go github.com/nats-io/stan.go.Subscription &
 	$(GO) generate ./...
