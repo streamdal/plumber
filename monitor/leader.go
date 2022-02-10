@@ -36,7 +36,7 @@ type LeaderInfo struct {
 //    ctx. If either has changed/triggered: it will shutdown RunLeader and itself.
 // 5. runLeader has watches for incoming alerts/etc.
 //
-// Etcd layout
+// Bus layout
 //
 // TBD
 func (m *Monitor) RunElectLeader(ctx context.Context, ch chan *ElectLeaderStatus, path string) error {

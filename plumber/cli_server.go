@@ -118,8 +118,11 @@ func (p *Plumber) runGRPCServer() error {
 		return errors.Wrap(err, "unable to create stats service")
 	}
 
+	// Commented out because uierrors was designed for etcd that has additional
+	// read controls (like sort & limit) that aren't available in NATS KV.
+	//
 	//errorsService, err := uierrors.New(&uierrors.Config{
-	//	EtcdService: p.Etcd,
+	//	EtcdService: p.Bus,
 	//})
 	//if err != nil {
 	//	return errors.Wrap(err, "unable to create uierrors service")
@@ -133,7 +136,7 @@ func (p *Plumber) runGRPCServer() error {
 		GithubService:    ghService,
 		StatsService:     statsService,
 		Log:              logrus.WithField("pkg", "plumber/cli_server.go"),
-		Etcd:             p.Etcd,
+		Bus:              p.Bus,
 		CLIOptions:       p.CLIOptions,
 	}
 

@@ -97,6 +97,7 @@ func (a *Actions) CreateRelay(ctx context.Context, relayOpts *opts.RelayOptions)
 	}
 
 	a.cfg.PersistentConfig.SetRelay(r.Id, r)
+	a.cfg.PersistentConfig.Save()
 
 	return r, nil
 }
@@ -123,6 +124,7 @@ func (a *Actions) StopRelay(ctx context.Context, relayID string) (*types.Relay, 
 
 	// Update persistent storage
 	a.cfg.PersistentConfig.SetRelay(relay.Id, relay)
+	a.cfg.PersistentConfig.Save()
 
 	// Update metrics
 	prometheus.DecrPromGauge(prometheus.PlumberRelayWorkers)
@@ -152,6 +154,7 @@ func (a *Actions) ResumeRelay(ctx context.Context, relayID string) (*types.Relay
 	relay.Options.XActive = true
 
 	a.cfg.PersistentConfig.SetRelay(relayID, relay)
+	a.cfg.PersistentConfig.Save()
 
 	// Update metrics
 	prometheus.IncrPromGauge(prometheus.PlumberRelayWorkers)
@@ -184,6 +187,7 @@ func (a *Actions) DeleteRelay(ctx context.Context, relayID string) (*types.Relay
 
 	// Delete from persistent storage
 	a.cfg.PersistentConfig.DeleteRelay(relayID)
+	a.cfg.PersistentConfig.Save()
 
 	return relay, nil
 }

@@ -29,7 +29,7 @@ package server
 //		//fakeEtcd := &etcdfakes.FakeIEtcd{}
 //
 //		p = &Server{
-//			Etcd:      fakeEtcd,
+//			Bus:      fakeEtcd,
 //			AuthToken: "batchcorp",
 //			PersistentConfig: &config.Config{
 //				ReadsMutex:      &sync.RWMutex{},
@@ -109,7 +109,7 @@ package server
 //
 //		It("creates a composite view", func() {
 //			fakeEtcd := &etcdfakes.FakeIEtcd{}
-//			p.Etcd = fakeEtcd
+//			p.Bus = fakeEtcd
 //
 //			composite := &opts.Composite{
 //				XId:     uuid.NewV4().String(),
@@ -140,7 +140,7 @@ package server
 //
 //		It("updates a composite view", func() {
 //			fakeEtcd := &etcdfakes.FakeIEtcd{}
-//			p.Etcd = fakeEtcd
+//			p.Bus = fakeEtcd
 //
 //			compositeID := uuid.NewV4().String()
 //
@@ -190,7 +190,7 @@ package server
 //
 //		It("deletes a composite view", func() {
 //			fakeEtcd := &etcdfakes.FakeIEtcd{}
-//			p.Etcd = fakeEtcd
+//			p.Bus = fakeEtcd
 //
 //			compositeID := uuid.NewV4().String()
 //

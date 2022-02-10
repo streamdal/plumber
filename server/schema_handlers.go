@@ -4,10 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/batchcorp/plumber/bus"
 	"github.com/batchcorp/plumber/github"
-
-	"github.com/golang/protobuf/proto"
 
 	uuid "github.com/satori/go.uuid"
 
@@ -91,22 +88,12 @@ func (s *Server) ImportGithubSelect(ctx context.Context, req *protos.ImportGithu
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
 
-	data, err := proto.Marshal(schema)
-	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, "could not marshal schema")
-	}
-
-	// Save to etcd
-	_, err = s.Etcd.Put(ctx, bus.CacheSchemasPrefix+"/"+schema.Id, string(data))
-	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, err.Error())
-	}
-
 	// Save to memory
 	s.PersistentConfig.SetSchema(schema.Id, schema)
+	s.PersistentConfig.Save()
 
 	// Publish create event
-	if err := s.Etcd.PublishCreateSchema(ctx, schema); err != nil {
+	if err := s.Bus.PublishCreateSchema(ctx, schema); err != nil {
 		s.Log.Error(err)
 	}
 
@@ -130,22 +117,12 @@ func (s *Server) ImportLocal(ctx context.Context, req *protos.ImportLocalRequest
 		return nil, CustomError(common.Code_FAILED_PRECONDITION, err.Error())
 	}
 
-	data, err := proto.Marshal(schema)
-	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, "could not marshal schema")
-	}
-
-	// Save to etcd
-	_, err = s.Etcd.Put(ctx, bus.CacheSchemasPrefix+"/"+schema.Id, string(data))
-	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, err.Error())
-	}
-
 	// Save to memory
 	s.PersistentConfig.SetSchema(schema.Id, schema)
+	s.PersistentConfig.Save()
 
 	// Publish create event
-	if err := s.Etcd.PublishCreateSchema(ctx, schema); err != nil {
+	if err := s.Bus.PublishCreateSchema(ctx, schema); err != nil {
 		s.Log.Error(err)
 	}
 
@@ -175,9 +152,10 @@ func (s *Server) UpdateSchema(ctx context.Context, req *protos.UpdateSchemaReque
 
 	// Save to memory
 	s.PersistentConfig.SetSchema(schema.Id, schema)
+	s.PersistentConfig.Save()
 
 	// Publish create event
-	if err := s.Etcd.PublishUpdateSchema(ctx, schema); err != nil {
+	if err := s.Bus.PublishUpdateSchema(ctx, schema); err != nil {
 		s.Log.Error(err)
 	}
 
@@ -201,17 +179,12 @@ func (s *Server) DeleteSchema(ctx context.Context, req *protos.DeleteSchemaReque
 		return nil, CustomError(common.Code_NOT_FOUND, "schema does not exist")
 	}
 
-	// Delete in etcd
-	_, err := s.Etcd.Delete(ctx, bus.CacheSchemasPrefix+"/"+schema.Id)
-	if err != nil {
-		return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to delete connection: "+err.Error()))
-	}
-
 	// Delete in memory
 	s.PersistentConfig.DeleteConnection(schema.Id)
+	s.PersistentConfig.Save()
 
 	// Publish delete event
-	if err := s.Etcd.PublishDeleteSchema(ctx, schema); err != nil {
+	if err := s.Bus.PublishDeleteSchema(ctx, schema); err != nil {
 		s.Log.Error(err)
 	}
 

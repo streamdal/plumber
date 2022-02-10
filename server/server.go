@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strconv"
 
-	bus2 "github.com/batchcorp/plumber/bus"
+	"github.com/batchcorp/plumber/bus"
 	"github.com/lestrrat-go/jwx/jwt"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -33,7 +33,7 @@ type Server struct {
 	VCService        vcservice.IVCService
 	GithubService    github.IGithub
 	StatsService     stats.IStats
-	Etcd             bus2.IBus
+	Bus              bus.IBus
 	Log              *logrus.Entry
 	CLIOptions       *opts.CLIOptions
 }
@@ -85,12 +85,12 @@ func (s *Server) SetServerOptions(ctx context.Context, req *protos.SetServerOpti
 		return nil, errors.Wrap(err, "unable to save updated config values")
 	}
 
-	msg := &bus2.MessageUpdateConfig{
+	msg := &bus.MessageUpdateConfig{
 		VCServiceToken: req.GetVcserviceToken(),
 		GithubToken:    stateMap["oauth_token_github"],
 	}
 
-	if err := s.Etcd.PublishConfigUpdate(ctx, msg); err != nil {
+	if err := s.Bus.PublishConfigUpdate(ctx, msg); err != nil {
 		return nil, errors.Wrap(err, "unable to broadcast config update")
 	}
 

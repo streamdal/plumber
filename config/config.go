@@ -226,6 +226,8 @@ func (c *Config) writeConfig(data []byte) error {
 		if err := c.kv.Put(context.Background(), KVConfigBucket, KVConfigKey, data); err != nil {
 			return errors.Wrap(err, "unable to write config to KV")
 		}
+
+		return nil
 	}
 
 	// Clustering not enabled - write to disk

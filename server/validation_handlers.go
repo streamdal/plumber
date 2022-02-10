@@ -4,9 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/batchcorp/plumber/bus"
-	"github.com/golang/protobuf/proto"
-	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
@@ -57,7 +54,7 @@ func (s *Server) CreateValidation(ctx context.Context, req *protos.CreateValidat
 	}
 
 	// Publish CreateValidation event for other plumber instances to receive
-	if err := s.Etcd.PublishCreateValidation(ctx, req.Validation); err != nil {
+	if err := s.Bus.PublishCreateValidation(ctx, req.Validation); err != nil {
 		s.Log.Error(err)
 	}
 
@@ -93,7 +90,7 @@ func (s *Server) UpdateValidation(ctx context.Context, req *protos.UpdateValidat
 	}
 
 	// Publish UpdateValidation event for other plumber instances to receive
-	if err := s.Etcd.PublishUpdateValidation(ctx, req.Validation); err != nil {
+	if err := s.Bus.PublishUpdateValidation(ctx, req.Validation); err != nil {
 		s.Log.Error(err)
 	}
 
@@ -120,17 +117,13 @@ func (s *Server) DeleteValidation(ctx context.Context, req *protos.DeleteValidat
 		return nil, CustomError(common.Code_NOT_FOUND, "validation not found")
 	}
 
-	if _, err := s.Etcd.Delete(ctx, bus.CacheValidationsPrefix+"/"+validation.XId); err != nil {
-		s.Log.Errorf("unable to delete validation '%s' from etcd: %s", validation.XId, err)
-		return nil, CustomError(common.Code_ABORTED, "validation could not be deleted from etcd")
-	}
-
-	if err := s.Etcd.PublishDeleteValidation(ctx, validation); err != nil {
+	if err := s.Bus.PublishDeleteValidation(ctx, validation); err != nil {
 		s.Log.Errorf("unable to publish DeleteValidation message for '%s': %s", validation.XId, err)
 		return nil, CustomError(common.Code_ABORTED, "DeleteValidation message could not be published")
 	}
 
 	s.PersistentConfig.DeleteValidation(validation.XId)
+	s.PersistentConfig.Save()
 
 	s.Log.WithField("request_id", requestID).Infof("validation '%s' updated", validation.XId)
 
@@ -146,17 +139,6 @@ func (s *Server) DeleteValidation(ctx context.Context, req *protos.DeleteValidat
 // persistValidation saves a validation to memory and etcd
 func (s *Server) persistValidation(ctx context.Context, v *common.Validation) error {
 	s.PersistentConfig.SetValidation(v.XId, v)
-
-	data, err := proto.Marshal(v)
-	if err != nil {
-		return errors.Wrap(err, "could not marshal connection")
-	}
-
-	// Save in etcd
-	_, err = s.Etcd.Put(ctx, bus.CacheValidationsPrefix+"/"+v.XId, string(data))
-	if err != nil {
-		return errors.Wrap(err, "unable to save validation to etcd")
-	}
-
+	s.PersistentConfig.Save()
 	return nil
 }

@@ -56,6 +56,7 @@ func (a *Actions) CreateDynamic(ctx context.Context, dynamicOpts *opts.DynamicOp
 	}
 
 	a.cfg.PersistentConfig.SetDynamic(dynamicOpts.XDynamicId, d)
+	a.cfg.PersistentConfig.Save()
 
 	return d, nil
 }
@@ -92,6 +93,8 @@ func (a *Actions) ResumeDynamic(ctx context.Context, dynamicID string) (*types.D
 
 	// Update metrics
 	prometheus.IncrPromGauge(prometheus.PlumberDynamicReplays)
+
+	// TODO: Active/inactive state should be stored somewhere
 
 	return d, nil
 }
@@ -157,6 +160,7 @@ func (a *Actions) UpdateDynamic(ctx context.Context, dynamicID string, dynamicOp
 
 	// Update in-memory config
 	a.cfg.PersistentConfig.SetDynamic(dynamicID, d)
+	a.cfg.PersistentConfig.Save()
 
 	// Update metrics
 	prometheus.IncrPromGauge(prometheus.PlumberDynamicReplays)
@@ -184,6 +188,7 @@ func (a *Actions) DeleteDynamic(ctx context.Context, dynamicID string) error {
 
 	// Delete in memory
 	a.cfg.PersistentConfig.DeleteService(dynamicID)
+	a.cfg.PersistentConfig.Save()
 
 	// Update metrics
 	prometheus.DecrPromGauge(prometheus.PlumberDynamicReplays)

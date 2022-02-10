@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/batchcorp/plumber/bus"
-	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
@@ -61,18 +59,9 @@ func (s *Server) CreateComposite(ctx context.Context, req *protos.CreateComposit
 	composite.XId = uuid.NewV4().String()
 
 	s.PersistentConfig.SetComposite(composite.XId, composite)
+	s.PersistentConfig.Save()
 
-	data, err := proto.Marshal(composite)
-	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
-	}
-
-	_, err = s.Etcd.Put(ctx, bus.CacheCompositesPrefix+"/"+composite.XId, string(data))
-	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, err.Error())
-	}
-
-	if err := s.Etcd.PublishCreateComposite(ctx, composite); err != nil {
+	if err := s.Bus.PublishCreateComposite(ctx, composite); err != nil {
 		s.rollbackCreateComposite(ctx, composite)
 
 		s.Log.Error(errors.Wrap(err, "unable to publish create connection event"))
@@ -108,18 +97,9 @@ func (s *Server) UpdateComposite(ctx context.Context, req *protos.UpdateComposit
 	composite.ReadIds = req.Composite.ReadIds
 
 	s.PersistentConfig.SetComposite(composite.XId, composite)
+	s.PersistentConfig.Save()
 
-	data, err := proto.Marshal(composite)
-	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
-	}
-
-	_, err = s.Etcd.Put(ctx, bus.CacheCompositesPrefix+"/"+composite.XId, string(data))
-	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, err.Error())
-	}
-
-	if err := s.Etcd.PublishUpdateComposite(ctx, composite); err != nil {
+	if err := s.Bus.PublishUpdateComposite(ctx, composite); err != nil {
 		s.rollbackCreateComposite(ctx, composite)
 
 		s.Log.Error(errors.Wrap(err, "unable to publish update composite event"))
@@ -149,17 +129,13 @@ func (s *Server) DeleteComposite(ctx context.Context, req *protos.DeleteComposit
 		return nil, CustomError(common.Code_FAILED_PRECONDITION, validate.ErrCompositeNotFound.Error())
 	}
 
-	_, err := s.Etcd.Delete(ctx, bus.CacheCompositesPrefix+"/"+composite.XId)
-	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, err.Error())
-	}
-
-	if err := s.Etcd.PublishDeleteComposite(ctx, composite); err != nil {
+	if err := s.Bus.PublishDeleteComposite(ctx, composite); err != nil {
 		s.Log.Error(errors.Wrap(err, "unable to publish delete composite event"))
 		return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to delete composite event: %s", err))
 	}
 
 	s.PersistentConfig.DeleteComposite(composite.XId)
+	s.PersistentConfig.Save()
 
 	s.Log.Debugf("Composite view '%s' deleted", composite.XId)
 
@@ -174,11 +150,7 @@ func (s *Server) DeleteComposite(ctx context.Context, req *protos.DeleteComposit
 
 // Rollback anything that may have been done during a composite creation request
 func (s *Server) rollbackCreateComposite(ctx context.Context, composite *opts.Composite) {
-	// Remove composite view from etcd
-	if _, err := s.Etcd.Delete(ctx, bus.CacheCompositesPrefix+"/"+composite.XId); err != nil {
-		s.Log.Errorf("unable to delete composite view in etcd: %s", err)
-	}
-
 	// Delete composite cache map entry
 	s.PersistentConfig.DeleteComposite(composite.XId)
+	s.PersistentConfig.Save()
 }

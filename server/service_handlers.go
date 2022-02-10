@@ -6,8 +6,6 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/batchcorp/plumber/bus"
-	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
@@ -76,20 +74,10 @@ func (s *Server) CreateService(ctx context.Context, req *protos.CreateServiceReq
 
 	svc.Id = uuid.NewV4().String()
 
-	data, err := proto.Marshal(svc)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to save service to etcd")
-	}
-
-	// Save to etcd
-	_, err = s.Etcd.Put(ctx, bus.CacheServicesPrefix+"/"+svc.Id, string(data))
-	if err != nil {
-		return nil, errors.Wrapf(err, "unable to save schema '%s' to etcd", svc.Id)
-	}
-
 	s.PersistentConfig.SetService(svc.Id, svc)
+	s.PersistentConfig.Save()
 
-	if err := s.Etcd.PublishCreateService(ctx, svc); err != nil {
+	if err := s.Bus.PublishCreateService(ctx, svc); err != nil {
 		s.Log.Error(err)
 	}
 
@@ -135,20 +123,10 @@ func (s *Server) UpdateService(ctx context.Context, req *protos.UpdateServiceReq
 
 // persistService is a helper function to save updates to services
 func (s *Server) persistService(ctx context.Context, svc *protos.Service) error {
-	data, err := proto.Marshal(svc)
-	if err != nil {
-		return errors.Wrap(err, "unable to save service to etcd")
-	}
-
-	// Save to etcd
-	_, err = s.Etcd.Put(ctx, bus.CacheServicesPrefix+"/"+svc.Id, string(data))
-	if err != nil {
-		return errors.Wrapf(err, "unable to save service '%s' to etcd", svc.Id)
-	}
-
 	s.PersistentConfig.SetService(svc.Id, svc)
+	s.PersistentConfig.Save()
 
-	if err := s.Etcd.PublishUpdateService(ctx, svc); err != nil {
+	if err := s.Bus.PublishUpdateService(ctx, svc); err != nil {
 		s.Log.Error(err)
 	}
 
@@ -165,17 +143,12 @@ func (s *Server) DeleteService(ctx context.Context, req *protos.DeleteServiceReq
 		return nil, CustomError(common.Code_NOT_FOUND, validate.ErrServiceNotFound.Error())
 	}
 
-	// Delete in etcd
-	_, err := s.Etcd.Delete(ctx, bus.CacheServicesPrefix+"/"+svc.Id)
-	if err != nil {
-		return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to delete service: "+err.Error()))
-	}
-
 	// Delete in memory
 	s.PersistentConfig.DeleteService(svc.Id)
+	s.PersistentConfig.Save()
 
 	// Publish DeleteService event
-	if err := s.Etcd.PublishDeleteService(ctx, svc); err != nil {
+	if err := s.Bus.PublishDeleteService(ctx, svc); err != nil {
 		s.Log.Error(err)
 	}
 

@@ -189,13 +189,13 @@ func (b *Bus) PublishConfigUpdate(ctx context.Context, msg *MessageUpdateConfig)
 	}
 	data, err := json.Marshal(msg)
 	if err != nil {
-		return errors.Wrapf(err, "unable to publish config update message")
+		return errors.Wrapf(err, "unable to marshal config update message")
 	}
 
-	return b.Broadcast(ctx, &Message{
+	return b.broadcast(ctx, &Message{
 		Action:    UpdateConfig,
 		Data:      data,
-		EmittedBy: b.config.PlumberID,
+		EmittedBy: b.config.ServerOptions.NodeId,
 		EmittedAt: time.Now().UTC(),
 	})
 }
@@ -219,126 +219,112 @@ func validateMessageUpdateConfig(msg *MessageUpdateConfig) error {
 func (b *Bus) publishServiceMessage(ctx context.Context, action Action, svc *protos.Service) error {
 	data, err := proto.Marshal(svc)
 	if err != nil {
-		return errors.Wrapf(err, "unable to publish service message for '%s'", svc.Id)
+		return errors.Wrapf(err, "unable to marshal service message for '%s'", svc.Id)
 	}
 
 	return b.broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: b.PersistentConfig.PlumberID,
+		EmittedBy: b.config.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
 
 func (b *Bus) publishConnectionMessage(ctx context.Context, action Action, conn *opts.ConnectionOptions) error {
-	return nil // TODO: remove
-
 	data, err := proto.Marshal(conn)
 	if err != nil {
-		return errors.Wrapf(err, "unable to publish connection message for '%s'", conn.XId)
+		return errors.Wrapf(err, "unable to marshal connection message for '%s'", conn.XId)
 	}
 
-	return b.Broadcast(ctx, &Message{
+	return b.broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: b.PersistentConfig.PlumberID,
+		EmittedBy: b.config.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
 
 func (b *Bus) publishSchemaMessage(ctx context.Context, action Action, svc *protos.Schema) error {
-	return nil // TODO: remove
-
 	data, err := proto.Marshal(svc)
 	if err != nil {
-		return errors.Wrapf(err, "unable to publish schema message for '%s'", svc.Id)
+		return errors.Wrapf(err, "unable to marshal schema message for '%s'", svc.Id)
 	}
 
 	// Publish delete
-	return b.Broadcast(ctx, &Message{
+	return b.broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: b.PersistentConfig.PlumberID,
+		EmittedBy: b.config.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
 
 func (b *Bus) publishRelayMessage(ctx context.Context, action Action, relay *opts.RelayOptions) error {
-	return nil // TODO: remove
-
 	data, err := proto.Marshal(relay)
 	if err != nil {
-		return errors.Wrapf(err, "unable to publish relay message for '%s'", relay.XRelayId)
+		return errors.Wrapf(err, "unable to marshal relay message for '%s'", relay.XRelayId)
 	}
 
-	return b.Broadcast(ctx, &Message{
+	return b.broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: b.PersistentConfig.PlumberID,
+		EmittedBy: b.config.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
 
 func (b *Bus) publishValidationMessage(ctx context.Context, action Action, validation *common.Validation) error {
-	return nil // TODO: remove
-
 	data, err := proto.Marshal(validation)
 	if err != nil {
-		return errors.Wrapf(err, "unable to publish validation message for '%s'", validation.XId)
+		return errors.Wrapf(err, "unable to marshal validation message for '%s'", validation.XId)
 	}
 
-	return b.Broadcast(ctx, &Message{
+	return b.broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: b.PersistentConfig.PlumberID,
+		EmittedBy: b.config.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
 
 func (b *Bus) publishReadMessage(ctx context.Context, action Action, read *opts.ReadOptions) error {
-	return nil // TODO: remove
-
 	data, err := proto.Marshal(read)
 	if err != nil {
-		return errors.Wrapf(err, "unable to publish read message for '%s'", read.XId)
+		return errors.Wrapf(err, "unable to marshal read message for '%s'", read.XId)
 	}
 
-	return b.Broadcast(ctx, &Message{
+	return b.broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: b.PersistentConfig.PlumberID,
+		EmittedBy: b.config.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
 
 func (b *Bus) publishCompositeMessage(ctx context.Context, action Action, composite *opts.Composite) error {
-	return nil // TODO: remove
-
 	data, err := proto.Marshal(composite)
 	if err != nil {
-		return errors.Wrapf(err, "unable to publish composite message for '%s'", composite.XId)
+		return errors.Wrapf(err, "unable to marshal composite message for '%s'", composite.XId)
 	}
 
-	return b.Broadcast(ctx, &Message{
+	return b.broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: b.PersistentConfig.PlumberID,
+		EmittedBy: b.config.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }
 
 func (b *Bus) publishDynamicMessage(ctx context.Context, action Action, dynamicOptions *opts.DynamicOptions) error {
-	return nil // TODO: remove
-
 	data, err := proto.Marshal(dynamicOptions)
 	if err != nil {
-		return errors.Wrapf(err, "unable to publish dynamic message for '%s'", dynamicOptions.XDynamicId)
+		return errors.Wrapf(err, "unable to marshal dynamic message for '%s'", dynamicOptions.XDynamicId)
 	}
 
-	return b.Broadcast(ctx, &Message{
+	return b.broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: b.PersistentConfig.PlumberID,
+		EmittedBy: b.config.PersistentConfig.PlumberID,
 		EmittedAt: time.Now().UTC(),
 	})
 }

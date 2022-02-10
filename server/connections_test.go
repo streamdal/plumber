@@ -28,7 +28,7 @@ package server
 //		fakeEtcd := &etcdfakes.FakeIEtcd{}
 //
 //		p = &Server{
-//			Etcd:      fakeEtcd,
+//			Bus:      fakeEtcd,
 //			AuthToken: "batchcorp",
 //			PersistentConfig: &config.Config{
 //				ConnectionsMutex: &sync.RWMutex{},
@@ -162,7 +162,7 @@ package server
 //			connID := uuid.NewV4().String()
 //
 //			fakeEtcd := &etcdfakes.FakeIEtcd{}
-//			p.Etcd = fakeEtcd
+//			p.Bus = fakeEtcd
 //
 //			conn := &opts.ConnectionOptions{
 //				XId:   connID,
@@ -213,7 +213,7 @@ package server
 //			connID := uuid.NewV4().String()
 //
 //			fakeEtcd := &etcdfakes.FakeIEtcd{}
-//			p.Etcd = fakeEtcd
+//			p.Bus = fakeEtcd
 //
 //			conn := &opts.ConnectionOptions{
 //				XId:   connID,

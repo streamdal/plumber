@@ -27,7 +27,7 @@ package server
 //		fakeEtcd := &etcdfakes.FakeIEtcd{}
 //
 //		p = &Server{
-//			Etcd:      fakeEtcd,
+//			Bus:      fakeEtcd,
 //			AuthToken: "batchcorp",
 //			PersistentConfig: &config.Config{
 //				ServicesMutex: &sync.RWMutex{},
@@ -109,7 +109,7 @@ package server
 //
 //		It("creates a service", func() {
 //			fakeEtcd := &etcdfakes.FakeIEtcd{}
-//			p.Etcd = fakeEtcd
+//			p.Bus = fakeEtcd
 //
 //			svc := &protos.Service{
 //				Name:    "testing",
@@ -139,7 +139,7 @@ package server
 //		})
 //		It("updates a service", func() {
 //			fakeEtcd := &etcdfakes.FakeIEtcd{}
-//			p.Etcd = fakeEtcd
+//			p.Bus = fakeEtcd
 //
 //			svcID := uuid.NewV4().String()
 //
@@ -190,7 +190,7 @@ package server
 //
 //		It("deletes a service", func() {
 //			fakeEtcd := &etcdfakes.FakeIEtcd{}
-//			p.Etcd = fakeEtcd
+//			p.Bus = fakeEtcd
 //
 //			svcID := uuid.NewV4().String()
 //
@@ -225,7 +225,7 @@ package server
 //
 //		It("links schema to service", func() {
 //			fakeEtcd := &etcdfakes.FakeIEtcd{}
-//			p.Etcd = fakeEtcd
+//			p.Bus = fakeEtcd
 //
 //			svcID := uuid.NewV4().String()
 //			schemaID := uuid.NewV4().String()
@@ -268,7 +268,7 @@ package server
 //
 //		It("unlinks schema from a service", func() {
 //			fakeEtcd := &etcdfakes.FakeIEtcd{}
-//			p.Etcd = fakeEtcd
+//			p.Bus = fakeEtcd
 //
 //			svcID := uuid.NewV4().String()
 //			schemaID := uuid.NewV4().String()
@@ -312,7 +312,7 @@ package server
 //
 //		It("links github repo to a service", func() {
 //			fakeEtcd := &etcdfakes.FakeIEtcd{}
-//			p.Etcd = fakeEtcd
+//			p.Bus = fakeEtcd
 //
 //			svcID := uuid.NewV4().String()
 //
@@ -347,7 +347,7 @@ package server
 //
 //		It("unlinks repo from a service", func() {
 //			fakeEtcd := &etcdfakes.FakeIEtcd{}
-//			p.Etcd = fakeEtcd
+//			p.Bus = fakeEtcd
 //
 //			svcID := uuid.NewV4().String()
 //			repoID := uuid.NewV4().String()

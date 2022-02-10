@@ -25,7 +25,7 @@ package server
 //		fakeEtcd := &etcdfakes.FakeIEtcd{}
 //
 //		p = &Server{
-//			Etcd:      fakeEtcd,
+//			Bus:      fakeEtcd,
 //			AuthToken: "batchcorp",
 //			PersistentConfig: &config.Config{
 //				ReadsMutex: &sync.RWMutex{},

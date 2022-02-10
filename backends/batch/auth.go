@@ -75,23 +75,14 @@ func (b *Batch) Logout() error {
 	// Perform APi logout
 	b.Post("/auth/logout", nil)
 
-	// Clear saved credentials
-	cfg, err := config.ReadConfig("config.json")
-	if err != nil {
-		// Just clearing these out for the sake of cleaning up. We don't need to worry about errors at this point
-		return nil
+	// Clear existing credentials
+	b.PersistentConfig.Token = ""
+	b.PersistentConfig.TeamID = ""
+	b.PersistentConfig.UserID = ""
+
+	if err := b.PersistentConfig.Save(); err != nil {
+		return errors.Wrap(err, "unable to save persistent config")
 	}
-
-	cfg.Token = ""
-	cfg.TeamID = ""
-	cfg.UserID = ""
-
-	data, err := json.Marshal(cfg)
-	if err != nil {
-		return errors.Wrap(err, "unable to marshal config data")
-	}
-
-	config.WriteConfig("config.json", data)
 
 	return nil
 }
@@ -148,7 +139,7 @@ func readPassword(readPassword func(fd int) ([]byte, error)) (string, error) {
 		fmt.Print("Enter Password: ")
 
 		// int typecast is needed for windows
-		password, err := readPassword(int(syscall.Stdin))
+		password, err := readPassword(syscall.Stdin)
 		if err != nil {
 			return "", errMissingPassword
 		}

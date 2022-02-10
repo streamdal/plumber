@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
@@ -99,11 +98,11 @@ MAIN:
 			r.AttachedClientsMutex.RUnlock()
 		case errRecord := <-errorCh:
 			r.Log.Errorf("IMPORTANT: Received an error from reader: %+v", errRecord)
-			s.ErrorsService.AddError(&protos.ErrorMessage{
-				Resource:   "read",
-				ResourceId: r.ReadOptions.XId,
-				Error:      errRecord.Error,
-			})
+			//s.ErrorsService.AddError(&protos.ErrorMessage{
+			//	Resource:   "read",
+			//	ResourceId: r.ReadOptions.XId,
+			//	Error:      errRecord.Error,
+			//})
 		case <-r.ContextCxl.Done():
 			r.Log.Info("Read stopped")
 			break MAIN
@@ -220,37 +219,38 @@ func getLatestSchemaVersion(schema *protos.Schema) *protos.SchemaVersion {
 	return schema.Versions[len(schema.Versions)-1]
 }
 
-// persistSchema will persist a schema to etcd and publish events so that other plumber instances will
-// receive the new or updated schema
+// persistSchema will persist a schema to KV and publish events so that other
+// plumber instances will receive the new or updated schema
 func (s *Server) persistSchema(ctx context.Context, newSchema bool, schema *protos.Schema) {
 	if newSchema {
 		// Publish CreateSchema message
-		if err := s.Etcd.PublishCreateSchema(ctx, schema); err != nil {
+		if err := s.Bus.PublishCreateSchema(ctx, schema); err != nil {
 			err = errors.Wrap(err, "unable to publish CreateSchema message")
 			s.Log.Error(err)
 			return
 		}
 	} else {
 		// Publish CreateSchema message
-		if err := s.Etcd.PublishUpdateSchema(ctx, schema); err != nil {
+		if err := s.Bus.PublishUpdateSchema(ctx, schema); err != nil {
 			err = errors.Wrap(err, "unable to publish UpdateSchema message")
 			s.Log.Error(err)
 			return
 		}
 	}
 
-	data, err := proto.Marshal(schema)
-	if err != nil {
-		err = errors.Wrap(err, "unable to marshal schema proto")
-		s.Log.Error(err)
-		return
-	}
-
-	// Save to etcd
-	_, err = s.Etcd.Put(ctx, "/plumber-server/schemas"+"/"+schema.Id, string(data))
-	if err != nil {
-		err = errors.Wrapf(err, "unable to save schema '%s' to etcd", schema.Id)
-		s.Log.Error(err)
-		return
-	}
+	// TODO: Schema needs to be persisted in KV
+	//data, err := proto.Marshal(schema)
+	//if err != nil {
+	//	err = errors.Wrap(err, "unable to marshal schema proto")
+	//	s.Log.Error(err)
+	//	return
+	//}
+	//
+	//// Save to etcd
+	//_, err = s.Bus.Put(ctx, "/plumber-server/schemas"+"/"+schema.Id, string(data))
+	//if err != nil {
+	//	err = errors.Wrapf(err, "unable to save schema '%s' to etcd", schema.Id)
+	//	s.Log.Error(err)
+	//	return
+	//}
 }
