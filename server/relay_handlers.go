@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/batchcorp/plumber/bus"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -13,7 +14,6 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
-	"github.com/batchcorp/plumber/embed/etcd"
 	"github.com/batchcorp/plumber/validate"
 )
 
@@ -99,7 +99,7 @@ func (s *Server) CreateRelay(ctx context.Context, req *protos.CreateRelayRequest
 		return nil, CustomError(common.Code_ABORTED, "could not marshal relay")
 	}
 
-	_, err = s.Etcd.Put(ctx, etcd.CacheRelaysPrefix+"/"+req.Opts.XRelayId, string(data))
+	_, err = s.Etcd.Put(ctx, bus.CacheRelaysPrefix+"/"+req.Opts.XRelayId, string(data))
 	if err != nil {
 		s.rollbackCreateRelay(ctx, req.Opts)
 		return nil, CustomError(common.Code_ABORTED, err.Error())
@@ -170,7 +170,7 @@ func (s *Server) UpdateRelay(_ context.Context, req *protos.UpdateRelayRequest) 
 	}
 
 	// Save to etcd
-	_, err = s.Etcd.Put(ctx, etcd.CacheRelaysPrefix+"/"+req.Opts.XRelayId, string(data))
+	_, err = s.Etcd.Put(ctx, bus.CacheRelaysPrefix+"/"+req.Opts.XRelayId, string(data))
 	if err != nil {
 		s.rollbackUpdateRelay(ctx, req.Opts)
 		fullErr := fmt.Sprintf("unable to save new relay options to etcd for relay id '%s': %s", req.Opts.XRelayId, err)
@@ -228,7 +228,7 @@ func (s *Server) StopRelay(ctx context.Context, req *protos.StopRelayRequest) (*
 		return nil, CustomError(common.Code_ABORTED, "could not marshal updated relay opts")
 	}
 
-	_, err = s.Etcd.Put(ctx, etcd.CacheRelaysPrefix+"/"+relay.Options.XRelayId, string(data))
+	_, err = s.Etcd.Put(ctx, bus.CacheRelaysPrefix+"/"+relay.Options.XRelayId, string(data))
 	if err != nil {
 		s.rollbackCreateRelay(ctx, relay.Options)
 		return nil, CustomError(common.Code_ABORTED, err.Error())
@@ -277,7 +277,7 @@ func (s *Server) ResumeRelay(ctx context.Context, req *protos.ResumeRelayRequest
 		return nil, CustomError(common.Code_ABORTED, "could not marshal updated relay opts")
 	}
 
-	_, err = s.Etcd.Put(ctx, etcd.CacheRelaysPrefix+"/"+relay.Options.XRelayId, string(data))
+	_, err = s.Etcd.Put(ctx, bus.CacheRelaysPrefix+"/"+relay.Options.XRelayId, string(data))
 	if err != nil {
 		s.rollbackCreateRelay(ctx, relay.Options)
 		return nil, CustomError(common.Code_ABORTED, err.Error())
@@ -317,7 +317,7 @@ func (s *Server) DeleteRelay(ctx context.Context, req *protos.DeleteRelayRequest
 	}
 
 	// Delete in etcd
-	if _, err := s.Etcd.Delete(ctx, etcd.CacheRelaysPrefix+"/"+relay.Id); err != nil {
+	if _, err := s.Etcd.Delete(ctx, bus.CacheRelaysPrefix+"/"+relay.Id); err != nil {
 		return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to delete relay in etcd: "+err.Error()))
 	}
 

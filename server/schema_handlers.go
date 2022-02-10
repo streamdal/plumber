@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/batchcorp/plumber/embed/etcd"
+	"github.com/batchcorp/plumber/bus"
 	"github.com/batchcorp/plumber/github"
 
 	"github.com/golang/protobuf/proto"
@@ -97,7 +97,7 @@ func (s *Server) ImportGithubSelect(ctx context.Context, req *protos.ImportGithu
 	}
 
 	// Save to etcd
-	_, err = s.Etcd.Put(ctx, etcd.CacheSchemasPrefix+"/"+schema.Id, string(data))
+	_, err = s.Etcd.Put(ctx, bus.CacheSchemasPrefix+"/"+schema.Id, string(data))
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
@@ -124,7 +124,7 @@ func (s *Server) ImportLocal(ctx context.Context, req *protos.ImportLocalRequest
 	if err := s.validateAuth(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
-	
+
 	schema, err := s.importLocal(req)
 	if err != nil {
 		return nil, CustomError(common.Code_FAILED_PRECONDITION, err.Error())
@@ -136,7 +136,7 @@ func (s *Server) ImportLocal(ctx context.Context, req *protos.ImportLocalRequest
 	}
 
 	// Save to etcd
-	_, err = s.Etcd.Put(ctx, etcd.CacheSchemasPrefix+"/"+schema.Id, string(data))
+	_, err = s.Etcd.Put(ctx, bus.CacheSchemasPrefix+"/"+schema.Id, string(data))
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
@@ -202,7 +202,7 @@ func (s *Server) DeleteSchema(ctx context.Context, req *protos.DeleteSchemaReque
 	}
 
 	// Delete in etcd
-	_, err := s.Etcd.Delete(ctx, etcd.CacheSchemasPrefix+"/"+schema.Id)
+	_, err := s.Etcd.Delete(ctx, bus.CacheSchemasPrefix+"/"+schema.Id)
 	if err != nil {
 		return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to delete connection: "+err.Error()))
 	}

@@ -5,8 +5,6 @@ import (
 
 	"github.com/batchcorp/plumber/config"
 
-	"github.com/batchcorp/plumber/embed/etcd/etcdfakes"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 

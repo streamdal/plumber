@@ -60,13 +60,8 @@ func (b *Batch) Login() error {
 		Token:  b.PersistentConfig.Token,
 	}
 
-	data, err := json.Marshal(cfg)
-	if err != nil {
-		return errors.Wrap(err, "unable to marshal config data")
-	}
-
 	// Successfully authenticated, write token to cache
-	if err := config.WriteConfig("config.json", data); err != nil {
+	if err := b.PersistentConfig.Update(cfg); err != nil {
 		return errors.Wrap(err, "unable to cache login credentials")
 	}
 

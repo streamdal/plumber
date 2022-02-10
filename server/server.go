@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strconv"
 
+	bus2 "github.com/batchcorp/plumber/bus"
 	"github.com/lestrrat-go/jwx/jwt"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -19,7 +20,6 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/config"
-	"github.com/batchcorp/plumber/embed/etcd"
 	"github.com/batchcorp/plumber/github"
 	"github.com/batchcorp/plumber/stats"
 	"github.com/batchcorp/plumber/uierrors"
@@ -35,7 +35,7 @@ type Server struct {
 	GithubService    github.IGithub
 	StatsService     stats.IStats
 	ErrorsService    uierrors.IUIErrors
-	Etcd             etcd.IEtcd
+	Etcd             bus2.IBus
 	Log              *logrus.Entry
 	CLIOptions       *opts.CLIOptions
 }
@@ -93,7 +93,7 @@ func (s *Server) SetServerOptions(ctx context.Context, req *protos.SetServerOpti
 		return nil, errors.Wrap(err, "unable to save updated config values")
 	}
 
-	msg := &etcd.MessageUpdateConfig{
+	msg := &bus2.MessageUpdateConfig{
 		VCServiceToken: req.GetVcserviceToken(),
 		GithubToken:    stateMap["oauth_token_github"],
 	}

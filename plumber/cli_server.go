@@ -5,6 +5,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/batchcorp/plumber/bus"
 	"github.com/nakabonne/tstorage"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -15,7 +16,6 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 
-	"github.com/batchcorp/plumber/embed/etcd"
 	"github.com/batchcorp/plumber/github"
 	"github.com/batchcorp/plumber/server"
 	"github.com/batchcorp/plumber/stats"
@@ -26,42 +26,7 @@ import (
 
 // RunServer is a wrapper for starting embedded etcd and starting the gRPC server.
 func (p *Plumber) RunServer() error {
-	// TODO: monitoring is currently etcd based, it will need to be reworked
-	//p.log.Info("starting embedded etcd")
-	//
-	//if err := p.startEtcd(); err != nil {
-	//	return errors.Wrap(err, "unable to start embedded etcd")
-	//}
-	//
-	//m, err := monitor.New(p.Etcd.Client(), p.Config.CLIOptions.Server.NodeId)
-	//if err != nil {
-	//	return errors.Wrap(err, "unable to create monitor instance")
-	//}
-	//
-	//p.log.Info("starting leader election for alerts")
-	//
-	//leaderChan := make(chan *monitor.ElectLeaderStatus, 1)
-	//
-	//alertsLeaderPath := fmt.Sprintf("/%s/monitor/leader", p.CLIOptions.Server.ClusterId)
-	//
-	//go m.RunElectLeader(p.ServiceShutdownCtx, leaderChan, alertsLeaderPath)
-	//
-	//// Bail out if initial election ran into errors
-	//timeoutCh := time.After(5 * time.Second)
-	//
-	//select {
-	//case status := <-leaderChan:
-	//	if status.Err != nil {
-	//		return errors.Wrap(status.Err, "unable to complete leader election")
-	//	}
-	//
-	//	// It is OK if we didn't get elected as leader - we only need to make
-	//	// sure that leader election worked without error.
-	//	p.log.Debugf("leader election process complete; elected leader '%s'", status.NodeID)
-	//case <-timeoutCh:
-	//	// Timeout hit - no errors, all is well
-	//	break
-	//}
+	p.log.Info("starting HTTP server")
 
 	// Launch HTTP server
 	go func() {
@@ -70,32 +35,27 @@ func (p *Plumber) RunServer() error {
 		}
 	}()
 
+	p.log.Info("starting bus")
+
+	// TODO: Instantiate the bus (only if enable cluster is set)
+	var b bus.IBus
+
+	if p.Config.CLIOptions.Server.EnableCluster {
+		var err error
+
+		b, err = bus.New(&bus.Config{
+			ServerOptions:    p.CLIOptions.Server,
+			PersistentConfig: p.PersistentConfig,
+			Actions:          p.Actions,
+		})
+
+	}
+
 	p.log.Info("starting gRPC server")
 
 	// Blocks
 	if err := p.runServer(); err != nil {
 		return errors.Wrap(err, "unable to run server")
-	}
-
-	return nil
-}
-
-func (p *Plumber) startEtcd() error {
-	e, err := etcd.New(p.Config.CLIOptions.Server, p.PersistentConfig, p.Actions)
-	if err != nil {
-		return errors.Wrap(err, "unable to instantiate etcd")
-	}
-
-	if err := e.Start(p.Config.ServiceShutdownCtx); err != nil {
-		return errors.Wrap(err, "unable to start embedded etcd")
-	}
-
-	p.Etcd = e
-
-	p.log.Debugf("embedded etcd listener address: %s", p.Config.CLIOptions.Server.ListenerClientUrl)
-
-	if err := e.PopulateCache(); err != nil {
-		p.log.Errorf("Unable to load data from etcd: %s", err)
 	}
 
 	return nil
@@ -119,7 +79,7 @@ func (p *Plumber) runServer() error {
 	if p.PersistentConfig.VCServiceToken != "" {
 		//var err error
 		//vcService, err = vcservice.New(&vcservice.Config{
-		//	EtcdService:      p.Etcd,
+		//	EtcdService:      p.Bus,
 		//	PersistentConfig: p.PersistentConfig,
 		//	ServerOptions:    p.CLIOptions.Server,
 		//})

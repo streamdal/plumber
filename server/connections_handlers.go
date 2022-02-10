@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/batchcorp/plumber/bus"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber/backends"
-	"github.com/batchcorp/plumber/embed/etcd"
 	"github.com/batchcorp/plumber/server/types"
 	"github.com/batchcorp/plumber/validate"
 
@@ -68,7 +68,7 @@ func (s *Server) CreateConnection(ctx context.Context, req *protos.CreateConnect
 	//	return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
 	//}
 	//
-	//_, err = s.Etcd.Put(ctx, etcd.CacheConnectionsPrefix+"/"+connOpts.XId, string(data))
+	//_, err = s.Bus.Put(ctx, etcd.CacheConnectionsPrefix+"/"+connOpts.XId, string(data))
 	//if err != nil {
 	//	return nil, CustomError(common.Code_ABORTED, err.Error())
 	//}
@@ -96,7 +96,7 @@ func (s *Server) CreateConnection(ctx context.Context, req *protos.CreateConnect
 // Rollback anything that may have been done during a conn creation request
 func (s *Server) rollbackCreateConnection(ctx context.Context, connOpts *opts.ConnectionOptions) {
 	// Remove connection from etcd
-	if _, err := s.Etcd.Delete(ctx, etcd.CacheConnectionsPrefix+"/"+connOpts.XId); err != nil {
+	if _, err := s.Etcd.Delete(ctx, bus.CacheConnectionsPrefix+"/"+connOpts.XId); err != nil {
 		// TODO: This should push a notification to a global log
 		s.Log.Errorf("unable to delete connection options in etcd: %s", err)
 	}
@@ -169,7 +169,7 @@ func (s *Server) UpdateConnection(ctx context.Context, req *protos.UpdateConnect
 	//}
 	//
 	//// Update in etcd
-	//_, err = s.Etcd.Put(ctx, etcd.CacheConnectionsPrefix+"/"+connOptions.XId, string(data))
+	//_, err = s.Bus.Put(ctx, etcd.CacheConnectionsPrefix+"/"+connOptions.XId, string(data))
 	//if err != nil {
 	//	return nil, CustomError(common.Code_ABORTED, err.Error())
 	//}
@@ -178,7 +178,7 @@ func (s *Server) UpdateConnection(ctx context.Context, req *protos.UpdateConnect
 	s.PersistentConfig.SetConnection(conn.Connection.XId, conn)
 
 	// Publish UpdateConnection event
-	//if err := s.Etcd.PublishUpdateConnection(ctx, connOptions); err != nil {
+	//if err := s.Bus.PublishUpdateConnection(ctx, connOptions); err != nil {
 	//	s.Log.Error(err)
 	//}
 
@@ -206,7 +206,7 @@ func (s *Server) DeleteConnection(ctx context.Context, req *protos.DeleteConnect
 	}
 
 	// Delete in etcd
-	_, err := s.Etcd.Delete(ctx, etcd.CacheConnectionsPrefix+"/"+conn.Connection.XId)
+	_, err := s.Etcd.Delete(ctx, bus.CacheConnectionsPrefix+"/"+conn.Connection.XId)
 	if err != nil {
 		return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to delete connection: "+err.Error()))
 	}

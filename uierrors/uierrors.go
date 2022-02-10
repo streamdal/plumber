@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/batchcorp/plumber/bus"
 	clientv3 "go.etcd.io/etcd/client/v3"
 
 	"github.com/golang/protobuf/proto"
@@ -13,7 +14,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
-	"github.com/batchcorp/plumber/embed/etcd"
 )
 
 const (
@@ -48,7 +48,7 @@ type UIErrors struct {
 
 // Config is used to pass required options to New()
 type Config struct {
-	EtcdService etcd.IEtcd
+	EtcdService bus.IBus
 }
 
 // AttachedStream is used to hold a channel which sends protos.ErrorMessage for a gRPC stream to receive
@@ -99,7 +99,7 @@ func (u *UIErrors) AddError(msg *protos.ErrorMessage) error {
 	}
 
 	// We are storing keys as nanoseconds so they won't conflict, and can be sorted when retrieved from etcd
-	cachePath := fmt.Sprintf("%s/%d", etcd.CacheErrorsPrefix, time.Now().UTC().UnixNano())
+	cachePath := fmt.Sprintf("%s/%d", bus.CacheErrorsPrefix, time.Now().UTC().UnixNano())
 
 	_, err = u.EtcdService.PutWithTTL(context.Background(), cachePath, string(data), DefaultErrorTTL)
 	if err != nil {
@@ -126,7 +126,7 @@ func (u *UIErrors) ConnectClient(id string) *AttachedStream {
 func (u *UIErrors) GetHistory(ctx context.Context) ([]*protos.ErrorMessage, error) {
 	resp, err := u.EtcdService.Get(
 		ctx,
-		etcd.CacheErrorsPrefix,
+		bus.CacheErrorsPrefix,
 		clientv3.WithPrefix(),
 		clientv3.WithSort(clientv3.SortByKey, clientv3.SortDescend),
 		clientv3.WithLimit(DefaultMaxErrorHistory),

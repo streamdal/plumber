@@ -4,13 +4,18 @@
 package config
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path"
 	"sync"
 
+	"github.com/batchcorp/plumber/kv"
+	"github.com/imdario/mergo"
+	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
@@ -19,11 +24,11 @@ import (
 	stypes "github.com/batchcorp/plumber/server/types"
 )
 
-type IConfig interface {
-	ConfigExists(fileName string) bool
-	ReadConfig(fileName string) (*Config, error)
-	WriteConfig(fileName string, data []byte) error
-}
+const (
+	ConfigFilename = "config.json"
+	KVConfigBucket = "config"
+	KVConfigKey    = "persistent-config"
+)
 
 // Config stores Account IDs and the auth_token cookie
 type Config struct {
@@ -43,7 +48,7 @@ type Config struct {
 	ImportRequests      map[string]*protos.ImportGithubRequest `json:"github_import_requests"`
 	Validations         map[string]*common.Validation          `json:"validations"`
 	Composites          map[string]*opts.Composite             `json:"composites"`
-	DynamicReplays      map[string]*stypes.Dynamic             `json:"dynamic_replays"`
+	Dynamic             map[string]*stypes.Dynamic             `json:"dynamic_replays"`
 	ConnectionsMutex    *sync.RWMutex                          `json:"-"`
 	ServicesMutex       *sync.RWMutex                          `json:"-"`
 	ReadsMutex          *sync.RWMutex                          `json:"-"`
@@ -53,20 +58,106 @@ type Config struct {
 	ValidationsMutex    *sync.RWMutex                          `json:"-"`
 	CompositesMutex     *sync.RWMutex                          `json:"-"`
 	DynamicReplaysMutex *sync.RWMutex                          `json:"-"`
+
+	enableCluster bool
+	kv            kv.IKV
 }
 
-// Save is a convenience method of persisting the config to disk via a single call
+// New will attempt to fetch and return an existing config from either NATS or
+// the local disk. If neither are available, it will return a new config.
+func New(enableCluster bool, k kv.IKV) (*Config, error) {
+	var cfg *Config
+	var err error
+
+	if enableCluster {
+		if k == nil {
+			return nil, errors.New("key-value client cannot be nil")
+		}
+
+		cfg, err = fetchConfigFromKV(k)
+		if err != nil {
+			if err == nats.ErrBucketNotFound || err == nats.ErrKeyNotFound {
+				return newConfig(enableCluster, k), nil
+			}
+
+			return nil, errors.Wrap(err, "unable to fetch config from kv")
+		}
+
+		return cfg, nil
+	}
+
+	// Not in cluster mode - attempt to read config from disk
+	if exists(ConfigFilename) {
+		cfg, err = readConfigFile(ConfigFilename)
+		if err != nil {
+			logrus.Errorf("unable to load config: %s", err)
+		}
+	}
+
+	if cfg == nil {
+		cfg = newConfig(false, nil)
+	}
+
+	return cfg, nil
+}
+
+func newConfig(enableCluster bool, k kv.IKV) *Config {
+	return &Config{
+		Connections:         make(map[string]*stypes.Connection),
+		Relays:              make(map[string]*stypes.Relay),
+		Schemas:             make(map[string]*protos.Schema),
+		Services:            make(map[string]*protos.Service),
+		Reads:               make(map[string]*stypes.Read),
+		ImportRequests:      make(map[string]*protos.ImportGithubRequest),
+		Validations:         make(map[string]*common.Validation),
+		Composites:          make(map[string]*opts.Composite),
+		Dynamic:             make(map[string]*stypes.Dynamic),
+		ConnectionsMutex:    &sync.RWMutex{},
+		ServicesMutex:       &sync.RWMutex{},
+		ReadsMutex:          &sync.RWMutex{},
+		RelaysMutex:         &sync.RWMutex{},
+		SchemasMutex:        &sync.RWMutex{},
+		ImportRequestsMutex: &sync.RWMutex{},
+		ValidationsMutex:    &sync.RWMutex{},
+		CompositesMutex:     &sync.RWMutex{},
+		DynamicReplaysMutex: &sync.RWMutex{},
+
+		kv:            k,
+		enableCluster: enableCluster,
+	}
+}
+
+// Save is a convenience method of persisting the config to KV store or disk
 func (c *Config) Save() error {
 	data, err := json.Marshal(c)
 	if err != nil {
 		return errors.Wrap(err, "unable to marshal config to JSON")
 	}
 
-	return WriteConfig("config.json", data)
+	return c.writeConfig(data)
 }
 
-// ReadConfig reads a config JSON file into a Config struct
-func ReadConfig(fileName string) (*Config, error) {
+func fetchConfigFromKV(k kv.IKV) (*Config, error) {
+	var cfg *Config
+	var err error
+
+	// Fetch the config from KV
+	data, err := k.Get(context.Background(), KVConfigBucket, KVConfigKey)
+	if err != nil {
+		return nil, err
+	}
+
+	// Unmarshal the config
+	cfg, err = readConfigBytes(data)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to unmarshal config from KV")
+	}
+
+	return cfg, nil
+}
+
+// readConfig reads a config JSON file into a Config struct
+func readConfigFile(fileName string) (*Config, error) {
 	f, err := getConfigJson(fileName)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not read ~/.batchsh/%s", fileName)
@@ -79,6 +170,15 @@ func ReadConfig(fileName string) (*Config, error) {
 		return nil, errors.Wrapf(err, "could not read ~/.batchsh/%s", fileName)
 	}
 
+	cfg, err := readConfigBytes(data)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not read config bytes")
+	}
+
+	return cfg, nil
+}
+
+func readConfigBytes(data []byte) (*Config, error) {
 	cfg := &Config{
 		ConnectionsMutex:    &sync.RWMutex{},
 		ServicesMutex:       &sync.RWMutex{},
@@ -96,17 +196,17 @@ func ReadConfig(fileName string) (*Config, error) {
 		ImportRequests:      make(map[string]*protos.ImportGithubRequest),
 		Validations:         make(map[string]*common.Validation),
 		Composites:          make(map[string]*opts.Composite),
-		DynamicReplays:      make(map[string]*stypes.Dynamic),
+		Dynamic:             make(map[string]*stypes.Dynamic),
 	}
 	if err := json.Unmarshal(data, cfg); err != nil {
-		return nil, errors.Wrapf(err, "could not unmarshal ~/.batchsh/%s", fileName)
+		return nil, errors.Wrapf(err, "could not unmarshal ~/.batchsh/%s", ConfigFilename)
 	}
 
 	return cfg, nil
 }
 
 // Exists determines if a config file exists yet
-func Exists(fileName string) bool {
+func exists(fileName string) bool {
 	configDir, err := getConfigDir()
 	if err != nil {
 		return false
@@ -121,13 +221,20 @@ func Exists(fileName string) bool {
 }
 
 // WriteConfig writes a Batch struct as JSON into a config.json file
-func WriteConfig(fileName string, data []byte) error {
+func (c *Config) writeConfig(data []byte) error {
+	if c.enableCluster {
+		if err := c.kv.Put(context.Background(), KVConfigBucket, KVConfigKey, data); err != nil {
+			return errors.Wrap(err, "unable to write config to KV")
+		}
+	}
+
+	// Clustering not enabled - write to disk
 	configDir, err := getConfigDir()
 	if err != nil {
 		return err
 	}
 
-	configPath := path.Join(configDir, fileName)
+	configPath := path.Join(configDir, ConfigFilename)
 
 	f, err := os.OpenFile(configPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
@@ -136,7 +243,24 @@ func WriteConfig(fileName string, data []byte) error {
 	defer f.Close()
 
 	_, err = f.Write(data)
+
 	return err
+}
+
+func (c *Config) Update(cfg *Config) error {
+	if cfg == nil {
+		return errors.New("config cannot be nil")
+	}
+
+	if err := mergo.Merge(c, cfg); err != nil {
+		return errors.Wrap(err, "unable to merge configs")
+	}
+
+	if err := c.Save(); err != nil {
+		return errors.Wrap(err, "unable to save merged config")
+	}
+
+	return nil
 }
 
 // getConfigJson attempts to read a user's .batchsh/config.json file to get saved credentials
@@ -381,22 +505,22 @@ func (c *Config) DeleteComposite(id string) {
 	delete(c.Composites, id)
 }
 
-// GetDynamic returns an in-progress read from the DynamicReplays map
+// GetDynamic returns an in-progress read from the Dynamic map
 func (c *Config) GetDynamic(dynamicID string) *stypes.Dynamic {
 	c.DynamicReplaysMutex.RLock()
 	defer c.DynamicReplaysMutex.RUnlock()
 
-	r, _ := c.DynamicReplays[dynamicID]
+	r, _ := c.Dynamic[dynamicID]
 
 	return r
 }
 
-// SetDynamic adds an in-progress read to the DynamicReplays map
+// SetDynamic adds an in-progress read to the Dynamic map
 func (c *Config) SetDynamic(dynamicID string, dynamicReplay *stypes.Dynamic) {
 	c.DynamicReplaysMutex.Lock()
 	defer c.DynamicReplaysMutex.Unlock()
 
-	c.DynamicReplays[dynamicID] = dynamicReplay
+	c.Dynamic[dynamicID] = dynamicReplay
 }
 
 // DeleteDynamic removes a dynamic replay from in-memory map

@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/batchcorp/plumber/bus"
 	"github.com/golang/protobuf/proto"
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-
-	"github.com/batchcorp/plumber/embed/etcd"
 )
 
 func (s *Server) GetAllDynamic(_ context.Context, req *protos.GetAllDynamicRequest) (*protos.GetAllDynamicResponse, error) {
@@ -23,7 +22,7 @@ func (s *Server) GetAllDynamic(_ context.Context, req *protos.GetAllDynamicReque
 	var numInactive int
 
 	dynamicOptions := make([]*opts.DynamicOptions, 0)
-	for _, v := range s.PersistentConfig.DynamicReplays {
+	for _, v := range s.PersistentConfig.Dynamic {
 		if v.Active {
 			numActive += 1
 		} else {
@@ -82,7 +81,7 @@ func (s *Server) CreateDynamic(ctx context.Context, req *protos.CreateDynamicReq
 		return nil, CustomError(common.Code_ABORTED, "could not marshal dynamic replay")
 	}
 
-	_, err = s.Etcd.Put(ctx, etcd.CacheDynamicPrefix+"/"+req.Opts.XDynamicId, string(data))
+	_, err = s.Etcd.Put(ctx, bus.CacheDynamicPrefix+"/"+req.Opts.XDynamicId, string(data))
 	if err != nil {
 		s.rollbackCreateDynamic(ctx, req.Opts)
 		return nil, CustomError(common.Code_ABORTED, err.Error())
@@ -113,7 +112,7 @@ func (s *Server) CreateDynamic(ctx context.Context, req *protos.CreateDynamicReq
 }
 
 func (s *Server) rollbackCreateDynamic(ctx context.Context, req *opts.DynamicOptions) {
-	if _, err := s.Etcd.Delete(ctx, etcd.CacheDynamicPrefix+"/"+req.XDynamicId); err != nil {
+	if _, err := s.Etcd.Delete(ctx, bus.CacheDynamicPrefix+"/"+req.XDynamicId); err != nil {
 		s.Log.Error(err)
 	}
 
@@ -135,7 +134,7 @@ func (s *Server) UpdateDynamic(ctx context.Context, req *protos.UpdateDynamicReq
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, "could not marshal dynamic replay")
 	}
-	if _, err := s.Etcd.Put(ctx, etcd.CacheDynamicPrefix+"/"+req.Opts.XDynamicId, string(data)); err != nil {
+	if _, err := s.Etcd.Put(ctx, bus.CacheDynamicPrefix+"/"+req.Opts.XDynamicId, string(data)); err != nil {
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
 
@@ -210,7 +209,7 @@ func (s *Server) DeleteDynamic(ctx context.Context, req *protos.DeleteDynamicReq
 		s.Log.Error(err)
 	}
 
-	if _, err := s.Etcd.Delete(ctx, etcd.CacheDynamicPrefix+"/"+req.DynamicId); err != nil {
+	if _, err := s.Etcd.Delete(ctx, bus.CacheDynamicPrefix+"/"+req.DynamicId); err != nil {
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
 

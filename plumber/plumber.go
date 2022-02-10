@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/batchcorp/plumber/actions"
+	"github.com/batchcorp/plumber/bus"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/mcuadros/go-lookup"
 	"github.com/pkg/errors"
@@ -16,7 +17,6 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/config"
-	"github.com/batchcorp/plumber/embed/etcd"
 	"github.com/batchcorp/plumber/monitor"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
@@ -47,7 +47,7 @@ type Config struct {
 type Plumber struct {
 	*Config
 
-	Etcd    *etcd.Etcd
+	Etcd    *bus.Bus
 	RelayCh chan interface{}
 
 	cliMD       map[pb.MDType]*desc.MessageDescriptor

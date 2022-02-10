@@ -4,11 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/batchcorp/plumber/bus"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
-
-	"github.com/batchcorp/plumber/embed/etcd"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
@@ -121,7 +120,7 @@ func (s *Server) DeleteValidation(ctx context.Context, req *protos.DeleteValidat
 		return nil, CustomError(common.Code_NOT_FOUND, "validation not found")
 	}
 
-	if _, err := s.Etcd.Delete(ctx, etcd.CacheValidationsPrefix+"/"+validation.XId); err != nil {
+	if _, err := s.Etcd.Delete(ctx, bus.CacheValidationsPrefix+"/"+validation.XId); err != nil {
 		s.Log.Errorf("unable to delete validation '%s' from etcd: %s", validation.XId, err)
 		return nil, CustomError(common.Code_ABORTED, "validation could not be deleted from etcd")
 	}
@@ -154,7 +153,7 @@ func (s *Server) persistValidation(ctx context.Context, v *common.Validation) er
 	}
 
 	// Save in etcd
-	_, err = s.Etcd.Put(ctx, etcd.CacheValidationsPrefix+"/"+v.XId, string(data))
+	_, err = s.Etcd.Put(ctx, bus.CacheValidationsPrefix+"/"+v.XId, string(data))
 	if err != nil {
 		return errors.Wrap(err, "unable to save validation to etcd")
 	}

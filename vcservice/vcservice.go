@@ -8,13 +8,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/batchcorp/plumber/bus"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
 	"github.com/batchcorp/plumber/config"
-	"github.com/batchcorp/plumber/embed/etcd"
 	"github.com/batchcorp/plumber/validate"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
@@ -27,7 +27,7 @@ const (
 )
 
 type Config struct {
-	EtcdService      etcd.IEtcd
+	EtcdService      bus.IBus
 	ServerOptions    *opts.ServerOptions
 	PersistentConfig *config.Config
 }

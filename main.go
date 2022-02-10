@@ -7,24 +7,21 @@ import (
 	"os"
 	"os/signal"
 	"strings"
-	"sync"
 	"syscall"
 
+	"github.com/batchcorp/plumber/config"
+	"github.com/batchcorp/plumber/kv"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/ssh/terminal"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/actions"
-	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/plumber"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/prometheus"
-	"github.com/batchcorp/plumber/server/types"
 )
 
 func main() {
@@ -46,7 +43,24 @@ func main() {
 	serviceCtx, serviceShutdownFunc := context.WithCancel(context.Background())
 	mainCtx, mainShutdownFunc := context.WithCancel(context.Background())
 
-	persistentConfig := getConfig()
+	var k kv.IKV
+
+	// If server && cluster mode is enabled, we should instantiate the kv store
+	// so that the config is stored in NATS instead of disk.
+	if cliOpts.Global.XAction == "server" && cliOpts.Server.EnableCluster {
+		var err error
+
+		k, err = kv.New(cliOpts.Server)
+		if err != nil {
+			logrus.Fatalf("unable to create KV store: %s", err)
+		}
+	}
+
+	persistentConfig, err := config.New(cliOpts.Server.EnableCluster, k)
+	if err != nil {
+		logrus.Fatalf("unable to create persistent config: %s", err)
+	}
+
 	// Save config automatically on exit
 	defer persistentConfig.Save()
 
@@ -152,43 +166,4 @@ func convertJSONInput(value string) []string {
 	})
 
 	return inputData
-}
-
-// getConfig returns either a stored config if there is one, or a fresh config
-func getConfig() *config.Config {
-	var cfg *config.Config
-	var err error
-
-	// No need to pollute user's FS if they aren't running in server mode
-	if config.Exists("config.json") {
-		cfg, err = config.ReadConfig("config.json")
-		if err != nil {
-			logrus.Errorf("unable to load config: %s", err)
-		}
-	}
-
-	if cfg == nil {
-		cfg = &config.Config{
-			Connections:         make(map[string]*types.Connection),
-			Relays:              make(map[string]*types.Relay),
-			Schemas:             make(map[string]*protos.Schema),
-			Services:            make(map[string]*protos.Service),
-			Reads:               make(map[string]*types.Read),
-			ImportRequests:      make(map[string]*protos.ImportGithubRequest),
-			Validations:         make(map[string]*common.Validation),
-			Composites:          make(map[string]*opts.Composite),
-			DynamicReplays:      make(map[string]*types.Dynamic),
-			ConnectionsMutex:    &sync.RWMutex{},
-			ServicesMutex:       &sync.RWMutex{},
-			ReadsMutex:          &sync.RWMutex{},
-			RelaysMutex:         &sync.RWMutex{},
-			SchemasMutex:        &sync.RWMutex{},
-			ImportRequestsMutex: &sync.RWMutex{},
-			ValidationsMutex:    &sync.RWMutex{},
-			CompositesMutex:     &sync.RWMutex{},
-			DynamicReplaysMutex: &sync.RWMutex{},
-		}
-	}
-
-	return cfg
 }

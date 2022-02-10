@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/batchcorp/plumber/bus"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -12,7 +13,6 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
-	"github.com/batchcorp/plumber/embed/etcd"
 	"github.com/batchcorp/plumber/validate"
 )
 
@@ -67,7 +67,7 @@ func (s *Server) CreateComposite(ctx context.Context, req *protos.CreateComposit
 		return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
 	}
 
-	_, err = s.Etcd.Put(ctx, etcd.CacheCompositesPrefix+"/"+composite.XId, string(data))
+	_, err = s.Etcd.Put(ctx, bus.CacheCompositesPrefix+"/"+composite.XId, string(data))
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
@@ -114,7 +114,7 @@ func (s *Server) UpdateComposite(ctx context.Context, req *protos.UpdateComposit
 		return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
 	}
 
-	_, err = s.Etcd.Put(ctx, etcd.CacheCompositesPrefix+"/"+composite.XId, string(data))
+	_, err = s.Etcd.Put(ctx, bus.CacheCompositesPrefix+"/"+composite.XId, string(data))
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
@@ -149,7 +149,7 @@ func (s *Server) DeleteComposite(ctx context.Context, req *protos.DeleteComposit
 		return nil, CustomError(common.Code_FAILED_PRECONDITION, validate.ErrCompositeNotFound.Error())
 	}
 
-	_, err := s.Etcd.Delete(ctx, etcd.CacheCompositesPrefix+"/"+composite.XId)
+	_, err := s.Etcd.Delete(ctx, bus.CacheCompositesPrefix+"/"+composite.XId)
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
@@ -175,7 +175,7 @@ func (s *Server) DeleteComposite(ctx context.Context, req *protos.DeleteComposit
 // Rollback anything that may have been done during a composite creation request
 func (s *Server) rollbackCreateComposite(ctx context.Context, composite *opts.Composite) {
 	// Remove composite view from etcd
-	if _, err := s.Etcd.Delete(ctx, etcd.CacheCompositesPrefix+"/"+composite.XId); err != nil {
+	if _, err := s.Etcd.Delete(ctx, bus.CacheCompositesPrefix+"/"+composite.XId); err != nil {
 		s.Log.Errorf("unable to delete composite view in etcd: %s", err)
 	}
 
