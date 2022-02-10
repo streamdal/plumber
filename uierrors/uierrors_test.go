@@ -39,7 +39,7 @@ package uierrors
 //		It("validates etcd", func() {
 //			err := validateConfig(&Config{})
 //			Expect(err).To(HaveOccurred())
-//			Expect(err.Error()).To(Equal(ErrMissingEtcd.Error()))
+//			Expect(err.Error()).To(Equal(ErrMissingKV.Error()))
 //		})
 //
 //		It("passes validation", func() {

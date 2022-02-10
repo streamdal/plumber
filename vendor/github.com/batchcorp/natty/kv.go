@@ -3,6 +3,7 @@ package natty
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
@@ -15,7 +16,7 @@ type KeyValueMap struct {
 
 func (n *Natty) Get(ctx context.Context, bucket string, key string) ([]byte, error) {
 	// NOTE: Context usage for K/V operations is not available in NATS (yet)
-	kv, err := n.getBucket(ctx, bucket, false)
+	kv, err := n.getBucket(ctx, bucket, false, 0)
 	if err != nil {
 		if err == nats.ErrBucketNotFound {
 			return nil, nats.ErrKeyNotFound
@@ -36,9 +37,17 @@ func (n *Natty) Get(ctx context.Context, bucket string, key string) ([]byte, err
 	return kve.Value(), nil
 }
 
-func (n *Natty) Put(ctx context.Context, bucket string, key string, data []byte) error {
+// Put puts a key/val into a bucket and will create bucket if it doesn't already
+// exit. TTL is optional; if provided, only the first value will be used.
+func (n *Natty) Put(ctx context.Context, bucket string, key string, data []byte, keyTTL ...time.Duration) error {
 	// NOTE: Context usage for K/V operations is not available in NATS (yet)
-	kv, err := n.getBucket(ctx, bucket, true)
+	var ttl time.Duration
+
+	if len(keyTTL) > 0 {
+		ttl = keyTTL[0]
+	}
+
+	kv, err := n.getBucket(ctx, bucket, true, ttl)
 	if err != nil {
 		return errors.Wrap(err, "unable to fetch bucket")
 	}
@@ -52,7 +61,7 @@ func (n *Natty) Put(ctx context.Context, bucket string, key string, data []byte)
 
 func (n *Natty) Delete(ctx context.Context, bucket string, key string) error {
 	// NOTE: Context usage for K/V operations is not available in NATS (yet)
-	kv, err := n.getBucket(ctx, bucket, false)
+	kv, err := n.getBucket(ctx, bucket, false, 0)
 	if err != nil {
 		if err == nats.ErrBucketNotFound {
 			return nil
@@ -80,7 +89,7 @@ func (n *Natty) DeleteBucket(_ context.Context, bucket string) error {
 }
 
 // getBucket will either fetch a known bucket or create it if it doesn't exist
-func (n *Natty) getBucket(_ context.Context, bucket string, create bool) (nats.KeyValue, error) {
+func (n *Natty) getBucket(_ context.Context, bucket string, create bool, ttl time.Duration) (nats.KeyValue, error) {
 	// NOTE: Context usage for K/V operations is not available in NATS (yet)
 
 	// Do we have this bucket locally?
@@ -110,6 +119,7 @@ func (n *Natty) getBucket(_ context.Context, bucket string, create bool) (nats.K
 			Bucket:      bucket,
 			Description: "auto-created bucket via natty",
 			History:     5,
+			TTL:         ttl,
 		})
 
 		if err != nil {

@@ -47,7 +47,7 @@ type Config struct {
 type Plumber struct {
 	*Config
 
-	Etcd    *bus.Bus
+	Bus     bus.IBus
 	RelayCh chan interface{}
 
 	cliMD       map[pb.MDType]*desc.MessageDescriptor

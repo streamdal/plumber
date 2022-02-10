@@ -138,7 +138,7 @@ github.com/batchcorp/collector-schemas/build/go/protos/services
 # github.com/batchcorp/kong v0.2.17-batch-fix
 ## explicit
 github.com/batchcorp/kong
-# github.com/batchcorp/natty v0.0.12
+# github.com/batchcorp/natty v0.0.13
 ## explicit
 github.com/batchcorp/natty
 # github.com/batchcorp/pgoutput v0.3.2
@@ -193,9 +193,8 @@ github.com/eclipse/paho.mqtt.golang/packets
 # github.com/fatih/color v1.12.0
 ## explicit
 github.com/fatih/color
-# github.com/fatih/structtag v1.2.0
-## explicit
 # github.com/form3tech-oss/jwt-go v3.2.3+incompatible
+## explicit
 github.com/form3tech-oss/jwt-go
 # github.com/fsnotify/fsnotify v1.4.9
 github.com/fsnotify/fsnotify
@@ -233,6 +232,7 @@ github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 github.com/gogo/protobuf/sortkeys
 # github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da
+## explicit
 github.com/golang/groupcache/lru
 # github.com/golang/protobuf v1.5.2
 ## explicit
@@ -249,7 +249,7 @@ github.com/golang/protobuf/ptypes/empty
 github.com/golang/protobuf/ptypes/struct
 github.com/golang/protobuf/ptypes/timestamp
 github.com/golang/protobuf/ptypes/wrappers
-# github.com/golang/snappy v0.0.1
+# github.com/golang/snappy v0.0.3
 github.com/golang/snappy
 # github.com/google/go-cmp v0.5.6
 github.com/google/go-cmp/cmp
@@ -320,6 +320,8 @@ github.com/klauspost/compress/huff0
 github.com/klauspost/compress/internal/snapref
 github.com/klauspost/compress/zstd
 github.com/klauspost/compress/zstd/internal/xxhash
+# github.com/kr/text v0.2.0
+## explicit
 # github.com/kubemq-io/kubemq-go v1.7.2
 ## explicit
 github.com/kubemq-io/kubemq-go/pkg/uuid
@@ -403,7 +405,9 @@ github.com/nakabonne/tstorage/internal/cgroup
 github.com/nakabonne/tstorage/internal/encoding
 github.com/nakabonne/tstorage/internal/syscall
 github.com/nakabonne/tstorage/internal/timerpool
-# github.com/nats-io/nats.go v1.13.0
+# github.com/nats-io/nats-streaming-server v0.24.1
+## explicit
+# github.com/nats-io/nats.go v1.13.1-0.20220121202836-972a071d373d
 ## explicit
 github.com/nats-io/nats.go
 github.com/nats-io/nats.go/encoders/builtin
@@ -482,8 +486,7 @@ github.com/prometheus/client_model/go
 github.com/prometheus/common/expfmt
 github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg
 github.com/prometheus/common/model
-# github.com/prometheus/procfs v0.7.1
-## explicit
+# github.com/prometheus/procfs v0.7.3
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
@@ -597,7 +600,6 @@ github.com/xdg/stringprep
 # github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d
 github.com/youmark/pkcs8
 # go.etcd.io/etcd/api/v3 v3.5.0
-## explicit
 go.etcd.io/etcd/api/v3/authpb
 go.etcd.io/etcd/api/v3/etcdserverpb
 go.etcd.io/etcd/api/v3/membershippb
@@ -605,7 +607,6 @@ go.etcd.io/etcd/api/v3/mvccpb
 go.etcd.io/etcd/api/v3/v3rpc/rpctypes
 go.etcd.io/etcd/api/v3/version
 # go.etcd.io/etcd/client/pkg/v3 v3.5.0
-## explicit
 go.etcd.io/etcd/client/pkg/v3/logutil
 go.etcd.io/etcd/client/pkg/v3/systemd
 go.etcd.io/etcd/client/pkg/v3/types
@@ -616,8 +617,6 @@ go.etcd.io/etcd/client/v3/concurrency
 go.etcd.io/etcd/client/v3/credentials
 go.etcd.io/etcd/client/v3/internal/endpoint
 go.etcd.io/etcd/client/v3/internal/resolver
-# go.etcd.io/etcd/server/v3 v3.5.0
-## explicit
 # go.mongodb.org/mongo-driver v1.7.3
 ## explicit
 go.mongodb.org/mongo-driver/bson
@@ -681,7 +680,7 @@ go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
 go.uber.org/zap/zapgrpc
-# golang.org/x/crypto v0.0.0-20211115234514-b4de73f9ece8
+# golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce
 ## explicit
 golang.org/x/crypto/cast5
 golang.org/x/crypto/curve25519
@@ -705,8 +704,7 @@ golang.org/x/lint/golint
 # golang.org/x/mod v0.4.2
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20210428140749-89ef3d95e781
-## explicit
+# golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/html
@@ -731,7 +729,7 @@ golang.org/x/oauth2/jwt
 # golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e
+# golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
 golang.org/x/sys/execabs
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
@@ -915,8 +913,6 @@ google.golang.org/protobuf/types/known/timestamppb
 google.golang.org/protobuf/types/known/typepb
 google.golang.org/protobuf/types/known/wrapperspb
 google.golang.org/protobuf/types/pluginpb
-# gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
-## explicit
 # gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
 gopkg.in/tomb.v1
 # gopkg.in/yaml.v2 v2.4.0

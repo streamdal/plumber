@@ -2,14 +2,10 @@ package uierrors
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 
-	"github.com/batchcorp/plumber/bus"
-	clientv3 "go.etcd.io/etcd/client/v3"
-
-	"github.com/golang/protobuf/proto"
+	"github.com/batchcorp/plumber/kv"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -17,6 +13,8 @@ import (
 )
 
 const (
+	Bucket = "uierrors"
+
 	// DefaultErrorTTL determines how long errors remain in etcd before the key expires
 	DefaultErrorTTL = time.Minute * 24 * 30
 
@@ -28,7 +26,7 @@ var (
 	ErrMissingError      = errors.New("error cannot be empty")
 	ErrMissingResource   = errors.New("resource cannot be empty")
 	ErrMissingResourceID = errors.New("resource ID cannot be empty")
-	ErrMissingEtcd       = errors.New("EtcdService cannot be nil")
+	ErrMissingKV         = errors.New("KV cannot be nil")
 )
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . IUIErrors
@@ -48,7 +46,7 @@ type UIErrors struct {
 
 // Config is used to pass required options to New()
 type Config struct {
-	EtcdService bus.IBus
+	KV kv.IKV
 }
 
 // AttachedStream is used to hold a channel which sends protos.ErrorMessage for a gRPC stream to receive
@@ -72,8 +70,8 @@ func New(cfg *Config) (*UIErrors, error) {
 
 // validateConfig ensures all required configuration options are passed when instantiating the uierrors service
 func validateConfig(cfg *Config) error {
-	if cfg.EtcdService == nil {
-		return ErrMissingEtcd
+	if cfg.KV == nil {
+		return ErrMissingKV
 	}
 
 	return nil
@@ -81,32 +79,34 @@ func validateConfig(cfg *Config) error {
 
 // AddError is called by plumber code where we need to send an error to the client
 func (u *UIErrors) AddError(msg *protos.ErrorMessage) error {
-	if err := validateError(msg); err != nil {
-		return errors.Wrap(err, "could not send error message")
-	}
-
-	// Send to consumers
-	u.AttachedClientsMtx.RLock()
-	for _, c := range u.AttachedClients {
-		c.MessageCh <- msg
-	}
-	u.AttachedClientsMtx.RUnlock()
-
-	// Save to etcd
-	data, err := proto.Marshal(msg)
-	if err != nil {
-		return errors.Wrap(err, "unable to marshal protobuf ErrorMessage to JSON")
-	}
-
-	// We are storing keys as nanoseconds so they won't conflict, and can be sorted when retrieved from etcd
-	cachePath := fmt.Sprintf("%s/%d", bus.CacheErrorsPrefix, time.Now().UTC().UnixNano())
-
-	_, err = u.EtcdService.PutWithTTL(context.Background(), cachePath, string(data), DefaultErrorTTL)
-	if err != nil {
-		return errors.Wrap(err, "unable to save error to etcd")
-	}
-
 	return nil
+
+	//if err := validateError(msg); err != nil {
+	//	return errors.Wrap(err, "could not send error message")
+	//}
+	//
+	//// Send to consumers
+	//u.AttachedClientsMtx.RLock()
+	//for _, c := range u.AttachedClients {
+	//	c.MessageCh <- msg
+	//}
+	//u.AttachedClientsMtx.RUnlock()
+	//
+	//// Save to etcd
+	//data, err := proto.Marshal(msg)
+	//if err != nil {
+	//	return errors.Wrap(err, "unable to marshal protobuf ErrorMessage to JSON")
+	//}
+	//
+	//// We are storing keys as nanoseconds so they won't conflict, and can be sorted when retrieved from etcd
+	//cachePath := fmt.Sprintf("%s/%d", bus.CacheErrorsPrefix, time.Now().UTC().UnixNano())
+	//
+	//_, err = u.KV.PutWithTTL(context.Background(), cachePath, string(data), DefaultErrorTTL)
+	//if err != nil {
+	//	return errors.Wrap(err, "unable to save error to etcd")
+	//}
+	//
+	//return nil
 }
 
 // ConnectClient is called whenever the streaming gRPC endpoint GetErrors() is called. A new AttachedClient
@@ -123,30 +123,34 @@ func (u *UIErrors) ConnectClient(id string) *AttachedStream {
 }
 
 // GetHistory reads all error messages stored in etcd
-func (u *UIErrors) GetHistory(ctx context.Context) ([]*protos.ErrorMessage, error) {
-	resp, err := u.EtcdService.Get(
-		ctx,
-		bus.CacheErrorsPrefix,
-		clientv3.WithPrefix(),
-		clientv3.WithSort(clientv3.SortByKey, clientv3.SortDescend),
-		clientv3.WithLimit(DefaultMaxErrorHistory),
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to read cached error messages")
-	}
+func (u *UIErrors) GetHistory(_ context.Context) ([]*protos.ErrorMessage, error) {
+	// NATS KV does not have a sort + limit in their key/val implementation.
+	// Will need to figure something out.
+	return nil, nil
 
-	history := make([]*protos.ErrorMessage, 0)
-
-	for _, v := range resp.Kvs {
-		errorMsg := &protos.ErrorMessage{}
-		if err := proto.Unmarshal(v.Value, errorMsg); err != nil {
-			u.log.Errorf("unable to unmarshal saved error message: %s", err)
-			continue
-		}
-		history = append(history, errorMsg)
-	}
-
-	return history, nil
+	//resp, err := u.EtcdService.Get(
+	//	ctx,
+	//	bus.CacheErrorsPrefix,
+	//	clientv3.WithPrefix(),
+	//	clientv3.WithSort(clientv3.SortByKey, clientv3.SortDescend),
+	//	clientv3.WithLimit(DefaultMaxErrorHistory),
+	//)
+	//if err != nil {
+	//	return nil, errors.Wrap(err, "unable to read cached error messages")
+	//}
+	//
+	//history := make([]*protos.ErrorMessage, 0)
+	//
+	//for _, v := range resp.Kvs {
+	//	errorMsg := &protos.ErrorMessage{}
+	//	if err := proto.Unmarshal(v.Value, errorMsg); err != nil {
+	//		u.log.Errorf("unable to unmarshal saved error message: %s", err)
+	//		continue
+	//	}
+	//	history = append(history, errorMsg)
+	//}
+	//
+	//return history, nil
 }
 
 // DisconnectClient removes an attached client from the map, and cleans up the channel

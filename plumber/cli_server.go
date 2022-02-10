@@ -19,7 +19,6 @@ import (
 	"github.com/batchcorp/plumber/github"
 	"github.com/batchcorp/plumber/server"
 	"github.com/batchcorp/plumber/stats"
-	"github.com/batchcorp/plumber/uierrors"
 	"github.com/batchcorp/plumber/util"
 	"github.com/batchcorp/plumber/vcservice"
 )
@@ -37,7 +36,6 @@ func (p *Plumber) RunServer() error {
 
 	p.log.Info("starting bus")
 
-	// TODO: Instantiate the bus (only if enable cluster is set)
 	var b bus.IBus
 
 	if p.Config.CLIOptions.Server.EnableCluster {
@@ -49,19 +47,28 @@ func (p *Plumber) RunServer() error {
 			Actions:          p.Actions,
 		})
 
+		if err != nil {
+			return errors.Wrap(err, "unable to setup bus bus")
+		}
+
+		if err := b.Start(p.ServiceShutdownCtx); err != nil {
+			return errors.Wrap(err, "unable to start bus consumers")
+		}
 	}
+
+	p.Bus = b
 
 	p.log.Info("starting gRPC server")
 
 	// Blocks
-	if err := p.runServer(); err != nil {
+	if err := p.runGRPCServer(); err != nil {
 		return errors.Wrap(err, "unable to run server")
 	}
 
 	return nil
 }
 
-func (p *Plumber) runServer() error {
+func (p *Plumber) runGRPCServer() error {
 	lis, err := net.Listen("tcp", p.CLIOptions.Server.GrpcListenAddress)
 	if err != nil {
 		return fmt.Errorf("unable to listen on '%s': %s", p.CLIOptions.Server.GrpcListenAddress, err)
@@ -107,17 +114,16 @@ func (p *Plumber) runServer() error {
 		ServiceShutdownCtx: p.ServiceShutdownCtx,
 		Storage:            storage,
 	})
-
-	errorsService, err := uierrors.New(&uierrors.Config{
-		EtcdService: p.Etcd,
-	})
 	if err != nil {
-		return errors.Wrap(err, "unable to create uierrors service")
+		return errors.Wrap(err, "unable to create stats service")
 	}
 
-	if err != nil {
-		return errors.Wrap(err, "unable to create actions service")
-	}
+	//errorsService, err := uierrors.New(&uierrors.Config{
+	//	EtcdService: p.Etcd,
+	//})
+	//if err != nil {
+	//	return errors.Wrap(err, "unable to create uierrors service")
+	//}
 
 	plumberServer := &server.Server{
 		Actions:          p.Actions,
@@ -126,7 +132,6 @@ func (p *Plumber) runServer() error {
 		VCService:        vcService,
 		GithubService:    ghService,
 		StatsService:     statsService,
-		ErrorsService:    errorsService,
 		Log:              logrus.WithField("pkg", "plumber/cli_server.go"),
 		Etcd:             p.Etcd,
 		CLIOptions:       p.CLIOptions,

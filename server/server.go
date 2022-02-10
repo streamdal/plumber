@@ -22,7 +22,6 @@ import (
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/github"
 	"github.com/batchcorp/plumber/stats"
-	"github.com/batchcorp/plumber/uierrors"
 	"github.com/batchcorp/plumber/validate"
 	"github.com/batchcorp/plumber/vcservice"
 )
@@ -34,7 +33,6 @@ type Server struct {
 	VCService        vcservice.IVCService
 	GithubService    github.IGithub
 	StatsService     stats.IStats
-	ErrorsService    uierrors.IUIErrors
 	Etcd             bus2.IBus
 	Log              *logrus.Entry
 	CLIOptions       *opts.CLIOptions
@@ -47,16 +45,10 @@ func (s *Server) GetServerOptions(_ context.Context, req *protos.GetServerOption
 
 	return &protos.GetServerOptionsResponse{
 		ServerOptions: &opts.ServerOptions{
-			NodeId:             s.CLIOptions.Server.NodeId,
-			ClusterId:          s.CLIOptions.Server.ClusterId,
-			GrpcListenAddress:  s.CLIOptions.Server.GrpcListenAddress,
-			AuthToken:          s.CLIOptions.Server.AuthToken,
-			InitialCluster:     s.CLIOptions.Server.InitialCluster,
-			AdvertisePeerUrl:   s.CLIOptions.Server.AdvertisePeerUrl,
-			AdvertiseClientUrl: s.CLIOptions.Server.AdvertiseClientUrl,
-			ListenerPeerUrl:    s.CLIOptions.Server.ListenerPeerUrl,
-			ListenerClientUrl:  s.CLIOptions.Server.ListenerClientUrl,
-			PeerToken:          s.CLIOptions.Server.PeerToken,
+			NodeId:            s.CLIOptions.Server.NodeId,
+			ClusterId:         s.CLIOptions.Server.ClusterId,
+			GrpcListenAddress: s.CLIOptions.Server.GrpcListenAddress,
+			AuthToken:         s.CLIOptions.Server.AuthToken,
 		},
 	}, nil
 }
@@ -104,16 +96,10 @@ func (s *Server) SetServerOptions(ctx context.Context, req *protos.SetServerOpti
 
 	return &protos.SetServerOptionsResponse{
 		ServerOptions: &opts.ServerOptions{
-			NodeId:             s.CLIOptions.Server.NodeId,
-			ClusterId:          s.CLIOptions.Server.ClusterId,
-			GrpcListenAddress:  s.CLIOptions.Server.GrpcListenAddress,
-			AuthToken:          s.CLIOptions.Server.AuthToken,
-			InitialCluster:     s.CLIOptions.Server.InitialCluster,
-			AdvertisePeerUrl:   s.CLIOptions.Server.AdvertisePeerUrl,
-			AdvertiseClientUrl: s.CLIOptions.Server.AdvertiseClientUrl,
-			ListenerPeerUrl:    s.CLIOptions.Server.ListenerPeerUrl,
-			ListenerClientUrl:  s.CLIOptions.Server.ListenerClientUrl,
-			PeerToken:          s.CLIOptions.Server.PeerToken,
+			NodeId:            s.CLIOptions.Server.NodeId,
+			ClusterId:         s.CLIOptions.Server.ClusterId,
+			GrpcListenAddress: s.CLIOptions.Server.GrpcListenAddress,
+			AuthToken:         s.CLIOptions.Server.AuthToken,
 		},
 	}, nil
 }

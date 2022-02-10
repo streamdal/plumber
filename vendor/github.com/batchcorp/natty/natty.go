@@ -47,7 +47,7 @@ type INatty interface {
 
 	// Put will put a new value for a given bucket and key. Will auto-create
 	// the bucket if it does not already exist.
-	Put(ctx context.Context, bucket string, key string, data []byte) error
+	Put(ctx context.Context, bucket string, key string, data []byte, ttl ...time.Duration) error
 
 	// Delete will delete a key from a given bucket. Will no-op if the bucket
 	// or key does not exist.
