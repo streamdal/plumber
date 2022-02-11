@@ -65,7 +65,7 @@ func (a *AzureServiceBus) relayQueue(ctx context.Context, handler servicebus.Han
 	for {
 		if err := queue.ReceiveOne(ctx, handler); err != nil {
 			if err == context.Canceled {
-				a.log.Info("Received shutdown signal, existing relayer")
+				a.log.Debug("Received shutdown signal, exiting relayer")
 				return nil
 			}
 
@@ -95,7 +95,7 @@ func (a *AzureServiceBus) relayTopic(ctx context.Context, handler servicebus.Han
 	for {
 		if err := sub.ReceiveOne(ctx, handler); err != nil {
 			if err == context.Canceled {
-				a.log.Info("Received shutdown signal, existing relayer")
+				a.log.Debug("Received shutdown signal, exiting relayer")
 				return nil
 			}
 

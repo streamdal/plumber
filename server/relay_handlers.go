@@ -267,6 +267,8 @@ func (s *Server) DeleteRelay(ctx context.Context, req *protos.DeleteRelayRequest
 		s.Log.Error(err)
 	}
 
+	s.Log.Infof("Relay '%s' deleted", relay.Id)
+
 	return &protos.DeleteRelayResponse{
 		Status: &common.Status{
 			Code:      common.Code_OK,

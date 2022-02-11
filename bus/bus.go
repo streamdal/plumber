@@ -155,6 +155,8 @@ func (b *Bus) Start(serviceCtx context.Context) error {
 	b.consumerCancelFunc = cancelFunc
 	b.consumerContext = consumerCtx
 
+	b.log.Debug("starting broadcast consumer")
+
 	// Start broadcast consumer
 	go func() {
 		if err := b.runBroadcastConsumer(consumerCtx); err != nil {
@@ -163,6 +165,8 @@ func (b *Bus) Start(serviceCtx context.Context) error {
 		}
 	}()
 
+	b.log.Debug("starting queue consumer")
+
 	// Start queue consumer
 	go func() {
 		if err := b.runQueueConsumer(consumerCtx); err != nil {
@@ -170,6 +174,8 @@ func (b *Bus) Start(serviceCtx context.Context) error {
 			queueErrChan <- err
 		}
 	}()
+
+	b.log.Debug("starting error watcher")
 
 	// Launch consumer error watcher
 	go func() {
@@ -191,6 +197,8 @@ func (b *Bus) Start(serviceCtx context.Context) error {
 		cancelFunc()
 		return errors.Wrap(err, "error running queue consumer")
 	}
+
+	b.log.Debug("starting shutdown listener")
 
 	go b.runServiceShutdownListener(serviceCtx)
 
@@ -232,46 +240,44 @@ func (b *Bus) runConsumerErrorWatcher(serviceCtx context.Context, consumerCtx co
 
 func (b *Bus) setupClients() error {
 	// Setup broadcast client
-	broadcastClient, err := natty.New(&natty.Config{
+	nattyCfg := natty.Config{
 		NatsURL:        b.config.ServerOptions.NatsUrl,
 		StreamName:     StreamName,
-		StreamSubjects: []string{StreamName + "." + BroadcastSubject},
+		StreamSubjects: []string{StreamName + ".*"},
+		MaxMsgs:        1000,
+		FetchSize:      1,
+		FetchTimeout:   time.Second * 1,
+		DeliverPolicy:  nats.DeliverNewPolicy,
+		Logger:         b.log,
+	}
 
-		// This is the important part - since every consumer will have a unique
-		// consumer name, NATS will send every plumber instance a copy of the message
-		ConsumerName: b.config.ServerOptions.NodeId,
+	if b.config.ServerOptions.UseTls {
+		nattyCfg.UseTLS = true
+		nattyCfg.TLSSkipVerify = b.config.ServerOptions.TlsSkipVerify
+		nattyCfg.TLSClientCertFile = b.config.ServerOptions.TlsCertFile
+		nattyCfg.TLSClientKeyFile = b.config.ServerOptions.TlsKeyFile
+		nattyCfg.TLSCACertFile = b.config.ServerOptions.TlsCaFile
+	}
 
-		MaxMsgs:           1000,
-		FetchSize:         1,
-		FetchTimeout:      time.Second * 1,
-		DeliverPolicy:     nats.DeliverNewPolicy,
-		Logger:            b.log,
-		TLSCACertFile:     b.config.ServerOptions.TlsCaFile,
-		TLSClientCertFile: b.config.ServerOptions.TlsCertFile,
-		TLSClientKeyFile:  b.config.ServerOptions.TlsKeyFile,
-		TLSSkipVerify:     b.config.ServerOptions.TlsSkipVerify,
-	})
+	broadcastCfg := nattyCfg
 
+	// This is the important part - since every consumer will have a unique
+	// consumer name, NATS will send every plumber instance a copy of the message
+	broadcastCfg.ConsumerName = b.config.ServerOptions.NodeId
+
+	broadcastClient, err := natty.New(&broadcastCfg)
 	if err != nil {
 		return errors.Wrap(err, "unable to create broadcast client")
 	}
 
+	queueCfg := nattyCfg
+
+	// By assigning a common consumer name, NATS will deliver the message to
+	// only one plumber instance.
+	broadcastCfg.ConsumerName = "queue-consumer"
+
 	// Setup queue client
-	queueClient, err := natty.New(&natty.Config{
-		NatsURL:           b.config.ServerOptions.NatsUrl,
-		StreamName:        StreamName,
-		StreamSubjects:    []string{StreamName + "." + QueueSubject},
-		ConsumerName:      "queue-consumer",
-		MaxMsgs:           1000,
-		FetchSize:         1,
-		FetchTimeout:      time.Second * 1,
-		DeliverPolicy:     nats.DeliverNewPolicy,
-		Logger:            b.log,
-		TLSCACertFile:     b.config.ServerOptions.TlsCaFile,
-		TLSClientCertFile: b.config.ServerOptions.TlsCertFile,
-		TLSClientKeyFile:  b.config.ServerOptions.TlsKeyFile,
-		TLSSkipVerify:     b.config.ServerOptions.TlsSkipVerify,
-	})
+	queueClient, err := natty.New(&queueCfg)
 
 	if err != nil {
 		return errors.Wrap(err, "unable to create queue client")
@@ -338,6 +344,7 @@ func (b *Bus) runQueueConsumer(consumerCtx context.Context) error {
 	return nil
 }
 
+// TODO: Where should this get called from?
 // PopulateCache loads config from etcd
 func (b *Bus) PopulateCache() error {
 	if err := b.populateServerConfigCache(); err != nil {

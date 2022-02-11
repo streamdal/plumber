@@ -25,16 +25,29 @@ import (
 
 // RunServer is a wrapper for starting embedded etcd and starting the gRPC server.
 func (p *Plumber) RunServer() error {
-	p.log.Info("starting HTTP server")
+	mode := "standalone"
+
+	if p.Config.CLIOptions.Server.EnableCluster {
+		mode = "cluster"
+	}
+
+	p.log.Infof("starting plumber server in '%s' mode...", mode)
+
+	if err := p.relaunchRelays(); err != nil {
+		return errors.Wrap(err, "failed to relaunch relays")
+	}
+
+	// TODO: Re-launch active tunnels
+	if err := p.relaunchTunnels(); err != nil {
+		return errors.Wrap(err, "failed to relaunch tunnels")
+	}
 
 	// Launch HTTP server
 	go func() {
-		if err := api.Start(p.CLIOptions.Server.HttpListenAddress, options.VERSION); err != nil {
+		if _, err := api.Run(p.CLIOptions.Server.HttpListenAddress, options.VERSION); err != nil {
 			logrus.Fatalf("unable to start API server: %s", err)
 		}
 	}()
-
-	p.log.Info("starting bus")
 
 	var b bus.IBus
 
@@ -54,17 +67,45 @@ func (p *Plumber) RunServer() error {
 		if err := b.Start(p.ServiceShutdownCtx); err != nil {
 			return errors.Wrap(err, "unable to start bus consumers")
 		}
+	} else {
+		b = &bus.NoOpBus{}
 	}
 
 	p.Bus = b
 
-	p.log.Info("starting gRPC server")
-
-	// Blocks
+	// Launch gRPC server (blocks)
 	if err := p.runGRPCServer(); err != nil {
-		return errors.Wrap(err, "unable to run server")
+		p.log.Fatalf("unable to run gRPC server: %s", err)
 	}
 
+	return nil
+}
+
+func (p *Plumber) relaunchRelays() error {
+	for relayID, relay := range p.PersistentConfig.Relays {
+		// We want to run both active and inactive relays through CreateRelay
+		// as we need to create backends, create shutdown context, channels, etc.
+		// CreateRelay will only "start" active relays.
+		r, err := p.Actions.CreateRelay(p.ServiceShutdownCtx, relay.Options)
+		if err != nil {
+			return errors.Wrapf(err, "unable to create relay '%s'", relayID)
+		}
+
+		if relay.Active {
+			p.log.Infof("Relay '%s' re-started", relayID)
+		} else {
+			p.log.Debugf("Relay '%s' is inactive - not relaunching", relayID)
+		}
+
+		p.PersistentConfig.SetRelay(relayID, r)
+		p.PersistentConfig.Save()
+	}
+
+	return nil
+}
+
+// TODO: Implement
+func (p *Plumber) relaunchTunnels() error {
 	return nil
 }
 
@@ -135,8 +176,8 @@ func (p *Plumber) runGRPCServer() error {
 		VCService:        vcService,
 		GithubService:    ghService,
 		StatsService:     statsService,
-		Log:              logrus.WithField("pkg", "plumber/cli_server.go"),
 		Bus:              p.Bus,
+		Log:              logrus.WithField("pkg", "plumber/cli_server.go"),
 		CLIOptions:       p.CLIOptions,
 	}
 
@@ -144,8 +185,7 @@ func (p *Plumber) runGRPCServer() error {
 
 	go p.watchServiceShutdown(grpcServer)
 
-	p.log.Infof("gRPC server listening on: %s", p.CLIOptions.Server.GrpcListenAddress)
-	p.log.Infof("Plumber Instance ID: %s", p.PersistentConfig.PlumberID)
+	p.log.Debugf("starting gRPC server on %s", p.CLIOptions.Server.GrpcListenAddress)
 
 	if err := grpcServer.Serve(lis); err != nil {
 		return fmt.Errorf("unable to start gRPC server: %s", err)

@@ -37,7 +37,7 @@ func (r *RedisStreams) Relay(ctx context.Context, relayOpts *opts.RelayOptions, 
 
 		if err != nil {
 			if err == context.Canceled {
-				r.log.Info("Received shutdown signal, existing relayer")
+				r.log.Debug("Received shutdown signal, exiting relayer")
 				return nil
 			}
 

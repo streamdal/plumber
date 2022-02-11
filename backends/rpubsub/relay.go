@@ -33,7 +33,7 @@ func (r *RedisPubsub) Relay(ctx context.Context, relayOpts *opts.RelayOptions, r
 		msg, err := ps.ReceiveMessage(ctx)
 		if err != nil {
 			if strings.Contains(err.Error(), "operation was canceled") {
-				r.log.Info("Received shutdown signal, existing relayer")
+				r.log.Debug("Received shutdown signal, exiting relayer")
 				return nil
 			}
 

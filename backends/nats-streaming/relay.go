@@ -44,7 +44,7 @@ func (n *NatsStreaming) Relay(ctx context.Context, relayOpts *opts.RelayOptions,
 	defer sub.Unsubscribe()
 
 	<-ctx.Done()
-	n.log.Info("Received shutdown signal, existing relayer")
+	n.log.Debug("Received shutdown signal, exiting relayer")
 
 	return nil
 }

@@ -30,7 +30,8 @@ type Relay struct {
 	log *logrus.Entry
 }
 
-// StartRelay starts a configured relay, it's workers, and the GRPC workers
+// StartRelay starts a configured relay, it's workers, and the GRPC workers;
+// StartRelay will block for "delay" duration, waiting for errors.
 func (r *Relay) StartRelay(delay time.Duration) error {
 	r.log = logrus.WithField("pkg", "types/relay")
 

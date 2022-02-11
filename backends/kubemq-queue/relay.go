@@ -22,7 +22,7 @@ func (k *KubeMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayC
 	for {
 		select {
 		case <-ctx.Done():
-			k.log.Info("Received shutdown signal, exiting relayer")
+			k.log.Debug("Received shutdown signal, exiting relayer")
 			return nil
 		default:
 			// NOOP

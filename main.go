@@ -84,6 +84,7 @@ func main() {
 		prometheus.InitPrometheusMetrics()
 	}
 
+	// TODO: This probably should be updated for server
 	// Launch a dedicated goroutine if stats display is enabled
 	if cliOpts.Relay != nil && cliOpts.Relay.StatsEnable {
 		prometheus.Start(cliOpts.Relay.StatsReportIntervalSec)

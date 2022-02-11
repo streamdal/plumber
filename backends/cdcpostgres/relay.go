@@ -82,7 +82,7 @@ func (c *CDCPostgres) Relay(ctx context.Context, relayOpts *opts.RelayOptions, r
 
 	err := sub.Start(ctx, 0, handler)
 	if err == context.Canceled {
-		c.log.Info("Received shutdown signal, existing relayer")
+		c.log.Debug("Received shutdown signal, exiting relayer")
 		return nil
 	}
 

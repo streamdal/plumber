@@ -121,10 +121,16 @@ github.com/batchcorp/natty v0.0.12 h1:WwHWTpFV+rj3Xd2yVxzQ9j50b/0AzscpGl8mjSoADl
 github.com/batchcorp/natty v0.0.12/go.mod h1:9vbgoZghKr/2FtueAquAlRacCSnEgfgTSA2eX2gpO54=
 github.com/batchcorp/natty v0.0.13 h1:eBcGWXFiPTrAl5H6ORqYKJB9H6iM9T4NuoTPCI3RdL8=
 github.com/batchcorp/natty v0.0.13/go.mod h1:9vbgoZghKr/2FtueAquAlRacCSnEgfgTSA2eX2gpO54=
+github.com/batchcorp/natty v0.0.14 h1:W+iO6ynwvEKqXU75vLxKQrgRNiQbjoST4CDiPP3gHV8=
+github.com/batchcorp/natty v0.0.14/go.mod h1:9vbgoZghKr/2FtueAquAlRacCSnEgfgTSA2eX2gpO54=
+github.com/batchcorp/natty v0.0.15 h1:+Bz8jYUYaCJBK8WsiITJhWUNNlAi3CyKsGfW1Q6A2io=
+github.com/batchcorp/natty v0.0.15/go.mod h1:9vbgoZghKr/2FtueAquAlRacCSnEgfgTSA2eX2gpO54=
 github.com/batchcorp/pgoutput v0.3.2 h1:Jck/nJLwXWmsNHF2iEfjFWrsds5LLGtqu6y6TjjU8Aw=
 github.com/batchcorp/pgoutput v0.3.2/go.mod h1:xzkr73rAlqUdvt2oMAQav1lIt6xnG8bqYYXt4GrXM/I=
 github.com/batchcorp/plumber-schemas v0.0.138 h1:PcBbVsvIdJl6NRgbgc1T0tTdnurmV0MEd9yEVpfM8b0=
 github.com/batchcorp/plumber-schemas v0.0.138/go.mod h1:YULMKnfZ8X7tglTfUzKXhWc1Bfq6dy5ysIQbvsbCOkY=
+github.com/batchcorp/plumber-schemas v0.0.139 h1:d03ri5OZFYQ142/unFqOLf/QNHMKcRlwRsrJBftCduU=
+github.com/batchcorp/plumber-schemas v0.0.139/go.mod h1:YULMKnfZ8X7tglTfUzKXhWc1Bfq6dy5ysIQbvsbCOkY=
 github.com/batchcorp/rabbit v0.1.17 h1:dui1W7FLTrNxyVlDN+G+6d8LXz8HBhVAcUethXql9vQ=
 github.com/batchcorp/rabbit v0.1.17/go.mod h1:2nplLhzjXrddaHWxrnduZS6tFwpF9QSpJ0a2A3erNYw=
 github.com/beefsack/go-rate v0.0.0-20180408011153-efa7637bb9b6/go.mod h1:6YNgTHLutezwnBvyneBbwvB8C82y3dcoOj5EQJIdGXA=

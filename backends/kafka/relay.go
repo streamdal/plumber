@@ -38,7 +38,7 @@ func (k *Kafka) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 		if err != nil {
 			// Shutdown cancelled, exit so we don't spam logs with context cancelled errors
 			if err == context.Canceled {
-				k.log.Info("Received shutdown signal, exiting relayer")
+				k.log.Debug("Received shutdown signal, exiting relayer")
 				break
 			}
 

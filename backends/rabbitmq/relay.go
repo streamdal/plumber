@@ -63,7 +63,7 @@ func (r *RabbitMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, rela
 			prometheus.IncrPromCounter("plumber_read_errors", 1)
 
 		case <-ctx.Done():
-			r.log.Info("Received shutdown signal, existing relayer")
+			r.log.Debug("Received shutdown signal, exiting relayer")
 			return nil
 		}
 	}

@@ -6,7 +6,6 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
-	"strings"
 	"sync"
 	"time"
 
@@ -97,6 +96,9 @@ type Config struct {
 	// ConsumerLooper allows you to inject a looper into the library. Optional.
 	ConsumerLooper director.Looper
 
+	// Whether to use TLS
+	UseTLS bool
+
 	// TLS CA certificate file
 	TLSCACertFile string
 
@@ -127,18 +129,18 @@ func New(cfg *Config) (*Natty, error) {
 	var connected bool
 	var nc *nats.Conn
 	var err error
+	var tlsConfig *tls.Config
+
+	if cfg.UseTLS {
+		tlsConfig, err = GenerateTLSConfig(cfg.TLSCACertFile, cfg.TLSClientCertFile, cfg.TLSClientKeyFile, cfg.TLSSkipVerify)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to create TLS config")
+		}
+	}
 
 	// Attempt to connect
 	for _, address := range cfg.NatsURL {
-		if strings.HasPrefix(address, "tls://") {
-			var tlsConfig *tls.Config
-
-			tlsConfig, err = GenerateTLSConfig(cfg.TLSCACertFile, cfg.TLSClientKeyFile, cfg.TLSClientCertFile, cfg.TLSSkipVerify)
-			if err != nil {
-				err = errors.Wrap(err, "failed to generate TLS config")
-				continue
-			}
-
+		if cfg.UseTLS {
 			nc, err = nats.Connect(address, nats.Secure(tlsConfig))
 		} else {
 			nc, err = nats.Connect(address)
@@ -174,12 +176,16 @@ func New(cfg *Config) (*Natty, error) {
 	}
 
 	// Inject looper (if provided)
-	if cfg.ConsumerLooper == nil {
+	n.consumerLooper = cfg.ConsumerLooper
+
+	if n.consumerLooper == nil {
 		n.consumerLooper = director.NewFreeLooper(director.FOREVER, make(chan error, 1))
 	}
 
 	// Inject logger (if provided)
-	if cfg.Logger == nil {
+	n.log = cfg.Logger
+
+	if n.log == nil {
 		n.log = &NoOpLogger{}
 	}
 
@@ -214,23 +220,34 @@ func GenerateTLSConfig(caCertFile, clientKeyFile, clientCertFile string, tlsSkip
 		}, nil
 	}
 
-	certpool := x509.NewCertPool()
+	var certpool *x509.CertPool
 
-	pemCerts, err := ioutil.ReadFile(caCertFile)
-	if err == nil {
-		certpool.AppendCertsFromPEM(pemCerts)
+	if caCertFile != "" {
+		certpool = x509.NewCertPool()
+
+		pemCerts, err := ioutil.ReadFile(caCertFile)
+		if err == nil {
+			certpool.AppendCertsFromPEM(pemCerts)
+		}
 	}
 
-	// Import client certificate/key pair
-	cert, err := tls.LoadX509KeyPair(clientCertFile, clientKeyFile)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to load ssl keypair")
-	}
+	var cert tls.Certificate
 
-	// Just to print out the client certificate..
-	cert.Leaf, err = x509.ParseCertificate(cert.Certificate[0])
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to parse certificate")
+	if clientKeyFile != "" && clientCertFile != "" {
+		var err error
+
+		// Import client certificate/key pair
+		cert, err = tls.LoadX509KeyPair(clientCertFile, clientKeyFile)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to load ssl keypair")
+		}
+
+		// Just to print out the client certificate..
+		cert.Leaf, err = x509.ParseCertificate(cert.Certificate[0])
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to parse certificate")
+		}
+
 	}
 
 	// Create tls.Config with desired tls properties

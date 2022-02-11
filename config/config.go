@@ -6,6 +6,7 @@ package config
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -61,6 +62,7 @@ type Config struct {
 
 	enableCluster bool
 	kv            kv.IKV
+	log           *logrus.Entry
 }
 
 // New will attempt to fetch and return an existing config from either NATS or
@@ -88,7 +90,7 @@ func New(enableCluster bool, k kv.IKV) (*Config, error) {
 
 	// Not in cluster mode - attempt to read config from disk
 	if exists(ConfigFilename) {
-		cfg, err = readConfigFile(ConfigFilename)
+		cfg, err = fetchConfigFromFile(ConfigFilename)
 		if err != nil {
 			logrus.Errorf("unable to load config: %s", err)
 		}
@@ -124,6 +126,7 @@ func newConfig(enableCluster bool, k kv.IKV) *Config {
 
 		kv:            k,
 		enableCluster: enableCluster,
+		log:           logrus.WithField("pkg", "config"),
 	}
 }
 
@@ -134,7 +137,12 @@ func (c *Config) Save() error {
 		return errors.Wrap(err, "unable to marshal config to JSON")
 	}
 
-	return c.writeConfig(data)
+	if err := c.writeConfig(data); err != nil {
+
+		return errors.Wrap(err, "unable to save config")
+	}
+
+	return nil
 }
 
 func fetchConfigFromKV(k kv.IKV) (*Config, error) {
@@ -153,11 +161,14 @@ func fetchConfigFromKV(k kv.IKV) (*Config, error) {
 		return nil, errors.Wrap(err, "unable to unmarshal config from KV")
 	}
 
+	cfg.kv = k
+	cfg.log = logrus.WithField("pkg", "config")
+
 	return cfg, nil
 }
 
 // readConfig reads a config JSON file into a Config struct
-func readConfigFile(fileName string) (*Config, error) {
+func fetchConfigFromFile(fileName string) (*Config, error) {
 	f, err := getConfigJson(fileName)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not read ~/.batchsh/%s", fileName)
@@ -174,6 +185,8 @@ func readConfigFile(fileName string) (*Config, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "could not read config bytes")
 	}
+
+	cfg.log = logrus.WithField("pkg", "config")
 
 	return cfg, nil
 }
@@ -198,6 +211,7 @@ func readConfigBytes(data []byte) (*Config, error) {
 		Composites:          make(map[string]*opts.Composite),
 		Dynamic:             make(map[string]*stypes.Dynamic),
 	}
+
 	if err := json.Unmarshal(data, cfg); err != nil {
 		return nil, errors.Wrapf(err, "could not unmarshal ~/.batchsh/%s", ConfigFilename)
 	}
@@ -236,10 +250,18 @@ func (c *Config) writeConfig(data []byte) error {
 		return err
 	}
 
+	// Create dir if needed
+	if _, err := os.Stat(configDir); os.IsNotExist(err) {
+		if err := os.Mkdir(configDir, 0700); err != nil {
+			return errors.Wrapf(err, "unable to create config directory %s", configDir)
+		}
+	}
+
 	configPath := path.Join(configDir, ConfigFilename)
 
 	f, err := os.OpenFile(configPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
+		fmt.Println("open failed: ", err.Error())
 		return err
 	}
 	defer f.Close()
@@ -265,7 +287,8 @@ func (c *Config) Update(cfg *Config) error {
 	return nil
 }
 
-// getConfigJson attempts to read a user's .batchsh/config.json file to get saved credentials
+// getConfigJson attempts to read a user's .batchsh/config.json file; if it
+// doesn't exist, it will create an empty json config and return that.
 func getConfigJson(fileName string) (*os.File, error) {
 	configDir, err := getConfigDir()
 	if err != nil {
@@ -275,8 +298,8 @@ func getConfigJson(fileName string) (*os.File, error) {
 
 	// Directory ~/.batchsh/ doesn't exist, create it
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		if err := createConfigDir(); err != nil {
-			return nil, err
+		if err := os.Mkdir(configPath, 0700); err != nil {
+			return nil, errors.Wrapf(err, "unable to create config directory %s", configPath)
 		}
 
 		// Create ~/.batchsh/config.json
@@ -301,20 +324,6 @@ func getConfigDir() (string, error) {
 	}
 
 	return path.Join(homeDir, ".batchsh"), nil
-}
-
-// createConfigDir will create a json file located at ~/.batchsh/config.json to store plumber authentication credentials
-func createConfigDir() error {
-	configDir, err := getConfigDir()
-	if err != nil {
-		return err
-	}
-
-	if err := os.Mkdir(configDir, 0755); err != nil && !os.IsExist(err) {
-		return errors.Wrap(err, "unable to create .batchsh directory")
-	}
-
-	return nil
 }
 
 // GetRead returns an in-progress read from the Read map

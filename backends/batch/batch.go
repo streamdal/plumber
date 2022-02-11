@@ -252,7 +252,7 @@ func printTable(v interface{}) {
 func printJSON(v interface{}) {
 	output, err := json.Marshal(v)
 	if err != nil {
-		fmt.Sprintf(`{"error": "%s"}`, err.Error())
+		fmt.Printf(`{"error": "%s"}\n`, err.Error())
 	}
 
 	fmt.Println(string(output))

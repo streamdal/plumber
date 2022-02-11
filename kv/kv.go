@@ -34,6 +34,7 @@ func New(serverOptions *opts.ServerOptions) (*KV, error) {
 		NoConsumer:        true,
 		NatsURL:           serverOptions.NatsUrl,
 		Logger:            logrus.WithField("pkg", "kv"),
+		UseTLS:            serverOptions.UseTls,
 		TLSCACertFile:     serverOptions.TlsCaFile,
 		TLSClientCertFile: serverOptions.TlsCertFile,
 		TLSClientKeyFile:  serverOptions.TlsKeyFile,
