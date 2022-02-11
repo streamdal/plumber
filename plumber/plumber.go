@@ -109,7 +109,7 @@ func generateConnectionOptions(cfg *opts.CLIOptions) (*opts.ConnectionOptions, e
 	}
 
 	// Some backends have a dash, remove it
-	backendName := strings.Replace(cfg.Global.XBackend, "-", "", 1)
+	backendName := strings.Replace(cfg.Global.XBackend, "-", "", -1)
 
 	// We are looking for the individual conn located at: cfg.$action.$backendName.XConn
 	lookupStrings := []string{cfg.Global.XAction, backendName, "XConn"}

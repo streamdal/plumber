@@ -8,3 +8,5 @@ start-*.sh
 *.etcd.log
 *.etcd*
 .tsdata
+data
+data/*
