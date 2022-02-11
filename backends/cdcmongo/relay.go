@@ -31,7 +31,7 @@ func (m *Mongo) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 	for {
 		if !cs.Next(ctx) {
 			if cs.Err() == context.Canceled {
-				n.log.Debug("Received shutdown signal, exiting relayer")
+				m.log.Debug("Received shutdown signal, exiting relayer")
 				return nil
 			}
 
@@ -48,10 +48,6 @@ func (m *Mongo) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 
 		prometheus.Incr("cdc-mongo-relay-consumer", 1)
 	}
-
-	defer cs.Close(ctx)
-
-	return nil
 }
 
 func (m *Mongo) getChangeStreamRelay(ctx context.Context, readOpts *opts.RelayOptions) (*mongo.ChangeStream, error) {

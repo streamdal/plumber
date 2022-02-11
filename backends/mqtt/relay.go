@@ -33,7 +33,7 @@ func (m *MQTT) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh 
 	}
 
 	<-ctx.Done()
-	n.log.Debug("Received shutdown signal, exiting relayer")
+	m.log.Debug("Received shutdown signal, exiting relayer")
 
 	return nil
 }
