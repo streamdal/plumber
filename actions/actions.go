@@ -10,6 +10,7 @@ package actions
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -95,6 +96,10 @@ func (a *Actions) CreateRelay(ctx context.Context, relayOpts *opts.RelayOptions)
 		prometheus.IncrPromGauge(prometheus.PlumberRelayWorkers)
 
 	}
+
+	fmt.Println("do we get to saving the config?")
+
+	fmt.Printf("attempting to save %+v\n", r)
 
 	a.cfg.PersistentConfig.SetRelay(r.Id, r)
 	a.cfg.PersistentConfig.Save()

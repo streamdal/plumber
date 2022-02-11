@@ -16,8 +16,11 @@ import (
 	"github.com/batchcorp/plumber/server/types"
 )
 
-// IMPORTANT: Returning an error will cause the consumer to stop
+// Returning an error will cause the error to be bubbled up to natty which will
+// log the error and push it to the error channel (if set).
 func (b *Bus) broadcastCallback(ctx context.Context, natsMsg *nats.Msg) error {
+	defer natsMsg.Ack()
+
 	if natsMsg == nil {
 		return errors.New("response cannot be nil")
 	}

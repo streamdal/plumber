@@ -27,7 +27,7 @@ import (
 
 const (
 	ConfigFilename = "config.json"
-	KVConfigBucket = "config"
+	KVConfigBucket = "plumber"
 	KVConfigKey    = "persistent-config"
 )
 
@@ -137,7 +137,10 @@ func (c *Config) Save() error {
 		return errors.Wrap(err, "unable to marshal config to JSON")
 	}
 
+	fmt.Println("These are the contents of the marshalled data: ", string(data))
+
 	if err := c.writeConfig(data); err != nil {
+		c.log.Errorf("unable to save config: %s", err)
 
 		return errors.Wrap(err, "unable to save config")
 	}
@@ -237,7 +240,11 @@ func exists(fileName string) bool {
 // WriteConfig writes a Batch struct as JSON into a config.json file
 func (c *Config) writeConfig(data []byte) error {
 	if c.enableCluster {
+		fmt.Println("Are we in cluster mode?")
+
 		if err := c.kv.Put(context.Background(), KVConfigBucket, KVConfigKey, data); err != nil {
+			c.log.Errorf("unable to write config to KV: %v", err)
+
 			return errors.Wrap(err, "unable to write config to KV")
 		}
 
@@ -247,12 +254,15 @@ func (c *Config) writeConfig(data []byte) error {
 	// Clustering not enabled - write to disk
 	configDir, err := getConfigDir()
 	if err != nil {
-		return err
+		c.log.Errorf("unable to determine config dir: %v", err)
+		return errors.Wrap(err, "unable to determine config dir")
 	}
 
 	// Create dir if needed
 	if _, err := os.Stat(configDir); os.IsNotExist(err) {
 		if err := os.Mkdir(configDir, 0700); err != nil {
+			c.log.Errorf("unable to create config directory '%s': %v", configDir, err)
+
 			return errors.Wrapf(err, "unable to create config directory %s", configDir)
 		}
 	}
@@ -261,7 +271,7 @@ func (c *Config) writeConfig(data []byte) error {
 
 	f, err := os.OpenFile(configPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
-		fmt.Println("open failed: ", err.Error())
+		c.log.Errorf("failed to open file '%s' for write: %v", configPath, err)
 		return err
 	}
 	defer f.Close()
