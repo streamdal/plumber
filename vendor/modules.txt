@@ -170,6 +170,7 @@ github.com/dgrijalva/jwt-go
 # github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f
 github.com/dgryski/go-rendezvous
 # github.com/dustin/go-humanize v1.0.0
+## explicit
 github.com/dustin/go-humanize
 # github.com/dvsekhvalnov/jose2go v0.0.0-20180829124132-7f401d37b68a
 github.com/dvsekhvalnov/jose2go
@@ -241,8 +242,6 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/go-github/v37 v37.0.0
-## explicit
 # github.com/google/uuid v1.2.0
 ## explicit
 github.com/google/uuid
@@ -312,8 +311,6 @@ github.com/kubemq-io/protobuf/go
 # github.com/lensesio/tableprinter v0.0.0-20201125135848-89e81fc956e7
 ## explicit
 github.com/lensesio/tableprinter
-# github.com/lestrrat-go/jwx v1.2.6
-## explicit
 # github.com/linkedin/goavro/v2 v2.9.8
 ## explicit
 github.com/linkedin/goavro/v2
@@ -549,8 +546,6 @@ github.com/xdg/scram
 github.com/xdg/stringprep
 # github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d
 github.com/youmark/pkcs8
-# go.etcd.io/etcd/client/v3 v3.5.0
-## explicit
 # go.mongodb.org/mongo-driver v1.7.3
 ## explicit
 go.mongodb.org/mongo-driver/bson
@@ -635,7 +630,6 @@ golang.org/x/net/proxy
 golang.org/x/net/trace
 golang.org/x/net/websocket
 # golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-## explicit
 golang.org/x/oauth2
 golang.org/x/oauth2/google
 golang.org/x/oauth2/internal
@@ -716,6 +710,7 @@ google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/socket
 google.golang.org/appengine/urlfetch
 # google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c
+## explicit
 google.golang.org/genproto/googleapis/api/annotations
 google.golang.org/genproto/googleapis/iam/v1
 google.golang.org/genproto/googleapis/pubsub/v1
@@ -784,7 +779,6 @@ google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
 # google.golang.org/protobuf v1.27.1
-## explicit
 google.golang.org/protobuf/cmd/protoc-gen-go/internal_gengo
 google.golang.org/protobuf/compiler/protogen
 google.golang.org/protobuf/encoding/protojson
