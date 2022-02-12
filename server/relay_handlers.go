@@ -3,9 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
-	"time"
 
-	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
@@ -115,60 +113,15 @@ func (s *Server) CreateRelay(ctx context.Context, req *protos.CreateRelayRequest
 	}, nil
 }
 
-// TODO: Needs to be updated similar to CreateRelay
-func (s *Server) UpdateRelay(_ context.Context, req *protos.UpdateRelayRequest) (*protos.UpdateRelayResponse, error) {
+func (s *Server) UpdateRelay(ctx context.Context, req *protos.UpdateRelayRequest) (*protos.UpdateRelayResponse, error) {
 	if err := s.validateAuth(req.Auth); err != nil {
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	// Stop existing relay
-	relay := s.PersistentConfig.GetRelay(req.RelayId)
-	if relay == nil {
-		return nil, CustomError(common.Code_NOT_FOUND, "relay does not exist")
-	}
-
-	s.Log.Infof("Stopping relay '%s'", relay.Id)
-
-	// Stop workers
-	relay.CancelFunc()
-
-	// TODO: need to get signal of when relay shutdown is complete
-	time.Sleep(time.Second)
-
-	// Update relay config
-	relay.Options = req.Opts
-
-	// Give relayer new ctx & cancel func
-	ctx, cancelFunc := context.WithCancel(context.Background())
-
-	relay.CancelCtx = ctx
-	relay.CancelFunc = cancelFunc
-
-	if err := relay.StartRelay(5 * time.Second); err != nil {
-		return nil, errors.Wrap(err, "unable to start relay")
-	}
-
-	// Save to memory
-	s.PersistentConfig.SetRelay(relay.Id, relay)
-	s.PersistentConfig.Save()
-
-	// Publish CreateSchema event
-	if err := s.Bus.PublishUpdateRelay(ctx, relay.Options); err != nil {
-		s.rollbackUpdateRelay(ctx, req.Opts)
-		fullErr := fmt.Sprintf("unable to publish update relay event for relay id '%s': %s", req.Opts.XRelayId, err)
-		s.Log.Error(fullErr)
-
-		return nil, CustomError(common.Code_ABORTED, fullErr)
-	}
-
-	s.Log.Infof("Relay '%s' updated", relay.Id)
-
-	relay.Active = true
-
 	return &protos.UpdateRelayResponse{
 		Status: &common.Status{
-			Code:      common.Code_OK,
-			Message:   "Relay updated",
+			Code:      common.Code_UNIMPLEMENTED,
+			Message:   "Update relay not implemented (use delete/create)",
 			RequestId: uuid.NewV4().String(),
 		},
 	}, nil

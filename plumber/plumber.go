@@ -37,8 +37,6 @@ type Config struct {
 	PersistentConfig   *config.Config
 	Actions            *actions.Actions
 	ServiceShutdownCtx context.Context
-	MainShutdownFunc   context.CancelFunc
-	MainShutdownCtx    context.Context
 	CLIOptions         *opts.CLIOptions
 	KongCtx            *kong.Context
 }
@@ -242,14 +240,6 @@ func validateConfig(cfg *Config) error {
 
 	if cfg.CLIOptions == nil {
 		return ErrMissingOptions
-	}
-
-	if cfg.MainShutdownCtx == nil {
-		return ErrMissingMainContext
-	}
-
-	if cfg.MainShutdownFunc == nil {
-		return ErrMissingMainShutdownFunc
 	}
 
 	if cfg.PersistentConfig == nil {

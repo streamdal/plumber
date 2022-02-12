@@ -48,7 +48,6 @@ func (p *Plumber) startRelayService() error {
 		DisableTLS:         p.CLIOptions.Relay.XBatchshGrpcDisableTls,
 		BatchSize:          p.CLIOptions.Relay.BatchSize,
 		Type:               p.CLIOptions.Global.XBackend,
-		MainShutdownFunc:   p.MainShutdownFunc,
 		ServiceShutdownCtx: p.ServiceShutdownCtx,
 	}
 

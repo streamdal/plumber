@@ -41,7 +41,6 @@ func main() {
 	}
 
 	serviceCtx, serviceShutdownFunc := context.WithCancel(context.Background())
-	mainCtx, mainShutdownFunc := context.WithCancel(context.Background())
 
 	var k kv.IKV
 
@@ -106,8 +105,6 @@ func main() {
 	p, err := plumber.New(&plumber.Config{
 		PersistentConfig:   persistentConfig,
 		ServiceShutdownCtx: serviceCtx,
-		MainShutdownFunc:   mainShutdownFunc,
-		MainShutdownCtx:    mainCtx,
 		KongCtx:            kongCtx,
 		CLIOptions:         cliOpts,
 		Actions:            a,
