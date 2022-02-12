@@ -22,7 +22,7 @@ type ResponseJSON struct {
 	Errors  string            `json:"errors,omitempty"`
 }
 
-func Run(listenAddress, version string) (*http.Server, error) {
+func Start(listenAddress, version string) (*http.Server, error) {
 	a := &API{
 		Version:       version,
 		ListenAddress: listenAddress,
@@ -42,10 +42,13 @@ func Run(listenAddress, version string) (*http.Server, error) {
 		Handler: router,
 	}
 
-	// TODO: Add graceful shutdown
-	if err := srv.ListenAndServe(); err != nil {
-		a.log.Fatalf("unable to start API server: %s", err)
-	}
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			if err != http.ErrServerClosed {
+				a.log.Errorf("unable to srv.ListenAndServe: %s", err)
+			}
+		}
+	}()
 
 	return srv, nil
 }

@@ -1,6 +1,7 @@
 package plumber
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"time"
@@ -37,11 +38,10 @@ func (p *Plumber) RunServer() error {
 	}
 
 	// Launch HTTP server
-	go func() {
-		if _, err := api.Run(p.CLIOptions.Server.HttpListenAddress, options.VERSION); err != nil {
-			logrus.Fatalf("unable to start API server: %s", err)
-		}
-	}()
+	srv, err := api.Start(p.CLIOptions.Server.HttpListenAddress, options.VERSION)
+	if err != nil {
+		logrus.Fatalf("unable to start API server: %s", err)
+	}
 
 	var b bus.IBus
 
@@ -68,8 +68,22 @@ func (p *Plumber) RunServer() error {
 	p.Bus = b
 
 	// Launch gRPC server (blocks)
-	if err := p.runGRPCServer(); err != nil {
+	if err := p.startGRPCServer(); err != nil {
 		p.log.Fatalf("unable to run gRPC server: %s", err)
+	}
+
+	p.log.Info("plumber server started")
+
+	// Wait for shutdown
+	select {
+	case <-p.ServiceShutdownCtx.Done():
+		p.log.Debug("service shutdown initiated")
+
+		timeoutCtx, _ := context.WithTimeout(context.Background(), time.Second*5)
+
+		if err := srv.Shutdown(timeoutCtx); err != nil {
+			p.log.Errorf("API server shutdown failed: %s", err)
+		}
 	}
 
 	return nil
@@ -103,7 +117,7 @@ func (p *Plumber) relaunchDynamic() error {
 	return nil
 }
 
-func (p *Plumber) runGRPCServer() error {
+func (p *Plumber) startGRPCServer() error {
 	lis, err := net.Listen("tcp", p.CLIOptions.Server.GrpcListenAddress)
 	if err != nil {
 		return fmt.Errorf("unable to listen on '%s': %s", p.CLIOptions.Server.GrpcListenAddress, err)
@@ -131,11 +145,22 @@ func (p *Plumber) runGRPCServer() error {
 
 	p.log.Debugf("starting gRPC server on %s", p.CLIOptions.Server.GrpcListenAddress)
 
-	if err := grpcServer.Serve(lis); err != nil {
-		return fmt.Errorf("unable to start gRPC server: %s", err)
-	}
+	errCh := make(chan error, 1)
 
-	return nil
+	go func() {
+		if err := grpcServer.Serve(lis); err != nil {
+			errCh <- errors.Wrap(err, "unable to start gRPC server")
+		}
+	}()
+
+	afterCh := time.After(5 * time.Second)
+
+	select {
+	case <-afterCh:
+		return nil
+	case err := <-errCh:
+		return err
+	}
 }
 
 func (p *Plumber) watchServiceShutdown(grpcServer *grpc.Server) {
@@ -143,8 +168,8 @@ func (p *Plumber) watchServiceShutdown(grpcServer *grpc.Server) {
 
 	p.log.Debug("received shutdown request in gRPC server via ServiceShutdownCtx")
 
-	// Give etcd a few seconds to shutdown gracefully
-	time.Sleep(10 * time.Second)
+	// Hack: Give anything in flight a moment to shutdown
+	time.Sleep(5 * time.Second)
 
 	grpcServer.Stop()
 }

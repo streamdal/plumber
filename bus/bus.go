@@ -196,11 +196,11 @@ func (b *Bus) runConsumerErrorWatcher(serviceCtx context.Context, consumerCtx co
 		case err := <-b.consumerErrChan:
 			b.log.Errorf("consumer error: %s", err)
 		case <-serviceCtx.Done():
-			b.log.Warning("service shutdown detected, stopping consumer error watcher")
+			b.log.Debug("service shutdown detected, stopping consumer error watcher")
 			b.consumerErrorLooper.Quit()
 			quit = true
 		case <-consumerCtx.Done():
-			b.log.Warning("service shutdown detected, stopping consumer error watcher")
+			b.log.Debug("consumer shutdown detected, stopping consumer error watcher")
 			b.consumerErrorLooper.Quit()
 			quit = true
 		}
