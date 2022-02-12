@@ -17,7 +17,6 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/config"
-	"github.com/batchcorp/plumber/monitor"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/validate"
@@ -52,9 +51,6 @@ type Plumber struct {
 
 	cliMD       map[pb.MDType]*desc.MessageDescriptor
 	cliConnOpts *opts.ConnectionOptions
-
-	// Only filled out when running in server mode
-	monitor monitor.IMonitor
 
 	log *logrus.Entry
 }

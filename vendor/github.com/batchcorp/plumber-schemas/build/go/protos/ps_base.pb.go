@@ -27,89 +27,39 @@ const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 func init() { proto.RegisterFile("ps_base.proto", fileDescriptor_ef931efdbd582aee) }
 
 var fileDescriptor_ef931efdbd582aee = []byte{
-	// 1299 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x98, 0x6f, 0x6f, 0x1c, 0x35,
-	0x10, 0xc6, 0xc5, 0x0b, 0x10, 0x38, 0x24, 0x69, 0x16, 0xaa, 0x24, 0xd7, 0x84, 0xa4, 0x7f, 0x00,
-	0x09, 0x89, 0x04, 0x41, 0xc5, 0x2b, 0x90, 0x48, 0xaf, 0xcd, 0x51, 0x29, 0xd0, 0xea, 0xae, 0x09,
-	0x55, 0x2b, 0x71, 0xda, 0xdb, 0xb3, 0x9a, 0x85, 0xbd, 0xf5, 0x62, 0xfb, 0x0e, 0xdd, 0x37, 0xe1,
-	0xe3, 0xa2, 0x5d, 0xdb, 0x6b, 0xcf, 0x8c, 0x9d, 0x48, 0x7d, 0x15, 0xe5, 0x79, 0x66, 0x7f, 0x3b,
-	0x6b, 0xcf, 0xcd, 0x8e, 0x97, 0x6d, 0x36, 0x6a, 0x3a, 0xcb, 0x15, 0x3f, 0x69, 0xa4, 0xd0, 0x22,
-	0xfb, 0xa8, 0xfb, 0xa3, 0x06, 0x5b, 0x8d, 0x9a, 0xe6, 0x15, 0x97, 0xda, 0xe8, 0x83, 0x3b, 0x8d,
-	0x9a, 0x16, 0xa2, 0xae, 0x79, 0x11, 0x2a, 0xf3, 0x75, 0x9d, 0x2f, 0xca, 0xc2, 0x2a, 0xdb, 0x8d,
-	0x9a, 0x72, 0x29, 0x85, 0x54, 0x41, 0xc8, 0x42, 0xd4, 0xa5, 0x16, 0xd2, 0x2a, 0xed, 0xdd, 0x24,
-	0xcf, 0xe7, 0xf6, 0xdf, 0xad, 0xee, 0xdf, 0x2a, 0x5f, 0x07, 0x04, 0x55, 0x5c, 0xf3, 0x45, 0x6e,
-	0x85, 0x41, 0x2f, 0x4c, 0x57, 0x79, 0x55, 0xce, 0x73, 0x5d, 0x8a, 0x3a, 0x0c, 0xe6, 0x72, 0xc5,
-	0x65, 0x70, 0xbb, 0x56, 0x28, 0x0b, 0x1e, 0xf0, 0x95, 0xce, 0xb5, 0x4b, 0x28, 0x6b, 0xd4, 0x74,
-	0x55, 0x4c, 0x8b, 0xaa, 0xe4, 0xb5, 0x86, 0x1a, 0x20, 0xb5, 0xd7, 0xfd, 0x2b, 0x4b, 0x6d, 0x39,
-	0xdf, 0xff, 0xf7, 0x0d, 0xdb, 0x7c, 0x59, 0x2d, 0x17, 0x33, 0x2e, 0x27, 0x5d, 0x5c, 0xf6, 0x9a,
-	0xed, 0x8c, 0xb8, 0x3e, 0xab, 0xaa, 0xa1, 0x59, 0x94, 0x52, 0xd4, 0x2a, 0x3b, 0x36, 0xe1, 0xea,
-	0x84, 0x58, 0x63, 0xfe, 0xcf, 0x92, 0x2b, 0x3d, 0xb8, 0x7f, 0x43, 0x84, 0x6a, 0x44, 0xad, 0x78,
-	0x76, 0xc1, 0x36, 0x47, 0x5c, 0x7b, 0x27, 0x3b, 0x08, 0xae, 0xf1, 0xb2, 0x23, 0x1e, 0x26, 0x5c,
-	0x4b, 0xbb, 0x64, 0x77, 0x86, 0x92, 0xe7, 0x9a, 0x07, 0xc0, 0x23, 0x77, 0x09, 0x76, 0x1c, 0xf3,
-	0x38, 0x1d, 0x60, 0xb1, 0x2f, 0xd8, 0xd6, 0x2b, 0xae, 0xc2, 0x2c, 0xfb, 0x3c, 0xa0, 0xee, 0x90,
-	0x5f, 0xa4, 0x6c, 0x9f, 0xe7, 0x65, 0x33, 0x4f, 0xe4, 0x89, 0x1d, 0x92, 0x27, 0x0d, 0xf0, 0xd8,
-	0xa7, 0xbc, 0xe2, 0x71, 0x2c, 0x76, 0x08, 0x96, 0x06, 0x58, 0xec, 0x90, 0x31, 0xb3, 0x34, 0x63,
-	0x9e, 0xcf, 0xb3, 0x7d, 0xb8, 0x5c, 0xad, 0xe6, 0x50, 0x83, 0x98, 0x65, 0x21, 0x4f, 0xd8, 0x27,
-	0x13, 0x9d, 0x4b, 0xdd, 0x31, 0xf6, 0x5c, 0x60, 0x2f, 0x39, 0xc4, 0x7e, 0xc4, 0x31, 0x84, 0xef,
-	0x3e, 0xc8, 0xce, 0xd9, 0x86, 0xa9, 0xa4, 0x56, 0x57, 0xd9, 0x00, 0x96, 0x57, 0x27, 0x3a, 0xce,
-	0xbd, 0xa8, 0x67, 0x73, 0xf9, 0x99, 0x7d, 0x3c, 0xd1, 0xa2, 0xe9, 0x52, 0xd9, 0xf5, 0x37, 0x34,
-	0x8a, 0x23, 0xec, 0x51, 0xc3, 0xaf, 0xc7, 0x98, 0xab, 0xe5, 0x02, 0xad, 0x87, 0xd7, 0xc8, 0x7a,
-	0x84, 0x96, 0x87, 0x98, 0x05, 0x87, 0x10, 0xaf, 0x11, 0x48, 0x68, 0x59, 0xc8, 0x63, 0xf6, 0xe1,
-	0x1f, 0xed, 0x0f, 0x37, 0xfb, 0xdc, 0x05, 0x75, 0xff, 0xba, 0x4b, 0xef, 0x22, 0xd5, 0x5e, 0x75,
-	0xce, 0x36, 0xdc, 0x06, 0x55, 0xf9, 0x3a, 0x23, 0xbb, 0x56, 0xe5, 0x6b, 0xb2, 0x8c, 0xc0, 0xf3,
-	0x1c, 0x53, 0x8a, 0x88, 0x13, 0x88, 0x84, 0x03, 0x3c, 0xcf, 0x71, 0x0b, 0x04, 0x38, 0x81, 0x48,
-	0x38, 0xc0, 0xb3, 0x9c, 0x5f, 0xda, 0x12, 0x6b, 0xf7, 0xaa, 0xa5, 0xa0, 0xed, 0x0b, 0x18, 0xfb,
-	0x11, 0xc7, 0x12, 0x9e, 0xb3, 0x4f, 0x5d, 0xbd, 0x54, 0xf9, 0x5a, 0x65, 0xa4, 0x8a, 0x5a, 0xd5,
-	0x71, 0x0e, 0xe2, 0xa6, 0xaf, 0xb1, 0x11, 0xd7, 0x26, 0x97, 0xdd, 0x20, 0x12, 0xa4, 0xb2, 0x47,
-	0x0d, 0xbf, 0x26, 0x6e, 0xbf, 0xc1, 0x9a, 0x04, 0x22, 0x59, 0x13, 0xe0, 0xf9, 0x35, 0x19, 0x71,
-	0x3d, 0xe9, 0x5e, 0x2a, 0x59, 0x78, 0x3b, 0x23, 0x91, 0x35, 0x09, 0x1c, 0xd0, 0xa1, 0xcf, 0xaa,
-	0xca, 0xe8, 0x2a, 0x43, 0xcf, 0x6d, 0xe5, 0x58, 0x87, 0x0e, 0x5d, 0xbf, 0xc2, 0xa6, 0x04, 0x6c,
-	0x4a, 0xa8, 0x30, 0x60, 0x56, 0x07, 0x71, 0xd3, 0xa2, 0xde, 0xb0, 0xcd, 0xb3, 0xa6, 0x91, 0x62,
-	0xe5, 0x58, 0x0f, 0x5d, 0x38, 0x90, 0xaf, 0xb8, 0x54, 0x41, 0xbb, 0x7b, 0x74, 0x73, 0x90, 0x4f,
-	0xf3, 0xf9, 0xa2, 0x11, 0x52, 0x8f, 0x4a, 0x7d, 0xbd, 0x9c, 0xf9, 0x34, 0x43, 0x95, 0xa4, 0x09,
-	0x4d, 0x8b, 0x7a, 0xcb, 0xb2, 0x50, 0x9f, 0xf0, 0x8a, 0x17, 0x3a, 0xbb, 0x1f, 0xbb, 0xc6, 0x78,
-	0x0e, 0xfb, 0xe0, 0xa6, 0x10, 0x5f, 0x26, 0xc6, 0xbd, 0x10, 0x45, 0x5e, 0xf9, 0x32, 0x09, 0x44,
-	0x52, 0x26, 0xc0, 0xf3, 0xcf, 0x6b, 0xaa, 0x07, 0x6f, 0x4b, 0xa8, 0x92, 0xe7, 0x85, 0xa6, 0x45,
-	0xfd, 0xc9, 0x3e, 0x0b, 0x75, 0xbb, 0xb2, 0xd9, 0x83, 0xd8, 0x45, 0x68, 0x6f, 0x1e, 0xde, 0x18,
-	0xe3, 0x1b, 0x67, 0x5b, 0xa4, 0x66, 0xf2, 0xc9, 0x40, 0xe1, 0x1a, 0x8d, 0x34, 0xce, 0xd0, 0xf2,
-	0x6f, 0x74, 0x5b, 0x9f, 0xc6, 0x50, 0x19, 0xae, 0x5b, 0xab, 0x93, 0x37, 0x3a, 0xb6, 0xfd, 0xaf,
-	0xc4, 0xb4, 0x48, 0x97, 0xd8, 0x01, 0xec, 0x9c, 0x28, 0xb7, 0xc3, 0x84, 0xeb, 0x69, 0xb6, 0xe4,
-	0x31, 0x0d, 0xc8, 0x84, 0x86, 0x5c, 0x4f, 0xb3, 0x0b, 0x8a, 0x69, 0x40, 0x26, 0x34, 0xe4, 0xfa,
-	0xfd, 0xbd, 0x28, 0xeb, 0xbf, 0xcd, 0xe6, 0xbc, 0x12, 0x8e, 0xd9, 0xef, 0x6f, 0xc4, 0x24, 0xfb,
-	0x1b, 0x8d, 0xb1, 0xfc, 0xbf, 0xd8, 0xee, 0x65, 0x5d, 0xf5, 0x01, 0xe7, 0x52, 0x2c, 0xdc, 0x3d,
-	0xbe, 0xea, 0x9f, 0x33, 0x1e, 0xe0, 0xee, 0xf3, 0xf5, 0xad, 0x71, 0xf6, 0x5e, 0xaf, 0xd9, 0x4e,
-	0x9b, 0xca, 0x98, 0x37, 0xc2, 0x3f, 0xc9, 0x71, 0x98, 0x25, 0xb0, 0xc8, 0x5c, 0x1b, 0x89, 0xb0,
-	0xe4, 0x39, 0xbb, 0x6b, 0x6e, 0xde, 0xda, 0xe1, 0x33, 0x3c, 0x82, 0xb9, 0x21, 0xdb, 0xdd, 0xe1,
-	0xcb, 0x5b, 0xa2, 0xfc, 0xc0, 0x67, 0x8b, 0x9b, 0xcb, 0x17, 0x8d, 0x19, 0xcb, 0x8f, 0x50, 0xd9,
-	0xf7, 0x0e, 0x19, 0xf8, 0x68, 0x80, 0xc7, 0x4e, 0x92, 0xd8, 0xc9, 0x6d, 0xd8, 0x49, 0x0a, 0x6b,
-	0xc6, 0xb7, 0xf6, 0x59, 0x2e, 0x4a, 0xa5, 0xc1, 0xf8, 0xe6, 0xc4, 0xd8, 0xf8, 0xe6, 0x3d, 0xcb,
-	0xf9, 0xa9, 0xe3, 0x5c, 0x0d, 0x9f, 0xad, 0x78, 0xad, 0xe1, 0x18, 0xe8, 0x44, 0xc7, 0xd9, 0x76,
-	0x9e, 0x35, 0xfa, 0x21, 0xb2, 0xdb, 0x35, 0xc9, 0x39, 0xc9, 0xa2, 0x15, 0x53, 0x59, 0x18, 0x8f,
-	0x3c, 0xcd, 0x79, 0x59, 0x51, 0x4e, 0x2b, 0xa6, 0x38, 0xc6, 0xeb, 0x39, 0x3b, 0xa6, 0x09, 0xbc,
-	0x5c, 0x56, 0xae, 0x59, 0xfb, 0x89, 0xc1, 0x5a, 0x63, 0x32, 0x31, 0x78, 0x03, 0xf4, 0xc5, 0xdf,
-	0xcc, 0x01, 0x14, 0xf4, 0x45, 0xab, 0xc5, 0xfa, 0x62, 0x6f, 0xe1, 0x36, 0xe6, 0x38, 0xa8, 0x8d,
-	0x21, 0xd4, 0x61, 0xc2, 0xc5, 0x8d, 0x87, 0xd0, 0x80, 0x9c, 0x68, 0x3c, 0x11, 0x9a, 0xe9, 0x6f,
-	0x84, 0x06, 0xe4, 0x44, 0x53, 0xc4, 0xb4, 0xb3, 0x6e, 0x3e, 0x3b, 0x6b, 0x0f, 0xfd, 0xef, 0xbb,
-	0x58, 0xfd, 0x1c, 0x6d, 0x28, 0x68, 0x8e, 0xee, 0xc4, 0xc4, 0x1c, 0x6d, 0x3d, 0x3c, 0xeb, 0x21,
-	0x4e, 0x20, 0x26, 0x66, 0x3d, 0xc2, 0x31, 0xcf, 0x8a, 0x38, 0x81, 0x98, 0x98, 0xc7, 0x21, 0xc7,
-	0x4c, 0x7c, 0x57, 0xfd, 0x17, 0x08, 0x30, 0xf1, 0x79, 0x39, 0x36, 0xf1, 0x85, 0xae, 0xef, 0xb1,
-	0xe6, 0x9d, 0xe9, 0x3d, 0xf2, 0xed, 0x20, 0xb0, 0x12, 0xdf, 0x0e, 0x40, 0x04, 0x3e, 0xed, 0x07,
-	0xa9, 0xa2, 0xd3, 0x3e, 0xcd, 0xf6, 0x38, 0x1d, 0x80, 0x0f, 0xe7, 0x31, 0x2c, 0x76, 0x12, 0x87,
-	0xf3, 0x38, 0xd6, 0x6c, 0x5a, 0x0c, 0x8b, 0x9d, 0xc4, 0xe1, 0x3c, 0x82, 0x7d, 0xcb, 0xb2, 0x11,
-	0xd7, 0xc3, 0xa5, 0x94, 0xbc, 0xd6, 0x43, 0xb1, 0xac, 0x35, 0x97, 0x2a, 0x0b, 0x57, 0x0f, 0x79,
-	0x64, 0xbc, 0x8c, 0x85, 0x80, 0xbd, 0xb3, 0xf2, 0xaf, 0xa5, 0xd2, 0x42, 0xae, 0xc1, 0xde, 0x41,
-	0x2b, 0xb6, 0x77, 0x38, 0xc2, 0x92, 0x7f, 0xef, 0x6a, 0xec, 0xa2, 0x5c, 0xf1, 0x67, 0xdd, 0x37,
-	0x34, 0x50, 0x63, 0x5e, 0x8e, 0xd5, 0x58, 0xe8, 0xf6, 0x9f, 0x06, 0xc6, 0x6c, 0x7b, 0xc4, 0x75,
-	0x27, 0xbb, 0x3c, 0xc3, 0x91, 0x2d, 0x34, 0x1c, 0xf3, 0x28, 0xe9, 0x83, 0x8e, 0xfa, 0xd4, 0x7c,
-	0xf5, 0x03, 0x4d, 0xc2, 0x6a, 0xb1, 0x26, 0xd1, 0x5b, 0xf8, 0xf8, 0xe4, 0x38, 0xe8, 0xf8, 0x84,
-	0x50, 0x87, 0x09, 0x17, 0xf7, 0x67, 0x42, 0x03, 0x72, 0xa2, 0x3f, 0x63, 0xda, 0x39, 0xdb, 0x68,
-	0xcf, 0xc0, 0x8e, 0x35, 0x08, 0x0f, 0xc6, 0x88, 0x74, 0x2f, 0xea, 0xf9, 0xac, 0xcc, 0x79, 0x9c,
-	0x64, 0x05, 0x64, 0x92, 0x15, 0x72, 0x71, 0x9f, 0x27, 0x34, 0x20, 0x27, 0xfa, 0x7c, 0x84, 0x66,
-	0x7e, 0x3b, 0x84, 0x06, 0xe4, 0xc4, 0x3b, 0x08, 0xd1, 0x9e, 0xfc, 0xf8, 0xe6, 0xf1, 0xbb, 0xee,
-	0x1c, 0x76, 0x52, 0x88, 0xc5, 0xe9, 0x2c, 0xd7, 0xc5, 0x75, 0x21, 0x64, 0x73, 0xda, 0x98, 0xcf,
-	0xa5, 0xdf, 0x9a, 0xaf, 0xb7, 0xea, 0x74, 0xb6, 0x2c, 0xab, 0xf9, 0xe9, 0x3b, 0x71, 0x6a, 0x68,
-	0x33, 0xf3, 0xa1, 0xf9, 0x87, 0xff, 0x03, 0x00, 0x00, 0xff, 0xff, 0xcd, 0xfa, 0xad, 0x8e, 0x80,
-	0x16, 0x00, 0x00,
+	// 497 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x95, 0xdf, 0x6e, 0xd3, 0x30,
+	0x14, 0x87, 0xef, 0x10, 0x98, 0x75, 0x8c, 0xdc, 0xc0, 0xd2, 0x8d, 0x8d, 0x07, 0xa0, 0x91, 0x00,
+	0x71, 0x87, 0xc4, 0xe8, 0x44, 0x84, 0x84, 0x34, 0xd4, 0x31, 0x09, 0x71, 0x53, 0x25, 0xe9, 0xd1,
+	0x5a, 0x29, 0x89, 0x4d, 0x8e, 0x83, 0xb4, 0xe7, 0xe5, 0x45, 0x50, 0x73, 0xec, 0xfa, 0xcf, 0x49,
+	0xb8, 0xaa, 0xfa, 0xfb, 0x8e, 0x3f, 0x9d, 0xfa, 0xb8, 0xb6, 0x98, 0x29, 0x5c, 0x97, 0x05, 0xc2,
+	0x42, 0x75, 0x52, 0xcb, 0xe4, 0xd1, 0xf0, 0x81, 0xe9, 0x89, 0xc2, 0x75, 0x25, 0xdb, 0x16, 0x2a,
+	0x4d, 0x64, 0x48, 0x36, 0x0f, 0x6d, 0xd1, 0xec, 0x2a, 0x93, 0x1c, 0x2b, 0x5c, 0x77, 0x50, 0x17,
+	0x0f, 0xe6, 0xfb, 0x33, 0x85, 0x6b, 0x84, 0xee, 0x0f, 0x74, 0x14, 0xbc, 0xfd, 0x7b, 0x24, 0x66,
+	0xdf, 0xeb, 0xbe, 0x29, 0xa1, 0xbb, 0x1d, 0xf2, 0xe4, 0xa7, 0x78, 0x9e, 0x83, 0xbe, 0xaa, 0xeb,
+	0x25, 0xb9, 0x77, 0xb2, 0xc5, 0xe4, 0x92, 0xca, 0x71, 0xc1, 0xd0, 0x0a, 0x7e, 0xf7, 0x80, 0x3a,
+	0x7d, 0xfd, 0x9f, 0x0a, 0x54, 0xb2, 0x45, 0x48, 0xbe, 0x89, 0x59, 0x0e, 0xda, 0x91, 0xe4, 0xcc,
+	0x5b, 0xe3, 0x62, 0x6b, 0x3c, 0x9f, 0xa0, 0xc6, 0x76, 0x27, 0x4e, 0x96, 0x1d, 0x14, 0x1a, 0x3c,
+	0xe1, 0x85, 0x5d, 0x12, 0x13, 0xeb, 0xbc, 0x9c, 0x2e, 0x30, 0xda, 0x1b, 0x71, 0xfc, 0x03, 0xd0,
+	0xef, 0xf2, 0xd0, 0x47, 0x98, 0x5b, 0xe5, 0xab, 0x29, 0xec, 0xfa, 0xbc, 0x53, 0x9b, 0x89, 0x3e,
+	0x63, 0xc2, 0xfa, 0xe4, 0x05, 0x4e, 0x7b, 0x0d, 0x35, 0x8c, 0x6b, 0x63, 0xc2, 0xb4, 0xbc, 0xc0,
+	0x68, 0xbf, 0x8a, 0x23, 0x1a, 0xe0, 0x6a, 0x7f, 0x6a, 0x30, 0x99, 0x87, 0x63, 0xa5, 0xd4, 0xea,
+	0xce, 0xc6, 0xa1, 0x51, 0x7d, 0x14, 0x8f, 0x73, 0xd0, 0x43, 0x98, 0xbc, 0xf0, 0x2a, 0x87, 0xc4,
+	0x2a, 0x5e, 0x72, 0x60, 0x96, 0x7f, 0x11, 0x4f, 0x69, 0x48, 0x64, 0x48, 0xc3, 0xc9, 0x05, 0x92,
+	0xf9, 0x28, 0x73, 0x1e, 0xda, 0xc4, 0xc8, 0xe3, 0x85, 0xcc, 0x13, 0x30, 0xe7, 0x59, 0x01, 0xf6,
+	0x4d, 0xec, 0xf1, 0x42, 0xe6, 0x09, 0x98, 0xf1, 0x7c, 0x12, 0x4f, 0x6e, 0xb5, 0x54, 0x64, 0x39,
+	0xfc, 0xfc, 0x43, 0x64, 0x1d, 0xa7, 0x23, 0xc4, 0x75, 0x42, 0xf3, 0x8b, 0x3a, 0xf1, 0x42, 0xd6,
+	0x49, 0xc0, 0x8c, 0x67, 0x29, 0x44, 0x0e, 0xfa, 0x9a, 0x2e, 0x8c, 0xe4, 0xd4, 0x9b, 0x84, 0xc9,
+	0xac, 0x25, 0x1d, 0x43, 0xc1, 0x9f, 0xfa, 0xaa, 0xae, 0xad, 0x27, 0x3a, 0x14, 0x91, 0xea, 0x7c,
+	0x82, 0x3a, 0x1b, 0xcd, 0x90, 0xd9, 0x82, 0x98, 0xd9, 0x22, 0xea, 0x36, 0x6a, 0xbf, 0x7b, 0xd6,
+	0x95, 0xfa, 0x5b, 0x1a, 0x99, 0xe6, 0xa3, 0xcc, 0x75, 0x45, 0x93, 0x64, 0x5d, 0x05, 0x31, 0xeb,
+	0x2a, 0xa2, 0xce, 0x46, 0xe7, 0x8b, 0xd9, 0x82, 0x98, 0xd9, 0x22, 0xea, 0x6c, 0x34, 0x5b, 0x66,
+	0x0b, 0x62, 0x66, 0x8b, 0xa8, 0xbb, 0x55, 0x72, 0xd0, 0xf4, 0x12, 0xdc, 0x28, 0xba, 0xfb, 0x2f,
+	0xbc, 0x91, 0x05, 0x84, 0xdd, 0x2a, 0xbc, 0x80, 0xb4, 0x9f, 0x3f, 0xfc, 0x7a, 0x7f, 0xbf, 0xd3,
+	0xdb, 0xbe, 0x5c, 0x54, 0xb2, 0xc9, 0xca, 0x42, 0x57, 0xdb, 0x4a, 0x76, 0x2a, 0x53, 0xf4, 0xf2,
+	0xbc, 0xc1, 0x6a, 0x0b, 0x4d, 0x81, 0x59, 0xd9, 0xef, 0xea, 0x4d, 0x76, 0x2f, 0x33, 0x12, 0x96,
+	0xf4, 0xd4, 0xbd, 0xfb, 0x17, 0x00, 0x00, 0xff, 0xff, 0xa0, 0xf0, 0x0b, 0x3d, 0x02, 0x07, 0x00,
+	0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -136,84 +86,13 @@ type PlumberServerClient interface {
 	UpdateConnection(ctx context.Context, in *UpdateConnectionRequest, opts ...grpc.CallOption) (*UpdateConnectionResponse, error)
 	// If there are any active connections, delete will cause them to get closed
 	DeleteConnection(ctx context.Context, in *DeleteConnectionRequest, opts ...grpc.CallOption) (*DeleteConnectionResponse, error)
-	// Start reading data from a connection
-	CreateRead(ctx context.Context, in *CreateReadRequest, opts ...grpc.CallOption) (*CreateReadResponse, error)
-	// Streams messages received off of a read
-	StartRead(ctx context.Context, in *StartReadRequest, opts ...grpc.CallOption) (PlumberServer_StartReadClient, error)
-	// List all reads that have been created
-	GetAllReads(ctx context.Context, in *GetAllReadsRequest, opts ...grpc.CallOption) (*GetAllReadsResponse, error)
-	// Stop reading data from a connection
-	StopRead(ctx context.Context, in *StopReadRequest, opts ...grpc.CallOption) (*StopReadResponse, error)
-	// Resume reading data from an existing read
-	ResumeRead(ctx context.Context, in *ResumeReadRequest, opts ...grpc.CallOption) (*ResumeReadResponse, error)
-	// Resume reading data from an existing read
-	DeleteRead(ctx context.Context, in *DeleteReadRequest, opts ...grpc.CallOption) (*DeleteReadResponse, error)
-	// Write data to a connection
-	Write(ctx context.Context, in *WriteRequest, opts ...grpc.CallOption) (*WriteResponse, error)
-	// Create a data relay from plumber server to the Batch platform
+	GetAllRelays(ctx context.Context, in *GetAllRelaysRequest, opts ...grpc.CallOption) (*GetAllRelaysResponse, error)
+	GetRelay(ctx context.Context, in *GetRelayRequest, opts ...grpc.CallOption) (*GetRelayResponse, error)
 	CreateRelay(ctx context.Context, in *CreateRelayRequest, opts ...grpc.CallOption) (*CreateRelayResponse, error)
-	// Update a relay (such as API token) - relay will be interrupted!
 	UpdateRelay(ctx context.Context, in *UpdateRelayRequest, opts ...grpc.CallOption) (*UpdateRelayResponse, error)
 	ResumeRelay(ctx context.Context, in *ResumeRelayRequest, opts ...grpc.CallOption) (*ResumeRelayResponse, error)
 	StopRelay(ctx context.Context, in *StopRelayRequest, opts ...grpc.CallOption) (*StopRelayResponse, error)
-	GetAllRelays(ctx context.Context, in *GetAllRelaysRequest, opts ...grpc.CallOption) (*GetAllRelaysResponse, error)
-	GetRelay(ctx context.Context, in *GetRelayRequest, opts ...grpc.CallOption) (*GetRelayResponse, error)
 	DeleteRelay(ctx context.Context, in *DeleteRelayRequest, opts ...grpc.CallOption) (*DeleteRelayResponse, error)
-	// Retrieve a single schema
-	GetSchema(ctx context.Context, in *GetSchemaRequest, opts ...grpc.CallOption) (*GetSchemaResponse, error)
-	// Retrieve all schemas
-	GetAllSchemas(ctx context.Context, in *GetAllSchemasRequest, opts ...grpc.CallOption) (*GetAllSchemasResponse, error)
-	// Edit an existing schema
-	UpdateSchema(ctx context.Context, in *UpdateSchemaRequest, opts ...grpc.CallOption) (*UpdateSchemaResponse, error)
-	// Approve a pending inferred schema
-	ApproveSchema(ctx context.Context, in *ApproveSchemaVersionRequest, opts ...grpc.CallOption) (*ApproveSchemaVersionResponse, error)
-	// Import a schema from github
-	ImportGithub(ctx context.Context, in *ImportGithubRequest, opts ...grpc.CallOption) (*ImportGithubResponse, error)
-	ImportGithubSelect(ctx context.Context, in *ImportGithubSelectRequest, opts ...grpc.CallOption) (*ImportGithubSelectResponse, error)
-	// Import a schema from the local file system
-	ImportLocal(ctx context.Context, in *ImportLocalRequest, opts ...grpc.CallOption) (*ImportLocalResponse, error)
-	// Delete a schema
-	DeleteSchema(ctx context.Context, in *DeleteSchemaRequest, opts ...grpc.CallOption) (*DeleteSchemaResponse, error)
-	DeleteSchemaVersion(ctx context.Context, in *DeleteSchemaVersionRequest, opts ...grpc.CallOption) (*DeleteSchemaVersionResponse, error)
-	GetService(ctx context.Context, in *GetServiceRequest, opts ...grpc.CallOption) (*GetServiceResponse, error)
-	GetAllServices(ctx context.Context, in *GetAllServicesRequest, opts ...grpc.CallOption) (*GetAllServicesResponse, error)
-	CreateService(ctx context.Context, in *CreateServiceRequest, opts ...grpc.CallOption) (*CreateServiceResponse, error)
-	UpdateService(ctx context.Context, in *UpdateServiceRequest, opts ...grpc.CallOption) (*UpdateServiceResponse, error)
-	DeleteService(ctx context.Context, in *DeleteServiceRequest, opts ...grpc.CallOption) (*DeleteServiceResponse, error)
-	LinkSchemaToService(ctx context.Context, in *LinkSchemaToServiceRequest, opts ...grpc.CallOption) (*LinkSchemaToServiceResponse, error)
-	UnlinkSchemaFromService(ctx context.Context, in *UnlinkSchemaFromServiceRequest, opts ...grpc.CallOption) (*UnlinkSchemaFromServiceResponse, error)
-	LinkRepoToService(ctx context.Context, in *LinkRepoToServiceRequest, opts ...grpc.CallOption) (*LinkRepoToServiceResponse, error)
-	UnlinkRepoFromService(ctx context.Context, in *UnlinkRepoFromServiceRequest, opts ...grpc.CallOption) (*UnlinkRepoFromServiceResponse, error)
-	GetServerOptions(ctx context.Context, in *GetServerOptionsRequest, opts ...grpc.CallOption) (*GetServerOptionsResponse, error)
-	SetServerOptions(ctx context.Context, in *SetServerOptionsRequest, opts ...grpc.CallOption) (*SetServerOptionsResponse, error)
-	// List repos pulls a list of repositories from Github after a user has authorized the app
-	GetRepoList(ctx context.Context, in *GetRepoListRequest, opts ...grpc.CallOption) (*GetRepoListResponse, error)
-	// GetVCEvents connects to vc-service backend and returns a stream of events pushed from github/bitbucket/etc
-	GetVCEvents(ctx context.Context, in *GetVCEventsRequest, opts ...grpc.CallOption) (PlumberServer_GetVCEventsClient, error)
-	// --------------------- Pull Request -------------------
-	GetRepoTree(ctx context.Context, in *GetRepoTreeRequest, opts ...grpc.CallOption) (*GetRepoTreeResponse, error)
-	GetRepoFile(ctx context.Context, in *GetRepoFileRequest, opts ...grpc.CallOption) (*GetRepoFileResponse, error)
-	CreatePullRequest(ctx context.Context, in *CreatePRRequest, opts ...grpc.CallOption) (*CreatePRResponse, error)
-	GetMonitor(ctx context.Context, in *GetMonitorRequest, opts ...grpc.CallOption) (*GetMonitorResponse, error)
-	CreateMonitor(ctx context.Context, in *CreateMonitorRequest, opts ...grpc.CallOption) (*CreateMonitorResponse, error)
-	DeleteMonitor(ctx context.Context, in *DeleteMonitorRequest, opts ...grpc.CallOption) (*DeleteMonitorResponse, error)
-	UpdateMonitor(ctx context.Context, in *UpdateMonitorRequest, opts ...grpc.CallOption) (*UpdateMonitorResponse, error)
-	GetAlert(ctx context.Context, in *GetMonitorRequest, opts ...grpc.CallOption) (*GetMonitorResponse, error)
-	CreateAlert(ctx context.Context, in *CreateAlertRequest, opts ...grpc.CallOption) (*CreateAlertResponse, error)
-	DeleteAlert(ctx context.Context, in *DeleteAlertRequest, opts ...grpc.CallOption) (*DeleteAlertResponse, error)
-	UpdateAlert(ctx context.Context, in *UpdateAlertRequest, opts ...grpc.CallOption) (*UpdateAlertResponse, error)
-	GetValidation(ctx context.Context, in *GetValidationRequest, opts ...grpc.CallOption) (*GetValidationResponse, error)
-	GetAllValidations(ctx context.Context, in *GetAllValidationsRequest, opts ...grpc.CallOption) (*GetAllValidationsResponse, error)
-	CreateValidation(ctx context.Context, in *CreateValidationRequest, opts ...grpc.CallOption) (*CreateValidationResponse, error)
-	UpdateValidation(ctx context.Context, in *UpdateValidationRequest, opts ...grpc.CallOption) (*UpdateValidationResponse, error)
-	DeleteValidation(ctx context.Context, in *DeleteValidationRequest, opts ...grpc.CallOption) (*DeleteValidationResponse, error)
-	GetCurrentCounters(ctx context.Context, in *GetCurrentCountersRequest, opts ...grpc.CallOption) (*GetCurrentCountersResponse, error)
-	GetCounterHistory(ctx context.Context, in *GetCounterHistoryRequest, opts ...grpc.CallOption) (*GetCounterHistoryResponse, error)
-	// Returns a stream of errors as they happen
-	GetLiveErrors(ctx context.Context, in *GetLiveErrorsRequest, opts ...grpc.CallOption) (PlumberServer_GetLiveErrorsClient, error)
-	// Returns 1000 most recent errors from etcd
-	GetErrorHistory(ctx context.Context, in *GetErrorHistoryRequest, opts ...grpc.CallOption) (*GetErrorHistoryResponse, error)
-	// --------------------- Dynamic ---------------------
 	GetDynamic(ctx context.Context, in *GetDynamicRequest, opts ...grpc.CallOption) (*GetDynamicResponse, error)
 	GetAllDynamic(ctx context.Context, in *GetAllDynamicRequest, opts ...grpc.CallOption) (*GetAllDynamicResponse, error)
 	CreateDynamic(ctx context.Context, in *CreateDynamicRequest, opts ...grpc.CallOption) (*CreateDynamicResponse, error)
@@ -221,6 +100,7 @@ type PlumberServerClient interface {
 	ResumeDynamic(ctx context.Context, in *ResumeDynamicRequest, opts ...grpc.CallOption) (*ResumeDynamicResponse, error)
 	UpdateDynamic(ctx context.Context, in *UpdateDynamicRequest, opts ...grpc.CallOption) (*UpdateDynamicResponse, error)
 	DeleteDynamic(ctx context.Context, in *DeleteDynamicRequest, opts ...grpc.CallOption) (*DeleteDynamicResponse, error)
+	GetServerOptions(ctx context.Context, in *GetServerOptionsRequest, opts ...grpc.CallOption) (*GetServerOptionsResponse, error)
 }
 
 type plumberServerClient struct {
@@ -285,86 +165,18 @@ func (c *plumberServerClient) DeleteConnection(ctx context.Context, in *DeleteCo
 	return out, nil
 }
 
-func (c *plumberServerClient) CreateRead(ctx context.Context, in *CreateReadRequest, opts ...grpc.CallOption) (*CreateReadResponse, error) {
-	out := new(CreateReadResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/CreateRead", in, out, opts...)
+func (c *plumberServerClient) GetAllRelays(ctx context.Context, in *GetAllRelaysRequest, opts ...grpc.CallOption) (*GetAllRelaysResponse, error) {
+	out := new(GetAllRelaysResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetAllRelays", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *plumberServerClient) StartRead(ctx context.Context, in *StartReadRequest, opts ...grpc.CallOption) (PlumberServer_StartReadClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_PlumberServer_serviceDesc.Streams[0], "/protos.PlumberServer/StartRead", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &plumberServerStartReadClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type PlumberServer_StartReadClient interface {
-	Recv() (*StartReadResponse, error)
-	grpc.ClientStream
-}
-
-type plumberServerStartReadClient struct {
-	grpc.ClientStream
-}
-
-func (x *plumberServerStartReadClient) Recv() (*StartReadResponse, error) {
-	m := new(StartReadResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *plumberServerClient) GetAllReads(ctx context.Context, in *GetAllReadsRequest, opts ...grpc.CallOption) (*GetAllReadsResponse, error) {
-	out := new(GetAllReadsResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetAllReads", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) StopRead(ctx context.Context, in *StopReadRequest, opts ...grpc.CallOption) (*StopReadResponse, error) {
-	out := new(StopReadResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/StopRead", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) ResumeRead(ctx context.Context, in *ResumeReadRequest, opts ...grpc.CallOption) (*ResumeReadResponse, error) {
-	out := new(ResumeReadResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/ResumeRead", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) DeleteRead(ctx context.Context, in *DeleteReadRequest, opts ...grpc.CallOption) (*DeleteReadResponse, error) {
-	out := new(DeleteReadResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/DeleteRead", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) Write(ctx context.Context, in *WriteRequest, opts ...grpc.CallOption) (*WriteResponse, error) {
-	out := new(WriteResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/Write", in, out, opts...)
+func (c *plumberServerClient) GetRelay(ctx context.Context, in *GetRelayRequest, opts ...grpc.CallOption) (*GetRelayResponse, error) {
+	out := new(GetRelayResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetRelay", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -407,451 +219,9 @@ func (c *plumberServerClient) StopRelay(ctx context.Context, in *StopRelayReques
 	return out, nil
 }
 
-func (c *plumberServerClient) GetAllRelays(ctx context.Context, in *GetAllRelaysRequest, opts ...grpc.CallOption) (*GetAllRelaysResponse, error) {
-	out := new(GetAllRelaysResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetAllRelays", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) GetRelay(ctx context.Context, in *GetRelayRequest, opts ...grpc.CallOption) (*GetRelayResponse, error) {
-	out := new(GetRelayResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetRelay", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *plumberServerClient) DeleteRelay(ctx context.Context, in *DeleteRelayRequest, opts ...grpc.CallOption) (*DeleteRelayResponse, error) {
 	out := new(DeleteRelayResponse)
 	err := c.cc.Invoke(ctx, "/protos.PlumberServer/DeleteRelay", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) GetSchema(ctx context.Context, in *GetSchemaRequest, opts ...grpc.CallOption) (*GetSchemaResponse, error) {
-	out := new(GetSchemaResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetSchema", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) GetAllSchemas(ctx context.Context, in *GetAllSchemasRequest, opts ...grpc.CallOption) (*GetAllSchemasResponse, error) {
-	out := new(GetAllSchemasResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetAllSchemas", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) UpdateSchema(ctx context.Context, in *UpdateSchemaRequest, opts ...grpc.CallOption) (*UpdateSchemaResponse, error) {
-	out := new(UpdateSchemaResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/UpdateSchema", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) ApproveSchema(ctx context.Context, in *ApproveSchemaVersionRequest, opts ...grpc.CallOption) (*ApproveSchemaVersionResponse, error) {
-	out := new(ApproveSchemaVersionResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/ApproveSchema", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) ImportGithub(ctx context.Context, in *ImportGithubRequest, opts ...grpc.CallOption) (*ImportGithubResponse, error) {
-	out := new(ImportGithubResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/ImportGithub", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) ImportGithubSelect(ctx context.Context, in *ImportGithubSelectRequest, opts ...grpc.CallOption) (*ImportGithubSelectResponse, error) {
-	out := new(ImportGithubSelectResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/ImportGithubSelect", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) ImportLocal(ctx context.Context, in *ImportLocalRequest, opts ...grpc.CallOption) (*ImportLocalResponse, error) {
-	out := new(ImportLocalResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/ImportLocal", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) DeleteSchema(ctx context.Context, in *DeleteSchemaRequest, opts ...grpc.CallOption) (*DeleteSchemaResponse, error) {
-	out := new(DeleteSchemaResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/DeleteSchema", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) DeleteSchemaVersion(ctx context.Context, in *DeleteSchemaVersionRequest, opts ...grpc.CallOption) (*DeleteSchemaVersionResponse, error) {
-	out := new(DeleteSchemaVersionResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/DeleteSchemaVersion", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) GetService(ctx context.Context, in *GetServiceRequest, opts ...grpc.CallOption) (*GetServiceResponse, error) {
-	out := new(GetServiceResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetService", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) GetAllServices(ctx context.Context, in *GetAllServicesRequest, opts ...grpc.CallOption) (*GetAllServicesResponse, error) {
-	out := new(GetAllServicesResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetAllServices", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) CreateService(ctx context.Context, in *CreateServiceRequest, opts ...grpc.CallOption) (*CreateServiceResponse, error) {
-	out := new(CreateServiceResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/CreateService", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) UpdateService(ctx context.Context, in *UpdateServiceRequest, opts ...grpc.CallOption) (*UpdateServiceResponse, error) {
-	out := new(UpdateServiceResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/UpdateService", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) DeleteService(ctx context.Context, in *DeleteServiceRequest, opts ...grpc.CallOption) (*DeleteServiceResponse, error) {
-	out := new(DeleteServiceResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/DeleteService", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) LinkSchemaToService(ctx context.Context, in *LinkSchemaToServiceRequest, opts ...grpc.CallOption) (*LinkSchemaToServiceResponse, error) {
-	out := new(LinkSchemaToServiceResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/LinkSchemaToService", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) UnlinkSchemaFromService(ctx context.Context, in *UnlinkSchemaFromServiceRequest, opts ...grpc.CallOption) (*UnlinkSchemaFromServiceResponse, error) {
-	out := new(UnlinkSchemaFromServiceResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/UnlinkSchemaFromService", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) LinkRepoToService(ctx context.Context, in *LinkRepoToServiceRequest, opts ...grpc.CallOption) (*LinkRepoToServiceResponse, error) {
-	out := new(LinkRepoToServiceResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/LinkRepoToService", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) UnlinkRepoFromService(ctx context.Context, in *UnlinkRepoFromServiceRequest, opts ...grpc.CallOption) (*UnlinkRepoFromServiceResponse, error) {
-	out := new(UnlinkRepoFromServiceResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/UnlinkRepoFromService", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) GetServerOptions(ctx context.Context, in *GetServerOptionsRequest, opts ...grpc.CallOption) (*GetServerOptionsResponse, error) {
-	out := new(GetServerOptionsResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetServerOptions", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) SetServerOptions(ctx context.Context, in *SetServerOptionsRequest, opts ...grpc.CallOption) (*SetServerOptionsResponse, error) {
-	out := new(SetServerOptionsResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/SetServerOptions", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) GetRepoList(ctx context.Context, in *GetRepoListRequest, opts ...grpc.CallOption) (*GetRepoListResponse, error) {
-	out := new(GetRepoListResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetRepoList", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) GetVCEvents(ctx context.Context, in *GetVCEventsRequest, opts ...grpc.CallOption) (PlumberServer_GetVCEventsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_PlumberServer_serviceDesc.Streams[1], "/protos.PlumberServer/GetVCEvents", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &plumberServerGetVCEventsClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type PlumberServer_GetVCEventsClient interface {
-	Recv() (*VCEvent, error)
-	grpc.ClientStream
-}
-
-type plumberServerGetVCEventsClient struct {
-	grpc.ClientStream
-}
-
-func (x *plumberServerGetVCEventsClient) Recv() (*VCEvent, error) {
-	m := new(VCEvent)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *plumberServerClient) GetRepoTree(ctx context.Context, in *GetRepoTreeRequest, opts ...grpc.CallOption) (*GetRepoTreeResponse, error) {
-	out := new(GetRepoTreeResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetRepoTree", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) GetRepoFile(ctx context.Context, in *GetRepoFileRequest, opts ...grpc.CallOption) (*GetRepoFileResponse, error) {
-	out := new(GetRepoFileResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetRepoFile", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) CreatePullRequest(ctx context.Context, in *CreatePRRequest, opts ...grpc.CallOption) (*CreatePRResponse, error) {
-	out := new(CreatePRResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/CreatePullRequest", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) GetMonitor(ctx context.Context, in *GetMonitorRequest, opts ...grpc.CallOption) (*GetMonitorResponse, error) {
-	out := new(GetMonitorResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetMonitor", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) CreateMonitor(ctx context.Context, in *CreateMonitorRequest, opts ...grpc.CallOption) (*CreateMonitorResponse, error) {
-	out := new(CreateMonitorResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/CreateMonitor", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) DeleteMonitor(ctx context.Context, in *DeleteMonitorRequest, opts ...grpc.CallOption) (*DeleteMonitorResponse, error) {
-	out := new(DeleteMonitorResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/DeleteMonitor", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) UpdateMonitor(ctx context.Context, in *UpdateMonitorRequest, opts ...grpc.CallOption) (*UpdateMonitorResponse, error) {
-	out := new(UpdateMonitorResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/UpdateMonitor", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) GetAlert(ctx context.Context, in *GetMonitorRequest, opts ...grpc.CallOption) (*GetMonitorResponse, error) {
-	out := new(GetMonitorResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetAlert", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) CreateAlert(ctx context.Context, in *CreateAlertRequest, opts ...grpc.CallOption) (*CreateAlertResponse, error) {
-	out := new(CreateAlertResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/CreateAlert", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) DeleteAlert(ctx context.Context, in *DeleteAlertRequest, opts ...grpc.CallOption) (*DeleteAlertResponse, error) {
-	out := new(DeleteAlertResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/DeleteAlert", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) UpdateAlert(ctx context.Context, in *UpdateAlertRequest, opts ...grpc.CallOption) (*UpdateAlertResponse, error) {
-	out := new(UpdateAlertResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/UpdateAlert", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) GetValidation(ctx context.Context, in *GetValidationRequest, opts ...grpc.CallOption) (*GetValidationResponse, error) {
-	out := new(GetValidationResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetValidation", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) GetAllValidations(ctx context.Context, in *GetAllValidationsRequest, opts ...grpc.CallOption) (*GetAllValidationsResponse, error) {
-	out := new(GetAllValidationsResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetAllValidations", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) CreateValidation(ctx context.Context, in *CreateValidationRequest, opts ...grpc.CallOption) (*CreateValidationResponse, error) {
-	out := new(CreateValidationResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/CreateValidation", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) UpdateValidation(ctx context.Context, in *UpdateValidationRequest, opts ...grpc.CallOption) (*UpdateValidationResponse, error) {
-	out := new(UpdateValidationResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/UpdateValidation", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) DeleteValidation(ctx context.Context, in *DeleteValidationRequest, opts ...grpc.CallOption) (*DeleteValidationResponse, error) {
-	out := new(DeleteValidationResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/DeleteValidation", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) GetCurrentCounters(ctx context.Context, in *GetCurrentCountersRequest, opts ...grpc.CallOption) (*GetCurrentCountersResponse, error) {
-	out := new(GetCurrentCountersResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetCurrentCounters", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) GetCounterHistory(ctx context.Context, in *GetCounterHistoryRequest, opts ...grpc.CallOption) (*GetCounterHistoryResponse, error) {
-	out := new(GetCounterHistoryResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetCounterHistory", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *plumberServerClient) GetLiveErrors(ctx context.Context, in *GetLiveErrorsRequest, opts ...grpc.CallOption) (PlumberServer_GetLiveErrorsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_PlumberServer_serviceDesc.Streams[2], "/protos.PlumberServer/GetLiveErrors", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &plumberServerGetLiveErrorsClient{stream}
-	if err := x.ClientStream.SendMsg(in); err != nil {
-		return nil, err
-	}
-	if err := x.ClientStream.CloseSend(); err != nil {
-		return nil, err
-	}
-	return x, nil
-}
-
-type PlumberServer_GetLiveErrorsClient interface {
-	Recv() (*GetLiveErrorsResponse, error)
-	grpc.ClientStream
-}
-
-type plumberServerGetLiveErrorsClient struct {
-	grpc.ClientStream
-}
-
-func (x *plumberServerGetLiveErrorsClient) Recv() (*GetLiveErrorsResponse, error) {
-	m := new(GetLiveErrorsResponse)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *plumberServerClient) GetErrorHistory(ctx context.Context, in *GetErrorHistoryRequest, opts ...grpc.CallOption) (*GetErrorHistoryResponse, error) {
-	out := new(GetErrorHistoryResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetErrorHistory", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -921,6 +291,15 @@ func (c *plumberServerClient) DeleteDynamic(ctx context.Context, in *DeleteDynam
 	return out, nil
 }
 
+func (c *plumberServerClient) GetServerOptions(ctx context.Context, in *GetServerOptionsRequest, opts ...grpc.CallOption) (*GetServerOptionsResponse, error) {
+	out := new(GetServerOptionsResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetServerOptions", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PlumberServerServer is the server API for PlumberServer service.
 type PlumberServerServer interface {
 	// List configured/known connections
@@ -935,84 +314,13 @@ type PlumberServerServer interface {
 	UpdateConnection(context.Context, *UpdateConnectionRequest) (*UpdateConnectionResponse, error)
 	// If there are any active connections, delete will cause them to get closed
 	DeleteConnection(context.Context, *DeleteConnectionRequest) (*DeleteConnectionResponse, error)
-	// Start reading data from a connection
-	CreateRead(context.Context, *CreateReadRequest) (*CreateReadResponse, error)
-	// Streams messages received off of a read
-	StartRead(*StartReadRequest, PlumberServer_StartReadServer) error
-	// List all reads that have been created
-	GetAllReads(context.Context, *GetAllReadsRequest) (*GetAllReadsResponse, error)
-	// Stop reading data from a connection
-	StopRead(context.Context, *StopReadRequest) (*StopReadResponse, error)
-	// Resume reading data from an existing read
-	ResumeRead(context.Context, *ResumeReadRequest) (*ResumeReadResponse, error)
-	// Resume reading data from an existing read
-	DeleteRead(context.Context, *DeleteReadRequest) (*DeleteReadResponse, error)
-	// Write data to a connection
-	Write(context.Context, *WriteRequest) (*WriteResponse, error)
-	// Create a data relay from plumber server to the Batch platform
+	GetAllRelays(context.Context, *GetAllRelaysRequest) (*GetAllRelaysResponse, error)
+	GetRelay(context.Context, *GetRelayRequest) (*GetRelayResponse, error)
 	CreateRelay(context.Context, *CreateRelayRequest) (*CreateRelayResponse, error)
-	// Update a relay (such as API token) - relay will be interrupted!
 	UpdateRelay(context.Context, *UpdateRelayRequest) (*UpdateRelayResponse, error)
 	ResumeRelay(context.Context, *ResumeRelayRequest) (*ResumeRelayResponse, error)
 	StopRelay(context.Context, *StopRelayRequest) (*StopRelayResponse, error)
-	GetAllRelays(context.Context, *GetAllRelaysRequest) (*GetAllRelaysResponse, error)
-	GetRelay(context.Context, *GetRelayRequest) (*GetRelayResponse, error)
 	DeleteRelay(context.Context, *DeleteRelayRequest) (*DeleteRelayResponse, error)
-	// Retrieve a single schema
-	GetSchema(context.Context, *GetSchemaRequest) (*GetSchemaResponse, error)
-	// Retrieve all schemas
-	GetAllSchemas(context.Context, *GetAllSchemasRequest) (*GetAllSchemasResponse, error)
-	// Edit an existing schema
-	UpdateSchema(context.Context, *UpdateSchemaRequest) (*UpdateSchemaResponse, error)
-	// Approve a pending inferred schema
-	ApproveSchema(context.Context, *ApproveSchemaVersionRequest) (*ApproveSchemaVersionResponse, error)
-	// Import a schema from github
-	ImportGithub(context.Context, *ImportGithubRequest) (*ImportGithubResponse, error)
-	ImportGithubSelect(context.Context, *ImportGithubSelectRequest) (*ImportGithubSelectResponse, error)
-	// Import a schema from the local file system
-	ImportLocal(context.Context, *ImportLocalRequest) (*ImportLocalResponse, error)
-	// Delete a schema
-	DeleteSchema(context.Context, *DeleteSchemaRequest) (*DeleteSchemaResponse, error)
-	DeleteSchemaVersion(context.Context, *DeleteSchemaVersionRequest) (*DeleteSchemaVersionResponse, error)
-	GetService(context.Context, *GetServiceRequest) (*GetServiceResponse, error)
-	GetAllServices(context.Context, *GetAllServicesRequest) (*GetAllServicesResponse, error)
-	CreateService(context.Context, *CreateServiceRequest) (*CreateServiceResponse, error)
-	UpdateService(context.Context, *UpdateServiceRequest) (*UpdateServiceResponse, error)
-	DeleteService(context.Context, *DeleteServiceRequest) (*DeleteServiceResponse, error)
-	LinkSchemaToService(context.Context, *LinkSchemaToServiceRequest) (*LinkSchemaToServiceResponse, error)
-	UnlinkSchemaFromService(context.Context, *UnlinkSchemaFromServiceRequest) (*UnlinkSchemaFromServiceResponse, error)
-	LinkRepoToService(context.Context, *LinkRepoToServiceRequest) (*LinkRepoToServiceResponse, error)
-	UnlinkRepoFromService(context.Context, *UnlinkRepoFromServiceRequest) (*UnlinkRepoFromServiceResponse, error)
-	GetServerOptions(context.Context, *GetServerOptionsRequest) (*GetServerOptionsResponse, error)
-	SetServerOptions(context.Context, *SetServerOptionsRequest) (*SetServerOptionsResponse, error)
-	// List repos pulls a list of repositories from Github after a user has authorized the app
-	GetRepoList(context.Context, *GetRepoListRequest) (*GetRepoListResponse, error)
-	// GetVCEvents connects to vc-service backend and returns a stream of events pushed from github/bitbucket/etc
-	GetVCEvents(*GetVCEventsRequest, PlumberServer_GetVCEventsServer) error
-	// --------------------- Pull Request -------------------
-	GetRepoTree(context.Context, *GetRepoTreeRequest) (*GetRepoTreeResponse, error)
-	GetRepoFile(context.Context, *GetRepoFileRequest) (*GetRepoFileResponse, error)
-	CreatePullRequest(context.Context, *CreatePRRequest) (*CreatePRResponse, error)
-	GetMonitor(context.Context, *GetMonitorRequest) (*GetMonitorResponse, error)
-	CreateMonitor(context.Context, *CreateMonitorRequest) (*CreateMonitorResponse, error)
-	DeleteMonitor(context.Context, *DeleteMonitorRequest) (*DeleteMonitorResponse, error)
-	UpdateMonitor(context.Context, *UpdateMonitorRequest) (*UpdateMonitorResponse, error)
-	GetAlert(context.Context, *GetMonitorRequest) (*GetMonitorResponse, error)
-	CreateAlert(context.Context, *CreateAlertRequest) (*CreateAlertResponse, error)
-	DeleteAlert(context.Context, *DeleteAlertRequest) (*DeleteAlertResponse, error)
-	UpdateAlert(context.Context, *UpdateAlertRequest) (*UpdateAlertResponse, error)
-	GetValidation(context.Context, *GetValidationRequest) (*GetValidationResponse, error)
-	GetAllValidations(context.Context, *GetAllValidationsRequest) (*GetAllValidationsResponse, error)
-	CreateValidation(context.Context, *CreateValidationRequest) (*CreateValidationResponse, error)
-	UpdateValidation(context.Context, *UpdateValidationRequest) (*UpdateValidationResponse, error)
-	DeleteValidation(context.Context, *DeleteValidationRequest) (*DeleteValidationResponse, error)
-	GetCurrentCounters(context.Context, *GetCurrentCountersRequest) (*GetCurrentCountersResponse, error)
-	GetCounterHistory(context.Context, *GetCounterHistoryRequest) (*GetCounterHistoryResponse, error)
-	// Returns a stream of errors as they happen
-	GetLiveErrors(*GetLiveErrorsRequest, PlumberServer_GetLiveErrorsServer) error
-	// Returns 1000 most recent errors from etcd
-	GetErrorHistory(context.Context, *GetErrorHistoryRequest) (*GetErrorHistoryResponse, error)
-	// --------------------- Dynamic ---------------------
 	GetDynamic(context.Context, *GetDynamicRequest) (*GetDynamicResponse, error)
 	GetAllDynamic(context.Context, *GetAllDynamicRequest) (*GetAllDynamicResponse, error)
 	CreateDynamic(context.Context, *CreateDynamicRequest) (*CreateDynamicResponse, error)
@@ -1020,6 +328,7 @@ type PlumberServerServer interface {
 	ResumeDynamic(context.Context, *ResumeDynamicRequest) (*ResumeDynamicResponse, error)
 	UpdateDynamic(context.Context, *UpdateDynamicRequest) (*UpdateDynamicResponse, error)
 	DeleteDynamic(context.Context, *DeleteDynamicRequest) (*DeleteDynamicResponse, error)
+	GetServerOptions(context.Context, *GetServerOptionsRequest) (*GetServerOptionsResponse, error)
 }
 
 // UnimplementedPlumberServerServer can be embedded to have forward compatible implementations.
@@ -1044,26 +353,11 @@ func (*UnimplementedPlumberServerServer) UpdateConnection(ctx context.Context, r
 func (*UnimplementedPlumberServerServer) DeleteConnection(ctx context.Context, req *DeleteConnectionRequest) (*DeleteConnectionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteConnection not implemented")
 }
-func (*UnimplementedPlumberServerServer) CreateRead(ctx context.Context, req *CreateReadRequest) (*CreateReadResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateRead not implemented")
+func (*UnimplementedPlumberServerServer) GetAllRelays(ctx context.Context, req *GetAllRelaysRequest) (*GetAllRelaysResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllRelays not implemented")
 }
-func (*UnimplementedPlumberServerServer) StartRead(req *StartReadRequest, srv PlumberServer_StartReadServer) error {
-	return status.Errorf(codes.Unimplemented, "method StartRead not implemented")
-}
-func (*UnimplementedPlumberServerServer) GetAllReads(ctx context.Context, req *GetAllReadsRequest) (*GetAllReadsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAllReads not implemented")
-}
-func (*UnimplementedPlumberServerServer) StopRead(ctx context.Context, req *StopReadRequest) (*StopReadResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StopRead not implemented")
-}
-func (*UnimplementedPlumberServerServer) ResumeRead(ctx context.Context, req *ResumeReadRequest) (*ResumeReadResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ResumeRead not implemented")
-}
-func (*UnimplementedPlumberServerServer) DeleteRead(ctx context.Context, req *DeleteReadRequest) (*DeleteReadResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteRead not implemented")
-}
-func (*UnimplementedPlumberServerServer) Write(ctx context.Context, req *WriteRequest) (*WriteResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Write not implemented")
+func (*UnimplementedPlumberServerServer) GetRelay(ctx context.Context, req *GetRelayRequest) (*GetRelayResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRelay not implemented")
 }
 func (*UnimplementedPlumberServerServer) CreateRelay(ctx context.Context, req *CreateRelayRequest) (*CreateRelayResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateRelay not implemented")
@@ -1077,140 +371,8 @@ func (*UnimplementedPlumberServerServer) ResumeRelay(ctx context.Context, req *R
 func (*UnimplementedPlumberServerServer) StopRelay(ctx context.Context, req *StopRelayRequest) (*StopRelayResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StopRelay not implemented")
 }
-func (*UnimplementedPlumberServerServer) GetAllRelays(ctx context.Context, req *GetAllRelaysRequest) (*GetAllRelaysResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAllRelays not implemented")
-}
-func (*UnimplementedPlumberServerServer) GetRelay(ctx context.Context, req *GetRelayRequest) (*GetRelayResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetRelay not implemented")
-}
 func (*UnimplementedPlumberServerServer) DeleteRelay(ctx context.Context, req *DeleteRelayRequest) (*DeleteRelayResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRelay not implemented")
-}
-func (*UnimplementedPlumberServerServer) GetSchema(ctx context.Context, req *GetSchemaRequest) (*GetSchemaResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetSchema not implemented")
-}
-func (*UnimplementedPlumberServerServer) GetAllSchemas(ctx context.Context, req *GetAllSchemasRequest) (*GetAllSchemasResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAllSchemas not implemented")
-}
-func (*UnimplementedPlumberServerServer) UpdateSchema(ctx context.Context, req *UpdateSchemaRequest) (*UpdateSchemaResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateSchema not implemented")
-}
-func (*UnimplementedPlumberServerServer) ApproveSchema(ctx context.Context, req *ApproveSchemaVersionRequest) (*ApproveSchemaVersionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ApproveSchema not implemented")
-}
-func (*UnimplementedPlumberServerServer) ImportGithub(ctx context.Context, req *ImportGithubRequest) (*ImportGithubResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ImportGithub not implemented")
-}
-func (*UnimplementedPlumberServerServer) ImportGithubSelect(ctx context.Context, req *ImportGithubSelectRequest) (*ImportGithubSelectResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ImportGithubSelect not implemented")
-}
-func (*UnimplementedPlumberServerServer) ImportLocal(ctx context.Context, req *ImportLocalRequest) (*ImportLocalResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ImportLocal not implemented")
-}
-func (*UnimplementedPlumberServerServer) DeleteSchema(ctx context.Context, req *DeleteSchemaRequest) (*DeleteSchemaResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteSchema not implemented")
-}
-func (*UnimplementedPlumberServerServer) DeleteSchemaVersion(ctx context.Context, req *DeleteSchemaVersionRequest) (*DeleteSchemaVersionResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteSchemaVersion not implemented")
-}
-func (*UnimplementedPlumberServerServer) GetService(ctx context.Context, req *GetServiceRequest) (*GetServiceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetService not implemented")
-}
-func (*UnimplementedPlumberServerServer) GetAllServices(ctx context.Context, req *GetAllServicesRequest) (*GetAllServicesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAllServices not implemented")
-}
-func (*UnimplementedPlumberServerServer) CreateService(ctx context.Context, req *CreateServiceRequest) (*CreateServiceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateService not implemented")
-}
-func (*UnimplementedPlumberServerServer) UpdateService(ctx context.Context, req *UpdateServiceRequest) (*UpdateServiceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateService not implemented")
-}
-func (*UnimplementedPlumberServerServer) DeleteService(ctx context.Context, req *DeleteServiceRequest) (*DeleteServiceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteService not implemented")
-}
-func (*UnimplementedPlumberServerServer) LinkSchemaToService(ctx context.Context, req *LinkSchemaToServiceRequest) (*LinkSchemaToServiceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method LinkSchemaToService not implemented")
-}
-func (*UnimplementedPlumberServerServer) UnlinkSchemaFromService(ctx context.Context, req *UnlinkSchemaFromServiceRequest) (*UnlinkSchemaFromServiceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UnlinkSchemaFromService not implemented")
-}
-func (*UnimplementedPlumberServerServer) LinkRepoToService(ctx context.Context, req *LinkRepoToServiceRequest) (*LinkRepoToServiceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method LinkRepoToService not implemented")
-}
-func (*UnimplementedPlumberServerServer) UnlinkRepoFromService(ctx context.Context, req *UnlinkRepoFromServiceRequest) (*UnlinkRepoFromServiceResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UnlinkRepoFromService not implemented")
-}
-func (*UnimplementedPlumberServerServer) GetServerOptions(ctx context.Context, req *GetServerOptionsRequest) (*GetServerOptionsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetServerOptions not implemented")
-}
-func (*UnimplementedPlumberServerServer) SetServerOptions(ctx context.Context, req *SetServerOptionsRequest) (*SetServerOptionsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetServerOptions not implemented")
-}
-func (*UnimplementedPlumberServerServer) GetRepoList(ctx context.Context, req *GetRepoListRequest) (*GetRepoListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetRepoList not implemented")
-}
-func (*UnimplementedPlumberServerServer) GetVCEvents(req *GetVCEventsRequest, srv PlumberServer_GetVCEventsServer) error {
-	return status.Errorf(codes.Unimplemented, "method GetVCEvents not implemented")
-}
-func (*UnimplementedPlumberServerServer) GetRepoTree(ctx context.Context, req *GetRepoTreeRequest) (*GetRepoTreeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetRepoTree not implemented")
-}
-func (*UnimplementedPlumberServerServer) GetRepoFile(ctx context.Context, req *GetRepoFileRequest) (*GetRepoFileResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetRepoFile not implemented")
-}
-func (*UnimplementedPlumberServerServer) CreatePullRequest(ctx context.Context, req *CreatePRRequest) (*CreatePRResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreatePullRequest not implemented")
-}
-func (*UnimplementedPlumberServerServer) GetMonitor(ctx context.Context, req *GetMonitorRequest) (*GetMonitorResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetMonitor not implemented")
-}
-func (*UnimplementedPlumberServerServer) CreateMonitor(ctx context.Context, req *CreateMonitorRequest) (*CreateMonitorResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateMonitor not implemented")
-}
-func (*UnimplementedPlumberServerServer) DeleteMonitor(ctx context.Context, req *DeleteMonitorRequest) (*DeleteMonitorResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteMonitor not implemented")
-}
-func (*UnimplementedPlumberServerServer) UpdateMonitor(ctx context.Context, req *UpdateMonitorRequest) (*UpdateMonitorResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateMonitor not implemented")
-}
-func (*UnimplementedPlumberServerServer) GetAlert(ctx context.Context, req *GetMonitorRequest) (*GetMonitorResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAlert not implemented")
-}
-func (*UnimplementedPlumberServerServer) CreateAlert(ctx context.Context, req *CreateAlertRequest) (*CreateAlertResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateAlert not implemented")
-}
-func (*UnimplementedPlumberServerServer) DeleteAlert(ctx context.Context, req *DeleteAlertRequest) (*DeleteAlertResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteAlert not implemented")
-}
-func (*UnimplementedPlumberServerServer) UpdateAlert(ctx context.Context, req *UpdateAlertRequest) (*UpdateAlertResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateAlert not implemented")
-}
-func (*UnimplementedPlumberServerServer) GetValidation(ctx context.Context, req *GetValidationRequest) (*GetValidationResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetValidation not implemented")
-}
-func (*UnimplementedPlumberServerServer) GetAllValidations(ctx context.Context, req *GetAllValidationsRequest) (*GetAllValidationsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAllValidations not implemented")
-}
-func (*UnimplementedPlumberServerServer) CreateValidation(ctx context.Context, req *CreateValidationRequest) (*CreateValidationResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateValidation not implemented")
-}
-func (*UnimplementedPlumberServerServer) UpdateValidation(ctx context.Context, req *UpdateValidationRequest) (*UpdateValidationResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateValidation not implemented")
-}
-func (*UnimplementedPlumberServerServer) DeleteValidation(ctx context.Context, req *DeleteValidationRequest) (*DeleteValidationResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteValidation not implemented")
-}
-func (*UnimplementedPlumberServerServer) GetCurrentCounters(ctx context.Context, req *GetCurrentCountersRequest) (*GetCurrentCountersResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetCurrentCounters not implemented")
-}
-func (*UnimplementedPlumberServerServer) GetCounterHistory(ctx context.Context, req *GetCounterHistoryRequest) (*GetCounterHistoryResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetCounterHistory not implemented")
-}
-func (*UnimplementedPlumberServerServer) GetLiveErrors(req *GetLiveErrorsRequest, srv PlumberServer_GetLiveErrorsServer) error {
-	return status.Errorf(codes.Unimplemented, "method GetLiveErrors not implemented")
-}
-func (*UnimplementedPlumberServerServer) GetErrorHistory(ctx context.Context, req *GetErrorHistoryRequest) (*GetErrorHistoryResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetErrorHistory not implemented")
 }
 func (*UnimplementedPlumberServerServer) GetDynamic(ctx context.Context, req *GetDynamicRequest) (*GetDynamicResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDynamic not implemented")
@@ -1232,6 +394,9 @@ func (*UnimplementedPlumberServerServer) UpdateDynamic(ctx context.Context, req 
 }
 func (*UnimplementedPlumberServerServer) DeleteDynamic(ctx context.Context, req *DeleteDynamicRequest) (*DeleteDynamicResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteDynamic not implemented")
+}
+func (*UnimplementedPlumberServerServer) GetServerOptions(ctx context.Context, req *GetServerOptionsRequest) (*GetServerOptionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetServerOptions not implemented")
 }
 
 func RegisterPlumberServerServer(s *grpc.Server, srv PlumberServerServer) {
@@ -1346,131 +511,38 @@ func _PlumberServer_DeleteConnection_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PlumberServer_CreateRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateReadRequest)
+func _PlumberServer_GetAllRelays_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllRelaysRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PlumberServerServer).CreateRead(ctx, in)
+		return srv.(PlumberServerServer).GetAllRelays(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.PlumberServer/CreateRead",
+		FullMethod: "/protos.PlumberServer/GetAllRelays",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).CreateRead(ctx, req.(*CreateReadRequest))
+		return srv.(PlumberServerServer).GetAllRelays(ctx, req.(*GetAllRelaysRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PlumberServer_StartRead_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(StartReadRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(PlumberServerServer).StartRead(m, &plumberServerStartReadServer{stream})
-}
-
-type PlumberServer_StartReadServer interface {
-	Send(*StartReadResponse) error
-	grpc.ServerStream
-}
-
-type plumberServerStartReadServer struct {
-	grpc.ServerStream
-}
-
-func (x *plumberServerStartReadServer) Send(m *StartReadResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _PlumberServer_GetAllReads_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAllReadsRequest)
+func _PlumberServer_GetRelay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRelayRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PlumberServerServer).GetAllReads(ctx, in)
+		return srv.(PlumberServerServer).GetRelay(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.PlumberServer/GetAllReads",
+		FullMethod: "/protos.PlumberServer/GetRelay",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).GetAllReads(ctx, req.(*GetAllReadsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_StopRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StopReadRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).StopRead(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/StopRead",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).StopRead(ctx, req.(*StopReadRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_ResumeRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ResumeReadRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).ResumeRead(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/ResumeRead",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).ResumeRead(ctx, req.(*ResumeReadRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_DeleteRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteReadRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).DeleteRead(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/DeleteRead",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).DeleteRead(ctx, req.(*DeleteReadRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_Write_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WriteRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).Write(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/Write",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).Write(ctx, req.(*WriteRequest))
+		return srv.(PlumberServerServer).GetRelay(ctx, req.(*GetRelayRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1547,42 +619,6 @@ func _PlumberServer_StopRelay_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PlumberServer_GetAllRelays_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAllRelaysRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).GetAllRelays(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/GetAllRelays",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).GetAllRelays(ctx, req.(*GetAllRelaysRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_GetRelay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRelayRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).GetRelay(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/GetRelay",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).GetRelay(ctx, req.(*GetRelayRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _PlumberServer_DeleteRelay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteRelayRequest)
 	if err := dec(in); err != nil {
@@ -1597,768 +633,6 @@ func _PlumberServer_DeleteRelay_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PlumberServerServer).DeleteRelay(ctx, req.(*DeleteRelayRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_GetSchema_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetSchemaRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).GetSchema(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/GetSchema",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).GetSchema(ctx, req.(*GetSchemaRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_GetAllSchemas_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAllSchemasRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).GetAllSchemas(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/GetAllSchemas",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).GetAllSchemas(ctx, req.(*GetAllSchemasRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_UpdateSchema_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateSchemaRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).UpdateSchema(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/UpdateSchema",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).UpdateSchema(ctx, req.(*UpdateSchemaRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_ApproveSchema_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ApproveSchemaVersionRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).ApproveSchema(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/ApproveSchema",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).ApproveSchema(ctx, req.(*ApproveSchemaVersionRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_ImportGithub_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ImportGithubRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).ImportGithub(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/ImportGithub",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).ImportGithub(ctx, req.(*ImportGithubRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_ImportGithubSelect_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ImportGithubSelectRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).ImportGithubSelect(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/ImportGithubSelect",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).ImportGithubSelect(ctx, req.(*ImportGithubSelectRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_ImportLocal_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ImportLocalRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).ImportLocal(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/ImportLocal",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).ImportLocal(ctx, req.(*ImportLocalRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_DeleteSchema_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteSchemaRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).DeleteSchema(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/DeleteSchema",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).DeleteSchema(ctx, req.(*DeleteSchemaRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_DeleteSchemaVersion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteSchemaVersionRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).DeleteSchemaVersion(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/DeleteSchemaVersion",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).DeleteSchemaVersion(ctx, req.(*DeleteSchemaVersionRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_GetService_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetServiceRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).GetService(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/GetService",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).GetService(ctx, req.(*GetServiceRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_GetAllServices_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAllServicesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).GetAllServices(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/GetAllServices",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).GetAllServices(ctx, req.(*GetAllServicesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_CreateService_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateServiceRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).CreateService(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/CreateService",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).CreateService(ctx, req.(*CreateServiceRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_UpdateService_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateServiceRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).UpdateService(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/UpdateService",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).UpdateService(ctx, req.(*UpdateServiceRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_DeleteService_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteServiceRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).DeleteService(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/DeleteService",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).DeleteService(ctx, req.(*DeleteServiceRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_LinkSchemaToService_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LinkSchemaToServiceRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).LinkSchemaToService(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/LinkSchemaToService",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).LinkSchemaToService(ctx, req.(*LinkSchemaToServiceRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_UnlinkSchemaFromService_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UnlinkSchemaFromServiceRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).UnlinkSchemaFromService(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/UnlinkSchemaFromService",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).UnlinkSchemaFromService(ctx, req.(*UnlinkSchemaFromServiceRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_LinkRepoToService_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LinkRepoToServiceRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).LinkRepoToService(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/LinkRepoToService",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).LinkRepoToService(ctx, req.(*LinkRepoToServiceRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_UnlinkRepoFromService_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UnlinkRepoFromServiceRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).UnlinkRepoFromService(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/UnlinkRepoFromService",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).UnlinkRepoFromService(ctx, req.(*UnlinkRepoFromServiceRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_GetServerOptions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetServerOptionsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).GetServerOptions(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/GetServerOptions",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).GetServerOptions(ctx, req.(*GetServerOptionsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_SetServerOptions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetServerOptionsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).SetServerOptions(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/SetServerOptions",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).SetServerOptions(ctx, req.(*SetServerOptionsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_GetRepoList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRepoListRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).GetRepoList(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/GetRepoList",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).GetRepoList(ctx, req.(*GetRepoListRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_GetVCEvents_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(GetVCEventsRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(PlumberServerServer).GetVCEvents(m, &plumberServerGetVCEventsServer{stream})
-}
-
-type PlumberServer_GetVCEventsServer interface {
-	Send(*VCEvent) error
-	grpc.ServerStream
-}
-
-type plumberServerGetVCEventsServer struct {
-	grpc.ServerStream
-}
-
-func (x *plumberServerGetVCEventsServer) Send(m *VCEvent) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _PlumberServer_GetRepoTree_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRepoTreeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).GetRepoTree(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/GetRepoTree",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).GetRepoTree(ctx, req.(*GetRepoTreeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_GetRepoFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRepoFileRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).GetRepoFile(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/GetRepoFile",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).GetRepoFile(ctx, req.(*GetRepoFileRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_CreatePullRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreatePRRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).CreatePullRequest(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/CreatePullRequest",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).CreatePullRequest(ctx, req.(*CreatePRRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_GetMonitor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetMonitorRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).GetMonitor(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/GetMonitor",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).GetMonitor(ctx, req.(*GetMonitorRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_CreateMonitor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateMonitorRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).CreateMonitor(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/CreateMonitor",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).CreateMonitor(ctx, req.(*CreateMonitorRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_DeleteMonitor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteMonitorRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).DeleteMonitor(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/DeleteMonitor",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).DeleteMonitor(ctx, req.(*DeleteMonitorRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_UpdateMonitor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateMonitorRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).UpdateMonitor(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/UpdateMonitor",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).UpdateMonitor(ctx, req.(*UpdateMonitorRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_GetAlert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetMonitorRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).GetAlert(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/GetAlert",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).GetAlert(ctx, req.(*GetMonitorRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_CreateAlert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateAlertRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).CreateAlert(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/CreateAlert",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).CreateAlert(ctx, req.(*CreateAlertRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_DeleteAlert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteAlertRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).DeleteAlert(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/DeleteAlert",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).DeleteAlert(ctx, req.(*DeleteAlertRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_UpdateAlert_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateAlertRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).UpdateAlert(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/UpdateAlert",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).UpdateAlert(ctx, req.(*UpdateAlertRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_GetValidation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetValidationRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).GetValidation(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/GetValidation",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).GetValidation(ctx, req.(*GetValidationRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_GetAllValidations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAllValidationsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).GetAllValidations(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/GetAllValidations",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).GetAllValidations(ctx, req.(*GetAllValidationsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_CreateValidation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateValidationRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).CreateValidation(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/CreateValidation",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).CreateValidation(ctx, req.(*CreateValidationRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_UpdateValidation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateValidationRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).UpdateValidation(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/UpdateValidation",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).UpdateValidation(ctx, req.(*UpdateValidationRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_DeleteValidation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteValidationRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).DeleteValidation(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/DeleteValidation",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).DeleteValidation(ctx, req.(*DeleteValidationRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_GetCurrentCounters_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetCurrentCountersRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).GetCurrentCounters(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/GetCurrentCounters",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).GetCurrentCounters(ctx, req.(*GetCurrentCountersRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_GetCounterHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetCounterHistoryRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).GetCounterHistory(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/GetCounterHistory",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).GetCounterHistory(ctx, req.(*GetCounterHistoryRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _PlumberServer_GetLiveErrors_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(GetLiveErrorsRequest)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
-	return srv.(PlumberServerServer).GetLiveErrors(m, &plumberServerGetLiveErrorsServer{stream})
-}
-
-type PlumberServer_GetLiveErrorsServer interface {
-	Send(*GetLiveErrorsResponse) error
-	grpc.ServerStream
-}
-
-type plumberServerGetLiveErrorsServer struct {
-	grpc.ServerStream
-}
-
-func (x *plumberServerGetLiveErrorsServer) Send(m *GetLiveErrorsResponse) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func _PlumberServer_GetErrorHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetErrorHistoryRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PlumberServerServer).GetErrorHistory(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protos.PlumberServer/GetErrorHistory",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).GetErrorHistory(ctx, req.(*GetErrorHistoryRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -2489,6 +763,24 @@ func _PlumberServer_DeleteDynamic_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PlumberServer_GetServerOptions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetServerOptionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlumberServerServer).GetServerOptions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.PlumberServer/GetServerOptions",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlumberServerServer).GetServerOptions(ctx, req.(*GetServerOptionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _PlumberServer_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "protos.PlumberServer",
 	HandlerType: (*PlumberServerServer)(nil),
@@ -2518,28 +810,12 @@ var _PlumberServer_serviceDesc = grpc.ServiceDesc{
 			Handler:    _PlumberServer_DeleteConnection_Handler,
 		},
 		{
-			MethodName: "CreateRead",
-			Handler:    _PlumberServer_CreateRead_Handler,
+			MethodName: "GetAllRelays",
+			Handler:    _PlumberServer_GetAllRelays_Handler,
 		},
 		{
-			MethodName: "GetAllReads",
-			Handler:    _PlumberServer_GetAllReads_Handler,
-		},
-		{
-			MethodName: "StopRead",
-			Handler:    _PlumberServer_StopRead_Handler,
-		},
-		{
-			MethodName: "ResumeRead",
-			Handler:    _PlumberServer_ResumeRead_Handler,
-		},
-		{
-			MethodName: "DeleteRead",
-			Handler:    _PlumberServer_DeleteRead_Handler,
-		},
-		{
-			MethodName: "Write",
-			Handler:    _PlumberServer_Write_Handler,
+			MethodName: "GetRelay",
+			Handler:    _PlumberServer_GetRelay_Handler,
 		},
 		{
 			MethodName: "CreateRelay",
@@ -2558,176 +834,8 @@ var _PlumberServer_serviceDesc = grpc.ServiceDesc{
 			Handler:    _PlumberServer_StopRelay_Handler,
 		},
 		{
-			MethodName: "GetAllRelays",
-			Handler:    _PlumberServer_GetAllRelays_Handler,
-		},
-		{
-			MethodName: "GetRelay",
-			Handler:    _PlumberServer_GetRelay_Handler,
-		},
-		{
 			MethodName: "DeleteRelay",
 			Handler:    _PlumberServer_DeleteRelay_Handler,
-		},
-		{
-			MethodName: "GetSchema",
-			Handler:    _PlumberServer_GetSchema_Handler,
-		},
-		{
-			MethodName: "GetAllSchemas",
-			Handler:    _PlumberServer_GetAllSchemas_Handler,
-		},
-		{
-			MethodName: "UpdateSchema",
-			Handler:    _PlumberServer_UpdateSchema_Handler,
-		},
-		{
-			MethodName: "ApproveSchema",
-			Handler:    _PlumberServer_ApproveSchema_Handler,
-		},
-		{
-			MethodName: "ImportGithub",
-			Handler:    _PlumberServer_ImportGithub_Handler,
-		},
-		{
-			MethodName: "ImportGithubSelect",
-			Handler:    _PlumberServer_ImportGithubSelect_Handler,
-		},
-		{
-			MethodName: "ImportLocal",
-			Handler:    _PlumberServer_ImportLocal_Handler,
-		},
-		{
-			MethodName: "DeleteSchema",
-			Handler:    _PlumberServer_DeleteSchema_Handler,
-		},
-		{
-			MethodName: "DeleteSchemaVersion",
-			Handler:    _PlumberServer_DeleteSchemaVersion_Handler,
-		},
-		{
-			MethodName: "GetService",
-			Handler:    _PlumberServer_GetService_Handler,
-		},
-		{
-			MethodName: "GetAllServices",
-			Handler:    _PlumberServer_GetAllServices_Handler,
-		},
-		{
-			MethodName: "CreateService",
-			Handler:    _PlumberServer_CreateService_Handler,
-		},
-		{
-			MethodName: "UpdateService",
-			Handler:    _PlumberServer_UpdateService_Handler,
-		},
-		{
-			MethodName: "DeleteService",
-			Handler:    _PlumberServer_DeleteService_Handler,
-		},
-		{
-			MethodName: "LinkSchemaToService",
-			Handler:    _PlumberServer_LinkSchemaToService_Handler,
-		},
-		{
-			MethodName: "UnlinkSchemaFromService",
-			Handler:    _PlumberServer_UnlinkSchemaFromService_Handler,
-		},
-		{
-			MethodName: "LinkRepoToService",
-			Handler:    _PlumberServer_LinkRepoToService_Handler,
-		},
-		{
-			MethodName: "UnlinkRepoFromService",
-			Handler:    _PlumberServer_UnlinkRepoFromService_Handler,
-		},
-		{
-			MethodName: "GetServerOptions",
-			Handler:    _PlumberServer_GetServerOptions_Handler,
-		},
-		{
-			MethodName: "SetServerOptions",
-			Handler:    _PlumberServer_SetServerOptions_Handler,
-		},
-		{
-			MethodName: "GetRepoList",
-			Handler:    _PlumberServer_GetRepoList_Handler,
-		},
-		{
-			MethodName: "GetRepoTree",
-			Handler:    _PlumberServer_GetRepoTree_Handler,
-		},
-		{
-			MethodName: "GetRepoFile",
-			Handler:    _PlumberServer_GetRepoFile_Handler,
-		},
-		{
-			MethodName: "CreatePullRequest",
-			Handler:    _PlumberServer_CreatePullRequest_Handler,
-		},
-		{
-			MethodName: "GetMonitor",
-			Handler:    _PlumberServer_GetMonitor_Handler,
-		},
-		{
-			MethodName: "CreateMonitor",
-			Handler:    _PlumberServer_CreateMonitor_Handler,
-		},
-		{
-			MethodName: "DeleteMonitor",
-			Handler:    _PlumberServer_DeleteMonitor_Handler,
-		},
-		{
-			MethodName: "UpdateMonitor",
-			Handler:    _PlumberServer_UpdateMonitor_Handler,
-		},
-		{
-			MethodName: "GetAlert",
-			Handler:    _PlumberServer_GetAlert_Handler,
-		},
-		{
-			MethodName: "CreateAlert",
-			Handler:    _PlumberServer_CreateAlert_Handler,
-		},
-		{
-			MethodName: "DeleteAlert",
-			Handler:    _PlumberServer_DeleteAlert_Handler,
-		},
-		{
-			MethodName: "UpdateAlert",
-			Handler:    _PlumberServer_UpdateAlert_Handler,
-		},
-		{
-			MethodName: "GetValidation",
-			Handler:    _PlumberServer_GetValidation_Handler,
-		},
-		{
-			MethodName: "GetAllValidations",
-			Handler:    _PlumberServer_GetAllValidations_Handler,
-		},
-		{
-			MethodName: "CreateValidation",
-			Handler:    _PlumberServer_CreateValidation_Handler,
-		},
-		{
-			MethodName: "UpdateValidation",
-			Handler:    _PlumberServer_UpdateValidation_Handler,
-		},
-		{
-			MethodName: "DeleteValidation",
-			Handler:    _PlumberServer_DeleteValidation_Handler,
-		},
-		{
-			MethodName: "GetCurrentCounters",
-			Handler:    _PlumberServer_GetCurrentCounters_Handler,
-		},
-		{
-			MethodName: "GetCounterHistory",
-			Handler:    _PlumberServer_GetCounterHistory_Handler,
-		},
-		{
-			MethodName: "GetErrorHistory",
-			Handler:    _PlumberServer_GetErrorHistory_Handler,
 		},
 		{
 			MethodName: "GetDynamic",
@@ -2757,23 +865,11 @@ var _PlumberServer_serviceDesc = grpc.ServiceDesc{
 			MethodName: "DeleteDynamic",
 			Handler:    _PlumberServer_DeleteDynamic_Handler,
 		},
-	},
-	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "StartRead",
-			Handler:       _PlumberServer_StartRead_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "GetVCEvents",
-			Handler:       _PlumberServer_GetVCEvents_Handler,
-			ServerStreams: true,
-		},
-		{
-			StreamName:    "GetLiveErrors",
-			Handler:       _PlumberServer_GetLiveErrors_Handler,
-			ServerStreams: true,
+			MethodName: "GetServerOptions",
+			Handler:    _PlumberServer_GetServerOptions_Handler,
 		},
 	},
+	Streams:  []grpc.StreamDesc{},
 	Metadata: "ps_base.proto",
 }

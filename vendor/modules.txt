@@ -144,7 +144,7 @@ github.com/batchcorp/natty
 # github.com/batchcorp/pgoutput v0.3.2
 ## explicit
 github.com/batchcorp/pgoutput
-# github.com/batchcorp/plumber-schemas v0.0.139
+# github.com/batchcorp/plumber-schemas v0.0.140
 ## explicit
 github.com/batchcorp/plumber-schemas/build/go/protos
 github.com/batchcorp/plumber-schemas/build/go/protos/args
@@ -159,16 +159,10 @@ github.com/batchcorp/rabbit
 github.com/beorn7/perks/quantile
 # github.com/cespare/xxhash/v2 v2.1.2
 github.com/cespare/xxhash/v2
-# github.com/coreos/go-semver v0.3.0
-github.com/coreos/go-semver/semver
-# github.com/coreos/go-systemd/v22 v22.3.2
-github.com/coreos/go-systemd/v22/journal
 # github.com/danieljoos/wincred v1.0.2
 github.com/danieljoos/wincred
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
-# github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.0-20210816181553-5444fa50b93d
-github.com/decred/dcrd/dcrec/secp256k1/v4
 # github.com/devigned/tab v0.1.1
 github.com/devigned/tab
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -214,16 +208,6 @@ github.com/go-stack/stack
 ## explicit
 github.com/go-stomp/stomp
 github.com/go-stomp/stomp/frame
-# github.com/goccy/go-json v0.7.6
-github.com/goccy/go-json
-github.com/goccy/go-json/internal/decoder
-github.com/goccy/go-json/internal/encoder
-github.com/goccy/go-json/internal/encoder/vm
-github.com/goccy/go-json/internal/encoder/vm_color
-github.com/goccy/go-json/internal/encoder/vm_color_indent
-github.com/goccy/go-json/internal/encoder/vm_indent
-github.com/goccy/go-json/internal/errors
-github.com/goccy/go-json/internal/runtime
 # github.com/godbus/dbus v0.0.0-20190726142602-4481cbc300e2
 github.com/godbus/dbus
 # github.com/gogo/protobuf v1.3.2
@@ -259,9 +243,6 @@ github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
 # github.com/google/go-github/v37 v37.0.0
 ## explicit
-github.com/google/go-github/v37/github
-# github.com/google/go-querystring v1.0.0
-github.com/google/go-querystring/query
 # github.com/google/uuid v1.2.0
 ## explicit
 github.com/google/uuid
@@ -331,39 +312,8 @@ github.com/kubemq-io/protobuf/go
 # github.com/lensesio/tableprinter v0.0.0-20201125135848-89e81fc956e7
 ## explicit
 github.com/lensesio/tableprinter
-# github.com/lestrrat-go/backoff/v2 v2.0.8
-github.com/lestrrat-go/backoff/v2
-# github.com/lestrrat-go/blackmagic v1.0.0
-github.com/lestrrat-go/blackmagic
-# github.com/lestrrat-go/httpcc v1.0.0
-github.com/lestrrat-go/httpcc
-# github.com/lestrrat-go/iter v1.0.1
-github.com/lestrrat-go/iter/arrayiter
-github.com/lestrrat-go/iter/mapiter
 # github.com/lestrrat-go/jwx v1.2.6
 ## explicit
-github.com/lestrrat-go/jwx
-github.com/lestrrat-go/jwx/internal/base64
-github.com/lestrrat-go/jwx/internal/ecutil
-github.com/lestrrat-go/jwx/internal/iter
-github.com/lestrrat-go/jwx/internal/json
-github.com/lestrrat-go/jwx/internal/keyconv
-github.com/lestrrat-go/jwx/internal/pool
-github.com/lestrrat-go/jwx/jwa
-github.com/lestrrat-go/jwx/jwe
-github.com/lestrrat-go/jwx/jwe/internal/aescbc
-github.com/lestrrat-go/jwx/jwe/internal/cipher
-github.com/lestrrat-go/jwx/jwe/internal/concatkdf
-github.com/lestrrat-go/jwx/jwe/internal/content_crypt
-github.com/lestrrat-go/jwx/jwe/internal/keyenc
-github.com/lestrrat-go/jwx/jwe/internal/keygen
-github.com/lestrrat-go/jwx/jwk
-github.com/lestrrat-go/jwx/jws
-github.com/lestrrat-go/jwx/jwt
-github.com/lestrrat-go/jwx/jwt/internal/types
-github.com/lestrrat-go/jwx/x25519
-# github.com/lestrrat-go/option v1.0.0
-github.com/lestrrat-go/option
 # github.com/linkedin/goavro/v2 v2.9.8
 ## explicit
 github.com/linkedin/goavro/v2
@@ -599,24 +549,8 @@ github.com/xdg/scram
 github.com/xdg/stringprep
 # github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d
 github.com/youmark/pkcs8
-# go.etcd.io/etcd/api/v3 v3.5.0
-go.etcd.io/etcd/api/v3/authpb
-go.etcd.io/etcd/api/v3/etcdserverpb
-go.etcd.io/etcd/api/v3/membershippb
-go.etcd.io/etcd/api/v3/mvccpb
-go.etcd.io/etcd/api/v3/v3rpc/rpctypes
-go.etcd.io/etcd/api/v3/version
-# go.etcd.io/etcd/client/pkg/v3 v3.5.0
-go.etcd.io/etcd/client/pkg/v3/logutil
-go.etcd.io/etcd/client/pkg/v3/systemd
-go.etcd.io/etcd/client/pkg/v3/types
 # go.etcd.io/etcd/client/v3 v3.5.0
 ## explicit
-go.etcd.io/etcd/client/v3
-go.etcd.io/etcd/client/v3/concurrency
-go.etcd.io/etcd/client/v3/credentials
-go.etcd.io/etcd/client/v3/internal/endpoint
-go.etcd.io/etcd/client/v3/internal/resolver
 # go.mongodb.org/mongo-driver v1.7.3
 ## explicit
 go.mongodb.org/mongo-driver/bson
@@ -670,30 +604,11 @@ go.opencensus.io/trace/propagation
 go.opencensus.io/trace/tracestate
 # go.uber.org/atomic v1.7.0
 go.uber.org/atomic
-# go.uber.org/multierr v1.6.0
-go.uber.org/multierr
-# go.uber.org/zap v1.17.0
-go.uber.org/zap
-go.uber.org/zap/buffer
-go.uber.org/zap/internal/bufferpool
-go.uber.org/zap/internal/color
-go.uber.org/zap/internal/exit
-go.uber.org/zap/zapcore
-go.uber.org/zap/zapgrpc
 # golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce
 ## explicit
-golang.org/x/crypto/cast5
-golang.org/x/crypto/curve25519
-golang.org/x/crypto/curve25519/internal/field
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/ed25519/internal/edwards25519
 golang.org/x/crypto/ocsp
-golang.org/x/crypto/openpgp
-golang.org/x/crypto/openpgp/armor
-golang.org/x/crypto/openpgp/elgamal
-golang.org/x/crypto/openpgp/errors
-golang.org/x/crypto/openpgp/packet
-golang.org/x/crypto/openpgp/s2k
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/pkcs12
 golang.org/x/crypto/pkcs12/internal/rc2
@@ -864,7 +779,6 @@ google.golang.org/grpc/keepalive
 google.golang.org/grpc/metadata
 google.golang.org/grpc/peer
 google.golang.org/grpc/resolver
-google.golang.org/grpc/resolver/manual
 google.golang.org/grpc/serviceconfig
 google.golang.org/grpc/stats
 google.golang.org/grpc/status

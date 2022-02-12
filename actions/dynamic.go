@@ -187,7 +187,7 @@ func (a *Actions) DeleteDynamic(ctx context.Context, dynamicID string) error {
 	}
 
 	// Delete in memory
-	a.cfg.PersistentConfig.DeleteService(dynamicID)
+	a.cfg.PersistentConfig.DeleteDynamic(dynamicID)
 	a.cfg.PersistentConfig.Save()
 
 	// Update metrics
