@@ -20,7 +20,7 @@ func (r *RedisPubsub) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOpti
 
 	llog := logrus.WithField("pkg", "rpubsub/dynamic")
 
-	if err := dynamicSvc.Start(ctx, "Redis PubSub"); err != nil {
+	if err := dynamicSvc.Start(ctx, "Redis PubSub", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create dynamic")
 	}
 

@@ -27,7 +27,7 @@ func (a *AWSSQS) Dynamic(ctx context.Context, opts *opts.DynamicOptions, dynamic
 		return errors.Wrap(err, "unable to get queue url")
 	}
 
-	if err := dynamicSvc.Start(ctx, "AWS SQS"); err != nil {
+	if err := dynamicSvc.Start(ctx, "AWS SQS", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create dynamic")
 	}
 

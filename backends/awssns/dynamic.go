@@ -23,7 +23,7 @@ func (a *AWSSNS) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, 
 
 	llog := a.log.WithField("pkg", "activemq/dynamic")
 
-	if err := dynamicSvc.Start(ctx, "AWS SNS"); err != nil {
+	if err := dynamicSvc.Start(ctx, "AWS SNS", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create dynamic")
 	}
 

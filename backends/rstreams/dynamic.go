@@ -20,7 +20,7 @@ func (r *RedisStreams) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOpt
 
 	llog := r.log.WithField("pkg", "rstreams/dynamic")
 
-	if err := dynamicSvc.Start(ctx, "Redis Streams"); err != nil {
+	if err := dynamicSvc.Start(ctx, "Redis Streams", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create dynamic")
 	}
 

@@ -29,7 +29,7 @@ func (r *RabbitMQ) Dynamic(ctx context.Context, opts *opts.DynamicOptions, dynam
 		r.client = producer
 	}
 
-	if err := dynamicSvc.Start(ctx, "RabbitMQ"); err != nil {
+	if err := dynamicSvc.Start(ctx, "RabbitMQ", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create dynamic")
 	}
 

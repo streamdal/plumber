@@ -18,7 +18,7 @@ func (a *ActiveMQ) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions
 
 	llog := a.log.WithField("pkg", "activemq/dynamic")
 
-	if err := dynamicSvc.Start(ctx, "ActiveMQ"); err != nil {
+	if err := dynamicSvc.Start(ctx, "ActiveMQ", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create dynamic")
 	}
 

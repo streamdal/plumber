@@ -24,7 +24,7 @@ func (p *Pulsar) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, 
 		return errors.Wrap(err, "unable to create Pulsar producer")
 	}
 
-	if err := dynamicSvc.Start(ctx, "Apache Pulsar"); err != nil {
+	if err := dynamicSvc.Start(ctx, "Apache Pulsar", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create dynamic")
 	}
 

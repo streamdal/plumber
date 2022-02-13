@@ -19,7 +19,7 @@ func (n *NatsJetstream) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOp
 
 	llog := n.log.WithField("pkg", "nats-jetstream/dynamic")
 
-	if err := dynamicSvc.Start(ctx, "Nats"); err != nil {
+	if err := dynamicSvc.Start(ctx, "Nats", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create dynamic")
 	}
 

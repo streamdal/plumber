@@ -20,7 +20,7 @@ func (n *NatsStreaming) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOp
 
 	llog := n.log.WithField("pkg", "nats-streaming/dynamic")
 
-	if err := dynamicSvc.Start(ctx, "Nats Streaming"); err != nil {
+	if err := dynamicSvc.Start(ctx, "Nats Streaming", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create dynamic")
 	}
 

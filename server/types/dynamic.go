@@ -30,6 +30,11 @@ type Dynamic struct {
 	log *logrus.Entry
 }
 
+// StartDynamic will attempt to start the replay tunnel. Upon the start, it will
+// wait for the given "delay" listening for errors. It will return an error
+// if it encounters any errors on the ErrorChan or if the Dynamic call fails.
+//
+// Subsequent failures inside of Dynamic() are not handled yet.
 func (d *Dynamic) StartDynamic(delay time.Duration) error {
 	d.log = logrus.WithField("pkg", "types/dynamic")
 
@@ -47,7 +52,6 @@ func (d *Dynamic) StartDynamic(delay time.Duration) error {
 	d.Options.XActive = true
 
 	go func() {
-
 		// Blocks until dynamic is closed
 		if err := d.Backend.Dynamic(d.CancelCtx, d.Options, dynamicSvc, localErrCh); err != nil {
 			util.WriteError(d.log, localErrCh, fmt.Errorf("error during dynamic replay (id: %s): %s", d.Id, err))
@@ -56,7 +60,7 @@ func (d *Dynamic) StartDynamic(delay time.Duration) error {
 			d.CancelFunc()
 
 			// Give it a sec
-			time.Sleep(time.Second) // ~DS: same here
+			time.Sleep(time.Second)
 
 			// Clean up connection to user's message bus
 			d.Close()

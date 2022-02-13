@@ -183,6 +183,8 @@ func (s *Server) DeleteDynamic(ctx context.Context, req *protos.DeleteDynamicReq
 		s.Log.Error(err)
 	}
 
+	s.Log.Infof("Dynamic replay '%s' deleted", req.DynamicId)
+
 	return &protos.DeleteDynamicResponse{
 		Status: &common.Status{
 			Code:      common.Code_OK,

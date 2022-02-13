@@ -36,7 +36,7 @@ func (r *RabbitStreams) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOp
 
 	defer producer.Close()
 
-	if err := dynamicSvc.Start(ctx, "RabbitMQ Streams"); err != nil {
+	if err := dynamicSvc.Start(ctx, "RabbitMQ Streams", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create dynamic")
 	}
 

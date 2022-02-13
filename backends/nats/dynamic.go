@@ -19,7 +19,7 @@ func (n *Nats) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dy
 
 	llog := n.log.WithField("pkg", "nats/dynamic")
 
-	if err := dynamicSvc.Start(ctx, "Nats"); err != nil {
+	if err := dynamicSvc.Start(ctx, "Nats", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create dynamic")
 	}
 

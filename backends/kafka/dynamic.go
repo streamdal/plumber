@@ -31,7 +31,7 @@ func (k *Kafka) Dynamic(ctx context.Context, opts *opts.DynamicOptions, dynamicS
 
 	defer writer.Close()
 
-	if err := dynamicSvc.Start(ctx, "Kafka"); err != nil {
+	if err := dynamicSvc.Start(ctx, "Kafka", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create dynamic")
 	}
 

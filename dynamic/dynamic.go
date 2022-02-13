@@ -5,9 +5,9 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
-	"strings"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -35,7 +35,7 @@ var (
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . IDynamic
 type IDynamic interface {
-	Start(ctx context.Context, bus string) error
+	Start(ctx context.Context, bus string, errorCh chan<- *records.ErrorRecord) error
 	Read() chan *events.Outbound
 	Close() error
 }
@@ -70,7 +70,7 @@ func New(opts *opts.DynamicOptions, bus string) (IDynamic, error) {
 		Client:            services.NewDProxyClient(conn),
 		Conn:              conn,
 		Token:             opts.ApiToken,
-		log:               logrus.WithField("pkg", "dproxy"),
+		log:               logrus.WithField("pkg", "dynamic"),
 		OutboundMessageCh: make(chan *events.Outbound, 1),
 		MessageBus:        bus,
 		Options:           opts,
@@ -139,23 +139,23 @@ func (d *Client) Read() chan *events.Outbound {
 // Start is called by a backend's Dynamic() method. It authorizes the connection
 // and begins reading a GRPC stream of responses consisting of DynamicReplay
 // protobuf messages.
-func (d *Client) Start(ctx context.Context, bus string) error {
-	// No reason to launch the goroutine if we're unable to auth to dproxy
-	authResponse, err := d.Client.Auth(ctx, &events.AuthRequest{
-		Token: d.Token,
-	})
-
-	if err != nil {
-		if !strings.Contains(err.Error(), "invalid API token") {
-			d.log.Errorf("error during auth check")
-		}
-
-		return ErrNotAuthorized
-	}
-
-	if !authResponse.Authorized {
-		return ErrNotAuthorized
-	}
+func (d *Client) Start(ctx context.Context, bus string, errorCh chan<- *records.ErrorRecord) error {
+	//// No reason to launch the goroutine if we're unable to auth to dproxy
+	//authResponse, err := d.Client.Auth(ctx, &events.AuthRequest{
+	//	Token: d.Token,
+	//})
+	//
+	//if err != nil {
+	//	if !strings.Contains(err.Error(), "invalid API token") {
+	//		d.log.Errorf("error during auth check")
+	//	}
+	//
+	//	return ErrNotAuthorized
+	//}
+	//
+	//if !authResponse.Authorized {
+	//	return ErrNotAuthorized
+	//}
 
 	go func() {
 		var err error
@@ -168,29 +168,31 @@ func (d *Client) Start(ctx context.Context, bus string) error {
 				stream, err = d.connect(ctx, bus)
 				if err != nil {
 					if err == context.Canceled {
-						d.log.Debug("context cancelled during connect")
+						d.notify(err, "context cancelled during connect", errorCh, logrus.DebugLevel)
 						break
 					}
 
-					d.log.Error(err)
+					// Error we can probably recover from -> force reconnect after sleep
 					stream = nil
+					d.log.Error(err)
 					time.Sleep(ReconnectSleep)
+
 					continue
 				}
 			}
 
 			response, err := stream.Recv()
 			if err != nil {
-				if err == context.Canceled {
-					d.log.Debug("context cancelled during recv")
+				if err.Error() == "rpc error: code = Canceled desc = context canceled" {
+					d.notify(err, "context cancelled during recv", errorCh, logrus.DebugLevel)
 					break
 				}
 
 				if errors.Is(err, io.EOF) {
-					// Nice reconnect messages
-					d.log.Errorf("dProxy server is unavailable, retrying in %s...", ReconnectSleep.String())
+					// Nicer reconnect messages
+					d.log.Warningf("dProxy server is unavailable, retrying in %s...", ReconnectSleep.String())
 				} else {
-					d.log.Errorf("Error receiving message: %s", err)
+					d.log.Warningf("Error receiving message, retrying in %s: %s", ReconnectSleep.String(), err)
 				}
 
 				// Stream is no longer useful. Need to get a new one on reconnect
@@ -206,11 +208,11 @@ func (d *Client) Start(ctx context.Context, bus string) error {
 
 			if err := d.handleResponse(ctx, response); err != nil {
 				if err == ErrNotAuthorized {
-					d.log.Debug("unauthorized - exiting")
+					d.notify(err, "API token was not accepted for dynamic - bailing out", errorCh, logrus.DebugLevel)
 					break
 				}
 
-				d.log.Errorf("error handling response for msg type '%s': %s", response.Type, err)
+				d.log.Warningf("error handling response for msg type '%s' (recoverable): %s", response.Type, err)
 			}
 		}
 
@@ -218,6 +220,33 @@ func (d *Client) Start(ctx context.Context, bus string) error {
 	}()
 
 	return nil
+}
+
+func (d *Client) notify(err error, desc string, errorCh chan<- *records.ErrorRecord, logLevel logrus.Level) {
+	if errorCh != nil {
+		errRecord := &records.ErrorRecord{
+			OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
+			Error:               err.Error(),
+		}
+
+		if desc != "" {
+			errRecord.Metadata = map[string][]byte{
+				"desc": []byte(desc),
+			}
+		}
+
+		errorCh <- errRecord
+	}
+
+	var fullErr string
+
+	if desc != "" {
+		fullErr = fmt.Sprintf("%s: %s", desc, err.Error())
+	} else {
+		fullErr = err.Error()
+	}
+
+	d.log.Logger.Log(logLevel, fullErr)
 }
 
 // connect opens a GRPC connection to dProxy. It is called by Start
@@ -271,7 +300,7 @@ func (d *Client) handleAuthResponse(resp *events.DynamicReplay) error {
 		return ErrNotAuthorized
 	}
 
-	d.log.Info("Connection authorized. Waiting for replay messages...")
+	d.log.Debug("Connection authorized for replay tunnel")
 
 	return nil
 }
@@ -299,7 +328,7 @@ func (d *Client) handleReplayEvent(resp *events.DynamicReplay) error {
 
 	switch event.Type {
 	case events.ReplayEvent_CREATE_REPLAY:
-		llog.Info("Replay starting")
+		llog.Debug("Replay starting")
 	case events.ReplayEvent_PAUSE_REPLAY:
 		llog.Info("Replay paused")
 	case events.ReplayEvent_RESUME_REPLAY:

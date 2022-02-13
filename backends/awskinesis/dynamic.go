@@ -21,7 +21,7 @@ func (k *Kinesis) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions,
 
 	llog := k.log.WithField("pkg", "kinesis/dynamic")
 
-	if err := dynamicSvc.Start(ctx, "AWS Kinesis"); err != nil {
+	if err := dynamicSvc.Start(ctx, "AWS Kinesis", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create dynamic")
 	}
 

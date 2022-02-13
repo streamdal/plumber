@@ -18,7 +18,7 @@ func (g *GCPPubSub) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOption
 		return errors.New("unable to validate write options")
 	}
 
-	if err := dynamicSvc.Start(ctx, "GCP PubSub"); err != nil {
+	if err := dynamicSvc.Start(ctx, "GCP PubSub", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create dynamic")
 	}
 

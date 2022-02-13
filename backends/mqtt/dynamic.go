@@ -20,7 +20,7 @@ func (m *MQTT) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dy
 
 	llog := m.log.WithField("pkg", "mqtt/dynamic")
 
-	if err := dynamicSvc.Start(ctx, "MQTT"); err != nil {
+	if err := dynamicSvc.Start(ctx, "MQTT", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create dynamic")
 	}
 

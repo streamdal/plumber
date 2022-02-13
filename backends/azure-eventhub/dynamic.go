@@ -20,7 +20,7 @@ func (a *AzureEventHub) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOp
 
 	llog := logrus.WithField("pkg", "azure-eventhub/dynamic")
 
-	if err := dynamicSvc.Start(ctx, "Azure Event Hub"); err != nil {
+	if err := dynamicSvc.Start(ctx, "Azure Event Hub", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create dynamic")
 	}
 

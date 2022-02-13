@@ -41,7 +41,7 @@ func (a *AzureServiceBus) Dynamic(ctx context.Context, dynamicOpts *opts.Dynamic
 		defer topic.Close(ctx)
 	}
 
-	if err := dynamicSvc.Start(ctx, "Azure Service Bus"); err != nil {
+	if err := dynamicSvc.Start(ctx, "Azure Service Bus", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create dynamic")
 	}
 
