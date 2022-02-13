@@ -127,8 +127,15 @@ func (s *Server) StopDynamic(ctx context.Context, req *protos.StopDynamicRequest
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	if err := s.Actions.StopDynamic(ctx, req.DynamicId); err != nil {
+	dynamicOptions, err := s.Actions.StopDynamic(ctx, req.DynamicId)
+	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, err.Error())
+	}
+
+	// Publish CreateDynamic event
+	if err := s.Bus.PublishStopDynamic(ctx, dynamicOptions.Options); err != nil {
+		// TODO: Should have rollback
+		s.Log.Errorf("unable to publish stop dynamic event: %s", err)
 	}
 
 	s.Log.Infof("Dynamic replay '%s' stopped", req.DynamicId)
@@ -150,6 +157,12 @@ func (s *Server) ResumeDynamic(ctx context.Context, req *protos.ResumeDynamicReq
 	d, err := s.Actions.ResumeDynamic(ctx, req.DynamicId)
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, err.Error())
+	}
+
+	// Publish CreateDynamic event
+	if err := s.Bus.PublishResumeDynamic(ctx, d.Options); err != nil {
+		// TODO: Should have rollback
+		s.Log.Errorf("unable to publish resume dynamic event: %s", err)
 	}
 
 	s.Log.Infof("Dynamic replay '%s' started", d.Id)

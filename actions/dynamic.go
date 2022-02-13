@@ -95,19 +95,20 @@ func (a *Actions) ResumeDynamic(ctx context.Context, dynamicID string) (*types.D
 	// Update metrics
 	prometheus.IncrPromGauge(prometheus.PlumberDynamicReplays)
 
-	// TODO: Active/inactive state should be stored somewhere
+	a.cfg.PersistentConfig.SetDynamic(dynamicID, d)
+	a.cfg.PersistentConfig.Save()
 
 	return d, nil
 }
 
-func (a Actions) StopDynamic(ctx context.Context, dynamicID string) error {
+func (a Actions) StopDynamic(ctx context.Context, dynamicID string) (*types.Dynamic, error) {
 	d := a.cfg.PersistentConfig.GetDynamic(dynamicID)
 	if d == nil {
-		return errors.New("Dynamic replay does not exist")
+		return nil, errors.New("Dynamic replay does not exist")
 	}
 
 	if !d.Active {
-		return errors.New("Dynamic replay is not active")
+		return nil, errors.New("Dynamic replay is not active")
 	}
 
 	// Stop grpc client connection so we no longer receive messages from dProxy
@@ -124,7 +125,10 @@ func (a Actions) StopDynamic(ctx context.Context, dynamicID string) error {
 	// Update metrics
 	prometheus.DecrPromGauge(prometheus.PlumberDynamicReplays)
 
-	return nil
+	a.cfg.PersistentConfig.SetDynamic(dynamicID, d)
+	a.cfg.PersistentConfig.Save()
+
+	return d, nil
 }
 
 func (a *Actions) UpdateDynamic(ctx context.Context, dynamicID string, dynamicOpts *opts.DynamicOptions) (*types.Dynamic, error) {
@@ -176,16 +180,16 @@ func (a *Actions) DeleteDynamic(ctx context.Context, dynamicID string) error {
 	}
 
 	// Stop grpc client connection so we no longer receive messages from dProxy
-	//if dynamicReplay.Active {
-	//	// Cancel reader worker
-	//	dynamicReplay.CancelFunc()
-	//
-	//	// Give it a sec to finish
-	//	time.Sleep(time.Second)
-	//
-	//	// Clean up gRPC connection to dProxy and connection to client's backend message bus
-	//	dynamicReplay.Close()
-	//}
+	if dynamicReplay.Active {
+		// Cancel reader worker
+		dynamicReplay.CancelFunc()
+
+		// Give it a sec to finish
+		time.Sleep(time.Second)
+
+		// Clean up gRPC connection to dProxy and connection to client's backend message bus
+		dynamicReplay.Close()
+	}
 
 	// Delete in memory
 	a.cfg.PersistentConfig.DeleteDynamic(dynamicID)
