@@ -239,6 +239,7 @@ func (b *Bus) setupClients() error {
 	// This is the important part - since every consumer will have a unique
 	// consumer name, NATS will send every plumber instance a copy of the message
 	broadcastCfg.ConsumerName = b.config.ServerOptions.NodeId
+	broadcastCfg.ConsumerFilterSubject = StreamName + "." + BroadcastSubject
 
 	broadcastClient, err := natty.New(&broadcastCfg)
 	if err != nil {
@@ -249,11 +250,11 @@ func (b *Bus) setupClients() error {
 
 	// By assigning a common consumer name, NATS will deliver the message to
 	// only one plumber instance.
-	broadcastCfg.ConsumerName = "queue-consumer"
+	queueCfg.ConsumerName = "queue-consumer"
+	queueCfg.ConsumerFilterSubject = StreamName + "." + QueueSubject
 
 	// Setup queue client
 	queueClient, err := natty.New(&queueCfg)
-
 	if err != nil {
 		return errors.Wrap(err, "unable to create queue client")
 	}
@@ -315,8 +316,26 @@ func (b *Bus) runBroadcastConsumer(consumerCtx context.Context) error {
 	return nil
 }
 
-// TODO: Implement
 func (b *Bus) runQueueConsumer(consumerCtx context.Context) error {
+	subject := StreamName + "." + QueueSubject
+
+	llog := b.log.WithFields(logrus.Fields{
+		"consumer": "broadcast",
+		"subject":  subject,
+	})
+
+	for {
+		err := b.queueClient.Consume(consumerCtx, subject, b.consumerErrChan, b.queueCallback)
+		if err != nil {
+			if err == context.Canceled {
+				llog.Debug("queue consumer context cancelled")
+				break
+			}
+		}
+	}
+
+	llog.Debug("exiting")
+
 	return nil
 }
 

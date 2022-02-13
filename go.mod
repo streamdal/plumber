@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go v1.34.28
 	github.com/batchcorp/collector-schemas v0.0.12
 	github.com/batchcorp/kong v0.2.17-batch-fix
-	github.com/batchcorp/natty v0.0.15
+	github.com/batchcorp/natty v0.0.16
 	github.com/batchcorp/pgoutput v0.3.2
 	github.com/batchcorp/plumber-schemas v0.0.140
 	github.com/batchcorp/rabbit v0.1.17

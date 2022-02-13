@@ -121,6 +121,8 @@ github.com/batchcorp/kong v0.2.17-batch-fix h1:H6sOfst2NcL2T/EZVNLukG7YRimJDHg9D
 github.com/batchcorp/kong v0.2.17-batch-fix/go.mod h1:ut4pbR4KLPWzKHbpEHZspWpRqjFr4UiPY3D2xf2tzf8=
 github.com/batchcorp/natty v0.0.15 h1:+Bz8jYUYaCJBK8WsiITJhWUNNlAi3CyKsGfW1Q6A2io=
 github.com/batchcorp/natty v0.0.15/go.mod h1:9vbgoZghKr/2FtueAquAlRacCSnEgfgTSA2eX2gpO54=
+github.com/batchcorp/natty v0.0.16 h1:RN20W2rlA1GtPzY3ioYIjqY0UlIFnH9Rs2c1nWajxcU=
+github.com/batchcorp/natty v0.0.16/go.mod h1:9vbgoZghKr/2FtueAquAlRacCSnEgfgTSA2eX2gpO54=
 github.com/batchcorp/pgoutput v0.3.2 h1:Jck/nJLwXWmsNHF2iEfjFWrsds5LLGtqu6y6TjjU8Aw=
 github.com/batchcorp/pgoutput v0.3.2/go.mod h1:xzkr73rAlqUdvt2oMAQav1lIt6xnG8bqYYXt4GrXM/I=
 github.com/batchcorp/plumber-schemas v0.0.140 h1:0dH/HbQ5YmmDvlxr+orq3uRKzDURPAH/DJPBe0faQHQ=

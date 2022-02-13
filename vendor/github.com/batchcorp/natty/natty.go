@@ -58,7 +58,7 @@ type Config struct {
 	// during library initialization via New().
 	NoConsumer bool
 
-	// NatsURL defines the NATS urls the library will attempt to connect to. If
+	// NatsURL defines the NATS urls the library will attempt to connect to. Iff
 	// first URL fails, we will try to connect to the next one. Only fail if all
 	// URLs fail.
 	NatsURL []string
@@ -73,6 +73,10 @@ type Config struct {
 	// ConsumerName defines the name of the consumer the library will create.
 	// NOTE: The library *always* creates durable consumers.
 	ConsumerName string
+
+	// ConsumerFilterSubject is useful for wildcard streams - it will ensure
+	// that a consumer only receives messages that match the subject filter
+	ConsumerFilterSubject string
 
 	// MaxMsgs defines the maximum number of messages a stream will contain.
 	MaxMsgs int64
@@ -204,8 +208,9 @@ func New(cfg *Config) (*Natty, error) {
 
 	// Create consumer
 	if _, err := js.AddConsumer(cfg.StreamName, &nats.ConsumerConfig{
-		Durable:   cfg.ConsumerName,
-		AckPolicy: nats.AckExplicitPolicy,
+		Durable:       cfg.ConsumerName,
+		AckPolicy:     nats.AckExplicitPolicy,
+		FilterSubject: cfg.ConsumerFilterSubject,
 	}); err != nil {
 		return nil, errors.Wrap(err, "unable to create consumer")
 	}
@@ -355,6 +360,10 @@ func validateConfig(cfg *Config) error {
 	}
 
 	if !cfg.NoConsumer {
+		if cfg.ConsumerName == "" {
+			return errors.New("ConsumerName cannot be empty")
+		}
+
 		if cfg.StreamName == "" {
 			return errors.New("StreamName cannot be empty")
 		}
