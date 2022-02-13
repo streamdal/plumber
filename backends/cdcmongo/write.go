@@ -8,6 +8,6 @@ import (
 	"github.com/batchcorp/plumber/types"
 )
 
-func (m *Mongo) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh chan *records.ErrorRecord, messages ...*records.WriteRecord) error {
+func (m *Mongo) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh chan<- *records.ErrorRecord, messages ...*records.WriteRecord) error {
 	return types.NotImplementedErr
 }

@@ -20,7 +20,7 @@ import (
 // RetryReadInterval determines how long to wait before retrying a read, after an error has occurred
 const RetryReadInterval = 5 * time.Second
 
-func (r *RedisStreams) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
+func (r *RedisStreams) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateRelayOptions(relayOpts); err != nil {
 		return errors.Wrap(err, "unable to validate relay options")
 	}

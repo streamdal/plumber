@@ -144,13 +144,13 @@ func (fake *FakeIDynamic) ReadReturnsOnCall(i int, result1 chan *events.Outbound
 	}{result1}
 }
 
-func (fake *FakeIDynamic) Start(arg1 string) {
+func (fake *FakeIDynamic) Run(arg1 string) {
 	fake.startMutex.Lock()
 	fake.startArgsForCall = append(fake.startArgsForCall, struct {
 		arg1 string
 	}{arg1})
 	stub := fake.StartStub
-	fake.recordInvocation("Start", []interface{}{arg1})
+	fake.recordInvocation("Run", []interface{}{arg1})
 	fake.startMutex.Unlock()
 	if stub != nil {
 		fake.StartStub(arg1)

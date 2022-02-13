@@ -63,7 +63,6 @@ func (s *Server) GetDynamic(_ context.Context, request *protos.GetDynamicRequest
 		},
 		Opts: dynamic.Options,
 	}, nil
-
 }
 
 func (s *Server) CreateDynamic(ctx context.Context, req *protos.CreateDynamicRequest) (*protos.CreateDynamicResponse, error) {
@@ -72,17 +71,18 @@ func (s *Server) CreateDynamic(ctx context.Context, req *protos.CreateDynamicReq
 	}
 
 	req.Opts.XDynamicId = uuid.NewV4().String()
-
-	// Publish CreateDynamic event
-	if err := s.Bus.PublishCreateDynamic(ctx, req.Opts); err != nil {
-		s.rollbackCreateDynamic(ctx, req.Opts)
-		s.Log.Error(err)
-	}
+	req.Opts.XActive = true
 
 	d, err := s.Actions.CreateDynamic(ctx, req.Opts)
 	if err != nil {
 		s.rollbackCreateDynamic(ctx, req.Opts)
 		return nil, CustomError(common.Code_ABORTED, err.Error())
+	}
+
+	// Publish CreateDynamic event
+	if err := s.Bus.PublishCreateDynamic(ctx, d.Options); err != nil {
+		s.rollbackCreateDynamic(ctx, req.Opts)
+		s.Log.Error(err)
 	}
 
 	s.Log.Infof("Replay tunnel '%s' started", d.Id)

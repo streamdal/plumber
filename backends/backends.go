@@ -52,7 +52,7 @@ type Backend interface {
 	//
 	// NOTE: Key, headers and any other metadata is fetched from CLIOptions
 	// (that are passed when instantiating the backend).
-	Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh chan *records.ErrorRecord, messages ...*records.WriteRecord) error
+	Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh chan<- *records.ErrorRecord, messages ...*records.WriteRecord) error
 
 	// Test performs a "test" to see if the connection to the backend is alive.
 	// The test varies between backends (ie. in kafka, it might be just attempting
@@ -62,12 +62,12 @@ type Backend interface {
 
 	// Dynamic enables plumber to become a "dynamic replay destination".
 	// This is a blocking call.
-	Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error
+	Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic, errorCh chan<- *records.ErrorRecord) error
 
 	// Relay will hook into a message bus as a consumer and relay all messages
 	// to the relayCh; if an error channel is provided, any errors will be piped
 	// to the channel as well. This method _usually_ blocks.
-	Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error
+	Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan<- *records.ErrorRecord) error
 
 	// DisplayMessage will parse a Read record and print (pretty) output to STDOUT
 	DisplayMessage(cliOpts *opts.CLIOptions, msg *records.ReadRecord) error

@@ -132,7 +132,7 @@ func (b *Bus) Start(serviceCtx context.Context) error {
 
 	b.log.Debug("starting broadcast consumer")
 
-	// Start broadcast consumer
+	// Run broadcast consumer
 	go func() {
 		if err := b.runBroadcastConsumer(consumerCtx); err != nil {
 			b.log.Warningf("broadcast consumer exit due to err: %s", err)
@@ -142,7 +142,7 @@ func (b *Bus) Start(serviceCtx context.Context) error {
 
 	b.log.Debug("starting queue consumer")
 
-	// Start queue consumer
+	// Run queue consumer
 	go func() {
 		if err := b.runQueueConsumer(consumerCtx); err != nil {
 			b.log.Warningf("queue consumer exit due to err: %s", err)

@@ -13,7 +13,7 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (a *Actions) CreateDynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) (*types.Dynamic, error) {
+func (a *Actions) CreateDynamic(reqCtx context.Context, dynamicOpts *opts.DynamicOptions) (*types.Dynamic, error) {
 	if err := validate.DynamicOptionsForServer(dynamicOpts); err != nil {
 		return nil, errors.Wrap(err, "unable to validate dynamic options")
 	}
@@ -42,10 +42,11 @@ func (a *Actions) CreateDynamic(ctx context.Context, dynamicOpts *opts.DynamicOp
 		Options:    dynamicOpts,
 	}
 
-	// Start the dynamic replay if it's active on other plumber instances
+	// Run the dynamic replay if it's active on other plumber instances
 	if dynamicOpts.XActive {
+		// This will block for 5 seconds
 		if err := d.StartDynamic(5 * time.Second); err != nil {
-			return nil, errors.Wrap(err, "unable to start replay")
+			return nil, errors.Wrap(err, "unable to start dynamic")
 		}
 
 		d.Active = true
@@ -175,16 +176,16 @@ func (a *Actions) DeleteDynamic(ctx context.Context, dynamicID string) error {
 	}
 
 	// Stop grpc client connection so we no longer receive messages from dProxy
-	if dynamicReplay.Active {
-		// Cancel reader worker
-		dynamicReplay.CancelFunc()
-
-		// Give it a sec to finish
-		time.Sleep(time.Second)
-
-		// Clean up gRPC connection to dProxy and connection to client's backend message bus
-		dynamicReplay.Close()
-	}
+	//if dynamicReplay.Active {
+	//	// Cancel reader worker
+	//	dynamicReplay.CancelFunc()
+	//
+	//	// Give it a sec to finish
+	//	time.Sleep(time.Second)
+	//
+	//	// Clean up gRPC connection to dProxy and connection to client's backend message bus
+	//	dynamicReplay.Close()
+	//}
 
 	// Delete in memory
 	a.cfg.PersistentConfig.DeleteDynamic(dynamicID)

@@ -7,11 +7,12 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/dynamic"
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (p *Pulsar) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
+func (p *Pulsar) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateDynamicOptions(dynamicOpts); err != nil {
 		return errors.Wrap(err, "invalid dynamic options")
 	}
@@ -23,7 +24,9 @@ func (p *Pulsar) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, 
 		return errors.Wrap(err, "unable to create Pulsar producer")
 	}
 
-	go dynamicSvc.Start("Apache Pulsar")
+	if err := dynamicSvc.Start(ctx, "Apache Pulsar"); err != nil {
+		return errors.Wrap(err, "unable to create dynamic")
+	}
 
 	outboundCh := dynamicSvc.Read()
 
@@ -39,7 +42,7 @@ func (p *Pulsar) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, 
 			llog.Debugf("Replayed message to Pulsar topic '%s' for replay '%s'",
 				dynamicOpts.Pulsar.Args.Topic, outbound.ReplayId)
 		case <-ctx.Done():
-			llog.Warning("context cancelled")
+			llog.Debug("context cancelled")
 			return nil
 		}
 	}

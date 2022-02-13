@@ -33,11 +33,12 @@ type Dynamic struct {
 func (d *Dynamic) StartDynamic(delay time.Duration) error {
 	d.log = logrus.WithField("pkg", "types/dynamic")
 
-	// Start up dynamic connection
+	// Create a new dynamic connection
 	dynamicSvc, err := dynamic.New(d.Options, d.Backend.Name())
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
+
 	d.DynamicService = dynamicSvc
 
 	localErrCh := make(chan *records.ErrorRecord, 1)
@@ -46,20 +47,22 @@ func (d *Dynamic) StartDynamic(delay time.Duration) error {
 	d.Options.XActive = true
 
 	go func() {
-		d.log.Info("Starting dynamic replay")
 
-		if err := d.Backend.Dynamic(d.CancelCtx, d.Options, dynamicSvc); err != nil {
+		// Blocks until dynamic is closed
+		if err := d.Backend.Dynamic(d.CancelCtx, d.Options, dynamicSvc, localErrCh); err != nil {
 			util.WriteError(d.log, localErrCh, fmt.Errorf("error during dynamic replay (id: %s): %s", d.Id, err))
 
-			// Cancel worker
+			// Cancel any goroutines spawned by Dynamic()
 			d.CancelFunc()
 
 			// Give it a sec
-			time.Sleep(time.Second)
+			time.Sleep(time.Second) // ~DS: same here
 
 			// Clean up connection to user's message bus
 			d.Close()
 		}
+
+		d.log.Debugf("goroutine exiting for dynamic_id '%s'", d.Id)
 	}()
 
 	timeAfterCh := time.After(delay)
@@ -70,7 +73,7 @@ func (d *Dynamic) StartDynamic(delay time.Duration) error {
 		d.log.Debugf("dynamic replay id '%s' success after %s wait", d.Id, delay.String())
 		break
 	case err := <-localErrCh:
-		return fmt.Errorf("relay startup failed for id '%s': %s", d.Id, err.Error)
+		return fmt.Errorf("dynamic startup failed for id '%s': %s", d.Id, err.Error)
 	}
 
 	return nil

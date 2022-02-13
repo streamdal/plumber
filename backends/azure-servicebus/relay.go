@@ -14,7 +14,7 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (a *AzureServiceBus) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
+func (a *AzureServiceBus) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateRelayOpts(relayOpts); err != nil {
 		return errors.Wrap(err, "invalid relay options")
 	}

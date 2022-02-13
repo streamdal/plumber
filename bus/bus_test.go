@@ -48,7 +48,7 @@ package bus
 //		Expect(srv).ToNot(BeNil())
 //		Expect(srv.started).To(BeFalse())
 //
-//		startErr := srv.Start(serviceContext)
+//		startErr := srv.Run(serviceContext)
 //		Expect(startErr).ToNot(HaveOccurred())
 //		Expect(srv.started).To(BeTrue())
 //	})
@@ -62,8 +62,8 @@ package bus
 //		Expect(writeReadErr.Error()).To(ContainSubstring("unable to PUT"))
 //	})
 //
-//	// We know that Start and Shutdown works so we test other by-products
-//	Context("Start", func() {
+//	// We know that Run and Shutdown works so we test other by-products
+//	Context("Run", func() {
 //		It("launches consumers", func() {
 //			// Write something to /bus/broadcast/* and /bus/queue/$nodeid/*
 //		})

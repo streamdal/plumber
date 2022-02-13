@@ -163,11 +163,12 @@ func fetchConfigFromFile(fileName string) (*Config, error) {
 
 func readConfigBytes(data []byte) (*Config, error) {
 	cfg := &Config{
-		ConnectionsMutex: &sync.RWMutex{},
-		RelaysMutex:      &sync.RWMutex{},
-		Connections:      make(map[string]*stypes.Connection),
-		Relays:           make(map[string]*stypes.Relay),
-		Dynamic:          make(map[string]*stypes.Dynamic),
+		ConnectionsMutex:    &sync.RWMutex{},
+		RelaysMutex:         &sync.RWMutex{},
+		DynamicReplaysMutex: &sync.RWMutex{},
+		Connections:         make(map[string]*stypes.Connection),
+		Relays:              make(map[string]*stypes.Relay),
+		Dynamic:             make(map[string]*stypes.Dynamic),
 	}
 
 	if err := json.Unmarshal(data, cfg); err != nil {

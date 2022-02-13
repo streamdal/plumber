@@ -8,18 +8,21 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/dynamic"
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (a *AzureEventHub) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
+func (a *AzureEventHub) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateDynamicOptions(dynamicOpts); err != nil {
 		return errors.Wrap(err, "invalid dynamic options")
 	}
 
 	llog := logrus.WithField("pkg", "azure-eventhub/dynamic")
 
-	go dynamicSvc.Start("Azure Event Hub")
+	if err := dynamicSvc.Start(ctx, "Azure Event Hub"); err != nil {
+		return errors.Wrap(err, "unable to create dynamic")
+	}
 
 	sendOpts := make([]eventhub.SendOption, 0)
 
@@ -42,7 +45,7 @@ func (a *AzureEventHub) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOp
 
 			llog.Debugf("Replayed message to Azure Event Hub for replay '%s'", outbound.ReplayId)
 		case <-ctx.Done():
-			llog.Warning("context cancelled")
+			llog.Debug("context cancelled")
 			return nil
 		}
 	}

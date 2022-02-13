@@ -8,6 +8,6 @@ import (
 	"github.com/batchcorp/plumber/types"
 )
 
-func (c *CDCPostgres) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh chan *records.ErrorRecord, messages ...*records.WriteRecord) error {
+func (c *CDCPostgres) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh chan<- *records.ErrorRecord, messages ...*records.WriteRecord) error {
 	return types.NotImplementedErr
 }

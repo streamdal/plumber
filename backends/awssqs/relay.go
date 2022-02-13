@@ -19,7 +19,7 @@ import (
 	"github.com/batchcorp/plumber/prometheus"
 )
 
-func (a *AWSSQS) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
+func (a *AWSSQS) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateRelayOptions(relayOpts); err != nil {
 		return errors.Wrap(err, "unable to verify relay options")
 	}

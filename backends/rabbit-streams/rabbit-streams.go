@@ -36,7 +36,7 @@ type RabbitStreams struct {
 	waitGroup *sync.WaitGroup
 
 	// errorCh is used because write errors are async
-	errorCh chan *records.ErrorRecord
+	errorCh chan<- *records.ErrorRecord
 
 	client     *stream.Environment
 	streamName string

@@ -80,7 +80,7 @@ func validateReadArgsForLag(readArgs *args.KafkaReadArgs) error {
 func (l *Lag) Lag(
 	ctx context.Context,
 	resultsCh chan *records.ReadRecord,
-	errorCh chan *records.ErrorRecord,
+	errorCh chan<- *records.ErrorRecord,
 	interval time.Duration,
 ) error {
 	t := time.NewTicker(interval)

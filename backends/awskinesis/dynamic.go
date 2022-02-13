@@ -10,17 +10,20 @@ import (
 	"github.com/batchcorp/plumber/validate"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/dynamic"
 )
 
-func (k *Kinesis) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
+func (k *Kinesis) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateDynamicOptions(dynamicOpts); err != nil {
 		return errors.Wrap(err, "unable to validate dynamic options")
 	}
 
 	llog := k.log.WithField("pkg", "kinesis/dynamic")
 
-	go dynamicSvc.Start("AWS Kinesis")
+	if err := dynamicSvc.Start(ctx, "AWS Kinesis"); err != nil {
+		return errors.Wrap(err, "unable to create dynamic")
+	}
 
 	outboundCh := dynamicSvc.Read()
 
@@ -43,7 +46,7 @@ func (k *Kinesis) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions,
 
 			k.log.Debugf("Replayed message to Kinesis stream '%s' for replay '%s'", args.Stream, outbound.ReplayId)
 		case <-ctx.Done():
-			llog.Warning("context cancelled")
+			llog.Debug("context cancelled")
 			return nil
 		}
 	}
