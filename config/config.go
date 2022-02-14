@@ -54,7 +54,7 @@ func New(enableCluster bool, k kv.IKV) (*Config, error) {
 
 	if enableCluster {
 		if k == nil {
-			return nil, errors.New("key-value client cannot be nil")
+			return nil, errors.New("key value store not initialized - are you running in server mode?")
 		}
 
 		cfg, err = fetchConfigFromKV(k)
