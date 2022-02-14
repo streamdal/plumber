@@ -57,6 +57,7 @@ func (b *Bus) doDeleteConnection(ctx context.Context, msg *Message) error {
 	b.config.PersistentConfig.DynamicReplaysMutex.RLock()
 	for id, dynamicReplay := range b.config.PersistentConfig.Dynamic {
 		if dynamicReplay.Options.ConnectionId == id {
+			b.config.PersistentConfig.DynamicReplaysMutex.RUnlock()
 			return fmt.Errorf("cannot delete connection '%s' because it is in use by dynamic replay '%s'",
 				id, dynamicReplay.Options.XDynamicId)
 		}
@@ -67,6 +68,7 @@ func (b *Bus) doDeleteConnection(ctx context.Context, msg *Message) error {
 	b.config.PersistentConfig.RelaysMutex.RLock()
 	for id, dynamicReplay := range b.config.PersistentConfig.Relays {
 		if dynamicReplay.Options.ConnectionId == id {
+			b.config.PersistentConfig.RelaysMutex.RUnlock()
 			return fmt.Errorf("cannot delete connection '%s' because it is in use by relay '%s'",
 				id, dynamicReplay.Options.XRelayId)
 		}
