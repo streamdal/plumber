@@ -16,16 +16,17 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/tools/mqttfakes"
-	"github.com/batchcorp/plumber/tunnel/tunnelfakes"
+
+	// "github.com/batchcorp/plumber/tunnel/tunnelfakes"
 	"github.com/batchcorp/plumber/validate"
 )
 
 var _ = Describe("MQTT Backend", func() {
-	var tunnelOpts *opts.DynamicOptions
+	var tunnelOpts *opts.TunnelOptions
 
 	BeforeEach(func() {
-		tunnelOpts = &opts.DynamicOptions{
-			Mqtt: &opts.DynamicGroupMQTTOptions{
+		tunnelOpts = &opts.TunnelOptions{
+			Mqtt: &opts.TunnelGroupMQTTOptions{
 				Args: &args.MQTTWriteArgs{
 					Topic:               "test",
 					WriteTimeoutSeconds: 1,
@@ -38,7 +39,7 @@ var _ = Describe("MQTT Backend", func() {
 		It("validates nil tunnel options", func() {
 			err := validateTunnelOptions(nil)
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(Equal(validate.ErrEmptyDynamicOpts))
+			Expect(err).To(Equal(validate.ErrEmptyTunnelOpts))
 		})
 		It("validates nil backend group", func() {
 			tunnelOpts.Mqtt = nil
@@ -80,7 +81,7 @@ var _ = Describe("MQTT Backend", func() {
 			errorCh := make(chan *records.ErrorRecord)
 			err := (&MQTT{}).Tunnel(context.Background(), nil, nil, errorCh)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring(validate.ErrEmptyDynamicOpts.Error()))
+			Expect(err.Error()).To(ContainSubstring(validate.ErrEmptyTunnelOpts.Error()))
 		})
 
 		It("returns an error on publish timeout", func() {

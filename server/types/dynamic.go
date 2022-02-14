@@ -19,12 +19,12 @@ import (
 )
 
 type Tunnel struct {
-	Active           bool                 `json:"-"`
-	Id               string               `json:"-"`
-	CancelCtx        context.Context      `json:"-"`
-	CancelFunc       context.CancelFunc   `json:"-"`
-	Backend          backends.Backend     `json:"-"`
-	Options          *opts.DynamicOptions `json:"config"`
+	Active           bool                `json:"-"`
+	Id               string              `json:"-"`
+	CancelCtx        context.Context     `json:"-"`
+	CancelFunc       context.CancelFunc  `json:"-"`
+	Backend          backends.Backend    `json:"-"`
+	Options          *opts.TunnelOptions `json:"config"`
 	TunnelService    tunnel.ITunnel
 	PlumberClusterID string `json:"-"`
 
@@ -41,13 +41,13 @@ func (d *Tunnel) StartTunnel(delay time.Duration) error {
 
 	d.log.Debugf("Plumber cluster ID: %s", d.PlumberClusterID)
 
-	// Create a new dynamic connection
-	dynamicSvc, err := tunnel.New(d.Options, d.PlumberClusterID)
+	// Create a new tunnel
+	tunnelSvc, err := tunnel.New(d.Options, d.PlumberClusterID)
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
 
-	d.TunnelService = dynamicSvc
+	d.TunnelService = tunnelSvc
 
 	localErrCh := make(chan *records.ErrorRecord, 1)
 
@@ -55,8 +55,8 @@ func (d *Tunnel) StartTunnel(delay time.Duration) error {
 	d.Options.XActive = true
 
 	go func() {
-		// Blocks until dynamic is closed
-		if err := d.Backend.Tunnel(d.CancelCtx, d.Options, dynamicSvc, localErrCh); err != nil {
+		// Blocks until tunnel is closed
+		if err := d.Backend.Tunnel(d.CancelCtx, d.Options, tunnelSvc, localErrCh); err != nil {
 			util.WriteError(d.log, localErrCh, fmt.Errorf("error during tunnel (id: %s): %s", d.Id, err))
 
 			// Cancel any goroutines spawned by Tunnel()
@@ -108,7 +108,7 @@ func (d *Tunnel) MarshalJSON() ([]byte, error) {
 
 	m := jsonpb.Marshaler{}
 	if err := m.Marshal(buf, d.Options); err != nil {
-		return nil, errors.Wrap(err, "could not marshal opts.DynamicOptions")
+		return nil, errors.Wrap(err, "could not marshal opts.TunnelOptions")
 	}
 
 	return buf.Bytes(), nil
@@ -116,14 +116,14 @@ func (d *Tunnel) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON unmarshals JSON into a tunnel struct
 func (d *Tunnel) UnmarshalJSON(v []byte) error {
-	dynamic := &opts.DynamicOptions{}
-	if err := jsonpb.Unmarshal(bytes.NewBuffer(v), dynamic); err != nil {
+	tunnelOpts := &opts.TunnelOptions{}
+	if err := jsonpb.Unmarshal(bytes.NewBuffer(v), tunnelOpts); err != nil {
 		return errors.Wrap(err, "unable to unmarshal stored tunnel")
 	}
 
-	d.Options = dynamic
-	d.Id = dynamic.XDynamicId
-	d.Active = dynamic.XActive
+	d.Options = tunnelOpts
+	d.Id = tunnelOpts.XTunnelId
+	d.Active = tunnelOpts.XActive
 
 	return nil
 }

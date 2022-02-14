@@ -15,16 +15,17 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/backends/nats-streaming/stanfakes"
-	"github.com/batchcorp/plumber/tunnel/tunnelfakes"
+
+	// "github.com/batchcorp/plumber/tunnel/tunnelfakes"
 	"github.com/batchcorp/plumber/validate"
 )
 
 var _ = Describe("Nats Streaming Backend", func() {
-	var tunnelOpts *opts.DynamicOptions
+	var tunnelOpts *opts.TunnelOptions
 
 	BeforeEach(func() {
-		tunnelOpts = &opts.DynamicOptions{
-			NatsStreaming: &opts.DynamicGroupNatsStreamingOptions{
+		tunnelOpts = &opts.TunnelOptions{
+			NatsStreaming: &opts.TunnelGroupNatsStreamingOptions{
 				Args: &args.NatsStreamingWriteArgs{
 					Channel: "testing",
 				},
@@ -36,7 +37,7 @@ var _ = Describe("Nats Streaming Backend", func() {
 		It("validates nil tunnel options", func() {
 			err := validateTunnelOptions(nil)
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(Equal(validate.ErrEmptyDynamicOpts))
+			Expect(err).To(Equal(validate.ErrEmptyTunnelOpts))
 		})
 		It("validates nil backend group", func() {
 			tunnelOpts.NatsStreaming = nil
@@ -78,7 +79,7 @@ var _ = Describe("Nats Streaming Backend", func() {
 			errorCh := make(chan *records.ErrorRecord)
 			err := (&NatsStreaming{}).Tunnel(context.Background(), nil, nil, errorCh)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring(validate.ErrEmptyDynamicOpts.Error()))
+			Expect(err.Error()).To(ContainSubstring(validate.ErrEmptyTunnelOpts.Error()))
 		})
 
 		It("returns an error on publish failure", func() {

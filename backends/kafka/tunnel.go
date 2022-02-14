@@ -16,7 +16,7 @@ import (
 
 // Tunnels starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
 // which are then written to the message bus.
-func (k *Kafka) Tunnel(ctx context.Context, opts *opts.DynamicOptions, dynamicSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
+func (k *Kafka) Tunnel(ctx context.Context, opts *opts.TunnelOptions, tunnelSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
 	llog := logrus.WithField("pkg", "kafka/tunnel")
 
 	if err := validateTunnelOptions(opts); err != nil {
@@ -31,11 +31,11 @@ func (k *Kafka) Tunnel(ctx context.Context, opts *opts.DynamicOptions, dynamicSv
 
 	defer writer.Close()
 
-	if err := dynamicSvc.Start(ctx, "Kafka", errorCh); err != nil {
+	if err := tunnelSvc.Start(ctx, "Kafka", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create tunnel")
 	}
 
-	outboundCh := dynamicSvc.Read()
+	outboundCh := tunnelSvc.Read()
 
 	// Continually loop looking for messages on the channel.
 MAIN:
@@ -64,9 +64,9 @@ MAIN:
 	return nil
 }
 
-func validateTunnelOptions(tunnelOpts *opts.DynamicOptions) error {
+func validateTunnelOptions(tunnelOpts *opts.TunnelOptions) error {
 	if tunnelOpts == nil {
-		return validate.ErrEmptyDynamicOpts
+		return validate.ErrEmptyTunnelOpts
 	}
 
 	if tunnelOpts.Kafka == nil {

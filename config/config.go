@@ -340,26 +340,26 @@ func (c *Config) DeleteConnection(connID string) {
 }
 
 // GetTunnel returns an in-progress read from the Tunnels map
-func (c *Config) GetTunnel(dynamicID string) *stypes.Tunnel {
+func (c *Config) GetTunnel(tunnelID string) *stypes.Tunnel {
 	c.TunnelsMutex.RLock()
 	defer c.TunnelsMutex.RUnlock()
 
-	r, _ := c.Tunnels[dynamicID]
+	r, _ := c.Tunnels[tunnelID]
 
 	return r
 }
 
 // SetTunnel adds an in-progress read to the Tunnels map
-func (c *Config) SetTunnel(dynamicID string, dynamicReplay *stypes.Tunnel) {
+func (c *Config) SetTunnel(tunnelID string, tunnel *stypes.Tunnel) {
 	c.TunnelsMutex.Lock()
 	defer c.TunnelsMutex.Unlock()
 
-	c.Tunnels[dynamicID] = dynamicReplay
+	c.Tunnels[tunnelID] = tunnel
 }
 
 // DeleteTunnel removes a tunnel from in-memory map
-func (c *Config) DeleteTunnel(dynamicID string) {
+func (c *Config) DeleteTunnel(tunnelID string) {
 	c.TunnelsMutex.Lock()
 	defer c.TunnelsMutex.Unlock()
-	delete(c.Tunnels, dynamicID)
+	delete(c.Tunnels, tunnelID)
 }

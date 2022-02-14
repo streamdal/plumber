@@ -11,20 +11,20 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (a *ActiveMQ) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOptions, dynamicSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
+func (a *ActiveMQ) Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOptions, tunnelSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateTunnelOptions(tunnelOpts); err != nil {
 		return errors.Wrap(err, "invalid tunnel options")
 	}
 
 	llog := a.log.WithField("pkg", "activemq/tunnel")
 
-	if err := dynamicSvc.Start(ctx, "ActiveMQ", errorCh); err != nil {
+	if err := tunnelSvc.Start(ctx, "ActiveMQ", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create tunnel")
 	}
 
 	destination := getDestinationWrite(tunnelOpts.Activemq.Args)
 
-	outboundCh := dynamicSvc.Read()
+	outboundCh := tunnelSvc.Read()
 
 	for {
 		select {
@@ -44,9 +44,9 @@ func (a *ActiveMQ) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOptions, 
 	return nil
 }
 
-func validateTunnelOptions(tunnelOpts *opts.DynamicOptions) error {
+func validateTunnelOptions(tunnelOpts *opts.TunnelOptions) error {
 	if tunnelOpts == nil {
-		return validate.ErrEmptyDynamicOpts
+		return validate.ErrEmptyTunnelOpts
 	}
 
 	if tunnelOpts.Activemq == nil {

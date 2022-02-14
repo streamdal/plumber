@@ -88,13 +88,13 @@ func unsetUnusedOptions(kongCtx *kong.Context, cliOptions *opts.CLIOptions) {
 		cliOptions.Read = nil
 		cliOptions.Write = nil
 	case "tunnel":
-		unsetUnusedDynamicOpts(cliOptions)
+		unsetUnusedTunnelOpts(cliOptions)
 	case "batch":
 		unsetUnusedBatchOpts(cliOptions)
 	}
 }
 
-func unsetUnusedDynamicOpts(cliOptions *opts.CLIOptions) {
+func unsetUnusedTunnelOpts(cliOptions *opts.CLIOptions) {
 	// TODO: unset unused backends
 }
 
@@ -174,13 +174,13 @@ func maybeDisplayVersion(args []string) {
 // options to.
 func NewCLIOptions() *opts.CLIOptions {
 	return &opts.CLIOptions{
-		Global:  &opts.GlobalCLIOptions{},
-		Server:  &opts.ServerOptions{},
-		Read:    newReadOptions(),
-		Write:   newWriteOptions(),
-		Relay:   newRelayOptions(),
-		Dynamic: newDynamicOptions(),
-		Batch:   newBatchOptions(),
+		Global: &opts.GlobalCLIOptions{},
+		Server: &opts.ServerOptions{},
+		Read:   newReadOptions(),
+		Write:  newWriteOptions(),
+		Relay:  newRelayOptions(),
+		Tunnel: newTunnelOptions(),
+		Batch:  newBatchOptions(),
 	}
 }
 
@@ -501,23 +501,23 @@ func newRelayOptions() *opts.RelayOptions {
 	}
 }
 
-func newDynamicOptions() *opts.DynamicOptions {
-	return &opts.DynamicOptions{
-		Kafka: &opts.DynamicGroupKafkaOptions{
+func newTunnelOptions() *opts.TunnelOptions {
+	return &opts.TunnelOptions{
+		Kafka: &opts.TunnelGroupKafkaOptions{
 			XConn: &args.KafkaConn{
 				Address: make([]string, 0),
 			},
 			Args: &args.KafkaWriteArgs{},
 		},
-		Activemq: &opts.DynamicGroupActiveMQOptions{
+		Activemq: &opts.TunnelGroupActiveMQOptions{
 			XConn: &args.ActiveMQConn{},
 			Args:  &args.ActiveMQWriteArgs{},
 		},
-		AwsSqs: &opts.DynamicGroupAWSSQSOptions{
+		AwsSqs: &opts.TunnelGroupAWSSQSOptions{
 			XConn: &args.AWSSQSConn{},
 			Args:  &args.AWSSQSWriteArgs{},
 		},
-		Nats: &opts.DynamicGroupNatsOptions{
+		Nats: &opts.TunnelGroupNatsOptions{
 			XConn: &args.NatsConn{
 				UserCredentials: make([]byte, 0),
 				TlsOptions: &args.NatsTLSOptions{
@@ -528,7 +528,7 @@ func newDynamicOptions() *opts.DynamicOptions {
 			},
 			Args: &args.NatsWriteArgs{},
 		},
-		NatsStreaming: &opts.DynamicGroupNatsStreamingOptions{
+		NatsStreaming: &opts.TunnelGroupNatsStreamingOptions{
 			XConn: &args.NatsStreamingConn{
 				UserCredentials: make([]byte, 0),
 				TlsOptions: &args.NatsStreamingTLSOptions{
@@ -539,7 +539,7 @@ func newDynamicOptions() *opts.DynamicOptions {
 			},
 			Args: &args.NatsStreamingWriteArgs{},
 		},
-		Nsq: &opts.DynamicGroupNSQOptions{
+		Nsq: &opts.TunnelGroupNSQOptions{
 			XConn: &args.NSQConn{
 				TlsCaCert:     make([]byte, 0),
 				TlsClientCert: make([]byte, 0),
@@ -547,41 +547,41 @@ func newDynamicOptions() *opts.DynamicOptions {
 			},
 			Args: &args.NSQWriteArgs{},
 		},
-		Rabbit: &opts.DynamicGroupRabbitOptions{
+		Rabbit: &opts.TunnelGroupRabbitOptions{
 			XConn: &args.RabbitConn{},
 			Args:  &args.RabbitWriteArgs{},
 		},
-		Mqtt: &opts.DynamicGroupMQTTOptions{
+		Mqtt: &opts.TunnelGroupMQTTOptions{
 			XConn: &args.MQTTConn{
 				TlsOptions: &args.MQTTTLSOptions{},
 			},
 			Args: &args.MQTTWriteArgs{},
 		},
-		AzureServiceBus: &opts.DynamicGroupAzureServiceBusOptions{
+		AzureServiceBus: &opts.TunnelGroupAzureServiceBusOptions{
 			XConn: &args.AzureServiceBusConn{},
 			Args:  &args.AzureServiceBusWriteArgs{},
 		},
-		AzureEventHub: &opts.DynamicGroupAzureEventHubOptions{
+		AzureEventHub: &opts.TunnelGroupAzureEventHubOptions{
 			XConn: &args.AzureEventHubConn{},
 			Args:  &args.AzureEventHubWriteArgs{},
 		},
-		GcpPubsub: &opts.DynamicGroupGCPPubSubOptions{
+		GcpPubsub: &opts.TunnelGroupGCPPubSubOptions{
 			XConn: &args.GCPPubSubConn{},
 			Args:  &args.GCPPubSubWriteArgs{},
 		},
-		KubemqQueue: &opts.DynamicGroupKubeMQQueueOptions{
+		KubemqQueue: &opts.TunnelGroupKubeMQQueueOptions{
 			XConn: &args.KubeMQQueueConn{},
 			Args:  &args.KubeMQQueueWriteArgs{},
 		},
-		RedisPubsub: &opts.DynamicGroupRedisPubSubOptions{
+		RedisPubsub: &opts.TunnelGroupRedisPubSubOptions{
 			XConn: &args.RedisPubSubConn{},
 			Args:  &args.RedisPubSubWriteArgs{},
 		},
-		RedisStreams: &opts.DynamicGroupRedisStreamsOptions{
+		RedisStreams: &opts.TunnelGroupRedisStreamsOptions{
 			XConn: &args.RedisStreamsConn{},
 			Args:  &args.RedisStreamsWriteArgs{},
 		},
-		AwsKinesis: &opts.DynamicGroupAWSKinesisOptions{
+		AwsKinesis: &opts.TunnelGroupAWSKinesisOptions{
 			XConn: &args.AWSKinesisConn{},
 			Args:  &args.AWSKinesisWriteArgs{},
 		},

@@ -14,18 +14,18 @@ import (
 	"github.com/batchcorp/plumber/tunnel"
 )
 
-func (k *Kinesis) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOptions, dynamicSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
+func (k *Kinesis) Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOptions, tunnelSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateTunnelOptions(tunnelOpts); err != nil {
 		return errors.Wrap(err, "unable to validate tunnel options")
 	}
 
 	llog := k.log.WithField("pkg", "kinesis/tunnel")
 
-	if err := dynamicSvc.Start(ctx, "AWS Kinesis", errorCh); err != nil {
+	if err := tunnelSvc.Start(ctx, "AWS Kinesis", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create tunnel")
 	}
 
-	outboundCh := dynamicSvc.Read()
+	outboundCh := tunnelSvc.Read()
 
 	args := tunnelOpts.AwsKinesis.Args
 
@@ -54,9 +54,9 @@ func (k *Kinesis) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOptions, d
 	return nil
 }
 
-func validateTunnelOptions(tunnelOpts *opts.DynamicOptions) error {
+func validateTunnelOptions(tunnelOpts *opts.TunnelOptions) error {
 	if tunnelOpts == nil {
-		return validate.ErrEmptyDynamicOpts
+		return validate.ErrEmptyTunnelOpts
 	}
 
 	if tunnelOpts.AwsKinesis == nil {

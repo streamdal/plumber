@@ -49,22 +49,22 @@ func (n NoOpBus) PublishResumeRelay(_ context.Context, _ *opts.RelayOptions) err
 	return nil
 }
 
-func (n NoOpBus) PublishCreateTunnel(_ context.Context, _ *opts.DynamicOptions) error {
+func (n NoOpBus) PublishCreateTunnel(_ context.Context, _ *opts.TunnelOptions) error {
 	return nil
 }
 
-func (n NoOpBus) PublishUpdateTunnel(_ context.Context, _ *opts.DynamicOptions) error {
+func (n NoOpBus) PublishUpdateTunnel(_ context.Context, _ *opts.TunnelOptions) error {
 	return nil
 }
 
-func (n NoOpBus) PublishStopTunnel(_ context.Context, _ *opts.DynamicOptions) error {
+func (n NoOpBus) PublishStopTunnel(_ context.Context, _ *opts.TunnelOptions) error {
 	return nil
 }
 
-func (n NoOpBus) PublishResumeTunnel(_ context.Context, _ *opts.DynamicOptions) error {
+func (n NoOpBus) PublishResumeTunnel(_ context.Context, _ *opts.TunnelOptions) error {
 	return nil
 }
 
-func (n NoOpBus) PublishDeleteTunnel(_ context.Context, _ *opts.DynamicOptions) error {
+func (n NoOpBus) PublishDeleteTunnel(_ context.Context, _ *opts.TunnelOptions) error {
 	return nil
 }

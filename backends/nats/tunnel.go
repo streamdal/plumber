@@ -12,7 +12,7 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (n *Nats) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOptions, tunnelSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
+func (n *Nats) Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOptions, tunnelSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateTunnelOptions(tunnelOpts); err != nil {
 		return errors.Wrap(err, "unable to validate tunnel options")
 	}
@@ -46,9 +46,9 @@ func (n *Nats) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOptions, tunn
 	return nil
 }
 
-func validateTunnelOptions(tunnelOpts *opts.DynamicOptions) error {
+func validateTunnelOptions(tunnelOpts *opts.TunnelOptions) error {
 	if tunnelOpts == nil {
-		return validate.ErrEmptyDynamicOpts
+		return validate.ErrEmptyTunnelOpts
 	}
 
 	if tunnelOpts.Nats == nil {

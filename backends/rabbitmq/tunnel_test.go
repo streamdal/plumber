@@ -16,17 +16,17 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/backends/rabbitmq/rabbitfakes"
-	"github.com/batchcorp/plumber/tunnel/tunnelfakes"
+	// "github.com/batchcorp/plumber/tunnel/tunnelfakes"
 	"github.com/batchcorp/plumber/validate"
 )
 
 var _ = Describe("RabbitMQ Backend", func() {
-	var tunnelOpts *opts.DynamicOptions
+	var tunnelOpts *opts.TunnelOptions
 	var fakeTunnel *tunnelfakes.FakeIDynamic
 
 	BeforeEach(func() {
-		tunnelOpts = &opts.DynamicOptions{
-			Rabbit: &opts.DynamicGroupRabbitOptions{
+		tunnelOpts = &opts.TunnelOptions{
+			Rabbit: &opts.TunnelGroupRabbitOptions{
 				Args: &args.RabbitWriteArgs{
 					ExchangeName: "testing",
 					RoutingKey:   "testing",
@@ -46,7 +46,7 @@ var _ = Describe("RabbitMQ Backend", func() {
 		It("validates nil tunnel options", func() {
 			err := validateTunnelOptions(nil)
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(Equal(validate.ErrEmptyDynamicOpts))
+			Expect(err).To(Equal(validate.ErrEmptyTunnelOpts))
 		})
 		It("validates nil backend group", func() {
 			tunnelOpts.Rabbit = nil
@@ -83,7 +83,7 @@ var _ = Describe("RabbitMQ Backend", func() {
 			errorCh := make(chan *records.ErrorRecord)
 			err := (&RabbitMQ{}).Tunnel(context.Background(), nil, nil, errorCh)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring(validate.ErrEmptyDynamicOpts.Error()))
+			Expect(err.Error()).To(ContainSubstring(validate.ErrEmptyTunnelOpts.Error()))
 		})
 	})
 

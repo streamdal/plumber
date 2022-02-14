@@ -13,18 +13,18 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (r *RedisPubsub) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOptions, dynamicSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
+func (r *RedisPubsub) Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOptions, tunnelSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateTunnelOpts(tunnelOpts); err != nil {
 		return errors.Wrap(err, "invalid tunnel options")
 	}
 
 	llog := logrus.WithField("pkg", "rpubsub/tunnel")
 
-	if err := dynamicSvc.Start(ctx, "Redis PubSub", errorCh); err != nil {
+	if err := tunnelSvc.Start(ctx, "Redis PubSub", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create tunnel")
 	}
 
-	outboundCh := dynamicSvc.Read()
+	outboundCh := tunnelSvc.Read()
 
 	// Continually loop looking for messages on the channel.
 	for {
@@ -47,9 +47,9 @@ func (r *RedisPubsub) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOption
 	}
 }
 
-func validateTunnelOpts(tunnelOpts *opts.DynamicOptions) error {
+func validateTunnelOpts(tunnelOpts *opts.TunnelOptions) error {
 	if tunnelOpts == nil {
-		return validate.ErrEmptyDynamicOpts
+		return validate.ErrEmptyTunnelOpts
 	}
 
 	if tunnelOpts.RedisPubsub == nil {

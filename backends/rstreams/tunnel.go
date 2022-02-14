@@ -13,7 +13,7 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (r *RedisStreams) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOptions, tunnelSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
+func (r *RedisStreams) Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOptions, tunnelSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateTunnelOptions(tunnelOpts); err != nil {
 		return errors.Wrap(err, "unable to validate tunnel options")
 	}
@@ -54,9 +54,9 @@ func (r *RedisStreams) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOptio
 	return nil
 }
 
-func validateTunnelOptions(tunnelOpts *opts.DynamicOptions) error {
+func validateTunnelOptions(tunnelOpts *opts.TunnelOptions) error {
 	if tunnelOpts == nil {
-		return validate.ErrEmptyDynamicOpts
+		return validate.ErrEmptyTunnelOpts
 	}
 
 	if tunnelOpts.RedisStreams == nil {

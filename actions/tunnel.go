@@ -13,7 +13,7 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (a *Actions) CreateTunnel(reqCtx context.Context, tunnelOpts *opts.DynamicOptions) (*types.Tunnel, error) {
+func (a *Actions) CreateTunnel(reqCtx context.Context, tunnelOpts *opts.TunnelOptions) (*types.Tunnel, error) {
 	if err := validate.TunnelOptionsForServer(tunnelOpts); err != nil {
 		return nil, errors.Wrap(err, "unable to validate tunnel options")
 	}
@@ -35,7 +35,7 @@ func (a *Actions) CreateTunnel(reqCtx context.Context, tunnelOpts *opts.DynamicO
 
 	d := &types.Tunnel{
 		Active:           false,
-		Id:               tunnelOpts.XDynamicId,
+		Id:               tunnelOpts.XTunnelId,
 		CancelCtx:        shutdownCtx,
 		CancelFunc:       shutdownFunc,
 		Backend:          be,
@@ -45,7 +45,7 @@ func (a *Actions) CreateTunnel(reqCtx context.Context, tunnelOpts *opts.DynamicO
 
 	// If a tunnel is in the process of starting and it gets deleted, we must have
 	// CancelFunc and CancelCtx set so that DeleteTunnel() can trigger
-	a.cfg.PersistentConfig.SetTunnel(tunnelOpts.XDynamicId, d)
+	a.cfg.PersistentConfig.SetTunnel(tunnelOpts.XTunnelId, d)
 
 	// Run the tunnel if it's active on other plumber instances
 	if tunnelOpts.XActive {
@@ -61,7 +61,7 @@ func (a *Actions) CreateTunnel(reqCtx context.Context, tunnelOpts *opts.DynamicO
 		prometheus.IncrPromGauge(prometheus.PlumberTunnels)
 	}
 
-	a.cfg.PersistentConfig.SetTunnel(tunnelOpts.XDynamicId, d)
+	a.cfg.PersistentConfig.SetTunnel(tunnelOpts.XTunnelId, d)
 	a.cfg.PersistentConfig.Save()
 
 	return d, nil
@@ -136,7 +136,7 @@ func (a Actions) StopTunnel(ctx context.Context, tunnelID string) (*types.Tunnel
 	return d, nil
 }
 
-func (a *Actions) UpdateTunnel(ctx context.Context, tunnelID string, tunnelOpts *opts.DynamicOptions) (*types.Tunnel, error) {
+func (a *Actions) UpdateTunnel(ctx context.Context, tunnelID string, tunnelOpts *opts.TunnelOptions) (*types.Tunnel, error) {
 	d := a.cfg.PersistentConfig.GetTunnel(tunnelID)
 	if d == nil {
 		return nil, errors.New("tunnel does not exist")
@@ -179,21 +179,21 @@ func (a *Actions) UpdateTunnel(ctx context.Context, tunnelID string, tunnelOpts 
 }
 
 func (a *Actions) DeleteTunnel(ctx context.Context, tunnelID string) error {
-	dynamicReplay := a.cfg.PersistentConfig.GetTunnel(tunnelID)
-	if dynamicReplay == nil {
+	tunnelCfg := a.cfg.PersistentConfig.GetTunnel(tunnelID)
+	if tunnelCfg == nil {
 		return errors.New("tunnel does not exist")
 	}
 
 	// Stop grpc client connection so we no longer receive messages from dProxy
-	if dynamicReplay.Active {
+	if tunnelCfg.Active {
 		// Cancel reader worker
-		dynamicReplay.CancelFunc()
+		tunnelCfg.CancelFunc()
 
 		// Give it a sec to finish
 		time.Sleep(time.Second)
 
 		// Clean up gRPC connection to dProxy and connection to client's backend message bus
-		dynamicReplay.Close()
+		tunnelCfg.Close()
 	}
 
 	// Delete in memory

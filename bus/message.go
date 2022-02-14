@@ -12,36 +12,17 @@ const (
 	UpdateConnection = "UpdateConnection"
 	DeleteConnection = "DeleteConnection"
 
-	CreateService = "CreateService"
-	UpdateService = "UpdateService"
-	DeleteService = "DeleteService"
-
-	CreateSchema = "CreateSchema"
-	UpdateSchema = "UpdateSchema"
-	DeleteSchema = "DeleteSchema"
-
 	CreateRelay = "CreateRelay"
 	UpdateRelay = "UpdateRelay"
 	DeleteRelay = "DeleteRelay"
 	StopRelay   = "StopRelay"
 	ResumeRelay = "ResumeRelay"
 
-	CreateDynamic = "CreateTunnel"
-	UpdateDynamic = "UpdateTunnel"
-	DeleteDynamic = "DeleteTunnel"
-	StopDynamic   = "StopTunnel"
-	ResumeDynamic = "ResumeTunnel"
-
-	CreateValidation = "CreateValidation"
-	UpdateValidation = "UpdateValidation"
-	DeleteValidation = "DeleteValidation"
-
-	CreateRead = "CreateRead"
-	DeleteRead = "DeleteRead"
-
-	CreateComposite = "CreateComposite"
-	UpdateComposite = "UpdateComposite"
-	DeleteComposite = "DeleteComposite"
+	CreateTunnel = "CreateTunnel"
+	UpdateTunnel = "UpdateTunnel"
+	DeleteTunnel = "DeleteTunnel"
+	StopTunnel   = "StopTunnel"
+	ResumeTunnel = "ResumeTunnel"
 
 	UpdateConfig = "UpdateConfig"
 )
@@ -49,11 +30,9 @@ const (
 var (
 	ValidActions = []Action{
 		CreateConnection, UpdateConnection, DeleteConnection,
-		CreateService, UpdateService, DeleteService,
 		CreateRelay, UpdateRelay, DeleteRelay, StopRelay, ResumeRelay,
-		CreateDynamic, UpdateDynamic, DeleteDynamic, StopDynamic, ResumeDynamic,
-		UpdateConfig, CreateRead, DeleteRead,
-		CreateComposite, UpdateComposite, DeleteComposite,
+		CreateTunnel, UpdateTunnel, DeleteTunnel, StopTunnel, ResumeTunnel,
+		UpdateConfig,
 	}
 )
 

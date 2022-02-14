@@ -60,32 +60,32 @@ func (b *Bus) PublishResumeRelay(ctx context.Context, relay *opts.RelayOptions) 
 
 // PublishCreateTunnel publishes a CreateTunnel message, which other plumber instances will receive
 // and add the service to their local in-memory maps
-func (b *Bus) PublishCreateTunnel(ctx context.Context, dynamicOptions *opts.DynamicOptions) error {
-	return b.publishDynamicMessage(ctx, CreateDynamic, dynamicOptions)
+func (b *Bus) PublishCreateTunnel(ctx context.Context, tunnelOptions *opts.TunnelOptions) error {
+	return b.publishTunnelMessage(ctx, CreateTunnel, tunnelOptions)
 }
 
 // PublishUpdateTunnel publishes an UpdateTunnel message, which other plumber instances will receive
 // and update the connection in their local in-memory maps
-func (b *Bus) PublishUpdateTunnel(ctx context.Context, dynamicOptions *opts.DynamicOptions) error {
-	return b.publishDynamicMessage(ctx, UpdateDynamic, dynamicOptions)
+func (b *Bus) PublishUpdateTunnel(ctx context.Context, tunnelOptions *opts.TunnelOptions) error {
+	return b.publishTunnelMessage(ctx, UpdateTunnel, tunnelOptions)
 }
 
 // PublishDeleteTunnel publishes a DeleteTunnel message, which other plumber instances will receive
 // and delete from their local in-memory maps
-func (b *Bus) PublishDeleteTunnel(ctx context.Context, dynamicOptions *opts.DynamicOptions) error {
-	return b.publishDynamicMessage(ctx, DeleteDynamic, dynamicOptions)
+func (b *Bus) PublishDeleteTunnel(ctx context.Context, tunnelOptions *opts.TunnelOptions) error {
+	return b.publishTunnelMessage(ctx, DeleteTunnel, tunnelOptions)
 }
 
 // PublishStopTunnel broadcasts a StopTunnel message which will cause all plumber
 // instances to stop the relay and remove it from their in-memory cache.
-func (b *Bus) PublishStopTunnel(ctx context.Context, dynamicOptions *opts.DynamicOptions) error {
-	return b.publishDynamicMessage(ctx, StopDynamic, dynamicOptions)
+func (b *Bus) PublishStopTunnel(ctx context.Context, tunnelOptions *opts.TunnelOptions) error {
+	return b.publishTunnelMessage(ctx, StopTunnel, tunnelOptions)
 }
 
 // PublishResumeTunnel broadcasts a ResumeTunnel message which will cause all plumber
 // instances to start a stopped relay and add it to their in-memory cache.
-func (b *Bus) PublishResumeTunnel(ctx context.Context, dynamicOptions *opts.DynamicOptions) error {
-	return b.publishDynamicMessage(ctx, ResumeDynamic, dynamicOptions)
+func (b *Bus) PublishResumeTunnel(ctx context.Context, tunnelOptions *opts.TunnelOptions) error {
+	return b.publishTunnelMessage(ctx, ResumeTunnel, tunnelOptions)
 }
 
 func (b *Bus) publishConnectionMessage(ctx context.Context, action Action, conn *opts.ConnectionOptions) error {
@@ -116,10 +116,10 @@ func (b *Bus) publishRelayMessage(ctx context.Context, action Action, relay *opt
 	})
 }
 
-func (b *Bus) publishDynamicMessage(ctx context.Context, action Action, dynamicOptions *opts.DynamicOptions) error {
-	data, err := proto.Marshal(dynamicOptions)
+func (b *Bus) publishTunnelMessage(ctx context.Context, action Action, tunnelOptions *opts.TunnelOptions) error {
+	data, err := proto.Marshal(tunnelOptions)
 	if err != nil {
-		return errors.Wrapf(err, "unable to marshal tunnel message for '%s'", dynamicOptions.XDynamicId)
+		return errors.Wrapf(err, "unable to marshal tunnel message for '%s'", tunnelOptions.XTunnelId)
 	}
 
 	return b.broadcast(ctx, &Message{

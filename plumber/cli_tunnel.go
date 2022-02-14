@@ -15,15 +15,15 @@ func (p *Plumber) HandleTunnelCmd() error {
 		return errors.Wrap(err, "unable to instantiate backend")
 	}
 
-	// Run up dynamic connection
+	// Run up tunnel
 	// Plumber cluster ID purposefully left blank here so the destination becomes ephemeral
-	dynamicSvc, err := tunnel.New(p.CLIOptions.Dynamic, "")
+	tunnelSvc, err := tunnel.New(p.CLIOptions.Tunnel, "")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
 
 	// Clean up gRPC connection
-	defer dynamicSvc.Close()
+	defer tunnelSvc.Close()
 
 	errorCh := make(chan *records.ErrorRecord, 1000)
 
@@ -34,7 +34,7 @@ func (p *Plumber) HandleTunnelCmd() error {
 	}()
 
 	// Blocks until completion
-	if err := backend.Tunnel(p.ServiceShutdownCtx, p.CLIOptions.Dynamic, dynamicSvc, errorCh); err != nil {
+	if err := backend.Tunnel(p.ServiceShutdownCtx, p.CLIOptions.Tunnel, tunnelSvc, errorCh); err != nil {
 		return errors.Wrap(err, "error(s) during tunnel run")
 	}
 

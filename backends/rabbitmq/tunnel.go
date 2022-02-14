@@ -12,7 +12,7 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (r *RabbitMQ) Tunnel(ctx context.Context, opts *opts.DynamicOptions, dynamicSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
+func (r *RabbitMQ) Tunnel(ctx context.Context, opts *opts.TunnelOptions, tunnelSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateTunnelOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate tunnel options")
 	}
@@ -29,11 +29,11 @@ func (r *RabbitMQ) Tunnel(ctx context.Context, opts *opts.DynamicOptions, dynami
 		r.client = producer
 	}
 
-	if err := dynamicSvc.Start(ctx, "RabbitMQ", errorCh); err != nil {
+	if err := tunnelSvc.Start(ctx, "RabbitMQ", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create tunnel")
 	}
 
-	outboundCh := dynamicSvc.Read()
+	outboundCh := tunnelSvc.Read()
 
 	// Continually loop looking for messages on the channel.
 	for {
@@ -52,9 +52,9 @@ func (r *RabbitMQ) Tunnel(ctx context.Context, opts *opts.DynamicOptions, dynami
 	}
 }
 
-func validateTunnelOptions(tunnelOpts *opts.DynamicOptions) error {
+func validateTunnelOptions(tunnelOpts *opts.TunnelOptions) error {
 	if tunnelOpts == nil {
-		return validate.ErrEmptyDynamicOpts
+		return validate.ErrEmptyTunnelOpts
 	}
 
 	if tunnelOpts.Rabbit == nil {

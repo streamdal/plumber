@@ -16,16 +16,16 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/backends/awssqs/sqsfakes"
-	"github.com/batchcorp/plumber/tunnel/tunnelfakes"
+	// "github.com/batchcorp/plumber/tunnel/tunnelfakes"
 	"github.com/batchcorp/plumber/validate"
 )
 
 var _ = Describe("AWSSQS Backend", func() {
-	var tunnelOpts *opts.DynamicOptions
+	var tunnelOpts *opts.TunnelOptions
 
 	BeforeEach(func() {
-		tunnelOpts = &opts.DynamicOptions{
-			AwsSqs: &opts.DynamicGroupAWSSQSOptions{
+		tunnelOpts = &opts.TunnelOptions{
+			AwsSqs: &opts.TunnelGroupAWSSQSOptions{
 				Args: &args.AWSSQSWriteArgs{
 					QueueName:              "testing.fifo",
 					MessageDeduplicationId: "test",
@@ -42,7 +42,7 @@ var _ = Describe("AWSSQS Backend", func() {
 		It("validates nil tunnel options", func() {
 			err := validateTunnelOptions(nil)
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(Equal(validate.ErrEmptyDynamicOpts))
+			Expect(err).To(Equal(validate.ErrEmptyTunnelOpts))
 		})
 		It("validates nil backend group", func() {
 			tunnelOpts.AwsSqs = nil
@@ -84,7 +84,7 @@ var _ = Describe("AWSSQS Backend", func() {
 			errorCh := make(chan *records.ErrorRecord)
 			err := (&AWSSQS{}).Tunnel(context.Background(), nil, nil, errorCh)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring(validate.ErrEmptyDynamicOpts.Error()))
+			Expect(err.Error()).To(ContainSubstring(validate.ErrEmptyTunnelOpts.Error()))
 		})
 
 		It("returns an error on failure to write a message", func() {

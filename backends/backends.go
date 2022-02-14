@@ -62,7 +62,7 @@ type Backend interface {
 
 	// Tunnel creates a tunnel to Batch and exposes the connected backend as a
 	// destination. This is a blocking call.
-	Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOptions, tunnelSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error
+	Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOptions, tunnelSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error
 
 	// Relay will hook into a message bus as a consumer and relay all messages
 	// to the relayCh; if an error channel is provided, any errors will be piped

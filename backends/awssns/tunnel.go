@@ -16,20 +16,20 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
-func (a *AWSSNS) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOptions, dynamicSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
+func (a *AWSSNS) Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOptions, tunnelSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateTunnelOptions(tunnelOpts); err != nil {
 		return errors.Wrap(err, "unable to validate tunnel options")
 	}
 
 	llog := a.log.WithField("pkg", "activemq/tunnel")
 
-	if err := dynamicSvc.Start(ctx, "AWS SNS", errorCh); err != nil {
+	if err := tunnelSvc.Start(ctx, "AWS SNS", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create tunnel")
 	}
 
 	topic := tunnelOpts.AwsSns.Args.Topic
 
-	outboundCh := dynamicSvc.Read()
+	outboundCh := tunnelSvc.Read()
 
 	// Continually loop looking for messages on the channel.
 	for {
@@ -54,9 +54,9 @@ func (a *AWSSNS) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOptions, dy
 	return nil
 }
 
-func validateTunnelOptions(tunnelOpts *opts.DynamicOptions) error {
+func validateTunnelOptions(tunnelOpts *opts.TunnelOptions) error {
 	if tunnelOpts == nil {
-		return validate.ErrEmptyDynamicOpts
+		return validate.ErrEmptyTunnelOpts
 	}
 
 	if tunnelOpts.AwsSns == nil {

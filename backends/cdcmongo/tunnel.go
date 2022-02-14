@@ -9,6 +9,6 @@ import (
 	"github.com/batchcorp/plumber/types"
 )
 
-func (m *Mongo) Tunnel(ctx context.Context, opts *opts.DynamicOptions, dynamicSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
+func (m *Mongo) Tunnel(ctx context.Context, opts *opts.TunnelOptions, tunnelSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
 	return types.NotImplementedErr
 }

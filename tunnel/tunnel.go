@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	// DefaultTunnelAddress is the default address that the dynamic pkg will
+	// DefaultTunnelAddress is the default address that the tunnel pkg will
 	// use if an alternate address is not specified
 	DefaultTunnelAddress = "dproxy.batch.sh:443"
 
@@ -50,11 +50,11 @@ type Client struct {
 	PlumberClusterID  string
 	OutboundMessageCh chan *events.Outbound
 
-	Options *opts.DynamicOptions
+	Options *opts.TunnelOptions
 }
 
 // New validates CLI options and returns a new Client struct
-func New(opts *opts.DynamicOptions, plumberClusterID string) (ITunnel, error) {
+func New(opts *opts.TunnelOptions, plumberClusterID string) (ITunnel, error) {
 	if err := validateTunnelOptions(opts); err != nil {
 		return nil, errors.Wrap(err, "unable to validate tunnel options")
 	}
@@ -81,7 +81,7 @@ func New(opts *opts.DynamicOptions, plumberClusterID string) (ITunnel, error) {
 	return dClient, nil
 }
 
-func validateTunnelOptions(opts *opts.DynamicOptions) error {
+func validateTunnelOptions(opts *opts.TunnelOptions) error {
 	if opts == nil {
 		return errors.New("opts cannot be nil")
 	}
@@ -118,7 +118,7 @@ func (d *Client) reconnect() error {
 }
 
 // getDialOptions returns all necessary grpc dial options to connect to dProxy
-func getDialOptions(opts *opts.DynamicOptions) []grpc.DialOption {
+func getDialOptions(opts *opts.TunnelOptions) []grpc.DialOption {
 	dialOpts := []grpc.DialOption{grpc.WithBlock()}
 
 	if opts.XGrpcInsecure {
@@ -139,8 +139,8 @@ func (d *Client) Read() chan *events.Outbound {
 }
 
 // Start is called by a backend's Tunnel() method. It authorizes the connection
-// and begins reading a GRPC stream of responses consisting of DynamicReplay
-// protobuf messages.
+// and begins reading a GRPC stream of responses consisting of Tunnel protobuf
+// messages.
 func (d *Client) Start(ctx context.Context, bus string, errorCh chan<- *records.ErrorRecord) error {
 	go func() {
 		var err error
@@ -236,9 +236,9 @@ func (d *Client) notify(err error, desc string, errorCh chan<- *records.ErrorRec
 
 // connect opens a GRPC connection to dProxy. It is called by Start
 func (d *Client) connect(ctx context.Context, bus string) (services.DProxy_ConnectClient, error) {
-	authRequest := &events.DynamicReplay{
-		Type: events.DynamicReplay_AUTH_REQUEST,
-		Payload: &events.DynamicReplay_AuthRequest{
+	authRequest := &events.Tunnel{
+		Type: events.Tunnel_AUTH_REQUEST,
+		Payload: &events.Tunnel_AuthRequest{
 			AuthRequest: &events.AuthRequest{
 				Token:            d.Token,
 				MessageBus:       bus,
@@ -257,15 +257,15 @@ func (d *Client) connect(ctx context.Context, bus string) (services.DProxy_Conne
 }
 
 // handleResponse receives a tunnel message and determines which method should handle it based on the payload
-func (d *Client) handleResponse(_ context.Context, resp *events.DynamicReplay) error {
+func (d *Client) handleResponse(_ context.Context, resp *events.Tunnel) error {
 	switch resp.Type {
-	case events.DynamicReplay_AUTH_RESPONSE:
+	case events.Tunnel_AUTH_RESPONSE:
 		return d.handleAuthResponse(resp)
-	case events.DynamicReplay_OUTBOUND_MESSAGE:
+	case events.Tunnel_OUTBOUND_MESSAGE:
 		return d.handleOutboundMessage(resp)
-	case events.DynamicReplay_REPLAY_EVENT:
+	case events.Tunnel_REPLAY_EVENT:
 		return d.handleReplayEvent(resp)
-	case events.DynamicReplay_UNSET:
+	case events.Tunnel_UNSET:
 		// Noop used by dproxy to keep connection open
 		return nil
 	default:
@@ -273,8 +273,8 @@ func (d *Client) handleResponse(_ context.Context, resp *events.DynamicReplay) e
 	}
 }
 
-// handleAuthResponse handles a AUTH_RESPONSE payload from a DynamicReplay protobuf message
-func (d *Client) handleAuthResponse(resp *events.DynamicReplay) error {
+// handleAuthResponse handles a AUTH_RESPONSE payload from a Tunnel protobuf message
+func (d *Client) handleAuthResponse(resp *events.Tunnel) error {
 	authResponse := resp.GetAuthResponse()
 	if authResponse == nil {
 		if err := d.Conn.Close(); err != nil {
@@ -297,8 +297,8 @@ func (d *Client) handleAuthResponse(resp *events.DynamicReplay) error {
 	return nil
 }
 
-// handleOutboundMessage handles a REPLAY_MESSAGE payload from a DynamicReplay protobuf message
-func (d *Client) handleOutboundMessage(resp *events.DynamicReplay) error {
+// handleOutboundMessage handles a REPLAY_MESSAGE payload from a Tunnel protobuf message
+func (d *Client) handleOutboundMessage(resp *events.Tunnel) error {
 	d.log.Debugf("received message for replay '%s'", resp.ReplayId)
 
 	outbound := resp.GetOutboundMessage()
@@ -313,8 +313,8 @@ func (d *Client) handleOutboundMessage(resp *events.DynamicReplay) error {
 	return nil
 }
 
-// handleOutboundMessage handles a REPLAY_MESSAGE payload from a DynamicReplay protobuf message
-func (d *Client) handleReplayEvent(resp *events.DynamicReplay) error {
+// handleOutboundMessage handles a REPLAY_MESSAGE payload from a Tunnel protobuf message
+func (d *Client) handleReplayEvent(resp *events.Tunnel) error {
 	llog := d.log.WithField("replay_id", resp.ReplayId)
 	event := resp.GetReplayMessage()
 

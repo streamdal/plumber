@@ -31,7 +31,7 @@ var (
 
 	// Tunnel
 
-	ErrEmptyDynamicOpts = errors.New("tunnel options cannot be nil")
+	ErrEmptyTunnelOpts = errors.New("tunnel options cannot be nil")
 
 	// Relay
 

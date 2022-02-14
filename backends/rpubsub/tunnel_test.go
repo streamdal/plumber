@@ -16,7 +16,7 @@ import (
 
 var _ = Describe("Redis PubSub Backend", func() {
 	var r *RedisPubsub
-	var tunnelOpts *opts.DynamicOptions
+	var tunnelOpts *opts.TunnelOptions
 
 	BeforeEach(func() {
 		r = &RedisPubsub{
@@ -24,8 +24,8 @@ var _ = Describe("Redis PubSub Backend", func() {
 			log:      logrus.NewEntry(&logrus.Logger{Out: ioutil.Discard}),
 		}
 
-		tunnelOpts = &opts.DynamicOptions{
-			RedisPubsub: &opts.DynamicGroupRedisPubSubOptions{
+		tunnelOpts = &opts.TunnelOptions{
+			RedisPubsub: &opts.TunnelGroupRedisPubSubOptions{
 				Args: &args.RedisPubSubWriteArgs{
 					Channels: []string{"test"},
 				},
@@ -37,7 +37,7 @@ var _ = Describe("Redis PubSub Backend", func() {
 		It("validates nil tunnel options", func() {
 			err := validateTunnelOpts(nil)
 			Expect(err).To(HaveOccurred())
-			Expect(err).To(Equal(validate.ErrEmptyDynamicOpts))
+			Expect(err).To(Equal(validate.ErrEmptyTunnelOpts))
 		})
 		It("validates nil backend group", func() {
 			tunnelOpts.RedisPubsub = nil
@@ -58,7 +58,7 @@ var _ = Describe("Redis PubSub Backend", func() {
 			errorCh := make(chan *records.ErrorRecord)
 			err := r.Tunnel(context.Background(), nil, nil, errorCh)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring(validate.ErrEmptyDynamicOpts.Error()))
+			Expect(err.Error()).To(ContainSubstring(validate.ErrEmptyTunnelOpts.Error()))
 		})
 
 		It("Publishes message", func() {

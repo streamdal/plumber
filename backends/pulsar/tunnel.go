@@ -12,7 +12,7 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (p *Pulsar) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOptions, dynamicSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
+func (p *Pulsar) Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOptions, tunnelSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateTunnelOptions(tunnelOpts); err != nil {
 		return errors.Wrap(err, "invalid tunnel options")
 	}
@@ -24,11 +24,11 @@ func (p *Pulsar) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOptions, dy
 		return errors.Wrap(err, "unable to create Pulsar producer")
 	}
 
-	if err := dynamicSvc.Start(ctx, "Apache Pulsar", errorCh); err != nil {
+	if err := tunnelSvc.Start(ctx, "Apache Pulsar", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create tunnel")
 	}
 
-	outboundCh := dynamicSvc.Read()
+	outboundCh := tunnelSvc.Read()
 
 	for {
 		select {
@@ -48,9 +48,9 @@ func (p *Pulsar) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOptions, dy
 	}
 }
 
-func validateTunnelOptions(tunnelOpts *opts.DynamicOptions) error {
+func validateTunnelOptions(tunnelOpts *opts.TunnelOptions) error {
 	if tunnelOpts == nil {
-		return validate.ErrEmptyDynamicOpts
+		return validate.ErrEmptyTunnelOpts
 	}
 
 	if tunnelOpts.Pulsar == nil {

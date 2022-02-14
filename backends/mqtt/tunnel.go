@@ -13,21 +13,21 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (m *MQTT) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOptions, dynamicSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
+func (m *MQTT) Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOptions, tunnelSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateTunnelOptions(tunnelOpts); err != nil {
 		return errors.Wrap(err, "invalid tunnel options")
 	}
 
 	llog := m.log.WithField("pkg", "mqtt/tunnel")
 
-	if err := dynamicSvc.Start(ctx, "MQTT", errorCh); err != nil {
+	if err := tunnelSvc.Start(ctx, "MQTT", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create tunnel")
 	}
 
 	timeout := util.DurationSec(tunnelOpts.Mqtt.Args.WriteTimeoutSeconds)
 	topic := tunnelOpts.Mqtt.Args.Topic
 
-	outboundCh := dynamicSvc.Read()
+	outboundCh := tunnelSvc.Read()
 
 	for {
 		select {
@@ -51,9 +51,9 @@ func (m *MQTT) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOptions, dyna
 	}
 }
 
-func validateTunnelOptions(tunnelOpts *opts.DynamicOptions) error {
+func validateTunnelOptions(tunnelOpts *opts.TunnelOptions) error {
 	if tunnelOpts == nil {
-		return validate.ErrEmptyDynamicOpts
+		return validate.ErrEmptyTunnelOpts
 	}
 
 	if tunnelOpts.Mqtt == nil {

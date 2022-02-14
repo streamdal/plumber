@@ -14,7 +14,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
-func (a *AzureServiceBus) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOptions, dynamicSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
+func (a *AzureServiceBus) Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOptions, tunnelSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateTunnelOptions(tunnelOpts); err != nil {
 		return errors.Wrap(err, "invalid tunnel options")
 	}
@@ -41,11 +41,11 @@ func (a *AzureServiceBus) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOp
 		defer topic.Close(ctx)
 	}
 
-	if err := dynamicSvc.Start(ctx, "Azure Service Bus", errorCh); err != nil {
+	if err := tunnelSvc.Start(ctx, "Azure Service Bus", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create tunnel")
 	}
 
-	outboundCh := dynamicSvc.Read()
+	outboundCh := tunnelSvc.Read()
 
 	// Continually loop looking for messages on the channel.
 	for {
@@ -77,9 +77,9 @@ func (a *AzureServiceBus) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOp
 	return nil
 }
 
-func validateTunnelOptions(tunnelOpts *opts.DynamicOptions) error {
+func validateTunnelOptions(tunnelOpts *opts.TunnelOptions) error {
 	if tunnelOpts == nil {
-		return validate.ErrEmptyDynamicOpts
+		return validate.ErrEmptyTunnelOpts
 	}
 
 	if tunnelOpts.AzureServiceBus == nil {

@@ -8,11 +8,11 @@ require (
 	github.com/Azure/azure-service-bus-go v0.11.5
 	github.com/apache/pulsar-client-go v0.7.0
 	github.com/aws/aws-sdk-go v1.34.28
-	github.com/batchcorp/collector-schemas v0.0.13
+	github.com/batchcorp/collector-schemas v0.0.15-0.20220214213641-2bc4e352a9f8
 	github.com/batchcorp/kong v0.2.17-batch-fix
 	github.com/batchcorp/natty v0.0.16
 	github.com/batchcorp/pgoutput v0.3.2
-	github.com/batchcorp/plumber-schemas v0.0.141
+	github.com/batchcorp/plumber-schemas v0.0.142-0.20220214214009-c6a6303bce51
 	github.com/batchcorp/rabbit v0.1.17
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.2.0

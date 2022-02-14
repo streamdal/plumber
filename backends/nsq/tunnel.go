@@ -9,6 +9,6 @@ import (
 	"github.com/batchcorp/plumber/types"
 )
 
-func (n *NSQ) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOptions, dynamicSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
+func (n *NSQ) Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOptions, tunnelSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
 	return types.NotImplementedErr
 }

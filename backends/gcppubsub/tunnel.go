@@ -13,18 +13,18 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (g *GCPPubSub) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOptions, dynamicSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
+func (g *GCPPubSub) Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOptions, tunnelSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateTunnelOptions(tunnelOpts); err != nil {
 		return errors.New("unable to validate write options")
 	}
 
-	if err := dynamicSvc.Start(ctx, "GCP PubSub", errorCh); err != nil {
+	if err := tunnelSvc.Start(ctx, "GCP PubSub", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create tunnel")
 	}
 
 	t := g.client.Topic(tunnelOpts.GcpPubsub.Args.TopicId)
 
-	outboundCh := dynamicSvc.Read()
+	outboundCh := tunnelSvc.Read()
 
 	for {
 		select {
@@ -49,9 +49,9 @@ func (g *GCPPubSub) Tunnel(ctx context.Context, tunnelOpts *opts.DynamicOptions,
 	return nil
 }
 
-func validateTunnelOptions(tunnelOpts *opts.DynamicOptions) error {
+func validateTunnelOptions(tunnelOpts *opts.TunnelOptions) error {
 	if tunnelOpts == nil {
-		return validate.ErrEmptyDynamicOpts
+		return validate.ErrEmptyTunnelOpts
 	}
 
 	if tunnelOpts.GcpPubsub == nil {

@@ -59,15 +59,15 @@ func (b *Bus) broadcastCallback(ctx context.Context, natsMsg *nats.Msg) error {
 		err = b.doResumeRelay(ctx, msg)
 
 	// Tunnel
-	case CreateDynamic:
+	case CreateTunnel:
 		err = b.doCreateTunnel(ctx, msg)
-	case UpdateDynamic:
+	case UpdateTunnel:
 		err = b.doUpdateTunnel(ctx, msg)
-	case DeleteDynamic:
+	case DeleteTunnel:
 		err = b.doDeleteTunnel(ctx, msg)
-	case StopDynamic:
+	case StopTunnel:
 		err = b.doStopTunnel(ctx, msg)
-	case ResumeDynamic:
+	case ResumeTunnel:
 		err = b.doResumeTunnel(ctx, msg)
 
 	default:
