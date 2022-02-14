@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber/server/types"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber/server/types"
 )
 
 func (b *Bus) doCreateConnection(_ context.Context, msg *Message) error {
@@ -52,6 +53,26 @@ func (b *Bus) doUpdateConnection(_ context.Context, msg *Message) error {
 }
 
 func (b *Bus) doDeleteConnection(ctx context.Context, msg *Message) error {
+	// Ensure this connection isn't being used by any dynamic replays
+	b.config.PersistentConfig.DynamicReplaysMutex.RLock()
+	for id, dynamicReplay := range b.config.PersistentConfig.Dynamic {
+		if dynamicReplay.Options.ConnectionId == id {
+			return fmt.Errorf("cannot delete connection '%s' because it is in use by dynamic replay '%s'",
+				id, dynamicReplay.Options.XDynamicId)
+		}
+	}
+	b.config.PersistentConfig.DynamicReplaysMutex.RUnlock()
+
+	// Ensure this connection isn't being used by any relays
+	b.config.PersistentConfig.RelaysMutex.RLock()
+	for id, dynamicReplay := range b.config.PersistentConfig.Relays {
+		if dynamicReplay.Options.ConnectionId == id {
+			return fmt.Errorf("cannot delete connection '%s' because it is in use by relay '%s'",
+				id, dynamicReplay.Options.XRelayId)
+		}
+	}
+	b.config.PersistentConfig.RelaysMutex.RUnlock()
+
 	b.log.Debugf("running doCreateConnection handler for msg emitted by %s", msg.EmittedBy)
 
 	connOpts := &opts.ConnectionOptions{}

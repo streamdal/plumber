@@ -6,14 +6,13 @@ import (
 	"net"
 	"time"
 
-	"github.com/batchcorp/plumber/bus"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
-
 	"github.com/batchcorp/plumber/api"
+	"github.com/batchcorp/plumber/bus"
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/server"
 )
@@ -29,11 +28,11 @@ func (p *Plumber) RunServer() error {
 	p.log.Infof("starting plumber server in '%s' mode...", mode)
 
 	if err := p.relaunchRelays(); err != nil {
-		return errors.Wrap(err, "failed to relaunch relays")
+		p.log.Error(errors.Wrap(err, "failed to relaunch relays"))
 	}
 
 	if err := p.relaunchDynamic(); err != nil {
-		return errors.Wrap(err, "failed to relaunch tunnels")
+		p.log.Error(errors.Wrap(err, "failed to relaunch tunnels"))
 	}
 
 	// Launch HTTP server
@@ -146,6 +145,7 @@ func (p *Plumber) startGRPCServer() error {
 
 	// Each plumber node needs a unique ID
 	p.PersistentConfig.PlumberID = p.CLIOptions.Server.NodeId
+	p.PersistentConfig.ClusterID = p.CLIOptions.Server.ClusterId
 
 	plumberServer := &server.Server{
 		Actions:          p.Actions,

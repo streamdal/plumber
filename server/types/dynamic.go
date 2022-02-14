@@ -19,13 +19,14 @@ import (
 )
 
 type Dynamic struct {
-	Active         bool                 `json:"-"`
-	Id             string               `json:"-"`
-	CancelCtx      context.Context      `json:"-"`
-	CancelFunc     context.CancelFunc   `json:"-"`
-	Backend        backends.Backend     `json:"-"`
-	Options        *opts.DynamicOptions `json:"config"`
-	DynamicService dynamic.IDynamic
+	Active           bool                 `json:"-"`
+	Id               string               `json:"-"`
+	CancelCtx        context.Context      `json:"-"`
+	CancelFunc       context.CancelFunc   `json:"-"`
+	Backend          backends.Backend     `json:"-"`
+	Options          *opts.DynamicOptions `json:"config"`
+	DynamicService   dynamic.IDynamic
+	PlumberClusterID string `json:"-"`
 
 	log *logrus.Entry
 }
@@ -38,8 +39,10 @@ type Dynamic struct {
 func (d *Dynamic) StartDynamic(delay time.Duration) error {
 	d.log = logrus.WithField("pkg", "types/dynamic")
 
+	d.log.Debugf("Plumber cluster ID: %s", d.PlumberClusterID)
+
 	// Create a new dynamic connection
-	dynamicSvc, err := dynamic.New(d.Options, d.Backend.Name())
+	dynamicSvc, err := dynamic.New(d.Options, d.PlumberClusterID)
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
