@@ -1,26 +1,26 @@
-name: master
-
-on:
-  push:
-    branches:
-      - master
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@master
-      - uses: actions/setup-go@v2
-        with:
-          go-version: '^1.15.4' # The Go version to download (if necessary) and use.
-      - name: Start up dependencies
-        run: docker-compose up -d
-      - name: Wait for dependencies to start up
-        uses: jakejarvis/wait-action@master
-        with:
-          time: '30s'
-      - name: Master buld tests
-        run: |
-          make test
+#name: master
+#
+#on:
+#  push:
+#    branches:
+#      - master
+#jobs:
+#  test:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@master
+#      - uses: actions/setup-go@v2
+#        with:
+#          go-version: '^1.15.4' # The Go version to download (if necessary) and use.
+#      - name: Start up dependencies
+#        run: docker-compose up -d
+#      - name: Wait for dependencies to start up
+#        uses: jakejarvis/wait-action@master
+#        with:
+#          time: '30s'
+#      - name: Master buld tests
+#        run: |
+#          make test
 #  functional:
 #    name: Run functional tests
 #    runs-on: ubuntu-latest
