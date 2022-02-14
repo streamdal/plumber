@@ -60,13 +60,6 @@ services:
       - "61613:61613"
       - "8161:8161" #Admin port, admin/admin to login
 
-  nats:
-    container_name: nats
-    image: nats-streaming
-    ports:
-      - "4222:4222" # Client
-      - "8222:8222" # Admin panel
-
   redis:
     container_name: redis
     image: redis:latest
