@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/batchcorp/natty"
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
 	"github.com/relistan/go-director"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/natty"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
@@ -23,7 +24,7 @@ const (
 	QueueSubject     = "queue"
 )
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . IEtcd
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . IBus
 type IBus interface {
 	// Start starts up the broadcast and queue consumers
 	Start(serviceCtx context.Context) error

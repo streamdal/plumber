@@ -12,6 +12,7 @@ import (
 	"github.com/batchcorp/collector-schemas/build/go/protos/events"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/backends/awskinesis/kinesisfakes"
 	"github.com/batchcorp/plumber/dynamic/dynamicfakes"
@@ -82,7 +83,8 @@ var _ = Describe("AWS Kinesis Backend", func() {
 		})
 
 		It("validates dynamic options", func() {
-			err := (&Kinesis{}).Dynamic(context.Background(), nil, nil)
+			errorCh := make(chan *records.ErrorRecord)
+			err := (&Kinesis{}).Dynamic(context.Background(), nil, nil, errorCh)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(validate.ErrEmptyDynamicOpts.Error()))
 		})
@@ -101,7 +103,8 @@ var _ = Describe("AWS Kinesis Backend", func() {
 				log:    logrus.NewEntry(&logrus.Logger{Out: ioutil.Discard}),
 			}
 
-			err := p.Dynamic(ctx, dynamicOpts, fakeDynamic)
+			errorCh := make(chan *records.ErrorRecord)
+			err := p.Dynamic(ctx, dynamicOpts, fakeDynamic, errorCh)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(fakeDynamic.ReadCallCount()).To(Equal(1))
 			Expect(fakeKinesis.PutRecordCallCount()).To(Equal(1))

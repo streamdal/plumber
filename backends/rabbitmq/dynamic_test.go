@@ -13,6 +13,7 @@ import (
 	"github.com/batchcorp/collector-schemas/build/go/protos/events"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/backends/rabbitmq/rabbitfakes"
 	"github.com/batchcorp/plumber/dynamic/dynamicfakes"
@@ -79,8 +80,8 @@ var _ = Describe("RabbitMQ Backend", func() {
 
 	Context("Dynamic", func() {
 		It("validates dynamic options", func() {
-
-			err := (&RabbitMQ{}).Dynamic(context.Background(), nil, nil)
+			errorCh := make(chan *records.ErrorRecord)
+			err := (&RabbitMQ{}).Dynamic(context.Background(), nil, nil, errorCh)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(validate.ErrEmptyDynamicOpts.Error()))
 		})
@@ -104,7 +105,9 @@ var _ = Describe("RabbitMQ Backend", func() {
 			client: fakeRabbit,
 			log:    logrus.NewEntry(&logrus.Logger{Out: ioutil.Discard}),
 		}
-		err := p.Dynamic(ctx, dynamicOpts, fakeDynamic)
+
+		errorCh := make(chan *records.ErrorRecord)
+		err := p.Dynamic(ctx, dynamicOpts, fakeDynamic, errorCh)
 
 		Expect(err).To(HaveOccurred())
 		Expect(err.Error()).To(ContainSubstring(testErr.Error()))
@@ -128,7 +131,9 @@ var _ = Describe("RabbitMQ Backend", func() {
 			client: fakeRabbit,
 			log:    logrus.NewEntry(&logrus.Logger{Out: ioutil.Discard}),
 		}
-		err := p.Dynamic(ctx, dynamicOpts, fakeDynamic)
+
+		errorCh := make(chan *records.ErrorRecord)
+		err := p.Dynamic(ctx, dynamicOpts, fakeDynamic, errorCh)
 
 		Expect(err).ToNot(HaveOccurred())
 		Expect(fakeDynamic.StartCallCount()).To(Equal(1))

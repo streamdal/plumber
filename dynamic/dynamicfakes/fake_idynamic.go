@@ -2,9 +2,11 @@
 package dynamicfakes
 
 import (
+	"context"
 	"sync"
 
 	"github.com/batchcorp/collector-schemas/build/go/protos/events"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/dynamic"
 )
 
@@ -29,10 +31,18 @@ type FakeIDynamic struct {
 	readReturnsOnCall map[int]struct {
 		result1 chan *events.Outbound
 	}
-	StartStub        func(string)
+	StartStub        func(context.Context, string, chan<- *records.ErrorRecord) error
 	startMutex       sync.RWMutex
 	startArgsForCall []struct {
-		arg1 string
+		arg1 context.Context
+		arg2 string
+		arg3 chan<- *records.ErrorRecord
+	}
+	startReturns struct {
+		result1 error
+	}
+	startReturnsOnCall map[int]struct {
+		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
@@ -144,17 +154,25 @@ func (fake *FakeIDynamic) ReadReturnsOnCall(i int, result1 chan *events.Outbound
 	}{result1}
 }
 
-func (fake *FakeIDynamic) Run(arg1 string) {
+func (fake *FakeIDynamic) Start(arg1 context.Context, arg2 string, arg3 chan<- *records.ErrorRecord) error {
 	fake.startMutex.Lock()
+	ret, specificReturn := fake.startReturnsOnCall[len(fake.startArgsForCall)]
 	fake.startArgsForCall = append(fake.startArgsForCall, struct {
-		arg1 string
-	}{arg1})
+		arg1 context.Context
+		arg2 string
+		arg3 chan<- *records.ErrorRecord
+	}{arg1, arg2, arg3})
 	stub := fake.StartStub
-	fake.recordInvocation("Run", []interface{}{arg1})
+	fakeReturns := fake.startReturns
+	fake.recordInvocation("Start", []interface{}{arg1, arg2, arg3})
 	fake.startMutex.Unlock()
 	if stub != nil {
-		fake.StartStub(arg1)
+		return stub(arg1, arg2, arg3)
 	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
 }
 
 func (fake *FakeIDynamic) StartCallCount() int {
@@ -163,17 +181,40 @@ func (fake *FakeIDynamic) StartCallCount() int {
 	return len(fake.startArgsForCall)
 }
 
-func (fake *FakeIDynamic) StartCalls(stub func(string)) {
+func (fake *FakeIDynamic) StartCalls(stub func(context.Context, string, chan<- *records.ErrorRecord) error) {
 	fake.startMutex.Lock()
 	defer fake.startMutex.Unlock()
 	fake.StartStub = stub
 }
 
-func (fake *FakeIDynamic) StartArgsForCall(i int) string {
+func (fake *FakeIDynamic) StartArgsForCall(i int) (context.Context, string, chan<- *records.ErrorRecord) {
 	fake.startMutex.RLock()
 	defer fake.startMutex.RUnlock()
 	argsForCall := fake.startArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeIDynamic) StartReturns(result1 error) {
+	fake.startMutex.Lock()
+	defer fake.startMutex.Unlock()
+	fake.StartStub = nil
+	fake.startReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIDynamic) StartReturnsOnCall(i int, result1 error) {
+	fake.startMutex.Lock()
+	defer fake.startMutex.Unlock()
+	fake.StartStub = nil
+	if fake.startReturnsOnCall == nil {
+		fake.startReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.startReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeIDynamic) Invocations() map[string][][]interface{} {
