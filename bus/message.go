@@ -26,11 +26,11 @@ const (
 	StopRelay   = "StopRelay"
 	ResumeRelay = "ResumeRelay"
 
-	CreateDynamic = "CreateDynamic"
-	UpdateDynamic = "UpdateDynamic"
-	DeleteDynamic = "DeleteDynamic"
-	StopDynamic   = "StopDynamic"
-	ResumeDynamic = "ResumeDynamic"
+	CreateDynamic = "CreateTunnel"
+	UpdateDynamic = "UpdateTunnel"
+	DeleteDynamic = "DeleteTunnel"
+	StopDynamic   = "StopTunnel"
+	ResumeDynamic = "ResumeTunnel"
 
 	CreateValidation = "CreateValidation"
 	UpdateValidation = "UpdateValidation"

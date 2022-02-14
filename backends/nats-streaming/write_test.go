@@ -39,7 +39,7 @@ var _ = Describe("Nats Streaming Backend", func() {
 	})
 
 	Context("validateWriteOptions", func() {
-		It("validates nil dynamic options", func() {
+		It("validates nil tunnel options", func() {
 			err := validateWriteOptions(nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(validate.ErrEmptyWriteOpts))

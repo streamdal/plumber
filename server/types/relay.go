@@ -88,7 +88,7 @@ func (r *Relay) StartRelay(delay time.Duration) error {
 	return nil
 }
 
-// MarshalJSON marshals a dynamic replay to JSON
+// MarshalJSON marshals a tunnel to JSON
 func (r *Relay) MarshalJSON() ([]byte, error) {
 	buf := bytes.NewBuffer([]byte(``))
 
@@ -100,7 +100,7 @@ func (r *Relay) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// UnmarshalJSON unmarshals JSON into a dynamic replay struct
+// UnmarshalJSON unmarshals JSON into a tunnel struct
 func (r *Relay) UnmarshalJSON(v []byte) error {
 	relay := &opts.RelayOptions{}
 	if err := jsonpb.Unmarshal(bytes.NewBuffer(v), relay); err != nil {

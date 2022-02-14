@@ -113,21 +113,21 @@ func (p *Plumber) relaunchRelays() error {
 }
 
 func (p *Plumber) relaunchDynamic() error {
-	for dynamicID, dynamic := range p.PersistentConfig.Dynamic {
-		// We want to "create" both active and inactive relays through CreateDynamic
+	for dynamicID, dynamic := range p.PersistentConfig.Tunnels {
+		// We want to "create" both active and inactive relays through CreateTunnel
 		// as we need to create backends, create shutdown context, channels, etc.
-		d, err := p.Actions.CreateDynamic(p.ServiceShutdownCtx, dynamic.Options)
+		d, err := p.Actions.CreateTunnel(p.ServiceShutdownCtx, dynamic.Options)
 		if err != nil {
-			return errors.Wrapf(err, "unable to create dynamic '%s'", dynamicID)
+			return errors.Wrapf(err, "unable to create tunnel '%s'", dynamicID)
 		}
 
 		if dynamic.Active {
-			p.log.Infof("Dynamic '%s' re-started", dynamicID)
+			p.log.Infof("Tunnel '%s' re-started", dynamicID)
 		} else {
-			p.log.Debugf("Dynamic '%s' is inactive - not relaunching", dynamicID)
+			p.log.Debugf("Tunnel '%s' is inactive - not relaunching", dynamicID)
 		}
 
-		p.PersistentConfig.SetDynamic(dynamicID, d)
+		p.PersistentConfig.SetTunnel(dynamicID, d)
 		p.PersistentConfig.Save()
 	}
 

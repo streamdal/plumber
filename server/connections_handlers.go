@@ -179,16 +179,16 @@ func (s *Server) DeleteConnection(ctx context.Context, req *protos.DeleteConnect
 		return nil, CustomError(common.Code_NOT_FOUND, "no such connection id")
 	}
 
-	// Ensure this connection isn't being used by any dynamic replays
-	s.PersistentConfig.DynamicReplaysMutex.RLock()
-	for id, dynamicReplay := range s.PersistentConfig.Dynamic {
+	// Ensure this connection isn't being used by any tunnels
+	s.PersistentConfig.TunnelsMutex.RLock()
+	for id, dynamicReplay := range s.PersistentConfig.Tunnels {
 		if dynamicReplay.Options.ConnectionId == id {
-			s.PersistentConfig.DynamicReplaysMutex.RUnlock()
-			return nil, fmt.Errorf("cannot delete connection '%s' because it is in use by dynamic replay '%s'",
+			s.PersistentConfig.TunnelsMutex.RUnlock()
+			return nil, fmt.Errorf("cannot delete connection '%s' because it is in use by tunnel '%s'",
 				id, dynamicReplay.Options.XDynamicId)
 		}
 	}
-	s.PersistentConfig.DynamicReplaysMutex.RUnlock()
+	s.PersistentConfig.TunnelsMutex.RUnlock()
 
 	// Ensure this connection isn't being used by any relays
 	s.PersistentConfig.RelaysMutex.RLock()

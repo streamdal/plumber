@@ -253,7 +253,7 @@ func (fake *FakeIBus) PublishCreateConnectionReturnsOnCall(i int, result1 error)
 	}{result1}
 }
 
-func (fake *FakeIBus) PublishCreateDynamic(arg1 context.Context, arg2 *opts.DynamicOptions) error {
+func (fake *FakeIBus) PublishCreateTunnel(arg1 context.Context, arg2 *opts.DynamicOptions) error {
 	fake.publishCreateDynamicMutex.Lock()
 	ret, specificReturn := fake.publishCreateDynamicReturnsOnCall[len(fake.publishCreateDynamicArgsForCall)]
 	fake.publishCreateDynamicArgsForCall = append(fake.publishCreateDynamicArgsForCall, struct {
@@ -262,7 +262,7 @@ func (fake *FakeIBus) PublishCreateDynamic(arg1 context.Context, arg2 *opts.Dyna
 	}{arg1, arg2})
 	stub := fake.PublishCreateDynamicStub
 	fakeReturns := fake.publishCreateDynamicReturns
-	fake.recordInvocation("PublishCreateDynamic", []interface{}{arg1, arg2})
+	fake.recordInvocation("PublishCreateTunnel", []interface{}{arg1, arg2})
 	fake.publishCreateDynamicMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2)
@@ -439,7 +439,7 @@ func (fake *FakeIBus) PublishDeleteConnectionReturnsOnCall(i int, result1 error)
 	}{result1}
 }
 
-func (fake *FakeIBus) PublishDeleteDynamic(arg1 context.Context, arg2 *opts.DynamicOptions) error {
+func (fake *FakeIBus) PublishDeleteTunnel(arg1 context.Context, arg2 *opts.DynamicOptions) error {
 	fake.publishDeleteDynamicMutex.Lock()
 	ret, specificReturn := fake.publishDeleteDynamicReturnsOnCall[len(fake.publishDeleteDynamicArgsForCall)]
 	fake.publishDeleteDynamicArgsForCall = append(fake.publishDeleteDynamicArgsForCall, struct {
@@ -448,7 +448,7 @@ func (fake *FakeIBus) PublishDeleteDynamic(arg1 context.Context, arg2 *opts.Dyna
 	}{arg1, arg2})
 	stub := fake.PublishDeleteDynamicStub
 	fakeReturns := fake.publishDeleteDynamicReturns
-	fake.recordInvocation("PublishDeleteDynamic", []interface{}{arg1, arg2})
+	fake.recordInvocation("PublishDeleteTunnel", []interface{}{arg1, arg2})
 	fake.publishDeleteDynamicMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2)
@@ -563,7 +563,7 @@ func (fake *FakeIBus) PublishDeleteRelayReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeIBus) PublishResumeDynamic(arg1 context.Context, arg2 *opts.DynamicOptions) error {
+func (fake *FakeIBus) PublishResumeTunnel(arg1 context.Context, arg2 *opts.DynamicOptions) error {
 	fake.publishResumeDynamicMutex.Lock()
 	ret, specificReturn := fake.publishResumeDynamicReturnsOnCall[len(fake.publishResumeDynamicArgsForCall)]
 	fake.publishResumeDynamicArgsForCall = append(fake.publishResumeDynamicArgsForCall, struct {
@@ -572,7 +572,7 @@ func (fake *FakeIBus) PublishResumeDynamic(arg1 context.Context, arg2 *opts.Dyna
 	}{arg1, arg2})
 	stub := fake.PublishResumeDynamicStub
 	fakeReturns := fake.publishResumeDynamicReturns
-	fake.recordInvocation("PublishResumeDynamic", []interface{}{arg1, arg2})
+	fake.recordInvocation("PublishResumeTunnel", []interface{}{arg1, arg2})
 	fake.publishResumeDynamicMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2)
@@ -687,7 +687,7 @@ func (fake *FakeIBus) PublishResumeRelayReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeIBus) PublishStopDynamic(arg1 context.Context, arg2 *opts.DynamicOptions) error {
+func (fake *FakeIBus) PublishStopTunnel(arg1 context.Context, arg2 *opts.DynamicOptions) error {
 	fake.publishStopDynamicMutex.Lock()
 	ret, specificReturn := fake.publishStopDynamicReturnsOnCall[len(fake.publishStopDynamicArgsForCall)]
 	fake.publishStopDynamicArgsForCall = append(fake.publishStopDynamicArgsForCall, struct {
@@ -696,7 +696,7 @@ func (fake *FakeIBus) PublishStopDynamic(arg1 context.Context, arg2 *opts.Dynami
 	}{arg1, arg2})
 	stub := fake.PublishStopDynamicStub
 	fakeReturns := fake.publishStopDynamicReturns
-	fake.recordInvocation("PublishStopDynamic", []interface{}{arg1, arg2})
+	fake.recordInvocation("PublishStopTunnel", []interface{}{arg1, arg2})
 	fake.publishStopDynamicMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2)
@@ -873,7 +873,7 @@ func (fake *FakeIBus) PublishUpdateConnectionReturnsOnCall(i int, result1 error)
 	}{result1}
 }
 
-func (fake *FakeIBus) PublishUpdateDynamic(arg1 context.Context, arg2 *opts.DynamicOptions) error {
+func (fake *FakeIBus) PublishUpdateTunnel(arg1 context.Context, arg2 *opts.DynamicOptions) error {
 	fake.publishUpdateDynamicMutex.Lock()
 	ret, specificReturn := fake.publishUpdateDynamicReturnsOnCall[len(fake.publishUpdateDynamicArgsForCall)]
 	fake.publishUpdateDynamicArgsForCall = append(fake.publishUpdateDynamicArgsForCall, struct {
@@ -882,7 +882,7 @@ func (fake *FakeIBus) PublishUpdateDynamic(arg1 context.Context, arg2 *opts.Dyna
 	}{arg1, arg2})
 	stub := fake.PublishUpdateDynamicStub
 	fakeReturns := fake.publishUpdateDynamicReturns
-	fake.recordInvocation("PublishUpdateDynamic", []interface{}{arg1, arg2})
+	fake.recordInvocation("PublishUpdateTunnel", []interface{}{arg1, arg2})
 	fake.publishUpdateDynamicMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2)

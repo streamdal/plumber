@@ -34,12 +34,12 @@ type Config struct {
 	TeamID    string `json:"team_id"`
 	UserID    string `json:"user_id"`
 
-	Connections         map[string]*stypes.Connection `json:"connections"`
-	Relays              map[string]*stypes.Relay      `json:"relays"`
-	Dynamic             map[string]*stypes.Dynamic    `json:"dynamic_replays"`
-	ConnectionsMutex    *sync.RWMutex                 `json:"-"`
-	RelaysMutex         *sync.RWMutex                 `json:"-"`
-	DynamicReplaysMutex *sync.RWMutex                 `json:"-"`
+	Connections      map[string]*stypes.Connection `json:"connections"`
+	Relays           map[string]*stypes.Relay      `json:"relays"`
+	Tunnels          map[string]*stypes.Tunnel     `json:"tunnels"`
+	ConnectionsMutex *sync.RWMutex                 `json:"-"`
+	RelaysMutex      *sync.RWMutex                 `json:"-"`
+	TunnelsMutex     *sync.RWMutex                 `json:"-"`
 
 	enableCluster bool
 	kv            kv.IKV
@@ -86,12 +86,12 @@ func New(enableCluster bool, k kv.IKV) (*Config, error) {
 
 func newConfig(enableCluster bool, k kv.IKV) *Config {
 	return &Config{
-		Connections:         make(map[string]*stypes.Connection),
-		Relays:              make(map[string]*stypes.Relay),
-		Dynamic:             make(map[string]*stypes.Dynamic),
-		ConnectionsMutex:    &sync.RWMutex{},
-		RelaysMutex:         &sync.RWMutex{},
-		DynamicReplaysMutex: &sync.RWMutex{},
+		Connections:      make(map[string]*stypes.Connection),
+		Relays:           make(map[string]*stypes.Relay),
+		Tunnels:          make(map[string]*stypes.Tunnel),
+		ConnectionsMutex: &sync.RWMutex{},
+		RelaysMutex:      &sync.RWMutex{},
+		TunnelsMutex:     &sync.RWMutex{},
 
 		kv:            k,
 		enableCluster: enableCluster,
@@ -164,12 +164,12 @@ func fetchConfigFromFile(fileName string) (*Config, error) {
 
 func readConfigBytes(data []byte) (*Config, error) {
 	cfg := &Config{
-		ConnectionsMutex:    &sync.RWMutex{},
-		RelaysMutex:         &sync.RWMutex{},
-		DynamicReplaysMutex: &sync.RWMutex{},
-		Connections:         make(map[string]*stypes.Connection),
-		Relays:              make(map[string]*stypes.Relay),
-		Dynamic:             make(map[string]*stypes.Dynamic),
+		ConnectionsMutex: &sync.RWMutex{},
+		RelaysMutex:      &sync.RWMutex{},
+		TunnelsMutex:     &sync.RWMutex{},
+		Connections:      make(map[string]*stypes.Connection),
+		Relays:           make(map[string]*stypes.Relay),
+		Tunnels:          make(map[string]*stypes.Tunnel),
 	}
 
 	if err := json.Unmarshal(data, cfg); err != nil {
@@ -339,27 +339,27 @@ func (c *Config) DeleteConnection(connID string) {
 	delete(c.Connections, connID)
 }
 
-// GetDynamic returns an in-progress read from the Dynamic map
-func (c *Config) GetDynamic(dynamicID string) *stypes.Dynamic {
-	c.DynamicReplaysMutex.RLock()
-	defer c.DynamicReplaysMutex.RUnlock()
+// GetTunnel returns an in-progress read from the Tunnels map
+func (c *Config) GetTunnel(dynamicID string) *stypes.Tunnel {
+	c.TunnelsMutex.RLock()
+	defer c.TunnelsMutex.RUnlock()
 
-	r, _ := c.Dynamic[dynamicID]
+	r, _ := c.Tunnels[dynamicID]
 
 	return r
 }
 
-// SetDynamic adds an in-progress read to the Dynamic map
-func (c *Config) SetDynamic(dynamicID string, dynamicReplay *stypes.Dynamic) {
-	c.DynamicReplaysMutex.Lock()
-	defer c.DynamicReplaysMutex.Unlock()
+// SetTunnel adds an in-progress read to the Tunnels map
+func (c *Config) SetTunnel(dynamicID string, dynamicReplay *stypes.Tunnel) {
+	c.TunnelsMutex.Lock()
+	defer c.TunnelsMutex.Unlock()
 
-	c.Dynamic[dynamicID] = dynamicReplay
+	c.Tunnels[dynamicID] = dynamicReplay
 }
 
-// DeleteDynamic removes a dynamic replay from in-memory map
-func (c *Config) DeleteDynamic(dynamicID string) {
-	c.DynamicReplaysMutex.Lock()
-	defer c.DynamicReplaysMutex.Unlock()
-	delete(c.Dynamic, dynamicID)
+// DeleteTunnel removes a tunnel from in-memory map
+func (c *Config) DeleteTunnel(dynamicID string) {
+	c.TunnelsMutex.Lock()
+	defer c.TunnelsMutex.Unlock()
+	delete(c.Tunnels, dynamicID)
 }

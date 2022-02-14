@@ -53,15 +53,15 @@ func (b *Bus) doUpdateConnection(_ context.Context, msg *Message) error {
 }
 
 func (b *Bus) doDeleteConnection(ctx context.Context, msg *Message) error {
-	b.config.PersistentConfig.DynamicReplaysMutex.RLock()
-	defer b.config.PersistentConfig.DynamicReplaysMutex.RUnlock()
+	b.config.PersistentConfig.TunnelsMutex.RLock()
+	defer b.config.PersistentConfig.TunnelsMutex.RUnlock()
 	b.config.PersistentConfig.RelaysMutex.RLock()
 	defer b.config.PersistentConfig.RelaysMutex.RUnlock()
 
-	// Ensure this connection isn't being used by any dynamic replays
-	for id, dynamicReplay := range b.config.PersistentConfig.Dynamic {
+	// Ensure this connection isn't being used by any tunnels
+	for id, dynamicReplay := range b.config.PersistentConfig.Tunnels {
 		if dynamicReplay.Options.ConnectionId == id {
-			return fmt.Errorf("cannot delete connection '%s' because it is in use by dynamic replay '%s'",
+			return fmt.Errorf("cannot delete connection '%s' because it is in use by tunnel '%s'",
 				id, dynamicReplay.Options.XDynamicId)
 		}
 	}
@@ -102,13 +102,13 @@ func (b *Bus) doDeleteConnection(ctx context.Context, msg *Message) error {
 	//	}
 	//}
 	//
-	//// Stop any dynamic that use this connection
-	//for dynamicID, dynamicCfg := range b.config.PersistentConfig.Dynamic {
+	//// Stop any tunnel that use this connection
+	//for dynamicID, dynamicCfg := range b.config.PersistentConfig.Tunnel {
 	//	if dynamicCfg.Options.ConnectionId == connOpts.XId {
-	//		b.log.Infof("attempting to delete dynamic '%s' that uses connection '%s'", dynamicID, connOpts.XId)
+	//		b.log.Infof("attempting to delete tunnel '%s' that uses connection '%s'", dynamicID, connOpts.XId)
 	//
-	//		if err := b.config.Actions.DeleteDynamic(ctx, dynamicID); err != nil {
-	//			return errors.Wrapf(err, "unable to delete dynamic '%s'; troubleshoot and perform manual deletes", dynamicID)
+	//		if err := b.config.Actions.DeleteTunnel(ctx, dynamicID); err != nil {
+	//			return errors.Wrapf(err, "unable to delete tunnel '%s'; troubleshoot and perform manual deletes", dynamicID)
 	//		}
 	//	}
 	//}

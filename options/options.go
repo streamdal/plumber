@@ -87,7 +87,7 @@ func unsetUnusedOptions(kongCtx *kong.Context, cliOptions *opts.CLIOptions) {
 		unsetUnusedRelayOpts(cliOptions)
 		cliOptions.Read = nil
 		cliOptions.Write = nil
-	case "dynamic":
+	case "tunnel":
 		unsetUnusedDynamicOpts(cliOptions)
 	case "batch":
 		unsetUnusedBatchOpts(cliOptions)
@@ -153,7 +153,7 @@ func ActionUsesBackend(action string) bool {
 		return true
 	case "write":
 		return true
-	case "dynamic":
+	case "tunnel":
 		return true
 	}
 
