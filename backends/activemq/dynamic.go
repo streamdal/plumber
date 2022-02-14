@@ -6,18 +6,21 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/dynamic"
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (a *ActiveMQ) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
+func (a *ActiveMQ) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateDynamicOptions(dynamicOpts); err != nil {
 		return errors.Wrap(err, "invalid dynamic options")
 	}
 
 	llog := a.log.WithField("pkg", "activemq/dynamic")
 
-	go dynamicSvc.Start("ActiveMQ")
+	if err := dynamicSvc.Start(ctx, "ActiveMQ", errorCh); err != nil {
+		return errors.Wrap(err, "unable to create dynamic")
+	}
 
 	destination := getDestinationWrite(dynamicOpts.Activemq.Args)
 
@@ -33,7 +36,7 @@ func (a *ActiveMQ) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions
 
 			llog.Debugf("Replayed message to ActiveMQ '%s' for replay '%s'", destination, outbound.ReplayId)
 		case <-ctx.Done():
-			a.log.Warning("context cancelled")
+			a.log.Debug("context cancelled")
 			return nil
 		}
 	}

@@ -9,6 +9,6 @@ import (
 	"github.com/batchcorp/plumber/types"
 )
 
-func (r *RabbitStreams) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
+func (r *RabbitStreams) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan<- *records.ErrorRecord) error {
 	return types.NotImplementedErr
 }

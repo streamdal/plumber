@@ -681,7 +681,7 @@ var _ = Describe("Functional", func() {
 					capture := make(chan string, 1)
 					defer close(capture)
 
-					// Start MQTT reader command
+					// Run MQTT reader command
 					go func(out chan string) {
 						defer GinkgoRecover()
 
@@ -733,7 +733,7 @@ var _ = Describe("Functional", func() {
 
 					capture := make(chan string, 1)
 
-					// Start MQTT reader command
+					// Run MQTT reader command
 					go func(out chan string) {
 						defer GinkgoRecover()
 
@@ -791,7 +791,7 @@ var _ = Describe("Functional", func() {
 					capture := make(chan string, 1)
 					defer close(capture)
 
-					// Start MQTT reader command
+					// Run MQTT reader command
 					go func(out chan string) {
 						defer GinkgoRecover()
 
@@ -981,7 +981,7 @@ var _ = Describe("Functional", func() {
 					capture := make(chan string, 1)
 					defer close(capture)
 
-					// Start NATS reader command
+					// Run NATS reader command
 					go func(out chan string) {
 						defer GinkgoRecover()
 
@@ -1034,7 +1034,7 @@ var _ = Describe("Functional", func() {
 					capture := make(chan string, 1)
 					defer close(capture)
 
-					// Start NATS reader command
+					// Run NATS reader command
 					go func(out chan string) {
 						defer GinkgoRecover()
 
@@ -1092,7 +1092,7 @@ var _ = Describe("Functional", func() {
 					capture := make(chan string, 1)
 					defer close(capture)
 
-					// Start NATS reader command
+					// Run NATS reader command
 					go func(out chan string) {
 						defer GinkgoRecover()
 
@@ -1158,7 +1158,7 @@ var _ = Describe("Functional", func() {
 					capture := make(chan string, 1)
 					defer close(capture)
 
-					// Start RedisPubSub reader command
+					// Run RedisPubSub reader command
 					go func(out chan string) {
 						defer GinkgoRecover()
 
@@ -1213,7 +1213,7 @@ var _ = Describe("Functional", func() {
 					capture := make(chan string, 1)
 					defer close(capture)
 
-					// Start RedisPubSub reader command
+					// Run RedisPubSub reader command
 					go func(out chan string) {
 						defer GinkgoRecover()
 
@@ -1273,7 +1273,7 @@ var _ = Describe("Functional", func() {
 					capture := make(chan string, 1)
 					defer close(capture)
 
-					// Start RedisPubSub reader command
+					// Run RedisPubSub reader command
 					go func(out chan string) {
 						defer GinkgoRecover()
 
@@ -1343,7 +1343,7 @@ var _ = Describe("Functional", func() {
 					capture := make(chan string, 1)
 					defer close(capture)
 
-					// Start RedisPubSub reader command
+					// Run RedisPubSub reader command
 					go func(out chan string) {
 						defer GinkgoRecover()
 
@@ -1399,7 +1399,7 @@ var _ = Describe("Functional", func() {
 
 					capture := make(chan string, 1)
 
-					// Start RedisPubSub reader command
+					// Run RedisPubSub reader command
 					go func(out chan string) {
 						defer GinkgoRecover()
 
@@ -1461,7 +1461,7 @@ var _ = Describe("Functional", func() {
 					capture := make(chan string, 1)
 					defer close(capture)
 
-					// Start RedisPubSub reader command
+					// Run RedisPubSub reader command
 					go func(out chan string) {
 						defer GinkgoRecover()
 
@@ -1531,7 +1531,7 @@ var _ = Describe("Functional", func() {
 					capture := make(chan string, 1)
 					defer close(capture)
 
-					// Start Pulsar reader command
+					// Run Pulsar reader command
 					go func(out chan string) {
 						defer GinkgoRecover()
 
@@ -1587,7 +1587,7 @@ var _ = Describe("Functional", func() {
 
 					capture := make(chan string, 1)
 
-					// Start Pulsar reader command
+					// Run Pulsar reader command
 					go func(out chan string) {
 						defer GinkgoRecover()
 
@@ -1645,7 +1645,7 @@ var _ = Describe("Functional", func() {
 					capture := make(chan string, 1)
 					defer close(capture)
 
-					// Start Pulsar reader command
+					// Run Pulsar reader command
 					go func(out chan string) {
 						defer GinkgoRecover()
 
@@ -1708,7 +1708,7 @@ var _ = Describe("Functional", func() {
 					capture := make(chan string, 1)
 					defer close(capture)
 
-					// Start Pulsar reader command
+					// Run Pulsar reader command
 					go func(out chan string) {
 						defer GinkgoRecover()
 

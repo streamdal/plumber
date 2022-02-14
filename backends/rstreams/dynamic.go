@@ -7,19 +7,22 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/dynamic"
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (r *RedisStreams) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
+func (r *RedisStreams) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateDynamicOptions(dynamicOpts); err != nil {
 		return errors.Wrap(err, "unable to validate dynamic options")
 	}
 
 	llog := r.log.WithField("pkg", "rstreams/dynamic")
 
-	go dynamicSvc.Start("Redis Streams")
+	if err := dynamicSvc.Start(ctx, "Redis Streams", errorCh); err != nil {
+		return errors.Wrap(err, "unable to create dynamic")
+	}
 
 	outboundCh := dynamicSvc.Read()
 
@@ -43,7 +46,7 @@ func (r *RedisStreams) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOpt
 					streamName, dynamicOpts.RedisStreams.Args.Key, outbound.ReplayId)
 			}
 		case <-ctx.Done():
-			llog.Warning("context cancelled")
+			llog.Debug("context cancelled")
 			return nil
 		}
 	}

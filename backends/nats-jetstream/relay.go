@@ -13,7 +13,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
-func (n *NatsJetstream) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, _ chan *records.ErrorRecord) error {
+func (n *NatsJetstream) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, _ chan<- *records.ErrorRecord) error {
 	if err := validateRelayOptions(relayOpts); err != nil {
 		return errors.Wrap(err, "unable to validate relay options")
 	}

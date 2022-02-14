@@ -16,7 +16,7 @@ import (
 	"github.com/batchcorp/rabbit"
 )
 
-func (r *RabbitMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
+func (r *RabbitMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateRelayOptions(relayOpts); err != nil {
 		return errors.Wrap(err, "unable to verify options")
 	}
@@ -63,7 +63,7 @@ func (r *RabbitMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, rela
 			prometheus.IncrPromCounter("plumber_read_errors", 1)
 
 		case <-ctx.Done():
-			r.log.Info("Received shutdown signal, existing relayer")
+			r.log.Debug("Received shutdown signal, exiting relayer")
 			return nil
 		}
 	}

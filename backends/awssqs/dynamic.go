@@ -7,12 +7,13 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/dynamic"
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (a *AWSSQS) Dynamic(ctx context.Context, opts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
+func (a *AWSSQS) Dynamic(ctx context.Context, opts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateDynamicOptions(opts); err != nil {
 		return errors.Wrap(err, "unable to validate dynamic options")
 	}
@@ -26,7 +27,9 @@ func (a *AWSSQS) Dynamic(ctx context.Context, opts *opts.DynamicOptions, dynamic
 		return errors.Wrap(err, "unable to get queue url")
 	}
 
-	go dynamicSvc.Start("AWS SQS")
+	if err := dynamicSvc.Start(ctx, "AWS SQS", errorCh); err != nil {
+		return errors.Wrap(err, "unable to create dynamic")
+	}
 
 	outboundCh := dynamicSvc.Read()
 
@@ -40,7 +43,7 @@ func (a *AWSSQS) Dynamic(ctx context.Context, opts *opts.DynamicOptions, dynamic
 				return err
 			}
 		case <-ctx.Done():
-			llog.Warning("context cancelled")
+			llog.Debug("context cancelled")
 			return nil
 		}
 	}

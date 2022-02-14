@@ -9,17 +9,20 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (n *NatsStreaming) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
+func (n *NatsStreaming) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateDynamicOptions(dynamicOpts); err != nil {
 		return errors.Wrap(err, "invalid dynamic options")
 	}
 
 	llog := n.log.WithField("pkg", "nats-streaming/dynamic")
 
-	go dynamicSvc.Start("Nats Streaming")
+	if err := dynamicSvc.Start(ctx, "Nats Streaming", errorCh); err != nil {
+		return errors.Wrap(err, "unable to create dynamic")
+	}
 
 	outboundCh := dynamicSvc.Read()
 
@@ -36,7 +39,7 @@ func (n *NatsStreaming) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOp
 			llog.Debugf("Replayed message to NATS streaming channel '%s' for replay '%s'",
 				dynamicOpts.NatsStreaming.Args.Channel, outbound.ReplayId)
 		case <-ctx.Done():
-			llog.Warning("context cancelled")
+			llog.Debug("context cancelled")
 			return nil
 		}
 	}

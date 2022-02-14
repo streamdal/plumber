@@ -10,12 +10,13 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/dynamic"
 )
 
 // Dynamic starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
 // which are then written to the message bus.
-func (k *Kafka) Dynamic(ctx context.Context, opts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
+func (k *Kafka) Dynamic(ctx context.Context, opts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic, errorCh chan<- *records.ErrorRecord) error {
 	llog := logrus.WithField("pkg", "kafka/dynamic")
 
 	if err := validateDynamicOptions(opts); err != nil {
@@ -30,7 +31,9 @@ func (k *Kafka) Dynamic(ctx context.Context, opts *opts.DynamicOptions, dynamicS
 
 	defer writer.Close()
 
-	go dynamicSvc.Start("Kafka")
+	if err := dynamicSvc.Start(ctx, "Kafka", errorCh); err != nil {
+		return errors.Wrap(err, "unable to create dynamic")
+	}
 
 	outboundCh := dynamicSvc.Read()
 
@@ -51,7 +54,7 @@ MAIN:
 			}
 
 		case <-ctx.Done():
-			k.log.Warning("context cancelled")
+			k.log.Debug("context cancelled")
 			break MAIN
 		}
 	}

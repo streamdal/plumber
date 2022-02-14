@@ -22,12 +22,14 @@ type ResponseJSON struct {
 	Errors  string            `json:"errors,omitempty"`
 }
 
-func Start(listenAddress, version string) error {
+func Start(listenAddress, version string) (*http.Server, error) {
 	a := &API{
 		Version:       version,
 		ListenAddress: listenAddress,
 		log:           logrus.WithField("pkg", "api"),
 	}
+
+	a.log.Debugf("starting API server on %s", listenAddress)
 
 	router := httprouter.New()
 
@@ -35,9 +37,20 @@ func Start(listenAddress, version string) error {
 	router.HandlerFunc("GET", "/version", a.versionHandler)
 	router.Handler("GET", "/metrics", promhttp.Handler())
 
-	a.log.Infof("starting API server on %s", listenAddress)
+	srv := &http.Server{
+		Addr:    listenAddress,
+		Handler: router,
+	}
 
-	return http.ListenAndServe(listenAddress, router)
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			if err != http.ErrServerClosed {
+				a.log.Errorf("unable to srv.ListenAndServe: %s", err)
+			}
+		}
+	}()
+
+	return srv, nil
 }
 
 func (a *API) healthCheckHandler(rw http.ResponseWriter, r *http.Request) {

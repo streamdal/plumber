@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/batchcorp/plumber/actions"
+	"github.com/batchcorp/plumber/bus"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/mcuadros/go-lookup"
 	"github.com/pkg/errors"
@@ -16,8 +17,6 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/config"
-	"github.com/batchcorp/plumber/embed/etcd"
-	"github.com/batchcorp/plumber/monitor"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/validate"
@@ -38,8 +37,6 @@ type Config struct {
 	PersistentConfig   *config.Config
 	Actions            *actions.Actions
 	ServiceShutdownCtx context.Context
-	MainShutdownFunc   context.CancelFunc
-	MainShutdownCtx    context.Context
 	CLIOptions         *opts.CLIOptions
 	KongCtx            *kong.Context
 }
@@ -47,14 +44,11 @@ type Config struct {
 type Plumber struct {
 	*Config
 
-	Etcd    *etcd.Etcd
+	Bus     bus.IBus
 	RelayCh chan interface{}
 
 	cliMD       map[pb.MDType]*desc.MessageDescriptor
 	cliConnOpts *opts.ConnectionOptions
-
-	// Only filled out when running in server mode
-	monitor monitor.IMonitor
 
 	log *logrus.Entry
 }
@@ -246,14 +240,6 @@ func validateConfig(cfg *Config) error {
 
 	if cfg.CLIOptions == nil {
 		return ErrMissingOptions
-	}
-
-	if cfg.MainShutdownCtx == nil {
-		return ErrMissingMainContext
-	}
-
-	if cfg.MainShutdownFunc == nil {
-		return ErrMissingMainShutdownFunc
 	}
 
 	if cfg.PersistentConfig == nil {

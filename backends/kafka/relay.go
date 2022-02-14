@@ -21,7 +21,7 @@ const (
 )
 
 // Relay sets up a new Kafka relayer
-func (k *Kafka) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
+func (k *Kafka) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateRelayOptions(relayOpts); err != nil {
 		return errors.Wrap(err, "unable to verify options")
 	}
@@ -38,7 +38,7 @@ func (k *Kafka) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 		if err != nil {
 			// Shutdown cancelled, exit so we don't spam logs with context cancelled errors
 			if err == context.Canceled {
-				k.log.Info("Received shutdown signal, exiting relayer")
+				k.log.Debug("Received shutdown signal, exiting relayer")
 				break
 			}
 

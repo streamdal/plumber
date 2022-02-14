@@ -13,6 +13,7 @@ import (
 	"github.com/batchcorp/collector-schemas/build/go/protos/events"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/backends/awssqs/sqsfakes"
 	"github.com/batchcorp/plumber/dynamic/dynamicfakes"
@@ -80,7 +81,8 @@ var _ = Describe("AWSSQS Backend", func() {
 		})
 
 		It("validates dynamic options", func() {
-			err := (&AWSSQS{}).Dynamic(context.Background(), nil, nil)
+			errorCh := make(chan *records.ErrorRecord)
+			err := (&AWSSQS{}).Dynamic(context.Background(), nil, nil, errorCh)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(validate.ErrEmptyDynamicOpts.Error()))
 		})
@@ -99,7 +101,8 @@ var _ = Describe("AWSSQS Backend", func() {
 				log:    logrus.NewEntry(&logrus.Logger{Out: ioutil.Discard}),
 			}
 
-			err := p.Dynamic(context.Background(), dynamicOpts, fakeDynamic)
+			errorCh := make(chan *records.ErrorRecord)
+			err := p.Dynamic(context.Background(), dynamicOpts, fakeDynamic, errorCh)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("unable to replay message"))
 			Expect(fakeDynamic.ReadCallCount()).To(Equal(1))
@@ -123,7 +126,8 @@ var _ = Describe("AWSSQS Backend", func() {
 				log:    logrus.NewEntry(&logrus.Logger{Out: ioutil.Discard}),
 			}
 
-			err := p.Dynamic(ctx, dynamicOpts, fakeDynamic)
+			errorCh := make(chan *records.ErrorRecord)
+			err := p.Dynamic(ctx, dynamicOpts, fakeDynamic, errorCh)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(fakeDynamic.ReadCallCount()).To(Equal(1))
 			Expect(fakeSQS.SendMessageCallCount()).To(Equal(1))

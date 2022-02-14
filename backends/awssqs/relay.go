@@ -19,7 +19,7 @@ import (
 	"github.com/batchcorp/plumber/prometheus"
 )
 
-func (a *AWSSQS) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
+func (a *AWSSQS) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateRelayOptions(relayOpts); err != nil {
 		return errors.Wrap(err, "unable to verify relay options")
 	}
@@ -34,7 +34,7 @@ func (a *AWSSQS) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayC
 	for {
 		select {
 		case <-ctx.Done():
-			a.log.Info("Received shutdown signal, exiting relayer")
+			a.log.Debug("Received shutdown signal, exiting relayer")
 			return nil
 		default:
 			// NOOP

@@ -7,19 +7,22 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/dynamic"
 	"github.com/batchcorp/plumber/util"
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (m *MQTT) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
+func (m *MQTT) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateDynamicOptions(dynamicOpts); err != nil {
 		return errors.Wrap(err, "invalid dynamic options")
 	}
 
 	llog := m.log.WithField("pkg", "mqtt/dynamic")
 
-	go dynamicSvc.Start("MQTT")
+	if err := dynamicSvc.Start(ctx, "MQTT", errorCh); err != nil {
+		return errors.Wrap(err, "unable to create dynamic")
+	}
 
 	timeout := util.DurationSec(dynamicOpts.Mqtt.Args.WriteTimeoutSeconds)
 	topic := dynamicOpts.Mqtt.Args.Topic
@@ -42,7 +45,7 @@ func (m *MQTT) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dy
 
 			llog.Debugf("Replayed message to MQTT topic '%s' for replay '%s'", topic, outbound.ReplayId)
 		case <-ctx.Done():
-			m.log.Warning("context cancelled")
+			m.log.Debug("context cancelled")
 			return nil
 		}
 	}

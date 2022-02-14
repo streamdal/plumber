@@ -6,18 +6,16 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/sirupsen/logrus"
-
-	"github.com/batchcorp/plumber/backends/nats-streaming/stanfakes"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/collector-schemas/build/go/protos/events"
-	"github.com/batchcorp/plumber/dynamic/dynamicfakes"
-
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+	"github.com/batchcorp/plumber/backends/nats-streaming/stanfakes"
+	"github.com/batchcorp/plumber/dynamic/dynamicfakes"
 	"github.com/batchcorp/plumber/validate"
 )
 
@@ -77,7 +75,8 @@ var _ = Describe("Nats Streaming Backend", func() {
 		})
 
 		It("validates dynamic options", func() {
-			err := (&NatsStreaming{}).Dynamic(context.Background(), nil, nil)
+			errorCh := make(chan *records.ErrorRecord)
+			err := (&NatsStreaming{}).Dynamic(context.Background(), nil, nil, errorCh)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(validate.ErrEmptyDynamicOpts.Error()))
 		})
@@ -102,7 +101,8 @@ var _ = Describe("Nats Streaming Backend", func() {
 				cancel()
 			}()
 
-			err := n.Dynamic(ctx, dynamicOpts, fakeDynamic)
+			errorCh := make(chan *records.ErrorRecord)
+			err := n.Dynamic(ctx, dynamicOpts, fakeDynamic, errorCh)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(errTest.Error()))
 		})
@@ -125,7 +125,8 @@ var _ = Describe("Nats Streaming Backend", func() {
 				cancel()
 			}()
 
-			err := n.Dynamic(ctx, dynamicOpts, fakeDynamic)
+			errorCh := make(chan *records.ErrorRecord)
+			err := n.Dynamic(ctx, dynamicOpts, fakeDynamic, errorCh)
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})

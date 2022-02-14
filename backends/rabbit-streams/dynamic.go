@@ -9,12 +9,13 @@ import (
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/stream"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/dynamic"
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (r *RabbitStreams) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
+func (r *RabbitStreams) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateDynamicOptions(dynamicOpts); err != nil {
 		return errors.Wrap(err, "invalid dynamic options")
 	}
@@ -35,7 +36,9 @@ func (r *RabbitStreams) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOp
 
 	defer producer.Close()
 
-	go dynamicSvc.Start("RabbitMQ Streams")
+	if err := dynamicSvc.Start(ctx, "RabbitMQ Streams", errorCh); err != nil {
+		return errors.Wrap(err, "unable to create dynamic")
+	}
 
 	outboundCh := dynamicSvc.Read()
 
@@ -53,7 +56,7 @@ func (r *RabbitStreams) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOp
 				dynamicOpts.RabbitStreams.Args.Stream, outbound.ReplayId)
 
 		case <-ctx.Done():
-			llog.Warning("context cancelled")
+			llog.Debug("context cancelled")
 			return nil
 		}
 	}

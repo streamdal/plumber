@@ -10,6 +10,7 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/validate"
 )
 
@@ -60,7 +61,8 @@ var _ = Describe("Redis Streams Backend", func() {
 
 	Context("Dynamic", func() {
 		It("validates dynamic options", func() {
-			err := r.Dynamic(context.Background(), nil, nil)
+			errorCh := make(chan *records.ErrorRecord)
+			err := r.Dynamic(context.Background(), nil, nil, errorCh)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(validate.ErrEmptyDynamicOpts.Error()))
 		})

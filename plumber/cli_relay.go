@@ -48,7 +48,6 @@ func (p *Plumber) startRelayService() error {
 		DisableTLS:         p.CLIOptions.Relay.XBatchshGrpcDisableTls,
 		BatchSize:          p.CLIOptions.Relay.BatchSize,
 		Type:               p.CLIOptions.Global.XBackend,
-		MainShutdownFunc:   p.MainShutdownFunc,
 		ServiceShutdownCtx: p.ServiceShutdownCtx,
 	}
 
@@ -59,7 +58,7 @@ func (p *Plumber) startRelayService() error {
 
 	// Launch HTTP server
 	go func() {
-		if err := api.Start(p.CLIOptions.Relay.XCliOptions.HttpListenAddress, options.VERSION); err != nil {
+		if _, err := api.Start(p.CLIOptions.Relay.XCliOptions.HttpListenAddress, options.VERSION); err != nil {
 			logrus.Fatalf("unable to start API server: %s", err)
 		}
 	}()

@@ -13,16 +13,19 @@ import (
 	"github.com/batchcorp/plumber/validate"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
-func (a *AWSSNS) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
+func (a *AWSSNS) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateDynamicOptions(dynamicOpts); err != nil {
 		return errors.Wrap(err, "unable to validate dynamic options")
 	}
 
 	llog := a.log.WithField("pkg", "activemq/dynamic")
 
-	go dynamicSvc.Start("AWS SNS")
+	if err := dynamicSvc.Start(ctx, "AWS SNS", errorCh); err != nil {
+		return errors.Wrap(err, "unable to create dynamic")
+	}
 
 	topic := dynamicOpts.AwsSns.Args.Topic
 
@@ -43,7 +46,7 @@ func (a *AWSSNS) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, 
 
 			llog.Debugf("Replayed message to AWSSNS topic '%s' for replay '%s'", topic, outbound.ReplayId)
 		case <-ctx.Done():
-			llog.Warning("context cancelled")
+			llog.Debug("context cancelled")
 			return nil
 		}
 	}

@@ -7,19 +7,22 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/dynamic"
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (r *RedisPubsub) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
+func (r *RedisPubsub) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateDynamicOptions(dynamicOpts); err != nil {
 		return errors.Wrap(err, "invalid dynamic options")
 	}
 
 	llog := logrus.WithField("pkg", "rpubsub/dynamic")
 
-	go dynamicSvc.Start("Redis PubSub")
+	if err := dynamicSvc.Start(ctx, "Redis PubSub", errorCh); err != nil {
+		return errors.Wrap(err, "unable to create dynamic")
+	}
 
 	outboundCh := dynamicSvc.Read()
 
@@ -37,7 +40,7 @@ func (r *RedisPubsub) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOpti
 				llog.Debugf("Replayed message to Redis PubSub channel '%s' for replay '%s'", ch, outbound.ReplayId)
 			}
 		case <-ctx.Done():
-			llog.Warning("context cancelled")
+			llog.Debug("context cancelled")
 			return nil
 		}
 

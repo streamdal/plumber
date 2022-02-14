@@ -1,107 +1,140 @@
 package plumber
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"time"
 
-	"github.com/nakabonne/tstorage"
+	"github.com/batchcorp/plumber/bus"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
-	"github.com/batchcorp/plumber/api"
-	"github.com/batchcorp/plumber/options"
-
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 
-	"github.com/batchcorp/plumber/embed/etcd"
-	"github.com/batchcorp/plumber/github"
+	"github.com/batchcorp/plumber/api"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/server"
-	"github.com/batchcorp/plumber/stats"
-	"github.com/batchcorp/plumber/uierrors"
-	"github.com/batchcorp/plumber/util"
-	"github.com/batchcorp/plumber/vcservice"
 )
 
 // RunServer is a wrapper for starting embedded etcd and starting the gRPC server.
 func (p *Plumber) RunServer() error {
-	// TODO: monitoring is currently etcd based, it will need to be reworked
-	//p.log.Info("starting embedded etcd")
-	//
-	//if err := p.startEtcd(); err != nil {
-	//	return errors.Wrap(err, "unable to start embedded etcd")
-	//}
-	//
-	//m, err := monitor.New(p.Etcd.Client(), p.Config.CLIOptions.Server.NodeId)
-	//if err != nil {
-	//	return errors.Wrap(err, "unable to create monitor instance")
-	//}
-	//
-	//p.log.Info("starting leader election for alerts")
-	//
-	//leaderChan := make(chan *monitor.ElectLeaderStatus, 1)
-	//
-	//alertsLeaderPath := fmt.Sprintf("/%s/monitor/leader", p.CLIOptions.Server.ClusterId)
-	//
-	//go m.RunElectLeader(p.ServiceShutdownCtx, leaderChan, alertsLeaderPath)
-	//
-	//// Bail out if initial election ran into errors
-	//timeoutCh := time.After(5 * time.Second)
-	//
-	//select {
-	//case status := <-leaderChan:
-	//	if status.Err != nil {
-	//		return errors.Wrap(status.Err, "unable to complete leader election")
-	//	}
-	//
-	//	// It is OK if we didn't get elected as leader - we only need to make
-	//	// sure that leader election worked without error.
-	//	p.log.Debugf("leader election process complete; elected leader '%s'", status.NodeID)
-	//case <-timeoutCh:
-	//	// Timeout hit - no errors, all is well
-	//	break
-	//}
+	mode := "standalone"
+
+	if p.Config.CLIOptions.Server.EnableCluster {
+		mode = "cluster"
+	}
+
+	p.log.Infof("starting plumber server in '%s' mode...", mode)
+
+	if err := p.relaunchRelays(); err != nil {
+		return errors.Wrap(err, "failed to relaunch relays")
+	}
+
+	if err := p.relaunchDynamic(); err != nil {
+		return errors.Wrap(err, "failed to relaunch tunnels")
+	}
 
 	// Launch HTTP server
-	go func() {
-		if err := api.Start(p.CLIOptions.Server.HttpListenAddress, options.VERSION); err != nil {
-			logrus.Fatalf("unable to start API server: %s", err)
-		}
-	}()
-
-	p.log.Info("starting gRPC server")
-
-	// Blocks
-	if err := p.runServer(); err != nil {
-		return errors.Wrap(err, "unable to run server")
-	}
-
-	return nil
-}
-
-func (p *Plumber) startEtcd() error {
-	e, err := etcd.New(p.Config.CLIOptions.Server, p.PersistentConfig, p.Actions)
+	srv, err := api.Start(p.CLIOptions.Server.HttpListenAddress, options.VERSION)
 	if err != nil {
-		return errors.Wrap(err, "unable to instantiate etcd")
+		logrus.Fatalf("unable to start API server: %s", err)
 	}
 
-	if err := e.Start(p.Config.ServiceShutdownCtx); err != nil {
-		return errors.Wrap(err, "unable to start embedded etcd")
+	var b bus.IBus
+
+	if p.Config.CLIOptions.Server.EnableCluster {
+		var err error
+
+		b, err = bus.New(&bus.Config{
+			ServerOptions:    p.CLIOptions.Server,
+			PersistentConfig: p.PersistentConfig,
+			Actions:          p.Actions,
+		})
+
+		if err != nil {
+			return errors.Wrap(err, "unable to setup bus bus")
+		}
+
+		if err := b.Start(p.ServiceShutdownCtx); err != nil {
+			return errors.Wrap(err, "unable to start bus consumers")
+		}
+	} else {
+		b = &bus.NoOpBus{}
 	}
 
-	p.Etcd = e
+	p.Bus = b
 
-	p.log.Debugf("embedded etcd listener address: %s", p.Config.CLIOptions.Server.ListenerClientUrl)
+	// Launch gRPC server (blocks)
+	if err := p.startGRPCServer(); err != nil {
+		p.log.Fatalf("unable to run gRPC server: %s", err)
+	}
 
-	if err := e.PopulateCache(); err != nil {
-		p.log.Errorf("Unable to load data from etcd: %s", err)
+	p.log.Info("plumber server started")
+
+	// Wait for shutdown
+	select {
+	case <-p.ServiceShutdownCtx.Done():
+		p.log.Debug("service shutdown initiated")
+
+		timeoutCtx, _ := context.WithTimeout(context.Background(), time.Second*5)
+
+		if err := srv.Shutdown(timeoutCtx); err != nil {
+			p.log.Errorf("API server shutdown failed: %s", err)
+		}
 	}
 
 	return nil
 }
 
-func (p *Plumber) runServer() error {
+func (p *Plumber) relaunchRelays() error {
+	for relayID, relay := range p.PersistentConfig.Relays {
+		// We want to run both active and inactive relays through CreateRelay
+		// as we need to create backends, create shutdown context, channels, etc.
+		// CreateRelay will only "start" active relays.
+		r, err := p.Actions.CreateRelay(p.ServiceShutdownCtx, relay.Options)
+		if err != nil {
+			return errors.Wrapf(err, "unable to create relay '%s'", relayID)
+		}
+
+		if relay.Active {
+			p.log.Infof("Relay '%s' re-started", relayID)
+		} else {
+			p.log.Debugf("Relay '%s' is inactive - not relaunching", relayID)
+		}
+
+		p.PersistentConfig.SetRelay(relayID, r)
+		p.PersistentConfig.Save()
+	}
+
+	return nil
+}
+
+func (p *Plumber) relaunchDynamic() error {
+	for dynamicID, dynamic := range p.PersistentConfig.Dynamic {
+		// We want to "create" both active and inactive relays through CreateDynamic
+		// as we need to create backends, create shutdown context, channels, etc.
+		d, err := p.Actions.CreateDynamic(p.ServiceShutdownCtx, dynamic.Options)
+		if err != nil {
+			return errors.Wrapf(err, "unable to create dynamic '%s'", dynamicID)
+		}
+
+		if dynamic.Active {
+			p.log.Infof("Dynamic '%s' re-started", dynamicID)
+		} else {
+			p.log.Debugf("Dynamic '%s' is inactive - not relaunching", dynamicID)
+		}
+
+		p.PersistentConfig.SetDynamic(dynamicID, d)
+		p.PersistentConfig.Save()
+	}
+
+	return nil
+
+}
+
+func (p *Plumber) startGRPCServer() error {
 	lis, err := net.Listen("tcp", p.CLIOptions.Server.GrpcListenAddress)
 	if err != nil {
 		return fmt.Errorf("unable to listen on '%s': %s", p.CLIOptions.Server.GrpcListenAddress, err)
@@ -114,61 +147,12 @@ func (p *Plumber) runServer() error {
 	// Each plumber node needs a unique ID
 	p.PersistentConfig.PlumberID = p.CLIOptions.Server.NodeId
 
-	// Only start if we have an authentication token for the service
-	var vcService vcservice.IVCService
-	if p.PersistentConfig.VCServiceToken != "" {
-		//var err error
-		//vcService, err = vcservice.New(&vcservice.Config{
-		//	EtcdService:      p.Etcd,
-		//	PersistentConfig: p.PersistentConfig,
-		//	ServerOptions:    p.CLIOptions.Server,
-		//})
-		//if err != nil {
-		//	return errors.Wrap(err, "unable to create VCService service instance")
-		//}
-	}
-
-	ghService, err := github.New()
-	if err != nil {
-		return errors.Wrap(err, "unable to start GitHub service")
-	}
-
-	storage, err := tstorage.NewStorage(
-		tstorage.WithDataPath(p.CLIOptions.Server.StatsDatabasePath),
-		tstorage.WithTimestampPrecision(tstorage.Seconds),
-		tstorage.WithRetention(time.Hour*24*7),
-	)
-	if err != nil {
-		return errors.Wrap(err, "unable to initialize time series storage")
-	}
-
-	statsService, err := stats.New(&stats.Config{
-		FlushInterval:      util.DurationSec(p.CLIOptions.Server.StatsFlushIntervalSeconds),
-		ServiceShutdownCtx: p.ServiceShutdownCtx,
-		Storage:            storage,
-	})
-
-	errorsService, err := uierrors.New(&uierrors.Config{
-		EtcdService: p.Etcd,
-	})
-	if err != nil {
-		return errors.Wrap(err, "unable to create uierrors service")
-	}
-
-	if err != nil {
-		return errors.Wrap(err, "unable to create actions service")
-	}
-
 	plumberServer := &server.Server{
 		Actions:          p.Actions,
 		PersistentConfig: p.PersistentConfig,
 		AuthToken:        p.CLIOptions.Server.AuthToken,
-		VCService:        vcService,
-		GithubService:    ghService,
-		StatsService:     statsService,
-		ErrorsService:    errorsService,
+		Bus:              p.Bus,
 		Log:              logrus.WithField("pkg", "plumber/cli_server.go"),
-		Etcd:             p.Etcd,
 		CLIOptions:       p.CLIOptions,
 	}
 
@@ -176,14 +160,24 @@ func (p *Plumber) runServer() error {
 
 	go p.watchServiceShutdown(grpcServer)
 
-	p.log.Infof("gRPC server listening on: %s", p.CLIOptions.Server.GrpcListenAddress)
-	p.log.Infof("Plumber Instance ID: %s", p.PersistentConfig.PlumberID)
+	p.log.Debugf("starting gRPC server on %s", p.CLIOptions.Server.GrpcListenAddress)
 
-	if err := grpcServer.Serve(lis); err != nil {
-		return fmt.Errorf("unable to start gRPC server: %s", err)
+	errCh := make(chan error, 1)
+
+	go func() {
+		if err := grpcServer.Serve(lis); err != nil {
+			errCh <- errors.Wrap(err, "unable to start gRPC server")
+		}
+	}()
+
+	afterCh := time.After(5 * time.Second)
+
+	select {
+	case <-afterCh:
+		return nil
+	case err := <-errCh:
+		return err
 	}
-
-	return nil
 }
 
 func (p *Plumber) watchServiceShutdown(grpcServer *grpc.Server) {
@@ -191,8 +185,8 @@ func (p *Plumber) watchServiceShutdown(grpcServer *grpc.Server) {
 
 	p.log.Debug("received shutdown request in gRPC server via ServiceShutdownCtx")
 
-	// Give etcd a few seconds to shutdown gracefully
-	time.Sleep(10 * time.Second)
+	// Hack: Give anything in flight a moment to shutdown
+	time.Sleep(5 * time.Second)
 
 	grpcServer.Stop()
 }

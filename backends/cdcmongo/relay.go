@@ -16,7 +16,7 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (m *Mongo) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
+func (m *Mongo) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateRelayOptions(relayOpts); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
@@ -31,7 +31,7 @@ func (m *Mongo) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 	for {
 		if !cs.Next(ctx) {
 			if cs.Err() == context.Canceled {
-				m.log.Info("Received shutdown signal, existing relayer")
+				m.log.Debug("Received shutdown signal, exiting relayer")
 				return nil
 			}
 
@@ -48,10 +48,6 @@ func (m *Mongo) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 
 		prometheus.Incr("cdc-mongo-relay-consumer", 1)
 	}
-
-	defer cs.Close(ctx)
-
-	return nil
 }
 
 func (m *Mongo) getChangeStreamRelay(ctx context.Context, readOpts *opts.RelayOptions) (*mongo.ChangeStream, error) {

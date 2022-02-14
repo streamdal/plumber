@@ -13,7 +13,7 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (a *Actions) CreateDynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions) (*types.Dynamic, error) {
+func (a *Actions) CreateDynamic(reqCtx context.Context, dynamicOpts *opts.DynamicOptions) (*types.Dynamic, error) {
 	if err := validate.DynamicOptionsForServer(dynamicOpts); err != nil {
 		return nil, errors.Wrap(err, "unable to validate dynamic options")
 	}
@@ -42,10 +42,11 @@ func (a *Actions) CreateDynamic(ctx context.Context, dynamicOpts *opts.DynamicOp
 		Options:    dynamicOpts,
 	}
 
-	// Start the dynamic replay if it's active on other plumber instances
+	// Run the dynamic replay if it's active on other plumber instances
 	if dynamicOpts.XActive {
+		// This will block for 5 seconds
 		if err := d.StartDynamic(5 * time.Second); err != nil {
-			return nil, errors.Wrap(err, "unable to start replay")
+			return nil, errors.Wrap(err, "unable to start dynamic")
 		}
 
 		d.Active = true
@@ -56,6 +57,7 @@ func (a *Actions) CreateDynamic(ctx context.Context, dynamicOpts *opts.DynamicOp
 	}
 
 	a.cfg.PersistentConfig.SetDynamic(dynamicOpts.XDynamicId, d)
+	a.cfg.PersistentConfig.Save()
 
 	return d, nil
 }
@@ -93,17 +95,20 @@ func (a *Actions) ResumeDynamic(ctx context.Context, dynamicID string) (*types.D
 	// Update metrics
 	prometheus.IncrPromGauge(prometheus.PlumberDynamicReplays)
 
+	a.cfg.PersistentConfig.SetDynamic(dynamicID, d)
+	a.cfg.PersistentConfig.Save()
+
 	return d, nil
 }
 
-func (a Actions) StopDynamic(ctx context.Context, dynamicID string) error {
+func (a Actions) StopDynamic(ctx context.Context, dynamicID string) (*types.Dynamic, error) {
 	d := a.cfg.PersistentConfig.GetDynamic(dynamicID)
 	if d == nil {
-		return errors.New("Dynamic replay does not exist")
+		return nil, errors.New("Dynamic replay does not exist")
 	}
 
 	if !d.Active {
-		return errors.New("Dynamic replay is not active")
+		return nil, errors.New("Dynamic replay is not active")
 	}
 
 	// Stop grpc client connection so we no longer receive messages from dProxy
@@ -120,7 +125,10 @@ func (a Actions) StopDynamic(ctx context.Context, dynamicID string) error {
 	// Update metrics
 	prometheus.DecrPromGauge(prometheus.PlumberDynamicReplays)
 
-	return nil
+	a.cfg.PersistentConfig.SetDynamic(dynamicID, d)
+	a.cfg.PersistentConfig.Save()
+
+	return d, nil
 }
 
 func (a *Actions) UpdateDynamic(ctx context.Context, dynamicID string, dynamicOpts *opts.DynamicOptions) (*types.Dynamic, error) {
@@ -157,6 +165,7 @@ func (a *Actions) UpdateDynamic(ctx context.Context, dynamicID string, dynamicOp
 
 	// Update in-memory config
 	a.cfg.PersistentConfig.SetDynamic(dynamicID, d)
+	a.cfg.PersistentConfig.Save()
 
 	// Update metrics
 	prometheus.IncrPromGauge(prometheus.PlumberDynamicReplays)
@@ -183,7 +192,8 @@ func (a *Actions) DeleteDynamic(ctx context.Context, dynamicID string) error {
 	}
 
 	// Delete in memory
-	a.cfg.PersistentConfig.DeleteService(dynamicID)
+	a.cfg.PersistentConfig.DeleteDynamic(dynamicID)
+	a.cfg.PersistentConfig.Save()
 
 	// Update metrics
 	prometheus.DecrPromGauge(prometheus.PlumberDynamicReplays)

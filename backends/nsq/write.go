@@ -13,7 +13,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
-func (n *NSQ) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh chan *records.ErrorRecord, messages ...*records.WriteRecord) error {
+func (n *NSQ) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh chan<- *records.ErrorRecord, messages ...*records.WriteRecord) error {
 	if err := validateWriteOptions(writeOpts); err != nil {
 		return errors.Wrap(err, "unable to validate write options")
 	}

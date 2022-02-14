@@ -15,7 +15,7 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (c *CDCPostgres) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
+func (c *CDCPostgres) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateRelayOptions(relayOpts); err != nil {
 		return errors.Wrap(err, "unable to verify options")
 	}
@@ -82,7 +82,7 @@ func (c *CDCPostgres) Relay(ctx context.Context, relayOpts *opts.RelayOptions, r
 
 	err := sub.Start(ctx, 0, handler)
 	if err == context.Canceled {
-		c.log.Info("Received shutdown signal, existing relayer")
+		c.log.Debug("Received shutdown signal, exiting relayer")
 		return nil
 	}
 

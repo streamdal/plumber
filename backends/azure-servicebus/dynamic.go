@@ -11,9 +11,10 @@ import (
 	"github.com/batchcorp/plumber/validate"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
-func (a *AzureServiceBus) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic) error {
+func (a *AzureServiceBus) Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateDynamicOptions(dynamicOpts); err != nil {
 		return errors.Wrap(err, "invalid dynamic options")
 	}
@@ -40,7 +41,9 @@ func (a *AzureServiceBus) Dynamic(ctx context.Context, dynamicOpts *opts.Dynamic
 		defer topic.Close(ctx)
 	}
 
-	go dynamicSvc.Start("Azure Service Bus")
+	if err := dynamicSvc.Start(ctx, "Azure Service Bus", errorCh); err != nil {
+		return errors.Wrap(err, "unable to create dynamic")
+	}
 
 	outboundCh := dynamicSvc.Read()
 
@@ -66,7 +69,7 @@ func (a *AzureServiceBus) Dynamic(ctx context.Context, dynamicOpts *opts.Dynamic
 
 			llog.Debugf("Replayed message to Azure Service Bus for replay '%s'", outbound.ReplayId)
 		case <-ctx.Done():
-			llog.Warning("context cancelled")
+			llog.Debug("context cancelled")
 			return nil
 		}
 	}

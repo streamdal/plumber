@@ -8,7 +8,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber/backends"
-	"github.com/batchcorp/plumber/embed/etcd"
 	"github.com/batchcorp/plumber/server/types"
 	"github.com/batchcorp/plumber/validate"
 
@@ -62,24 +61,14 @@ func (s *Server) CreateConnection(ctx context.Context, req *protos.CreateConnect
 		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
 	}
 
-	// Save conn options to etcd
-	//data, err := proto.Marshal(connOpts)
-	//if err != nil {
-	//	return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
-	//}
-	//
-	//_, err = s.Etcd.Put(ctx, etcd.CacheConnectionsPrefix+"/"+connOpts.XId, string(data))
-	//if err != nil {
-	//	return nil, CustomError(common.Code_ABORTED, err.Error())
-	//}
-
 	// Save connection options in mem
 	s.PersistentConfig.SetConnection(connOpts.XId, &types.Connection{Connection: connOpts})
+	s.PersistentConfig.Save()
 
 	// TODO: What if the publish fails - how do other nodes know about the new
 	// connection? Once this is figured out, we can move this down; for now,
 	// this should fail the request. ~ds
-	if err := s.Etcd.PublishCreateConnection(ctx, connOpts); err != nil {
+	if err := s.Bus.PublishCreateConnection(ctx, connOpts); err != nil {
 		s.rollbackCreateConnection(ctx, connOpts)
 
 		s.Log.Error(errors.Wrap(err, "unable to publish create connection event"))
@@ -95,14 +84,9 @@ func (s *Server) CreateConnection(ctx context.Context, req *protos.CreateConnect
 
 // Rollback anything that may have been done during a conn creation request
 func (s *Server) rollbackCreateConnection(ctx context.Context, connOpts *opts.ConnectionOptions) {
-	// Remove connection from etcd
-	if _, err := s.Etcd.Delete(ctx, etcd.CacheConnectionsPrefix+"/"+connOpts.XId); err != nil {
-		// TODO: This should push a notification to a global log
-		s.Log.Errorf("unable to delete connection options in etcd: %s", err)
-	}
-
 	// Delete connections options map entry
 	s.PersistentConfig.DeleteConnection(connOpts.XId)
+	s.PersistentConfig.Save()
 }
 
 func (s *Server) TestConnection(ctx context.Context, req *protos.TestConnectionRequest) (*protos.TestConnectionResponse, error) {
@@ -163,24 +147,14 @@ func (s *Server) UpdateConnection(ctx context.Context, req *protos.UpdateConnect
 	// Re-assign connection options so we can update in-mem + etcd
 	conn.Connection = req.Options
 
-	//data, err := proto.Marshal(connOptions)
-	//if err != nil {
-	//	return nil, CustomError(common.Code_ABORTED, "could not marshal connection")
-	//}
-	//
-	//// Update in etcd
-	//_, err = s.Etcd.Put(ctx, etcd.CacheConnectionsPrefix+"/"+connOptions.XId, string(data))
-	//if err != nil {
-	//	return nil, CustomError(common.Code_ABORTED, err.Error())
-	//}
-
-	// Update in memory
+	// Update conf
 	s.PersistentConfig.SetConnection(conn.Connection.XId, conn)
+	s.PersistentConfig.Save()
 
-	// Publish UpdateConnection event
-	//if err := s.Etcd.PublishUpdateConnection(ctx, connOptions); err != nil {
-	//	s.Log.Error(err)
-	//}
+	//Publish UpdateConnection event
+	if err := s.Bus.PublishUpdateConnection(ctx, conn.Connection); err != nil {
+		s.Log.Error(err)
+	}
 
 	s.Log.WithField("request_id", requestID).Infof("Connection '%s' updated", req.ConnectionId)
 
@@ -205,17 +179,12 @@ func (s *Server) DeleteConnection(ctx context.Context, req *protos.DeleteConnect
 		return nil, CustomError(common.Code_NOT_FOUND, "no such connection id")
 	}
 
-	// Delete in etcd
-	_, err := s.Etcd.Delete(ctx, etcd.CacheConnectionsPrefix+"/"+conn.Connection.XId)
-	if err != nil {
-		return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to delete connection: "+err.Error()))
-	}
-
 	// Delete in memory
 	s.PersistentConfig.DeleteConnection(conn.Connection.XId)
+	s.PersistentConfig.Save()
 
 	// Publish DeleteConnection event
-	if err := s.Etcd.PublishDeleteConnection(ctx, conn.Connection); err != nil {
+	if err := s.Bus.PublishDeleteConnection(ctx, conn.Connection); err != nil {
 		s.Log.Error(err)
 	}
 

@@ -4,14 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/golang/protobuf/proto"
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-
-	"github.com/batchcorp/plumber/embed/etcd"
 )
 
 func (s *Server) GetAllDynamic(_ context.Context, req *protos.GetAllDynamicRequest) (*protos.GetAllDynamicResponse, error) {
@@ -23,7 +20,7 @@ func (s *Server) GetAllDynamic(_ context.Context, req *protos.GetAllDynamicReque
 	var numInactive int
 
 	dynamicOptions := make([]*opts.DynamicOptions, 0)
-	for _, v := range s.PersistentConfig.DynamicReplays {
+	for _, v := range s.PersistentConfig.Dynamic {
 		if v.Active {
 			numActive += 1
 		} else {
@@ -66,7 +63,6 @@ func (s *Server) GetDynamic(_ context.Context, request *protos.GetDynamicRequest
 		},
 		Opts: dynamic.Options,
 	}, nil
-
 }
 
 func (s *Server) CreateDynamic(ctx context.Context, req *protos.CreateDynamicRequest) (*protos.CreateDynamicResponse, error) {
@@ -75,29 +71,18 @@ func (s *Server) CreateDynamic(ctx context.Context, req *protos.CreateDynamicReq
 	}
 
 	req.Opts.XDynamicId = uuid.NewV4().String()
+	req.Opts.XActive = true
 
-	// Save to etcd
-	data, err := proto.Marshal(req.Opts)
-	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, "could not marshal dynamic replay")
-	}
-
-	_, err = s.Etcd.Put(ctx, etcd.CacheDynamicPrefix+"/"+req.Opts.XDynamicId, string(data))
+	d, err := s.Actions.CreateDynamic(ctx, req.Opts)
 	if err != nil {
 		s.rollbackCreateDynamic(ctx, req.Opts)
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
 
 	// Publish CreateDynamic event
-	if err := s.Etcd.PublishCreateDynamic(ctx, req.Opts); err != nil {
+	if err := s.Bus.PublishCreateDynamic(ctx, d.Options); err != nil {
 		s.rollbackCreateDynamic(ctx, req.Opts)
 		s.Log.Error(err)
-	}
-
-	d, err := s.Actions.CreateDynamic(ctx, req.Opts)
-	if err != nil {
-		s.rollbackCreateDynamic(ctx, req.Opts)
-		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
 
 	s.Log.Infof("Replay tunnel '%s' started", d.Id)
@@ -113,11 +98,8 @@ func (s *Server) CreateDynamic(ctx context.Context, req *protos.CreateDynamicReq
 }
 
 func (s *Server) rollbackCreateDynamic(ctx context.Context, req *opts.DynamicOptions) {
-	if _, err := s.Etcd.Delete(ctx, etcd.CacheDynamicPrefix+"/"+req.XDynamicId); err != nil {
-		s.Log.Error(err)
-	}
-
 	s.PersistentConfig.DeleteDynamic(req.XDynamicId)
+	s.PersistentConfig.Save()
 }
 
 func (s *Server) UpdateDynamic(ctx context.Context, req *protos.UpdateDynamicRequest) (*protos.UpdateDynamicResponse, error) {
@@ -127,15 +109,6 @@ func (s *Server) UpdateDynamic(ctx context.Context, req *protos.UpdateDynamicReq
 
 	if _, err := s.Actions.UpdateDynamic(ctx, req.DynamicId, req.Opts); err != nil {
 		// No need to roll back here since we haven't updated anything yet
-		return nil, CustomError(common.Code_ABORTED, err.Error())
-	}
-
-	// Update etcd
-	data, err := proto.Marshal(req.Opts)
-	if err != nil {
-		return nil, CustomError(common.Code_ABORTED, "could not marshal dynamic replay")
-	}
-	if _, err := s.Etcd.Put(ctx, etcd.CacheDynamicPrefix+"/"+req.Opts.XDynamicId, string(data)); err != nil {
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
 
@@ -154,8 +127,15 @@ func (s *Server) StopDynamic(ctx context.Context, req *protos.StopDynamicRequest
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	if err := s.Actions.StopDynamic(ctx, req.DynamicId); err != nil {
+	dynamicOptions, err := s.Actions.StopDynamic(ctx, req.DynamicId)
+	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, err.Error())
+	}
+
+	// Publish CreateDynamic event
+	if err := s.Bus.PublishStopDynamic(ctx, dynamicOptions.Options); err != nil {
+		// TODO: Should have rollback
+		s.Log.Errorf("unable to publish stop dynamic event: %s", err)
 	}
 
 	s.Log.Infof("Dynamic replay '%s' stopped", req.DynamicId)
@@ -177,6 +157,12 @@ func (s *Server) ResumeDynamic(ctx context.Context, req *protos.ResumeDynamicReq
 	d, err := s.Actions.ResumeDynamic(ctx, req.DynamicId)
 	if err != nil {
 		return nil, CustomError(common.Code_ABORTED, err.Error())
+	}
+
+	// Publish CreateDynamic event
+	if err := s.Bus.PublishResumeDynamic(ctx, d.Options); err != nil {
+		// TODO: Should have rollback
+		s.Log.Errorf("unable to publish resume dynamic event: %s", err)
 	}
 
 	s.Log.Infof("Dynamic replay '%s' started", d.Id)
@@ -206,13 +192,11 @@ func (s *Server) DeleteDynamic(ctx context.Context, req *protos.DeleteDynamicReq
 	}
 
 	// Publish delete event
-	if err := s.Etcd.PublishDeleteDynamic(ctx, dynamicReplay.Options); err != nil {
+	if err := s.Bus.PublishDeleteDynamic(ctx, dynamicReplay.Options); err != nil {
 		s.Log.Error(err)
 	}
 
-	if _, err := s.Etcd.Delete(ctx, etcd.CacheDynamicPrefix+"/"+req.DynamicId); err != nil {
-		return nil, CustomError(common.Code_ABORTED, err.Error())
-	}
+	s.Log.Infof("Dynamic replay '%s' deleted", req.DynamicId)
 
 	return &protos.DeleteDynamicResponse{
 		Status: &common.Status{

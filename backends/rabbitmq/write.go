@@ -13,7 +13,7 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (r *RabbitMQ) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh chan *records.ErrorRecord, messages ...*records.WriteRecord) error {
+func (r *RabbitMQ) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh chan<- *records.ErrorRecord, messages ...*records.WriteRecord) error {
 	if err := validateWriteOptions(writeOpts); err != nil {
 		return errors.Wrap(err, "unable to verify write options")
 	}

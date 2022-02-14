@@ -14,7 +14,7 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (k *KubeMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
+func (k *KubeMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateRelayOptions(relayOpts); err != nil {
 		return errors.Wrap(err, "unable to validate relay options")
 	}
@@ -22,7 +22,7 @@ func (k *KubeMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayC
 	for {
 		select {
 		case <-ctx.Done():
-			k.log.Info("Received shutdown signal, exiting relayer")
+			k.log.Debug("Received shutdown signal, exiting relayer")
 			return nil
 		default:
 			// NOOP

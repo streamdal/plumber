@@ -16,7 +16,7 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (n *NatsStreaming) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan *records.ErrorRecord) error {
+func (n *NatsStreaming) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan<- *records.ErrorRecord) error {
 	if err := validateRelayOptions(relayOpts); err != nil {
 		return errors.Wrap(err, "invalid read options")
 	}
@@ -44,7 +44,7 @@ func (n *NatsStreaming) Relay(ctx context.Context, relayOpts *opts.RelayOptions,
 	defer sub.Unsubscribe()
 
 	<-ctx.Done()
-	n.log.Info("Received shutdown signal, existing relayer")
+	n.log.Debug("Received shutdown signal, exiting relayer")
 
 	return nil
 }
