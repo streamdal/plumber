@@ -139,7 +139,7 @@ func readPassword(readPassword func(fd int) ([]byte, error)) (string, error) {
 		fmt.Print("Enter Password: ")
 
 		// int typecast is needed for windows
-		password, err := readPassword(syscall.Stdin)
+		password, err := readPassword(int(syscall.Stdin))
 		if err != nil {
 			return "", errMissingPassword
 		}
