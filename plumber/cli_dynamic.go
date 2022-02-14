@@ -1,9 +1,9 @@
 package plumber
 
 import (
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/pkg/errors"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/dynamic"
 )
@@ -16,7 +16,8 @@ func (p *Plumber) HandleDynamicCmd() error {
 	}
 
 	// Run up dynamic connection
-	dynamicSvc, err := dynamic.New(p.CLIOptions.Dynamic, backend.Name())
+	// Plumber cluster ID purposefully left blank here so the destination becomes ephemeral
+	dynamicSvc, err := dynamic.New(p.CLIOptions.Dynamic, "")
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}

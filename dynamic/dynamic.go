@@ -7,15 +7,17 @@ import (
 	"io"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/metadata"
 
 	"github.com/batchcorp/collector-schemas/build/go/protos/events"
 	"github.com/batchcorp/collector-schemas/build/go/protos/services"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
 const (
@@ -45,14 +47,14 @@ type Client struct {
 	Conn              *grpc.ClientConn
 	Token             string
 	log               *logrus.Entry
-	MessageBus        string
+	PlumberClusterID  string
 	OutboundMessageCh chan *events.Outbound
 
 	Options *opts.DynamicOptions
 }
 
 // New validates CLI options and returns a new Client struct
-func New(opts *opts.DynamicOptions, bus string) (IDynamic, error) {
+func New(opts *opts.DynamicOptions, plumberClusterID string) (IDynamic, error) {
 	if err := validateDynamicOptions(opts); err != nil {
 		return nil, errors.Wrap(err, "unable to validate dynamic options")
 	}
@@ -70,10 +72,10 @@ func New(opts *opts.DynamicOptions, bus string) (IDynamic, error) {
 		Client:            services.NewDProxyClient(conn),
 		Conn:              conn,
 		Token:             opts.ApiToken,
-		log:               logrus.WithField("pkg", "dynamic"),
 		OutboundMessageCh: make(chan *events.Outbound, 1),
-		MessageBus:        bus,
 		Options:           opts,
+		PlumberClusterID:  plumberClusterID,
+		log:               logrus.WithField("pkg", "dynamic"),
 	}
 
 	return dClient, nil
@@ -255,11 +257,18 @@ func (d *Client) connect(ctx context.Context, bus string) (services.DProxy_Conne
 		Type: events.DynamicReplay_AUTH_REQUEST,
 		Payload: &events.DynamicReplay_AuthRequest{
 			AuthRequest: &events.AuthRequest{
-				Token:      d.Token,
-				MessageBus: bus,
+				Token:            d.Token,
+				MessageBus:       bus,
+				PlumberClusterId: d.PlumberClusterID,
+				Name:             d.Options.Name,
 			},
 		},
 	}
+
+	// dProxy needs a unique ID to track the connection
+	// This value can be anything, so long as it is unique
+	md := metadata.Pairs("plumber-stream-id", uuid.NewV4().String())
+	ctx = metadata.NewOutgoingContext(ctx, md)
 
 	return d.Client.Connect(ctx, authRequest)
 }

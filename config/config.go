@@ -11,12 +11,12 @@ import (
 	"path"
 	"sync"
 
-	"github.com/batchcorp/plumber/kv"
 	"github.com/imdario/mergo"
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"github.com/batchcorp/plumber/kv"
 	stypes "github.com/batchcorp/plumber/server/types"
 )
 
@@ -28,6 +28,7 @@ const (
 
 // Config stores Account IDs and the auth_token cookie
 type Config struct {
+	ClusterID string `json:"-"` // This comes from an environment variable
 	PlumberID string `json:"plumber_id"`
 	Token     string `json:"token"`
 	TeamID    string `json:"team_id"`

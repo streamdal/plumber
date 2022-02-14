@@ -34,12 +34,13 @@ func (a *Actions) CreateDynamic(reqCtx context.Context, dynamicOpts *opts.Dynami
 	shutdownCtx, shutdownFunc := context.WithCancel(context.Background())
 
 	d := &types.Dynamic{
-		Active:     false,
-		Id:         dynamicOpts.XDynamicId,
-		CancelCtx:  shutdownCtx,
-		CancelFunc: shutdownFunc,
-		Backend:    be,
-		Options:    dynamicOpts,
+		Active:           false,
+		Id:               dynamicOpts.XDynamicId,
+		CancelCtx:        shutdownCtx,
+		CancelFunc:       shutdownFunc,
+		Backend:          be,
+		Options:          dynamicOpts,
+		PlumberClusterID: a.cfg.PersistentConfig.ClusterID,
 	}
 
 	// Run the dynamic replay if it's active on other plumber instances
