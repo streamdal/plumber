@@ -16,13 +16,13 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/backends/rabbitmq/rabbitfakes"
-	// "github.com/batchcorp/plumber/tunnel/tunnelfakes"
+	"github.com/batchcorp/plumber/tunnel/tunnelfakes"
 	"github.com/batchcorp/plumber/validate"
 )
 
 var _ = Describe("RabbitMQ Backend", func() {
 	var tunnelOpts *opts.TunnelOptions
-	var fakeTunnel *tunnelfakes.FakeIDynamic
+	var fakeTunnel *tunnelfakes.FakeITunnel
 
 	BeforeEach(func() {
 		tunnelOpts = &opts.TunnelOptions{
@@ -34,7 +34,7 @@ var _ = Describe("RabbitMQ Backend", func() {
 			},
 		}
 
-		fakeTunnel = &tunnelfakes.FakeIDynamic{}
+		fakeTunnel = &tunnelfakes.FakeITunnel{}
 		fakeTunnel.ReadStub = func() chan *events.Outbound {
 			ch := make(chan *events.Outbound, 1)
 			ch <- &events.Outbound{Blob: []byte(`testing`)}

@@ -17,7 +17,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/backends/pulsar/pulsarfakes"
 
-	// "github.com/batchcorp/plumber/tunnel/tunnelfakes"
+	"github.com/batchcorp/plumber/tunnel/tunnelfakes"
 	"github.com/batchcorp/plumber/validate"
 )
 
@@ -65,11 +65,11 @@ var _ = Describe("Pulsar Backend", func() {
 	})
 
 	Context("Tunnel", func() {
-		var fakeDynamic *tunnelfakes.FakeIDynamic
+		var fakeTunnel *tunnelfakes.FakeITunnel
 
 		BeforeEach(func() {
-			fakeDynamic = &tunnelfakes.FakeIDynamic{}
-			fakeDynamic.ReadStub = func() chan *events.Outbound {
+			fakeTunnel = &tunnelfakes.FakeITunnel{}
+			fakeTunnel.ReadStub = func() chan *events.Outbound {
 				ch := make(chan *events.Outbound, 1)
 				ch <- &events.Outbound{Blob: []byte(`testing`)}
 				return ch
@@ -97,7 +97,7 @@ var _ = Describe("Pulsar Backend", func() {
 			}
 
 			errorCh := make(chan *records.ErrorRecord)
-			err := p.Tunnel(context.Background(), tunnelOpts, fakeDynamic, errorCh)
+			err := p.Tunnel(context.Background(), tunnelOpts, fakeTunnel, errorCh)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(testErr.Error()))
 		})
@@ -124,15 +124,15 @@ var _ = Describe("Pulsar Backend", func() {
 			}
 
 			errorCh := make(chan *records.ErrorRecord)
-			err := p.Tunnel(ctx, tunnelOpts, fakeDynamic, errorCh)
+			err := p.Tunnel(ctx, tunnelOpts, fakeTunnel, errorCh)
 
 			// Allow start goroutine to launch
 			time.Sleep(time.Millisecond * 100)
 
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Unable to replay message"))
-			Expect(fakeDynamic.StartCallCount()).To(Equal(1))
-			Expect(fakeDynamic.ReadCallCount()).To(Equal(1))
+			Expect(fakeTunnel.StartCallCount()).To(Equal(1))
+			Expect(fakeTunnel.ReadCallCount()).To(Equal(1))
 			Expect(fakeProducer.SendCallCount()).To(Equal(1))
 		})
 
@@ -158,10 +158,10 @@ var _ = Describe("Pulsar Backend", func() {
 			}
 
 			errorCh := make(chan *records.ErrorRecord)
-			err := p.Tunnel(ctx, tunnelOpts, fakeDynamic, errorCh)
+			err := p.Tunnel(ctx, tunnelOpts, fakeTunnel, errorCh)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(fakeDynamic.StartCallCount()).To(Equal(1))
-			Expect(fakeDynamic.ReadCallCount()).To(Equal(1))
+			Expect(fakeTunnel.StartCallCount()).To(Equal(1))
+			Expect(fakeTunnel.ReadCallCount()).To(Equal(1))
 			Expect(fakeProducer.SendCallCount()).To(Equal(1))
 		})
 	})

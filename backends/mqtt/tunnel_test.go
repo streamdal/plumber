@@ -17,7 +17,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/tools/mqttfakes"
 
-	// "github.com/batchcorp/plumber/tunnel/tunnelfakes"
+	"github.com/batchcorp/plumber/tunnel/tunnelfakes"
 	"github.com/batchcorp/plumber/validate"
 )
 

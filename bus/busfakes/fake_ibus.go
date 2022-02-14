@@ -22,18 +22,6 @@ type FakeIBus struct {
 	publishCreateConnectionReturnsOnCall map[int]struct {
 		result1 error
 	}
-	PublishCreateDynamicStub        func(context.Context, *opts.TunnelOptions) error
-	publishCreateDynamicMutex       sync.RWMutex
-	publishCreateDynamicArgsForCall []struct {
-		arg1 context.Context
-		arg2 *opts.TunnelOptions
-	}
-	publishCreateDynamicReturns struct {
-		result1 error
-	}
-	publishCreateDynamicReturnsOnCall map[int]struct {
-		result1 error
-	}
 	PublishCreateRelayStub        func(context.Context, *opts.RelayOptions) error
 	publishCreateRelayMutex       sync.RWMutex
 	publishCreateRelayArgsForCall []struct {
@@ -44,6 +32,18 @@ type FakeIBus struct {
 		result1 error
 	}
 	publishCreateRelayReturnsOnCall map[int]struct {
+		result1 error
+	}
+	PublishCreateTunnelStub        func(context.Context, *opts.TunnelOptions) error
+	publishCreateTunnelMutex       sync.RWMutex
+	publishCreateTunnelArgsForCall []struct {
+		arg1 context.Context
+		arg2 *opts.TunnelOptions
+	}
+	publishCreateTunnelReturns struct {
+		result1 error
+	}
+	publishCreateTunnelReturnsOnCall map[int]struct {
 		result1 error
 	}
 	PublishDeleteConnectionStub        func(context.Context, *opts.ConnectionOptions) error
@@ -58,18 +58,6 @@ type FakeIBus struct {
 	publishDeleteConnectionReturnsOnCall map[int]struct {
 		result1 error
 	}
-	PublishDeleteDynamicStub        func(context.Context, *opts.TunnelOptions) error
-	publishDeleteDynamicMutex       sync.RWMutex
-	publishDeleteDynamicArgsForCall []struct {
-		arg1 context.Context
-		arg2 *opts.TunnelOptions
-	}
-	publishDeleteDynamicReturns struct {
-		result1 error
-	}
-	publishDeleteDynamicReturnsOnCall map[int]struct {
-		result1 error
-	}
 	PublishDeleteRelayStub        func(context.Context, *opts.RelayOptions) error
 	publishDeleteRelayMutex       sync.RWMutex
 	publishDeleteRelayArgsForCall []struct {
@@ -82,16 +70,16 @@ type FakeIBus struct {
 	publishDeleteRelayReturnsOnCall map[int]struct {
 		result1 error
 	}
-	PublishResumeDynamicStub        func(context.Context, *opts.TunnelOptions) error
-	publishResumeDynamicMutex       sync.RWMutex
-	publishResumeDynamicArgsForCall []struct {
+	PublishDeleteTunnelStub        func(context.Context, *opts.TunnelOptions) error
+	publishDeleteTunnelMutex       sync.RWMutex
+	publishDeleteTunnelArgsForCall []struct {
 		arg1 context.Context
 		arg2 *opts.TunnelOptions
 	}
-	publishResumeDynamicReturns struct {
+	publishDeleteTunnelReturns struct {
 		result1 error
 	}
-	publishResumeDynamicReturnsOnCall map[int]struct {
+	publishDeleteTunnelReturnsOnCall map[int]struct {
 		result1 error
 	}
 	PublishResumeRelayStub        func(context.Context, *opts.RelayOptions) error
@@ -106,16 +94,16 @@ type FakeIBus struct {
 	publishResumeRelayReturnsOnCall map[int]struct {
 		result1 error
 	}
-	PublishStopDynamicStub        func(context.Context, *opts.TunnelOptions) error
-	publishStopDynamicMutex       sync.RWMutex
-	publishStopDynamicArgsForCall []struct {
+	PublishResumeTunnelStub        func(context.Context, *opts.TunnelOptions) error
+	publishResumeTunnelMutex       sync.RWMutex
+	publishResumeTunnelArgsForCall []struct {
 		arg1 context.Context
 		arg2 *opts.TunnelOptions
 	}
-	publishStopDynamicReturns struct {
+	publishResumeTunnelReturns struct {
 		result1 error
 	}
-	publishStopDynamicReturnsOnCall map[int]struct {
+	publishResumeTunnelReturnsOnCall map[int]struct {
 		result1 error
 	}
 	PublishStopRelayStub        func(context.Context, *opts.RelayOptions) error
@@ -130,6 +118,18 @@ type FakeIBus struct {
 	publishStopRelayReturnsOnCall map[int]struct {
 		result1 error
 	}
+	PublishStopTunnelStub        func(context.Context, *opts.TunnelOptions) error
+	publishStopTunnelMutex       sync.RWMutex
+	publishStopTunnelArgsForCall []struct {
+		arg1 context.Context
+		arg2 *opts.TunnelOptions
+	}
+	publishStopTunnelReturns struct {
+		result1 error
+	}
+	publishStopTunnelReturnsOnCall map[int]struct {
+		result1 error
+	}
 	PublishUpdateConnectionStub        func(context.Context, *opts.ConnectionOptions) error
 	publishUpdateConnectionMutex       sync.RWMutex
 	publishUpdateConnectionArgsForCall []struct {
@@ -142,18 +142,6 @@ type FakeIBus struct {
 	publishUpdateConnectionReturnsOnCall map[int]struct {
 		result1 error
 	}
-	PublishUpdateDynamicStub        func(context.Context, *opts.TunnelOptions) error
-	publishUpdateDynamicMutex       sync.RWMutex
-	publishUpdateDynamicArgsForCall []struct {
-		arg1 context.Context
-		arg2 *opts.TunnelOptions
-	}
-	publishUpdateDynamicReturns struct {
-		result1 error
-	}
-	publishUpdateDynamicReturnsOnCall map[int]struct {
-		result1 error
-	}
 	PublishUpdateRelayStub        func(context.Context, *opts.RelayOptions) error
 	publishUpdateRelayMutex       sync.RWMutex
 	publishUpdateRelayArgsForCall []struct {
@@ -164,6 +152,18 @@ type FakeIBus struct {
 		result1 error
 	}
 	publishUpdateRelayReturnsOnCall map[int]struct {
+		result1 error
+	}
+	PublishUpdateTunnelStub        func(context.Context, *opts.TunnelOptions) error
+	publishUpdateTunnelMutex       sync.RWMutex
+	publishUpdateTunnelArgsForCall []struct {
+		arg1 context.Context
+		arg2 *opts.TunnelOptions
+	}
+	publishUpdateTunnelReturns struct {
+		result1 error
+	}
+	publishUpdateTunnelReturnsOnCall map[int]struct {
 		result1 error
 	}
 	StartStub        func(context.Context) error
@@ -253,68 +253,6 @@ func (fake *FakeIBus) PublishCreateConnectionReturnsOnCall(i int, result1 error)
 	}{result1}
 }
 
-func (fake *FakeIBus) PublishCreateTunnel(arg1 context.Context, arg2 *opts.TunnelOptions) error {
-	fake.publishCreateDynamicMutex.Lock()
-	ret, specificReturn := fake.publishCreateDynamicReturnsOnCall[len(fake.publishCreateDynamicArgsForCall)]
-	fake.publishCreateDynamicArgsForCall = append(fake.publishCreateDynamicArgsForCall, struct {
-		arg1 context.Context
-		arg2 *opts.TunnelOptions
-	}{arg1, arg2})
-	stub := fake.PublishCreateDynamicStub
-	fakeReturns := fake.publishCreateDynamicReturns
-	fake.recordInvocation("PublishCreateTunnel", []interface{}{arg1, arg2})
-	fake.publishCreateDynamicMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fakeReturns.result1
-}
-
-func (fake *FakeIBus) PublishCreateDynamicCallCount() int {
-	fake.publishCreateDynamicMutex.RLock()
-	defer fake.publishCreateDynamicMutex.RUnlock()
-	return len(fake.publishCreateDynamicArgsForCall)
-}
-
-func (fake *FakeIBus) PublishCreateDynamicCalls(stub func(context.Context, *opts.TunnelOptions) error) {
-	fake.publishCreateDynamicMutex.Lock()
-	defer fake.publishCreateDynamicMutex.Unlock()
-	fake.PublishCreateDynamicStub = stub
-}
-
-func (fake *FakeIBus) PublishCreateDynamicArgsForCall(i int) (context.Context, *opts.TunnelOptions) {
-	fake.publishCreateDynamicMutex.RLock()
-	defer fake.publishCreateDynamicMutex.RUnlock()
-	argsForCall := fake.publishCreateDynamicArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeIBus) PublishCreateDynamicReturns(result1 error) {
-	fake.publishCreateDynamicMutex.Lock()
-	defer fake.publishCreateDynamicMutex.Unlock()
-	fake.PublishCreateDynamicStub = nil
-	fake.publishCreateDynamicReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeIBus) PublishCreateDynamicReturnsOnCall(i int, result1 error) {
-	fake.publishCreateDynamicMutex.Lock()
-	defer fake.publishCreateDynamicMutex.Unlock()
-	fake.PublishCreateDynamicStub = nil
-	if fake.publishCreateDynamicReturnsOnCall == nil {
-		fake.publishCreateDynamicReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.publishCreateDynamicReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
 func (fake *FakeIBus) PublishCreateRelay(arg1 context.Context, arg2 *opts.RelayOptions) error {
 	fake.publishCreateRelayMutex.Lock()
 	ret, specificReturn := fake.publishCreateRelayReturnsOnCall[len(fake.publishCreateRelayArgsForCall)]
@@ -373,6 +311,68 @@ func (fake *FakeIBus) PublishCreateRelayReturnsOnCall(i int, result1 error) {
 		})
 	}
 	fake.publishCreateRelayReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIBus) PublishCreateTunnel(arg1 context.Context, arg2 *opts.TunnelOptions) error {
+	fake.publishCreateTunnelMutex.Lock()
+	ret, specificReturn := fake.publishCreateTunnelReturnsOnCall[len(fake.publishCreateTunnelArgsForCall)]
+	fake.publishCreateTunnelArgsForCall = append(fake.publishCreateTunnelArgsForCall, struct {
+		arg1 context.Context
+		arg2 *opts.TunnelOptions
+	}{arg1, arg2})
+	stub := fake.PublishCreateTunnelStub
+	fakeReturns := fake.publishCreateTunnelReturns
+	fake.recordInvocation("PublishCreateTunnel", []interface{}{arg1, arg2})
+	fake.publishCreateTunnelMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIBus) PublishCreateTunnelCallCount() int {
+	fake.publishCreateTunnelMutex.RLock()
+	defer fake.publishCreateTunnelMutex.RUnlock()
+	return len(fake.publishCreateTunnelArgsForCall)
+}
+
+func (fake *FakeIBus) PublishCreateTunnelCalls(stub func(context.Context, *opts.TunnelOptions) error) {
+	fake.publishCreateTunnelMutex.Lock()
+	defer fake.publishCreateTunnelMutex.Unlock()
+	fake.PublishCreateTunnelStub = stub
+}
+
+func (fake *FakeIBus) PublishCreateTunnelArgsForCall(i int) (context.Context, *opts.TunnelOptions) {
+	fake.publishCreateTunnelMutex.RLock()
+	defer fake.publishCreateTunnelMutex.RUnlock()
+	argsForCall := fake.publishCreateTunnelArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIBus) PublishCreateTunnelReturns(result1 error) {
+	fake.publishCreateTunnelMutex.Lock()
+	defer fake.publishCreateTunnelMutex.Unlock()
+	fake.PublishCreateTunnelStub = nil
+	fake.publishCreateTunnelReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIBus) PublishCreateTunnelReturnsOnCall(i int, result1 error) {
+	fake.publishCreateTunnelMutex.Lock()
+	defer fake.publishCreateTunnelMutex.Unlock()
+	fake.PublishCreateTunnelStub = nil
+	if fake.publishCreateTunnelReturnsOnCall == nil {
+		fake.publishCreateTunnelReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.publishCreateTunnelReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -439,68 +439,6 @@ func (fake *FakeIBus) PublishDeleteConnectionReturnsOnCall(i int, result1 error)
 	}{result1}
 }
 
-func (fake *FakeIBus) PublishDeleteTunnel(arg1 context.Context, arg2 *opts.TunnelOptions) error {
-	fake.publishDeleteDynamicMutex.Lock()
-	ret, specificReturn := fake.publishDeleteDynamicReturnsOnCall[len(fake.publishDeleteDynamicArgsForCall)]
-	fake.publishDeleteDynamicArgsForCall = append(fake.publishDeleteDynamicArgsForCall, struct {
-		arg1 context.Context
-		arg2 *opts.TunnelOptions
-	}{arg1, arg2})
-	stub := fake.PublishDeleteDynamicStub
-	fakeReturns := fake.publishDeleteDynamicReturns
-	fake.recordInvocation("PublishDeleteTunnel", []interface{}{arg1, arg2})
-	fake.publishDeleteDynamicMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fakeReturns.result1
-}
-
-func (fake *FakeIBus) PublishDeleteDynamicCallCount() int {
-	fake.publishDeleteDynamicMutex.RLock()
-	defer fake.publishDeleteDynamicMutex.RUnlock()
-	return len(fake.publishDeleteDynamicArgsForCall)
-}
-
-func (fake *FakeIBus) PublishDeleteDynamicCalls(stub func(context.Context, *opts.TunnelOptions) error) {
-	fake.publishDeleteDynamicMutex.Lock()
-	defer fake.publishDeleteDynamicMutex.Unlock()
-	fake.PublishDeleteDynamicStub = stub
-}
-
-func (fake *FakeIBus) PublishDeleteDynamicArgsForCall(i int) (context.Context, *opts.TunnelOptions) {
-	fake.publishDeleteDynamicMutex.RLock()
-	defer fake.publishDeleteDynamicMutex.RUnlock()
-	argsForCall := fake.publishDeleteDynamicArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeIBus) PublishDeleteDynamicReturns(result1 error) {
-	fake.publishDeleteDynamicMutex.Lock()
-	defer fake.publishDeleteDynamicMutex.Unlock()
-	fake.PublishDeleteDynamicStub = nil
-	fake.publishDeleteDynamicReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeIBus) PublishDeleteDynamicReturnsOnCall(i int, result1 error) {
-	fake.publishDeleteDynamicMutex.Lock()
-	defer fake.publishDeleteDynamicMutex.Unlock()
-	fake.PublishDeleteDynamicStub = nil
-	if fake.publishDeleteDynamicReturnsOnCall == nil {
-		fake.publishDeleteDynamicReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.publishDeleteDynamicReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
 func (fake *FakeIBus) PublishDeleteRelay(arg1 context.Context, arg2 *opts.RelayOptions) error {
 	fake.publishDeleteRelayMutex.Lock()
 	ret, specificReturn := fake.publishDeleteRelayReturnsOnCall[len(fake.publishDeleteRelayArgsForCall)]
@@ -563,17 +501,17 @@ func (fake *FakeIBus) PublishDeleteRelayReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeIBus) PublishResumeTunnel(arg1 context.Context, arg2 *opts.TunnelOptions) error {
-	fake.publishResumeDynamicMutex.Lock()
-	ret, specificReturn := fake.publishResumeDynamicReturnsOnCall[len(fake.publishResumeDynamicArgsForCall)]
-	fake.publishResumeDynamicArgsForCall = append(fake.publishResumeDynamicArgsForCall, struct {
+func (fake *FakeIBus) PublishDeleteTunnel(arg1 context.Context, arg2 *opts.TunnelOptions) error {
+	fake.publishDeleteTunnelMutex.Lock()
+	ret, specificReturn := fake.publishDeleteTunnelReturnsOnCall[len(fake.publishDeleteTunnelArgsForCall)]
+	fake.publishDeleteTunnelArgsForCall = append(fake.publishDeleteTunnelArgsForCall, struct {
 		arg1 context.Context
 		arg2 *opts.TunnelOptions
 	}{arg1, arg2})
-	stub := fake.PublishResumeDynamicStub
-	fakeReturns := fake.publishResumeDynamicReturns
-	fake.recordInvocation("PublishResumeTunnel", []interface{}{arg1, arg2})
-	fake.publishResumeDynamicMutex.Unlock()
+	stub := fake.PublishDeleteTunnelStub
+	fakeReturns := fake.publishDeleteTunnelReturns
+	fake.recordInvocation("PublishDeleteTunnel", []interface{}{arg1, arg2})
+	fake.publishDeleteTunnelMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2)
 	}
@@ -583,44 +521,44 @@ func (fake *FakeIBus) PublishResumeTunnel(arg1 context.Context, arg2 *opts.Tunne
 	return fakeReturns.result1
 }
 
-func (fake *FakeIBus) PublishResumeDynamicCallCount() int {
-	fake.publishResumeDynamicMutex.RLock()
-	defer fake.publishResumeDynamicMutex.RUnlock()
-	return len(fake.publishResumeDynamicArgsForCall)
+func (fake *FakeIBus) PublishDeleteTunnelCallCount() int {
+	fake.publishDeleteTunnelMutex.RLock()
+	defer fake.publishDeleteTunnelMutex.RUnlock()
+	return len(fake.publishDeleteTunnelArgsForCall)
 }
 
-func (fake *FakeIBus) PublishResumeDynamicCalls(stub func(context.Context, *opts.TunnelOptions) error) {
-	fake.publishResumeDynamicMutex.Lock()
-	defer fake.publishResumeDynamicMutex.Unlock()
-	fake.PublishResumeDynamicStub = stub
+func (fake *FakeIBus) PublishDeleteTunnelCalls(stub func(context.Context, *opts.TunnelOptions) error) {
+	fake.publishDeleteTunnelMutex.Lock()
+	defer fake.publishDeleteTunnelMutex.Unlock()
+	fake.PublishDeleteTunnelStub = stub
 }
 
-func (fake *FakeIBus) PublishResumeDynamicArgsForCall(i int) (context.Context, *opts.TunnelOptions) {
-	fake.publishResumeDynamicMutex.RLock()
-	defer fake.publishResumeDynamicMutex.RUnlock()
-	argsForCall := fake.publishResumeDynamicArgsForCall[i]
+func (fake *FakeIBus) PublishDeleteTunnelArgsForCall(i int) (context.Context, *opts.TunnelOptions) {
+	fake.publishDeleteTunnelMutex.RLock()
+	defer fake.publishDeleteTunnelMutex.RUnlock()
+	argsForCall := fake.publishDeleteTunnelArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeIBus) PublishResumeDynamicReturns(result1 error) {
-	fake.publishResumeDynamicMutex.Lock()
-	defer fake.publishResumeDynamicMutex.Unlock()
-	fake.PublishResumeDynamicStub = nil
-	fake.publishResumeDynamicReturns = struct {
+func (fake *FakeIBus) PublishDeleteTunnelReturns(result1 error) {
+	fake.publishDeleteTunnelMutex.Lock()
+	defer fake.publishDeleteTunnelMutex.Unlock()
+	fake.PublishDeleteTunnelStub = nil
+	fake.publishDeleteTunnelReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeIBus) PublishResumeDynamicReturnsOnCall(i int, result1 error) {
-	fake.publishResumeDynamicMutex.Lock()
-	defer fake.publishResumeDynamicMutex.Unlock()
-	fake.PublishResumeDynamicStub = nil
-	if fake.publishResumeDynamicReturnsOnCall == nil {
-		fake.publishResumeDynamicReturnsOnCall = make(map[int]struct {
+func (fake *FakeIBus) PublishDeleteTunnelReturnsOnCall(i int, result1 error) {
+	fake.publishDeleteTunnelMutex.Lock()
+	defer fake.publishDeleteTunnelMutex.Unlock()
+	fake.PublishDeleteTunnelStub = nil
+	if fake.publishDeleteTunnelReturnsOnCall == nil {
+		fake.publishDeleteTunnelReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.publishResumeDynamicReturnsOnCall[i] = struct {
+	fake.publishDeleteTunnelReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -687,17 +625,17 @@ func (fake *FakeIBus) PublishResumeRelayReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeIBus) PublishStopTunnel(arg1 context.Context, arg2 *opts.TunnelOptions) error {
-	fake.publishStopDynamicMutex.Lock()
-	ret, specificReturn := fake.publishStopDynamicReturnsOnCall[len(fake.publishStopDynamicArgsForCall)]
-	fake.publishStopDynamicArgsForCall = append(fake.publishStopDynamicArgsForCall, struct {
+func (fake *FakeIBus) PublishResumeTunnel(arg1 context.Context, arg2 *opts.TunnelOptions) error {
+	fake.publishResumeTunnelMutex.Lock()
+	ret, specificReturn := fake.publishResumeTunnelReturnsOnCall[len(fake.publishResumeTunnelArgsForCall)]
+	fake.publishResumeTunnelArgsForCall = append(fake.publishResumeTunnelArgsForCall, struct {
 		arg1 context.Context
 		arg2 *opts.TunnelOptions
 	}{arg1, arg2})
-	stub := fake.PublishStopDynamicStub
-	fakeReturns := fake.publishStopDynamicReturns
-	fake.recordInvocation("PublishStopTunnel", []interface{}{arg1, arg2})
-	fake.publishStopDynamicMutex.Unlock()
+	stub := fake.PublishResumeTunnelStub
+	fakeReturns := fake.publishResumeTunnelReturns
+	fake.recordInvocation("PublishResumeTunnel", []interface{}{arg1, arg2})
+	fake.publishResumeTunnelMutex.Unlock()
 	if stub != nil {
 		return stub(arg1, arg2)
 	}
@@ -707,44 +645,44 @@ func (fake *FakeIBus) PublishStopTunnel(arg1 context.Context, arg2 *opts.TunnelO
 	return fakeReturns.result1
 }
 
-func (fake *FakeIBus) PublishStopDynamicCallCount() int {
-	fake.publishStopDynamicMutex.RLock()
-	defer fake.publishStopDynamicMutex.RUnlock()
-	return len(fake.publishStopDynamicArgsForCall)
+func (fake *FakeIBus) PublishResumeTunnelCallCount() int {
+	fake.publishResumeTunnelMutex.RLock()
+	defer fake.publishResumeTunnelMutex.RUnlock()
+	return len(fake.publishResumeTunnelArgsForCall)
 }
 
-func (fake *FakeIBus) PublishStopDynamicCalls(stub func(context.Context, *opts.TunnelOptions) error) {
-	fake.publishStopDynamicMutex.Lock()
-	defer fake.publishStopDynamicMutex.Unlock()
-	fake.PublishStopDynamicStub = stub
+func (fake *FakeIBus) PublishResumeTunnelCalls(stub func(context.Context, *opts.TunnelOptions) error) {
+	fake.publishResumeTunnelMutex.Lock()
+	defer fake.publishResumeTunnelMutex.Unlock()
+	fake.PublishResumeTunnelStub = stub
 }
 
-func (fake *FakeIBus) PublishStopDynamicArgsForCall(i int) (context.Context, *opts.TunnelOptions) {
-	fake.publishStopDynamicMutex.RLock()
-	defer fake.publishStopDynamicMutex.RUnlock()
-	argsForCall := fake.publishStopDynamicArgsForCall[i]
+func (fake *FakeIBus) PublishResumeTunnelArgsForCall(i int) (context.Context, *opts.TunnelOptions) {
+	fake.publishResumeTunnelMutex.RLock()
+	defer fake.publishResumeTunnelMutex.RUnlock()
+	argsForCall := fake.publishResumeTunnelArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeIBus) PublishStopDynamicReturns(result1 error) {
-	fake.publishStopDynamicMutex.Lock()
-	defer fake.publishStopDynamicMutex.Unlock()
-	fake.PublishStopDynamicStub = nil
-	fake.publishStopDynamicReturns = struct {
+func (fake *FakeIBus) PublishResumeTunnelReturns(result1 error) {
+	fake.publishResumeTunnelMutex.Lock()
+	defer fake.publishResumeTunnelMutex.Unlock()
+	fake.PublishResumeTunnelStub = nil
+	fake.publishResumeTunnelReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeIBus) PublishStopDynamicReturnsOnCall(i int, result1 error) {
-	fake.publishStopDynamicMutex.Lock()
-	defer fake.publishStopDynamicMutex.Unlock()
-	fake.PublishStopDynamicStub = nil
-	if fake.publishStopDynamicReturnsOnCall == nil {
-		fake.publishStopDynamicReturnsOnCall = make(map[int]struct {
+func (fake *FakeIBus) PublishResumeTunnelReturnsOnCall(i int, result1 error) {
+	fake.publishResumeTunnelMutex.Lock()
+	defer fake.publishResumeTunnelMutex.Unlock()
+	fake.PublishResumeTunnelStub = nil
+	if fake.publishResumeTunnelReturnsOnCall == nil {
+		fake.publishResumeTunnelReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.publishStopDynamicReturnsOnCall[i] = struct {
+	fake.publishResumeTunnelReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -811,6 +749,68 @@ func (fake *FakeIBus) PublishStopRelayReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeIBus) PublishStopTunnel(arg1 context.Context, arg2 *opts.TunnelOptions) error {
+	fake.publishStopTunnelMutex.Lock()
+	ret, specificReturn := fake.publishStopTunnelReturnsOnCall[len(fake.publishStopTunnelArgsForCall)]
+	fake.publishStopTunnelArgsForCall = append(fake.publishStopTunnelArgsForCall, struct {
+		arg1 context.Context
+		arg2 *opts.TunnelOptions
+	}{arg1, arg2})
+	stub := fake.PublishStopTunnelStub
+	fakeReturns := fake.publishStopTunnelReturns
+	fake.recordInvocation("PublishStopTunnel", []interface{}{arg1, arg2})
+	fake.publishStopTunnelMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIBus) PublishStopTunnelCallCount() int {
+	fake.publishStopTunnelMutex.RLock()
+	defer fake.publishStopTunnelMutex.RUnlock()
+	return len(fake.publishStopTunnelArgsForCall)
+}
+
+func (fake *FakeIBus) PublishStopTunnelCalls(stub func(context.Context, *opts.TunnelOptions) error) {
+	fake.publishStopTunnelMutex.Lock()
+	defer fake.publishStopTunnelMutex.Unlock()
+	fake.PublishStopTunnelStub = stub
+}
+
+func (fake *FakeIBus) PublishStopTunnelArgsForCall(i int) (context.Context, *opts.TunnelOptions) {
+	fake.publishStopTunnelMutex.RLock()
+	defer fake.publishStopTunnelMutex.RUnlock()
+	argsForCall := fake.publishStopTunnelArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIBus) PublishStopTunnelReturns(result1 error) {
+	fake.publishStopTunnelMutex.Lock()
+	defer fake.publishStopTunnelMutex.Unlock()
+	fake.PublishStopTunnelStub = nil
+	fake.publishStopTunnelReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIBus) PublishStopTunnelReturnsOnCall(i int, result1 error) {
+	fake.publishStopTunnelMutex.Lock()
+	defer fake.publishStopTunnelMutex.Unlock()
+	fake.PublishStopTunnelStub = nil
+	if fake.publishStopTunnelReturnsOnCall == nil {
+		fake.publishStopTunnelReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.publishStopTunnelReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeIBus) PublishUpdateConnection(arg1 context.Context, arg2 *opts.ConnectionOptions) error {
 	fake.publishUpdateConnectionMutex.Lock()
 	ret, specificReturn := fake.publishUpdateConnectionReturnsOnCall[len(fake.publishUpdateConnectionArgsForCall)]
@@ -873,68 +873,6 @@ func (fake *FakeIBus) PublishUpdateConnectionReturnsOnCall(i int, result1 error)
 	}{result1}
 }
 
-func (fake *FakeIBus) PublishUpdateTunnel(arg1 context.Context, arg2 *opts.TunnelOptions) error {
-	fake.publishUpdateDynamicMutex.Lock()
-	ret, specificReturn := fake.publishUpdateDynamicReturnsOnCall[len(fake.publishUpdateDynamicArgsForCall)]
-	fake.publishUpdateDynamicArgsForCall = append(fake.publishUpdateDynamicArgsForCall, struct {
-		arg1 context.Context
-		arg2 *opts.TunnelOptions
-	}{arg1, arg2})
-	stub := fake.PublishUpdateDynamicStub
-	fakeReturns := fake.publishUpdateDynamicReturns
-	fake.recordInvocation("PublishUpdateTunnel", []interface{}{arg1, arg2})
-	fake.publishUpdateDynamicMutex.Unlock()
-	if stub != nil {
-		return stub(arg1, arg2)
-	}
-	if specificReturn {
-		return ret.result1
-	}
-	return fakeReturns.result1
-}
-
-func (fake *FakeIBus) PublishUpdateDynamicCallCount() int {
-	fake.publishUpdateDynamicMutex.RLock()
-	defer fake.publishUpdateDynamicMutex.RUnlock()
-	return len(fake.publishUpdateDynamicArgsForCall)
-}
-
-func (fake *FakeIBus) PublishUpdateDynamicCalls(stub func(context.Context, *opts.TunnelOptions) error) {
-	fake.publishUpdateDynamicMutex.Lock()
-	defer fake.publishUpdateDynamicMutex.Unlock()
-	fake.PublishUpdateDynamicStub = stub
-}
-
-func (fake *FakeIBus) PublishUpdateDynamicArgsForCall(i int) (context.Context, *opts.TunnelOptions) {
-	fake.publishUpdateDynamicMutex.RLock()
-	defer fake.publishUpdateDynamicMutex.RUnlock()
-	argsForCall := fake.publishUpdateDynamicArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
-func (fake *FakeIBus) PublishUpdateDynamicReturns(result1 error) {
-	fake.publishUpdateDynamicMutex.Lock()
-	defer fake.publishUpdateDynamicMutex.Unlock()
-	fake.PublishUpdateDynamicStub = nil
-	fake.publishUpdateDynamicReturns = struct {
-		result1 error
-	}{result1}
-}
-
-func (fake *FakeIBus) PublishUpdateDynamicReturnsOnCall(i int, result1 error) {
-	fake.publishUpdateDynamicMutex.Lock()
-	defer fake.publishUpdateDynamicMutex.Unlock()
-	fake.PublishUpdateDynamicStub = nil
-	if fake.publishUpdateDynamicReturnsOnCall == nil {
-		fake.publishUpdateDynamicReturnsOnCall = make(map[int]struct {
-			result1 error
-		})
-	}
-	fake.publishUpdateDynamicReturnsOnCall[i] = struct {
-		result1 error
-	}{result1}
-}
-
 func (fake *FakeIBus) PublishUpdateRelay(arg1 context.Context, arg2 *opts.RelayOptions) error {
 	fake.publishUpdateRelayMutex.Lock()
 	ret, specificReturn := fake.publishUpdateRelayReturnsOnCall[len(fake.publishUpdateRelayArgsForCall)]
@@ -993,6 +931,68 @@ func (fake *FakeIBus) PublishUpdateRelayReturnsOnCall(i int, result1 error) {
 		})
 	}
 	fake.publishUpdateRelayReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIBus) PublishUpdateTunnel(arg1 context.Context, arg2 *opts.TunnelOptions) error {
+	fake.publishUpdateTunnelMutex.Lock()
+	ret, specificReturn := fake.publishUpdateTunnelReturnsOnCall[len(fake.publishUpdateTunnelArgsForCall)]
+	fake.publishUpdateTunnelArgsForCall = append(fake.publishUpdateTunnelArgsForCall, struct {
+		arg1 context.Context
+		arg2 *opts.TunnelOptions
+	}{arg1, arg2})
+	stub := fake.PublishUpdateTunnelStub
+	fakeReturns := fake.publishUpdateTunnelReturns
+	fake.recordInvocation("PublishUpdateTunnel", []interface{}{arg1, arg2})
+	fake.publishUpdateTunnelMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIBus) PublishUpdateTunnelCallCount() int {
+	fake.publishUpdateTunnelMutex.RLock()
+	defer fake.publishUpdateTunnelMutex.RUnlock()
+	return len(fake.publishUpdateTunnelArgsForCall)
+}
+
+func (fake *FakeIBus) PublishUpdateTunnelCalls(stub func(context.Context, *opts.TunnelOptions) error) {
+	fake.publishUpdateTunnelMutex.Lock()
+	defer fake.publishUpdateTunnelMutex.Unlock()
+	fake.PublishUpdateTunnelStub = stub
+}
+
+func (fake *FakeIBus) PublishUpdateTunnelArgsForCall(i int) (context.Context, *opts.TunnelOptions) {
+	fake.publishUpdateTunnelMutex.RLock()
+	defer fake.publishUpdateTunnelMutex.RUnlock()
+	argsForCall := fake.publishUpdateTunnelArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIBus) PublishUpdateTunnelReturns(result1 error) {
+	fake.publishUpdateTunnelMutex.Lock()
+	defer fake.publishUpdateTunnelMutex.Unlock()
+	fake.PublishUpdateTunnelStub = nil
+	fake.publishUpdateTunnelReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIBus) PublishUpdateTunnelReturnsOnCall(i int, result1 error) {
+	fake.publishUpdateTunnelMutex.Lock()
+	defer fake.publishUpdateTunnelMutex.Unlock()
+	fake.PublishUpdateTunnelStub = nil
+	if fake.publishUpdateTunnelReturnsOnCall == nil {
+		fake.publishUpdateTunnelReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.publishUpdateTunnelReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -1116,30 +1116,30 @@ func (fake *FakeIBus) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.publishCreateConnectionMutex.RLock()
 	defer fake.publishCreateConnectionMutex.RUnlock()
-	fake.publishCreateDynamicMutex.RLock()
-	defer fake.publishCreateDynamicMutex.RUnlock()
 	fake.publishCreateRelayMutex.RLock()
 	defer fake.publishCreateRelayMutex.RUnlock()
+	fake.publishCreateTunnelMutex.RLock()
+	defer fake.publishCreateTunnelMutex.RUnlock()
 	fake.publishDeleteConnectionMutex.RLock()
 	defer fake.publishDeleteConnectionMutex.RUnlock()
-	fake.publishDeleteDynamicMutex.RLock()
-	defer fake.publishDeleteDynamicMutex.RUnlock()
 	fake.publishDeleteRelayMutex.RLock()
 	defer fake.publishDeleteRelayMutex.RUnlock()
-	fake.publishResumeDynamicMutex.RLock()
-	defer fake.publishResumeDynamicMutex.RUnlock()
+	fake.publishDeleteTunnelMutex.RLock()
+	defer fake.publishDeleteTunnelMutex.RUnlock()
 	fake.publishResumeRelayMutex.RLock()
 	defer fake.publishResumeRelayMutex.RUnlock()
-	fake.publishStopDynamicMutex.RLock()
-	defer fake.publishStopDynamicMutex.RUnlock()
+	fake.publishResumeTunnelMutex.RLock()
+	defer fake.publishResumeTunnelMutex.RUnlock()
 	fake.publishStopRelayMutex.RLock()
 	defer fake.publishStopRelayMutex.RUnlock()
+	fake.publishStopTunnelMutex.RLock()
+	defer fake.publishStopTunnelMutex.RUnlock()
 	fake.publishUpdateConnectionMutex.RLock()
 	defer fake.publishUpdateConnectionMutex.RUnlock()
-	fake.publishUpdateDynamicMutex.RLock()
-	defer fake.publishUpdateDynamicMutex.RUnlock()
 	fake.publishUpdateRelayMutex.RLock()
 	defer fake.publishUpdateRelayMutex.RUnlock()
+	fake.publishUpdateTunnelMutex.RLock()
+	defer fake.publishUpdateTunnelMutex.RUnlock()
 	fake.startMutex.RLock()
 	defer fake.startMutex.RUnlock()
 	fake.stopMutex.RLock()

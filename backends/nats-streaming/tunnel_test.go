@@ -16,7 +16,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/backends/nats-streaming/stanfakes"
 
-	// "github.com/batchcorp/plumber/tunnel/tunnelfakes"
+	"github.com/batchcorp/plumber/tunnel/tunnelfakes"
 	"github.com/batchcorp/plumber/validate"
 )
 
@@ -64,11 +64,11 @@ var _ = Describe("Nats Streaming Backend", func() {
 	})
 
 	Context("Tunnel", func() {
-		var fakeDynamic *tunnelfakes.FakeIDynamic
+		var fakeTunnel *tunnelfakes.FakeITunnel
 
 		BeforeEach(func() {
-			fakeDynamic = &tunnelfakes.FakeIDynamic{}
-			fakeDynamic.ReadStub = func() chan *events.Outbound {
+			fakeTunnel = &tunnelfakes.FakeITunnel{}
+			fakeTunnel.ReadStub = func() chan *events.Outbound {
 				ch := make(chan *events.Outbound, 1)
 				ch <- &events.Outbound{Blob: []byte(`testing`)}
 				return ch
@@ -103,7 +103,7 @@ var _ = Describe("Nats Streaming Backend", func() {
 			}()
 
 			errorCh := make(chan *records.ErrorRecord)
-			err := n.Tunnel(ctx, tunnelOpts, fakeDynamic, errorCh)
+			err := n.Tunnel(ctx, tunnelOpts, fakeTunnel, errorCh)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring(errTest.Error()))
 		})
@@ -127,7 +127,7 @@ var _ = Describe("Nats Streaming Backend", func() {
 			}()
 
 			errorCh := make(chan *records.ErrorRecord)
-			err := n.Tunnel(ctx, tunnelOpts, fakeDynamic, errorCh)
+			err := n.Tunnel(ctx, tunnelOpts, fakeTunnel, errorCh)
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})
