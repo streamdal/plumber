@@ -27,14 +27,6 @@ func (p *Plumber) RunServer() error {
 
 	p.log.Infof("starting plumber server in '%s' mode...", mode)
 
-	if err := p.relaunchRelays(); err != nil {
-		p.log.Error(errors.Wrap(err, "failed to relaunch relays"))
-	}
-
-	if err := p.relaunchDynamic(); err != nil {
-		p.log.Error(errors.Wrap(err, "failed to relaunch tunnels"))
-	}
-
 	// Launch HTTP server
 	srv, err := api.Start(p.CLIOptions.Server.HttpListenAddress, options.VERSION)
 	if err != nil {
@@ -71,6 +63,16 @@ func (p *Plumber) RunServer() error {
 	}
 
 	p.log.Info("plumber server started")
+
+	// Keep after startGRPCServer(). If dProxy is unreachable on start, these will block for a while
+	// and prevent gRPC server from starting.
+	if err := p.relaunchRelays(); err != nil {
+		p.log.Error(errors.Wrap(err, "failed to relaunch relays"))
+	}
+
+	if err := p.relaunchDynamic(); err != nil {
+		p.log.Error(errors.Wrap(err, "failed to relaunch tunnels"))
+	}
 
 	// Wait for shutdown
 	select {

@@ -43,6 +43,10 @@ func (a *Actions) CreateDynamic(reqCtx context.Context, dynamicOpts *opts.Dynami
 		PlumberClusterID: a.cfg.PersistentConfig.ClusterID,
 	}
 
+	// If a dynamic replay is in the process of starting and it gets deleted, we must have
+	// CancelFunc and CancelCtx set so that DeleteDynamic() can trigger
+	a.cfg.PersistentConfig.SetDynamic(dynamicOpts.XDynamicId, d)
+
 	// Run the dynamic replay if it's active on other plumber instances
 	if dynamicOpts.XActive {
 		// This will block for 5 seconds
