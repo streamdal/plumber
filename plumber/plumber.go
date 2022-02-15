@@ -140,9 +140,9 @@ func (p *Plumber) Run() {
 	case "relay":
 		printer.PrintRelayOptions(p.CLIOptions)
 		err = p.HandleRelayCmd()
-	case "dynamic":
-		logrus.Fatal("dynamic mode not implemented")
-		//err = p.HandleDynamicCmd()
+	case "tunnel":
+		logrus.Fatal("tunnel mode not implemented")
+		//err = p.HandleTunnelCmd()
 	default:
 		logrus.Fatalf("unrecognized command: %s", p.CLIOptions.Global.XAction)
 	}

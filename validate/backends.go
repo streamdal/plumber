@@ -29,9 +29,9 @@ var (
 
 	ErrEmptyWriteOpts = errors.New("write options cannot be nil")
 
-	// Dynamic
+	// Tunnel
 
-	ErrEmptyDynamicOpts = errors.New("dynamic options cannot be nil")
+	ErrEmptyTunnelOpts = errors.New("tunnel options cannot be nil")
 
 	// Relay
 

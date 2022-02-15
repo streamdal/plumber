@@ -27,39 +27,38 @@ const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 func init() { proto.RegisterFile("ps_base.proto", fileDescriptor_ef931efdbd582aee) }
 
 var fileDescriptor_ef931efdbd582aee = []byte{
-	// 497 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x95, 0xdf, 0x6e, 0xd3, 0x30,
-	0x14, 0x87, 0xef, 0x10, 0x98, 0x75, 0x8c, 0xdc, 0xc0, 0xd2, 0x8d, 0x8d, 0x07, 0xa0, 0x91, 0x00,
-	0x71, 0x87, 0xc4, 0xe8, 0x44, 0x84, 0x84, 0x34, 0xd4, 0x31, 0x09, 0x71, 0x53, 0x25, 0xe9, 0xd1,
-	0x5a, 0x29, 0x89, 0x4d, 0x8e, 0x83, 0xb4, 0xe7, 0xe5, 0x45, 0x50, 0x73, 0xec, 0xfa, 0xcf, 0x49,
-	0xb8, 0xaa, 0xfa, 0xfb, 0x8e, 0x3f, 0x9d, 0xfa, 0xb8, 0xb6, 0x98, 0x29, 0x5c, 0x97, 0x05, 0xc2,
-	0x42, 0x75, 0x52, 0xcb, 0xe4, 0xd1, 0xf0, 0x81, 0xe9, 0x89, 0xc2, 0x75, 0x25, 0xdb, 0x16, 0x2a,
-	0x4d, 0x64, 0x48, 0x36, 0x0f, 0x6d, 0xd1, 0xec, 0x2a, 0x93, 0x1c, 0x2b, 0x5c, 0x77, 0x50, 0x17,
-	0x0f, 0xe6, 0xfb, 0x33, 0x85, 0x6b, 0x84, 0xee, 0x0f, 0x74, 0x14, 0xbc, 0xfd, 0x7b, 0x24, 0x66,
-	0xdf, 0xeb, 0xbe, 0x29, 0xa1, 0xbb, 0x1d, 0xf2, 0xe4, 0xa7, 0x78, 0x9e, 0x83, 0xbe, 0xaa, 0xeb,
-	0x25, 0xb9, 0x77, 0xb2, 0xc5, 0xe4, 0x92, 0xca, 0x71, 0xc1, 0xd0, 0x0a, 0x7e, 0xf7, 0x80, 0x3a,
-	0x7d, 0xfd, 0x9f, 0x0a, 0x54, 0xb2, 0x45, 0x48, 0xbe, 0x89, 0x59, 0x0e, 0xda, 0x91, 0xe4, 0xcc,
-	0x5b, 0xe3, 0x62, 0x6b, 0x3c, 0x9f, 0xa0, 0xc6, 0x76, 0x27, 0x4e, 0x96, 0x1d, 0x14, 0x1a, 0x3c,
-	0xe1, 0x85, 0x5d, 0x12, 0x13, 0xeb, 0xbc, 0x9c, 0x2e, 0x30, 0xda, 0x1b, 0x71, 0xfc, 0x03, 0xd0,
-	0xef, 0xf2, 0xd0, 0x47, 0x98, 0x5b, 0xe5, 0xab, 0x29, 0xec, 0xfa, 0xbc, 0x53, 0x9b, 0x89, 0x3e,
-	0x63, 0xc2, 0xfa, 0xe4, 0x05, 0x4e, 0x7b, 0x0d, 0x35, 0x8c, 0x6b, 0x63, 0xc2, 0xb4, 0xbc, 0xc0,
-	0x68, 0xbf, 0x8a, 0x23, 0x1a, 0xe0, 0x6a, 0x7f, 0x6a, 0x30, 0x99, 0x87, 0x63, 0xa5, 0xd4, 0xea,
-	0xce, 0xc6, 0xa1, 0x51, 0x7d, 0x14, 0x8f, 0x73, 0xd0, 0x43, 0x98, 0xbc, 0xf0, 0x2a, 0x87, 0xc4,
-	0x2a, 0x5e, 0x72, 0x60, 0x96, 0x7f, 0x11, 0x4f, 0x69, 0x48, 0x64, 0x48, 0xc3, 0xc9, 0x05, 0x92,
-	0xf9, 0x28, 0x73, 0x1e, 0xda, 0xc4, 0xc8, 0xe3, 0x85, 0xcc, 0x13, 0x30, 0xe7, 0x59, 0x01, 0xf6,
-	0x4d, 0xec, 0xf1, 0x42, 0xe6, 0x09, 0x98, 0xf1, 0x7c, 0x12, 0x4f, 0x6e, 0xb5, 0x54, 0x64, 0x39,
-	0xfc, 0xfc, 0x43, 0x64, 0x1d, 0xa7, 0x23, 0xc4, 0x75, 0x42, 0xf3, 0x8b, 0x3a, 0xf1, 0x42, 0xd6,
-	0x49, 0xc0, 0x8c, 0x67, 0x29, 0x44, 0x0e, 0xfa, 0x9a, 0x2e, 0x8c, 0xe4, 0xd4, 0x9b, 0x84, 0xc9,
-	0xac, 0x25, 0x1d, 0x43, 0xc1, 0x9f, 0xfa, 0xaa, 0xae, 0xad, 0x27, 0x3a, 0x14, 0x91, 0xea, 0x7c,
-	0x82, 0x3a, 0x1b, 0xcd, 0x90, 0xd9, 0x82, 0x98, 0xd9, 0x22, 0xea, 0x36, 0x6a, 0xbf, 0x7b, 0xd6,
-	0x95, 0xfa, 0x5b, 0x1a, 0x99, 0xe6, 0xa3, 0xcc, 0x75, 0x45, 0x93, 0x64, 0x5d, 0x05, 0x31, 0xeb,
-	0x2a, 0xa2, 0xce, 0x46, 0xe7, 0x8b, 0xd9, 0x82, 0x98, 0xd9, 0x22, 0xea, 0x6c, 0x34, 0x5b, 0x66,
-	0x0b, 0x62, 0x66, 0x8b, 0xa8, 0xbb, 0x55, 0x72, 0xd0, 0xf4, 0x12, 0xdc, 0x28, 0xba, 0xfb, 0x2f,
-	0xbc, 0x91, 0x05, 0x84, 0xdd, 0x2a, 0xbc, 0x80, 0xb4, 0x9f, 0x3f, 0xfc, 0x7a, 0x7f, 0xbf, 0xd3,
-	0xdb, 0xbe, 0x5c, 0x54, 0xb2, 0xc9, 0xca, 0x42, 0x57, 0xdb, 0x4a, 0x76, 0x2a, 0x53, 0xf4, 0xf2,
-	0xbc, 0xc1, 0x6a, 0x0b, 0x4d, 0x81, 0x59, 0xd9, 0xef, 0xea, 0x4d, 0x76, 0x2f, 0x33, 0x12, 0x96,
-	0xf4, 0xd4, 0xbd, 0xfb, 0x17, 0x00, 0x00, 0xff, 0xff, 0xa0, 0xf0, 0x0b, 0x3d, 0x02, 0x07, 0x00,
-	0x00,
+	// 496 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x95, 0xdf, 0x8a, 0xd3, 0x40,
+	0x14, 0xc6, 0xef, 0x44, 0xc7, 0xed, 0xba, 0xce, 0x8d, 0x9a, 0xad, 0xee, 0xfa, 0x00, 0x36, 0xa0,
+	0xe2, 0x9d, 0xe0, 0x5a, 0x31, 0x08, 0xc2, 0x4a, 0xb7, 0x05, 0xf1, 0x26, 0x24, 0xe9, 0xa1, 0x2d,
+	0x4c, 0x32, 0x63, 0xce, 0x44, 0xf0, 0x31, 0x7d, 0x23, 0x69, 0xce, 0xa4, 0xf3, 0x2f, 0xd9, 0xab,
+	0x85, 0xef, 0x77, 0xf2, 0xe3, 0xdb, 0x9c, 0xe9, 0x84, 0xcd, 0x14, 0xe6, 0x65, 0x81, 0xb0, 0x50,
+	0xad, 0xd4, 0x92, 0x3f, 0xe8, 0xff, 0x60, 0x72, 0xa1, 0x30, 0xaf, 0x64, 0xd3, 0x40, 0xa5, 0x89,
+	0x24, 0x4f, 0x14, 0xe6, 0xba, 0x6b, 0x1a, 0x10, 0x26, 0x38, 0x57, 0x98, 0xb7, 0x20, 0x8a, 0xbf,
+	0xce, 0x00, 0x42, 0xfb, 0x07, 0x5a, 0x0a, 0xde, 0xfe, 0x3b, 0x63, 0xb3, 0x1f, 0xa2, 0xab, 0x4b,
+	0x68, 0xef, 0xfa, 0x9c, 0xff, 0x64, 0x4f, 0x33, 0xd0, 0x37, 0x42, 0x2c, 0x49, 0x7d, 0x90, 0x0d,
+	0xf2, 0x6b, 0x1a, 0xc7, 0x45, 0x84, 0x56, 0xf0, 0xbb, 0x03, 0xd4, 0xc9, 0xeb, 0x7b, 0x26, 0x50,
+	0xc9, 0x06, 0x81, 0x7f, 0x67, 0xb3, 0x0c, 0xb4, 0x25, 0x7c, 0xee, 0x3c, 0x63, 0xe3, 0xc1, 0xf8,
+	0x72, 0x82, 0x1a, 0xdb, 0x86, 0x5d, 0x2c, 0x5b, 0x28, 0x34, 0x38, 0xc2, 0xab, 0xe1, 0x91, 0x90,
+	0x0c, 0xce, 0xeb, 0xe9, 0x01, 0xa3, 0xbd, 0x65, 0xe7, 0x6b, 0x40, 0xb7, 0xe5, 0xa9, 0x87, 0x9f,
+	0x0f, 0xca, 0x57, 0x53, 0xd8, 0xf6, 0xdc, 0xa8, 0xed, 0x44, 0xcf, 0x90, 0x44, 0x3d, 0xe3, 0x01,
+	0xab, 0xfd, 0x02, 0x02, 0xc6, 0xb5, 0x21, 0x89, 0xb4, 0xf1, 0x80, 0xd1, 0x7e, 0x63, 0x67, 0xb4,
+	0xc0, 0xd5, 0xf1, 0xd4, 0x20, 0xbf, 0xf4, 0xd7, 0x4a, 0xe9, 0xa0, 0x9b, 0x8f, 0x43, 0xa3, 0xfa,
+	0xc8, 0x1e, 0x66, 0xa0, 0xfb, 0x90, 0x3f, 0x73, 0x26, 0xfb, 0x64, 0x50, 0x3c, 0x8f, 0x81, 0x79,
+	0xfc, 0x2b, 0x7b, 0x4c, 0x4b, 0x22, 0x43, 0xe2, 0x6f, 0xce, 0x93, 0x5c, 0x8e, 0x32, 0xeb, 0xa1,
+	0x97, 0x18, 0x78, 0x9c, 0x30, 0xf2, 0x78, 0xcc, 0x7a, 0x56, 0x80, 0x5d, 0x1d, 0x7a, 0x9c, 0x30,
+	0xf2, 0x78, 0xcc, 0x78, 0x3e, 0xb1, 0x47, 0x77, 0x5a, 0x2a, 0xb2, 0x9c, 0xfe, 0xfd, 0x53, 0x34,
+	0x38, 0x5e, 0x8c, 0x10, 0xdb, 0x84, 0xf6, 0x17, 0x34, 0x71, 0xc2, 0xa8, 0x89, 0xc7, 0x6c, 0x93,
+	0x0c, 0xf4, 0xba, 0xbf, 0x2f, 0xb8, 0xbb, 0x08, 0x8a, 0xa2, 0x26, 0x0e, 0xf1, 0x7e, 0xd1, 0x37,
+	0x42, 0x50, 0x8e, 0x3c, 0x38, 0x11, 0x26, 0x1e, 0xfb, 0x45, 0xbb, 0xd4, 0x9e, 0x3d, 0x5a, 0xa0,
+	0xa9, 0x14, 0xac, 0xd5, 0x6f, 0x35, 0x1f, 0x87, 0x46, 0xb5, 0x64, 0xec, 0xf8, 0xde, 0x8c, 0xc8,
+	0x7b, 0x97, 0xbe, 0x26, 0x19, 0x43, 0xb6, 0x0f, 0x2d, 0x30, 0xec, 0xe3, 0xa6, 0x51, 0x1f, 0x1f,
+	0x5a, 0x15, 0x9d, 0xa9, 0x50, 0xe5, 0xa6, 0x91, 0xca, 0x87, 0x56, 0x45, 0xcb, 0x0c, 0x55, 0x6e,
+	0x1a, 0xa9, 0x7c, 0x68, 0xef, 0x90, 0x0c, 0x34, 0xdd, 0xfb, 0xb7, 0x8a, 0x6e, 0xfa, 0x2b, 0x67,
+	0x47, 0x1e, 0x89, 0xee, 0x90, 0x78, 0x80, 0xb4, 0x9f, 0x3f, 0xfc, 0x7a, 0xbf, 0x3b, 0xe8, 0x7d,
+	0x57, 0x2e, 0x2a, 0x59, 0xa7, 0x65, 0xa1, 0xab, 0x7d, 0x25, 0x5b, 0x95, 0x2a, 0xfa, 0xce, 0xbc,
+	0xc1, 0x6a, 0x0f, 0x75, 0x81, 0x69, 0xd9, 0x1d, 0xc4, 0x36, 0xdd, 0xc9, 0x94, 0x84, 0x25, 0x7d,
+	0xd7, 0xde, 0xfd, 0x0f, 0x00, 0x00, 0xff, 0xff, 0xd9, 0x3c, 0xc4, 0x54, 0xef, 0x06, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -93,13 +92,13 @@ type PlumberServerClient interface {
 	ResumeRelay(ctx context.Context, in *ResumeRelayRequest, opts ...grpc.CallOption) (*ResumeRelayResponse, error)
 	StopRelay(ctx context.Context, in *StopRelayRequest, opts ...grpc.CallOption) (*StopRelayResponse, error)
 	DeleteRelay(ctx context.Context, in *DeleteRelayRequest, opts ...grpc.CallOption) (*DeleteRelayResponse, error)
-	GetDynamic(ctx context.Context, in *GetDynamicRequest, opts ...grpc.CallOption) (*GetDynamicResponse, error)
-	GetAllDynamic(ctx context.Context, in *GetAllDynamicRequest, opts ...grpc.CallOption) (*GetAllDynamicResponse, error)
-	CreateDynamic(ctx context.Context, in *CreateDynamicRequest, opts ...grpc.CallOption) (*CreateDynamicResponse, error)
-	StopDynamic(ctx context.Context, in *StopDynamicRequest, opts ...grpc.CallOption) (*StopDynamicResponse, error)
-	ResumeDynamic(ctx context.Context, in *ResumeDynamicRequest, opts ...grpc.CallOption) (*ResumeDynamicResponse, error)
-	UpdateDynamic(ctx context.Context, in *UpdateDynamicRequest, opts ...grpc.CallOption) (*UpdateDynamicResponse, error)
-	DeleteDynamic(ctx context.Context, in *DeleteDynamicRequest, opts ...grpc.CallOption) (*DeleteDynamicResponse, error)
+	GetTunnel(ctx context.Context, in *GetTunnelRequest, opts ...grpc.CallOption) (*GetTunnelResponse, error)
+	GetAllTunnels(ctx context.Context, in *GetAllTunnelsRequest, opts ...grpc.CallOption) (*GetAllTunnelsResponse, error)
+	CreateTunnel(ctx context.Context, in *CreateTunnelRequest, opts ...grpc.CallOption) (*CreateTunnelResponse, error)
+	StopTunnel(ctx context.Context, in *StopTunnelRequest, opts ...grpc.CallOption) (*StopTunnelResponse, error)
+	ResumeTunnel(ctx context.Context, in *ResumeTunnelRequest, opts ...grpc.CallOption) (*ResumeTunnelResponse, error)
+	UpdateTunnel(ctx context.Context, in *UpdateTunnelRequest, opts ...grpc.CallOption) (*UpdateTunnelResponse, error)
+	DeleteTunnel(ctx context.Context, in *DeleteTunnelRequest, opts ...grpc.CallOption) (*DeleteTunnelResponse, error)
 	GetServerOptions(ctx context.Context, in *GetServerOptionsRequest, opts ...grpc.CallOption) (*GetServerOptionsResponse, error)
 }
 
@@ -228,63 +227,63 @@ func (c *plumberServerClient) DeleteRelay(ctx context.Context, in *DeleteRelayRe
 	return out, nil
 }
 
-func (c *plumberServerClient) GetDynamic(ctx context.Context, in *GetDynamicRequest, opts ...grpc.CallOption) (*GetDynamicResponse, error) {
-	out := new(GetDynamicResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetDynamic", in, out, opts...)
+func (c *plumberServerClient) GetTunnel(ctx context.Context, in *GetTunnelRequest, opts ...grpc.CallOption) (*GetTunnelResponse, error) {
+	out := new(GetTunnelResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetTunnel", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *plumberServerClient) GetAllDynamic(ctx context.Context, in *GetAllDynamicRequest, opts ...grpc.CallOption) (*GetAllDynamicResponse, error) {
-	out := new(GetAllDynamicResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetAllDynamic", in, out, opts...)
+func (c *plumberServerClient) GetAllTunnels(ctx context.Context, in *GetAllTunnelsRequest, opts ...grpc.CallOption) (*GetAllTunnelsResponse, error) {
+	out := new(GetAllTunnelsResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetAllTunnels", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *plumberServerClient) CreateDynamic(ctx context.Context, in *CreateDynamicRequest, opts ...grpc.CallOption) (*CreateDynamicResponse, error) {
-	out := new(CreateDynamicResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/CreateDynamic", in, out, opts...)
+func (c *plumberServerClient) CreateTunnel(ctx context.Context, in *CreateTunnelRequest, opts ...grpc.CallOption) (*CreateTunnelResponse, error) {
+	out := new(CreateTunnelResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/CreateTunnel", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *plumberServerClient) StopDynamic(ctx context.Context, in *StopDynamicRequest, opts ...grpc.CallOption) (*StopDynamicResponse, error) {
-	out := new(StopDynamicResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/StopDynamic", in, out, opts...)
+func (c *plumberServerClient) StopTunnel(ctx context.Context, in *StopTunnelRequest, opts ...grpc.CallOption) (*StopTunnelResponse, error) {
+	out := new(StopTunnelResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/StopTunnel", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *plumberServerClient) ResumeDynamic(ctx context.Context, in *ResumeDynamicRequest, opts ...grpc.CallOption) (*ResumeDynamicResponse, error) {
-	out := new(ResumeDynamicResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/ResumeDynamic", in, out, opts...)
+func (c *plumberServerClient) ResumeTunnel(ctx context.Context, in *ResumeTunnelRequest, opts ...grpc.CallOption) (*ResumeTunnelResponse, error) {
+	out := new(ResumeTunnelResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/ResumeTunnel", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *plumberServerClient) UpdateDynamic(ctx context.Context, in *UpdateDynamicRequest, opts ...grpc.CallOption) (*UpdateDynamicResponse, error) {
-	out := new(UpdateDynamicResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/UpdateDynamic", in, out, opts...)
+func (c *plumberServerClient) UpdateTunnel(ctx context.Context, in *UpdateTunnelRequest, opts ...grpc.CallOption) (*UpdateTunnelResponse, error) {
+	out := new(UpdateTunnelResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/UpdateTunnel", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *plumberServerClient) DeleteDynamic(ctx context.Context, in *DeleteDynamicRequest, opts ...grpc.CallOption) (*DeleteDynamicResponse, error) {
-	out := new(DeleteDynamicResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/DeleteDynamic", in, out, opts...)
+func (c *plumberServerClient) DeleteTunnel(ctx context.Context, in *DeleteTunnelRequest, opts ...grpc.CallOption) (*DeleteTunnelResponse, error) {
+	out := new(DeleteTunnelResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/DeleteTunnel", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -321,13 +320,13 @@ type PlumberServerServer interface {
 	ResumeRelay(context.Context, *ResumeRelayRequest) (*ResumeRelayResponse, error)
 	StopRelay(context.Context, *StopRelayRequest) (*StopRelayResponse, error)
 	DeleteRelay(context.Context, *DeleteRelayRequest) (*DeleteRelayResponse, error)
-	GetDynamic(context.Context, *GetDynamicRequest) (*GetDynamicResponse, error)
-	GetAllDynamic(context.Context, *GetAllDynamicRequest) (*GetAllDynamicResponse, error)
-	CreateDynamic(context.Context, *CreateDynamicRequest) (*CreateDynamicResponse, error)
-	StopDynamic(context.Context, *StopDynamicRequest) (*StopDynamicResponse, error)
-	ResumeDynamic(context.Context, *ResumeDynamicRequest) (*ResumeDynamicResponse, error)
-	UpdateDynamic(context.Context, *UpdateDynamicRequest) (*UpdateDynamicResponse, error)
-	DeleteDynamic(context.Context, *DeleteDynamicRequest) (*DeleteDynamicResponse, error)
+	GetTunnel(context.Context, *GetTunnelRequest) (*GetTunnelResponse, error)
+	GetAllTunnels(context.Context, *GetAllTunnelsRequest) (*GetAllTunnelsResponse, error)
+	CreateTunnel(context.Context, *CreateTunnelRequest) (*CreateTunnelResponse, error)
+	StopTunnel(context.Context, *StopTunnelRequest) (*StopTunnelResponse, error)
+	ResumeTunnel(context.Context, *ResumeTunnelRequest) (*ResumeTunnelResponse, error)
+	UpdateTunnel(context.Context, *UpdateTunnelRequest) (*UpdateTunnelResponse, error)
+	DeleteTunnel(context.Context, *DeleteTunnelRequest) (*DeleteTunnelResponse, error)
 	GetServerOptions(context.Context, *GetServerOptionsRequest) (*GetServerOptionsResponse, error)
 }
 
@@ -374,26 +373,26 @@ func (*UnimplementedPlumberServerServer) StopRelay(ctx context.Context, req *Sto
 func (*UnimplementedPlumberServerServer) DeleteRelay(ctx context.Context, req *DeleteRelayRequest) (*DeleteRelayResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteRelay not implemented")
 }
-func (*UnimplementedPlumberServerServer) GetDynamic(ctx context.Context, req *GetDynamicRequest) (*GetDynamicResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetDynamic not implemented")
+func (*UnimplementedPlumberServerServer) GetTunnel(ctx context.Context, req *GetTunnelRequest) (*GetTunnelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTunnel not implemented")
 }
-func (*UnimplementedPlumberServerServer) GetAllDynamic(ctx context.Context, req *GetAllDynamicRequest) (*GetAllDynamicResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAllDynamic not implemented")
+func (*UnimplementedPlumberServerServer) GetAllTunnels(ctx context.Context, req *GetAllTunnelsRequest) (*GetAllTunnelsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllTunnels not implemented")
 }
-func (*UnimplementedPlumberServerServer) CreateDynamic(ctx context.Context, req *CreateDynamicRequest) (*CreateDynamicResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateDynamic not implemented")
+func (*UnimplementedPlumberServerServer) CreateTunnel(ctx context.Context, req *CreateTunnelRequest) (*CreateTunnelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateTunnel not implemented")
 }
-func (*UnimplementedPlumberServerServer) StopDynamic(ctx context.Context, req *StopDynamicRequest) (*StopDynamicResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StopDynamic not implemented")
+func (*UnimplementedPlumberServerServer) StopTunnel(ctx context.Context, req *StopTunnelRequest) (*StopTunnelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StopTunnel not implemented")
 }
-func (*UnimplementedPlumberServerServer) ResumeDynamic(ctx context.Context, req *ResumeDynamicRequest) (*ResumeDynamicResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ResumeDynamic not implemented")
+func (*UnimplementedPlumberServerServer) ResumeTunnel(ctx context.Context, req *ResumeTunnelRequest) (*ResumeTunnelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResumeTunnel not implemented")
 }
-func (*UnimplementedPlumberServerServer) UpdateDynamic(ctx context.Context, req *UpdateDynamicRequest) (*UpdateDynamicResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateDynamic not implemented")
+func (*UnimplementedPlumberServerServer) UpdateTunnel(ctx context.Context, req *UpdateTunnelRequest) (*UpdateTunnelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateTunnel not implemented")
 }
-func (*UnimplementedPlumberServerServer) DeleteDynamic(ctx context.Context, req *DeleteDynamicRequest) (*DeleteDynamicResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteDynamic not implemented")
+func (*UnimplementedPlumberServerServer) DeleteTunnel(ctx context.Context, req *DeleteTunnelRequest) (*DeleteTunnelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteTunnel not implemented")
 }
 func (*UnimplementedPlumberServerServer) GetServerOptions(ctx context.Context, req *GetServerOptionsRequest) (*GetServerOptionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetServerOptions not implemented")
@@ -637,128 +636,128 @@ func _PlumberServer_DeleteRelay_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PlumberServer_GetDynamic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetDynamicRequest)
+func _PlumberServer_GetTunnel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTunnelRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PlumberServerServer).GetDynamic(ctx, in)
+		return srv.(PlumberServerServer).GetTunnel(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.PlumberServer/GetDynamic",
+		FullMethod: "/protos.PlumberServer/GetTunnel",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).GetDynamic(ctx, req.(*GetDynamicRequest))
+		return srv.(PlumberServerServer).GetTunnel(ctx, req.(*GetTunnelRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PlumberServer_GetAllDynamic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAllDynamicRequest)
+func _PlumberServer_GetAllTunnels_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllTunnelsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PlumberServerServer).GetAllDynamic(ctx, in)
+		return srv.(PlumberServerServer).GetAllTunnels(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.PlumberServer/GetAllDynamic",
+		FullMethod: "/protos.PlumberServer/GetAllTunnels",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).GetAllDynamic(ctx, req.(*GetAllDynamicRequest))
+		return srv.(PlumberServerServer).GetAllTunnels(ctx, req.(*GetAllTunnelsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PlumberServer_CreateDynamic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateDynamicRequest)
+func _PlumberServer_CreateTunnel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateTunnelRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PlumberServerServer).CreateDynamic(ctx, in)
+		return srv.(PlumberServerServer).CreateTunnel(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.PlumberServer/CreateDynamic",
+		FullMethod: "/protos.PlumberServer/CreateTunnel",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).CreateDynamic(ctx, req.(*CreateDynamicRequest))
+		return srv.(PlumberServerServer).CreateTunnel(ctx, req.(*CreateTunnelRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PlumberServer_StopDynamic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StopDynamicRequest)
+func _PlumberServer_StopTunnel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StopTunnelRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PlumberServerServer).StopDynamic(ctx, in)
+		return srv.(PlumberServerServer).StopTunnel(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.PlumberServer/StopDynamic",
+		FullMethod: "/protos.PlumberServer/StopTunnel",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).StopDynamic(ctx, req.(*StopDynamicRequest))
+		return srv.(PlumberServerServer).StopTunnel(ctx, req.(*StopTunnelRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PlumberServer_ResumeDynamic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ResumeDynamicRequest)
+func _PlumberServer_ResumeTunnel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResumeTunnelRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PlumberServerServer).ResumeDynamic(ctx, in)
+		return srv.(PlumberServerServer).ResumeTunnel(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.PlumberServer/ResumeDynamic",
+		FullMethod: "/protos.PlumberServer/ResumeTunnel",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).ResumeDynamic(ctx, req.(*ResumeDynamicRequest))
+		return srv.(PlumberServerServer).ResumeTunnel(ctx, req.(*ResumeTunnelRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PlumberServer_UpdateDynamic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateDynamicRequest)
+func _PlumberServer_UpdateTunnel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateTunnelRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PlumberServerServer).UpdateDynamic(ctx, in)
+		return srv.(PlumberServerServer).UpdateTunnel(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.PlumberServer/UpdateDynamic",
+		FullMethod: "/protos.PlumberServer/UpdateTunnel",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).UpdateDynamic(ctx, req.(*UpdateDynamicRequest))
+		return srv.(PlumberServerServer).UpdateTunnel(ctx, req.(*UpdateTunnelRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PlumberServer_DeleteDynamic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteDynamicRequest)
+func _PlumberServer_DeleteTunnel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteTunnelRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PlumberServerServer).DeleteDynamic(ctx, in)
+		return srv.(PlumberServerServer).DeleteTunnel(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.PlumberServer/DeleteDynamic",
+		FullMethod: "/protos.PlumberServer/DeleteTunnel",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).DeleteDynamic(ctx, req.(*DeleteDynamicRequest))
+		return srv.(PlumberServerServer).DeleteTunnel(ctx, req.(*DeleteTunnelRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -838,32 +837,32 @@ var _PlumberServer_serviceDesc = grpc.ServiceDesc{
 			Handler:    _PlumberServer_DeleteRelay_Handler,
 		},
 		{
-			MethodName: "GetDynamic",
-			Handler:    _PlumberServer_GetDynamic_Handler,
+			MethodName: "GetTunnel",
+			Handler:    _PlumberServer_GetTunnel_Handler,
 		},
 		{
-			MethodName: "GetAllDynamic",
-			Handler:    _PlumberServer_GetAllDynamic_Handler,
+			MethodName: "GetAllTunnels",
+			Handler:    _PlumberServer_GetAllTunnels_Handler,
 		},
 		{
-			MethodName: "CreateDynamic",
-			Handler:    _PlumberServer_CreateDynamic_Handler,
+			MethodName: "CreateTunnel",
+			Handler:    _PlumberServer_CreateTunnel_Handler,
 		},
 		{
-			MethodName: "StopDynamic",
-			Handler:    _PlumberServer_StopDynamic_Handler,
+			MethodName: "StopTunnel",
+			Handler:    _PlumberServer_StopTunnel_Handler,
 		},
 		{
-			MethodName: "ResumeDynamic",
-			Handler:    _PlumberServer_ResumeDynamic_Handler,
+			MethodName: "ResumeTunnel",
+			Handler:    _PlumberServer_ResumeTunnel_Handler,
 		},
 		{
-			MethodName: "UpdateDynamic",
-			Handler:    _PlumberServer_UpdateDynamic_Handler,
+			MethodName: "UpdateTunnel",
+			Handler:    _PlumberServer_UpdateTunnel_Handler,
 		},
 		{
-			MethodName: "DeleteDynamic",
-			Handler:    _PlumberServer_DeleteDynamic_Handler,
+			MethodName: "DeleteTunnel",
+			Handler:    _PlumberServer_DeleteTunnel_Handler,
 		},
 		{
 			MethodName: "GetServerOptions",

@@ -14,40 +14,40 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/backends"
-	"github.com/batchcorp/plumber/dynamic"
+	"github.com/batchcorp/plumber/tunnel"
 	"github.com/batchcorp/plumber/util"
 )
 
-type Dynamic struct {
-	Active           bool                 `json:"-"`
-	Id               string               `json:"-"`
-	CancelCtx        context.Context      `json:"-"`
-	CancelFunc       context.CancelFunc   `json:"-"`
-	Backend          backends.Backend     `json:"-"`
-	Options          *opts.DynamicOptions `json:"config"`
-	DynamicService   dynamic.IDynamic
+type Tunnel struct {
+	Active           bool                `json:"-"`
+	Id               string              `json:"-"`
+	CancelCtx        context.Context     `json:"-"`
+	CancelFunc       context.CancelFunc  `json:"-"`
+	Backend          backends.Backend    `json:"-"`
+	Options          *opts.TunnelOptions `json:"config"`
+	TunnelService    tunnel.ITunnel
 	PlumberClusterID string `json:"-"`
 
 	log *logrus.Entry
 }
 
-// StartDynamic will attempt to start the replay tunnel. Upon the start, it will
+// StartTunnel will attempt to start the replay tunnel. Upon the start, it will
 // wait for the given "delay" listening for errors. It will return an error
-// if it encounters any errors on the ErrorChan or if the Dynamic call fails.
+// if it encounters any errors on the ErrorChan or if the Tunnel call fails.
 //
-// Subsequent failures inside of Dynamic() are not handled yet.
-func (d *Dynamic) StartDynamic(delay time.Duration) error {
-	d.log = logrus.WithField("pkg", "types/dynamic")
+// Subsequent failures inside of Tunnel() are not handled yet.
+func (d *Tunnel) StartTunnel(delay time.Duration) error {
+	d.log = logrus.WithField("pkg", "types/tunnel")
 
 	d.log.Debugf("Plumber cluster ID: %s", d.PlumberClusterID)
 
-	// Create a new dynamic connection
-	dynamicSvc, err := dynamic.New(d.Options, d.PlumberClusterID)
+	// Create a new tunnel
+	tunnelSvc, err := tunnel.New(d.Options, d.PlumberClusterID)
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
 
-	d.DynamicService = dynamicSvc
+	d.TunnelService = tunnelSvc
 
 	localErrCh := make(chan *records.ErrorRecord, 1)
 
@@ -55,11 +55,11 @@ func (d *Dynamic) StartDynamic(delay time.Duration) error {
 	d.Options.XActive = true
 
 	go func() {
-		// Blocks until dynamic is closed
-		if err := d.Backend.Dynamic(d.CancelCtx, d.Options, dynamicSvc, localErrCh); err != nil {
-			util.WriteError(d.log, localErrCh, fmt.Errorf("error during dynamic replay (id: %s): %s", d.Id, err))
+		// Blocks until tunnel is closed
+		if err := d.Backend.Tunnel(d.CancelCtx, d.Options, tunnelSvc, localErrCh); err != nil {
+			util.WriteError(d.log, localErrCh, fmt.Errorf("error during tunnel (id: %s): %s", d.Id, err))
 
-			// Cancel any goroutines spawned by Dynamic()
+			// Cancel any goroutines spawned by Tunnel()
 			d.CancelFunc()
 
 			// Give it a sec
@@ -69,7 +69,7 @@ func (d *Dynamic) StartDynamic(delay time.Duration) error {
 			d.Close()
 		}
 
-		d.log.Debugf("goroutine exiting for dynamic_id '%s'", d.Id)
+		d.log.Debugf("goroutine exiting for tunnel_id '%s'", d.Id)
 	}()
 
 	timeAfterCh := time.After(delay)
@@ -77,53 +77,53 @@ func (d *Dynamic) StartDynamic(delay time.Duration) error {
 	// Will block for =< delay
 	select {
 	case <-timeAfterCh:
-		d.log.Debugf("dynamic replay id '%s' success after %s wait", d.Id, delay.String())
+		d.log.Debugf("tunnel id '%s' success after %s wait", d.Id, delay.String())
 		break
 	case err := <-localErrCh:
-		return fmt.Errorf("dynamic startup failed for id '%s': %s", d.Id, err.Error)
+		return fmt.Errorf("tunnel startup failed for id '%s': %s", d.Id, err.Error)
 	}
 
 	return nil
 
 }
 
-func (d *Dynamic) Close() {
+func (d *Tunnel) Close() {
 	// Clean up connection to user's message bus
 	if err := d.Backend.Close(context.Background()); err != nil {
-		d.log.Errorf("error closing dynamic replay backend: %s", err)
+		d.log.Errorf("error closing tunnel backend: %s", err)
 	}
 
 	// Clean up gRPC connection
-	if err := d.DynamicService.Close(); err != nil {
-		d.log.Errorf("error closing dynamic replay gRPC connection: %s", err)
+	if err := d.TunnelService.Close(); err != nil {
+		d.log.Errorf("error closing tunnel gRPC connection: %s", err)
 	}
 
-	// This gets re-set on ResumeDynamic
+	// This gets re-set on ResumeTunnel
 	d.Backend = nil
 }
 
-// MarshalJSON marshals a dynamic replay to JSON
-func (d *Dynamic) MarshalJSON() ([]byte, error) {
+// MarshalJSON marshals a tunnel to JSON
+func (d *Tunnel) MarshalJSON() ([]byte, error) {
 	buf := bytes.NewBuffer([]byte(``))
 
 	m := jsonpb.Marshaler{}
 	if err := m.Marshal(buf, d.Options); err != nil {
-		return nil, errors.Wrap(err, "could not marshal opts.DynamicOptions")
+		return nil, errors.Wrap(err, "could not marshal opts.TunnelOptions")
 	}
 
 	return buf.Bytes(), nil
 }
 
-// UnmarshalJSON unmarshals JSON into a dynamic replay struct
-func (d *Dynamic) UnmarshalJSON(v []byte) error {
-	dynamic := &opts.DynamicOptions{}
-	if err := jsonpb.Unmarshal(bytes.NewBuffer(v), dynamic); err != nil {
-		return errors.Wrap(err, "unable to unmarshal stored dynamic replay")
+// UnmarshalJSON unmarshals JSON into a tunnel struct
+func (d *Tunnel) UnmarshalJSON(v []byte) error {
+	tunnelOpts := &opts.TunnelOptions{}
+	if err := jsonpb.Unmarshal(bytes.NewBuffer(v), tunnelOpts); err != nil {
+		return errors.Wrap(err, "unable to unmarshal stored tunnel")
 	}
 
-	d.Options = dynamic
-	d.Id = dynamic.XDynamicId
-	d.Active = dynamic.XActive
+	d.Options = tunnelOpts
+	d.Id = tunnelOpts.XTunnelId
+	d.Active = tunnelOpts.XActive
 
 	return nil
 }

@@ -26,7 +26,7 @@ import (
 	"github.com/batchcorp/plumber/backends/rabbitmq"
 	"github.com/batchcorp/plumber/backends/rpubsub"
 	"github.com/batchcorp/plumber/backends/rstreams"
-	"github.com/batchcorp/plumber/dynamic"
+	"github.com/batchcorp/plumber/tunnel"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
@@ -60,9 +60,9 @@ type Backend interface {
 	// put/get sample data).
 	Test(ctx context.Context) error
 
-	// Dynamic enables plumber to become a "dynamic replay destination".
-	// This is a blocking call.
-	Dynamic(ctx context.Context, dynamicOpts *opts.DynamicOptions, dynamicSvc dynamic.IDynamic, errorCh chan<- *records.ErrorRecord) error
+	// Tunnel creates a tunnel to Batch and exposes the connected backend as a
+	// destination. This is a blocking call.
+	Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOptions, tunnelSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error
 
 	// Relay will hook into a message bus as a consumer and relay all messages
 	// to the relayCh; if an error channel is provided, any errors will be piped

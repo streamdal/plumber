@@ -179,24 +179,24 @@ func (s *Server) DeleteConnection(ctx context.Context, req *protos.DeleteConnect
 		return nil, CustomError(common.Code_NOT_FOUND, "no such connection id")
 	}
 
-	// Ensure this connection isn't being used by any dynamic replays
-	s.PersistentConfig.DynamicReplaysMutex.RLock()
-	for id, dynamicReplay := range s.PersistentConfig.Dynamic {
-		if dynamicReplay.Options.ConnectionId == id {
-			s.PersistentConfig.DynamicReplaysMutex.RUnlock()
-			return nil, fmt.Errorf("cannot delete connection '%s' because it is in use by dynamic replay '%s'",
-				id, dynamicReplay.Options.XDynamicId)
+	// Ensure this connection isn't being used by any tunnels
+	s.PersistentConfig.TunnelsMutex.RLock()
+	for id, tunnel := range s.PersistentConfig.Tunnels {
+		if tunnel.Options.ConnectionId == id {
+			s.PersistentConfig.TunnelsMutex.RUnlock()
+			return nil, fmt.Errorf("cannot delete connection '%s' because it is in use by tunnel '%s'",
+				id, tunnel.Options.XTunnelId)
 		}
 	}
-	s.PersistentConfig.DynamicReplaysMutex.RUnlock()
+	s.PersistentConfig.TunnelsMutex.RUnlock()
 
 	// Ensure this connection isn't being used by any relays
 	s.PersistentConfig.RelaysMutex.RLock()
-	for id, dynamicReplay := range s.PersistentConfig.Relays {
-		if dynamicReplay.Options.ConnectionId == id {
+	for id, relay := range s.PersistentConfig.Relays {
+		if relay.Options.ConnectionId == id {
 			s.PersistentConfig.RelaysMutex.RUnlock()
 			return nil, fmt.Errorf("cannot delete connection '%s' because it is in use by relay '%s'",
-				id, dynamicReplay.Options.XRelayId)
+				id, relay.Options.XRelayId)
 		}
 	}
 	s.PersistentConfig.RelaysMutex.RUnlock()

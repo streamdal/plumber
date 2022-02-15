@@ -77,8 +77,8 @@ func ConnectionOptionsForServer(connOptions *opts.ConnectionOptions) error {
 	return nil
 }
 
-func DynamicOptionsForServer(dynamicOptions *opts.DynamicOptions) error {
-	// TODO: Implement specific dynamic validations
+func TunnelOptionsForServer(tunnelOptions *opts.TunnelOptions) error {
+	// TODO: Implement specific tunnel validations
 
 	return nil
 }

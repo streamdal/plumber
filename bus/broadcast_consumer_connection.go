@@ -53,25 +53,24 @@ func (b *Bus) doUpdateConnection(_ context.Context, msg *Message) error {
 }
 
 func (b *Bus) doDeleteConnection(ctx context.Context, msg *Message) error {
-	b.config.PersistentConfig.DynamicReplaysMutex.RLock()
-	defer b.config.PersistentConfig.DynamicReplaysMutex.RUnlock()
+	b.config.PersistentConfig.TunnelsMutex.RLock()
+	defer b.config.PersistentConfig.TunnelsMutex.RUnlock()
 	b.config.PersistentConfig.RelaysMutex.RLock()
 	defer b.config.PersistentConfig.RelaysMutex.RUnlock()
 
-	// Ensure this connection isn't being used by any dynamic replays
-	for id, dynamicReplay := range b.config.PersistentConfig.Dynamic {
-		if dynamicReplay.Options.ConnectionId == id {
-			return fmt.Errorf("cannot delete connection '%s' because it is in use by dynamic replay '%s'",
-				id, dynamicReplay.Options.XDynamicId)
+	// Ensure this connection isn't being used by any tunnels
+	for id, tunnel := range b.config.PersistentConfig.Tunnels {
+		if tunnel.Options.ConnectionId == id {
+			return fmt.Errorf("cannot delete connection '%s' because it is in use by tunnel '%s'",
+				id, tunnel.Options.XTunnelId)
 		}
 	}
 
 	// Ensure this connection isn't being used by any relays
-
-	for id, dynamicReplay := range b.config.PersistentConfig.Relays {
-		if dynamicReplay.Options.ConnectionId == id {
+	for id, relay := range b.config.PersistentConfig.Relays {
+		if relay.Options.ConnectionId == id {
 			return fmt.Errorf("cannot delete connection '%s' because it is in use by relay '%s'",
-				id, dynamicReplay.Options.XRelayId)
+				id, relay.Options.XRelayId)
 		}
 	}
 
@@ -91,27 +90,7 @@ func (b *Bus) doDeleteConnection(ctx context.Context, msg *Message) error {
 		return fmt.Errorf("connection id '%s' does not exist", connOpts.XId)
 	}
 
-	// Stop any relays that use this connection
-	//for relayID, relayCfg := range b.config.PersistentConfig.Relays {
-	//	if relayCfg.Options.ConnectionId == connOpts.XId {
-	//		b.log.Infof("attempting to delete relay '%s' that uses connection '%s'", relayID, connOpts.XId)
-	//
-	//		if _, err := b.config.Actions.DeleteRelay(ctx, relayID); err != nil {
-	//			return errors.Wrapf(err, "unable to delete relay '%s'; troubleshoot and perform manual deletes", relayID)
-	//		}
-	//	}
-	//}
-	//
-	//// Stop any dynamic that use this connection
-	//for dynamicID, dynamicCfg := range b.config.PersistentConfig.Dynamic {
-	//	if dynamicCfg.Options.ConnectionId == connOpts.XId {
-	//		b.log.Infof("attempting to delete dynamic '%s' that uses connection '%s'", dynamicID, connOpts.XId)
-	//
-	//		if err := b.config.Actions.DeleteDynamic(ctx, dynamicID); err != nil {
-	//			return errors.Wrapf(err, "unable to delete dynamic '%s'; troubleshoot and perform manual deletes", dynamicID)
-	//		}
-	//	}
-	//}
+	// TODO: Verify that the connection is not used by anything - if it is, return an error
 
 	// Delete connection from config
 	b.config.PersistentConfig.DeleteConnection(connOpts.XId)
