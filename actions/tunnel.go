@@ -142,6 +142,17 @@ func (a *Actions) UpdateTunnel(ctx context.Context, tunnelID string, tunnelOpts 
 		return nil, errors.New("tunnel does not exist")
 	}
 
+	if d.Active {
+		// Close existing tunnel
+		d.CancelFunc()
+		d.Active = false
+		d.Options.XActive = false
+		d.Close()
+
+		// Give it a sec to close out connections and goroutines
+		time.Sleep(time.Second)
+	}
+
 	d.Options = tunnelOpts
 
 	// New contexts
@@ -161,12 +172,14 @@ func (a *Actions) UpdateTunnel(ctx context.Context, tunnelID string, tunnelOpts 
 	}
 	d.Backend = be
 
-	if err := d.StartTunnel(5 * time.Second); err != nil {
-		return nil, errors.Wrap(err, "unable to start tunnel")
-	}
+	if tunnelOpts.XActive == true {
+		if err := d.StartTunnel(5 * time.Second); err != nil {
+			return nil, errors.Wrap(err, "unable to start tunnel")
+		}
 
-	d.Active = true
-	d.Options.XActive = true
+		d.Active = true
+		d.Options.XActive = true
+	}
 
 	// Update in-memory config
 	a.cfg.PersistentConfig.SetTunnel(tunnelID, d)

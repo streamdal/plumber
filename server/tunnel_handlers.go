@@ -107,9 +107,22 @@ func (s *Server) UpdateTunnel(ctx context.Context, req *protos.UpdateTunnelReque
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
+	currentTunnel := s.PersistentConfig.GetTunnel(req.TunnelId)
+	if currentTunnel.Active {
+		// Publish StopTunnel event
+		if err := s.Bus.PublishStopTunnel(ctx, currentTunnel.Options); err != nil {
+			return nil, fmt.Errorf("unable to publish stop tunnel event: %s", err)
+		}
+	}
+
 	if _, err := s.Actions.UpdateTunnel(ctx, req.TunnelId, req.Opts); err != nil {
 		// No need to roll back here since we haven't updated anything yet
 		return nil, CustomError(common.Code_ABORTED, err.Error())
+	}
+
+	if err := s.Bus.PublishUpdateTunnel(ctx, req.Opts); err != nil {
+		// TODO: Should have rollback
+		return nil, fmt.Errorf("unable to publish update tunnel event: %s", err)
 	}
 
 	s.Log.Infof("Tunnel '%s' updated", req.TunnelId)
@@ -134,7 +147,7 @@ func (s *Server) StopTunnel(ctx context.Context, req *protos.StopTunnelRequest) 
 		return nil, CustomError(common.Code_ABORTED, err.Error())
 	}
 
-	// Publish CreateTunnel event
+	// Publish StopTunnel event
 	if err := s.Bus.PublishStopTunnel(ctx, tunnelOptions.Options); err != nil {
 		// TODO: Should have rollback
 		s.Log.Errorf("unable to publish stop tunnel event: %s", err)
