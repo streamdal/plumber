@@ -9,6 +9,8 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: '^1.15.4' # The Go version to download (if necessary) and use.
+      - name: NATS data directory
+        run: mkdir -p ./data/jetstream/jetstream
       - name: Start up dependencies
         run: docker-compose up -d
       - name: Wait for dependencies to start up
