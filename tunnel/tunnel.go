@@ -244,7 +244,7 @@ func (d *Client) connect(ctx context.Context, bus string) (services.DProxy_Conne
 				MessageBus:       bus,
 				PlumberClusterId: d.PlumberClusterID,
 				Name:             d.Options.Name,
-				DynamicId:        d.Options.XDynamicId,
+				TunnelId:         d.Options.XTunnelId,
 			},
 		},
 	}
