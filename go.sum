@@ -119,6 +119,8 @@ github.com/batchcorp/collector-schemas v0.0.12 h1:IfSPmdQBy5oi++wZt0DOi7+8U1f4lz
 github.com/batchcorp/collector-schemas v0.0.12/go.mod h1:qSVA1UcrApoLX2mS4cj+aH+IvNwcSfm50vWa0UAN/WU=
 github.com/batchcorp/collector-schemas v0.0.13 h1:zgQ969GJd0qmMz5jYW00b4NWlrnnSYmPskohBooXV6Q=
 github.com/batchcorp/collector-schemas v0.0.13/go.mod h1:qSVA1UcrApoLX2mS4cj+aH+IvNwcSfm50vWa0UAN/WU=
+github.com/batchcorp/collector-schemas v0.0.14 h1:gZILTtA/BzKC03O0obZ0IKnGpTc30cqoY/qr3RDlcGM=
+github.com/batchcorp/collector-schemas v0.0.14/go.mod h1:qSVA1UcrApoLX2mS4cj+aH+IvNwcSfm50vWa0UAN/WU=
 github.com/batchcorp/collector-schemas v0.0.15-0.20220214213641-2bc4e352a9f8 h1:sygehwst1M1+5hNsqoYcDe+hXm3WCP6xQg7uPhdgmJo=
 github.com/batchcorp/collector-schemas v0.0.15-0.20220214213641-2bc4e352a9f8/go.mod h1:qSVA1UcrApoLX2mS4cj+aH+IvNwcSfm50vWa0UAN/WU=
 github.com/batchcorp/kong v0.2.17-batch-fix h1:H6sOfst2NcL2T/EZVNLukG7YRimJDHg9DhbRq7gE+KQ=
