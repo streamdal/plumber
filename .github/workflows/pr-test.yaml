@@ -16,7 +16,7 @@ jobs:
         with:
           time: '30s'
       - name: NATS data directory
-        - chmod -R 755 ./data/jetstream/jetstream
+        run: chmod -R 755 ./data/jetstream/jetstream
       - name: Test
         run: |
           make test
