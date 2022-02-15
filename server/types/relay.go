@@ -44,7 +44,7 @@ func (r *Relay) StartRelay(delay time.Duration) error {
 	relayCfg := &relay.Config{
 		Token:              r.Options.CollectionToken,
 		GRPCAddress:        r.Options.XBatchshGrpcAddress,
-		NumWorkers:         5,
+		NumWorkers:         r.Options.NumWorkers,
 		Timeout:            util.DurationSec(r.Options.XBatchshGrpcTimeoutSeconds),
 		RelayCh:            relayCh,
 		DisableTLS:         r.Options.XBatchshGrpcDisableTls,
