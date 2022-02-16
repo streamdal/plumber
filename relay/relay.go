@@ -89,6 +89,7 @@ type Config struct {
 	Type               string
 	ServiceShutdownCtx context.Context
 	MainShutdownFunc   context.CancelFunc
+	MainShutdownCtx    context.Context
 }
 
 // New creates a new instance of the Relay

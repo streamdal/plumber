@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/batchcorp/plumber/actions"
-	"github.com/batchcorp/plumber/bus"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/mcuadros/go-lookup"
 	"github.com/pkg/errors"
@@ -16,6 +14,8 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
+	"github.com/batchcorp/plumber/actions"
+	"github.com/batchcorp/plumber/bus"
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/printer"
@@ -37,6 +37,8 @@ type Config struct {
 	PersistentConfig   *config.Config
 	Actions            *actions.Actions
 	ServiceShutdownCtx context.Context
+	MainShutdownFunc   context.CancelFunc
+	MainShutdownCtx    context.Context
 	CLIOptions         *opts.CLIOptions
 	KongCtx            *kong.Context
 }

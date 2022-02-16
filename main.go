@@ -9,8 +9,6 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/batchcorp/plumber/config"
-	"github.com/batchcorp/plumber/kv"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/ssh/terminal"
@@ -18,6 +16,8 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/actions"
+	"github.com/batchcorp/plumber/config"
+	"github.com/batchcorp/plumber/kv"
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/plumber"
 	"github.com/batchcorp/plumber/printer"
@@ -41,6 +41,7 @@ func main() {
 	}
 
 	serviceCtx, serviceShutdownFunc := context.WithCancel(context.Background())
+	mainShutdownCtx, mainShutdownFunc := context.WithCancel(context.Background())
 
 	var k kv.IKV
 
@@ -108,6 +109,8 @@ func main() {
 		KongCtx:            kongCtx,
 		CLIOptions:         cliOpts,
 		Actions:            a,
+		MainShutdownFunc:   mainShutdownFunc,
+		MainShutdownCtx:    mainShutdownCtx,
 	})
 
 	if err != nil {
