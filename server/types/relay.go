@@ -39,7 +39,7 @@ func (r *Relay) StartRelay(delay time.Duration) error {
 	localErrCh := make(chan *records.ErrorRecord, 1)
 
 	// Needed to satisfy relay.Options{}, not used
-	_, stubCancelFunc := context.WithCancel(context.Background())
+	stubMainCtx, stubCancelFunc := context.WithCancel(context.Background())
 
 	relayCfg := &relay.Config{
 		Token:              r.Options.CollectionToken,
@@ -50,8 +50,9 @@ func (r *Relay) StartRelay(delay time.Duration) error {
 		DisableTLS:         r.Options.XBatchshGrpcDisableTls,
 		BatchSize:          r.Options.BatchSize,
 		Type:               r.Backend.Name(),
-		MainShutdownFunc:   stubCancelFunc,
 		ServiceShutdownCtx: r.CancelCtx,
+		MainShutdownCtx:    stubMainCtx,    // Needed to satisfy relay.Options{}, not used in server mode
+		MainShutdownFunc:   stubCancelFunc, // Needed to satisfy relay.Options{}, not used in server mode
 	}
 
 	grpcRelayer, err := relay.New(relayCfg)

@@ -27,10 +27,19 @@ func (p *Plumber) HandleRelayCmd() error {
 		return errors.Wrap(err, "unable to start relay service")
 	}
 
+	// Log message prints ID on exit
+	p.CLIOptions.Relay.XRelayId = "CLI"
+
 	// Blocks until ctx is cancelled
 	if err := backend.Relay(p.ServiceShutdownCtx, p.CLIOptions.Relay, p.RelayCh, nil); err != nil {
+		// Shut down workers properly
+		p.ServiceShutdownCtx.Done()
+
 		return errors.Wrap(err, "unable to start relay backend")
 	}
+
+	// Block here to wait until all relay workers have shut down
+	<-p.MainShutdownCtx.Done()
 
 	p.log.Info("relay exiting")
 
@@ -49,6 +58,8 @@ func (p *Plumber) startRelayService() error {
 		BatchSize:          p.CLIOptions.Relay.BatchSize,
 		Type:               p.CLIOptions.Global.XBackend,
 		ServiceShutdownCtx: p.ServiceShutdownCtx,
+		MainShutdownFunc:   p.MainShutdownFunc,
+		MainShutdownCtx:    p.MainShutdownCtx,
 	}
 
 	grpcRelayer, err := relay.New(relayCfg)
