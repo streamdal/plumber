@@ -9,6 +9,7 @@
        * [Azure Event Hub](#azure-event-hub)
        * [NATS](#nats)
        * [NATS Streaming](#nats-streaming)
+       * [NATS JetStream](#nats-jetstream)
        * [Redis PubSub](#redis-pubsub)
        * [Redis Streams](#redis-streams)
        * [GCP Pub/Sub](#gcp-pubsub)
@@ -28,6 +29,7 @@
        * [Azure Event Hub](#azure-event-hub-1)
        * [NATS](#nats-1)
        * [NATS Streaming](#nats-streaming-1)
+       * [NATS JetStream](#nats-jetstream-1)
        * [Redis PubSub](#redis-pubsub-1)
        * [Redis Streams](#redis-streams-1)
        * [GCP Pub/Sub](#gcp-pubsub-1)
@@ -44,6 +46,7 @@
        * [Continuously relay messages for multiple Redis streams to a Batch.sh collection](#continuously-relay-messages-from-multiple-redis-streams-to-a-batchsh-collection)
        * [Continuously relay messages from a Kafka topic (on Confluent) to a Batch.sh collection (via CLI)](#continuously-relay-messages-from-a-kafka-topic-on-confluent-to-a-batchsh-collection-via-cli)
        * [Continuously relay messages from a MQTT topic to a Batch.sh collection](#continuously-relay-messages-from-a-mqtt-topic-to-a-batchsh-collection)
+       * [Continuously relay messages from a NATS JetStream stream to a Batch.sh collection](#continuously-relay-messages-from-a-nats-jetstream-stream-to-a-batchsh-collection)
   * [Change Data Capture](#change-data-capture)
        * [Continuously relay Postgres change events to a Batch.sh collection](#continuously-relay-postgres-change-events-to-a-batchsh-collection)
        * [Continuously relay MongoDB change stream events to a Batch.sh collection](#continuously-relay-mongodb-change-stream-events-to-a-batchsh-collection)
@@ -164,6 +167,12 @@ plumber read nats --address="nats://user:pass@nats.test.io:4222" --subject "test
 
 ```bash
 plumber read nats-streaming --address="nats://user:pass@nats.test.io:4222" --channel "orders" --cluster-id "test-cluster" --client-id "plumber"
+```
+
+##### NATS JetStream
+
+```bash
+plumber read nats-jetstream --dsn="nats://user:pass@nats.test.io:4222" --stream "orders.>" --client-id "plumber"
 ```
 
 ##### Redis PubSub
@@ -325,6 +334,12 @@ plumber write nats --address="nats://user:pass@nats.test.io:4222" --subject "tes
 plumber write nats-streaming --address="nats://user:pass@nats.test.io:4222" --channel "orders" --cluster-id "test-cluster" --client-id "plumber-producer" --input "{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
+##### NATS JetStream
+
+```bash
+plumber read nats-jetstream --dsn="nats://user:pass@nats.test.io:4222" --stream "orders.>" --input="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+```
+
 ##### Redis PubSub
 
 ```bash
@@ -454,6 +469,17 @@ docker run -d --name plumber-mqtt -p 8080:8080 \
     -e PLUMBER_RELAY_MQTT_ADDRESS=tcp://localhost:1883 \
     -e PLUMBER_RELAY_MQTT_TOPIC=iotdata \
     -e PLUMBER_RELAY_MQTT_QOS=1 \
+    -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
+    batchcorp/plumber:local mqtt
+```
+
+##### Continuously relay messages from a NATS JetStream stream to a Batch.sh collection
+
+```bash
+docker run -d --name plumber-natsjs -p 8080:8080 \
+    -e PLUMBER_RELAY_NATS_JETSTREAM_DSN=nats://localhost:4222 \
+    -e PLUMBER_RELAY_NATS_JETSTREAM_CLIENT_ID=plumber \
+    -e PLUMBER_RELAY_NATS_JETSTREAM_STREAM=orders \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
     batchcorp/plumber:local mqtt
 ```
