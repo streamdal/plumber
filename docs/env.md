@@ -30,7 +30,7 @@
 
 ## Backends
 
-### Aws_sns
+### AQS SNS
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
@@ -38,7 +38,7 @@
 | AWS_ACCESS_KEY_ID |  |  | **true** |
 | AWS_SECRET_ACCESS_KEY |  |  | **true** |
 
-### Aws_sqs
+### AWS SQS
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
@@ -52,13 +52,13 @@
 | PLUMBER_RELAY_SQS_AUTO_DELETE | Auto-delete read/received message(s) |  | false |
 | PLUMBER_RELAY_SQS_WAIT_TIME_SECONDS | Number of seconds to wait for messages (not used when using --continuous) | 5 | false |
 
-### Azure_event_hub
+### Azure Event Hub
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
 | EVENTHUB_CONNECTION_STRING | Connection string |  | **true** |
 
-### Azure_service_bus
+### Azure Service Bus
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
@@ -67,7 +67,7 @@
 | PLUMBER_RELAY_AZURE_TOPIC_NAME | Topic name |  | **true** |
 | PLUMBER_RELAY_AZURE_SUBSCRIPTION | Subscription name |  | **true** |
 
-### Gcp_pubsub
+### Google Cloud PubSub
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
@@ -99,7 +99,7 @@
 | PLUMBER_RELAY_KAFKA_REBALANCE_TIMEOUT | How long a coordinator will wait for member joins as part of a rebalance | 5 | false |
 | PLUMBER_RELAY_KAFKA_QUEUE_CAPACITY | Internal library queue capacity (throughput optimization) | 1000 | false |
 
-### Kubemq_queue
+### KubeMQ Queue
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
@@ -133,14 +133,48 @@
 | PLUMBER_RELAY_MQTT_TOPIC | Topic to read message(s) from |  | **true** |
 | PLUMBER_RELAY_MQTT_READ_TIMEOUT_SECONDS | How long to attempt to read message(s) | 0 | false |
 
-### Nats_streaming
+### NATS
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
-| PLUMBER_RELAY_NATS_STREAMING_TLS_CA_CERT | CA file (only needed if addr is tls:// |  | false |
-| PLUMBER_RELAY_NATS_STREAMING_TLS_CLIENT_CERT | Client cert file (only needed if addr is tls:// |  | false |
-| PLUMBER_RELAY_NATS_STREAMING_TLS_CLIENT_KEY | Client key file (only needed if addr is tls:// |  | false |
+| PLUMBER_RELAY_NATS_DSN | Dial string for NATS server (Ex: nats://localhost:4222) | nats://localhost:4222 | **true** |
+| PLUMBER_RELAY_NATS_CREDENTIALS | Contents of NATS .creds file to authenticate with |  | false |
+| PLUMBER_RELAY_NATS_SUBJECT | Subject to read from. Ex: foo.bar.* |  | false |
+| PLUMBER_RELAY_NATS_USE_TLS | Force TLS connection. (Ignored if DSN begins with "tls://") | false | false |
+| PLUMBER_RELAY_NATS_TLS_CA_CERT | CA file (only used for TLS connections) |  | false |
+| PLUMBER_RELAY_NATS_TLS_CLIENT_CERT | Client cert file (only used for TLS connections) |  | false |
+| PLUMBER_RELAY_NATS_TLS_CLIENT_KEY | Client key file (only used for TLS connections) |  | false |
+
+### NATS Streaming
+
+| **Environment Variable** | **Description** | **Default** | **Required** |
+| ------------------------ | --------------- | ----------- | ------------ |
+| PLUMBER_RELAY_NATS_STREAMING_DSN | Dial string for NATS server (Ex: nats://localhost:4222) | nats://localhost:4222 | **true** |
+| PLUMBER_RELAY_NATS_STREAMING_CLUSTER_ID | Cluster ID | Cluster ID of the Nats server  | **true** |
+| PLUMBER_RELAY_NATS_STREAMING_CHANNEL | Channel name | Channel name to subscribe to | **true** |
+| PLUMBER_RELAY_NATS_STREAMING_DURABLE_SUBSCRIPTION_NAME | Create a durable subscription with this name for the given channel |  | false |
+| PLUMBER_RELAY_NATS_STREAMING_USE_TLS | Force TLS connection. (Ignored if DSN begins with "tls://") | false | false |
+| PLUMBER_RELAY_NATS_STREAMING_TLS_CA_CERT | CA file (only used for TLS connections) |  | false |
+| PLUMBER_RELAY_NATS_STREAMING_TLS_CLIENT_CERT | Client cert file (only used for TLS connections) |  | false |
+| PLUMBER_RELAY_NATS_STREAMING_TLS_CLIENT_KEY | Client key file (only used for TLS connections) |  | false |
 | PLUMBER_RELAY_NATS_STREAMING_SKIP_VERIFY_TLS | Whether to verify server certificate |  | false |
+| PLUMBER_RELAY_NATS_STREAMING_READ_LAST | Deliver starting with last published message | false | false |
+| PLUMBER_RELAY_NATS_STREAMING_READ_SEQUENCE | Deliver messages starting at this sequence number | 0 | false |
+| PLUMBER_RELAY_NATS_STREAMING_READ_SINCE | Deliver messages in last interval (e.g. 1s, 1h) | | false |
+| PLUMBER_RELAY_NATS_STREAMING_READ_ALL | Deliver all available messages | false | false |
+
+### NATS JetStream
+
+| **Environment Variable** | **Description** | **Default** | **Required** |
+| ------------------------ | --------------- | ----------- | ------------ |
+| PLUMBER_RELAY_NATS_JETSTREAM_DSN | Dial string for NATS server (Ex: nats://localhost:4222) | nats://localhost:4222 | **true** |
+| PLUMBER_RELAY_NATS_JETSTREAM_CLIENT_ID | User specified client ID to connect with | plumber | false |
+| PLUMBER_RELAY_NATS_JETSTREAM_STREAM | Stream name to read from |  | **true** |
+| PLUMBER_RELAY_NATS_JETSTREAM_USE_TLS | Force TLS connection. (Ignored if DSN begins with "tls://") | false | false |
+| PLUMBER_RELAY_NATS_JETSTREAM_TLS_CA_CERT | CA file (only used for TLS connections) |  | false |
+| PLUMBER_RELAY_NATS_JETSTREAM_TLS_CLIENT_CERT | Client cert file (only used for TLS connections) |  | false |
+| PLUMBER_RELAY_NATS_JETSTREAM_TLS_CLIENT_KEY | Client key file (only used for TLS connections) |  | false |
+| PLUMBER_RELAY_NATS_JETSTREAM_SKIP_VERIFY_TLS | Whether to verify server certificate (only needed using TLS) |  | false |
 
 ### Nsq
 
@@ -189,7 +223,7 @@
 | PLUMBER_RELAY_CONSUMER_TAG | How to identify the consumer to RabbitMQ | plumber | false |
 | PLUMBER_RELAY_RABBIT_QUEUE_AUTO_DELETE | Whether to auto-delete the queue after plumber has disconnected | true | false |
 
-### Redis_pubsub
+### Redis PubSub
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
@@ -199,7 +233,7 @@
 | PLUMBER_RELAY_REDIS_PUBSUB_DATABASE | Database (0-16) |  | false |
 | PLUMBER_RELAY_REDIS_PUBSUB_CHANNELS | Comma separated list of channels to read from |  | **true** |
 
-### Redis_streams
+### Redis Streams
 
 | **Environment Variable** | **Description** | **Default** | **Required** |
 | ------------------------ | --------------- | ----------- | ------------ |
