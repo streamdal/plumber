@@ -73,7 +73,7 @@ func newClient(opts *args.NatsConn) (*nats.Conn, error) {
 		creds = nats.UserCredentials(string(opts.UserCredentials))
 	}
 
-	if uri.Scheme != "tls" {
+	if uri.Scheme != "tls" || opts.TlsOptions.UseTls {
 		// Insecure connection
 		c, err := nats.Connect(opts.Dsn, creds)
 		if err != nil {

@@ -64,7 +64,7 @@ func New(connOpts *opts.ConnectionOptions) (*NatsJetstream, error) {
 	}
 
 	var client *nats.Conn
-	if uri.Scheme == "tls" {
+	if uri.Scheme == "tls" || args.TlsOptions.UseTls {
 		// TLS Secured connection
 		tlsConfig, err := generateTLSConfig(args)
 		if err != nil {
