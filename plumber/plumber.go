@@ -145,6 +145,8 @@ func (p *Plumber) Run() {
 	case "tunnel":
 		logrus.Fatal("tunnel mode not implemented")
 		//err = p.HandleTunnelCmd()
+	case "manage":
+		err = p.HandleManageCmd()
 	default:
 		logrus.Fatalf("unrecognized command: %s", p.CLIOptions.Global.XAction)
 	}
