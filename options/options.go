@@ -181,6 +181,7 @@ func NewCLIOptions() *opts.CLIOptions {
 		Relay:  newRelayOptions(),
 		Tunnel: newTunnelOptions(),
 		Batch:  newBatchOptions(),
+		Manage: newManageOptions(),
 	}
 }
 
@@ -626,6 +627,140 @@ func newBatchOptions() *opts.BatchOptions {
 		Search: &opts.BatchSearchOptions{},
 		Archive: &opts.BatchArchiveOptions{
 			Replay: &opts.BatchArchiveReplayOptions{},
+		},
+	}
+}
+
+func newManageOptions() *opts.ManageOptions {
+	return &opts.ManageOptions{
+		GlobalOptions: &opts.GlobalManageOptions{},
+		Get: &opts.GetOptions{
+			Connection: &opts.GetConnectionOptions{},
+			Relay:      &opts.GetRelayOptions{},
+			Tunnel:     &opts.GetTunnelOptions{},
+		},
+		Create: &opts.CreateOptions{
+			Connection: &opts.CreateConnectionOptions{
+				Kafka: &args.KafkaConn{
+					Address: make([]string, 0),
+				},
+				ActiveMq: &args.ActiveMQConn{},
+				AwsSqs:   &args.AWSSQSConn{},
+				AwsSns:   &args.AWSSNSConn{},
+				Mongo:    &args.MongoConn{},
+				Nats: &args.NatsConn{
+					UserCredentials: make([]byte, 0),
+					TlsOptions: &args.NatsTLSOptions{
+						TlsCaCert:     make([]byte, 0),
+						TlsClientCert: make([]byte, 0),
+						TlsClientKey:  make([]byte, 0),
+					},
+				},
+				NatsStreaming: &args.NatsStreamingConn{
+					UserCredentials: make([]byte, 0),
+					TlsOptions: &args.NatsStreamingTLSOptions{
+						TlsCaCert:     make([]byte, 0),
+						TlsClientCert: make([]byte, 0),
+						TlsClientKey:  make([]byte, 0),
+					},
+				},
+				NatsJetstream: &args.NatsJetstreamConn{
+					UserCredentials: make([]byte, 0),
+					TlsOptions: &args.NatsJetstreamTLSOptions{
+						TlsCaCert:     make([]byte, 0),
+						TlsClientCert: make([]byte, 0),
+						TlsClientKey:  make([]byte, 0),
+					},
+				},
+				Nsq: &args.NSQConn{
+					TlsCaCert:     make([]byte, 0),
+					TlsClientCert: make([]byte, 0),
+					TlsClientKey:  make([]byte, 0),
+				},
+				Postgres: &args.PostgresConn{},
+				Pulsar: &args.PulsarConn{
+					TlsClientCert: make([]byte, 0),
+					TlsClientKey:  make([]byte, 0),
+				},
+				Rabbit:          &args.RabbitConn{},
+				RabbitStreams:   &args.RabbitStreamsConn{},
+				RedisPubsub:     &args.RedisPubSubConn{},
+				RedisStreams:    &args.RedisStreamsConn{},
+				AzureEventHub:   &args.AzureEventHubConn{},
+				AzureServiceBus: &args.AzureServiceBusConn{},
+				Mqtt: &args.MQTTConn{
+					TlsOptions: &args.MQTTTLSOptions{},
+				},
+				KubemqQueue: &args.KubeMQQueueConn{},
+				GcpPubsub:   &args.GCPPubSubConn{},
+				AwsKinesis:  &args.AWSKinesisConn{},
+			},
+			Relay: &opts.CreateRelayOptions{
+				Kafka: &args.KafkaRelayArgs{
+					Topics: make([]string, 0),
+				},
+				AwsSqs:          &args.AWSSQSRelayArgs{},
+				Mongo:           &args.MongoReadArgs{},
+				Nsq:             &args.NSQReadArgs{},
+				Rabbit:          &args.RabbitReadArgs{},
+				Mqtt:            &args.MQTTReadArgs{},
+				AzureServiceBus: &args.AzureServiceBusReadArgs{},
+				GcpPubsub:       &args.GCPPubSubReadArgs{},
+				KubemqQueue:     &args.KubeMQQueueReadArgs{},
+				RedisPubsub: &args.RedisPubSubReadArgs{
+					Channels: make([]string, 0),
+				},
+				RedisStreams: &args.RedisStreamsReadArgs{
+					Streams:              make([]string, 0),
+					CreateConsumerConfig: &args.CreateConsumerConfig{},
+				},
+				Postgres:      &args.PostgresReadArgs{},
+				Nats:          &args.NatsReadArgs{},
+				NatsStreaming: &args.NatsStreamingReadArgs{},
+				NatsJetstream: &args.NatsJetstreamReadArgs{},
+			},
+			Tunnel: &opts.CreateTunnelOptions{
+				Kafka: &args.KafkaWriteArgs{
+					Topics: make([]string, 0),
+				},
+				Activemq: &args.ActiveMQWriteArgs{},
+				AwsSqs: &args.AWSSQSWriteArgs{
+					Attributes: make(map[string]string, 0),
+				},
+				AwsSns:          &args.AWSSNSWriteArgs{},
+				Nats:            &args.NatsWriteArgs{},
+				NatsStreaming:   &args.NatsStreamingWriteArgs{},
+				Nsq:             &args.NSQWriteArgs{},
+				Rabbit:          &args.RabbitWriteArgs{},
+				Mqtt:            &args.MQTTWriteArgs{},
+				AzureServiceBus: &args.AzureServiceBusWriteArgs{},
+				AzureEventHub:   &args.AzureEventHubWriteArgs{},
+				GcpPubsub:       &args.GCPPubSubWriteArgs{},
+				KubemqQueue:     &args.KubeMQQueueWriteArgs{},
+				RedisPubsub: &args.RedisPubSubWriteArgs{
+					Channels: make([]string, 0),
+				},
+				RedisStreams: &args.RedisStreamsWriteArgs{
+					Streams: make([]string, 0),
+				},
+				Pulsar:        &args.PulsarWriteArgs{},
+				RabbitStreams: &args.RabbitStreamsWriteArgs{},
+				NatsJetstream: &args.NatsJetstreamWriteArgs{},
+				AwsKinesis:    &args.AWSKinesisWriteArgs{},
+			},
+		},
+		Delete: &opts.DeleteOptions{
+			Connection: &opts.DeleteConnectionOptions{},
+			Relay:      &opts.DeleteRelayOptions{},
+			Tunnel:     &opts.DeleteTunnelOptions{},
+		},
+		Stop: &opts.StopOptions{
+			Relay:  &opts.StopRelayOptions{},
+			Tunnel: &opts.StopTunnelOptions{},
+		},
+		Resume: &opts.ResumeOptions{
+			Relay:  &opts.ResumeRelayOptions{},
+			Tunnel: &opts.ResumeTunnelOptions{},
 		},
 	}
 }
