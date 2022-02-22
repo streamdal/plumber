@@ -89,6 +89,7 @@ func New(cfg *Config) (*Plumber, error) {
 
 // generateConnectionOptions generates a connection config from passed in CLI
 // options. This function is used by plumber in CLI mode.
+// TODO: This needs to be updated to support "manage create"
 func generateConnectionOptions(cfg *opts.CLIOptions) (*opts.ConnectionOptions, error) {
 	if cfg == nil {
 		return nil, errors.New("cli options config cannot be nil")

@@ -1,9 +1,16 @@
 package plumber
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/golang/protobuf/jsonpb"
+	"github.com/golang/protobuf/proto"
+	"github.com/hokaccha/go-prettyjson"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )
@@ -17,15 +24,19 @@ func (p *Plumber) HandleManageCmd() error {
 	var opts []grpc.DialOption
 
 	if p.CLIOptions.Manage.GlobalOptions.ServerUseTls {
-		if p.CLIOptions.Manage.GlobalOptions.ServerInsecureTls {
-			opts = append(opts, grpc.WithInsecure())
-		}
+		// TODO: Need to be able to set certs + double check insecure skip verify
+	} else {
+		// grpc.WithInsecure() is a required opt to disable use of TLS
+		opts = append(opts, grpc.WithInsecure())
 	}
 
 	conn, err := grpc.Dial(p.CLIOptions.Manage.GlobalOptions.ServerAddress, opts...)
 	if err != nil {
 		return errors.Wrap(err, "failed to dial gRPC server")
 	}
+
+	// TODO: Should allow timeout to be specified via CLI
+	ctx, _ := context.WithTimeout(context.Background(), time.Second*5)
 
 	client := protos.NewPlumberServerClient(conn)
 
@@ -35,50 +46,50 @@ func (p *Plumber) HandleManageCmd() error {
 	// Get
 	case "get connection":
 		if p.CLIOptions.Manage.Get.Connection.Id == "" {
-			err = p.HandleGetAllConnectionsCmd(client)
+			err = p.HandleGetAllConnectionsCmd(ctx, client)
 		} else {
-			err = p.HandleGetConnectionCmd(client)
+			err = p.HandleGetConnectionCmd(ctx, client)
 		}
 	case "get relay":
 		if p.CLIOptions.Manage.Get.Relay.Id == "" {
-			err = p.HandleGetAllRelaysCmd(client)
+			err = p.HandleGetAllRelaysCmd(ctx, client)
 		} else {
-			err = p.HandleGetRelayCmd(client)
+			err = p.HandleGetRelayCmd(ctx, client)
 		}
 	case "get tunnel":
 		if p.CLIOptions.Manage.Get.Tunnel.Id == "" {
-			err = p.HandleGetAllTunnelsCmd(client)
+			err = p.HandleGetAllTunnelsCmd(ctx, client)
 		} else {
-			err = p.HandleGetTunnelCmd(client)
+			err = p.HandleGetTunnelCmd(ctx, client)
 		}
 
 	// Create
 	case "create connection":
-		err = p.HandleCreateConnectionCmd(client)
+		err = p.HandleCreateConnectionCmd(ctx, client)
 	case "create relay":
-		err = p.HandleCreateRelayCmd(client)
+		err = p.HandleCreateRelayCmd(ctx, client)
 	case "create tunnel":
-		err = p.HandleCreateTunnelCmd(client)
+		err = p.HandleCreateTunnelCmd(ctx, client)
 
 	// Delete
 	case "delete connection":
-		err = p.HandleDeleteConnectionCmd(client)
+		err = p.HandleDeleteConnectionCmd(ctx, client)
 	case "delete relay":
-		err = p.HandleDeleteRelayCmd(client)
+		err = p.HandleDeleteRelayCmd(ctx, client)
 	case "delete tunnel":
-		err = p.HandleDeleteTunnelCmd(client)
+		err = p.HandleDeleteTunnelCmd(ctx, client)
 
 	// Stop
 	case "stop relay":
-		err = p.HandleStopRelayCmd(client)
+		err = p.HandleStopRelayCmd(ctx, client)
 	case "stop tunnel":
-		err = p.HandleStopTunnelCmd(client)
+		err = p.HandleStopTunnelCmd(ctx, client)
 
 	// Resume
 	case "resume relay":
-		err = p.HandleResumeRelayCmd(client)
+		err = p.HandleResumeRelayCmd(ctx, client)
 	case "resume tunnel":
-		err = p.HandleResumeTunnelCmd(client)
+		err = p.HandleResumeTunnelCmd(ctx, client)
 	default:
 		return fmt.Errorf("unrecognized comand: %s", p.KongCtx.Args[2])
 	}
@@ -90,106 +101,51 @@ func (p *Plumber) HandleManageCmd() error {
 	return nil
 }
 
-////////////////// GET //////////////////
+func (p *Plumber) displayJSON(input map[string]string) {
+	data, err := json.Marshal(input)
+	if err != nil {
+		p.log.Errorf("failed to marshal JSON: %s", err)
+		return
+	}
 
-func (p *Plumber) HandleGetConnectionCmd(client protos.PlumberServerClient) error {
-	fmt.Println("get connection")
-	return nil
+	// TODO: Add --pretty to CLI protos
+	if true {
+		colorized, err := prettyjson.Format(data)
+		if err != nil {
+			p.log.Errorf("failed to colorize JSON: %s", err)
+			return
+		}
+
+		data = colorized
+	}
+
+	fmt.Println(string(data))
 }
 
-func (p *Plumber) HandleGetRelayCmd(client protos.PlumberServerClient) error {
-	fmt.Println("get relay")
+func (p *Plumber) displayProtobuf(msg proto.Message) error {
+	marshaller := jsonpb.Marshaler{
+		Indent: "  ",
+	}
 
-	return nil
-}
+	var buf bytes.Buffer
 
-func (p *Plumber) HandleGetTunnelCmd(client protos.PlumberServerClient) error {
-	fmt.Println("get tunnel")
+	if err := marshaller.Marshal(&buf, msg); err != nil {
+		return errors.Wrap(err, "failed to marshal response")
+	}
 
-	return nil
-}
+	output := buf.Bytes()
 
-func (p *Plumber) HandleGetAllConnectionsCmd(client protos.PlumberServerClient) error {
-	fmt.Println("get all connections")
-	return nil
-}
+	// TODO: Add pretty to CLI opts
+	if true {
+		colorized, err := prettyjson.Format(buf.Bytes())
+		if err != nil {
+			return errors.Wrap(err, "unable to colorize response")
+		}
 
-func (p *Plumber) HandleGetAllRelaysCmd(client protos.PlumberServerClient) error {
-	fmt.Println("get all relays")
+		output = colorized
+	}
 
-	return nil
-}
-
-func (p *Plumber) HandleGetAllTunnelsCmd(client protos.PlumberServerClient) error {
-	fmt.Println("get all tunnels")
-
-	return nil
-}
-
-////////////////// CREATE //////////////////
-
-func (p *Plumber) HandleCreateConnectionCmd(client protos.PlumberServerClient) error {
-	fmt.Println("create connection")
-
-	return nil
-}
-
-func (p *Plumber) HandleCreateRelayCmd(client protos.PlumberServerClient) error {
-	fmt.Println("create relay")
-
-	return nil
-}
-
-func (p *Plumber) HandleCreateTunnelCmd(client protos.PlumberServerClient) error {
-	fmt.Println("create tunnel")
-
-	return nil
-}
-
-/////////////////// DELETE //////////////////
-
-func (p *Plumber) HandleDeleteConnectionCmd(client protos.PlumberServerClient) error {
-	fmt.Println("delete connection")
-
-	return nil
-}
-
-func (p *Plumber) HandleDeleteRelayCmd(client protos.PlumberServerClient) error {
-	fmt.Println("delete relay")
-
-	return nil
-}
-
-func (p *Plumber) HandleDeleteTunnelCmd(client protos.PlumberServerClient) error {
-	fmt.Println("delete tunnel")
-
-	return nil
-}
-
-////////////////// STOP //////////////////
-
-func (p *Plumber) HandleStopRelayCmd(client protos.PlumberServerClient) error {
-	fmt.Println("stop relay")
-
-	return nil
-}
-
-func (p *Plumber) HandleStopTunnelCmd(client protos.PlumberServerClient) error {
-	fmt.Println("stop tunnel")
-
-	return nil
-}
-
-//////////////////// RESUME //////////////////
-
-func (p *Plumber) HandleResumeRelayCmd(client protos.PlumberServerClient) error {
-	fmt.Println("resume relay")
-
-	return nil
-}
-
-func (p *Plumber) HandleResumeTunnelCmd(client protos.PlumberServerClient) error {
-	fmt.Println("resume tunnel")
+	fmt.Println(string(output))
 
 	return nil
 }

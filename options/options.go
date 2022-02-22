@@ -59,8 +59,13 @@ func New(args []string) (*kong.Context, *opts.CLIOptions, error) {
 	cliOpts.Global.XFullCommand = strings.Join(args, " ")
 
 	if ActionUsesBackend(cliOpts.Global.XAction) {
-		if len(args) >= 2 {
+		if len(args) >= 2 && cliOpts.Global.XAction != "manage" {
 			cliOpts.Global.XBackend = args[1]
+		} else {
+			// Go through the kong ctx path and find which backend was selected
+			if len(kongCtx.Path) >= 5 {
+				cliOpts.Global.XBackend = kongCtx.Path[len(kongCtx.Path)-1].Command.Name
+			}
 		}
 	}
 
@@ -154,6 +159,8 @@ func ActionUsesBackend(action string) bool {
 	case "write":
 		return true
 	case "tunnel":
+		return true
+	case "manage":
 		return true
 	}
 
