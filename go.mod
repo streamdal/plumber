@@ -9,7 +9,6 @@ require (
 	github.com/apache/pulsar-client-go v0.7.0
 	github.com/aws/aws-sdk-go v1.34.28
 	github.com/batchcorp/collector-schemas v0.0.15
-	github.com/batchcorp/grpc-collector v0.0.0-20220217191157-62cad80ecdba
 	github.com/batchcorp/kong v0.2.17-batch-fix
 	github.com/batchcorp/natty v0.0.16
 	github.com/batchcorp/pgoutput v0.3.2
@@ -61,7 +60,6 @@ require (
 	github.com/v2pro/plz v0.0.0-20200805122259-422184e41b6e // indirect
 	github.com/v2pro/quokka v0.0.0-20171201153428-382cb39c6ee6 // indirect
 	github.com/v2pro/wombat v0.0.0-20180402055224-a56dbdcddef2 // indirect
-	go.etcd.io/etcd v3.3.27+incompatible
 	go.mongodb.org/mongo-driver v1.7.3
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce
 	google.golang.org/api v0.29.0
