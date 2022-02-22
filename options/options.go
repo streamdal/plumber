@@ -58,13 +58,20 @@ func New(args []string) (*kong.Context, *opts.CLIOptions, error) {
 	cliOpts.Global.XAction = kongCtx.Args[0]
 	cliOpts.Global.XFullCommand = strings.Join(args, " ")
 
+	// Set the subcommand (if any)
+	for _, v := range kongCtx.Path {
+		if v.Command != nil {
+			cliOpts.Global.XCommands = append(cliOpts.Global.XCommands, v.Command.Name)
+		}
+	}
+
 	if ActionUsesBackend(cliOpts.Global.XAction) {
 		if len(args) >= 2 && cliOpts.Global.XAction != "manage" {
 			cliOpts.Global.XBackend = args[1]
 		} else {
-			// Go through the kong ctx path and find which backend was selected
-			if len(kongCtx.Path) >= 5 {
-				cliOpts.Global.XBackend = kongCtx.Path[len(kongCtx.Path)-1].Command.Name
+			// The backend is the last command in the path
+			if len(cliOpts.Global.XCommands) >= 4 {
+				cliOpts.Global.XBackend = cliOpts.Global.XCommands[len(cliOpts.Global.XCommands)-1]
 			}
 		}
 	}
@@ -181,7 +188,9 @@ func maybeDisplayVersion(args []string) {
 // options to.
 func NewCLIOptions() *opts.CLIOptions {
 	return &opts.CLIOptions{
-		Global: &opts.GlobalCLIOptions{},
+		Global: &opts.GlobalCLIOptions{
+			XCommands: make([]string, 0),
+		},
 		Server: &opts.ServerOptions{},
 		Read:   newReadOptions(),
 		Write:  newWriteOptions(),

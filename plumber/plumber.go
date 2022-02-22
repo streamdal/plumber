@@ -75,9 +75,16 @@ func New(cfg *Config) (*Plumber, error) {
 			return nil, errors.Wrap(err, "unable to populate protobuf message descriptors")
 		}
 
-		connCfg, err := generateConnectionOptions(cfg.CLIOptions)
+		var connCfg *opts.ConnectionOptions
+
+		// TODO: Improve this comment
+		// "manage" requires us to fill out "create" options differently
+		if cfg.CLIOptions.Global.XAction != "manage" {
+			connCfg, err = generateConnectionOptions(cfg.CLIOptions)
+		}
+
 		if err != nil {
-			return nil, errors.Wrap(err, "unable to generate connection config")
+			return nil, errors.Wrap(err, "unable to dynamic options config")
 		}
 
 		p.cliMD = mds
@@ -89,7 +96,6 @@ func New(cfg *Config) (*Plumber, error) {
 
 // generateConnectionOptions generates a connection config from passed in CLI
 // options. This function is used by plumber in CLI mode.
-// TODO: This needs to be updated to support "manage create"
 func generateConnectionOptions(cfg *opts.CLIOptions) (*opts.ConnectionOptions, error) {
 	if cfg == nil {
 		return nil, errors.New("cli options config cannot be nil")

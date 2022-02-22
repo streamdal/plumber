@@ -7,12 +7,14 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/batchcorp/natty"
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 	"github.com/hokaccha/go-prettyjson"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 func (p *Plumber) HandleManageCmd() error {
@@ -23,24 +25,36 @@ func (p *Plumber) HandleManageCmd() error {
 	// Setup gRPC conn + client
 	var opts []grpc.DialOption
 
-	if p.CLIOptions.Manage.GlobalOptions.ServerUseTls {
-		// TODO: Need to be able to set certs + double check insecure skip verify
+	if p.CLIOptions.Manage.GlobalOptions.ManageUseTls {
+		tlsConfig, err := natty.GenerateTLSConfig(
+			p.CLIOptions.Manage.GlobalOptions.ManageTlsCaFile,
+			p.CLIOptions.Manage.GlobalOptions.ManageTlsCertFile,
+			p.CLIOptions.Manage.GlobalOptions.ManageTlsKeyFile,
+			p.CLIOptions.Manage.GlobalOptions.ManageInsecureTls, // TODO: Protos should be renamed to skip verify
+		)
+
+		if err != nil {
+			return errors.Wrap(err, "failed to generate TLS config")
+		}
+
+		grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig))
 	} else {
 		// grpc.WithInsecure() is a required opt to disable use of TLS
 		opts = append(opts, grpc.WithInsecure())
 	}
 
-	conn, err := grpc.Dial(p.CLIOptions.Manage.GlobalOptions.ServerAddress, opts...)
+	conn, err := grpc.Dial(p.CLIOptions.Manage.GlobalOptions.ManageAddress, opts...)
 	if err != nil {
 		return errors.Wrap(err, "failed to dial gRPC server")
 	}
 
-	// TODO: Should allow timeout to be specified via CLI
-	ctx, _ := context.WithTimeout(context.Background(), time.Second*5)
+	timeout := time.Second * time.Duration(p.CLIOptions.Manage.GlobalOptions.ManageTimeoutSeconds)
+
+	ctx, _ := context.WithTimeout(context.Background(), timeout)
 
 	client := protos.NewPlumberServerClient(conn)
 
-	cmd := p.KongCtx.Args[1] + " " + p.KongCtx.Args[2]
+	cmd := p.CLIOptions.Global.XCommands[1] + " " + p.CLIOptions.Global.XCommands[2]
 
 	switch cmd {
 	// Get
@@ -91,7 +105,7 @@ func (p *Plumber) HandleManageCmd() error {
 	case "resume tunnel":
 		err = p.HandleResumeTunnelCmd(ctx, client)
 	default:
-		return fmt.Errorf("unrecognized comand: %s", p.KongCtx.Args[2])
+		return fmt.Errorf("unrecognized command: '%s'", cmd)
 	}
 
 	if err != nil {
@@ -108,8 +122,7 @@ func (p *Plumber) displayJSON(input map[string]string) {
 		return
 	}
 
-	// TODO: Add --pretty to CLI protos
-	if true {
+	if p.CLIOptions.Manage.GlobalOptions.ManagePretty {
 		colorized, err := prettyjson.Format(data)
 		if err != nil {
 			p.log.Errorf("failed to colorize JSON: %s", err)
@@ -135,8 +148,7 @@ func (p *Plumber) displayProtobuf(msg proto.Message) error {
 
 	output := buf.Bytes()
 
-	// TODO: Add pretty to CLI opts
-	if true {
+	if p.CLIOptions.Manage.GlobalOptions.ManagePretty {
 		colorized, err := prettyjson.Format(buf.Bytes())
 		if err != nil {
 			return errors.Wrap(err, "unable to colorize response")

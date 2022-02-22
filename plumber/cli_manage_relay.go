@@ -12,7 +12,7 @@ import (
 func (p *Plumber) HandleGetRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
 	resp, err := client.GetRelay(ctx, &protos.GetRelayRequest{
 		Auth: &common.Auth{
-			Token: p.CLIOptions.Manage.GlobalOptions.ServerToken,
+			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
 		},
 		RelayId: p.CLIOptions.Manage.Get.Relay.Id,
 	})
@@ -32,7 +32,7 @@ func (p *Plumber) HandleGetRelayCmd(ctx context.Context, client protos.PlumberSe
 func (p *Plumber) HandleGetAllRelaysCmd(ctx context.Context, client protos.PlumberServerClient) error {
 	resp, err := client.GetAllRelays(ctx, &protos.GetAllRelaysRequest{
 		Auth: &common.Auth{
-			Token: p.CLIOptions.Manage.GlobalOptions.ServerToken,
+			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
 		},
 	})
 
@@ -50,7 +50,7 @@ func (p *Plumber) HandleGetAllRelaysCmd(ctx context.Context, client protos.Plumb
 func (p *Plumber) HandleResumeRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
 	resp, err := client.ResumeRelay(ctx, &protos.ResumeRelayRequest{
 		Auth: &common.Auth{
-			Token: p.CLIOptions.Manage.GlobalOptions.ServerToken,
+			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
 		},
 		RelayId: p.CLIOptions.Manage.Resume.Relay.Id,
 	})
@@ -69,7 +69,7 @@ func (p *Plumber) HandleResumeRelayCmd(ctx context.Context, client protos.Plumbe
 func (p *Plumber) HandleStopRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
 	resp, err := client.StopRelay(ctx, &protos.StopRelayRequest{
 		Auth: &common.Auth{
-			Token: p.CLIOptions.Manage.GlobalOptions.ServerToken,
+			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
 		},
 		RelayId: p.CLIOptions.Manage.Resume.Relay.Id,
 	})
@@ -88,7 +88,7 @@ func (p *Plumber) HandleStopRelayCmd(ctx context.Context, client protos.PlumberS
 func (p *Plumber) HandleDeleteRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
 	resp, err := client.DeleteRelay(ctx, &protos.DeleteRelayRequest{
 		Auth: &common.Auth{
-			Token: p.CLIOptions.Manage.GlobalOptions.ServerToken,
+			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
 		},
 		RelayId: p.CLIOptions.Manage.Resume.Relay.Id,
 	})

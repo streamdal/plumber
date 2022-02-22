@@ -11,7 +11,7 @@ import (
 func (p *Plumber) HandleGetTunnelCmd(ctx context.Context, client protos.PlumberServerClient) error {
 	resp, err := client.GetTunnel(ctx, &protos.GetTunnelRequest{
 		Auth: &common.Auth{
-			Token: p.CLIOptions.Manage.GlobalOptions.ServerToken,
+			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
 		},
 		TunnelId: p.CLIOptions.Manage.Get.Tunnel.Id,
 	})
@@ -31,7 +31,7 @@ func (p *Plumber) HandleGetTunnelCmd(ctx context.Context, client protos.PlumberS
 func (p *Plumber) HandleGetAllTunnelsCmd(ctx context.Context, client protos.PlumberServerClient) error {
 	resp, err := client.GetAllTunnels(ctx, &protos.GetAllTunnelsRequest{
 		Auth: &common.Auth{
-			Token: p.CLIOptions.Manage.GlobalOptions.ServerToken,
+			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
 		},
 	})
 
@@ -54,7 +54,7 @@ func (p *Plumber) HandleCreateTunnelCmd(ctx context.Context, client protos.Plumb
 func (p *Plumber) HandleDeleteTunnelCmd(ctx context.Context, client protos.PlumberServerClient) error {
 	resp, err := client.DeleteTunnel(ctx, &protos.DeleteTunnelRequest{
 		Auth: &common.Auth{
-			Token: p.CLIOptions.Manage.GlobalOptions.ServerToken,
+			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
 		},
 		TunnelId: p.CLIOptions.Manage.Delete.Tunnel.Id,
 	})
@@ -73,7 +73,7 @@ func (p *Plumber) HandleDeleteTunnelCmd(ctx context.Context, client protos.Plumb
 func (p *Plumber) HandleStopTunnelCmd(ctx context.Context, client protos.PlumberServerClient) error {
 	resp, err := client.StopTunnel(ctx, &protos.StopTunnelRequest{
 		Auth: &common.Auth{
-			Token: p.CLIOptions.Manage.GlobalOptions.ServerToken,
+			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
 		},
 		TunnelId: p.CLIOptions.Manage.Delete.Tunnel.Id,
 	})
@@ -92,7 +92,7 @@ func (p *Plumber) HandleStopTunnelCmd(ctx context.Context, client protos.Plumber
 func (p *Plumber) HandleResumeTunnelCmd(ctx context.Context, client protos.PlumberServerClient) error {
 	resp, err := client.ResumeTunnel(ctx, &protos.ResumeTunnelRequest{
 		Auth: &common.Auth{
-			Token: p.CLIOptions.Manage.GlobalOptions.ServerToken,
+			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
 		},
 		TunnelId: p.CLIOptions.Manage.Delete.Tunnel.Id,
 	})
