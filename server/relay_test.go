@@ -2,6 +2,13 @@ package server
 
 import (
 	"context"
+	"sync"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	uuid "github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
@@ -11,13 +18,7 @@ import (
 	"github.com/batchcorp/plumber/config"
 	stypes "github.com/batchcorp/plumber/server/types"
 	"github.com/batchcorp/plumber/validate"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	uuid "github.com/satori/go.uuid"
-	"github.com/sirupsen/logrus"
-	"sync"
 )
-
 
 var _ = Describe("Relay", func() {
 
@@ -27,7 +28,7 @@ var _ = Describe("Relay", func() {
 		fakeBus := &busfakes.FakeIBus{}
 		pConfig := &config.Config{
 			Connections:      map[string]*stypes.Connection{},
-			Relays:      map[string]*stypes.Relay{},
+			Relays:           map[string]*stypes.Relay{},
 			TunnelsMutex:     &sync.RWMutex{},
 			RelaysMutex:      &sync.RWMutex{},
 			ConnectionsMutex: &sync.RWMutex{},
@@ -38,12 +39,12 @@ var _ = Describe("Relay", func() {
 		})
 
 		p = &Server{
-			Bus:       fakeBus,
-			Actions:          action,
+			Bus:     fakeBus,
+			Actions: action,
 
-			AuthToken: "batchcorp",
+			AuthToken:        "batchcorp",
 			PersistentConfig: pConfig,
-			Log: logrus.NewEntry(logger),
+			Log:              logrus.NewEntry(logger),
 		}
 	})
 
@@ -73,17 +74,16 @@ var _ = Describe("Relay", func() {
 				}
 				p.PersistentConfig.SetConnection(connID, &stypes.Connection{Connection: conn})
 
-
 				relayOpts := &opts.RelayOptions{
-					XActive: false,
-					XRelayId: uuid.NewV4().String(),
+					XActive:         false,
+					XRelayId:        uuid.NewV4().String(),
 					CollectionToken: "1234",
-					ConnectionId: connID,
+					ConnectionId:    connID,
 				}
 				relayId := uuid.NewV4().String()
 				relay := &stypes.Relay{
-					Active: false,
-					Id: relayId,
+					Active:  false,
+					Id:      relayId,
 					Options: relayOpts,
 				}
 				p.PersistentConfig.SetRelay(relayId, relay)
