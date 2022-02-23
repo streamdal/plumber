@@ -122,7 +122,7 @@ func (p *Plumber) displayJSON(input map[string]string) {
 		return
 	}
 
-	if p.CLIOptions.Manage.GlobalOptions.ManagePretty {
+	if !p.CLIOptions.Manage.GlobalOptions.DisablePretty {
 		colorized, err := prettyjson.Format(data)
 		if err != nil {
 			p.log.Errorf("failed to colorize JSON: %s", err)
@@ -148,7 +148,7 @@ func (p *Plumber) displayProtobuf(msg proto.Message) error {
 
 	output := buf.Bytes()
 
-	if p.CLIOptions.Manage.GlobalOptions.ManagePretty {
+	if !p.CLIOptions.Manage.GlobalOptions.DisablePretty {
 		colorized, err := prettyjson.Format(buf.Bytes())
 		if err != nil {
 			return errors.Wrap(err, "unable to colorize response")

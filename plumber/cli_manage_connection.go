@@ -105,7 +105,13 @@ func generateConnOptionsForManageCreate(cliOpts *opts.CLIOptions) (*opts.Connect
 		connOpts.Notes = cliOpts.Manage.Create.Connection.Notes
 	}
 
-	// We know that the backend we are interested in was selected via .XBackend
+	// We need to be able to generate a ConnectionOptions from the CLI options.
+	// We have backend-specific arguments in options, but we do not have them
+	// in the form of *ConnectionOptions.
+	//
+	// The following "cleverness" is done to dynamically generate such options
+	// from the CLI args.
+
 	// Some backends have a dash, remove it
 	backendName := strings.Replace(cliOpts.Global.XBackend, "-", "", -1)
 
