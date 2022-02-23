@@ -199,26 +199,6 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 NOTE: If your messaging tech is not supported - submit an issue and we'll do
 our best to make it happen!
 
-## Dynamic Replay Destination
-
-Plumber can now act as a replay destination. Dynamic replay mode allows you to
-run an instance of plumber, on your local network, which will then be available
-in the Batch platform as a _replay destination_.
-
-This mitigates the need make firewall changes to replay messages from a Batch
-collection back to your message bus.
-
-See https://docs.batch.sh/what-are/what-are-destinations/plumber-as-a-destination
-for full documentation
-
-## High Availability
-When running `plumber` in relay mode in production, you will want to run at
-least 2 instances of `plumber` - that way updates, maintenances or unexpected
-problems will not interfere with data collection.
-
-You can achieve H/A by launching 2+ instances of plumber with identical 
-configurations.
-
 ### Kafka
 You need to ensure that you are using the same consumer group on all plumber
 instances.
@@ -230,6 +210,24 @@ Make sure that all instances of `plumber` are pointed to the same queue.
 In order to flip a boolean flag to `false`, prepend `--no` to the flag.
 
 ie. `--queue-declare` is `true` by default. To make it false, use `--no-queue-declare`.
+
+## Tunnels
+
+`plumber` can now act as a replay destination (tunnel). Tunnel mode allows you to
+run an instance of plumber, on your local network, which will then be available
+in the Batch platform as a _replay destination_.
+
+This mitigates the need make firewall changes to replay messages from a Batch
+collection back to your message bus.
+
+See https://docs.batch.sh/what-are/what-are-destinations/plumber-as-a-destination
+for full documentation.
+
+## High Performance & High Availability
+`plumber` comes with a "server" mode which will cause plumber to operate as a
+highly available cluster.
+
+You can read more about "server mode" [here](https://docs.batch.sh/plumber/server-mode).
 
 ## Acknowledgments
 

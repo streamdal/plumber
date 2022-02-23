@@ -58,9 +58,21 @@ func New(args []string) (*kong.Context, *opts.CLIOptions, error) {
 	cliOpts.Global.XAction = kongCtx.Args[0]
 	cliOpts.Global.XFullCommand = strings.Join(args, " ")
 
+	// Set the subcommand (if any)
+	for _, v := range kongCtx.Path {
+		if v.Command != nil {
+			cliOpts.Global.XCommands = append(cliOpts.Global.XCommands, v.Command.Name)
+		}
+	}
+
 	if ActionUsesBackend(cliOpts.Global.XAction) {
-		if len(args) >= 2 {
+		if len(args) >= 2 && cliOpts.Global.XAction != "manage" {
 			cliOpts.Global.XBackend = args[1]
+		} else {
+			// The backend is the last command in the path
+			if len(cliOpts.Global.XCommands) >= 4 {
+				cliOpts.Global.XBackend = cliOpts.Global.XCommands[len(cliOpts.Global.XCommands)-1]
+			}
 		}
 	}
 
@@ -155,6 +167,8 @@ func ActionUsesBackend(action string) bool {
 		return true
 	case "tunnel":
 		return true
+	case "manage":
+		return true
 	}
 
 	return false
@@ -174,13 +188,16 @@ func maybeDisplayVersion(args []string) {
 // options to.
 func NewCLIOptions() *opts.CLIOptions {
 	return &opts.CLIOptions{
-		Global: &opts.GlobalCLIOptions{},
+		Global: &opts.GlobalCLIOptions{
+			XCommands: make([]string, 0),
+		},
 		Server: &opts.ServerOptions{},
 		Read:   newReadOptions(),
 		Write:  newWriteOptions(),
 		Relay:  newRelayOptions(),
 		Tunnel: newTunnelOptions(),
 		Batch:  newBatchOptions(),
+		Manage: newManageOptions(),
 	}
 }
 
@@ -626,6 +643,140 @@ func newBatchOptions() *opts.BatchOptions {
 		Search: &opts.BatchSearchOptions{},
 		Archive: &opts.BatchArchiveOptions{
 			Replay: &opts.BatchArchiveReplayOptions{},
+		},
+	}
+}
+
+func newManageOptions() *opts.ManageOptions {
+	return &opts.ManageOptions{
+		GlobalOptions: &opts.GlobalManageOptions{},
+		Get: &opts.GetOptions{
+			Connection: &opts.GetConnectionOptions{},
+			Relay:      &opts.GetRelayOptions{},
+			Tunnel:     &opts.GetTunnelOptions{},
+		},
+		Create: &opts.CreateOptions{
+			Connection: &opts.CreateConnectionOptions{
+				Kafka: &args.KafkaConn{
+					Address: make([]string, 0),
+				},
+				ActiveMq: &args.ActiveMQConn{},
+				AwsSqs:   &args.AWSSQSConn{},
+				AwsSns:   &args.AWSSNSConn{},
+				Mongo:    &args.MongoConn{},
+				Nats: &args.NatsConn{
+					UserCredentials: make([]byte, 0),
+					TlsOptions: &args.NatsTLSOptions{
+						TlsCaCert:     make([]byte, 0),
+						TlsClientCert: make([]byte, 0),
+						TlsClientKey:  make([]byte, 0),
+					},
+				},
+				NatsStreaming: &args.NatsStreamingConn{
+					UserCredentials: make([]byte, 0),
+					TlsOptions: &args.NatsStreamingTLSOptions{
+						TlsCaCert:     make([]byte, 0),
+						TlsClientCert: make([]byte, 0),
+						TlsClientKey:  make([]byte, 0),
+					},
+				},
+				NatsJetstream: &args.NatsJetstreamConn{
+					UserCredentials: make([]byte, 0),
+					TlsOptions: &args.NatsJetstreamTLSOptions{
+						TlsCaCert:     make([]byte, 0),
+						TlsClientCert: make([]byte, 0),
+						TlsClientKey:  make([]byte, 0),
+					},
+				},
+				Nsq: &args.NSQConn{
+					TlsCaCert:     make([]byte, 0),
+					TlsClientCert: make([]byte, 0),
+					TlsClientKey:  make([]byte, 0),
+				},
+				Postgres: &args.PostgresConn{},
+				Pulsar: &args.PulsarConn{
+					TlsClientCert: make([]byte, 0),
+					TlsClientKey:  make([]byte, 0),
+				},
+				Rabbit:          &args.RabbitConn{},
+				RabbitStreams:   &args.RabbitStreamsConn{},
+				RedisPubsub:     &args.RedisPubSubConn{},
+				RedisStreams:    &args.RedisStreamsConn{},
+				AzureEventHub:   &args.AzureEventHubConn{},
+				AzureServiceBus: &args.AzureServiceBusConn{},
+				Mqtt: &args.MQTTConn{
+					TlsOptions: &args.MQTTTLSOptions{},
+				},
+				KubemqQueue: &args.KubeMQQueueConn{},
+				GcpPubsub:   &args.GCPPubSubConn{},
+				AwsKinesis:  &args.AWSKinesisConn{},
+			},
+			Relay: &opts.CreateRelayOptions{
+				Kafka: &args.KafkaRelayArgs{
+					Topics: make([]string, 0),
+				},
+				AwsSqs:          &args.AWSSQSRelayArgs{},
+				Mongo:           &args.MongoReadArgs{},
+				Nsq:             &args.NSQReadArgs{},
+				Rabbit:          &args.RabbitReadArgs{},
+				Mqtt:            &args.MQTTReadArgs{},
+				AzureServiceBus: &args.AzureServiceBusReadArgs{},
+				GcpPubsub:       &args.GCPPubSubReadArgs{},
+				KubemqQueue:     &args.KubeMQQueueReadArgs{},
+				RedisPubsub: &args.RedisPubSubReadArgs{
+					Channels: make([]string, 0),
+				},
+				RedisStreams: &args.RedisStreamsReadArgs{
+					Streams:              make([]string, 0),
+					CreateConsumerConfig: &args.CreateConsumerConfig{},
+				},
+				Postgres:      &args.PostgresReadArgs{},
+				Nats:          &args.NatsReadArgs{},
+				NatsStreaming: &args.NatsStreamingReadArgs{},
+				NatsJetstream: &args.NatsJetstreamReadArgs{},
+			},
+			Tunnel: &opts.CreateTunnelOptions{
+				Kafka: &args.KafkaWriteArgs{
+					Topics: make([]string, 0),
+				},
+				Activemq: &args.ActiveMQWriteArgs{},
+				AwsSqs: &args.AWSSQSWriteArgs{
+					Attributes: make(map[string]string, 0),
+				},
+				AwsSns:          &args.AWSSNSWriteArgs{},
+				Nats:            &args.NatsWriteArgs{},
+				NatsStreaming:   &args.NatsStreamingWriteArgs{},
+				Nsq:             &args.NSQWriteArgs{},
+				Rabbit:          &args.RabbitWriteArgs{},
+				Mqtt:            &args.MQTTWriteArgs{},
+				AzureServiceBus: &args.AzureServiceBusWriteArgs{},
+				AzureEventHub:   &args.AzureEventHubWriteArgs{},
+				GcpPubsub:       &args.GCPPubSubWriteArgs{},
+				KubemqQueue:     &args.KubeMQQueueWriteArgs{},
+				RedisPubsub: &args.RedisPubSubWriteArgs{
+					Channels: make([]string, 0),
+				},
+				RedisStreams: &args.RedisStreamsWriteArgs{
+					Streams: make([]string, 0),
+				},
+				Pulsar:        &args.PulsarWriteArgs{},
+				RabbitStreams: &args.RabbitStreamsWriteArgs{},
+				NatsJetstream: &args.NatsJetstreamWriteArgs{},
+				AwsKinesis:    &args.AWSKinesisWriteArgs{},
+			},
+		},
+		Delete: &opts.DeleteOptions{
+			Connection: &opts.DeleteConnectionOptions{},
+			Relay:      &opts.DeleteRelayOptions{},
+			Tunnel:     &opts.DeleteTunnelOptions{},
+		},
+		Stop: &opts.StopOptions{
+			Relay:  &opts.StopRelayOptions{},
+			Tunnel: &opts.StopTunnelOptions{},
+		},
+		Resume: &opts.ResumeOptions{
+			Relay:  &opts.ResumeRelayOptions{},
+			Tunnel: &opts.ResumeTunnelOptions{},
 		},
 	}
 }
