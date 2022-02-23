@@ -109,7 +109,7 @@ func (p *Plumber) HandleCreateRelayCmd(ctx context.Context, client protos.Plumbe
 	// Create relay options from CLI opts
 	relayOpts, err := generateRelayOptionsForManageCreate(p.CLIOptions)
 	if err != nil {
-		return errors.Wrap(err, "failed to generate connection options")
+		return errors.Wrap(err, "failed to generate relay options")
 	}
 
 	resp, err := client.CreateRelay(ctx, &protos.CreateRelayRequest{
@@ -146,8 +146,6 @@ func generateRelayOptionsForManageCreate(cliOpts *opts.CLIOptions) (*opts.RelayO
 	// Some backends have a dash, remove it; all further normalization will be
 	// taken care of by the Merge function.
 	backendName := strings.Replace(cliOpts.Global.XBackend, "-", "", -1)
-
-	relayOpts.Kafka = &opts.RelayGroupKafkaOptions{Args: cliOpts.Manage.Create.Relay.Kafka}
 
 	if err := opts.MergeRelayOptions(backendName, relayOpts, cliOpts.Manage.Create.Relay); err != nil {
 		return nil, errors.Wrap(err, "unable to merge relay options")
