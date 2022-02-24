@@ -90,7 +90,7 @@ func New(connOpts *opts.ConnectionOptions) (*NatsStreaming, error) {
 
 	stanClient, err := stan.Connect(args.ClusterId, args.ClientId, stan.NatsOptions())
 	if err != nil {
-		return nil, errors.Wrap(err, "could not create NATS subscription")
+		return nil, errors.Wrap(err, "could not create STAN subscription")
 	}
 
 	return &NatsStreaming{
