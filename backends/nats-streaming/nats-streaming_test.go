@@ -1,8 +1,6 @@
 package nats_streaming
 
 import (
-	"io/ioutil"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -59,64 +57,6 @@ var _ = Describe("Nats Streaming Backend", func() {
 			err := (&NatsStreaming{}).Test(nil)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(types.NotImplementedErr))
-		})
-	})
-
-	Context("generateTLSConfig", func() {
-		It("works with files", func() {
-			tlsConfig, err := generateTLSConfig(connOpts.GetNatsStreaming())
-			Expect(err).ToNot(HaveOccurred())
-			Expect(len(tlsConfig.Certificates)).To(Equal(1))
-		})
-		It("returns error on incorrect cert file", func() {
-			args := connOpts.GetNatsStreaming()
-			args.TlsOptions.TlsClientCert = args.TlsOptions.TlsClientKey
-			_, err := generateTLSConfig(args)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("unable to load ssl keypair"))
-		})
-		It("returns error on incorrect cert string", func() {
-			caBytes, err := ioutil.ReadFile("../../test-assets/ssl/ca.crt")
-			Expect(err).ToNot(HaveOccurred())
-			certBytes, err := ioutil.ReadFile("../../test-assets/ssl/client.crt")
-			Expect(err).ToNot(HaveOccurred())
-			keyBytes, err := ioutil.ReadFile("../../test-assets/ssl/client.key")
-			Expect(err).ToNot(HaveOccurred())
-
-			args := &args.NatsStreamingConn{
-				TlsOptions: &args.NatsStreamingTLSOptions{
-					TlsCaCert:     caBytes,
-					TlsClientCert: keyBytes,
-					TlsClientKey:  certBytes,
-					TlsSkipVerify: true,
-				},
-			}
-
-			_, err = generateTLSConfig(args)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("unable to load ssl keypair"))
-		})
-
-		It("works with strings", func() {
-			caBytes, err := ioutil.ReadFile("../../test-assets/ssl/ca.crt")
-			Expect(err).ToNot(HaveOccurred())
-			certBytes, err := ioutil.ReadFile("../../test-assets/ssl/client.crt")
-			Expect(err).ToNot(HaveOccurred())
-			keyBytes, err := ioutil.ReadFile("../../test-assets/ssl/client.key")
-			Expect(err).ToNot(HaveOccurred())
-
-			args := &args.NatsStreamingConn{
-				TlsOptions: &args.NatsStreamingTLSOptions{
-					TlsCaCert:     caBytes,
-					TlsClientCert: certBytes,
-					TlsClientKey:  keyBytes,
-					TlsSkipVerify: true,
-				},
-			}
-
-			tlsConfig, err := generateTLSConfig(args)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(len(tlsConfig.Certificates)).To(Equal(1))
 		})
 	})
 

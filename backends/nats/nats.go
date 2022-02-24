@@ -2,9 +2,6 @@ package nats
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
-	"io/ioutil"
 	"net/url"
 
 	"github.com/nats-io/nats.go"
@@ -15,6 +12,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/types"
+	"github.com/batchcorp/plumber/util"
 )
 
 const BackendName = "nats"
@@ -73,7 +71,7 @@ func newClient(opts *args.NatsConn) (*nats.Conn, error) {
 		creds = nats.UserCredentials(string(opts.UserCredentials))
 	}
 
-	if uri.Scheme != "tls" || opts.TlsOptions.UseTls {
+	if uri.Scheme != "tls" && !opts.TlsOptions.UseTls {
 		// Insecure connection
 		c, err := nats.Connect(opts.Dsn, creds)
 		if err != nil {
@@ -83,9 +81,14 @@ func newClient(opts *args.NatsConn) (*nats.Conn, error) {
 	}
 
 	// TLS Secured connection
-	tlsConfig, err := generateTLSConfig(opts)
+	tlsConfig, err := util.GenerateTLSConfig(
+		opts.TlsOptions.TlsCaCert,
+		opts.TlsOptions.TlsClientCert,
+		opts.TlsOptions.TlsClientKey,
+		opts.TlsOptions.TlsSkipVerify,
+	)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "Unable to generate TLS Config")
 	}
 
 	c, err := nats.Connect(opts.Dsn, nats.Secure(tlsConfig), creds)
@@ -94,35 +97,4 @@ func newClient(opts *args.NatsConn) (*nats.Conn, error) {
 	}
 
 	return c, nil
-}
-
-func generateTLSConfig(opts *args.NatsConn) (*tls.Config, error) {
-	certpool := x509.NewCertPool()
-
-	pemCerts, err := ioutil.ReadFile(string(opts.TlsOptions.TlsCaCert))
-	if err == nil {
-		certpool.AppendCertsFromPEM(pemCerts)
-	}
-
-	// Import client certificate/key pair
-	cert, err := tls.LoadX509KeyPair(string(opts.TlsOptions.TlsClientCert), string(opts.TlsOptions.TlsClientKey))
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to load ssl keypair")
-	}
-
-	// Just to print out the client certificate..
-	cert.Leaf, err = x509.ParseCertificate(cert.Certificate[0])
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to parse certificate")
-	}
-
-	// Create tls.Config with desired tls properties
-	return &tls.Config{
-		RootCAs:            certpool,
-		ClientAuth:         tls.NoClientCert,
-		ClientCAs:          nil,
-		InsecureSkipVerify: opts.TlsOptions.TlsSkipVerify,
-		Certificates:       []tls.Certificate{cert},
-		MinVersion:         tls.VersionTLS12,
-	}, nil
 }

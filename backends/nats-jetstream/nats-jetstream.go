@@ -2,9 +2,6 @@ package nats_jetstream
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
-	"io/ioutil"
 	"net/url"
 	"strings"
 
@@ -16,7 +13,6 @@ import (
 	"github.com/batchcorp/plumber/util"
 	"github.com/batchcorp/plumber/validate"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
@@ -66,9 +62,14 @@ func New(connOpts *opts.ConnectionOptions) (*NatsJetstream, error) {
 	var client *nats.Conn
 	if uri.Scheme == "tls" || args.TlsOptions.UseTls {
 		// TLS Secured connection
-		tlsConfig, err := generateTLSConfig(args)
+		tlsConfig, err := util.GenerateTLSConfig(
+			args.TlsOptions.TlsCaCert,
+			args.TlsOptions.TlsClientCert,
+			args.TlsOptions.TlsClientKey,
+			args.TlsOptions.TlsSkipVerify,
+		)
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, "Unable to generate TLS Config")
 		}
 
 		client, err = nats.Connect(args.Dsn, nats.Secure(tlsConfig), creds)
@@ -101,50 +102,6 @@ func (n *NatsJetstream) Close(_ context.Context) error {
 
 func (n *NatsJetstream) Test(_ context.Context) error {
 	return types.NotImplementedErr
-}
-
-func generateTLSConfig(args *args.NatsJetstreamConn) (*tls.Config, error) {
-	certpool := x509.NewCertPool()
-
-	var cert tls.Certificate
-	var err error
-
-	if util.FileExists(args.TlsOptions.TlsClientCert) {
-		// CLI input, read from file
-		pemCerts, err := ioutil.ReadFile(string(args.TlsOptions.TlsCaCert))
-		if err == nil {
-			certpool.AppendCertsFromPEM(pemCerts)
-		}
-
-		cert, err = tls.LoadX509KeyPair(string(args.TlsOptions.TlsClientCert), string(args.TlsOptions.TlsClientKey))
-		if err != nil {
-			return nil, errors.Wrap(err, "unable to load ssl keypair")
-		}
-
-	} else {
-		certpool.AppendCertsFromPEM(args.TlsOptions.TlsCaCert)
-
-		cert, err = tls.X509KeyPair(args.TlsOptions.TlsClientCert, args.TlsOptions.TlsClientKey)
-		if err != nil {
-			return nil, errors.Wrap(err, "unable to load ssl keypair")
-		}
-	}
-
-	// Just to print out the client certificate..
-	cert.Leaf, err = x509.ParseCertificate(cert.Certificate[0])
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to parse certificate")
-	}
-
-	// Create tls.Config with desired tls properties
-	return &tls.Config{
-		RootCAs:            certpool,
-		ClientAuth:         tls.NoClientCert,
-		ClientCAs:          nil,
-		InsecureSkipVerify: args.TlsOptions.TlsSkipVerify,
-		Certificates:       []tls.Certificate{cert},
-		MinVersion:         tls.VersionTLS12,
-	}, nil
 }
 
 func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
