@@ -68,7 +68,7 @@ type Bus struct {
 type Config struct {
 	ServerOptions    *opts.ServerOptions
 	PersistentConfig *config.Config // Consumers will need this to update their local config
-	Actions          *actions.Actions
+	Actions          actions.IActions
 }
 
 var (

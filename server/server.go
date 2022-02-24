@@ -4,22 +4,21 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/batchcorp/plumber/bus"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
-
-	"github.com/batchcorp/plumber/actions"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
+	"github.com/batchcorp/plumber/actions"
+	"github.com/batchcorp/plumber/bus"
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/validate"
 )
 
 type Server struct {
-	Actions          *actions.Actions
+	Actions          actions.IActions
 	AuthToken        string
 	PersistentConfig *config.Config
 	Bus              bus.IBus
