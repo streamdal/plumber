@@ -148,7 +148,7 @@ func generateTLSConfig(args *args.MQTTConn) (*tls.Config, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to load ssl keypair")
 		}
-	} else {
+	} else if len(args.TlsOptions.TlsClientCert) > 0 {
 		// Server input
 		certpool.AppendCertsFromPEM(args.TlsOptions.TlsCaCert)
 

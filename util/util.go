@@ -3,8 +3,11 @@ package util
 import (
 	"bytes"
 	"compress/gzip"
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"strings"
 	"time"
@@ -140,4 +143,55 @@ func DerefInt16(v *int16) int16 {
 func FileExists(path []byte) bool {
 	_, err := os.Stat(string(path))
 	return err == nil
+}
+
+func GenerateTLSConfig(caCert, clientCert, clientKey []byte, skipVerify bool) (*tls.Config, error) {
+	certpool := x509.NewCertPool()
+
+	if len(caCert) > 0 {
+		if FileExists(caCert) {
+			// CLI input, read from file
+			pemCerts, err := ioutil.ReadFile(string(caCert))
+			if err == nil {
+				certpool.AppendCertsFromPEM(pemCerts)
+			}
+		} else {
+			// Server input, contents of the certificate
+			certpool.AppendCertsFromPEM(caCert)
+		}
+	}
+
+	// Import client certificate/key pair
+	var cert tls.Certificate
+	var err error
+	if len(clientCert) > 0 && len(clientKey) > 0 {
+		if FileExists(clientCert) {
+			// CLI input, read from file
+			cert, err = tls.LoadX509KeyPair(string(clientCert), string(clientKey))
+			if err != nil {
+				return nil, errors.Wrap(err, "unable to load client certificate")
+			}
+		} else {
+			// Server input, contents of the certificate
+			cert, err = tls.X509KeyPair(clientCert, clientKey)
+			if err != nil {
+				return nil, errors.Wrap(err, "unable to load client certificate")
+			}
+		}
+
+		cert.Leaf, err = x509.ParseCertificate(cert.Certificate[0])
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to parse certificate")
+		}
+	}
+
+	// Create tls.Config with desired tls properties
+	return &tls.Config{
+		RootCAs:            certpool,
+		ClientAuth:         tls.NoClientCert,
+		ClientCAs:          nil,
+		InsecureSkipVerify: skipVerify,
+		Certificates:       []tls.Certificate{cert},
+		MinVersion:         tls.VersionTLS12,
+	}, nil
 }
