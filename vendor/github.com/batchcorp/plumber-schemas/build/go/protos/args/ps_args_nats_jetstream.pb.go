@@ -29,8 +29,8 @@ type NatsJetstreamTLSOptions struct {
 	TlsClientKey []byte `protobuf:"bytes,3,opt,name=tls_client_key,json=tlsClientKey,proto3" json:"tls_client_key,omitempty" kong:"help='Client key file (only needed if addr is tls://*)',env='PLUMBER_RELAY_NATS_JETSTREAM_TLS_CLIENT_KEY'"`
 	// @gotags: kong:"help='Whether to verify server certificate',env='PLUMBER_RELAY_NATS_JETSTREAM_SKIP_VERIFY_TLS'"
 	TlsSkipVerify bool `protobuf:"varint,4,opt,name=tls_skip_verify,json=tlsSkipVerify,proto3" json:"tls_skip_verify,omitempty" kong:"help='Whether to verify server certificate',env='PLUMBER_RELAY_NATS_JETSTREAM_SKIP_VERIFY_TLS'"`
-	// @gotags: kong:"help='Connect using TLS',env='PLUMBER_RELAY_NATS_JETSTREAM_USE_TLS'"
-	UseTls               bool     `protobuf:"varint,5,opt,name=use_tls,json=useTls,proto3" json:"use_tls,omitempty" kong:"help='Connect using TLS',env='PLUMBER_RELAY_NATS_JETSTREAM_USE_TLS'"`
+	// @gotags: kong:"help='Enable TLS',env='PLUMBER_RELAY_NATS_JETSTREAM_USE_TLS'"
+	UseTls               bool     `protobuf:"varint,5,opt,name=use_tls,json=useTls,proto3" json:"use_tls,omitempty" kong:"help='Enable TLS',env='PLUMBER_RELAY_NATS_JETSTREAM_USE_TLS'"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`

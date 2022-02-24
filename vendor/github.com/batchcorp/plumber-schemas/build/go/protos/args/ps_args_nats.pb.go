@@ -87,8 +87,8 @@ type NatsTLSOptions struct {
 	TlsClientCert []byte `protobuf:"bytes,3,opt,name=tls_client_cert,json=tlsClientCert,proto3" json:"tls_client_cert,omitempty" kong:"help='Client cert file (only needed if addr is tls://)',env='PLUMBER_RELAY_NATS_TLS_CLIENT_CERT'"`
 	// @gotags: kong:"help='client key file (only needed if addr is tls://)',env='PLUMBER_RELAY_NATS_TLS_CLIENT_KEY'"
 	TlsClientKey []byte `protobuf:"bytes,4,opt,name=tls_client_key,json=tlsClientKey,proto3" json:"tls_client_key,omitempty" kong:"help='client key file (only needed if addr is tls://)',env='PLUMBER_RELAY_NATS_TLS_CLIENT_KEY'"`
-	// @gotags: kong:"help='Connect using TLS',env='PLUMBER_RELAY_NATS_USE_TLS'"
-	UseTls               bool     `protobuf:"varint,5,opt,name=use_tls,json=useTls,proto3" json:"use_tls,omitempty" kong:"help='Connect using TLS',env='PLUMBER_RELAY_NATS_USE_TLS'"`
+	// @gotags: kong:"help='Enable TLS',env='PLUMBER_RELAY_NATS_USE_TLS'"
+	UseTls               bool     `protobuf:"varint,5,opt,name=use_tls,json=useTls,proto3" json:"use_tls,omitempty" kong:"help='Enable TLS',env='PLUMBER_RELAY_NATS_USE_TLS'"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
