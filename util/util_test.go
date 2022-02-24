@@ -29,7 +29,7 @@ var _ = Describe("Utility Package", func() {
 			// Cert and key arguments are swapped
 			_, err := GenerateTLSConfig(tlsCaCert, tlsClientKey, tlsClientCert, tlsSkipVerify)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("unable to load client certificate: tls: failed to find certificate PEM data in certificate input, but did find a private key; PEM inputs may have been switched"))
+			Expect(err.Error()).To(ContainSubstring("failed to find certificate PEM data in certificate input"))
 		})
 		It("returns error on incorrect cert string", func() {
 			caBytes, err := ioutil.ReadFile("../test-assets/ssl/ca.crt")
@@ -39,9 +39,10 @@ var _ = Describe("Utility Package", func() {
 			keyBytes, err := ioutil.ReadFile("../test-assets/ssl/client.key")
 			Expect(err).ToNot(HaveOccurred())
 
-			_, err = GenerateTLSConfig(caBytes, certBytes, keyBytes, tlsSkipVerify)
+			// Cert and key arguments are swapped
+			_, err = GenerateTLSConfig(caBytes, keyBytes, certBytes, tlsSkipVerify)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("unable to load ssl keypair"))
+			Expect(err.Error()).To(ContainSubstring("failed to find certificate PEM data in certificate input"))
 		})
 
 		It("works with strings", func() {
