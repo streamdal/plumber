@@ -68,13 +68,14 @@ var _ = Describe("Relay", func() {
 			}
 			p.PersistentConfig.SetConnection(connID, &stypes.Connection{Connection: conn})
 
+			relayId := uuid.NewV4().String()
 			relayOpts := &opts.RelayOptions{
 				XActive:         false,
-				XRelayId:        uuid.NewV4().String(),
+				XRelayId:        relayId,
 				CollectionToken: "1234",
 				ConnectionId:    connID,
 			}
-			relayId := uuid.NewV4().String()
+
 			relay := &stypes.Relay{
 				Active:  false,
 				Id:      relayId,
@@ -82,21 +83,22 @@ var _ = Describe("Relay", func() {
 			}
 			p.PersistentConfig.SetRelay(relayId, relay)
 
-			request := &protos.GetRelayRequest{
+			delRequest := &protos.DeleteRelayRequest{
 				Auth:    &common.Auth{Token: "batchcorp"},
 				RelayId: relayId,
 			}
 
-			getResp, _ := p.GetRelay(context.Background(), request)
-			Expect(getResp.Opts.XRelayId).To(Equal(relayId))
+			bFake := &busfakes.FakeIBus{}
+			p.Bus = bFake
+			aFake := &actionsfakes.FakeIActions{}
+			aFake.DeleteRelayStub = func(ctx context.Context, s string) (*stypes.Relay, error) {
+				return relay, nil
+			}
+			p.Actions = aFake
 
-			delResp, _ := p.Actions.DeleteRelay(context.Background(), relayId)
-			Expect(delResp.Id).To(Equal(relayId))
-
-			getDeletedResp, err := p.GetRelay(context.Background(), request)
+			_, err := p.DeleteRelay(context.Background(), delRequest)
 			Expect(err).ToNot(HaveOccurred())
-			// should not be able to get back the deleted relay
-			Expect(getDeletedResp).To(Equal(nil))
+			Expect(aFake.DeleteRelayCallCount()).To(Equal(1))
 		})
 
 	})
