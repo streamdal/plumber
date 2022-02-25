@@ -13,7 +13,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber/actions"
+	"github.com/batchcorp/plumber/actions/actionsfakes"
 	"github.com/batchcorp/plumber/bus/busfakes"
 	"github.com/batchcorp/plumber/config"
 	stypes "github.com/batchcorp/plumber/server/types"
@@ -34,18 +34,73 @@ var _ = Describe("Relay", func() {
 			ConnectionsMutex: &sync.RWMutex{},
 		}
 
-		action, _ := actions.New(&actions.Config{
-			PersistentConfig: pConfig,
-		})
+		fakeActions := &actionsfakes.FakeIActions{}
 
 		p = &Server{
 			Bus:     fakeBus,
-			Actions: action,
+			Actions: fakeActions,
 
 			AuthToken:        "batchcorp",
 			PersistentConfig: pConfig,
 			Log:              logrus.NewEntry(logger),
 		}
+	})
+
+	Context("DeleteRelay", func() {
+		It("check auth token", func() {
+			_, err := p.DeleteRelay(context.Background(), &protos.DeleteRelayRequest{
+				Auth: &common.Auth{Token: "incorrect token"},
+			})
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring(validate.ErrInvalidToken.Error()))
+		})
+
+		It("delete a relay", func() {
+			// set relay
+			connID := uuid.NewV4().String()
+			conn := &opts.ConnectionOptions{
+				Name:  "testing",
+				Notes: "test connection",
+				XId:   connID,
+				Conn: &opts.ConnectionOptions_Kafka{Kafka: &args.KafkaConn{
+					Address: []string{"127.0.0.1:9200"},
+				}},
+			}
+			p.PersistentConfig.SetConnection(connID, &stypes.Connection{Connection: conn})
+
+			relayId := uuid.NewV4().String()
+			relayOpts := &opts.RelayOptions{
+				XActive:         false,
+				XRelayId:        relayId,
+				CollectionToken: "1234",
+				ConnectionId:    connID,
+			}
+
+			relay := &stypes.Relay{
+				Active:  false,
+				Id:      relayId,
+				Options: relayOpts,
+			}
+			p.PersistentConfig.SetRelay(relayId, relay)
+
+			delRequest := &protos.DeleteRelayRequest{
+				Auth:    &common.Auth{Token: "batchcorp"},
+				RelayId: relayId,
+			}
+
+			bFake := &busfakes.FakeIBus{}
+			p.Bus = bFake
+			aFake := &actionsfakes.FakeIActions{}
+			aFake.DeleteRelayStub = func(ctx context.Context, s string) (*stypes.Relay, error) {
+				return relay, nil
+			}
+			p.Actions = aFake
+
+			_, err := p.DeleteRelay(context.Background(), delRequest)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(aFake.DeleteRelayCallCount()).To(Equal(1))
+		})
+
 	})
 
 	Context("GetAllRelays", func() {

@@ -9,10 +9,14 @@
 package actions
 
 import (
+	"context"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber/config"
+	"github.com/batchcorp/plumber/server/types"
 )
 
 type Actions struct {
@@ -24,7 +28,24 @@ type Config struct {
 	PersistentConfig *config.Config
 }
 
-func New(cfg *Config) (*Actions, error) {
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . IActions
+type IActions interface {
+	// relay
+	CreateRelay(ctx context.Context, relayOpts *opts.RelayOptions) (*types.Relay, error)
+	DeleteRelay(context.Context, string) (*types.Relay, error)
+	StopRelay(ctx context.Context, relayID string) (*types.Relay, error)
+	ResumeRelay(ctx context.Context, relayID string) (*types.Relay, error)
+	UpdateRelay(_ context.Context, _ *opts.RelayOptions) (*types.Relay, error)
+
+	// tunnel
+	CreateTunnel(reqCtx context.Context, tunnelOpts *opts.TunnelOptions) (*types.Tunnel, error)
+	ResumeTunnel(ctx context.Context, tunnelID string) (*types.Tunnel, error)
+	StopTunnel(ctx context.Context, tunnelID string) (*types.Tunnel, error)
+	UpdateTunnel(ctx context.Context, tunnelID string, tunnelOpts *opts.TunnelOptions) (*types.Tunnel, error)
+	DeleteTunnel(ctx context.Context, tunnelID string) error
+}
+
+func New(cfg *Config) (IActions, error) {
 	if err := validateConfig(cfg); err != nil {
 		return nil, errors.Wrap(err, "unable to validate config")
 	}

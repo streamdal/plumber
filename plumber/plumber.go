@@ -35,7 +35,7 @@ var (
 // Config contains configurable options for instantiating a new Plumber
 type Config struct {
 	PersistentConfig   *config.Config
-	Actions            *actions.Actions
+	Actions            actions.IActions
 	ServiceShutdownCtx context.Context
 	MainShutdownFunc   context.CancelFunc
 	MainShutdownCtx    context.Context
