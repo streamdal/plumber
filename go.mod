@@ -23,6 +23,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.2.0
+	github.com/hashicorp/yamux v0.0.0-20211028200310-0bc27b27de87
 	github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
 	github.com/imdario/mergo v0.3.12
 	github.com/jackc/pgx v3.2.0+incompatible

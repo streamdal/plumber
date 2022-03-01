@@ -6,6 +6,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/hashicorp/yamux"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -57,8 +58,13 @@ func (p *Plumber) RunServer() error {
 
 	p.Bus = b
 
-	// Launch gRPC server (blocks)
-	if err := p.startGRPCServer(); err != nil {
+	lis, err := net.Listen("tcp", p.CLIOptions.Server.GrpcListenAddress)
+	if err != nil {
+		return fmt.Errorf("unable to listen on '%s': %s", p.CLIOptions.Server.GrpcListenAddress, err)
+	}
+
+	// Launch gRPC server
+	if err := p.startGRPCServer(lis, p.CLIOptions.Server.GrpcListenAddress); err != nil {
 		p.log.Fatalf("unable to run gRPC server: %s", err)
 	}
 
@@ -74,6 +80,8 @@ func (p *Plumber) RunServer() error {
 		p.log.Error(errors.Wrap(err, "failed to relaunch tunnels"))
 	}
 
+	go p.runRemoteControl()
+
 	// Wait for shutdown
 	select {
 	case <-p.ServiceShutdownCtx.Done():
@@ -87,6 +95,71 @@ func (p *Plumber) RunServer() error {
 	}
 
 	return nil
+}
+
+func (p *Plumber) runRemoteControl() {
+	// TODO: add CLI flag to enable remote control
+	if !p.Config.CLIOptions.Server.RemoteControlEnabled {
+		return
+	}
+
+	p.log.Debug("starting remote control server...")
+
+	foremanAddr := p.Config.CLIOptions.Server.RemoteControlAddress
+
+	conn, err := net.DialTimeout("tcp", foremanAddr, time.Second*5)
+	if err != nil {
+		p.log.Errorf("error dialing: %s", err)
+		return
+	}
+
+	srvConn, err := yamux.Client(conn, yamux.DefaultConfig())
+	if err != nil {
+		p.log.Errorf("couldn't create yamux server: %s", err)
+		return
+	}
+
+	// TODO: flag for foreman service address
+	gconn, err := grpc.Dial(foremanAddr, grpc.WithInsecure(), grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
+		return srvConn.Open()
+	}))
+	if err != nil {
+		p.log.Errorf("failed to create grpc client: %s", err)
+		conn.Close()
+		return
+	}
+
+	client := protos.NewForemanClientClient(gconn)
+	authResp, err := client.Register(context.Background(), &protos.RegisterRequest{
+		// TODO: how do we set this? Flag?
+		ApiToken:     "batchsh_319041f4b82fb7c0fe04b2598449a3e07effe66c2af5d54d13d6f6b1d2bb", // TODO: store in config
+		ClusterId:    p.PersistentConfig.ClusterID,
+		PlumberToken: p.Config.CLIOptions.Server.AuthToken,
+	})
+	if err != nil {
+		p.log.Errorf("failed to register with remote control server. remove control not available: %s", err)
+		conn.Close()
+		gconn.Close()
+		return
+	}
+
+	p.log.Debugf("register response: %#v\n", authResp)
+
+	if err := p.startGRPCServer(srvConn, foremanAddr); err != nil {
+		p.log.Fatalf("unable to run remote control gRPC server: %s", err)
+	}
+
+	return
+}
+
+func (p *Plumber) watchForForemanDisconnect(sess *yamux.Session) {
+	ch := sess.CloseChan()
+
+	<-ch
+
+	p.log.Info("Lost connection to remote control server. Remote control not available")
+
+	// TODO: handle reconnects somehow?
 }
 
 func (p *Plumber) relaunchRelays() error {
@@ -135,12 +208,7 @@ func (p *Plumber) relaunchTunnels() error {
 
 }
 
-func (p *Plumber) startGRPCServer() error {
-	lis, err := net.Listen("tcp", p.CLIOptions.Server.GrpcListenAddress)
-	if err != nil {
-		return fmt.Errorf("unable to listen on '%s': %s", p.CLIOptions.Server.GrpcListenAddress, err)
-	}
-
+func (p *Plumber) startGRPCServer(listener net.Listener, addr string) error {
 	var opts []grpc.ServerOption
 
 	grpcServer := grpc.NewServer(opts...)
@@ -162,15 +230,15 @@ func (p *Plumber) startGRPCServer() error {
 
 	go p.watchServiceShutdown(grpcServer)
 
-	p.log.Debugf("starting gRPC server on %s", p.CLIOptions.Server.GrpcListenAddress)
-
 	errCh := make(chan error, 1)
 
 	go func() {
-		if err := grpcServer.Serve(lis); err != nil {
+		if err := grpcServer.Serve(listener); err != nil {
 			errCh <- errors.Wrap(err, "unable to start gRPC server")
 		}
 	}()
+
+	p.log.Debugf("started gRPC server on %s", addr)
 
 	afterCh := time.After(5 * time.Second)
 

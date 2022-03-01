@@ -249,6 +249,9 @@ github.com/google/uuid
 github.com/googleapis/gax-go/v2
 # github.com/gsterjov/go-libsecret v0.0.0-20161001094733-a6f4afe4910c
 github.com/gsterjov/go-libsecret
+# github.com/hashicorp/yamux v0.0.0-20211028200310-0bc27b27de87
+## explicit
+github.com/hashicorp/yamux
 # github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
 ## explicit
 github.com/hokaccha/go-prettyjson
