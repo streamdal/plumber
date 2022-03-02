@@ -131,19 +131,24 @@ func (p *Plumber) runRemoteControl() {
 
 	client := protos.NewForemanClientClient(gconn)
 	authResp, err := client.Register(context.Background(), &protos.RegisterRequest{
-		// TODO: how do we set this? Flag?
-		ApiToken:     "batchsh_319041f4b82fb7c0fe04b2598449a3e07effe66c2af5d54d13d6f6b1d2bb", // TODO: store in config
-		ClusterId:    p.PersistentConfig.ClusterID,
+		ApiToken:     "batchsh_319041f4b82fb7c0fe04b2598449a3e07effe66c2af5d54d13d6f6b1d2bb", // TODO: config via envar
+		ClusterId:    p.PersistentConfig.ClusterID,                                           // TODO: config via envar
 		PlumberToken: p.Config.CLIOptions.Server.AuthToken,
+		NodeId:       p.Config.CLIOptions.Server.NodeId,
 	})
+	if !authResp.Success {
+		p.log.Errorf("failed to register with remote control server. remove control not available: %s", authResp.Message)
+		conn.Close()
+		gconn.Close()
+		return
+	}
+
 	if err != nil {
 		p.log.Errorf("failed to register with remote control server. remove control not available: %s", err)
 		conn.Close()
 		gconn.Close()
 		return
 	}
-
-	p.log.Debugf("register response: %#v\n", authResp)
 
 	if err := p.startGRPCServer(srvConn, foremanAddr); err != nil {
 		p.log.Fatalf("unable to run remote control gRPC server: %s", err)
