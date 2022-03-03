@@ -97,10 +97,9 @@ func (p *Plumber) RunServer() error {
 	return nil
 }
 
-func (p *Plumber) runRemoteControl() {
-	// TODO: add CLI flag to enable remote control
+func (p *Plumber) runRemoteControl() bool {
 	if !p.Config.CLIOptions.Server.RemoteControlEnabled {
-		return
+		return true
 	}
 
 	p.log.Debug("starting remote control server...")
@@ -109,27 +108,26 @@ func (p *Plumber) runRemoteControl() {
 
 	conn, err := net.DialTimeout("tcp", foremanAddr, time.Second*5)
 	if err != nil {
-		p.log.Errorf("error dialing: %s", err)
-		return
+		p.log.Errorf("failed to register with remote control server. remove control not available: %s", err)
+		return false
 	}
 
-	srvConn, err := yamux.Client(conn, yamux.DefaultConfig())
+	foremanConn, err := yamux.Client(conn, yamux.DefaultConfig())
 	if err != nil {
 		p.log.Errorf("couldn't create yamux server: %s", err)
-		return
+		return false
 	}
 
-	// TODO: flag for foreman service address
-	gconn, err := grpc.Dial(foremanAddr, grpc.WithInsecure(), grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
-		return srvConn.Open()
+	foremanGRPCConn, err := grpc.Dial(foremanAddr, grpc.WithInsecure(), grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
+		return foremanConn.Open()
 	}))
 	if err != nil {
 		p.log.Errorf("failed to create grpc client: %s", err)
 		conn.Close()
-		return
+		return false
 	}
 
-	client := protos.NewForemanClientClient(gconn)
+	client := protos.NewForemanClientClient(foremanGRPCConn)
 	authResp, err := client.Register(context.Background(), &protos.RegisterRequest{
 		ApiToken:     "batchsh_319041f4b82fb7c0fe04b2598449a3e07effe66c2af5d54d13d6f6b1d2bb", // TODO: config via envar
 		ClusterId:    p.PersistentConfig.ClusterID,                                           // TODO: config via envar
@@ -139,22 +137,24 @@ func (p *Plumber) runRemoteControl() {
 	if !authResp.Success {
 		p.log.Errorf("failed to register with remote control server. remove control not available: %s", authResp.Message)
 		conn.Close()
-		gconn.Close()
-		return
+		foremanGRPCConn.Close()
+		return false
 	}
 
 	if err != nil {
 		p.log.Errorf("failed to register with remote control server. remove control not available: %s", err)
 		conn.Close()
-		gconn.Close()
-		return
+		foremanGRPCConn.Close()
+		return false
 	}
 
-	if err := p.startGRPCServer(srvConn, foremanAddr); err != nil {
+	if err := p.startGRPCServer(foremanConn, foremanAddr); err != nil {
 		p.log.Fatalf("unable to run remote control gRPC server: %s", err)
 	}
 
-	return
+	go p.watchForForemanDisconnect(foremanConn)
+
+	return true
 }
 
 func (p *Plumber) watchForForemanDisconnect(sess *yamux.Session) {
@@ -162,9 +162,22 @@ func (p *Plumber) watchForForemanDisconnect(sess *yamux.Session) {
 
 	<-ch
 
-	p.log.Info("Lost connection to remote control server. Remote control not available")
+	var i int
+	for {
+		retry := ForemanReconnectPolicy.Duration(i)
+		p.log.Errorf("No connection to remote control server. Remote control not available, attempting "+
+			"reconnect in %s", retry.String())
+		time.Sleep(retry)
 
-	// TODO: handle reconnects somehow?
+		if ok := p.runRemoteControl(); ok {
+			p.log.Info("Reconnected successfully to remote control server")
+			// Reconnected successfully, exit out of this goroutine
+			// Another one will be started for the new connection in runRemoteControl()
+			return
+		}
+
+		i++
+	}
 }
 
 func (p *Plumber) relaunchRelays() error {
