@@ -666,7 +666,7 @@ var _ = Describe("Functional", func() {
 		})
 	})
 
-	Describe("Mosquitto", func() {
+	XDescribe("Mosquitto", func() {
 
 		Describe("read/write", func() {
 			var topicName string
@@ -845,6 +845,7 @@ var _ = Describe("Functional", func() {
 			})
 		})
 	})
+
 	//
 	//Describe("ActiveMQ", func() {
 	//	Describe("read/write", func() {
@@ -1531,7 +1532,7 @@ var _ = Describe("Functional", func() {
 		})
 	})
 
-	Describe("Apache Pulsar", func() {
+	XDescribe("Apache Pulsar", func() {
 		Describe("read/write", func() {
 			var topicName string
 
