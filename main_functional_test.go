@@ -6,6 +6,7 @@
 // NOTE 1: You should probably have local instances of rabbit, kafka, etc. running
 // or  else the test suite will fail.
 
+//go:build functional
 // +build functional
 
 package main
@@ -717,7 +718,8 @@ var _ = Describe("Functional", func() {
 
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					defer cancel()
 
 					select {
 					case readGot := <-capture:
@@ -772,7 +774,8 @@ var _ = Describe("Functional", func() {
 
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					defer cancel()
 
 					select {
 					case readGot := <-capture:
@@ -829,7 +832,8 @@ var _ = Describe("Functional", func() {
 					writeWant := "Successfully wrote '1' message(s)"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					defer cancel()
 
 					select {
 					case readGot := <-capture:
@@ -1009,7 +1013,8 @@ var _ = Describe("Functional", func() {
 						"--input", testMessage,
 					)
 
-					ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					defer cancel()
 
 					writeOut, err := writeCmd.CombinedOutput()
 					Expect(err).ToNot(HaveOccurred())
@@ -1073,7 +1078,8 @@ var _ = Describe("Functional", func() {
 
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					defer cancel()
 
 					select {
 					case readGot := <-capture:
@@ -1130,7 +1136,8 @@ var _ = Describe("Functional", func() {
 					writeWant := "Successfully wrote '1' message(s)"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					defer cancel()
 
 					select {
 					case readGot := <-capture:
@@ -1166,7 +1173,7 @@ var _ = Describe("Functional", func() {
 							binary,
 							"read",
 							"redis-pubsub",
-							"--channel", topicName,
+							"--channels", topicName,
 						)
 
 						readOutput, err := readCmd.CombinedOutput()
@@ -1182,7 +1189,7 @@ var _ = Describe("Functional", func() {
 						binary,
 						"write",
 						"redis-pubsub",
-						"--channel", topicName,
+						"--channels", topicName,
 						"--input", testMessage,
 					)
 
@@ -1196,7 +1203,9 @@ var _ = Describe("Functional", func() {
 					writeWant := "Successfully wrote '1' message(s)"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					defer cancel()
+					time.Sleep(time.Millisecond * 100)
 
 					select {
 					case readGot := <-capture:
@@ -1221,7 +1230,7 @@ var _ = Describe("Functional", func() {
 							binary,
 							"read",
 							"redis-pubsub",
-							"--channel", topicName,
+							"--channels", topicName,
 						)
 
 						readOutput, err := readCmd.CombinedOutput()
@@ -1237,7 +1246,7 @@ var _ = Describe("Functional", func() {
 						binary,
 						"write",
 						"redis-pubsub",
-						"--channel", topicName,
+						"--channels", topicName,
 						"--encode-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dirs", protoSchemasDir,
@@ -1254,7 +1263,8 @@ var _ = Describe("Functional", func() {
 
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					defer cancel()
 
 					select {
 					case readGot := <-capture:
@@ -1281,7 +1291,7 @@ var _ = Describe("Functional", func() {
 							binary,
 							"read",
 							"redis-pubsub",
-							"--channel", topicName,
+							"--channels", topicName,
 							"--avro-schema-file", "./test-assets/avro/test.avsc",
 						)
 
@@ -1298,7 +1308,7 @@ var _ = Describe("Functional", func() {
 						binary,
 						"write",
 						"redis-pubsub",
-						"--channel", topicName,
+						"--channels", topicName,
 						"--input", testMessage,
 						"--avro-schema-file", "./test-assets/avro/test.avsc",
 					)
@@ -1313,7 +1323,8 @@ var _ = Describe("Functional", func() {
 					writeWant := "Successfully wrote '1' message(s)"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					defer cancel()
 
 					select {
 					case readGot := <-capture:
@@ -1351,7 +1362,7 @@ var _ = Describe("Functional", func() {
 							binary,
 							"read",
 							"redis-streams",
-							"--stream", topicName,
+							"--streams", topicName,
 							"--create-streams",
 						)
 
@@ -1369,7 +1380,7 @@ var _ = Describe("Functional", func() {
 						"write",
 						"redis-streams",
 						"--key", keyName,
-						"--stream", topicName,
+						"--streams", topicName,
 						"--input", testMessage,
 					)
 
@@ -1383,7 +1394,9 @@ var _ = Describe("Functional", func() {
 					writeWant := "Successfully wrote '1' message(s)"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					defer cancel()
+					time.Sleep(time.Millisecond * 1000)
 
 					select {
 					case readGot := <-capture:
@@ -1407,7 +1420,7 @@ var _ = Describe("Functional", func() {
 							binary,
 							"read",
 							"redis-streams",
-							"--stream", topicName,
+							"--streams", topicName,
 							"--create-streams",
 						)
 
@@ -1424,7 +1437,7 @@ var _ = Describe("Functional", func() {
 						binary,
 						"write",
 						"redis-streams",
-						"--stream", topicName,
+						"--streams", topicName,
 						"--key", keyName,
 						"--encode-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
@@ -1442,7 +1455,8 @@ var _ = Describe("Functional", func() {
 
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					defer cancel()
 
 					select {
 					case readGot := <-capture:
@@ -1469,7 +1483,7 @@ var _ = Describe("Functional", func() {
 							binary,
 							"read",
 							"redis-streams",
-							"--stream", topicName,
+							"--streams", topicName,
 							"--avro-schema-file", "./test-assets/avro/test.avsc",
 							"--create-streams",
 						)
@@ -1487,7 +1501,7 @@ var _ = Describe("Functional", func() {
 						binary,
 						"write",
 						"redis-streams",
-						"--stream", topicName,
+						"--streams", topicName,
 						"--key", keyName,
 						"--input", testMessage,
 						"--avro-schema-file", "./test-assets/avro/test.avsc",
@@ -1503,7 +1517,8 @@ var _ = Describe("Functional", func() {
 					writeWant := "Successfully wrote '1' message(s)"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					defer cancel()
 
 					select {
 					case readGot := <-capture:
@@ -1572,7 +1587,8 @@ var _ = Describe("Functional", func() {
 					writeWant := "Successfully wrote '1' message(s)"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					defer cancel()
 
 					select {
 					case readGot := <-capture:
@@ -1628,7 +1644,8 @@ var _ = Describe("Functional", func() {
 					writeWant := "Successfully wrote '1' message(s)"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					defer cancel()
 
 					select {
 					case readGot := <-capture:
@@ -1689,7 +1706,8 @@ var _ = Describe("Functional", func() {
 
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					defer cancel()
 
 					select {
 					case readGot := <-capture:
@@ -1751,7 +1769,8 @@ var _ = Describe("Functional", func() {
 					writeWant := "Successfully wrote '1' message(s)"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					ctx, _ := context.WithTimeout(context.Background(), time.Second*10)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					defer cancel()
 
 					select {
 					case readGot := <-capture:
