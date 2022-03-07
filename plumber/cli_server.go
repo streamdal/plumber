@@ -129,8 +129,8 @@ func (p *Plumber) runRemoteControl() bool {
 
 	client := protos.NewForemanClientClient(foremanGRPCConn)
 	authResp, err := client.Register(context.Background(), &protos.RegisterRequest{
-		ApiToken:     "batchsh_319041f4b82fb7c0fe04b2598449a3e07effe66c2af5d54d13d6f6b1d2bb", // TODO: config via envar
-		ClusterId:    p.PersistentConfig.ClusterID,                                           // TODO: config via envar
+		ApiToken:     p.Config.CLIOptions.Server.RemoteControlApiToken,
+		ClusterId:    p.Config.CLIOptions.Server.ClusterId,
 		PlumberToken: p.Config.CLIOptions.Server.AuthToken,
 		NodeId:       p.Config.CLIOptions.Server.NodeId,
 	})
