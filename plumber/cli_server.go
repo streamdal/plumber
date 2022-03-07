@@ -2,9 +2,12 @@ package plumber
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net"
 	"time"
+
+	"google.golang.org/grpc/credentials"
 
 	"github.com/hashicorp/yamux"
 	"github.com/pkg/errors"
@@ -118,9 +121,23 @@ func (p *Plumber) runRemoteControl() bool {
 		return false
 	}
 
-	foremanGRPCConn, err := grpc.Dial(foremanAddr, grpc.WithInsecure(), grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
+	dialOpts := make([]grpc.DialOption, 0)
+
+	if p.Config.CLIOptions.Server.RemoteControlDisableTls {
+		dialOpts = append(dialOpts, grpc.WithInsecure())
+	} else {
+		dialOpts = append(dialOpts, grpc.WithTransportCredentials(credentials.NewTLS(
+			&tls.Config{
+				InsecureSkipVerify: true,
+			},
+		)))
+	}
+
+	dialOpts = append(dialOpts, grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 		return foremanConn.Open()
 	}))
+
+	foremanGRPCConn, err := grpc.Dial(foremanAddr, dialOpts...)
 	if err != nil {
 		p.log.Errorf("failed to create grpc client: %s", err)
 		conn.Close()
@@ -134,15 +151,15 @@ func (p *Plumber) runRemoteControl() bool {
 		PlumberToken: p.Config.CLIOptions.Server.AuthToken,
 		NodeId:       p.Config.CLIOptions.Server.NodeId,
 	})
-	if !authResp.Success {
-		p.log.Errorf("failed to register with remote control server. remove control not available: %s", authResp.Message)
+	if err != nil {
+		p.log.Errorf("failed to register with remote control server. remove control not available: %s", err)
 		conn.Close()
 		foremanGRPCConn.Close()
 		return false
 	}
 
-	if err != nil {
-		p.log.Errorf("failed to register with remote control server. remove control not available: %s", err)
+	if !authResp.Success {
+		p.log.Errorf("failed to register with remote control server. remove control not available: %s", authResp.Message)
 		conn.Close()
 		foremanGRPCConn.Close()
 		return false
