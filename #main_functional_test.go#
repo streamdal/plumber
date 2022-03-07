@@ -1,4 +1,4 @@
-// This package will perform _functional_ testing of the plumber CLI tool.
+\0;95;0c// This package will perform _functional_ testing of the plumber CLI tool.
 //
 // It is going to perform a single, OS-specific compile via `make` and then
 // re-execute the built binary over and over.
@@ -6,6 +6,7 @@
 // NOTE 1: You should probably have local instances of rabbit, kafka, etc. running
 // or  else the test suite will fail.
 
+//go:build functional
 // +build functional
 
 package main
