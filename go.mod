@@ -38,7 +38,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.10 // indirect
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.3.0
 	github.com/mcuadros/go-lookup v0.0.0-20200831155250-80f87a4fa5ee
-	github.com/nakabonne/tstorage v0.3.5
+	github.com/nakabonne/tstorage v0.3.5 // indirect
 	github.com/nats-io/nats-streaming-server v0.24.1 // indirect
 	github.com/nats-io/nats.go v1.13.1-0.20220121202836-972a071d373d
 	github.com/nats-io/stan.go v0.10.2

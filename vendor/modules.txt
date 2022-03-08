@@ -347,11 +347,6 @@ github.com/modern-go/reflect2
 github.com/mtibben/percent
 # github.com/nakabonne/tstorage v0.3.5
 ## explicit
-github.com/nakabonne/tstorage
-github.com/nakabonne/tstorage/internal/cgroup
-github.com/nakabonne/tstorage/internal/encoding
-github.com/nakabonne/tstorage/internal/syscall
-github.com/nakabonne/tstorage/internal/timerpool
 # github.com/nats-io/nats-streaming-server v0.24.1
 ## explicit
 # github.com/nats-io/nats.go v1.13.1-0.20220121202836-972a071d373d
