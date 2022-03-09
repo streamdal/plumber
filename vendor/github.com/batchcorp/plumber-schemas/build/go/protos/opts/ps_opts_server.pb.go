@@ -57,12 +57,12 @@ type ServerOptions struct {
 	HttpListenAddress string `protobuf:"bytes,16,opt,name=http_listen_address,json=httpListenAddress,proto3" json:"http_listen_address,omitempty" kong:"help='What address to bind the built-in HTTP server to',default='0.0.0.0:9191'"`
 	// @gotags: kong:"help='Allow plumber to be controlled from https://console.batch.sh',env='PLUMBER_REMOTE_CONTROL_ENABLED',default=false"
 	RemoteControlEnabled bool `protobuf:"varint,17,opt,name=remote_control_enabled,json=remoteControlEnabled,proto3" json:"remote_control_enabled,omitempty" kong:"help='Allow plumber to be controlled from https://console.batch.sh',env='PLUMBER_REMOTE_CONTROL_ENABLED',default=false"`
-	// @gotags: kong:"help='Address of Batch.sh Plumber remote control service',env='PLUMBER_REMOTE_CONTROL_ADDRESS',default='0.0.0.0:9897'"
-	RemoteControlAddress string `protobuf:"bytes,18,opt,name=remote_control_address,json=remoteControlAddress,proto3" json:"remote_control_address,omitempty" kong:"help='Address of Batch.sh Plumber remote control service',env='PLUMBER_REMOTE_CONTROL_ADDRESS',default='0.0.0.0:9897'"`
+	// @gotags: kong:"help='Address of Batch.sh Plumber remote control service',env='PLUMBER_REMOTE_CONTROL_ADDRESS',default='foreman.batch.sh:443'"
+	RemoteControlAddress string `protobuf:"bytes,18,opt,name=remote_control_address,json=remoteControlAddress,proto3" json:"remote_control_address,omitempty" kong:"help='Address of Batch.sh Plumber remote control service',env='PLUMBER_REMOTE_CONTROL_ADDRESS',default='foreman.batch.sh:443'"`
 	// @gotags: kong:"help='Batch.sh API token, needed to access remote control service',env='PLUMBER_REMOTE_CONTROL_API_TOKEN'"
 	RemoteControlApiToken string `protobuf:"bytes,19,opt,name=remote_control_api_token,json=remoteControlApiToken,proto3" json:"remote_control_api_token,omitempty" kong:"help='Batch.sh API token, needed to access remote control service',env='PLUMBER_REMOTE_CONTROL_API_TOKEN'"`
-	// @gotags: kong:"help='Connect to remove control server without TLS',default=false"
-	RemoteControlDisableTls bool     `protobuf:"varint,20,opt,name=remote_control_disable_tls,json=remoteControlDisableTls,proto3" json:"remote_control_disable_tls,omitempty" kong:"help='Connect to remove control server without TLS',default=false"`
+	// @gotags: kong:"help='Connect to remote control server without TLS',default=false"
+	RemoteControlDisableTls bool     `protobuf:"varint,20,opt,name=remote_control_disable_tls,json=remoteControlDisableTls,proto3" json:"remote_control_disable_tls,omitempty" kong:"help='Connect to remote control server without TLS',default=false"`
 	XXX_NoUnkeyedLiteral    struct{} `json:"-"`
 	XXX_unrecognized        []byte   `json:"-"`
 	XXX_sizecache           int32    `json:"-"`
