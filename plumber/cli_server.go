@@ -101,8 +101,12 @@ func (p *Plumber) RunServer() error {
 }
 
 func (p *Plumber) runRemoteControl() bool {
-	if !p.Config.CLIOptions.Server.RemoteControlEnabled {
+	if !p.CLIOptions.Server.RemoteControlEnabled {
 		return true
+	}
+
+	if p.CLIOptions.Server.RemoteControlApiToken == "" {
+		p.log.Fatalf("Remote control requires --remote-control-api-token or PLUMBER_REMOTE_CONTROL_API_TOKEN to be specified")
 	}
 
 	p.log.Debug("starting remote control server...")
@@ -111,7 +115,7 @@ func (p *Plumber) runRemoteControl() bool {
 
 	conn, err := net.DialTimeout("tcp", foremanAddr, time.Second*5)
 	if err != nil {
-		p.log.Errorf("failed to register with remote control server. remove control not available: %s", err)
+		p.log.Errorf("failed to register with remote control server. remote control not available: %s", err)
 		return false
 	}
 
@@ -152,14 +156,14 @@ func (p *Plumber) runRemoteControl() bool {
 		NodeId:       p.Config.CLIOptions.Server.NodeId,
 	})
 	if err != nil {
-		p.log.Errorf("failed to register with remote control server. remove control not available: %s", err)
+		p.log.Errorf("failed to register with remote control server. remote control not available: %s", err)
 		conn.Close()
 		foremanGRPCConn.Close()
 		return false
 	}
 
 	if !authResp.Success {
-		p.log.Errorf("failed to register with remote control server. remove control not available: %s", authResp.Message)
+		p.log.Errorf("failed to register with remote control server. remote control not available: %s", authResp.Message)
 		conn.Close()
 		foremanGRPCConn.Close()
 		return false
