@@ -6,6 +6,7 @@
 // NOTE 1: You should probably have local instances of rabbit, kafka, etc. running
 // or  else the test suite will fail.
 
+//go:build functional
 // +build functional
 
 package main
@@ -847,12 +848,39 @@ var _ = Describe("Functional", func() {
 
 	Describe("ActiveMQ", func() {
 		Describe("read/write", func() {
-			Context("plain input, plain output", func() {
+			var queueName string
+
+			BeforeEach(func() {
+				queueName = fmt.Sprintf("TestQueue%d", rand.Int())
+			})
+
+			Context("plain input and output", func() {
 				It("should work", func() {
-					var queueName string = fmt.Sprintf("TestQueue%d", rand.Int())
 					const testMessage string = "welovemessaging"
 
-					// First write the message
+					capture := make(chan string, 1)
+					defer close(capture)
+
+					// Run NATS reader command
+					go func(out chan string) {
+						defer GinkgoRecover()
+
+						readCmd := exec.Command(
+							binary,
+							"read",
+							"activemq",
+							"--queue", queueName,
+						)
+
+						readOutput, err := readCmd.CombinedOutput()
+						Expect(err).ToNot(HaveOccurred())
+						out <- string(readOutput)
+					}(capture)
+
+					// Wait for reader to start up
+					time.Sleep(time.Millisecond * 100)
+
+					// reader is ready, write the message to ActiveMQ
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -861,33 +889,56 @@ var _ = Describe("Functional", func() {
 						"--input", testMessage,
 					)
 
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					defer cancel()
+					time.Sleep(time.Second * 1)
+
 					writeOut, err := writeCmd.CombinedOutput()
 					Expect(err).ToNot(HaveOccurred())
 
 					writeGot := string(writeOut)
+
 					writeWant := "Successfully wrote '1' message(s)"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					// Now try and read from the queue
-					readCmd := exec.Command(
-						binary,
-						"read",
-						"activemq",
-						"--queue", queueName,
-					)
-
-					readOutput, err := readCmd.CombinedOutput()
-					Expect(err).ToNot(HaveOccurred())
-
-					readGot := string(readOutput)
-					Expect(readGot).To(ContainSubstring(testMessage))
+					select {
+					case readGot := <-capture:
+						Expect(readGot).To(ContainSubstring(testMessage))
+					case <-ctx.Done():
+						Fail("timed out waiting for activeMQ message")
+					}
 				})
 			})
 
 			Context("jsonpb input, protobuf output", func() {
 				It("should work", func() {
-					var queueName string = fmt.Sprintf("TestQueue%d", rand.Int())
 
+					capture := make(chan string, 1)
+					defer close(capture)
+
+					// Run ActiveMQ reader command
+					go func(out chan string) {
+						defer GinkgoRecover()
+
+						readCmd := exec.Command(
+							binary,
+							"read",
+							"activemq",
+							"--queue", queueName,
+							"--decode-type", "protobuf",
+							"--protobuf-dirs", protoSchemasDir,
+							"--protobuf-root-message", "events.Outbound",
+						)
+
+						readOutput, err := readCmd.CombinedOutput()
+						Expect(err).ToNot(HaveOccurred())
+						out <- string(readOutput)
+					}(capture)
+
+					// Wait for reader to start up
+					time.Sleep(time.Millisecond * 50)
+
+					// reader is ready, write the message to ActiveMQ
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -907,63 +958,76 @@ var _ = Describe("Functional", func() {
 
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					// Now try and read from the queue
-					readCmd := exec.Command(
-						binary,
-						"read",
-						"activemq",
-						"--queue", queueName,
-						"--decode-type", "protobuf",
-						"--protobuf-dirs", protoSchemasDir,
-						"--protobuf-root-message", "events.Outbound",
-					)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					defer cancel()
+					time.Sleep(time.Second * 1)
 
-					readOut, err := readCmd.CombinedOutput()
-					Expect(err).ToNot(HaveOccurred())
-
-					readGot := string(readOut)
-					Expect(readGot).To(ContainSubstring("30ddb850-1aca-4ee5-870c-1bb7b339ee5d"))
-					Expect(readGot).To(ContainSubstring("eyJoZWxsbyI6ImRhbiJ9Cg=="))
+					select {
+					case readGot := <-capture:
+						Expect(readGot).To(ContainSubstring("30ddb850-1aca-4ee5-870c-1bb7b339ee5d"))
+						Expect(readGot).To(ContainSubstring("eyJoZWxsbyI6ImRhbiJ9Cg=="))
+					case <-ctx.Done():
+						Fail("timed out waiting for activeMQ message")
+					}
 				})
 			})
-		})
 
-		Context("avro and json", func() {
-			It("should work", func() {
-				var queueName string = fmt.Sprintf("TestQueue%d", rand.Int())
-				const testMessage string = "{\"company\":\"Batch Corp\"}"
+			Context("avro and json", func() {
+				It("should work", func() {
+					const testMessage string = "{\"company\":\"Batch Corp\"}"
 
-				// First write the message
-				writeCmd := exec.Command(
-					binary,
-					"write",
-					"activemq",
-					"--avro-schema-file", "./test-assets/avro/test.avsc",
-					"--queue", queueName,
-					"--input", testMessage,
-				)
+					capture := make(chan string, 1)
+					defer close(capture)
 
-				writeOut, err := writeCmd.CombinedOutput()
-				Expect(err).ToNot(HaveOccurred())
+					// Run ActiveMQ reader command
+					go func(out chan string) {
+						defer GinkgoRecover()
 
-				writeGot := string(writeOut)
-				writeWant := "Successfully wrote '1' message(s)"
-				Expect(writeGot).To(ContainSubstring(writeWant))
+						readCmd := exec.Command(
+							binary,
+							"read",
+							"activemq",
+							"--avro-schema-file", "./test-assets/avro/test.avsc",
+							"--queue", queueName,
+						)
 
-				// Now try and read from the queue
-				readCmd := exec.Command(
-					binary,
-					"read",
-					"activemq",
-					"--avro-schema-file", "./test-assets/avro/test.avsc",
-					"--queue", queueName,
-				)
+						readOutput, err := readCmd.CombinedOutput()
+						Expect(err).ToNot(HaveOccurred())
+						out <- string(readOutput)
+					}(capture)
 
-				readOutput, err := readCmd.CombinedOutput()
-				Expect(err).ToNot(HaveOccurred())
+					// Wait for reader to start up
+					time.Sleep(time.Millisecond * 50)
 
-				readGot := string(readOutput)
-				Expect(readGot).To(ContainSubstring(testMessage))
+					// First write the message to NATS
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"activemq",
+						"--avro-schema-file", "./test-assets/avro/test.avsc",
+						"--queue", queueName,
+						"--input", testMessage,
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					writeGot := string(writeOut)
+
+					writeWant := "Successfully wrote '1' message(s)"
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					defer cancel()
+					time.Sleep(time.Second * 1)
+
+					select {
+					case readGot := <-capture:
+						Expect(readGot).To(ContainSubstring(testMessage))
+					case <-ctx.Done():
+						Fail("timed out waiting for activeMQ message")
+					}
+				})
 			})
 		})
 	})
