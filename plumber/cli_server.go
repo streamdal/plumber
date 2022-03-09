@@ -7,12 +7,11 @@ import (
 	"net"
 	"time"
 
-	"google.golang.org/grpc/credentials"
-
 	"github.com/hashicorp/yamux"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber/api"
@@ -113,12 +112,15 @@ func (p *Plumber) runRemoteControl() bool {
 
 	foremanAddr := p.Config.CLIOptions.Server.RemoteControlAddress
 
+	// Establish a regular TCP connection to the foreman service
 	conn, err := net.DialTimeout("tcp", foremanAddr, time.Second*5)
 	if err != nil {
 		p.log.Errorf("failed to register with remote control server. remote control not available: %s", err)
 		return false
 	}
 
+	// Establish two-way communication with the foreman service
+	// We will talk gRPC to Foreman, and Foreman will talk gRPC to us
 	foremanConn, err := yamux.Client(conn, yamux.DefaultConfig())
 	if err != nil {
 		p.log.Errorf("couldn't create yamux server: %s", err)
@@ -141,6 +143,7 @@ func (p *Plumber) runRemoteControl() bool {
 		return foremanConn.Open()
 	}))
 
+	// Establish Plumber -> Foreman gRPC connection over our yamux session
 	foremanGRPCConn, err := grpc.Dial(foremanAddr, dialOpts...)
 	if err != nil {
 		p.log.Errorf("failed to create grpc client: %s", err)
@@ -148,6 +151,7 @@ func (p *Plumber) runRemoteControl() bool {
 		return false
 	}
 
+	// Register ourselves with the foreman service
 	client := protos.NewForemanClientClient(foremanGRPCConn)
 	authResp, err := client.Register(context.Background(), &protos.RegisterRequest{
 		ApiToken:     p.Config.CLIOptions.Server.RemoteControlApiToken,
@@ -169,20 +173,27 @@ func (p *Plumber) runRemoteControl() bool {
 		return false
 	}
 
+	// Start a second plumber gRPC server over the yamux session so that
+	// Foreman can send gRPC calls to this Plumber instance
 	if err := p.startGRPCServer(foremanConn, foremanAddr); err != nil {
 		p.log.Fatalf("unable to run remote control gRPC server: %s", err)
 	}
 
+	// Monitor for connection loss and attempt to reconnect
 	go p.watchForForemanDisconnect(foremanConn)
 
 	return true
 }
 
+// watchForForemanDisconnect watches for a disconnect from the foreman plumber control service
+// If it detects a disconnect, it will attempt to continually retry the connection
 func (p *Plumber) watchForForemanDisconnect(sess *yamux.Session) {
 	ch := sess.CloseChan()
 
+	// Block until connection is closed/lost
 	<-ch
 
+	// Try to reconnect w/backoff
 	var i int
 	for {
 		retry := ForemanReconnectPolicy.Duration(i)
