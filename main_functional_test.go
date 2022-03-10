@@ -6,7 +6,6 @@
 // NOTE 1: You should probably have local instances of rabbit, kafka, etc. running
 // or  else the test suite will fail.
 
-//go:build functional
 // +build functional
 
 package main
@@ -530,7 +529,7 @@ var _ = Describe("Functional", func() {
 		})
 	})
 
-	Describe("AWS SQS", func() {
+	XDescribe("AWS SQS", func() {
 
 		Describe("read/write", func() {
 			var queueName string
@@ -846,7 +845,7 @@ var _ = Describe("Functional", func() {
 		})
 	})
 
-	Describe("ActiveMQ", func() {
+	XDescribe("ActiveMQ", func() {
 		Describe("read/write", func() {
 			var queueName string
 
@@ -861,7 +860,7 @@ var _ = Describe("Functional", func() {
 					capture := make(chan string, 1)
 					defer close(capture)
 
-					// Run NATS reader command
+					// Run activemq reader command
 					go func(out chan string) {
 						defer GinkgoRecover()
 
@@ -878,7 +877,7 @@ var _ = Describe("Functional", func() {
 					}(capture)
 
 					// Wait for reader to start up
-					time.Sleep(time.Millisecond * 100)
+					time.Sleep(time.Millisecond * 500)
 
 					// reader is ready, write the message to ActiveMQ
 					writeCmd := exec.Command(
@@ -936,7 +935,7 @@ var _ = Describe("Functional", func() {
 					}(capture)
 
 					// Wait for reader to start up
-					time.Sleep(time.Millisecond * 50)
+					time.Sleep(time.Millisecond * 500)
 
 					// reader is ready, write the message to ActiveMQ
 					writeCmd := exec.Command(
@@ -997,7 +996,7 @@ var _ = Describe("Functional", func() {
 					}(capture)
 
 					// Wait for reader to start up
-					time.Sleep(time.Millisecond * 50)
+					time.Sleep(time.Millisecond * 500)
 
 					// First write the message to NATS
 					writeCmd := exec.Command(
@@ -1032,7 +1031,7 @@ var _ = Describe("Functional", func() {
 		})
 	})
 
-	Describe("NATS", func() {
+	XDescribe("NATS", func() {
 
 		Describe("read/write", func() {
 			var topicName string
