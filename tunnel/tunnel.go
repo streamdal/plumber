@@ -37,9 +37,20 @@ var (
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . ITunnel
 type ITunnel interface {
+	// Start is called by a backend's Tunnel() method. It authorizes the connection
+	// and begins reading a GRPC stream of responses consisting of Tunnel protobuf
+	// messages.
 	Start(ctx context.Context, bus string, errorCh chan<- *records.ErrorRecord) error
+
+	// Read returns a channel that will receive replay events from the dProxy service
 	Read() chan *events.Outbound
+
+	// Close closes the connection to dProxy service
 	Close() error
+
+	// Delete deletes a tunnel from dProxy and from ui-bff destinations.
+	// This should be called after the tunnel is deleted from the plumber cluster to ensure proper cleanup.
+	Delete(ctx context.Context, tunnelID string) error
 }
 
 type Client struct {
@@ -138,9 +149,6 @@ func (d *Client) Read() chan *events.Outbound {
 	return d.OutboundMessageCh
 }
 
-// Start is called by a backend's Tunnel() method. It authorizes the connection
-// and begins reading a GRPC stream of responses consisting of Tunnel protobuf
-// messages.
 func (d *Client) Start(ctx context.Context, bus string, errorCh chan<- *records.ErrorRecord) error {
 	go func() {
 		var err error
@@ -183,7 +191,7 @@ func (d *Client) Start(ctx context.Context, bus string, errorCh chan<- *records.
 				// Stream is no longer useful. Need to get a new one on reconnect
 				stream = nil
 
-				// Attempt reconnect. On the next loop iteration, stream == nil check will be hit, and assuming we've
+				// Attempt to reconnect. On the next loop iteration, stream == nil check will be hit, and assuming we've
 				// reconnected at that point, a new stream will be opened and authorized
 				d.reconnect()
 
@@ -203,6 +211,22 @@ func (d *Client) Start(ctx context.Context, bus string, errorCh chan<- *records.
 
 		d.log.Debug("Start() goroutine exiting")
 	}()
+
+	return nil
+}
+
+func (d *Client) Delete(ctx context.Context, tunnelID string) error {
+	resp, err := d.Client.DeleteTunnel(ctx, &events.DeleteTunnelRequest{
+		Token:            d.Token,
+		PlumberClusterId: d.PlumberClusterID,
+		TunnelId:         tunnelID,
+	})
+	if err != nil {
+		return errors.Wrapf(err, "unable to delete tunnel in dProxy service")
+	}
+	if !resp.Success {
+		return errors.New(resp.Message)
+	}
 
 	return nil
 }
