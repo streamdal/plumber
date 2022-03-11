@@ -2,7 +2,7 @@
 
 [![Master build status](https://github.com/batchcorp/plumber/workflows/master/badge.svg)](https://github.com/batchcorp/plumber/actions/workflows/master-test.yaml) [![Go Report Card](https://goreportcard.com/badge/github.com/batchcorp/plumber)](https://goreportcard.com/report/github.com/batchcorp/plumber)
 
-plumber is a CLI devtool for inspecting, piping, massaging and redirecting data
+plumber is a CLI devtool for inspecting, piping, messaging and redirecting data
 in message systems like Kafka, RabbitMQ , GCP PubSub and 
 [many more](#supported-messaging-systems). \[1]
 
