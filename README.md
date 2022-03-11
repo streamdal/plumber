@@ -124,6 +124,7 @@ INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
 * [docs/examples.md](https://github.com/batchcorp/plumber/blob/master/docs/examples.md) for more usage examples
 * [docs/env.md](https://github.com/batchcorp/plumber/blob/master/docs/env.md) for list of supported environment variables
 * [docs/metrics.md](https://github.com/batchcorp/plumber/blob/master/docs/metrics.md) for information on metrics that plumber exposes
+* [docs/server.md](https://github.com/batchcorp/plumber/blob/master/docs/server.md) for examples on running plumber in server mode
 
 ## Getting Help
 
@@ -228,6 +229,8 @@ for full documentation.
 highly available cluster.
 
 You can read more about "server mode" [here](https://docs.batch.sh/plumber/server-mode).
+
+Server mode examples can be found in [docs/server.md](https://github.com/batchcorp/plumber/blob/master/docs/server.md)
 
 ## Acknowledgments
 
