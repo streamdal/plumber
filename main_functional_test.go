@@ -1285,6 +1285,7 @@ var _ = Describe("Functional", func() {
 				It("should work", func() {
 					capture := make(chan string, 1)
 					defer close(capture)
+					defer GinkgoRecover()
 
 					// Run Jetstream reader command
 					go func(out chan string) {
@@ -1336,68 +1337,69 @@ var _ = Describe("Functional", func() {
 					}
 				})
 			})
+
 		})
 
-		Context("avro and json", func() {
-			streamName := fmt.Sprintf("FunctionalTestSteam-%d", rand.Int())
-			err := createNatsJsStream(streamName)
-			Expect(err).ToNot(HaveOccurred())
-
-			const testMessage string = "{\"company\":\"Batch Corp\"}"
-
-			capture := make(chan string, 1)
-			defer close(capture)
-
-			// Run Jetstream reader command
-			go func(out chan string) {
+		XDescribe("avro-json read/write", func() {
+			XContext("avro and json", func() {
 				defer GinkgoRecover()
 
-				readCmd := exec.Command(
+				streamName := fmt.Sprintf("FunctionalTestSteam-%d", rand.Int())
+				err := createNatsJsStream(streamName)
+				const testMessage string = "{\"company\":\"Batch Corp\"}"
+
+				capture := make(chan string, 1)
+				defer close(capture)
+
+				// Run Jetstream reader command
+				go func(out chan string) {
+					defer GinkgoRecover()
+
+					readCmd := exec.Command(
+						binary,
+						"read",
+						"nats-jetstream",
+						"--stream", streamName,
+						"--avro-schema-file", "./test-assets/avro/test.avsc",
+					)
+
+					readOutput, err := readCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+					out <- string(readOutput)
+				}(capture)
+
+				// Wait for reader to start up
+				time.Sleep(time.Millisecond * 100)
+
+				// reader is ready
+				writeCmd := exec.Command(
 					binary,
-					"read",
+					"write",
 					"nats-jetstream",
 					"--stream", streamName,
+					"--input", testMessage,
 					"--avro-schema-file", "./test-assets/avro/test.avsc",
 				)
 
-				readOutput, err := readCmd.CombinedOutput()
+				writeOut, err := writeCmd.CombinedOutput()
 				Expect(err).ToNot(HaveOccurred())
-				out <- string(readOutput)
-			}(capture)
 
-			// Wait for reader to start up
-			time.Sleep(time.Millisecond * 100)
+				writeGot := string(writeOut)
 
-			// reader is ready, write the message to RedisPubSub
-			writeCmd := exec.Command(
-				binary,
-				"write",
-				"nats-jetstream",
-				"--stream", streamName,
-				"--input", testMessage,
-				"--avro-schema-file", "./test-assets/avro/test.avsc",
-			)
+				writeWant := "Successfully wrote '1' message(s)"
+				Expect(writeGot).To(ContainSubstring(writeWant))
 
-			writeOut, err := writeCmd.CombinedOutput()
-			if err != nil {
-				Fail("write failed: " + string(writeOut))
-			}
+				ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+				defer cancel()
+				time.Sleep(time.Millisecond * 1000)
 
-			writeGot := string(writeOut)
-
-			writeWant := "Successfully wrote '1' message(s)"
-			Expect(writeGot).To(ContainSubstring(writeWant))
-
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-			defer cancel()
-			time.Sleep(time.Millisecond * 1000)
-
-			select {
-			case readGot := <-capture:
-				Expect(readGot).To(ContainSubstring(testMessage))
-			case <-ctx.Done():
-				Fail("timed out waiting for nats-jetstream message")
-			}
+				select {
+				case readGot := <-capture:
+					Expect(readGot).To(ContainSubstring(testMessage))
+				case <-ctx.Done():
+					Fail("timed out waiting for nats-jetstream message")
+				}
+			})
 		})
 	})
 
