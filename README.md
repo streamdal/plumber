@@ -244,6 +244,7 @@ To push a new plumber release:
 1. Watch the github action
 1. New release should be automatically created under https://github.com/batchcorp/plumber/releases/
 1. Update release to include any relevant info
+1. Update [homebrew](https://github.com/batchcorp/homebrew-public/blob/master/plumber.rb) SHA and version references
 
 ## Contribute
 
