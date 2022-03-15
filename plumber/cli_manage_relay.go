@@ -72,7 +72,7 @@ func (p *Plumber) HandleStopRelayCmd(ctx context.Context, client protos.PlumberS
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
 		},
-		RelayId: p.CLIOptions.Manage.Resume.Relay.Id,
+		RelayId: p.CLIOptions.Manage.Stop.Relay.Id,
 	})
 
 	if err != nil {
@@ -91,7 +91,7 @@ func (p *Plumber) HandleDeleteRelayCmd(ctx context.Context, client protos.Plumbe
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
 		},
-		RelayId: p.CLIOptions.Manage.Resume.Relay.Id,
+		RelayId: p.CLIOptions.Manage.Delete.Relay.Id,
 	})
 
 	if err != nil {
