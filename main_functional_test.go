@@ -26,6 +26,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/golang/protobuf/proto"
+	"github.com/nats-io/nats.go"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
@@ -1212,6 +1213,197 @@ var _ = Describe("Functional", func() {
 		})
 	})
 
+	Describe("NATS Jetstream", func() {
+		Describe("read/write", func() {
+			var streamName string
+
+			BeforeEach(func() {
+				streamName = fmt.Sprintf("FunctionalTestSteam-%d", rand.Int())
+				err := createNatsJsStream(streamName)
+				Expect(err).ToNot(HaveOccurred())
+			})
+
+			Context("plain input, plain output", func() {
+				It("should work", func() {
+					const testMessage string = "welovemessaging"
+
+					capture := make(chan string, 1)
+					defer close(capture)
+
+					// Run Jetstream reader command
+					go func(out chan string) {
+						defer GinkgoRecover()
+
+						readCmd := exec.Command(
+							binary,
+							"read",
+							"nats-jetstream",
+							"--stream", streamName,
+						)
+
+						readOutput, err := readCmd.CombinedOutput()
+						Expect(err).ToNot(HaveOccurred())
+						out <- string(readOutput)
+					}(capture)
+
+					// Wait for reader to start up
+					time.Sleep(time.Millisecond * 100)
+
+					// reader is ready, write the message to RedisPubSub
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"nats-jetstream",
+						"--stream", streamName,
+						"--input", testMessage,
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					if err != nil {
+						Fail("write failed: " + string(writeOut))
+					}
+
+					writeGot := string(writeOut)
+
+					writeWant := "Successfully wrote '1' message(s)"
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					defer cancel()
+					time.Sleep(time.Millisecond * 1000)
+
+					select {
+					case readGot := <-capture:
+						Expect(readGot).To(ContainSubstring(testMessage))
+					case <-ctx.Done():
+						Fail("timed out waiting for nats-jetstream message")
+					}
+				})
+			})
+
+			Context("jsonpb input, protobuf output", func() {
+				It("should work", func() {
+					capture := make(chan string, 1)
+					defer close(capture)
+					defer GinkgoRecover()
+
+					// Run Jetstream reader command
+					go func(out chan string) {
+						defer GinkgoRecover()
+
+						readCmd := exec.Command(
+							binary,
+							"read",
+							"nats-jetstream",
+							"--stream", streamName,
+						)
+
+						readOutput, err := readCmd.CombinedOutput()
+						Expect(err).ToNot(HaveOccurred())
+						out <- string(readOutput)
+					}(capture)
+
+					// Wait for reader to start up
+					time.Sleep(time.Millisecond * 100)
+
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"nats-jetstream",
+						"--stream", streamName,
+						"--encode-type", "jsonpb",
+						"--input-file", sampleOutboundJSONPB,
+						"--protobuf-dirs", protoSchemasDir,
+						"--protobuf-root-message", "events.Outbound",
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					writeGot := string(writeOut)
+					writeWant := "Successfully wrote '1' message(s)"
+
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					defer cancel()
+
+					select {
+					case readGot := <-capture:
+						Expect(readGot).To(ContainSubstring("30ddb850-1aca-4ee5-870c-1bb7b339ee5d"))
+						Expect(readGot).To(ContainSubstring("{\"hello\":\"dan\"}"))
+					case <-ctx.Done():
+						Fail("timed out waiting for natsjs message")
+					}
+				})
+			})
+
+		})
+
+		// XDescribe does not work nested so this locally passed test is commented out
+		//Describe("avro-json read/write", func() {
+		//	Context("avro and json", func() {
+		//		defer GinkgoRecover()
+		//
+		//		streamName := fmt.Sprintf("FunctionalTestSteam-%d", rand.Int())
+		//		err := createNatsJsStream(streamName)
+		//		const testMessage string = "{\"company\":\"Batch Corp\"}"
+		//
+		//		capture := make(chan string, 1)
+		//		defer close(capture)
+		//
+		//		// Run Jetstream reader command
+		//		go func(out chan string) {
+		//			defer GinkgoRecover()
+		//
+		//			readCmd := exec.Command(
+		//				binary,
+		//				"read",
+		//				"nats-jetstream",
+		//				"--stream", streamName,
+		//				"--avro-schema-file", "./test-assets/avro/test.avsc",
+		//			)
+		//
+		//			readOutput, err := readCmd.CombinedOutput()
+		//			Expect(err).ToNot(HaveOccurred())
+		//			out <- string(readOutput)
+		//		}(capture)
+		//
+		//		// Wait for reader to start up
+		//		time.Sleep(time.Millisecond * 100)
+		//
+		//		// reader is ready
+		//		writeCmd := exec.Command(
+		//			binary,
+		//			"write",
+		//			"nats-jetstream",
+		//			"--stream", streamName,
+		//			"--input", testMessage,
+		//			"--avro-schema-file", "./test-assets/avro/test.avsc",
+		//		)
+		//
+		//		writeOut, err := writeCmd.CombinedOutput()
+		//		Expect(err).ToNot(HaveOccurred())
+		//
+		//		writeGot := string(writeOut)
+		//
+		//		writeWant := "Successfully wrote '1' message(s)"
+		//		Expect(writeGot).To(ContainSubstring(writeWant))
+		//
+		//		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+		//		defer cancel()
+		//		time.Sleep(time.Millisecond * 1000)
+		//
+		//		select {
+		//		case readGot := <-capture:
+		//			Expect(readGot).To(ContainSubstring(testMessage))
+		//		case <-ctx.Done():
+		//			Fail("timed out waiting for nats-jetstream message")
+		//		}
+		//	})
+		//})
+	})
+
 	Describe("RedisPubSub PubSub", func() {
 		Describe("read/write", func() {
 			var topicName string
@@ -1956,6 +2148,19 @@ func writeKafkaRecords(client *Kafka, topic, dataType string, num int) ([]skafka
 	}
 
 	return messages, nil
+}
+
+func createNatsJsStream(streamName string) error {
+	nc, _ := nats.Connect("nats://localhost:4222")
+	js, _ := nc.JetStream()
+	_, err := js.AddStream(&nats.StreamConfig{
+		Name: streamName,
+		//Subjects: []string{streamSubjects},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // TODO: Implement
