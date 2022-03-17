@@ -666,7 +666,7 @@ var _ = Describe("Functional", func() {
 		})
 	})
 
-	XDescribe("Mosquitto", func() {
+	Describe("Mosquitto", func() {
 
 		Describe("read/write", func() {
 			var topicName string
@@ -699,7 +699,7 @@ var _ = Describe("Functional", func() {
 					}(capture)
 
 					// Wait for reader to start up
-					time.Sleep(time.Millisecond * 100)
+					time.Sleep(time.Second * 1)
 
 					// reader is ready, write the message to MQTT
 					writeCmd := exec.Command(
@@ -718,7 +718,7 @@ var _ = Describe("Functional", func() {
 
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
 					defer cancel()
 
 					select {
@@ -752,7 +752,7 @@ var _ = Describe("Functional", func() {
 					}(capture)
 
 					// Wait for reader to start up
-					time.Sleep(time.Millisecond * 50)
+					time.Sleep(time.Second * 1)
 
 					// reader is ready, write the message to MQTT
 					writeCmd := exec.Command(
@@ -774,7 +774,7 @@ var _ = Describe("Functional", func() {
 
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
 					defer cancel()
 
 					select {
@@ -812,7 +812,7 @@ var _ = Describe("Functional", func() {
 					}(capture)
 
 					// Wait for reader to start up
-					time.Sleep(time.Millisecond * 50)
+					time.Sleep(time.Second * 1)
 
 					// First write the message to MQTT
 					writeCmd := exec.Command(
@@ -832,7 +832,7 @@ var _ = Describe("Functional", func() {
 					writeWant := "Successfully wrote '1' message(s)"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
 					defer cancel()
 
 					select {
