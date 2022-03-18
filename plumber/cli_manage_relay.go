@@ -4,10 +4,11 @@ import (
 	"context"
 	"strings"
 
+	"github.com/pkg/errors"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/pkg/errors"
 )
 
 func (p *Plumber) HandleGetRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
@@ -131,11 +132,14 @@ func (p *Plumber) HandleCreateRelayCmd(ctx context.Context, client protos.Plumbe
 
 func generateRelayOptionsForManageCreate(cliOpts *opts.CLIOptions) (*opts.RelayOptions, error) {
 	relayOpts := &opts.RelayOptions{
-		CollectionToken: cliOpts.Manage.Create.Relay.CollectionToken,
-		BatchSize:       cliOpts.Manage.Create.Relay.BatchSize,
-		BatchMaxRetry:   cliOpts.Manage.Create.Relay.BatchMaxRetry,
-		ConnectionId:    cliOpts.Manage.Create.Relay.ConnectionId,
-		NumWorkers:      cliOpts.Manage.Create.Relay.NumWorkers,
+		CollectionToken:            cliOpts.Manage.Create.Relay.CollectionToken,
+		BatchSize:                  cliOpts.Manage.Create.Relay.BatchSize,
+		BatchMaxRetry:              cliOpts.Manage.Create.Relay.BatchMaxRetry,
+		ConnectionId:               cliOpts.Manage.Create.Relay.ConnectionId,
+		NumWorkers:                 cliOpts.Manage.Create.Relay.NumWorkers,
+		XBatchshGrpcAddress:        cliOpts.Manage.Create.Relay.BatchshGrpcAddress,
+		XBatchshGrpcDisableTls:     cliOpts.Manage.Create.Relay.BatchshGrpcDisableTls,
+		XBatchshGrpcTimeoutSeconds: cliOpts.Manage.Create.Relay.BatchshGrpcTimeoutSeconds,
 	}
 
 	// We need to assign the CLI opts to the correct backend field in the request.
