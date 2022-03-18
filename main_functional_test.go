@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
+	"os"
 	"os/exec"
 	"runtime"
 	"time"
@@ -2034,6 +2035,176 @@ var _ = Describe("Functional", func() {
 					}
 				})
 			})
+		})
+	})
+
+	Describe("plumber manage subcommands", func() {
+		Describe("blah", func() {
+
+		})
+		var connName string
+		var connId string
+
+		BeforeEach(func() {
+			// create a connection
+			type CreateConnResp struct {
+				ConnectionId string `json:"connectionId"`
+			}
+
+			connName = fmt.Sprintf("FunctionalTestConnection-%d", rand.Int())
+			createConnCmd := exec.Command(
+				binary,
+				"manage",
+				"create",
+				"connection",
+				"kafka",
+				"--name", connName,
+				"--address", "localhost:9092",
+			)
+			out, err := createConnCmd.CombinedOutput()
+			Expect(err).ToNot(HaveOccurred())
+
+			resp := CreateConnResp{}
+			json.Unmarshal(out, &resp)
+
+			connId = resp.ConnectionId
+		})
+
+		AfterEach(func() {
+			// delete the connection
+			deleteConnCmd := exec.Command(
+				binary,
+				"manage",
+				"delete",
+				"connection",
+				"--id", connId,
+			)
+			_, err := deleteConnCmd.CombinedOutput()
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		Describe("relay", func() {
+			var relayId string
+			type createRelayResp struct {
+				RelayId string `json:"relayId"`
+				Status  struct {
+					Message   string `json:"message"`
+					RequestId string `json:"requestId"`
+				} `json:"status"`
+			}
+
+			It("create should work", func() {
+				testCollectionToken := os.Getenv("TEST_COLLECTION_TOKEN")
+				if testCollectionToken == "" {
+					defer GinkgoRecover()
+					Skip("Cannot test, no collection token")
+				}
+
+				createRelayCmd := exec.Command(
+					binary,
+					"manage",
+					"create",
+					"relay",
+					"kafka",
+					"--batchsh-grpc-address", "grpc-collector.dev.batch.sh:9000",
+					"--connection-id", connId,
+					"--collection-token", testCollectionToken,
+					"--topics", "foo",
+				)
+				out, err := createRelayCmd.CombinedOutput()
+				Expect(err).ToNot(HaveOccurred())
+
+				resp := createRelayResp{}
+				json.Unmarshal(out, &resp)
+				Expect(resp.Status.Message).To(ContainSubstring("Relay started"))
+
+				relayId = resp.RelayId
+				fmt.Sprintf(relayId)
+			})
+
+			It("get should work", func() {
+				if relayId == "" {
+					defer GinkgoRecover()
+					Skip("Cannot test, no collection token in creation")
+				}
+
+				type getRelayResp struct {
+					Opts struct {
+						RelayId string `json:"RelayId"`
+					}
+				}
+				getRelayCmd := exec.Command(
+					binary,
+					"manage",
+					"get",
+					"relay",
+					"--id", relayId,
+				)
+				out, err := getRelayCmd.CombinedOutput()
+				Expect(err).ToNot(HaveOccurred())
+				resp := getRelayResp{}
+				json.Unmarshal(out, &resp)
+
+				Expect(resp.Opts.RelayId).To(Equal(relayId))
+			})
+
+			It("stop should work", func() {
+				if relayId == "" {
+					defer GinkgoRecover()
+					Skip("Cannot test, no collection token in creation")
+				}
+
+				type stopRelayResp struct {
+					Status struct {
+						Message   string `json:"message"`
+						RequestId string `json:"requestId"`
+					} `json:"status"`
+				}
+				stopRelayCmd := exec.Command(
+					binary,
+					"manage",
+					"stop",
+					"relay",
+					"--id", relayId,
+				)
+				out, err := stopRelayCmd.CombinedOutput()
+				Expect(err).ToNot(HaveOccurred())
+				resp := stopRelayResp{}
+				json.Unmarshal(out, &resp)
+
+				Expect(resp.Status.Message).To(ContainSubstring("Relay stopped"))
+			})
+
+			It("resume should work", func() {
+				if relayId == "" {
+					defer GinkgoRecover()
+					Skip("Cannot test, no collection token in creation")
+				}
+
+				type resumeRelayResp struct {
+					Status struct {
+						Message   string `json:"message"`
+						RequestId string `json:"requestId"`
+					} `json:"status"`
+				}
+				resumeRelayCmd := exec.Command(
+					binary,
+					"manage",
+					"resume",
+					"relay",
+					"--id", relayId,
+				)
+				out, err := resumeRelayCmd.CombinedOutput()
+				Expect(err).ToNot(HaveOccurred())
+				resp := resumeRelayResp{}
+				json.Unmarshal(out, &resp)
+
+				Expect(resp.Status.Message).To(ContainSubstring("Relay resumed"))
+			})
+		})
+
+		Describe("tunnel", func() {
+
 		})
 	})
 })
