@@ -304,6 +304,9 @@ func (c *Config) GetRelay(relayID string) *stypes.Relay {
 // SetRelay saves a relay to in-memory map
 func (c *Config) SetRelay(relayID string, relay *stypes.Relay) {
 	c.RelaysMutex.Lock()
+	if c.Relays == nil {
+		c.Relays = make(map[string]*stypes.Relay)
+	}
 	c.Relays[relayID] = relay
 	c.RelaysMutex.Unlock()
 }
@@ -354,6 +357,9 @@ func (c *Config) SetTunnel(tunnelID string, tunnel *stypes.Tunnel) {
 	c.TunnelsMutex.Lock()
 	defer c.TunnelsMutex.Unlock()
 
+	if c.Tunnels == nil {
+		c.Tunnels = make(map[string]*stypes.Tunnel)
+	}
 	c.Tunnels[tunnelID] = tunnel
 }
 
