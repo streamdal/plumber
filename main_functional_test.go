@@ -6,6 +6,7 @@
 // NOTE 1: You should probably have local instances of rabbit, kafka, etc. running
 // or  else the test suite will fail.
 
+//go:build functional
 // +build functional
 
 package main
@@ -2039,9 +2040,6 @@ var _ = Describe("Functional", func() {
 	})
 
 	Describe("plumber manage subcommands", func() {
-		Describe("blah", func() {
-
-		})
 		var connName string
 		var connId string
 
