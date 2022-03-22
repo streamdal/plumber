@@ -90,7 +90,7 @@ func (s *Server) CreateTunnel(ctx context.Context, req *protos.CreateTunnelReque
 	return &protos.CreateTunnelResponse{
 		Status: &common.Status{
 			Code:      common.Code_OK,
-			Message:   "Tunnel tunnel created",
+			Message:   "Tunnel created",
 			RequestId: uuid.NewV4().String(),
 		},
 		TunnelId: d.Id,

@@ -4,10 +4,11 @@ import (
 	"context"
 	"strings"
 
+	"github.com/pkg/errors"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/pkg/errors"
 )
 
 func (p *Plumber) HandleGetTunnelCmd(ctx context.Context, client protos.PlumberServerClient) error {
@@ -96,7 +97,7 @@ func (p *Plumber) HandleStopTunnelCmd(ctx context.Context, client protos.Plumber
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
 		},
-		TunnelId: p.CLIOptions.Manage.Delete.Tunnel.Id,
+		TunnelId: p.CLIOptions.Manage.Stop.Tunnel.Id,
 	})
 
 	if err != nil {
@@ -115,7 +116,7 @@ func (p *Plumber) HandleResumeTunnelCmd(ctx context.Context, client protos.Plumb
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
 		},
-		TunnelId: p.CLIOptions.Manage.Delete.Tunnel.Id,
+		TunnelId: p.CLIOptions.Manage.Resume.Tunnel.Id,
 	})
 
 	if err != nil {
