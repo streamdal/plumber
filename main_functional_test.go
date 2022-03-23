@@ -6,7 +6,6 @@
 // NOTE 1: You should probably have local instances of rabbit, kafka, etc. running
 // or  else the test suite will fail.
 
-//go:build functional
 // +build functional
 
 package main
@@ -2039,169 +2038,314 @@ var _ = Describe("Functional", func() {
 		})
 	})
 
-	Describe("plumber manage subcommands", func() {
-		var connName string
-		var connId string
+	Describe("manage subcommand", func() {
+		Describe("kafka", func() {
+			Describe("relay", func() {
+				var connId string
+				var relayId string
 
-		BeforeEach(func() {
-			// create a connection
-			type CreateConnResp struct {
-				ConnectionId string `json:"connectionId"`
-			}
-
-			connName = fmt.Sprintf("FunctionalTestConnection-%d", rand.Int())
-			createConnCmd := exec.Command(
-				binary,
-				"manage",
-				"create",
-				"connection",
-				"kafka",
-				"--name", connName,
-				"--address", "localhost:9092",
-			)
-			out, err := createConnCmd.CombinedOutput()
-			Expect(err).ToNot(HaveOccurred())
-
-			resp := CreateConnResp{}
-			json.Unmarshal(out, &resp)
-
-			connId = resp.ConnectionId
-		})
-
-		AfterEach(func() {
-			// delete the connection
-			deleteConnCmd := exec.Command(
-				binary,
-				"manage",
-				"delete",
-				"connection",
-				"--id", connId,
-			)
-			_, err := deleteConnCmd.CombinedOutput()
-			Expect(err).ToNot(HaveOccurred())
-		})
-
-		Describe("relay", func() {
-			var relayId string
-			type createRelayResp struct {
-				RelayId string `json:"relayId"`
-				Status  struct {
-					Message   string `json:"message"`
-					RequestId string `json:"requestId"`
-				} `json:"status"`
-			}
-
-			It("create should work", func() {
-				testCollectionToken := os.Getenv("TEST_COLLECTION_TOKEN")
-				if testCollectionToken == "" {
-					defer GinkgoRecover()
-					Skip("Cannot test, no collection token")
-				}
-
-				createRelayCmd := exec.Command(
-					binary,
-					"manage",
-					"create",
-					"relay",
-					"kafka",
-					"--batchsh-grpc-address", "grpc-collector.dev.batch.sh:9000",
-					"--connection-id", connId,
-					"--collection-token", testCollectionToken,
-					"--topics", "foo",
-				)
-				out, err := createRelayCmd.CombinedOutput()
-				Expect(err).ToNot(HaveOccurred())
-
-				resp := createRelayResp{}
-				json.Unmarshal(out, &resp)
-				Expect(resp.Status.Message).To(ContainSubstring("Relay started"))
-
-				relayId = resp.RelayId
-				fmt.Sprintf(relayId)
-			})
-
-			It("get should work", func() {
-				if relayId == "" {
-					defer GinkgoRecover()
-					Skip("Cannot test, no collection token in creation")
-				}
-
-				type getRelayResp struct {
-					Opts struct {
-						RelayId string `json:"RelayId"`
+				It("create should work", func() {
+					connId = createKafkaConnection(binary)
+					type createRelayResp struct {
+						RelayId string `json:"relayId"`
+						Status  struct {
+							Message   string `json:"message"`
+							RequestId string `json:"requestId"`
+						} `json:"status"`
 					}
-				}
-				getRelayCmd := exec.Command(
-					binary,
-					"manage",
-					"get",
-					"relay",
-					"--id", relayId,
-				)
-				out, err := getRelayCmd.CombinedOutput()
-				Expect(err).ToNot(HaveOccurred())
-				resp := getRelayResp{}
-				json.Unmarshal(out, &resp)
+					testCollectionToken := os.Getenv("TEST_COLLECTION_TOKEN")
+					if testCollectionToken == "" {
+						defer GinkgoRecover()
+						Skip("Cannot test, no collection token")
+					}
 
-				Expect(resp.Opts.RelayId).To(Equal(relayId))
+					createRelayCmd := exec.Command(
+						binary,
+						"manage",
+						"create",
+						"relay",
+						"kafka",
+						"--batchsh-grpc-address", "grpc-collector.dev.batch.sh:9000",
+						"--connection-id", connId,
+						"--collection-token", testCollectionToken,
+						"--topics", "foo",
+					)
+					out, err := createRelayCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					resp := createRelayResp{}
+					json.Unmarshal(out, &resp)
+					Expect(resp.Status.Message).To(ContainSubstring("Relay started"))
+
+					relayId = resp.RelayId
+				})
+
+				It("get should work", func() {
+					if relayId == "" {
+						defer GinkgoRecover()
+						Skip("Cannot test, no collection token in creation")
+					}
+
+					type getRelayResp struct {
+						Opts struct {
+							RelayId string `json:"RelayId"`
+						}
+					}
+					getRelayCmd := exec.Command(
+						binary,
+						"manage",
+						"get",
+						"relay",
+						"--id", relayId,
+					)
+					out, err := getRelayCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+					resp := getRelayResp{}
+					json.Unmarshal(out, &resp)
+
+					Expect(resp.Opts.RelayId).To(Equal(relayId))
+				})
+
+				It("stop should work", func() {
+					if relayId == "" {
+						defer GinkgoRecover()
+						Skip("Cannot test, no collection token in creation")
+					}
+
+					type stopRelayResp struct {
+						Status struct {
+							Message   string `json:"message"`
+							RequestId string `json:"requestId"`
+						} `json:"status"`
+					}
+					stopRelayCmd := exec.Command(
+						binary,
+						"manage",
+						"stop",
+						"relay",
+						"--id", relayId,
+					)
+					out, err := stopRelayCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+					resp := stopRelayResp{}
+					json.Unmarshal(out, &resp)
+
+					Expect(resp.Status.Message).To(ContainSubstring("Relay stopped"))
+				})
+
+				It("resume should work", func() {
+					if relayId == "" {
+						defer GinkgoRecover()
+						Skip("Cannot test, no collection token in creation")
+					}
+
+					type resumeRelayResp struct {
+						Status struct {
+							Message   string `json:"message"`
+							RequestId string `json:"requestId"`
+						} `json:"status"`
+					}
+					resumeRelayCmd := exec.Command(
+						binary,
+						"manage",
+						"resume",
+						"relay",
+						"--id", relayId,
+					)
+					out, err := resumeRelayCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+					resp := resumeRelayResp{}
+					json.Unmarshal(out, &resp)
+
+					Expect(resp.Status.Message).To(ContainSubstring("Relay resumed"))
+				})
+
+				It("delete should work", func() {
+					if relayId == "" {
+						defer GinkgoRecover()
+						Skip("Cannot test, no collection token in creation")
+					}
+
+					// resume
+					type deleteRelayResp struct {
+						Status struct {
+							Message   string `json:"message"`
+							RequestId string `json:"requestId"`
+						} `json:"status"`
+					}
+					deleteRelayCmd := exec.Command(
+						binary,
+						"manage",
+						"delete",
+						"relay",
+						"--id", relayId,
+					)
+					out, err := deleteRelayCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+					resp := deleteRelayResp{}
+					json.Unmarshal(out, &resp)
+
+					Expect(resp.Status.Message).To(ContainSubstring("Relay deleted"))
+
+					// delete connection
+					deleteKafkaConnection(binary, connId)
+				})
 			})
 
-			It("stop should work", func() {
-				if relayId == "" {
-					defer GinkgoRecover()
-					Skip("Cannot test, no collection token in creation")
-				}
+			Describe("tunnel", func() {
+				var connId string
+				var tunnelId string
 
-				type stopRelayResp struct {
-					Status struct {
-						Message   string `json:"message"`
-						RequestId string `json:"requestId"`
-					} `json:"status"`
-				}
-				stopRelayCmd := exec.Command(
-					binary,
-					"manage",
-					"stop",
-					"relay",
-					"--id", relayId,
-				)
-				out, err := stopRelayCmd.CombinedOutput()
-				Expect(err).ToNot(HaveOccurred())
-				resp := stopRelayResp{}
-				json.Unmarshal(out, &resp)
+				It("create should work", func() {
+					connId = createKafkaConnection(binary)
+					type createTunnelResp struct {
+						Status struct {
+							Message   string `json:"message"`
+							RequestId string `json:"requestId"`
+						} `json:"status"`
+						TunnelId string `json:"tunnelId"`
+					}
 
-				Expect(resp.Status.Message).To(ContainSubstring("Relay stopped"))
+					batchAPIToken := os.Getenv("TEST_API_TOKEN")
+					if batchAPIToken == "" {
+						defer GinkgoRecover()
+						Skip("Cannot test, no API token")
+					}
+
+					createTunnelCmd := exec.Command(
+						binary,
+						"manage",
+						"create",
+						"tunnel",
+						"kafka",
+						"--x-tunnel-address", "dproxy.dev.batch.sh:9000",
+						"--connection-id", connId,
+						"--tunnel-token", batchAPIToken,
+						"--topics", "foo",
+					)
+					out, err := createTunnelCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					resp := createTunnelResp{}
+					json.Unmarshal(out, &resp)
+					Expect(resp.Status.Message).To(ContainSubstring("Tunnel created"))
+
+					tunnelId = resp.TunnelId
+				})
+
+				It("get should work", func() {
+					if tunnelId == "" {
+						defer GinkgoRecover()
+						Skip("Cannot test, no collection token in creation")
+					}
+
+					type getTunnelResp struct {
+						Opts struct {
+							TunnelId string `json:"TunnelId"`
+						}
+					}
+					getTunnelCmd := exec.Command(
+						binary,
+						"manage",
+						"get",
+						"tunnel",
+						"--id", tunnelId,
+					)
+					out, err := getTunnelCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+					resp := getTunnelResp{}
+					json.Unmarshal(out, &resp)
+
+					Expect(resp.Opts.TunnelId).To(Equal(tunnelId))
+				})
+
+				It("stop should work", func() {
+					if tunnelId == "" {
+						defer GinkgoRecover()
+						Skip("Cannot test, no collection token in creation")
+					}
+
+					type stopTunnelResp struct {
+						Status struct {
+							Message   string `json:"message"`
+							RequestId string `json:"requestId"`
+						} `json:"status"`
+					}
+					stopTunnelCmd := exec.Command(
+						binary,
+						"manage",
+						"stop",
+						"tunnel",
+						"--id", tunnelId,
+					)
+					out, err := stopTunnelCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+					resp := stopTunnelResp{}
+					json.Unmarshal(out, &resp)
+
+					Expect(resp.Status.Message).To(ContainSubstring("Tunnel replay stopped"))
+				})
+
+				It("resume should work", func() {
+					if tunnelId == "" {
+						defer GinkgoRecover()
+						Skip("Cannot test, no collection token in creation")
+					}
+
+					// resume
+					type resumeTunnelResp struct {
+						Status struct {
+							Message   string `json:"message"`
+							RequestId string `json:"requestId"`
+						} `json:"status"`
+					}
+					resumeTunnelCmd := exec.Command(
+						binary,
+						"manage",
+						"resume",
+						"tunnel",
+						"--id", tunnelId,
+					)
+					out, err := resumeTunnelCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+					resp := resumeTunnelResp{}
+					json.Unmarshal(out, &resp)
+
+					Expect(resp.Status.Message).To(ContainSubstring("Tunnel replay resumed"))
+				})
+
+				It("delete should work", func() {
+					if tunnelId == "" {
+						defer GinkgoRecover()
+						Skip("Cannot test, no collection token in creation")
+					}
+
+					// resume
+					type deleteTunnelResp struct {
+						Status struct {
+							Message   string `json:"message"`
+							RequestId string `json:"requestId"`
+						} `json:"status"`
+					}
+					deleteTunnelCmd := exec.Command(
+						binary,
+						"manage",
+						"delete",
+						"tunnel",
+						"--id", tunnelId,
+					)
+					out, err := deleteTunnelCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+					resp := deleteTunnelResp{}
+					json.Unmarshal(out, &resp)
+
+					Expect(resp.Status.Message).To(ContainSubstring("Tunnel replay deleted"))
+
+					// delete connection
+					deleteKafkaConnection(binary, connId)
+				})
+
 			})
-
-			It("resume should work", func() {
-				if relayId == "" {
-					defer GinkgoRecover()
-					Skip("Cannot test, no collection token in creation")
-				}
-
-				type resumeRelayResp struct {
-					Status struct {
-						Message   string `json:"message"`
-						RequestId string `json:"requestId"`
-					} `json:"status"`
-				}
-				resumeRelayCmd := exec.Command(
-					binary,
-					"manage",
-					"resume",
-					"relay",
-					"--id", relayId,
-				)
-				out, err := resumeRelayCmd.CombinedOutput()
-				Expect(err).ToNot(HaveOccurred())
-				resp := resumeRelayResp{}
-				json.Unmarshal(out, &resp)
-
-				Expect(resp.Status.Message).To(ContainSubstring("Relay resumed"))
-			})
-		})
-
-		Describe("tunnel", func() {
 
 		})
 	})
@@ -2283,6 +2427,42 @@ func newKafkaWriter(address, topic string) (*Kafka, error) {
 			Addr: skafka.TCP(address),
 		},
 	}, nil
+}
+
+func createKafkaConnection(binary string) string {
+
+	type CreateConnResp struct {
+		ConnectionId string `json:"connectionId"`
+	}
+
+	connName := fmt.Sprintf("FunctionalTestConnection-%d", rand.Int())
+	createConnCmd := exec.Command(
+		binary,
+		"manage",
+		"create",
+		"connection",
+		"kafka",
+		"--name", connName,
+		"--address", "localhost:9092",
+	)
+	out, err := createConnCmd.CombinedOutput()
+	Expect(err).ToNot(HaveOccurred())
+
+	resp := CreateConnResp{}
+	json.Unmarshal(out, &resp)
+	return resp.ConnectionId
+}
+
+func deleteKafkaConnection(binary string, connId string) {
+	deleteConnCmd := exec.Command(
+		binary,
+		"manage",
+		"delete",
+		"connection",
+		"--id", connId,
+	)
+	_, err := deleteConnCmd.CombinedOutput()
+	Expect(err).ToNot(HaveOccurred())
 }
 
 func writeKafkaRecords(client *Kafka, topic, dataType string, num int) ([]skafka.Message, error) {
