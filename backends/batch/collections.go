@@ -119,6 +119,9 @@ func (b *Batch) search(from, size, page int) error {
 	}
 
 	res, _, err := b.Post("/v1/collection/"+b.Opts.Batch.Search.CollectionId+"/search", p)
+	if err != nil {
+		return err
+	}
 
 	results := &SearchResult{}
 	if err := json.Unmarshal(res, results); err != nil {
