@@ -119,16 +119,19 @@ func (b *Batch) search(from, size, page int) error {
 	}
 
 	res, _, err := b.Post("/v1/collection/"+b.Opts.Batch.Search.CollectionId+"/search", p)
+	if err != nil {
+		return errors.Wrap(err, "unable to complete search request")
+	}
 
 	results := &SearchResult{}
 	if err := json.Unmarshal(res, results); err != nil {
-		b.Log.Fatalf("Failed to search collection: %s", err)
+		return errors.Wrap(err, "failed to search collection")
 	}
 
 	// Our JSON output should be human readable
 	m, err := json.MarshalIndent(results.Data, "", "  ")
 	if err != nil {
-		b.Log.Fatalf("Could not display search results: %s", err)
+		return errors.Wrap(err, "could not display search results")
 	}
 
 	// Display JSON results
