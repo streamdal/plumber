@@ -5,7 +5,6 @@
 //
 // NOTE 1: You should probably have local instances of rabbit, kafka, etc. running
 // or  else the test suite will fail.
-
 // +build functional
 
 package main
