@@ -66,7 +66,7 @@ func ConnectionOptionsForServer(connOptions *opts.ConnectionOptions) error {
 		return ErrMissingConnectionOptions
 	}
 
-	if connOptions.Name == "" {
+	if connOptions.Name == "" && connOptions.GetRabbit() == nil {
 		return ErrMissingConnName
 	}
 
