@@ -144,7 +144,7 @@ github.com/batchcorp/natty
 # github.com/batchcorp/pgoutput v0.3.2
 ## explicit
 github.com/batchcorp/pgoutput
-# github.com/batchcorp/plumber-schemas v0.0.156
+# github.com/batchcorp/plumber-schemas v0.0.157
 ## explicit
 github.com/batchcorp/plumber-schemas/build/go/protos
 github.com/batchcorp/plumber-schemas/build/go/protos/args
@@ -773,7 +773,7 @@ google.golang.org/grpc/serviceconfig
 google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
-# google.golang.org/protobuf v1.27.1
+# google.golang.org/protobuf v1.28.0
 google.golang.org/protobuf/cmd/protoc-gen-go/internal_gengo
 google.golang.org/protobuf/compiler/protogen
 google.golang.org/protobuf/encoding/protojson
