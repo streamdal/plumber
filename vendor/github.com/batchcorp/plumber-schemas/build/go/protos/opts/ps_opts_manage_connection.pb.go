@@ -62,8 +62,8 @@ func (m *GetConnectionOptions) GetId() string {
 }
 
 type CreateConnectionOptions struct {
-	// @gotags: kong:"help='Optional friendly name for the connection'"
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty" kong:"help='Optional friendly name for the connection'"`
+	// @gotags: kong:"help='Friendly name for the connection', required"
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty" kong:"help='Friendly name for the connection', required"`
 	// @gotags: kong:"help='Optional notes to associate with the connection'"
 	Notes string `protobuf:"bytes,2,opt,name=notes,proto3" json:"notes,omitempty" kong:"help='Optional notes to associate with the connection'"`
 	// @gotags: kong:"cmd,help='Apache Kafka'"
