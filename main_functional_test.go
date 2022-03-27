@@ -2113,12 +2113,6 @@ var _ = Describe("Functional", func() {
 						Skip("Cannot test, no collection token in creation")
 					}
 
-					type stopRelayResp struct {
-						Status struct {
-							Message   string `json:"message"`
-							RequestId string `json:"requestId"`
-						} `json:"status"`
-					}
 					stopRelayCmd := exec.Command(
 						binary,
 						"manage",
@@ -2128,10 +2122,7 @@ var _ = Describe("Functional", func() {
 					)
 					out, err := stopRelayCmd.CombinedOutput()
 					Expect(err).ToNot(HaveOccurred())
-					resp := stopRelayResp{}
-					json.Unmarshal(out, &resp)
-
-					Expect(resp.Status.Message).To(ContainSubstring("Relay stopped"))
+					Expect(string(out)).To(ContainSubstring("Relay stopped"))
 				})
 
 				It("resume should work", func() {
@@ -2140,12 +2131,6 @@ var _ = Describe("Functional", func() {
 						Skip("Cannot test, no collection token in creation")
 					}
 
-					type resumeRelayResp struct {
-						Status struct {
-							Message   string `json:"message"`
-							RequestId string `json:"requestId"`
-						} `json:"status"`
-					}
 					resumeRelayCmd := exec.Command(
 						binary,
 						"manage",
@@ -2155,10 +2140,7 @@ var _ = Describe("Functional", func() {
 					)
 					out, err := resumeRelayCmd.CombinedOutput()
 					Expect(err).ToNot(HaveOccurred())
-					resp := resumeRelayResp{}
-					json.Unmarshal(out, &resp)
-
-					Expect(resp.Status.Message).To(ContainSubstring("Relay resumed"))
+					Expect(string(out)).To(ContainSubstring("Relay resumed"))
 				})
 
 				It("delete should work", func() {
@@ -2167,13 +2149,6 @@ var _ = Describe("Functional", func() {
 						Skip("Cannot test, no collection token in creation")
 					}
 
-					// resume
-					type deleteRelayResp struct {
-						Status struct {
-							Message   string `json:"message"`
-							RequestId string `json:"requestId"`
-						} `json:"status"`
-					}
 					deleteRelayCmd := exec.Command(
 						binary,
 						"manage",
@@ -2183,10 +2158,7 @@ var _ = Describe("Functional", func() {
 					)
 					out, err := deleteRelayCmd.CombinedOutput()
 					Expect(err).ToNot(HaveOccurred())
-					resp := deleteRelayResp{}
-					json.Unmarshal(out, &resp)
-
-					Expect(resp.Status.Message).To(ContainSubstring("Relay deleted"))
+					Expect(string(out)).To(ContainSubstring("Relay deleted"))
 
 					// delete connection
 					deleteConnection(binary, connId)
@@ -2266,12 +2238,6 @@ var _ = Describe("Functional", func() {
 						Skip("Cannot test, no collection token in creation")
 					}
 
-					type stopTunnelResp struct {
-						Status struct {
-							Message   string `json:"message"`
-							RequestId string `json:"requestId"`
-						} `json:"status"`
-					}
 					stopTunnelCmd := exec.Command(
 						binary,
 						"manage",
@@ -2281,10 +2247,7 @@ var _ = Describe("Functional", func() {
 					)
 					out, err := stopTunnelCmd.CombinedOutput()
 					Expect(err).ToNot(HaveOccurred())
-					resp := stopTunnelResp{}
-					json.Unmarshal(out, &resp)
-
-					Expect(resp.Status.Message).To(ContainSubstring("Tunnel replay stopped"))
+					Expect(string(out)).To(ContainSubstring("Tunnel replay stopped"))
 				})
 
 				It("resume should work", func() {
@@ -2293,13 +2256,6 @@ var _ = Describe("Functional", func() {
 						Skip("Cannot test, no collection token in creation")
 					}
 
-					// resume
-					type resumeTunnelResp struct {
-						Status struct {
-							Message   string `json:"message"`
-							RequestId string `json:"requestId"`
-						} `json:"status"`
-					}
 					resumeTunnelCmd := exec.Command(
 						binary,
 						"manage",
@@ -2309,10 +2265,7 @@ var _ = Describe("Functional", func() {
 					)
 					out, err := resumeTunnelCmd.CombinedOutput()
 					Expect(err).ToNot(HaveOccurred())
-					resp := resumeTunnelResp{}
-					json.Unmarshal(out, &resp)
-
-					Expect(resp.Status.Message).To(ContainSubstring("Tunnel replay resumed"))
+					Expect(string(out)).To(ContainSubstring("Tunnel replay resumed"))
 				})
 
 				It("delete should work", func() {
@@ -2321,13 +2274,6 @@ var _ = Describe("Functional", func() {
 						Skip("Cannot test, no collection token in creation")
 					}
 
-					// resume
-					type deleteTunnelResp struct {
-						Status struct {
-							Message   string `json:"message"`
-							RequestId string `json:"requestId"`
-						} `json:"status"`
-					}
 					deleteTunnelCmd := exec.Command(
 						binary,
 						"manage",
@@ -2337,10 +2283,7 @@ var _ = Describe("Functional", func() {
 					)
 					out, err := deleteTunnelCmd.CombinedOutput()
 					Expect(err).ToNot(HaveOccurred())
-					resp := deleteTunnelResp{}
-					json.Unmarshal(out, &resp)
-
-					Expect(resp.Status.Message).To(ContainSubstring("Tunnel replay deleted"))
+					Expect(string(out)).To(ContainSubstring("Tunnel replay deleted"))
 
 					// delete connection
 					deleteConnection(binary, connId)
@@ -2435,12 +2378,6 @@ var _ = Describe("Functional", func() {
 						Skip("Cannot test, no collection token in creation")
 					}
 
-					type stopRelayResp struct {
-						Status struct {
-							Message   string `json:"message"`
-							RequestId string `json:"requestId"`
-						} `json:"status"`
-					}
 					stopRelayCmd := exec.Command(
 						binary,
 						"manage",
@@ -2450,10 +2387,7 @@ var _ = Describe("Functional", func() {
 					)
 					out, err := stopRelayCmd.CombinedOutput()
 					Expect(err).ToNot(HaveOccurred())
-					resp := stopRelayResp{}
-					json.Unmarshal(out, &resp)
-
-					Expect(resp.Status.Message).To(ContainSubstring("Relay stopped"))
+					Expect(string(out)).To(ContainSubstring("Relay stopped"))
 				})
 
 				It("resume should work", func() {
@@ -2462,12 +2396,6 @@ var _ = Describe("Functional", func() {
 						Skip("Cannot test, no collection token in creation")
 					}
 
-					type resumeRelayResp struct {
-						Status struct {
-							Message   string `json:"message"`
-							RequestId string `json:"requestId"`
-						} `json:"status"`
-					}
 					resumeRelayCmd := exec.Command(
 						binary,
 						"manage",
@@ -2475,11 +2403,8 @@ var _ = Describe("Functional", func() {
 						"relay",
 						"--id", relayId,
 					)
-					out, _ := resumeRelayCmd.CombinedOutput()
-					//					Expect(err).ToNot(HaveOccurred())
-					resp := resumeRelayResp{}
-					json.Unmarshal(out, &resp)
-
+					out, err := resumeRelayCmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
 					Expect(string(out)).To(ContainSubstring("Relay resumed"))
 				})
 
@@ -2489,13 +2414,6 @@ var _ = Describe("Functional", func() {
 						Skip("Cannot test, no collection token in creation")
 					}
 
-					// resume
-					type deleteRelayResp struct {
-						Status struct {
-							Message   string `json:"message"`
-							RequestId string `json:"requestId"`
-						} `json:"status"`
-					}
 					deleteRelayCmd := exec.Command(
 						binary,
 						"manage",
@@ -2505,10 +2423,7 @@ var _ = Describe("Functional", func() {
 					)
 					out, err := deleteRelayCmd.CombinedOutput()
 					Expect(err).ToNot(HaveOccurred())
-					resp := deleteRelayResp{}
-					json.Unmarshal(out, &resp)
-
-					Expect(resp.Status.Message).To(ContainSubstring("Relay deleted"))
+					Expect(string(out)).To(ContainSubstring("Relay deleted"))
 
 					// delete connection
 					deleteConnection(binary, connId)
@@ -2599,12 +2514,6 @@ var _ = Describe("Functional", func() {
 						Skip("Cannot test, no collection token in creation")
 					}
 
-					type stopTunnelResp struct {
-						Status struct {
-							Message   string `json:"message"`
-							RequestId string `json:"requestId"`
-						} `json:"status"`
-					}
 					stopTunnelCmd := exec.Command(
 						binary,
 						"manage",
@@ -2614,10 +2523,7 @@ var _ = Describe("Functional", func() {
 					)
 					out, err := stopTunnelCmd.CombinedOutput()
 					Expect(err).ToNot(HaveOccurred())
-					resp := stopTunnelResp{}
-					json.Unmarshal(out, &resp)
-
-					Expect(resp.Status.Message).To(ContainSubstring("Tunnel stopped"))
+					Expect(string(out)).To(ContainSubstring("Tunnel stopped"))
 				})
 
 				It("resume should work", func() {
@@ -2626,12 +2532,6 @@ var _ = Describe("Functional", func() {
 						Skip("Cannot test, no collection token in creation")
 					}
 
-					type resumeTunnelResp struct {
-						Status struct {
-							Message   string `json:"message"`
-							RequestId string `json:"requestId"`
-						} `json:"status"`
-					}
 					resumeTunnelCmd := exec.Command(
 						binary,
 						"manage",
@@ -2641,10 +2541,7 @@ var _ = Describe("Functional", func() {
 					)
 					out, err := resumeTunnelCmd.CombinedOutput()
 					Expect(err).ToNot(HaveOccurred())
-					resp := resumeTunnelResp{}
-					json.Unmarshal(out, &resp)
-
-					Expect(resp.Status.Message).To(ContainSubstring("Tunnel resumed"))
+					Expect(string(out)).To(ContainSubstring("Tunnel resumed"))
 				})
 
 				It("delete should work", func() {
@@ -2653,13 +2550,6 @@ var _ = Describe("Functional", func() {
 						Skip("Cannot test, no collection token in creation")
 					}
 
-					// resume
-					type deleteTunnelResp struct {
-						Status struct {
-							Message   string `json:"message"`
-							RequestId string `json:"requestId"`
-						} `json:"status"`
-					}
 					deleteTunnelCmd := exec.Command(
 						binary,
 						"manage",
@@ -2669,10 +2559,7 @@ var _ = Describe("Functional", func() {
 					)
 					out, err := deleteTunnelCmd.CombinedOutput()
 					Expect(err).ToNot(HaveOccurred())
-					resp := deleteTunnelResp{}
-					json.Unmarshal(out, &resp)
-
-					Expect(resp.Status.Message).To(ContainSubstring("Tunnel deleted"))
+					Expect(string(out)).To(ContainSubstring("Tunnel deleted"))
 
 					// delete connection
 					deleteConnection(binary, connId)
