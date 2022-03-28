@@ -41,4 +41,5 @@ jobs:
           TEST_COLLECTION_TOKEN: ${{ secrets.TEST_COLLECTION_TOKEN }}
         run: |
           go run main.go server &
+          sleep 5
           go test --tags=functional
