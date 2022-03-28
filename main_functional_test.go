@@ -2075,7 +2075,7 @@ var _ = Describe("Functional", func() {
 
 					resp := createRelayResp{}
 					json.Unmarshal(out, &resp)
-					Expect(resp.Status.Message).To(ContainSubstring("Relay started"))
+					Expect(string(out)).To(ContainSubstring("Relay started"))
 
 					relayId = resp.RelayId
 				})
@@ -2340,7 +2340,7 @@ var _ = Describe("Functional", func() {
 
 					resp := createRelayResp{}
 					json.Unmarshal(out, &resp)
-					Expect(resp.Status.Message).To(ContainSubstring("Relay started"))
+					Expect(string(out)).To(ContainSubstring("Relay started"))
 
 					relayId = resp.RelayId
 				})
@@ -2447,11 +2447,11 @@ var _ = Describe("Functional", func() {
 					Expect(err).ToNot(HaveOccurred())
 
 					type createTunnelResp struct {
-						tunnelId string `json:"tunnelId"`
-						Status   struct {
+						Status struct {
 							Message   string `json:"message"`
 							RequestId string `json:"requestId"`
 						} `json:"status"`
+						TunnelId string `json:"tunnelId"`
 					}
 					batchAPIToken := os.Getenv("TEST_API_TOKEN")
 					if batchAPIToken == "" {
@@ -2476,9 +2476,9 @@ var _ = Describe("Functional", func() {
 
 					resp := createTunnelResp{}
 					json.Unmarshal(out, &resp)
-					Expect(resp.Status.Message).To(ContainSubstring("Tunnel created"))
+					Expect(string(out)).To(ContainSubstring("Tunnel created"))
 
-					tunnelId = resp.tunnelId
+					tunnelId = resp.TunnelId
 				})
 
 				It("get should work", func() {
@@ -2522,7 +2522,7 @@ var _ = Describe("Functional", func() {
 					)
 					out, err := stopTunnelCmd.CombinedOutput()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(string(out)).To(ContainSubstring("Tunnel stopped"))
+					Expect(string(out)).To(ContainSubstring("Tunnel replay stopped"))
 				})
 
 				It("resume should work", func() {
@@ -2540,7 +2540,7 @@ var _ = Describe("Functional", func() {
 					)
 					out, err := resumeTunnelCmd.CombinedOutput()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(string(out)).To(ContainSubstring("Tunnel resumed"))
+					Expect(string(out)).To(ContainSubstring("Tunnel replay resumed"))
 				})
 
 				It("delete should work", func() {
@@ -2558,7 +2558,7 @@ var _ = Describe("Functional", func() {
 					)
 					out, err := deleteTunnelCmd.CombinedOutput()
 					Expect(err).ToNot(HaveOccurred())
-					Expect(string(out)).To(ContainSubstring("Tunnel deleted"))
+					Expect(string(out)).To(ContainSubstring("Tunnel replay deleted"))
 
 					// delete connection
 					deleteConnection(binary, connId)
