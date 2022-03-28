@@ -37,5 +37,9 @@ jobs:
           AWS_REGION: us-west-2
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          TEST_API_TOKEN: ${{ secrets.TEST_API_TOKEN }}
+          TEST_COLLECTION_TOKEN: ${{ secrets.TEST_COLLECTION_TOKEN }}
         run: |
+          go run main.go server &
+          sleep 5
           go test --tags=functional
