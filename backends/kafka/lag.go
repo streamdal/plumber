@@ -259,7 +259,9 @@ func (l *Lag) getPartitionLag(ctx context.Context, topic string, groupId string,
 
 	// get last offset per partition
 	lastOffset, err := l.GetPartitionLastOffset(topic, part)
-
+	if err != nil {
+		return -1, errors.Wrap(err, "Unable to get last partion offset")
+	}
 	// obtain last committed offset for a given partition and consumer group
 	kafkaClient := &skafka.Client{Addr: remoteAddr}
 
