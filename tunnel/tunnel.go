@@ -222,7 +222,7 @@ func (d *Client) Delete(ctx context.Context, tunnelID string) error {
 		TunnelId:         tunnelID,
 	})
 	if err != nil {
-		return errors.Wrapf(err, "unable to delete tunnel in dProxy service")
+		return errors.Wrap(err, "unable to delete tunnel in dProxy service")
 	}
 	if !resp.Success {
 		return errors.New(resp.Message)
