@@ -102,6 +102,9 @@ func main() {
 	a, err := actions.New(&actions.Config{
 		PersistentConfig: persistentConfig,
 	})
+	if err != nil {
+		logrus.Fatal(err)
+	}
 
 	p, err := plumber.New(&plumber.Config{
 		PersistentConfig:   persistentConfig,
