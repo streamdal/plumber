@@ -237,7 +237,7 @@ var _ = Describe("Functional", func() {
 			})
 
 			Context("thrift decoding", func() {
-				It("should work", func() {
+				XIt("should work", func() {
 					// First write the message to Rabbit
 					writeCmd := exec.Command(
 						binary,
