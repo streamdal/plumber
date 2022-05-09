@@ -150,8 +150,7 @@ func (p *Plumber) Run() {
 		printer.PrintRelayOptions(p.CLIOptions)
 		err = p.HandleRelayCmd()
 	case "tunnel":
-		logrus.Fatal("tunnel mode not implemented")
-		//err = p.HandleTunnelCmd()
+		err = p.HandleTunnelCmd()
 	case "manage":
 		err = p.HandleManageCmd()
 	default:
