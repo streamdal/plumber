@@ -6,6 +6,7 @@
 // NOTE 1: You should probably have local instances of rabbit, kafka, etc. running
 // or  else the test suite will fail.
 
+//go:build functional
 // +build functional
 
 package main
@@ -2190,7 +2191,7 @@ var _ = Describe("Functional", func() {
 						"create",
 						"tunnel",
 						"kafka",
-						"--x-tunnel-address", "dproxy.dev.batch.sh:9000",
+						"--x-tunnel-address", "dproxy.dev.batch.sh:443",
 						"--connection-id", connId,
 						"--tunnel-token", batchAPIToken,
 						"--topics", "foo",
@@ -2465,7 +2466,7 @@ var _ = Describe("Functional", func() {
 						"create",
 						"tunnel",
 						"rabbit",
-						"--x-tunnel-address", "dproxy.dev.batch.sh:9000",
+						"--x-tunnel-address", "dproxy.dev.batch.sh:443",
 						"--connection-id", connId,
 						"--tunnel-token", batchAPIToken,
 						"--exchange-name", exchangeName,
