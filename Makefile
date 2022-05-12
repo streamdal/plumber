@@ -46,7 +46,7 @@ start/deps:
 
 .PHONY: build
 build: description = Build $(BINARY)
-build: clean build/linux build/darwin build/windows
+build: clean build/linux build/darwin build/darwin/arm64 build/windows
 
 .PHONY: build/linux
 build/linux: description = Build $(BINARY) for linux
@@ -57,6 +57,11 @@ build/linux: clean
 build/darwin: description = Build $(BINARY) for darwin
 build/darwin: clean
 	GOOS=darwin GOARCH=amd64 $(GO) build $(GO_BUILD_FLAGS) -o ./build/$(BINARY)-darwin
+
+.PHONY: build/darwin/arm64
+build/darwin/arm64: description = Build $(BINARY) for darwin/arm64 (Apple Silicon)
+build/darwin/arm64: clean
+	GOOS=darwin GOARCH=arm64 $(GO) build $(GO_BUILD_FLAGS) -o ./build/$(BINARY)-darwin-arm64
 
 .PHONY: build/windows
 build/windows: description = Build $(BINARY) for windows
