@@ -2,6 +2,8 @@ module github.com/batchcorp/plumber
 
 go 1.16
 
+replace github.com/v2pro/plz => github.com/batchcorp/plz v0.9.2
+
 require (
 	cloud.google.com/go/pubsub v1.6.1
 	github.com/Azure/azure-event-hubs-go/v3 v3.3.16

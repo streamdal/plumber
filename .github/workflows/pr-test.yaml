@@ -15,13 +15,6 @@ jobs:
         uses: jakejarvis/wait-action@master
         with:
           time: '30s'
-      - name: Set tag
-        run: echo "GITHUB_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-      - name: Set short sha
-        run: echo "GITHUB_SHORT_SHA=`git rev-parse --short HEAD`" >> $GITHUB_ENV
-      - name: Build
-        run: |
-          VERSION="$GITHUB_TAG ($GITHUB_SHORT_SHA)" make build
       - name: Test
         run: |
           make test
