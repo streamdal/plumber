@@ -507,7 +507,7 @@ github.com/tidwall/gjson
 github.com/tidwall/match
 # github.com/tidwall/pretty v1.2.0
 github.com/tidwall/pretty
-# github.com/v2pro/plz v0.0.0-20200805122259-422184e41b6e
+# github.com/v2pro/plz v0.0.0-20200805122259-422184e41b6e => github.com/batchcorp/plz v0.9.2
 ## explicit
 github.com/v2pro/plz/concurrent
 github.com/v2pro/plz/countlog
@@ -828,3 +828,4 @@ nhooyr.io/websocket/internal/bpool
 nhooyr.io/websocket/internal/errd
 nhooyr.io/websocket/internal/wsjs
 nhooyr.io/websocket/internal/xsync
+# github.com/v2pro/plz => github.com/batchcorp/plz v0.9.2
