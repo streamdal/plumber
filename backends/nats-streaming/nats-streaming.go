@@ -2,8 +2,8 @@ package nats_streaming
 
 import (
 	"context"
+	"crypto/tls"
 	"net/url"
-	"strings"
 
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/stan.go"
@@ -20,9 +20,6 @@ import (
 const BackendName = "nats-streaming"
 
 var (
-	ErrMissingTLSKey     = errors.New("--tls-client-key-file cannot be blank if using ssl")
-	ErrMissingTlsCert    = errors.New("--tls-client-cert-file cannot be blank if using ssl")
-	ErrMissingTLSCA      = errors.New("--tls-ca-file cannot be blank if using ssl")
 	ErrEmptyChannel      = errors.New("channel cannot be empty")
 	ErrInvalidReadOption = errors.New("You may only specify one read option of --last, --all, --seq, --since")
 )
@@ -51,7 +48,7 @@ func New(connOpts *opts.ConnectionOptions) (*NatsStreaming, error) {
 	var creds nats.Option
 	if len(args.UserCredentials) > 0 {
 		if util.FileExists(args.UserCredentials) {
-			creds = nats.UserCredentials(string(args.UserCredentials))
+			creds = nats.UserCredentials(args.UserCredentials)
 		} else {
 			creds = func(o *nats.Options) error {
 				o.UserJWT = func() (string, error) {
@@ -71,6 +68,7 @@ func New(connOpts *opts.ConnectionOptions) (*NatsStreaming, error) {
 			args.TlsOptions.TlsClientCert,
 			args.TlsOptions.TlsClientKey,
 			args.TlsOptions.TlsSkipVerify,
+			tls.NoClientCert,
 		)
 		if err != nil {
 			return nil, errors.Wrap(err, "Unable to generate TLS Config")
@@ -132,20 +130,6 @@ func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 	args := connOpts.GetNatsStreaming()
 	if args == nil {
 		return validate.ErrMissingConnArgs
-	}
-
-	if strings.HasPrefix(args.Dsn, "tls") {
-		if len(args.TlsOptions.TlsClientKey) == 0 {
-			return ErrMissingTLSKey
-		}
-
-		if len(args.TlsOptions.TlsClientCert) == 0 {
-			return ErrMissingTlsCert
-		}
-
-		if len(args.TlsOptions.TlsCaCert) == 0 {
-			return ErrMissingTLSCA
-		}
 	}
 
 	return nil

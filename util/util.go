@@ -140,24 +140,24 @@ func DerefInt16(v *int16) int16 {
 	return *v
 }
 
-func FileExists(path []byte) bool {
-	_, err := os.Stat(string(path))
+func FileExists(path string) bool {
+	_, err := os.Stat(path)
 	return err == nil
 }
 
-func GenerateTLSConfig(caCert, clientCert, clientKey []byte, skipVerify bool) (*tls.Config, error) {
+func GenerateTLSConfig(caCert, clientCert, clientKey string, skipVerify bool, mTLS tls.ClientAuthType) (*tls.Config, error) {
 	certpool := x509.NewCertPool()
 
 	if len(caCert) > 0 {
 		if FileExists(caCert) {
 			// CLI input, read from file
-			pemCerts, err := ioutil.ReadFile(string(caCert))
+			pemCerts, err := ioutil.ReadFile(caCert)
 			if err == nil {
 				certpool.AppendCertsFromPEM(pemCerts)
 			}
 		} else {
 			// Server input, contents of the certificate
-			certpool.AppendCertsFromPEM(caCert)
+			certpool.AppendCertsFromPEM([]byte(caCert))
 		}
 	}
 
@@ -167,13 +167,13 @@ func GenerateTLSConfig(caCert, clientCert, clientKey []byte, skipVerify bool) (*
 	if len(clientCert) > 0 && len(clientKey) > 0 {
 		if FileExists(clientCert) {
 			// CLI input, read from file
-			cert, err = tls.LoadX509KeyPair(string(clientCert), string(clientKey))
+			cert, err = tls.LoadX509KeyPair(clientCert, clientKey)
 			if err != nil {
 				return nil, errors.Wrap(err, "unable to load client certificate")
 			}
 		} else {
 			// Server input, contents of the certificate
-			cert, err = tls.X509KeyPair(clientCert, clientKey)
+			cert, err = tls.X509KeyPair([]byte(clientCert), []byte(clientKey))
 			if err != nil {
 				return nil, errors.Wrap(err, "unable to load client certificate")
 			}
@@ -188,7 +188,7 @@ func GenerateTLSConfig(caCert, clientCert, clientKey []byte, skipVerify bool) (*
 	// Create tls.Config with desired tls properties
 	return &tls.Config{
 		RootCAs:            certpool,
-		ClientAuth:         tls.NoClientCert,
+		ClientAuth:         mTLS,
 		ClientCAs:          nil,
 		InsecureSkipVerify: skipVerify,
 		Certificates:       []tls.Certificate{cert},

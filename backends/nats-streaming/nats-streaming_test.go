@@ -82,30 +82,6 @@ var _ = Describe("Nats Streaming Backend", func() {
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(validate.ErrMissingConnArgs))
 		})
-		It("validates TLS key", func() {
-			args := connOpts.GetNatsStreaming()
-			args.Dsn = "tls://localhost"
-			args.TlsOptions.TlsClientKey = nil
-			err := validateBaseConnOpts(connOpts)
-			Expect(err).To(HaveOccurred())
-			Expect(err).To(Equal(ErrMissingTLSKey))
-		})
-		It("validates TLS Cert", func() {
-			args := connOpts.GetNatsStreaming()
-			args.Dsn = "tls://localhost"
-			args.TlsOptions.TlsClientCert = nil
-			err := validateBaseConnOpts(connOpts)
-			Expect(err).To(HaveOccurred())
-			Expect(err).To(Equal(ErrMissingTlsCert))
-		})
-		It("validates TLS Certificate Authority", func() {
-			args := connOpts.GetNatsStreaming()
-			args.Dsn = "tls://localhost"
-			args.TlsOptions.TlsCaCert = nil
-			err := validateBaseConnOpts(connOpts)
-			Expect(err).To(HaveOccurred())
-			Expect(err).To(Equal(ErrMissingTLSCA))
-		})
 		It("passes validation", func() {
 			err := validateBaseConnOpts(connOpts)
 			Expect(err).ToNot(HaveOccurred())

@@ -2,8 +2,8 @@ package nats_jetstream
 
 import (
 	"context"
+	"crypto/tls"
 	"net/url"
-	"strings"
 
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
@@ -19,10 +19,7 @@ import (
 const BackendName = "nats-jetstream"
 
 var (
-	ErrMissingTLSKey  = errors.New("--tls-client-key-file cannot be blank if using ssl")
-	ErrMissingTlsCert = errors.New("--tls-client-cert-file cannot be blank if using ssl")
-	ErrMissingTLSCA   = errors.New("--tls-ca-file cannot be blank if using ssl")
-	ErrMissingStream  = errors.New("--stream cannot be empty")
+	ErrMissingStream = errors.New("--stream cannot be empty")
 )
 
 type NatsJetstream struct {
@@ -67,6 +64,7 @@ func New(connOpts *opts.ConnectionOptions) (*NatsJetstream, error) {
 			args.TlsOptions.TlsClientCert,
 			args.TlsOptions.TlsClientKey,
 			args.TlsOptions.TlsSkipVerify,
+			tls.NoClientCert,
 		)
 		if err != nil {
 			return nil, errors.Wrap(err, "Unable to generate TLS Config")
@@ -116,20 +114,6 @@ func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 	args := connOpts.GetNatsJetstream()
 	if args == nil {
 		return validate.ErrMissingConnArgs
-	}
-
-	if strings.HasPrefix(args.Dsn, "tls") {
-		if len(args.TlsOptions.TlsClientKey) == 0 {
-			return ErrMissingTLSKey
-		}
-
-		if len(args.TlsOptions.TlsClientCert) == 0 {
-			return ErrMissingTlsCert
-		}
-
-		if len(args.TlsOptions.TlsCaCert) == 0 {
-			return ErrMissingTLSCA
-		}
 	}
 
 	return nil

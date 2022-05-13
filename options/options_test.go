@@ -143,8 +143,8 @@ package options
 //		"--read-timeout", "10s",
 //		"--qos", "2",
 //		"--tls-ca-file", "options.go",
-//		"--tls-client-cert-file", "options.go",
-//		"--tls-client-key-file", "options.go",
+//		"--tls-client-cert", "options.go",
+//		"--tls-client-key", "options.go",
 //		"--insecure-tls", // default is false
 //		"--protobuf-dir", "../test-assets/protos",
 //		"--protobuf-root-message", "events.Message",
@@ -180,8 +180,8 @@ package options
 //		"--write-timeout", "10s",
 //		"--qos", "2",
 //		"--tls-ca-file", "options.go",
-//		"--tls-client-cert-file", "options.go",
-//		"--tls-client-key-file", "options.go",
+//		"--tls-client-cert", "options.go",
+//		"--tls-client-key", "options.go",
 //		"--insecure-tls", // default is false
 //		"--input-data", "welovemessaging",
 //		"--input-file", "options.go",
