@@ -45,8 +45,8 @@ var _ = Describe("Pulsar Backend", func() {
 					Pulsar: &args.PulsarConn{
 						Dsn:                   "localhost",
 						ConnectTimeoutSeconds: 1,
-						TlsClientKey:          []byte(`---testcert---`),
-						TlsClientCert:         []byte(`---testcert---`),
+						TlsClientKey:          "---testcert---",
+						TlsClientCert:         "---testcert---",
 					},
 				},
 			}
@@ -96,8 +96,8 @@ var _ = Describe("Pulsar Backend", func() {
 				Conn: &opts.ConnectionOptions_Pulsar{
 					Pulsar: &args.PulsarConn{
 						Dsn:                   "test",
-						TlsClientCert:         []byte(`test`),
-						TlsClientKey:          nil,
+						TlsClientCert:         "test",
+						TlsClientKey:          "",
 						ConnectTimeoutSeconds: 1,
 					},
 				},
@@ -111,8 +111,8 @@ var _ = Describe("Pulsar Backend", func() {
 				Conn: &opts.ConnectionOptions_Pulsar{
 					Pulsar: &args.PulsarConn{
 						Dsn:                   "test",
-						TlsClientCert:         nil,
-						TlsClientKey:          []byte(`test`),
+						TlsClientCert:         "",
+						TlsClientKey:          "test",
 						ConnectTimeoutSeconds: 1,
 					},
 				},
@@ -126,8 +126,8 @@ var _ = Describe("Pulsar Backend", func() {
 				Conn: &opts.ConnectionOptions_Pulsar{
 					Pulsar: &args.PulsarConn{
 						Dsn:                   "test",
-						TlsClientCert:         nil,
-						TlsClientKey:          []byte(`test`),
+						TlsClientCert:         "",
+						TlsClientKey:          "test",
 						ConnectTimeoutSeconds: 0,
 					},
 				},
@@ -141,8 +141,8 @@ var _ = Describe("Pulsar Backend", func() {
 				Conn: &opts.ConnectionOptions_Pulsar{
 					Pulsar: &args.PulsarConn{
 						Dsn:                   "test",
-						TlsClientCert:         []byte(`test`),
-						TlsClientKey:          []byte(`test`),
+						TlsClientCert:         "test",
+						TlsClientKey:          "test",
 						ConnectTimeoutSeconds: 1,
 					},
 				},

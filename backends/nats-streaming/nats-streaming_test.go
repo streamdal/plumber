@@ -20,14 +20,14 @@ var _ = Describe("Nats Streaming Backend", func() {
 			Conn: &opts.ConnectionOptions_NatsStreaming{
 				NatsStreaming: &args.NatsStreamingConn{
 					Dsn:             "localhost",
-					UserCredentials: nil,
+					UserCredentials: "",
 					ClusterId:       "test",
 					ClientId:        "plumber",
 					TlsOptions: &args.NatsStreamingTLSOptions{
 						TlsSkipVerify: false,
-						TlsCaCert:     []byte(`../../test-assets/ssl/ca.crt`),
-						TlsClientCert: []byte(`../../test-assets/ssl/client.crt`),
-						TlsClientKey:  []byte(`../../test-assets/ssl/client.key`),
+						TlsCaCert:     "../../test-assets/ssl/ca.crt",
+						TlsClientCert: "../../test-assets/ssl/client.crt",
+						TlsClientKey:  "../../test-assets/ssl/client.key",
 					},
 				},
 			},
