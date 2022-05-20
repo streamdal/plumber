@@ -232,51 +232,29 @@ func newReadOptions() *opts.ReadOptions {
 		},
 		Nats: &opts.ReadGroupNatsOptions{
 			XConn: &args.NatsConn{
-				UserCredentials: make([]byte, 0),
-				TlsOptions: &args.NatsTLSOptions{
-					TlsCaCert:     make([]byte, 0),
-					TlsClientCert: make([]byte, 0),
-					TlsClientKey:  make([]byte, 0),
-				},
+				TlsOptions: &args.NatsTLSOptions{},
 			},
 			Args: &args.NatsReadArgs{},
 		},
 		NatsStreaming: &opts.ReadGroupNatsStreamingOptions{
 			XConn: &args.NatsStreamingConn{
-				UserCredentials: make([]byte, 0),
-				TlsOptions: &args.NatsStreamingTLSOptions{
-					TlsCaCert:     make([]byte, 0),
-					TlsClientCert: make([]byte, 0),
-					TlsClientKey:  make([]byte, 0),
-				},
+				TlsOptions: &args.NatsStreamingTLSOptions{},
 			},
 			Args: &args.NatsStreamingReadArgs{},
 		},
 		NatsJetstream: &opts.ReadGroupNatsJetstreamOptions{
 			XConn: &args.NatsJetstreamConn{
-				UserCredentials: make([]byte, 0),
-				TlsOptions: &args.NatsJetstreamTLSOptions{
-					TlsCaCert:     make([]byte, 0),
-					TlsClientCert: make([]byte, 0),
-					TlsClientKey:  make([]byte, 0),
-				},
+				TlsOptions: &args.NatsJetstreamTLSOptions{},
 			},
 			Args: &args.NatsJetstreamReadArgs{},
 		},
 		Nsq: &opts.ReadGroupNSQOptions{
-			XConn: &args.NSQConn{
-				TlsCaCert:     make([]byte, 0),
-				TlsClientCert: make([]byte, 0),
-				TlsClientKey:  make([]byte, 0),
-			},
-			Args: &args.NSQReadArgs{},
+			XConn: &args.NSQConn{},
+			Args:  &args.NSQReadArgs{},
 		},
 		Pulsar: &opts.ReadGroupPulsarOptions{
-			XConn: &args.PulsarConn{
-				TlsClientCert: make([]byte, 0),
-				TlsClientKey:  make([]byte, 0),
-			},
-			Args: &args.PulsarReadArgs{},
+			XConn: &args.PulsarConn{},
+			Args:  &args.PulsarReadArgs{},
 		},
 		Rabbit: &opts.ReadGroupRabbitOptions{
 			XConn: &args.RabbitConn{},
@@ -357,51 +335,29 @@ func newWriteOptions() *opts.WriteOptions {
 		},
 		Nats: &opts.WriteGroupNatsOptions{
 			XConn: &args.NatsConn{
-				UserCredentials: make([]byte, 0),
-				TlsOptions: &args.NatsTLSOptions{
-					TlsCaCert:     make([]byte, 0),
-					TlsClientCert: make([]byte, 0),
-					TlsClientKey:  make([]byte, 0),
-				},
+				TlsOptions: &args.NatsTLSOptions{},
 			},
 			Args: &args.NatsWriteArgs{},
 		},
 		NatsStreaming: &opts.WriteGroupNatsStreamingOptions{
 			XConn: &args.NatsStreamingConn{
-				UserCredentials: make([]byte, 0),
-				TlsOptions: &args.NatsStreamingTLSOptions{
-					TlsCaCert:     make([]byte, 0),
-					TlsClientCert: make([]byte, 0),
-					TlsClientKey:  make([]byte, 0),
-				},
+				TlsOptions: &args.NatsStreamingTLSOptions{},
 			},
 			Args: &args.NatsStreamingWriteArgs{},
 		},
 		NatsJetstream: &opts.WriteGroupNatsJetstreamOptions{
 			XConn: &args.NatsJetstreamConn{
-				UserCredentials: make([]byte, 0),
-				TlsOptions: &args.NatsJetstreamTLSOptions{
-					TlsCaCert:     make([]byte, 0),
-					TlsClientCert: make([]byte, 0),
-					TlsClientKey:  make([]byte, 0),
-				},
+				TlsOptions: &args.NatsJetstreamTLSOptions{},
 			},
 			Args: &args.NatsJetstreamWriteArgs{},
 		},
 		Nsq: &opts.WriteGroupNSQOptions{
-			XConn: &args.NSQConn{
-				TlsCaCert:     make([]byte, 0),
-				TlsClientCert: make([]byte, 0),
-				TlsClientKey:  make([]byte, 0),
-			},
-			Args: &args.NSQWriteArgs{},
+			XConn: &args.NSQConn{},
+			Args:  &args.NSQWriteArgs{},
 		},
 		Pulsar: &opts.WriteGroupPulsarOptions{
-			XConn: &args.PulsarConn{
-				TlsClientCert: make([]byte, 0),
-				TlsClientKey:  make([]byte, 0),
-			},
-			Args: &args.PulsarWriteArgs{},
+			XConn: &args.PulsarConn{},
+			Args:  &args.PulsarWriteArgs{},
 		},
 		Rabbit: &opts.WriteGroupRabbitOptions{
 			XConn: &args.RabbitConn{},
@@ -469,12 +425,8 @@ func newRelayOptions() *opts.RelayOptions {
 			Args:  &args.MongoReadArgs{},
 		},
 		Nsq: &opts.RelayGroupNSQOptions{
-			XConn: &args.NSQConn{
-				TlsCaCert:     make([]byte, 0),
-				TlsClientCert: make([]byte, 0),
-				TlsClientKey:  make([]byte, 0),
-			},
-			Args: &args.NSQReadArgs{},
+			XConn: &args.NSQConn{},
+			Args:  &args.NSQReadArgs{},
 		},
 		Rabbit: &opts.RelayGroupRabbitOptions{
 			XConn: &args.RabbitConn{},
@@ -536,33 +488,19 @@ func newTunnelOptions() *opts.TunnelOptions {
 		},
 		Nats: &opts.TunnelGroupNatsOptions{
 			XConn: &args.NatsConn{
-				UserCredentials: make([]byte, 0),
-				TlsOptions: &args.NatsTLSOptions{
-					TlsCaCert:     make([]byte, 0),
-					TlsClientCert: make([]byte, 0),
-					TlsClientKey:  make([]byte, 0),
-				},
+				TlsOptions: &args.NatsTLSOptions{},
 			},
 			Args: &args.NatsWriteArgs{},
 		},
 		NatsStreaming: &opts.TunnelGroupNatsStreamingOptions{
 			XConn: &args.NatsStreamingConn{
-				UserCredentials: make([]byte, 0),
-				TlsOptions: &args.NatsStreamingTLSOptions{
-					TlsCaCert:     make([]byte, 0),
-					TlsClientCert: make([]byte, 0),
-					TlsClientKey:  make([]byte, 0),
-				},
+				TlsOptions: &args.NatsStreamingTLSOptions{},
 			},
 			Args: &args.NatsStreamingWriteArgs{},
 		},
 		Nsq: &opts.TunnelGroupNSQOptions{
-			XConn: &args.NSQConn{
-				TlsCaCert:     make([]byte, 0),
-				TlsClientCert: make([]byte, 0),
-				TlsClientKey:  make([]byte, 0),
-			},
-			Args: &args.NSQWriteArgs{},
+			XConn: &args.NSQConn{},
+			Args:  &args.NSQWriteArgs{},
 		},
 		Rabbit: &opts.TunnelGroupRabbitOptions{
 			XConn: &args.RabbitConn{},
@@ -665,39 +603,17 @@ func newManageOptions() *opts.ManageOptions {
 				AwsSns:   &args.AWSSNSConn{},
 				Mongo:    &args.MongoConn{},
 				Nats: &args.NatsConn{
-					UserCredentials: make([]byte, 0),
-					TlsOptions: &args.NatsTLSOptions{
-						TlsCaCert:     make([]byte, 0),
-						TlsClientCert: make([]byte, 0),
-						TlsClientKey:  make([]byte, 0),
-					},
+					TlsOptions: &args.NatsTLSOptions{},
 				},
 				NatsStreaming: &args.NatsStreamingConn{
-					UserCredentials: make([]byte, 0),
-					TlsOptions: &args.NatsStreamingTLSOptions{
-						TlsCaCert:     make([]byte, 0),
-						TlsClientCert: make([]byte, 0),
-						TlsClientKey:  make([]byte, 0),
-					},
+					TlsOptions: &args.NatsStreamingTLSOptions{},
 				},
 				NatsJetstream: &args.NatsJetstreamConn{
-					UserCredentials: make([]byte, 0),
-					TlsOptions: &args.NatsJetstreamTLSOptions{
-						TlsCaCert:     make([]byte, 0),
-						TlsClientCert: make([]byte, 0),
-						TlsClientKey:  make([]byte, 0),
-					},
+					TlsOptions: &args.NatsJetstreamTLSOptions{},
 				},
-				Nsq: &args.NSQConn{
-					TlsCaCert:     make([]byte, 0),
-					TlsClientCert: make([]byte, 0),
-					TlsClientKey:  make([]byte, 0),
-				},
-				Postgres: &args.PostgresConn{},
-				Pulsar: &args.PulsarConn{
-					TlsClientCert: make([]byte, 0),
-					TlsClientKey:  make([]byte, 0),
-				},
+				Nsq:             &args.NSQConn{},
+				Postgres:        &args.PostgresConn{},
+				Pulsar:          &args.PulsarConn{},
 				Rabbit:          &args.RabbitConn{},
 				RabbitStreams:   &args.RabbitStreamsConn{},
 				RedisPubsub:     &args.RedisPubSubConn{},

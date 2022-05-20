@@ -22,9 +22,6 @@ const BackendName = "NSQ"
 var (
 	ErrMissingAddress = errors.New("you must specify either --nsqd-address or --lookupd-address")
 	ErrChooseAddress  = errors.New("you must specify either --nsqd-address or --lookupd-address, not both")
-	ErrMissingTLSKey  = errors.New("--tls-client-key-file cannot be blank if using TLS")
-	ErrMissingTlsCert = errors.New("--tls-client-cert-file cannot be blank if using TLS")
-	ErrMissingTLSCA   = errors.New("--tls-ca-file cannot be blank if using TLS")
 	ErrMissingTopic   = errors.New("--topic cannot be empty")
 )
 
@@ -164,20 +161,6 @@ func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 	nsqOpts := connOpts.GetNsq()
 	if nsqOpts == nil {
 		return validate.ErrMissingConnArgs
-	}
-
-	if len(connOpts.GetNsq().TlsCaCert) > 0 || len(connOpts.GetNsq().TlsClientCert) > 0 || len(connOpts.GetNsq().TlsClientKey) > 0 {
-		if len(connOpts.GetNsq().TlsClientKey) == 0 {
-			return ErrMissingTLSKey
-		}
-
-		if len(connOpts.GetNsq().TlsClientCert) == 0 {
-			return ErrMissingTlsCert
-		}
-
-		if len(connOpts.GetNsq().TlsCaCert) == 0 {
-			return ErrMissingTLSCA
-		}
 	}
 
 	return nil

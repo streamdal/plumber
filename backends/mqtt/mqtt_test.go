@@ -1,7 +1,6 @@
 package mqtt
 
 import (
-	"io/ioutil"
 	"net/url"
 
 	pahomqtt "github.com/eclipse/paho.mqtt.golang"
@@ -28,9 +27,9 @@ var _ = Describe("MQTT Backend", func() {
 					ClientId:           "plumber",
 					QosLevel:           0,
 					TlsOptions: &args.MQTTTLSOptions{
-						TlsClientCert: []byte(`../../test-assets/ssl/client.crt`),
-						TlsClientKey:  []byte(`../../test-assets/ssl/client.key`),
-						TlsCaCert:     []byte(`../../test-assets/ssl/ca.crt`),
+						TlsClientCert: "../../test-assets/ssl/client.crt",
+						TlsClientKey:  "../../test-assets/ssl/client.key",
+						TlsCaCert:     "../../test-assets/ssl/ca.crt",
 					},
 				},
 			},
@@ -67,63 +66,6 @@ var _ = Describe("MQTT Backend", func() {
 			clientOpts, err := createClientOptions(connOpts.GetMqtt(), uri)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(clientOpts).To(BeAssignableToTypeOf(&pahomqtt.ClientOptions{}))
-		})
-	})
-
-	Context("generateTLSConfig", func() {
-		It("works with files", func() {
-			tlsConfig, err := generateTLSConfig(connOpts.GetMqtt())
-			Expect(err).ToNot(HaveOccurred())
-			Expect(len(tlsConfig.Certificates)).To(Equal(1))
-		})
-		It("returns error on incorrect cert file", func() {
-			args := connOpts.GetMqtt()
-			args.TlsOptions.TlsClientCert = args.TlsOptions.TlsClientKey
-			_, err := generateTLSConfig(args)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("unable to load ssl keypair"))
-		})
-		It("returns error on incorrect cert string", func() {
-			caBytes, err := ioutil.ReadFile("../../test-assets/ssl/ca.crt")
-			Expect(err).ToNot(HaveOccurred())
-			certBytes, err := ioutil.ReadFile("../../test-assets/ssl/client.crt")
-			Expect(err).ToNot(HaveOccurred())
-			keyBytes, err := ioutil.ReadFile("../../test-assets/ssl/client.key")
-			Expect(err).ToNot(HaveOccurred())
-
-			args := &args.MQTTConn{
-				TlsOptions: &args.MQTTTLSOptions{
-					TlsCaCert:     caBytes,
-					TlsClientCert: keyBytes,
-					TlsClientKey:  certBytes,
-					TlsSkipVerify: true,
-				},
-			}
-
-			_, err = generateTLSConfig(args)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("unable to load ssl keypair"))
-		})
-		It("works with strings", func() {
-			caBytes, err := ioutil.ReadFile("../../test-assets/ssl/ca.crt")
-			Expect(err).ToNot(HaveOccurred())
-			certBytes, err := ioutil.ReadFile("../../test-assets/ssl/client.crt")
-			Expect(err).ToNot(HaveOccurred())
-			keyBytes, err := ioutil.ReadFile("../../test-assets/ssl/client.key")
-			Expect(err).ToNot(HaveOccurred())
-
-			args := &args.MQTTConn{
-				TlsOptions: &args.MQTTTLSOptions{
-					TlsCaCert:     caBytes,
-					TlsClientCert: certBytes,
-					TlsClientKey:  keyBytes,
-					TlsSkipVerify: true,
-				},
-			}
-
-			tlsConfig, err := generateTLSConfig(args)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(len(tlsConfig.Certificates)).To(Equal(1))
 		})
 	})
 
@@ -165,30 +107,6 @@ var _ = Describe("MQTT Backend", func() {
 			err := validateBaseConnOpts(connOpts)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(validate.ErrMissingConnArgs))
-		})
-		It("validates TLS key", func() {
-			args := connOpts.GetMqtt()
-			args.Address = "ssl://localhost"
-			args.TlsOptions.TlsClientKey = nil
-			err := validateBaseConnOpts(connOpts)
-			Expect(err).To(HaveOccurred())
-			Expect(err).To(Equal(ErrMissingTLSKey))
-		})
-		It("validates TLS Cert", func() {
-			args := connOpts.GetMqtt()
-			args.Address = "ssl://localhost"
-			args.TlsOptions.TlsClientCert = nil
-			err := validateBaseConnOpts(connOpts)
-			Expect(err).To(HaveOccurred())
-			Expect(err).To(Equal(ErrMissingTlsCert))
-		})
-		It("validates TLS Certificate Authority", func() {
-			args := connOpts.GetMqtt()
-			args.Address = "ssl://localhost"
-			args.TlsOptions.TlsCaCert = nil
-			err := validateBaseConnOpts(connOpts)
-			Expect(err).To(HaveOccurred())
-			Expect(err).To(Equal(ErrMissingTLSCA))
 		})
 		It("passes validation", func() {
 			err := validateBaseConnOpts(connOpts)

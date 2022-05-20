@@ -2,6 +2,7 @@ package nats
 
 import (
 	"context"
+	"crypto/tls"
 	"net/url"
 
 	"github.com/nats-io/nats.go"
@@ -86,6 +87,7 @@ func newClient(opts *args.NatsConn) (*nats.Conn, error) {
 		opts.TlsOptions.TlsClientCert,
 		opts.TlsOptions.TlsClientKey,
 		opts.TlsOptions.TlsSkipVerify,
+		tls.NoClientCert,
 	)
 	if err != nil {
 		return nil, errors.Wrap(err, "Unable to generate TLS Config")
