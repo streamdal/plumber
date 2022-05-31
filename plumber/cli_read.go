@@ -43,7 +43,7 @@ MAIN:
 		case msg := <-resultCh:
 			p.log.Debug("HandleReadCmd: received message on resultCh")
 
-			decoded, decodeErr := reader.Decode(p.CLIOptions.Read, p.cliMD, msg.Payload)
+			decoded, decodeErr := reader.Decode(p.CLIOptions.Read, p.cliFDS, msg.Payload)
 			if decodeErr != nil {
 				printer.Errorf("unable to decode message payload for backend '%s': %s", backend.Name(), decodeErr)
 

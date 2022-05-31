@@ -35,6 +35,8 @@ import (
 	skafka "github.com/segmentio/kafka-go"
 
 	"github.com/batchcorp/collector-schemas/build/go/protos/events"
+	"github.com/batchcorp/plumber/test-assets/protobuf-any/sample"
+	"github.com/batchcorp/plumber/test-assets/shallow-envelope/shallow"
 )
 
 func init() {
@@ -159,6 +161,83 @@ var _ = Describe("Functional", func() {
 					Expect(encodedBlob).To(Equal(jsonMap["blob"]))
 				})
 			})
+
+			Context("google.protobuf.Any", func() {
+				It("should work", func() {
+					cmd := exec.Command(binary, "write", "kafka",
+						"--address", kafkaAddress,
+						"--topics", kafkaTopic,
+						"--encode-type", "jsonpb",
+						"--input-file", "./test-assets/protobuf-any/payload.json",
+						"--protobuf-descriptor-set", "./test-assets/protobuf-any/sample/protos.fds",
+						"--protobuf-root-message", "sample.Envelope")
+
+					_, err := cmd.CombinedOutput()
+					Expect(err).ToNot(HaveOccurred())
+
+					ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+					defer cancel()
+
+					// Read message from kafka topic; verify it matches what we wrote
+					msg, err := kafka.Reader.ReadMessage(ctx)
+					Expect(err).ToNot(HaveOccurred())
+
+					// Verify we wrote a valid protobuf message
+					anyEnvelope := &sample.Envelope{}
+
+					err = proto.Unmarshal(msg.Value, anyEnvelope)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(anyEnvelope.Message).To(Equal("Plumber supports google.protobuf.Any"))
+
+					anyMessage := &sample.Message{}
+					err = proto.Unmarshal(anyEnvelope.Details.Value, anyMessage)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(anyMessage.Name).To(Equal("Mark"))
+				})
+			})
+
+			Context("Shallow Envelope", func() {
+				It("should work", func() {
+					protoSchemasDir := "./test-assets/shallow-envelope/"
+					sampleOutboundJSONPB := "./test-assets/shallow-envelope/example-payload.json"
+
+					cmd := exec.Command(binary, "write", "kafka",
+						"--address", kafkaAddress,
+						"--topics", kafkaTopic,
+						"--encode-type", "jsonpb",
+						"--input-file", sampleOutboundJSONPB,
+						"--protobuf-dirs", protoSchemasDir,
+						"--protobuf-root-message", "shallow.Envelope",
+						"--protobuf-envelope-type", "shallow",
+						"--shallow-envelope-field-number", "2",
+						"--shallow-envelope-message", "shallow.Payload")
+
+					out, err := cmd.CombinedOutput()
+					if err != nil {
+						Fail("command failed: " + string(out))
+					}
+
+					ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+					defer cancel()
+
+					// Read message from kafka topic; verify it matches what we wrote
+					msg, err := kafka.Reader.ReadMessage(ctx)
+					Expect(err).ToNot(HaveOccurred())
+
+					// Verify we wrote a valid protobuf message
+					shallowEnvelope := &shallow.Envelope{}
+
+					err = proto.Unmarshal(msg.Value, shallowEnvelope)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(shallowEnvelope.Id).To(Equal("test-1"))
+					//Expect(string(shallowEnvelope.Data)).To(Equal("hi"))
+
+					shallowPayload := &shallow.Payload{}
+					err = proto.Unmarshal(shallowEnvelope.Data, shallowPayload)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(shallowPayload.Name).To(Equal("Mark Test"))
+				})
+			})
 		})
 
 		Describe("read", func() {
@@ -239,7 +318,7 @@ var _ = Describe("Functional", func() {
 
 			Context("thrift decoding", func() {
 				XIt("should work", func() {
-					// First write the message to Rabbit
+					// First write the message to Kafka
 					writeCmd := exec.Command(
 						binary,
 						"write",
@@ -283,6 +362,101 @@ var _ = Describe("Functional", func() {
 
 					readGot := string(readOutput)
 					Expect(readGot).To(ContainSubstring(`{"1":"submessage value here"}`))
+				})
+			})
+
+			Context("google.protobuf.Any", func() {
+				It("should work", func() {
+					// First write the message to Kafka
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"kafka",
+						"--topics", kafkaTopic,
+						"--input-file", "./test-assets/protobuf-any/payload.bin",
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					if err != nil {
+						Fail("write failed: " + string(writeOut))
+					}
+
+					writeGot := string(writeOut)
+					writeWant := "Successfully wrote '1' message(s)"
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+					defer cancel()
+
+					time.Sleep(time.Second * 1)
+
+					readCmd := exec.CommandContext(
+						ctx,
+						binary,
+						"read",
+						"kafka",
+						"--topics", kafkaTopic,
+						"--decode-type", "protobuf",
+						"--protobuf-root-message", "sample.Envelope",
+						"--protobuf-descriptor-set", "./test-assets/protobuf-any/sample/protos.fds",
+					)
+
+					readOutput, err := readCmd.CombinedOutput()
+					if err != nil {
+						Fail("read failed: " + string(readOutput))
+					}
+
+					Expect(string(readOutput)).To(ContainSubstring("Plumber supports google.protobuf.Any"))
+					Expect(string(readOutput)).To(ContainSubstring(`"@type":"type.googleapis.com/sample.Message"`))
+				})
+			})
+
+			Context("Shallow envelope", func() {
+				It("should work", func() {
+					// First write the message to Kafka
+					writeCmd := exec.Command(
+						binary,
+						"write",
+						"kafka",
+						"--topics", kafkaTopic,
+						"--input-file", "./test-assets/shallow-envelope/payload.bin",
+					)
+
+					writeOut, err := writeCmd.CombinedOutput()
+					if err != nil {
+						Fail("write failed: " + string(writeOut))
+					}
+
+					writeGot := string(writeOut)
+					writeWant := "Successfully wrote '1' message(s)"
+					Expect(writeGot).To(ContainSubstring(writeWant))
+
+					ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+					defer cancel()
+
+					time.Sleep(time.Second * 1)
+
+					readCmd := exec.CommandContext(
+						ctx,
+						binary,
+						"read",
+						"kafka",
+						"--topics", kafkaTopic,
+						"--decode-type", "protobuf",
+						"--protobuf-root-message", "shallow.Envelope",
+						"--protobuf-dirs", "./test-assets/shallow-envelope/",
+						"--protobuf-root-message", "shallow.Envelope",
+						"--protobuf-envelope-type", "shallow",
+						"--shallow-envelope-field-number", "2",
+						"--shallow-envelope-message", "shallow.Payload",
+					)
+
+					readOutput, err := readCmd.CombinedOutput()
+					if err != nil {
+						Fail("read failed: " + string(readOutput))
+					}
+
+					Expect(string(readOutput)).To(ContainSubstring(`{"name":"Mark"}`))
 				})
 			})
 		})
@@ -2569,6 +2743,7 @@ var _ = Describe("Functional", func() {
 
 		})
 	})
+
 })
 
 type Kafka struct {

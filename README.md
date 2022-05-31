@@ -12,6 +12,8 @@ The tool enables you to:
 * Write plain or encoded data to any system
 * Route data from one place to another
 * Decode protobuf/avro/thrift/JSON data in real-time
+  * Support for both Deep and Shallow protobuf envelope types
+  * Support for google.protobuf.Any fields
 * Relay data to the [Batch platform](https://batch.sh)
 * Ship change data capture events to [Batch platform](https://batch.sh)
 * [Replay events into a message system on your local network](https://docs.batch.sh/what-are/what-are-destinations/plumber-as-a-destination)

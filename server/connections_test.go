@@ -31,13 +31,13 @@ var _ = Describe("Connection", func() {
 		fakeBus := &busfakes.FakeIBus{}
 
 		p = &Server{
-			Bus:      fakeBus,
+			Bus:       fakeBus,
 			AuthToken: "batchcorp",
 			PersistentConfig: &config.Config{
 				ConnectionsMutex: &sync.RWMutex{},
 				Connections:      map[string]*stypes.Connection{},
-				TunnelsMutex: &sync.RWMutex{},
-				RelaysMutex: &sync.RWMutex{},
+				TunnelsMutex:     &sync.RWMutex{},
+				RelaysMutex:      &sync.RWMutex{},
 			},
 			Log: logrus.NewEntry(logger),
 		}
@@ -144,7 +144,7 @@ var _ = Describe("Connection", func() {
 			}
 
 			resp, err := p.CreateConnection(context.Background(), &protos.CreateConnectionRequest{
-				Auth:       &common.Auth{Token: "batchcorp"},
+				Auth:    &common.Auth{Token: "batchcorp"},
 				Options: conn,
 			})
 
@@ -190,9 +190,9 @@ var _ = Describe("Connection", func() {
 			}
 
 			_, err := p.UpdateConnection(context.Background(), &protos.UpdateConnectionRequest{
-				Auth:          &common.Auth{Token: "batchcorp"},
+				Auth:         &common.Auth{Token: "batchcorp"},
 				ConnectionId: connID,
-				Options:    newConn,
+				Options:      newConn,
 			})
 
 			updateConn := p.PersistentConfig.GetConnection(connID)
@@ -230,9 +230,8 @@ var _ = Describe("Connection", func() {
 
 			p.PersistentConfig.SetConnection(connID, &stypes.Connection{Connection: conn})
 
-
 			resp, err := p.DeleteConnection(context.Background(), &protos.DeleteConnectionRequest{
-				Auth:          &common.Auth{Token: "batchcorp"},
+				Auth:         &common.Auth{Token: "batchcorp"},
 				ConnectionId: connID,
 			})
 

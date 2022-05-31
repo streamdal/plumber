@@ -4,11 +4,12 @@ import (
 	"context"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/validate"
 	"github.com/pkg/errors"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
 	"github.com/batchcorp/plumber/backends"
+	"github.com/batchcorp/plumber/validate"
 	"github.com/batchcorp/plumber/writer"
 )
 
@@ -23,7 +24,7 @@ func (p *Plumber) HandleWriteCmd() error {
 		return errors.Wrap(err, "unable to create new backend")
 	}
 
-	value, err := writer.GenerateWriteValue(p.CLIOptions.Write, p.cliMD)
+	value, err := writer.GenerateWriteValue(p.CLIOptions.Write, p.cliFDS)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate write value")
 	}

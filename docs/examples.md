@@ -53,6 +53,7 @@
   * [Advanced Usage](#advanced-usage)
        * [Decoding protobuf encoded messages and viewing them live](#decoding-protobuf-encoded-messages-and-viewing-them-live)
        * [Shallow envelope protobuf messages](#shallow-envelope-protobuf-messages)
+       * [Using File Descriptor Sets](#using-file-descriptor-sets)
        * [Using Avro schemas when reading or writing](#using-avro-schemas-when-reading-or-writing)
 
 ## Consuming
@@ -197,6 +198,10 @@ plumber read gcp-pubsub --project-id=PROJECT_ID --sub-id=SUBSCRIPTION
 
 ```bash
 plumber read mqtt --address tcp://localhost:1883 --topic iotdata -qos 1
+
+# Or connect with TLS:
+
+plumber read mqtt --address ssl://localhost:8883 --topic iotdata -qos 1
 ```
 
 #### Apache Pulsar
@@ -362,7 +367,12 @@ plumber write gcp-pubsub --topic-id=TOPIC --project-id=PROJECT_ID --input='{"Sen
 
 ```bash
 plumber write mqtt --address tcp://localhost:1883 --topic iotdata -qos 1 --input "{\"id\": 123, \"temperature\": 15}"
+
+# or connect with TLS:
+
+plumber write mqtt --address ssl://localhost:8883 --topic iotdata -qos 1 --input "{\"id\": 123, \"temperature\": 15}"
 ```
+
 ##### Apache Pulsar
 
 ```bash
@@ -602,6 +612,35 @@ plumber read kafka --topics testing \
   --protobuf-envelope-type shallow \
   --shallow-envelope-message shallow.Payload \
   --shallow-envelope-field-number=2 \
+  --decode-type protobuf
+```
+
+### Using File Descriptor Sets
+
+Plumber supports using protobuf file descriptor set files for decoding and encoding protobuf messages, instead of
+using a directory of `.proto` files. This method is more reliable than using `--protobuf-dirs` flag as it ensures
+that there won't be any include path issues.
+
+For help with generating an `.fds` file from your `.proto` files, see https://docs.batch.sh/platform/components/what-are-schemas#protocol-buffers
+
+#### Writing using FDS
+
+```bash
+plumber write kafka --topics fdstest1 \
+  --protobuf-descriptor-set test-assets/protobuf-any/sample/protos.fds \
+  --protobuf-root-message sample.Envelope \
+  --encode-type jsonpb \
+  --input-file test-assets/protobuf-any/payload.json
+```
+
+#### Reading using FDS
+
+#### Writing read FDS
+
+```bash
+plumber read kafka --topics fdstest1 \
+  --protobuf-descriptor-set test-assets/protobuf-any/sample/protos.fds \
+  --protobuf-root-message sample.Envelope \
   --decode-type protobuf
 ```
 
