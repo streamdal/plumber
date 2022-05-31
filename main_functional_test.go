@@ -431,7 +431,7 @@ var _ = Describe("Functional", func() {
 					writeWant := "Successfully wrote '1' message(s)"
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+					ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 					defer cancel()
 
 					time.Sleep(time.Second * 1)
@@ -576,7 +576,7 @@ var _ = Describe("Functional", func() {
 
 					Expect(writeGot).To(ContainSubstring(writeWant))
 
-					ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+					ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 					defer cancel()
 
 					// Now try and read from the RabbitMQ queue
