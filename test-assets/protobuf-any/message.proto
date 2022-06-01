@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option go_package = "github.com/batchcorp/plumber/test-assets/protobuf-any/sample";
+
+package sample;
+
+message Message {
+  string name = 1;
+  int32 age = 2;
+}
