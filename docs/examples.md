@@ -635,8 +635,6 @@ plumber write kafka --topics fdstest1 \
 
 #### Reading using FDS
 
-#### Writing read FDS
-
 ```bash
 plumber read kafka --topics fdstest1 \
   --protobuf-descriptor-set test-assets/protobuf-any/sample/protos.fds \
