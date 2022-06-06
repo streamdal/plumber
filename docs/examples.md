@@ -469,7 +469,7 @@ docker run -d --name plumber-kafka -p 8080:8080 \
     -e PLUMBER_RELAY_KAFKA_USERNAME="$YOUR_CONFLUENT_API_KEY"
     -e PLUMBER_RELAY_KAFKA_PASSWORD="$YOUR_CONFLUENT_API_SECRET"
     -e PLUMBER_RELAY_KAFKA_SASL_TYPE="plain"
-    batchcorp/plumber:local plumber relay kafka
+    batchcorp/plumber plumber relay kafka
 ```
 
 ##### Continuously relay messages from a MQTT topic to a Batch.sh collection
@@ -480,7 +480,7 @@ docker run -d --name plumber-mqtt -p 8080:8080 \
     -e PLUMBER_RELAY_MQTT_TOPIC=iotdata \
     -e PLUMBER_RELAY_MQTT_QOS=1 \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
-    batchcorp/plumber:local plumber relay mqtt
+    batchcorp/plumber plumber relay mqtt
 ```
 
 ##### Continuously relay messages from a NATS JetStream stream to a Batch.sh collection
@@ -491,7 +491,7 @@ docker run -d --name plumber-natsjs -p 8080:8080 \
     -e PLUMBER_RELAY_NATS_JETSTREAM_CLIENT_ID=plumber \
     -e PLUMBER_RELAY_NATS_JETSTREAM_STREAM=orders \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
-    batchcorp/plumber:local plumber relay mqtt
+    batchcorp/plumber plumber relay mqtt
 ```
 
 
