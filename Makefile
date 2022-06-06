@@ -124,6 +124,12 @@ testv: GOFLAGS=
 testv:
 	$(GO) test ./... -v
 
+.PHONY: test/coverage
+test/coverage: description = Run Go unit tests and output coverage information
+test/coverage: GOFLAGS=
+test/coverage:
+	$(GO) test ./... -coverprofile c.out
+
 .PHONY: test/functional
 test/functional: description = Run functional tests
 test/functional: GOFLAGS=
