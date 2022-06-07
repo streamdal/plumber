@@ -64,15 +64,16 @@ func (p *Plumber) RunServer() error {
 
 	p.log.Info("plumber server started")
 
-	// Keep after startGRPCServer(). If dProxy is unreachable on start, these will block for a while
-	// and prevent gRPC server from starting.
-	if err := p.relaunchRelays(); err != nil {
-		p.log.Error(errors.Wrap(err, "failed to relaunch relays"))
-	}
+	// Running in a goroutine to prevent blocking of server startup due to possible long connect timeouts
+	go func() {
+		if err := p.relaunchRelays(); err != nil {
+			p.log.Error(errors.Wrap(err, "failed to relaunch relays"))
+		}
 
-	if err := p.relaunchTunnels(); err != nil {
-		p.log.Error(errors.Wrap(err, "failed to relaunch tunnels"))
-	}
+		if err := p.relaunchTunnels(); err != nil {
+			p.log.Error(errors.Wrap(err, "failed to relaunch tunnels"))
+		}
+	}()
 
 	// Wait for shutdown
 	select {
