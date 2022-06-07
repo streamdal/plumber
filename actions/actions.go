@@ -35,7 +35,7 @@ type IActions interface {
 	DeleteRelay(context.Context, string) (*types.Relay, error)
 	StopRelay(ctx context.Context, relayID string) (*types.Relay, error)
 	ResumeRelay(ctx context.Context, relayID string) (*types.Relay, error)
-	UpdateRelay(_ context.Context, _ *opts.RelayOptions) (*types.Relay, error)
+	UpdateRelay(ctx context.Context, relayID string, relayOpts *opts.RelayOptions) (*types.Relay, error)
 
 	// tunnel
 	CreateTunnel(reqCtx context.Context, tunnelOpts *opts.TunnelOptions) (*types.Tunnel, error)

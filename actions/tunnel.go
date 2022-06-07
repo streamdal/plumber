@@ -175,6 +175,7 @@ func (a *Actions) UpdateTunnel(ctx context.Context, tunnelID string, tunnelOpts 
 
 	if tunnelOpts.XActive {
 		if err := d.StartTunnel(5 * time.Second); err != nil {
+			d.Options.XActive = true
 			return nil, errors.Wrap(err, "unable to start tunnel")
 		}
 

@@ -4,12 +4,13 @@ import (
 	"context"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/prometheus"
 	"github.com/batchcorp/plumber/server/types"
 	"github.com/batchcorp/plumber/validate"
-	"github.com/pkg/errors"
 )
 
 func (a *Actions) CreateRelay(ctx context.Context, relayOpts *opts.RelayOptions) (*types.Relay, error) {
@@ -149,6 +150,60 @@ func (a *Actions) DeleteRelay(ctx context.Context, relayID string) (*types.Relay
 	return relay, nil
 }
 
-func (a *Actions) UpdateRelay(_ context.Context, _ *opts.RelayOptions) (*types.Relay, error) {
-	panic("not implemented")
+func (a *Actions) UpdateRelay(ctx context.Context, relayID string, relayOpts *opts.RelayOptions) (*types.Relay, error) {
+	relay := a.cfg.PersistentConfig.GetRelay(relayID)
+	if relay == nil {
+		return nil, errors.New("relay does not exist")
+	}
+
+	if relay.Active {
+		// Close existing relay
+		relay.CancelFunc()
+		relay.Active = false
+		relay.Options.XActive = false
+
+		// Give it a sec to close out connections and goroutines
+		time.Sleep(time.Second)
+
+		prometheus.DecrPromGauge(prometheus.PlumberRelayWorkers)
+	}
+
+	// Get stored connection information
+	conn := a.cfg.PersistentConfig.GetConnection(relayOpts.ConnectionId)
+	if conn == nil {
+		return nil, validate.ErrConnectionNotFound
+	}
+
+	// Try to create a backend from given connection options
+	be, err := backends.New(conn.Connection)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create backend")
+	}
+
+	relay.Backend = be
+	relay.Options = relayOpts
+
+	// New contexts
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	relay.CancelCtx = ctx
+	relay.CancelFunc = cancelFunc
+
+	if relayOpts.XActive {
+		if err := relay.StartRelay(5 * time.Second); err != nil {
+			relay.Options.XActive = false
+			return nil, errors.Wrap(err, "unable to start relay")
+		}
+
+		relay.Active = true
+
+	}
+
+	// Update in-memory config
+	a.cfg.PersistentConfig.SetRelay(relayID, relay)
+	a.cfg.PersistentConfig.Save()
+
+	// Update metrics
+	prometheus.IncrPromGauge(prometheus.PlumberRelayWorkers)
+
+	return relay, nil
 }

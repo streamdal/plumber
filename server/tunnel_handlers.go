@@ -130,7 +130,7 @@ func (s *Server) UpdateTunnel(ctx context.Context, req *protos.UpdateTunnelReque
 	return &protos.UpdateTunnelResponse{
 		Status: &common.Status{
 			Code:      common.Code_OK,
-			Message:   "Relay updated",
+			Message:   "Tunnel updated",
 			RequestId: uuid.NewV4().String(),
 		},
 	}, nil
