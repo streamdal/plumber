@@ -10,3 +10,4 @@ start-*.sh
 .tsdata
 data
 data/*
+c.out
