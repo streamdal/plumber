@@ -134,7 +134,6 @@ test/functional:
 test/fakes: description = Generate test fakes
 test/fakes: GOFLAGS=
 test/fakes:
-	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o tools/fake_tstorage.go github.com/nakabonne/tstorage.Storage &
 	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/pulsar/pulsarfakes/fake_pulsar.go github.com/apache/pulsar-client-go/pulsar.Client &
 	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/pulsar/pulsarfakes/fake_producer.go github.com/apache/pulsar-client-go/pulsar.Producer &
 	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/pulsar/pulsarfakes/fake_consumer.go github.com/apache/pulsar-client-go/pulsar.Consumer &
