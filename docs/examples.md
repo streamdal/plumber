@@ -202,6 +202,10 @@ plumber read mqtt --address tcp://localhost:1883 --topic iotdata --qos-level at_
 # Or connect with TLS:
 
 plumber read mqtt --address ssl://localhost:8883 --topic iotdata --qos-level at_least_once
+
+# TLS using certificates
+
+plumber read mqtt --address ssl://localhost:8883 --topic iotdata --qos-level at_least_once --tls-ca-cert=/path/to/ca_certificate.pem --tls-client-key=/path/to/client_key.pem --tls-client-cert=/path/to/client_certificate.pem
 ```
 
 #### Apache Pulsar
@@ -371,6 +375,10 @@ plumber write mqtt --address tcp://localhost:1883 --topic iotdata --qos-level at
 # or connect with TLS:
 
 plumber write mqtt --address ssl://localhost:8883 --topic iotdata --qos-level at_least_once --input "{\"id\": 123, \"temperature\": 15}"
+
+# TLS using certificates
+
+plumber write mqtt --address ssl://localhost:8883 --topic iotdata --qos-level at_least_once --tls-ca-cert=/path/to/ca_certificate.pem --tls-client-key=/path/to/client_key.pem --tls-client-cert=/path/to/client_certificate.pem --input "{\"id\": 123, \"temperature\": 15}"
 ```
 
 ##### Apache Pulsar
