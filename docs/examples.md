@@ -197,11 +197,15 @@ plumber read gcp-pubsub --project-id=PROJECT_ID --sub-id=SUBSCRIPTION
 ##### MQTT
 
 ```bash
-plumber read mqtt --address tcp://localhost:1883 --topic iotdata -qos 1
+plumber read mqtt --address tcp://localhost:1883 --topic iotdata --qos-level at_least_once
 
 # Or connect with TLS:
 
-plumber read mqtt --address ssl://localhost:8883 --topic iotdata -qos 1
+plumber read mqtt --address ssl://localhost:8883 --topic iotdata --qos-level at_least_once
+
+# TLS using certificates
+
+plumber read mqtt --address ssl://localhost:8883 --topic iotdata --qos-level at_least_once --tls-ca-cert=/path/to/ca_certificate.pem --tls-client-key=/path/to/client_key.pem --tls-client-cert=/path/to/client_certificate.pem
 ```
 
 #### Apache Pulsar
@@ -366,11 +370,15 @@ plumber write gcp-pubsub --topic-id=TOPIC --project-id=PROJECT_ID --input='{"Sen
 ##### MQTT
 
 ```bash
-plumber write mqtt --address tcp://localhost:1883 --topic iotdata -qos 1 --input "{\"id\": 123, \"temperature\": 15}"
+plumber write mqtt --address tcp://localhost:1883 --topic iotdata --qos-level at_least_once --input "{\"id\": 123, \"temperature\": 15}"
 
 # or connect with TLS:
 
-plumber write mqtt --address ssl://localhost:8883 --topic iotdata -qos 1 --input "{\"id\": 123, \"temperature\": 15}"
+plumber write mqtt --address ssl://localhost:8883 --topic iotdata --qos-level at_least_once --input "{\"id\": 123, \"temperature\": 15}"
+
+# TLS using certificates
+
+plumber write mqtt --address ssl://localhost:8883 --topic iotdata --qos-level at_least_once --tls-ca-cert=/path/to/ca_certificate.pem --tls-client-key=/path/to/client_key.pem --tls-client-cert=/path/to/client_certificate.pem --input "{\"id\": 123, \"temperature\": 15}"
 ```
 
 ##### Apache Pulsar
