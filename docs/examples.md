@@ -86,11 +86,11 @@ plumber read aws-sqs --queue-name=orders --wait-time-seconds=20
 ##### RabbitMQ
 
 ```
-plumber read rabbit
+plumber read rabbit \
     --address="amqp://localhost:5672" \
     --exchange-name=testex \
-    --queue=testqueue \
-    --binding-key="orders.#"
+    --queue-name=testqueue \
+    --binding-key="orders.#" \
     --continuous
 ```
 
@@ -262,7 +262,7 @@ plumber write aws-sqs --queue-name=NewOrders --input="{\"order_id\": \"A-3458-65
 ##### RabbitMQ
 
 ```
-plumber write rabbit --address="aqmp://rabbit.yourdomain.net:5672" --exchange=NewOrders --routing-key="orders.oregon.coffee" --input="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+plumber write rabbit --address="amqp://rabbit.yourdomain.net:5672" --exchange-name=NewOrders --routing-key="orders.oregon.coffee" --input="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ##### RabbitMQ Streams
