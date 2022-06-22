@@ -6,7 +6,6 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -15,13 +14,15 @@ import (
 	"github.com/batchcorp/plumber/util"
 	"github.com/batchcorp/plumber/validate"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
 const BackendName = "nats-jetstream"
 
 var (
-	ErrMissingStream = errors.New("--stream cannot be empty")
+	ErrMissingStream  = errors.New("--stream cannot be empty")
+	ErrMissingSubject = errors.New("--subject cannot be empty")
 )
 
 type NatsJetstream struct {
