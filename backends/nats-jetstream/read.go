@@ -155,7 +155,7 @@ func (n *NatsJetstream) cleanupConsumer(jsCtx nats.JetStreamContext, ci *nats.Co
 		n.log.Errorf("unable to delete consumer during cleanup: %s", err)
 	}
 
-	n.log.Debug("successfully deleted consumer '%s' during cleanup", ci.Name)
+	n.log.Debugf("successfully deleted consumer '%s' during cleanup", ci.Name)
 }
 
 func validateReadOptions(readOpts *opts.ReadOptions) error {
