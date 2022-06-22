@@ -24,7 +24,7 @@ func (n *NatsJetstream) Write(_ context.Context, writeOpts *opts.WriteOptions, e
 		return errors.Wrap(err, "failed to get jetstream context")
 	}
 
-	stream := writeOpts.NatsJetstream.Args.Stream
+	stream := writeOpts.NatsJetstream.Args.Subject
 
 	for _, msg := range messages {
 		if _, err := jsCtx.Publish(stream, []byte(msg.Input)); err != nil {
@@ -50,8 +50,8 @@ func validateWriteOptions(writeOpts *opts.WriteOptions) error {
 		return validate.ErrEmptyBackendArgs
 	}
 
-	if args.Stream == "" {
-		return ErrMissingStream
+	if args.Subject == "" {
+		return ErrMissingSubject
 	}
 
 	return nil
