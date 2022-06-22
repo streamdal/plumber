@@ -28,6 +28,9 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/golang/protobuf/proto"
+	"github.com/nats-io/nats.go"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
 	skafka "github.com/segmentio/kafka-go"
 
