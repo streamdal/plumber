@@ -176,6 +176,25 @@ plumber read nats-streaming --address="nats://user:pass@nats.test.io:4222" --cha
 plumber read nats-jetstream --dsn="nats://user:pass@nats.test.io:4222" --stream "orders.>" --client-id "plumber"
 ```
 
+Create and use a durable consumer:
+
+```bash
+plumber read nats-jetstream --dsn="nats://user:pass@nats.test.io:4222" --stream foo --create-durable-consumer
+```
+
+Use an existing durable consumer:
+```bash
+plumber read nats-jetstream --dsn="nats://user:pass@nats.test.io:4222" --stream foo --existing-durable-consumer --consumer-name existing_consumer
+```
+
+Create a new durable consumer at a specific stream start sequence:
+
+```bash
+plumber read nats-jetstream --dsn="nats://user:pass@nats.test.io:4222" --stream foo --create-durable-consumer --consumer-start-sequence 42
+```
+
+NOTE: By default, `plumber` will remove any consumers it creates. To leave consumers untouched, set `--keep-consumer`.
+
 ##### Redis PubSub
 
 ```bash

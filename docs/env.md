@@ -165,16 +165,22 @@
 
 ### NATS JetStream
 
-| **Environment Variable** | **Description** | **Default** | **Required** |
-| ------------------------ | --------------- | ----------- | ------------ |
-| PLUMBER_RELAY_NATS_JETSTREAM_DSN | Dial string for NATS server (Ex: nats://localhost:4222) | nats://localhost:4222 | **true** |
-| PLUMBER_RELAY_NATS_JETSTREAM_CLIENT_ID | User specified client ID to connect with | plumber | false |
-| PLUMBER_RELAY_NATS_JETSTREAM_STREAM | Stream name to read from |  | **true** |
-| PLUMBER_RELAY_NATS_JETSTREAM_USE_TLS | Force TLS connection. (Ignored if DSN begins with "tls://") | false | false |
-| PLUMBER_RELAY_NATS_JETSTREAM_TLS_CA_CERT | CA file (only used for TLS connections) |  | false |
-| PLUMBER_RELAY_NATS_JETSTREAM_TLS_CLIENT_CERT | Client cert file (only used for TLS connections) |  | false |
-| PLUMBER_RELAY_NATS_JETSTREAM_TLS_CLIENT_KEY | Client key file (only used for TLS connections) |  | false |
-| PLUMBER_RELAY_NATS_JETSTREAM_SKIP_VERIFY_TLS | Whether to verify server certificate (only needed using TLS) |  | false |
+| **Environment Variable**                     | **Description**                                                                                                                        | **Default** | **Required** |
+|----------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------| ----------- |------------|
+| PLUMBER_RELAY_NATS_JETSTREAM_DSN             | Dial string for NATS server (Ex: nats://localhost:4222)                                                                                | nats://localhost:4222 | **true**   |
+| PLUMBER_RELAY_NATS_JETSTREAM_CLIENT_ID       | User specified client ID to connect with                                                                                               | plumber | false      |
+| PLUMBER_RELAY_NATS_JETSTREAM_STREAM          | Stream name to read from                                                                                                               |  | **true**   |
+| PLUMBER_RELAY_NATS_JETSTREAM_USE_TLS         | Force TLS connection. (Ignored if DSN begins with "tls://")                                                                            | false | false      |
+| PLUMBER_RELAY_NATS_JETSTREAM_TLS_CA_CERT     | CA file (only used for TLS connections)                                                                                                |  | false      |
+| PLUMBER_RELAY_NATS_JETSTREAM_TLS_CLIENT_CERT | Client cert file (only used for TLS connections)                                                                                       |  | false      |
+| PLUMBER_RELAY_NATS_JETSTREAM_TLS_CLIENT_KEY  | Client key file (only used for TLS connections)                                                                                        |  | false      |
+| PLUMBER_RELAY_NATS_JETSTREAM_SKIP_VERIFY_TLS | Whether to verify server certificate (only needed using TLS)                                                                           |  | false      |
+| PLUMBER_RELAY_NATS_JETSTREAM_CONSUMER_NAME   | Consumer name (has no effect if create_durable_consumer or existing_durable_consumer is not set)                                       |  | false      |
+| PLUMBER_RELAY_NATS_JETSTREAM_CREATE_DURABLE_CONSUMER  | Whether to create a durable consumer (setting this will cause plumber to create a pull consumer)                                       |  | false      |
+| PLUMBER_RELAY_NATS_JETSTREAM_KEEP_CONSUMER  | Whether to delete the consumer after use                                                                                               |  | false      |
+| PLUMBER_RELAY_NATS_JETSTREAM_CONSUMER_START_SEQUENCE | Where in the stream the consumer should start reading (NOTE: If set, consumer deliver policy will be set to DeliverByStartSequence)    | | false |
+| PLUMBER_RELAY_NATS_JETSTREAM_CONSUMER_START_TIME | At what time in the stream should the consumer begin reading (NOTE: If set, consumer deliver policy will be set to DeliverByStartTime) | | false |
+| PLUMBER_RELAY_NATS_JETSTREAM_CONSUMER_FILTER_SUBJECT | Only receive a subset of messages from the Stream based on the subject | | false |
 
 ### Nsq
 
