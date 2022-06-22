@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"strings"
 	"time"
@@ -17,6 +18,10 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 func DurationSec(durationSec interface{}) time.Duration {
 	if v, ok := durationSec.(int32); ok {
@@ -36,6 +41,19 @@ func DurationSec(durationSec interface{}) time.Duration {
 	}
 
 	return 0
+}
+
+// https://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-a-fixed-length-in-go
+var charRunes = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
+
+func RandomString(n int) string {
+	b := make([]rune, n)
+
+	for i := range b {
+		b[i] = charRunes[rand.Intn(len(charRunes))]
+	}
+
+	return string(b)
 }
 
 // Gunzip decompresses a slice of bytes and returns a slice of decompressed

@@ -1,6 +1,7 @@
 package nats_jetstream
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -24,6 +25,11 @@ func (n *NatsJetstream) DisplayMessage(cliOpts *opts.CLIOptions, msg *records.Re
 
 	properties := [][]string{
 		{"Subject", record.Stream},
+	}
+
+	if cliOpts.Read.NatsJetstream.Args.CreateDurableConsumer || cliOpts.Read.NatsJetstream.Args.ExistingDurableConsumer {
+		properties = append(properties, []string{"Consumer Name", record.ConsumerName})
+		properties = append(properties, []string{"Stream Sequence", fmt.Sprint(record.Sequence)})
 	}
 
 	receivedAt := time.Unix(msg.ReceivedAtUnixTsUtc, 0)
