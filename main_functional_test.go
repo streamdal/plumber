@@ -1430,7 +1430,7 @@ var _ = Describe("Functional", func() {
 						binary,
 						"write",
 						"nats-jetstream",
-						"--stream", streamName,
+						"--subject", streamName,
 						"--input", testMessage,
 					)
 
@@ -1486,7 +1486,7 @@ var _ = Describe("Functional", func() {
 						binary,
 						"write",
 						"nats-jetstream",
-						"--stream", streamName,
+						"--subject", streamName,
 						"--encode-type", "jsonpb",
 						"--input-file", sampleOutboundJSONPB,
 						"--protobuf-dirs", protoSchemasDir,
@@ -1553,7 +1553,7 @@ var _ = Describe("Functional", func() {
 		//			binary,
 		//			"write",
 		//			"nats-jetstream",
-		//			"--stream", streamName,
+		//			"--subject", streamName,
 		//			"--input", testMessage,
 		//			"--avro-schema-file", "./test-assets/avro/test.avsc",
 		//		)
