@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Validation", func() {
+var _ = Describe("Validate Server", func() {
 
 	Context("ConnectionOptionsForServer", func() {
 		It("validates missing conn options", func() {

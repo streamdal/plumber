@@ -15,7 +15,7 @@ import (
 
 // HandleWriteCmd handles write mode
 func (p *Plumber) HandleWriteCmd() error {
-	if err := validate.WriteOptionsCLI(p.CLIOptions.Write); err != nil {
+	if err := validate.WriteOptionsForCLI(p.CLIOptions.Write); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
 
