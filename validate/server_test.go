@@ -64,7 +64,7 @@ var _ = Describe("Validation", func() {
 
 			Expect(err).ToNot(HaveOccurred())
 			Expect(relayOptions.XBatchshGrpcAddress).To(Equal("grpc-collector.batch.sh:9000"))
-			Expect(relayOptions.XBatchshGrpcTimeoutSeconds).To(Equal(5))
+			Expect(relayOptions.XBatchshGrpcTimeoutSeconds).To(BeEquivalentTo(5))
 		})
 
 	})
