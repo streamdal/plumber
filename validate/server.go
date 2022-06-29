@@ -30,22 +30,25 @@ var (
 
 	// Relay
 
-	ErrRelayNotFound      = errors.New("relay not found")
-	ErrRelayNotActive     = errors.New("relay not active")
-	ErrRelayAlreadyActive = errors.New("relay already active")
+	ErrMissingRelayOptions    = errors.New("relay options cannot be nil")
+	ErrMissingCollectionToken = errors.New("collection token cannot be empty")
+	ErrMissingConnectionId    = errors.New("connection id cannot be empty")
+	ErrRelayNotFound          = errors.New("relay not found")
+	ErrRelayNotActive         = errors.New("relay not active")
+	ErrRelayAlreadyActive     = errors.New("relay already active")
 )
 
 func RelayOptionsForServer(relayOptions *opts.RelayOptions) error {
 	if relayOptions == nil {
-		return errors.New("relay options cannot be nil")
+		return ErrMissingRelayOptions
 	}
 
 	if relayOptions.CollectionToken == "" {
-		return errors.New("collection token cannot be empty")
+		return ErrMissingCollectionToken
 	}
 
 	if relayOptions.ConnectionId == "" {
-		return errors.New("connection id cannot be empty")
+		return ErrMissingConnectionId
 	}
 
 	if relayOptions.XBatchshGrpcAddress == "" {
