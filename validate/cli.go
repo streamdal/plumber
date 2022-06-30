@@ -12,6 +12,10 @@ import (
 	"github.com/batchcorp/plumber/util"
 )
 
+var (
+	ErrMissingCLIOptions = errors.New("cli options cannot be nil")
+)
+
 func ProtobufOptionsForCLI(dirs []string, rootMessage, fdsFile string) error {
 	if len(dirs) == 0 && fdsFile == "" {
 		return errors.New("at least one '--protobuf-dirs' or --protobuf-descriptor-set required when type " +
@@ -37,7 +41,7 @@ func RelayOptionsForCLI(relayOpts *opts.RelayOptions) error {
 	}
 
 	if relayOpts.XCliOptions == nil {
-		return errors.New("cli options cannot be nil")
+		return ErrMissingCLIOptions
 	}
 
 	return nil
@@ -45,23 +49,23 @@ func RelayOptionsForCLI(relayOpts *opts.RelayOptions) error {
 
 func ReadOptionsForCLI(readOpts *opts.ReadOptions) error {
 	if readOpts == nil {
-		return errors.New("read options cannot be nil")
+		return ErrMissingReadOptions
 	}
 
 	if readOpts.XCliOptions == nil {
-		return errors.New("cli options cannot be nil")
+		return ErrMissingCLIOptions
 	}
 
 	return nil
 }
 
-func WriteOptionsCLI(writeOpts *opts.WriteOptions) error {
+func WriteOptionsForCLI(writeOpts *opts.WriteOptions) error {
 	if writeOpts == nil {
 		return ErrEmptyWriteOpts
 	}
 
 	if writeOpts.XCliOptions == nil {
-		return errors.New("cli options cannot be nil")
+		return ErrMissingCLIOptions
 	}
 
 	if writeOpts.Record.Input == "" && writeOpts.XCliOptions.InputFile == "" && len(writeOpts.XCliOptions.InputStdin) == 0 {
