@@ -130,6 +130,14 @@ test/coverage: GOFLAGS=
 test/coverage:
 	$(GO) test ./... -coverprofile c.out
 
+.PHONY: test/dev
+test/dev: description = Run Go unit tests, output coverage information to a browser
+test/dev: GOFLAGS=
+test/dev:
+	$(GO) test ./... -coverprofile c.out
+	$(GO) tool cover -html=c.out -o cover.html
+	open cover.html
+
 .PHONY: test/functional
 test/functional: description = Run functional tests
 test/functional: GOFLAGS=
