@@ -11,3 +11,4 @@ start-*.sh
 data
 data/*
 c.out
+cover.html
