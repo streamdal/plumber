@@ -36,6 +36,7 @@ func (n *NatsJetstream) Read(ctx context.Context, readOpts *opts.ReadOptions, re
 
 	var consumerInfo *nats.ConsumerInfo
 	var sub *nats.Subscription
+	var retry int
 
 	handler := func(msg *nats.Msg) {
 		n.log.Debugf("Received new message on subject '%s'", msg.Subject)
@@ -105,23 +106,34 @@ func (n *NatsJetstream) Read(ctx context.Context, readOpts *opts.ReadOptions, re
 	defer n.cleanupConsumer(jsCtx, consumerInfo, readOpts.NatsJetstream.Args)
 
 	if sub.Type() == nats.PullSubscription {
-	TOP:
-		for {
-			msgs, err := sub.Fetch(1, nats.MaxWait(60*time.Second))
-			if err != nil {
-				if strings.Contains(err.Error(), "timeout") {
-					continue
+		go func() {
+		TOP:
+			for {
+				msgs, err := sub.Fetch(1, nats.MaxWait(60*time.Second))
+				n.log.Info(msgs)
+				if err != nil {
+					if strings.Contains(err.Error(), "timeout") {
+						if retry == 5 {
+							doneCh <- struct{}{}
+							errorChan <- &records.ErrorRecord{
+								OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
+								Error:               errors.Wrap(err, "retry 5 times, but don't receive any message").Error(),
+							}
+						}
+						retry++
+						continue
+					}
+				}
+
+				for _, m := range msgs {
+					handler(m)
+
+					if !readOpts.Continuous {
+						break TOP
+					}
 				}
 			}
-
-			for _, m := range msgs {
-				handler(m)
-
-				if !readOpts.Continuous {
-					break TOP
-				}
-			}
-		}
+		}()
 	}
 
 	<-doneCh
