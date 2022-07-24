@@ -92,7 +92,7 @@ func (n *NatsJetstream) Read(ctx context.Context, readOpts *opts.ReadOptions, re
 			return errors.Wrap(err, "unable to create consumer")
 		}
 
-		sub, err = jsCtx.PullSubscribe(consumerInfo.Stream, consumerInfo.Name)
+		sub, err = jsCtx.PullSubscribe(consumerInfo.Config.FilterSubject, consumerInfo.Name)
 	} else {
 		sub, err = jsCtx.Subscribe(readOpts.NatsJetstream.Args.Stream, handler)
 	}
