@@ -111,19 +111,17 @@ func (n *NatsJetstream) Read(ctx context.Context, readOpts *opts.ReadOptions, re
 		TOP:
 			for {
 				msgs, err := sub.Fetch(1, nats.MaxWait(60*time.Second))
-				if err != nil {
-					if strings.Contains(err.Error(), "timeout") {
-						if maxWaitTimes == 10 {
-							readOpts.Continuous = false
-							doneCh <- struct{}{}
-							errorChan <- &records.ErrorRecord{
-								OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
-								Error:               errors.Wrap(err, fmt.Sprintf("retried %d times, but don't receive any message from nats-jetstream server.", maxWaitTimes)).Error(),
-							}
+				if err != nil && strings.Contains(err.Error(), "timeout") {
+					if maxWaitTimes == 10 {
+						readOpts.Continuous = false
+						doneCh <- struct{}{}
+						errorChan <- &records.ErrorRecord{
+							OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
+							Error:               errors.Wrap(err, fmt.Sprintf("retried %d times, but don't receive any message from nats-jetstream server", maxWaitTimes)).Error(),
 						}
-						maxWaitTimes++
-						continue
 					}
+					maxWaitTimes++
+					continue
 				}
 
 				for _, m := range msgs {
