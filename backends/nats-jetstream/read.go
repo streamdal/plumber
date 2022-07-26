@@ -3,6 +3,7 @@ package nats_jetstream
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"time"
 
@@ -36,7 +37,7 @@ func (n *NatsJetstream) Read(ctx context.Context, readOpts *opts.ReadOptions, re
 
 	var consumerInfo *nats.ConsumerInfo
 	var sub *nats.Subscription
-	var retry int
+	var maxWaitTimes = 1
 
 	handler := func(msg *nats.Msg) {
 		n.log.Debugf("Received new message on subject '%s'", msg.Subject)
@@ -110,22 +111,23 @@ func (n *NatsJetstream) Read(ctx context.Context, readOpts *opts.ReadOptions, re
 		TOP:
 			for {
 				msgs, err := sub.Fetch(1, nats.MaxWait(60*time.Second))
-				n.log.Info(msgs)
 				if err != nil {
 					if strings.Contains(err.Error(), "timeout") {
-						if retry == 5 {
+						if maxWaitTimes == 10 {
+							readOpts.Continuous = false
 							doneCh <- struct{}{}
 							errorChan <- &records.ErrorRecord{
 								OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
-								Error:               errors.Wrap(err, "retry 5 times, but don't receive any message").Error(),
+								Error:               errors.Wrap(err, fmt.Sprintf("retried %d times, but don't receive any message from nats-jetstream server.", maxWaitTimes)).Error(),
 							}
 						}
-						retry++
+						maxWaitTimes++
 						continue
 					}
 				}
 
 				for _, m := range msgs {
+					maxWaitTimes = 1
 					handler(m)
 
 					if !readOpts.Continuous {
