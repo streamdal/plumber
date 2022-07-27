@@ -1,7 +1,6 @@
 package plumber
 
 import (
-	"context"
 	"os"
 
 	"github.com/pkg/errors"
@@ -29,10 +28,13 @@ func (p *Plumber) HandleReadCmd() error {
 
 	// backend.Read() blocks
 	go func() {
-		if err := backend.Read(context.Background(), p.CLIOptions.Read, resultCh, errorCh); err != nil {
+		if err := backend.Read(p.ServiceShutdownCtx, p.CLIOptions.Read, resultCh, errorCh); err != nil {
 			p.log.Errorf("unable to complete read for backend '%s': %s", backend.Name(), err)
 			os.Exit(0) // Exit out of plumber, since we can't continue
 		}
+
+		p.log.Debug("Read() exited, calling MainShutdownFunc()")
+		p.MainShutdownFunc()
 	}()
 
 MAIN:
@@ -59,6 +61,8 @@ MAIN:
 			err = backend.DisplayMessage(p.CLIOptions, msg)
 		case errorMsg := <-errorCh:
 			err = backend.DisplayError(errorMsg)
+		case <-p.MainShutdownCtx.Done():
+			break MAIN
 		}
 
 		if err != nil {
@@ -66,6 +70,7 @@ MAIN:
 		}
 
 		if !p.CLIOptions.Read.Continuous {
+			<-p.MainShutdownCtx.Done()
 			break MAIN
 		}
 	}

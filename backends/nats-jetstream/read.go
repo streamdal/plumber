@@ -6,13 +6,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber/validate"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
@@ -22,7 +22,7 @@ func (n *NatsJetstream) Read(ctx context.Context, readOpts *opts.ReadOptions, re
 		return errors.Wrap(err, "invalid read options")
 	}
 
-	jsCtx, err := n.client.JetStream()
+	jsCtx, err := n.client.JetStream(nats.Context(ctx))
 	if err != nil {
 		return errors.Wrap(err, "failed to get jetstream context")
 	}
@@ -31,6 +31,14 @@ func (n *NatsJetstream) Read(ctx context.Context, readOpts *opts.ReadOptions, re
 
 	// nats.Subscribe is async, use channel to wait to exit
 	doneCh := make(chan struct{})
+
+	go func() {
+		// NATS library does not appear to be respecting contexts
+		// sub.Fetch() will block indefinitely regardless of the context
+		// passed to nats.Conn.JetStream(), so force an exit.
+		<-ctx.Done()
+		doneCh <- struct{}{}
+	}()
 
 	var count int64
 
@@ -101,35 +109,41 @@ func (n *NatsJetstream) Read(ctx context.Context, readOpts *opts.ReadOptions, re
 		n.log.Errorf("unable to subscribe: %s", err)
 	}
 
-	defer sub.Unsubscribe()
-	defer n.cleanupConsumer(jsCtx, consumerInfo, readOpts.NatsJetstream.Args)
-
 	if sub.Type() == nats.PullSubscription {
-	TOP:
-		for {
-			msgs, err := sub.Fetch(1, nats.MaxWait(60*time.Second))
-			if err != nil {
-				if strings.Contains(err.Error(), "timeout") {
-					continue
+		go func() {
+		TOP:
+			for {
+				msgs, err := sub.Fetch(1, nats.MaxWait(60*time.Second))
+				if err != nil {
+					if strings.Contains(err.Error(), "timeout") {
+						continue
+					}
+				}
+
+				for _, m := range msgs {
+					handler(m)
+
+					if !readOpts.Continuous {
+						break TOP
+					}
 				}
 			}
-
-			for _, m := range msgs {
-				handler(m)
-
-				if !readOpts.Continuous {
-					break TOP
-				}
-			}
-		}
+		}()
 	}
 
 	<-doneCh
+
+	// Don't use defer for these  since Read() is ran in a goroutine and there is no guarantee of execution of defers.
+	// Let these block in order to ensure proper cleanup and shutdown
+	sub.Unsubscribe()
+	n.cleanupConsumer(jsCtx, consumerInfo, readOpts.NatsJetstream.Args)
 
 	return nil
 }
 
 func (n *NatsJetstream) cleanupConsumer(jsCtx nats.JetStreamContext, ci *nats.ConsumerInfo, readArgs *args.NatsJetstreamReadArgs) {
+	defer n.log.Debug("Exited cleanup consumer")
+
 	// Nothing to do if no consumer info or read args
 	if ci == nil || readArgs == nil {
 		return
@@ -140,7 +154,7 @@ func (n *NatsJetstream) cleanupConsumer(jsCtx nats.JetStreamContext, ci *nats.Co
 		return
 	}
 
-	// Nothing to do if no jctx
+	// Nothing to do if no jsCtx
 	if jsCtx == nil {
 		return
 	}
