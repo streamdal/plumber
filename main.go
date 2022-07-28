@@ -65,7 +65,7 @@ func main() {
 	defer persistentConfig.Save()
 
 	// We only want to intercept interrupt signals in relay or server mode
-	if cliOpts.Global.XAction == "relay" || cliOpts.Global.XAction == "server" {
+	if cliOpts.Global.XAction == "relay" || cliOpts.Global.XAction == "server" || cliOpts.Global.XAction == "read" {
 		logrus.Debug("Intercepting signals")
 
 		c := make(chan os.Signal, 1)
@@ -74,9 +74,8 @@ func main() {
 
 		go func() {
 			sig := <-c
-			logrus.Info("Shutting down plumber server...")
 			logrus.Debugf("Received system call: %+v", sig)
-
+			logrus.Info("Shutting down plumber...")
 			serviceShutdownFunc()
 		}()
 
