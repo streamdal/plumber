@@ -32,7 +32,7 @@ func (r *RabbitMQ) Read(ctx context.Context, readOpts *opts.ReadOptions, results
 	}
 
 	errCh := make(chan *rabbit.ConsumeError)
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(ctx)
 
 	var count int64
 

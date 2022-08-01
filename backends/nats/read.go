@@ -15,7 +15,7 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (n *Nats) Read(_ context.Context, readOpts *opts.ReadOptions, resultsChan chan *records.ReadRecord, errorChan chan *records.ErrorRecord) error {
+func (n *Nats) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan chan *records.ReadRecord, errorChan chan *records.ErrorRecord) error {
 	if err := validateReadOptions(readOpts); err != nil {
 		return errors.Wrap(err, "unable to validate read options")
 	}
@@ -59,7 +59,12 @@ func (n *Nats) Read(_ context.Context, readOpts *opts.ReadOptions, resultsChan c
 		}
 	})
 
-	<-doneCh
+	select {
+	case <-doneCh:
+		return nil
+	case <-ctx.Done():
+		return nil
+	}
 
 	return nil
 }

@@ -79,7 +79,12 @@ func (n *NatsStreaming) Read(ctx context.Context, readOpts *opts.ReadOptions, re
 
 	defer sub.Unsubscribe()
 
-	<-doneCh
+	select {
+	case <-doneCh:
+		return nil
+	case <-ctx.Done():
+		return nil
+	}
 
 	return nil
 

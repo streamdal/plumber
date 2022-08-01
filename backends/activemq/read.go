@@ -33,51 +33,56 @@ func (a *ActiveMQ) Read(ctx context.Context, readOpts *opts.ReadOptions, results
 
 	a.log.Info("Listening for message(s) ...")
 
-	for msg := range sub.C {
-		if msg.Err != nil {
-			errorChan <- &records.ErrorRecord{
-				Error:               msg.Err.Error(),
-				OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
-			}
-			continue
-		}
-
-		count++
-
-		// can marshal entire message: unsupported type: chan *stomp.Message
-		serializedMsg, err := json.Marshal(msg.Body)
-		if err != nil {
-			errorChan <- &records.ErrorRecord{
-				OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
-				Error:               errors.Wrap(err, "unable to serialize message into JSON").Error(),
-			}
-		}
-
-		if err := a.client.Ack(msg); err != nil {
-			errorChan <- &records.ErrorRecord{
-				OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
-				Error:               fmt.Sprintf("unable to ack message: %s", err),
-			}
-		}
-
-		resultsChan <- &records.ReadRecord{
-			MessageId:           uuid.NewV4().String(),
-			Num:                 count,
-			ReceivedAtUnixTsUtc: time.Now().UTC().Unix(),
-			Payload:             msg.Body,
-			XRaw:                serializedMsg,
-			Record: &records.ReadRecord_Activemq{
-				Activemq: &records.ActiveMQ{
-					Destination:    msg.Destination,
-					ContentType:    msg.ContentType,
-					SubscriptionId: msg.Subscription.Id(),
-					Value:          msg.Body,
-				},
-			},
-		}
-
-		if !readOpts.Continuous {
+	for {
+		select {
+		case <-ctx.Done():
 			return nil
+		case msg := <-sub.C:
+			if msg.Err != nil {
+				errorChan <- &records.ErrorRecord{
+					Error:               msg.Err.Error(),
+					OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
+				}
+				continue
+			}
+
+			count++
+
+			// can marshal entire message: unsupported type: chan *stomp.Message
+			serializedMsg, err := json.Marshal(msg.Body)
+			if err != nil {
+				errorChan <- &records.ErrorRecord{
+					OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
+					Error:               errors.Wrap(err, "unable to serialize message into JSON").Error(),
+				}
+			}
+
+			if err := a.client.Ack(msg); err != nil {
+				errorChan <- &records.ErrorRecord{
+					OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
+					Error:               fmt.Sprintf("unable to ack message: %s", err),
+				}
+			}
+
+			resultsChan <- &records.ReadRecord{
+				MessageId:           uuid.NewV4().String(),
+				Num:                 count,
+				ReceivedAtUnixTsUtc: time.Now().UTC().Unix(),
+				Payload:             msg.Body,
+				XRaw:                serializedMsg,
+				Record: &records.ReadRecord_Activemq{
+					Activemq: &records.ActiveMQ{
+						Destination:    msg.Destination,
+						ContentType:    msg.ContentType,
+						SubscriptionId: msg.Subscription.Id(),
+						Value:          msg.Body,
+					},
+				},
+			}
+
+			if !readOpts.Continuous {
+				return nil
+			}
 		}
 	}
 

@@ -32,6 +32,9 @@ func (m *Mongo) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsCha
 
 	for {
 		if !cs.Next(ctx) {
+			if errors.Is(cs.Err(), context.Canceled) {
+				return nil
+			}
 			m.log.Errorf("unable to read message from mongo: %s", cs.Err())
 			time.Sleep(ReadRetryInterval)
 			continue
