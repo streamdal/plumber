@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"sync"
 	"time"
 
 	"github.com/nsqio/go-nsq"
@@ -27,8 +26,8 @@ func (n *NSQ) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan 
 
 	consumer.SetLogger(n.log, nsq.LogLevelError)
 
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
+	doneCh := make(chan struct{})
+	defer close(doneCh)
 
 	var count int64
 
@@ -61,7 +60,7 @@ func (n *NSQ) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan 
 		}
 
 		if !readOpts.Continuous {
-			wg.Done()
+			doneCh <- struct{}{}
 		}
 
 		return nil
@@ -83,7 +82,12 @@ func (n *NSQ) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan 
 
 	n.log.Infof("Waiting for messages...")
 
-	wg.Wait()
+	select {
+	case <-doneCh:
+		return nil
+	case <-ctx.Done():
+		return nil
+	}
 
 	return nil
 }

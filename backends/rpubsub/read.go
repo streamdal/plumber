@@ -28,52 +28,63 @@ func (r *RedisPubsub) Read(ctx context.Context, readOpts *opts.ReadOptions, resu
 
 	r.log.Info("Listening for message(s) ...")
 
-	for {
-		msg, err := ps.ReceiveMessage(ctx)
-		if err != nil {
-			util.WriteError(r.log, errorChan, fmt.Errorf("unable to receive redis pubsub messsage: %s", err))
+	doneCh := make(chan struct{})
+
+	go func() {
+		for {
+			msg, err := ps.ReceiveMessage(ctx)
+			if err != nil {
+				util.WriteError(r.log, errorChan, fmt.Errorf("unable to receive redis pubsub messsage: %s", err))
+
+				if !readOpts.Continuous {
+					doneCh <- struct{}{}
+					break
+				}
+
+				continue
+			}
+
+			count++
+
+			serializedMsg, err := json.Marshal(msg)
+			if err != nil {
+				errorChan <- &records.ErrorRecord{
+					OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
+					Error:               errors.Wrap(err, "unable to serialize message into JSON").Error(),
+				}
+				continue
+			}
+
+			count++
+
+			resultsChan <- &records.ReadRecord{
+				MessageId:           uuid.NewV4().String(),
+				Num:                 count,
+				Metadata:            nil,
+				ReceivedAtUnixTsUtc: time.Now().UTC().Unix(),
+				Payload:             []byte(msg.Payload),
+				XRaw:                serializedMsg,
+				Record: &records.ReadRecord_RedisPubsub{
+					RedisPubsub: &records.RedisPubsub{
+						Value:     []byte(msg.Payload),
+						Timestamp: time.Now().UTC().Unix(),
+					},
+				},
+			}
 
 			if !readOpts.Continuous {
-				break
+				doneCh <- struct{}{}
+				return
 			}
-
-			continue
 		}
+	}()
 
-		count++
-
-		serializedMsg, err := json.Marshal(msg)
-		if err != nil {
-			errorChan <- &records.ErrorRecord{
-				OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
-				Error:               errors.Wrap(err, "unable to serialize message into JSON").Error(),
-			}
-			continue
-		}
-
-		count++
-
-		resultsChan <- &records.ReadRecord{
-			MessageId:           uuid.NewV4().String(),
-			Num:                 count,
-			Metadata:            nil,
-			ReceivedAtUnixTsUtc: time.Now().UTC().Unix(),
-			Payload:             []byte(msg.Payload),
-			XRaw:                serializedMsg,
-			Record: &records.ReadRecord_RedisPubsub{
-				RedisPubsub: &records.RedisPubsub{
-					Value:     []byte(msg.Payload),
-					Timestamp: time.Now().UTC().Unix(),
-				},
-			},
-		}
-
-		if !readOpts.Continuous {
-			return nil
-		}
+	select {
+	case <-ctx.Done():
+		return nil
+	case <-doneCh:
+		return nil
 	}
-
-	return nil
 }
 
 func validateReadOptions(readOpts *opts.ReadOptions) error {

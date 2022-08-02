@@ -67,7 +67,12 @@ func (m *MQTT) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan
 		return err
 	}
 
-	<-doneCh
+	select {
+	case <-doneCh:
+		return nil
+	case <-ctx.Done():
+		return nil
+	}
 
 	return nil
 }
