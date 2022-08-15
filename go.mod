@@ -14,7 +14,7 @@ require (
 	github.com/batchcorp/kong v0.2.17-batch-fix
 	github.com/batchcorp/natty v0.0.16
 	github.com/batchcorp/pgoutput v0.3.2
-	github.com/batchcorp/plumber-schemas v0.0.164
+	github.com/batchcorp/plumber-schemas v0.0.166
 	github.com/batchcorp/rabbit v0.1.17
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.2.0

@@ -105,8 +105,8 @@ type NatsJetstreamConn struct {
 	ClientId string `protobuf:"bytes,3,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty" kong:"help='User specified client ID to connect with',default=plumber,env='PLUMBER_RELAY_NATS_JETSTREAM_CLIENT_ID'"`
 	// @gotags: kong:"embed"
 	TlsOptions *NatsJetstreamTLSOptions `protobuf:"bytes,4,opt,name=tls_options,json=tlsOptions,proto3" json:"tls_options,omitempty" kong:"embed"`
-	// @gotags: kong:"help='File containing NATS NKey',env='pLUMBER_RELAY_NATS_JETSTREAM_NKEY'"
-	Nkey                 string   `protobuf:"bytes,5,opt,name=nkey,proto3" json:"nkey,omitempty" kong:"help='File containing NATS NKey',env='pLUMBER_RELAY_NATS_JETSTREAM_NKEY'"`
+	// @gotags: kong:"help='File containing NATS NKey',env='PLUMBER_RELAY_NATS_JETSTREAM_NKEY'"
+	Nkey                 string   `protobuf:"bytes,5,opt,name=nkey,proto3" json:"nkey,omitempty" kong:"help='File containing NATS NKey',env='PLUMBER_RELAY_NATS_JETSTREAM_NKEY'"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
