@@ -13,6 +13,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/nats-io/nats.go"
+	"github.com/nats-io/nkeys"
+
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -212,4 +215,86 @@ func GenerateTLSConfig(caCert, clientCert, clientKey string, skipVerify bool, mT
 		Certificates:       []tls.Certificate{cert},
 		MinVersion:         tls.VersionTLS12,
 	}, nil
+}
+
+// GenerateNATSAuthJWT accepts either a path to a .creds file containing JWT credentials or the credentials
+// directly in string format, and returns the correct nats connection authentication options
+func GenerateNATSAuthJWT(creds string) ([]nats.Option, error) {
+	opts := make([]nats.Option, 0)
+
+	// Creds as a file
+	if FileExists(creds) {
+		return append(opts, nats.UserCredentials(creds)), nil
+	}
+
+	// Creds as string
+	userCB, err := nkeys.ParseDecoratedJWT([]byte(creds))
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to parse user credentials")
+	}
+
+	sigCB := func(nonce []byte) ([]byte, error) {
+		kp, err := nkeys.ParseDecoratedNKey([]byte(creds))
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to parse nkey from credentials")
+		}
+		defer kp.Wipe()
+
+		sig, err := kp.Sign(nonce)
+		if err != nil {
+			return nil, err
+		}
+		return sig, nil
+	}
+
+	jwtFunc := func(o *nats.Options) error {
+		o.UserJWT = func() (string, error) {
+			return userCB, nil
+		}
+		o.SignatureCB = sigCB
+		return nil
+	}
+	return append(opts, jwtFunc), nil
+}
+
+// GenerateNATSAuthNKey accepts either a path to a file containing a Nkey seed, or the Nkey seed
+// directly in string format, and returns the correct nats connection authentication options
+func GenerateNATSAuthNKey(nkeyPath string) ([]nats.Option, error) {
+	opts := make([]nats.Option, 0)
+
+	// Creds as a file
+	if FileExists(nkeyPath) {
+		// CLI, pass via filepath
+		nkeyCreds, err := nats.NkeyOptionFromSeed(nkeyPath)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to load nkey")
+		}
+
+		return append(opts, nkeyCreds), nil
+	}
+
+	// Server conn, pass via string
+	kp, err := nkeys.ParseDecoratedNKey([]byte(nkeyPath))
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to parse nkey data")
+	}
+
+	defer kp.Wipe()
+
+	pubKey, err := kp.PublicKey()
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to find public key in nkey data")
+	}
+	if !nkeys.IsValidPublicUserKey(pubKey) {
+		return nil, fmt.Errorf("not a valid nkey user seed")
+	}
+
+	sigCB := func(nonce []byte) ([]byte, error) {
+		sig, _ := kp.Sign(nonce)
+
+		return sig, nil
+	}
+
+	return append(opts, nats.Nkey(pubKey, sigCB)), nil
+
 }

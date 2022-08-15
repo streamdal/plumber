@@ -43,20 +43,25 @@ func New(connOpts *opts.ConnectionOptions) (*NatsJetstream, error) {
 		return nil, errors.Wrap(err, "unable to parse address")
 	}
 
-	// Credentials can be specified by a .creds file if users do not wish to pass in with the DSN
-	var creds nats.Option
-	if len(args.UserCredentials) > 0 {
-		if util.FileExists(args.UserCredentials) {
-			creds = nats.UserCredentials(string(args.UserCredentials))
-		} else {
-			creds = func(o *nats.Options) error {
-				o.UserJWT = func() (string, error) {
-					return string(args.UserCredentials), nil
-				}
-				o.SignatureCB = nil
-				return nil
-			}
+	// Credentials are in NKey format
+	opts := make([]nats.Option, 0)
+	if len(args.Nkey) > 0 {
+		authOpts, err := util.GenerateNATSAuthNKey(args.Nkey)
+		if err != nil {
+			return nil, err
 		}
+
+		opts = append(opts, authOpts...)
+	}
+
+	// Credentials can be specified by a .creds file if users do not wish to pass in with the DSN
+	if len(args.UserCredentials) > 0 {
+		authOpts, err := util.GenerateNATSAuthJWT(args.UserCredentials)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, authOpts...)
 	}
 
 	var client *nats.Conn
@@ -73,13 +78,15 @@ func New(connOpts *opts.ConnectionOptions) (*NatsJetstream, error) {
 			return nil, errors.Wrap(err, "Unable to generate TLS Config")
 		}
 
-		client, err = nats.Connect(args.Dsn, nats.Secure(tlsConfig), creds)
+		opts = append(opts, nats.Secure(tlsConfig))
+
+		client, err = nats.Connect(args.Dsn, opts...)
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to create new nats client")
 		}
 	} else {
 		// Plaintext connection
-		client, err = nats.Connect(args.Dsn, creds)
+		client, err = nats.Connect(args.Dsn, opts...)
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to create new nats client")
 		}

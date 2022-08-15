@@ -60,21 +60,37 @@ func (n *Nats) Test(_ context.Context) error {
 }
 
 // newClient creates a new Nats client connection
-func newClient(opts *args.NatsConn) (*nats.Conn, error) {
-	uri, err := url.Parse(opts.Dsn)
+func newClient(args *args.NatsConn) (*nats.Conn, error) {
+	uri, err := url.Parse(args.Dsn)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to parse address")
 	}
 
 	// Credentials can be specified by a .creds file if users do not wish to pass in the address
-	var creds nats.Option
-	if len(opts.UserCredentials) > 0 {
-		creds = nats.UserCredentials(string(opts.UserCredentials))
+	// Credentials are in NKey format
+	opts := make([]nats.Option, 0)
+	if len(args.Nkey) > 0 {
+		authOpts, err := util.GenerateNATSAuthNKey(args.Nkey)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, authOpts...)
 	}
 
-	if uri.Scheme != "tls" && !opts.TlsOptions.UseTls {
+	// Credentials can be specified by a .creds file if users do not wish to pass in with the DSN
+	if len(args.UserCredentials) > 0 {
+		authOpts, err := util.GenerateNATSAuthJWT(args.UserCredentials)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, authOpts...)
+	}
+
+	if uri.Scheme != "tls" && !args.TlsOptions.UseTls {
 		// Insecure connection
-		c, err := nats.Connect(opts.Dsn, creds)
+		c, err := nats.Connect(args.Dsn, opts...)
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to create new nats client")
 		}
@@ -83,17 +99,19 @@ func newClient(opts *args.NatsConn) (*nats.Conn, error) {
 
 	// TLS Secured connection
 	tlsConfig, err := util.GenerateTLSConfig(
-		opts.TlsOptions.TlsCaCert,
-		opts.TlsOptions.TlsClientCert,
-		opts.TlsOptions.TlsClientKey,
-		opts.TlsOptions.TlsSkipVerify,
+		args.TlsOptions.TlsCaCert,
+		args.TlsOptions.TlsClientCert,
+		args.TlsOptions.TlsClientKey,
+		args.TlsOptions.TlsSkipVerify,
 		tls.NoClientCert,
 	)
 	if err != nil {
 		return nil, errors.Wrap(err, "Unable to generate TLS Config")
 	}
 
-	c, err := nats.Connect(opts.Dsn, nats.Secure(tlsConfig), creds)
+	opts = append(opts, nats.Secure(tlsConfig))
+
+	c, err := nats.Connect(args.Dsn, opts...)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create new nats client")
 	}
