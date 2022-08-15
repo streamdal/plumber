@@ -52,10 +52,8 @@ func New(connOpts *opts.ConnectionOptions) (*NatsJetstream, error) {
 		}
 
 		opts = append(opts, authOpts...)
-	}
-
-	// Credentials can be specified by a .creds file if users do not wish to pass in with the DSN
-	if len(args.UserCredentials) > 0 {
+	} else if len(args.UserCredentials) > 0 {
+		// Credentials can be specified by a .creds file if users do not wish to pass in with the DSN
 		authOpts, err := util.GenerateNATSAuthJWT(args.UserCredentials)
 		if err != nil {
 			return nil, err

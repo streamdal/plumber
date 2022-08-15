@@ -15,7 +15,6 @@ import (
 
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
-
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
