@@ -107,6 +107,7 @@ func (n *NatsJetstream) Read(ctx context.Context, readOpts *opts.ReadOptions, re
 
 	if err != nil {
 		n.log.Errorf("unable to subscribe: %s", err)
+		return err
 	}
 
 	if sub.Type() == nats.PullSubscription {
