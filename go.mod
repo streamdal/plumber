@@ -8,7 +8,7 @@ require (
 	cloud.google.com/go/pubsub v1.6.1
 	github.com/Azure/azure-event-hubs-go/v3 v3.3.16
 	github.com/Azure/azure-service-bus-go v0.11.5
-	github.com/Masterminds/semver v1.5.0 // indirect
+	github.com/Masterminds/semver v1.5.0
 	github.com/apache/pulsar-client-go v0.7.0
 	github.com/aws/aws-sdk-go v1.34.28
 	github.com/batchcorp/collector-schemas v0.0.16
@@ -17,7 +17,7 @@ require (
 	github.com/batchcorp/pgoutput v0.3.2
 	github.com/batchcorp/plumber-schemas v0.0.166
 	github.com/batchcorp/rabbit v0.1.17
-	github.com/dukex/mixpanel v1.0.1 // indirect
+	github.com/dukex/mixpanel v1.0.1
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fatih/color v1.12.0 // indirect
@@ -44,13 +44,14 @@ require (
 	github.com/mcuadros/go-lookup v0.0.0-20200831155250-80f87a4fa5ee
 	github.com/nats-io/nats-streaming-server v0.24.1 // indirect
 	github.com/nats-io/nats.go v1.13.1-0.20220121202836-972a071d373d
-	github.com/nats-io/nkeys v0.3.0 // indirect
+	github.com/nats-io/nkeys v0.3.0
 	github.com/nats-io/stan.go v0.10.2
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.18.1
 	github.com/pkg/errors v0.9.1
+	github.com/posthog/posthog-go v0.0.0-20220817142604-0b0bbf0f9c0f
 	github.com/prometheus/client_golang v1.11.0
 	github.com/rabbitmq/rabbitmq-stream-go-client v0.1.0-beta
 	github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d
@@ -66,7 +67,6 @@ require (
 	github.com/v2pro/wombat v0.0.0-20180402055224-a56dbdcddef2 // indirect
 	go.mongodb.org/mongo-driver v1.7.3
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce
-	golang.org/x/mod v0.4.2 // indirect
 	google.golang.org/api v0.29.0
 	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c // indirect
 	google.golang.org/grpc v1.40.0

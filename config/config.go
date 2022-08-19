@@ -1,10 +1,15 @@
-// Package config is used for storing and manipulating (server) state in plumber.
+// Package config is used for storing and manipulating the plumber config.
 // There should be, at most, a single instance of the plumber config that is
 // passed around between various components.
+//
+// If running in cluster mode, config will write the config to NATS. If running
+// locally, the config will be saved to ~/.batchsh/plumber.json
 package config
 
 import (
 	"context"
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -26,7 +31,8 @@ import (
 )
 
 const (
-	ConfigFilename = "config.json"
+	ConfigDir      = ".batchsh"
+	ConfigFilename = "plumber.json"
 	KVConfigBucket = "plumber"
 	KVConfigKey    = "persistent-config"
 )
@@ -38,7 +44,7 @@ type Config struct {
 	Token           string `json:"token"`
 	TeamID          string `json:"team_id"`
 	UserID          string `json:"user_id"`
-	EnableAnalytics bool   `json:"enable_analytics"`
+	EnableTelemetry bool   `json:"enable_telemetry"`
 	LastVersion     string `json:"last_version"`
 
 	Connections      map[string]*stypes.Connection `json:"connections"`
@@ -61,6 +67,11 @@ func New(enableCluster bool, k kv.IKV) (*Config, error) {
 
 	defer func() {
 		cfg.LastVersion = options.VERSION
+
+		// PlumberID was incorrectly written as plumber1 for a small period of time
+		if cfg.PlumberID == "plumber1" {
+			cfg.PlumberID = getPlumberID()
+		}
 	}()
 
 	if enableCluster {
@@ -113,7 +124,7 @@ func requireReconfig(initialRun bool, cfg *Config) bool {
 		return false
 	}
 
-	// Brand new config
+	// Brand new config or config doesn't contain LastVersion yet
 	if initialRun || cfg.LastVersion == "" {
 		return true
 	}
@@ -140,52 +151,46 @@ func requireReconfig(initialRun bool, cfg *Config) bool {
 }
 
 func (c *Config) Configure() {
-	analyticsDescription := `If analytics are enabled, plumber will collect the following anonymous usage statistics:
+	telemetryDescription := `If telemetry is enabled, plumber will collect the following anonymous telemetry data:
 
 > General
 	- PlumberID (a unique, randomly generated ID for this plumber instance)
-	- What version of plumber is being used
-	- What OS is being used
-	- What mode is plumber ran in (CLI or server)
-	- Number of errors encountered
+	- Plumber version
+	- OS and architecture
+	- Plumber mode (server or CLI)
 
 > For CLI
-	- What action is taken (read or write)
-	- What backend is used (kafka, redis, nats, etc.)
-	- What data format is used for reading or writing (json, protobuf, etc.)
+	- Plumber action (read, write, relay, etc.)
+	- Backend used (kafka, rabbitmq, nats, etc.)
+	- Data format used for read or write (json, protobuf, etc.)
 	- If reading, whether continuous mode is used
 	- If using protobuf, whether file descriptors are used
 
 > For server
-	- How many connections, relays, tunnels are configured
-	- Uptime of the server
+	- Number of connections, relays, tunnels
+	- Server uptime
 	- ClusterID
 	- gRPC methods used (create relay, stop tunnel, etc.)
 
-NOTE: We do NOT collect any personally identifiable or confidential information.
+NOTE: We do NOT collect ANY personally identifiable or confidential information.
 
-You can read this statement here: https://docs.batch.sh/plumber/analytics
+You can read this statement here: https://docs.batch.sh/plumber/telemetry
 `
+	fmt.Printf(telemetryDescription + "\n")
 
-	enableAnalytics, err := askYesNo("Do you want to enable analytics?", "N", analyticsDescription)
+	enableTelemetry, err := askYesNo("Do you want to enable telemetry?", "N")
 	if err != nil {
 		c.log.Fatalf("unable to configure plumber: %s", err)
 	}
 
-	if enableAnalytics {
-		fmt.Println("Thank you for participating! This will help us improve plumber :)")
+	if enableTelemetry {
+		fmt.Println("\nNICE! Thank you for opting in! This will help us improve plumber :)\n")
 	}
 
-	c.EnableAnalytics = enableAnalytics
+	c.EnableTelemetry = enableTelemetry
 }
 
-func askYesNo(question, defaultAnswer, description string) (bool, error) {
-	fmt.Println()
-
-	if description != "" {
-		fmt.Println(description + "\n")
-	}
-
+func askYesNo(question, defaultAnswer string) (bool, error) {
 	if defaultAnswer != "" {
 		fmt.Printf(question+" [y/n (default: %s)]: ", defaultAnswer)
 	} else {
@@ -215,13 +220,13 @@ func askYesNo(question, defaultAnswer, description string) (bool, error) {
 		return false, nil
 	}
 
-	fmt.Println("invalid answer")
-	return askYesNo(question, defaultAnswer, description)
+	fmt.Println("invalid input")
+	return askYesNo(question, defaultAnswer)
 }
 
 func newConfig(enableCluster bool, k kv.IKV) *Config {
 	return &Config{
-		PlumberID:        uuid.NewV4().String(),
+		PlumberID:        getPlumberID(),
 		Connections:      make(map[string]*stypes.Connection),
 		Relays:           make(map[string]*stypes.Relay),
 		Tunnels:          make(map[string]*stypes.Tunnel),
@@ -233,6 +238,19 @@ func newConfig(enableCluster bool, k kv.IKV) *Config {
 		enableCluster: enableCluster,
 		log:           logrus.WithField("pkg", "config"),
 	}
+}
+
+func getPlumberID() string {
+	hostname, err := os.Hostname()
+	if err != nil {
+		logrus.Warningf("unable to get hostname: %s", err)
+		hostname = uuid.NewV4().String()
+	}
+
+	h := sha1.New()
+	h.Write([]byte(hostname))
+
+	return hex.EncodeToString(h.Sum(nil))[:8]
 }
 
 // Save is a convenience method of persisting the config to KV store or disk
@@ -424,7 +442,7 @@ func getConfigDir() (string, error) {
 		return "", errors.Wrap(err, "unable to locate user's home directory")
 	}
 
-	return path.Join(homeDir, ".batchsh"), nil
+	return path.Join(homeDir, ConfigDir), nil
 }
 
 // GetRelay returns a relay from the in-memory map

@@ -6,11 +6,9 @@ import (
 	"time"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
-	"github.com/dukex/mixpanel"
-	"github.com/pkg/errors"
-	uuid "github.com/satori/go.uuid"
-
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+	"github.com/pkg/errors"
+	"github.com/posthog/posthog-go"
 
 	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/validate"
@@ -41,11 +39,13 @@ func (p *Plumber) HandleWriteCmd() error {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 
-	// Fire off a goroutine to (potentially) post usage analytics
+	// Fire off a goroutine to (potentially) post usage telemetry
 	go func() {
 		defer wg.Done()
 
-		event := &mixpanel.Event{
+		event := posthog.Capture{
+			Event:      "command_write",
+			DistinctId: p.PersistentConfig.PlumberID,
 			Properties: map[string]interface{}{
 				"backend":     backend.Name(),
 				"encode_type": "unset",
@@ -68,7 +68,7 @@ func (p *Plumber) HandleWriteCmd() error {
 			}
 		}
 
-		if err := p.Config.Analytics.Track(uuid.NewV4().String(), "write", event); err != nil {
+		if err := p.Config.Telemetry.Enqueue(event); err != nil {
 			p.log.Errorf("unable to track write event: %s", err)
 		}
 	}()

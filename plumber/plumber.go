@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/batchcorp/plumber/analytics"
+	"github.com/batchcorp/plumber/telemetry"
 	dpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/mcuadros/go-lookup"
 	"github.com/pkg/errors"
@@ -35,7 +35,7 @@ var (
 
 // Config contains configurable options for instantiating a new Plumber
 type Config struct {
-	Analytics          analytics.IAnalytics
+	Telemetry          telemetry.ITelemetry
 	PersistentConfig   *config.Config
 	Actions            actions.IActions
 	ServiceShutdownCtx context.Context

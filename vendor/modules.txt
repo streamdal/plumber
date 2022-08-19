@@ -174,7 +174,6 @@ github.com/dgrijalva/jwt-go
 github.com/dgryski/go-rendezvous
 # github.com/dukex/mixpanel v1.0.1
 ## explicit
-github.com/dukex/mixpanel
 # github.com/dustin/go-humanize v1.0.0
 ## explicit
 github.com/dustin/go-humanize
@@ -421,6 +420,9 @@ github.com/pierrec/lz4/internal/xxh32
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
+# github.com/posthog/posthog-go v0.0.0-20220817142604-0b0bbf0f9c0f
+## explicit
+github.com/posthog/posthog-go
 # github.com/prometheus/client_golang v1.11.0
 ## explicit
 github.com/prometheus/client_golang/prometheus
@@ -544,6 +546,8 @@ github.com/xdg-go/stringprep
 github.com/xdg/scram
 # github.com/xdg/stringprep v1.0.0
 github.com/xdg/stringprep
+# github.com/xtgo/uuid v0.0.0-20140804021211-a0b114877d4c
+github.com/xtgo/uuid
 # github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d
 github.com/youmark/pkcs8
 # go.mongodb.org/mongo-driver v1.7.3
@@ -612,7 +616,6 @@ golang.org/x/crypto/ssh/terminal
 golang.org/x/lint
 golang.org/x/lint/golint
 # golang.org/x/mod v0.4.2
-## explicit
 golang.org/x/mod/module
 golang.org/x/mod/semver
 # golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2

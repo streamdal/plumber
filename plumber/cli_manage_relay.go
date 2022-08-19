@@ -4,20 +4,21 @@ import (
 	"context"
 	"strings"
 
-	"github.com/dukex/mixpanel"
-	"github.com/pkg/errors"
-	uuid "github.com/satori/go.uuid"
-
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/pkg/errors"
+	"github.com/posthog/posthog-go"
 )
 
 func (p *Plumber) HandleGetRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "get_relay", &mixpanel.Event{
+	p.AsyncTrackManageTelemetry(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
 			"type":     "request",
 			"relay_id": p.CLIOptions.Manage.Get.Relay.Id,
+			"method":   "get_relay",
 		},
 	})
 
@@ -41,9 +42,12 @@ func (p *Plumber) HandleGetRelayCmd(ctx context.Context, client protos.PlumberSe
 }
 
 func (p *Plumber) HandleGetAllRelaysCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "get_all_relays", &mixpanel.Event{
+	p.AsyncTrackManageTelemetry(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
-			"type": "request",
+			"type":   "request",
+			"method": "get_all_relays",
 		},
 	})
 
@@ -65,10 +69,13 @@ func (p *Plumber) HandleGetAllRelaysCmd(ctx context.Context, client protos.Plumb
 }
 
 func (p *Plumber) HandleResumeRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "resume_relay", &mixpanel.Event{
+	p.AsyncTrackManageTelemetry(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
 			"type":     "request",
 			"relay_id": p.CLIOptions.Manage.Resume.Relay.Id,
+			"method":   "resume_relay",
 		},
 	})
 
@@ -91,10 +98,13 @@ func (p *Plumber) HandleResumeRelayCmd(ctx context.Context, client protos.Plumbe
 }
 
 func (p *Plumber) HandleStopRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "stop_relay", &mixpanel.Event{
+	p.AsyncTrackManageTelemetry(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
 			"type":     "request",
 			"relay_id": p.CLIOptions.Manage.Stop.Relay.Id,
+			"method":   "stop_relay",
 		},
 	})
 
@@ -117,10 +127,13 @@ func (p *Plumber) HandleStopRelayCmd(ctx context.Context, client protos.PlumberS
 }
 
 func (p *Plumber) HandleDeleteRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "delete_relay", &mixpanel.Event{
+	p.AsyncTrackManageTelemetry(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
 			"type":     "request",
 			"relay_id": p.CLIOptions.Manage.Delete.Relay.Id,
+			"method":   "delete_relay",
 		},
 	})
 
@@ -143,9 +156,12 @@ func (p *Plumber) HandleDeleteRelayCmd(ctx context.Context, client protos.Plumbe
 }
 
 func (p *Plumber) HandleCreateRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "create_relay", &mixpanel.Event{
+	p.AsyncTrackManageTelemetry(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
-			"type": "request",
+			"type":   "request",
+			"method": "create_relay",
 		},
 	})
 

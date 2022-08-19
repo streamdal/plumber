@@ -4,9 +4,8 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/tunnel"
-	"github.com/dukex/mixpanel"
 	"github.com/pkg/errors"
-	uuid "github.com/satori/go.uuid"
+	"github.com/posthog/posthog-go"
 )
 
 // HandleTunnelCmd handles tunnel destination mode commands
@@ -16,7 +15,9 @@ func (p *Plumber) HandleTunnelCmd() error {
 		return errors.Wrap(err, "unable to instantiate backend")
 	}
 
-	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "tunnel", &mixpanel.Event{
+	p.AsyncTrackManageTelemetry(posthog.Capture{
+		Event:      "command_tunnel",
+		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
 			"backend": backend.Name(),
 		},

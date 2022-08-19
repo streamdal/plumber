@@ -4,15 +4,13 @@ import (
 	"os"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
-	"github.com/dukex/mixpanel"
-	"github.com/pkg/errors"
-	uuid "github.com/satori/go.uuid"
-
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/reader"
 	"github.com/batchcorp/plumber/validate"
+	"github.com/pkg/errors"
+	"github.com/posthog/posthog-go"
 )
 
 // HandleReadCmd handles CLI read mode
@@ -40,9 +38,11 @@ func (p *Plumber) HandleReadCmd() error {
 		p.MainShutdownFunc()
 	}()
 
-	// Fire off a goroutine to (potentially) post usage analytics
+	// Fire off a goroutine to (potentially) post usage telemetry
 	go func() {
-		event := &mixpanel.Event{
+		event := posthog.Capture{
+			Event:      "command_read",
+			DistinctId: p.PersistentConfig.PlumberID,
 			Properties: map[string]interface{}{
 				"continuous":  p.CLIOptions.Read.Continuous,
 				"backend":     backend.Name(),
@@ -66,7 +66,7 @@ func (p *Plumber) HandleReadCmd() error {
 			}
 		}
 
-		p.Config.Analytics.Track(uuid.NewV4().String(), "read", event)
+		p.Config.Telemetry.Enqueue(event)
 	}()
 
 MAIN:

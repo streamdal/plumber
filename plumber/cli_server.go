@@ -6,9 +6,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/dukex/mixpanel"
 	"github.com/pkg/errors"
-	uuid "github.com/satori/go.uuid"
+	"github.com/posthog/posthog-go"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
@@ -165,7 +164,9 @@ func (p *Plumber) startGRPCServer() error {
 
 	go p.watchServiceShutdown(grpcServer)
 
-	p.Analytics.AsyncTrack(uuid.NewV4().String(), "server", &mixpanel.Event{
+	p.Telemetry.AsyncEnqueue(posthog.Capture{
+		Event:      "command_server",
+		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
 			"cluster_id":     p.CLIOptions.Server.ClusterId,
 			"node_id":        p.CLIOptions.Server.NodeId,

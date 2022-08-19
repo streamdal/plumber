@@ -9,7 +9,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/batchcorp/plumber/analytics"
+	"github.com/batchcorp/plumber/telemetry"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/ssh/terminal"
@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	// Note: Only used if analytics are enabled (default: no)
+	// Note: Only used if telemetry are enabled (default: no)
 	MixPanelToken = "2d2995d51084155edc043905f2dc528f"
 )
 
@@ -70,21 +70,21 @@ func main() {
 	// Save config automatically on exit
 	defer persistentConfig.Save()
 
-	// If enabled, setup analytics
-	var as analytics.IAnalytics
+	// If enabled, setup telemetry
+	var as telemetry.ITelemetry
 
-	if persistentConfig.EnableAnalytics {
+	if persistentConfig.EnableTelemetry {
 		var err error
 
-		as, err = analytics.New(&analytics.Config{
+		as, err = telemetry.New(&telemetry.Config{
 			Token:     MixPanelToken,
 			PlumberID: persistentConfig.PlumberID,
 		})
 		if err != nil {
-			logrus.Fatalf("unable to create analytics client: %s", err)
+			logrus.Fatalf("unable to create telemetry client: %s", err)
 		}
 	} else {
-		as = &analytics.NoopAnalytics{}
+		as = &telemetry.NoopTelemtry{}
 	}
 
 	// We only want to intercept interrupt signals in relay or server mode
@@ -129,7 +129,7 @@ func main() {
 	}
 
 	p, err := plumber.New(&plumber.Config{
-		Analytics:          as,
+		Telemetry:          as,
 		PersistentConfig:   persistentConfig,
 		ServiceShutdownCtx: serviceCtx,
 		KongCtx:            kongCtx,

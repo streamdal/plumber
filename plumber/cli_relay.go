@@ -1,9 +1,8 @@
 package plumber
 
 import (
-	"github.com/dukex/mixpanel"
 	"github.com/pkg/errors"
-	uuid "github.com/satori/go.uuid"
+	"github.com/posthog/posthog-go"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber/api"
@@ -29,7 +28,9 @@ func (p *Plumber) HandleRelayCmd() error {
 		return errors.Wrap(err, "unable to start relay service")
 	}
 
-	p.Analytics.AsyncTrack(uuid.NewV4().String(), "relay", &mixpanel.Event{
+	p.Telemetry.AsyncEnqueue(posthog.Capture{
+		Event:      "command_relay",
+		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
 			"backend": backend.Name(),
 		},

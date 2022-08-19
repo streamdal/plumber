@@ -4,20 +4,21 @@ import (
 	"context"
 	"strings"
 
-	"github.com/dukex/mixpanel"
-	"github.com/pkg/errors"
-	uuid "github.com/satori/go.uuid"
-
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/pkg/errors"
+	"github.com/posthog/posthog-go"
 )
 
 func (p *Plumber) HandleGetTunnelCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "get_tunnel", &mixpanel.Event{
+	p.AsyncTrackManageTelemetry(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
 			"type":      "request",
 			"tunnel_id": p.CLIOptions.Manage.Get.Tunnel.Id,
+			"method":    "get_tunnel",
 		},
 	})
 
@@ -41,9 +42,12 @@ func (p *Plumber) HandleGetTunnelCmd(ctx context.Context, client protos.PlumberS
 }
 
 func (p *Plumber) HandleGetAllTunnelsCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "get_all_tunnels", &mixpanel.Event{
+	p.AsyncTrackManageTelemetry(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
-			"type": "request",
+			"type":   "request",
+			"method": "get_all_tunnels",
 		},
 	})
 
@@ -65,9 +69,12 @@ func (p *Plumber) HandleGetAllTunnelsCmd(ctx context.Context, client protos.Plum
 }
 
 func (p *Plumber) HandleCreateTunnelCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "create_tunnel", &mixpanel.Event{
+	p.AsyncTrackManageTelemetry(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
-			"type": "request",
+			"type":   "request",
+			"method": "create_tunnel",
 		},
 	})
 
@@ -95,10 +102,13 @@ func (p *Plumber) HandleCreateTunnelCmd(ctx context.Context, client protos.Plumb
 }
 
 func (p *Plumber) HandleDeleteTunnelCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "delete_tunnel", &mixpanel.Event{
+	p.AsyncTrackManageTelemetry(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
 			"type":      "request",
 			"tunnel_id": p.CLIOptions.Manage.Delete.Tunnel.Id,
+			"method":    "delete_tunnel",
 		},
 	})
 
@@ -121,10 +131,13 @@ func (p *Plumber) HandleDeleteTunnelCmd(ctx context.Context, client protos.Plumb
 }
 
 func (p *Plumber) HandleStopTunnelCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "stop_tunnel", &mixpanel.Event{
+	p.AsyncTrackManageTelemetry(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
 			"type":      "request",
 			"tunnel_id": p.CLIOptions.Manage.Stop.Tunnel.Id,
+			"method":    "stop_tunnel",
 		},
 	})
 
@@ -147,10 +160,13 @@ func (p *Plumber) HandleStopTunnelCmd(ctx context.Context, client protos.Plumber
 }
 
 func (p *Plumber) HandleResumeTunnelCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "resume_tunnel", &mixpanel.Event{
+	p.AsyncTrackManageTelemetry(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
 			"type":      "request",
 			"tunnel_id": p.CLIOptions.Manage.Resume.Tunnel.Id,
+			"method":    "resume_tunnel",
 		},
 	})
 

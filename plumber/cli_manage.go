@@ -9,12 +9,11 @@ import (
 
 	"github.com/batchcorp/natty"
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
-	"github.com/dukex/mixpanel"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 	"github.com/hokaccha/go-prettyjson"
 	"github.com/pkg/errors"
-	uuid "github.com/satori/go.uuid"
+	"github.com/posthog/posthog-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -58,7 +57,10 @@ func (p *Plumber) HandleManageCmd() error {
 
 	cmd := p.CLIOptions.Global.XCommands[1] + " " + p.CLIOptions.Global.XCommands[2]
 
-	p.Analytics.AsyncTrack(uuid.NewV4().String(), "manage", &mixpanel.Event{
+	p.Telemetry.AsyncEnqueue(posthog.Capture{
+		Event:      "cli_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
+
 		Properties: map[string]interface{}{
 			"cmd": cmd,
 		},
@@ -143,12 +145,7 @@ func (p *Plumber) displayJSON(input map[string]string) {
 	fmt.Println(string(data))
 }
 
-func (p *Plumber) AsyncTrackServerAnalytics(distinctID string, method string, event *mixpanel.Event) {
-	if event == nil {
-		p.log.Warningf("analytics event is nil - nothing to do")
-		return
-	}
-
+func (p *Plumber) AsyncTrackManageTelemetry(event posthog.Capture) {
 	if _, ok := event.Properties["cluster_id"]; !ok {
 		event.Properties["cluster_id"] = p.CLIOptions.Server.ClusterId
 	}
@@ -165,9 +162,7 @@ func (p *Plumber) AsyncTrackServerAnalytics(distinctID string, method string, ev
 		event.Properties["enable_cluster"] = p.CLIOptions.Server.EnableCluster
 	}
 
-	event.Properties["method"] = method
-
-	p.Analytics.AsyncTrack(distinctID, "server", event)
+	p.Telemetry.AsyncEnqueue(event)
 }
 
 func (p *Plumber) displayProtobuf(msg proto.Message) error {
