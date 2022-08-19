@@ -166,7 +166,7 @@ func (p *Plumber) startGRPCServer() error {
 
 	p.Telemetry.AsyncEnqueue(posthog.Capture{
 		Event:      "command_server",
-		DistinctId: p.PersistentConfig.PlumberID,
+		DistinctId: p.PersistentConfig.ClusterID,
 		Properties: map[string]interface{}{
 			"cluster_id":     p.CLIOptions.Server.ClusterId,
 			"node_id":        p.CLIOptions.Server.NodeId,

@@ -8,8 +8,6 @@ package config
 
 import (
 	"context"
-	"crypto/sha1"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -121,6 +119,7 @@ func requireReconfig(initialRun bool, cfg *Config) bool {
 
 	// Should not ever reach this case but avoid a panic just incase
 	if cfg == nil {
+		logrus.Warningf("bug? cfg is nil in requireReconfig")
 		return false
 	}
 
@@ -241,16 +240,7 @@ func newConfig(enableCluster bool, k kv.IKV) *Config {
 }
 
 func getPlumberID() string {
-	hostname, err := os.Hostname()
-	if err != nil {
-		logrus.Warningf("unable to get hostname: %s", err)
-		hostname = uuid.NewV4().String()
-	}
-
-	h := sha1.New()
-	h.Write([]byte(hostname))
-
-	return hex.EncodeToString(h.Sum(nil))[:8]
+	return uuid.NewV4().String()
 }
 
 // Save is a convenience method of persisting the config to KV store or disk

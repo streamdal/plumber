@@ -119,8 +119,8 @@ func (t *Telemetry) AsyncEnqueue(c posthog.Capture) {
 	go t.Enqueue(c)
 }
 
-func (t *NoopTelemtry) Enqueue(_ *posthog.Capture) error {
+func (t *NoopTelemtry) Enqueue(_ posthog.Capture) error {
 	return nil
 }
 
-func (t *NoopTelemtry) AsyncEnqueue(_, _ string, _ posthog.Capture) {}
+func (t *NoopTelemtry) AsyncEnqueue(_ posthog.Capture) {}
