@@ -8,6 +8,7 @@ require (
 	cloud.google.com/go/pubsub v1.6.1
 	github.com/Azure/azure-event-hubs-go/v3 v3.3.16
 	github.com/Azure/azure-service-bus-go v0.11.5
+	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/apache/pulsar-client-go v0.7.0
 	github.com/aws/aws-sdk-go v1.34.28
 	github.com/batchcorp/collector-schemas v0.0.16
@@ -16,6 +17,7 @@ require (
 	github.com/batchcorp/pgoutput v0.3.2
 	github.com/batchcorp/plumber-schemas v0.0.166
 	github.com/batchcorp/rabbit v0.1.17
+	github.com/dukex/mixpanel v1.0.1 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fatih/color v1.12.0 // indirect
@@ -64,6 +66,7 @@ require (
 	github.com/v2pro/wombat v0.0.0-20180402055224-a56dbdcddef2 // indirect
 	go.mongodb.org/mongo-driver v1.7.3
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce
+	golang.org/x/mod v0.4.2 // indirect
 	google.golang.org/api v0.29.0
 	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c // indirect
 	google.golang.org/grpc v1.40.0

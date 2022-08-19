@@ -9,6 +9,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/batchcorp/plumber/analytics"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/ssh/terminal"
@@ -22,6 +23,11 @@ import (
 	"github.com/batchcorp/plumber/plumber"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/prometheus"
+)
+
+const (
+	// Note: Only used if analytics are enabled (default: no)
+	MixPanelToken = "2d2995d51084155edc043905f2dc528f"
 )
 
 func main() {
@@ -63,6 +69,23 @@ func main() {
 
 	// Save config automatically on exit
 	defer persistentConfig.Save()
+
+	// If enabled, setup analytics
+	var as analytics.IAnalytics
+
+	if persistentConfig.EnableAnalytics {
+		var err error
+
+		as, err = analytics.New(&analytics.Config{
+			Token:     MixPanelToken,
+			PlumberID: persistentConfig.PlumberID,
+		})
+		if err != nil {
+			logrus.Fatalf("unable to create analytics client: %s", err)
+		}
+	} else {
+		as = &analytics.NoopAnalytics{}
+	}
 
 	// We only want to intercept interrupt signals in relay or server mode
 	if cliOpts.Global.XAction == "relay" || cliOpts.Global.XAction == "server" || cliOpts.Global.XAction == "read" {
@@ -106,6 +129,7 @@ func main() {
 	}
 
 	p, err := plumber.New(&plumber.Config{
+		Analytics:          as,
 		PersistentConfig:   persistentConfig,
 		ServiceShutdownCtx: serviceCtx,
 		KongCtx:            kongCtx,

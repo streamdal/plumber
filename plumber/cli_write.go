@@ -2,9 +2,13 @@ package plumber
 
 import (
 	"context"
+	"sync"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
+	"github.com/dukex/mixpanel"
 	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
@@ -34,6 +38,41 @@ func (p *Plumber) HandleWriteCmd() error {
 
 	errorCh := make(chan *records.ErrorRecord, 1)
 
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+
+	// Fire off a goroutine to (potentially) post usage analytics
+	go func() {
+		defer wg.Done()
+
+		event := &mixpanel.Event{
+			Properties: map[string]interface{}{
+				"backend":     backend.Name(),
+				"encode_type": "unset",
+			},
+		}
+
+		if p.CLIOptions.Write.EncodeOptions != nil {
+			event.Properties["encode_type"] = p.CLIOptions.Write.EncodeOptions.EncodeType.String()
+
+			if p.CLIOptions.Write.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_JSONPB {
+				// Using FD's or dir?
+				if p.CLIOptions.Write.EncodeOptions.ProtobufSettings.ProtobufDescriptorSet != "" {
+					event.Properties["protobuf_type"] = "fds"
+				} else {
+					event.Properties["protobuf_type"] = "dir"
+				}
+
+				// Set envelope info
+				event.Properties["protobuf_envelope"] = p.CLIOptions.Write.EncodeOptions.ProtobufSettings.ProtobufEnvelopeType.String()
+			}
+		}
+
+		if err := p.Config.Analytics.Track(uuid.NewV4().String(), "write", event); err != nil {
+			p.log.Errorf("unable to track write event: %s", err)
+		}
+	}()
+
 	go func() {
 		if err := backend.Write(ctx, p.CLIOptions.Write, errorCh, value...); err != nil {
 			p.log.Errorf("unable to complete write(s): %s", err)
@@ -59,6 +98,8 @@ MAIN:
 	if errRecord == nil {
 		p.log.Infof("Successfully wrote '%d' message(s)", len(value))
 	}
+
+	wg.Wait()
 
 	return nil
 }

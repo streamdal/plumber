@@ -8,11 +8,20 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/dukex/mixpanel"
 	"github.com/mcuadros/go-lookup"
 	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
 )
 
 func (p *Plumber) HandleGetConnectionCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "get_connection", &mixpanel.Event{
+		Properties: map[string]interface{}{
+			"type":          "request",
+			"connection_id": p.CLIOptions.Manage.Get.Connection.Id,
+		},
+	})
+
 	resp, err := client.GetConnection(ctx, &protos.GetConnectionRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -33,6 +42,12 @@ func (p *Plumber) HandleGetConnectionCmd(ctx context.Context, client protos.Plum
 }
 
 func (p *Plumber) HandleGetAllConnectionsCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "get_all_connections", &mixpanel.Event{
+		Properties: map[string]interface{}{
+			"type": "request",
+		},
+	})
+
 	resp, err := client.GetAllConnections(ctx, &protos.GetAllConnectionsRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -52,6 +67,13 @@ func (p *Plumber) HandleGetAllConnectionsCmd(ctx context.Context, client protos.
 }
 
 func (p *Plumber) HandleDeleteConnectionCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "delete_connection", &mixpanel.Event{
+		Properties: map[string]interface{}{
+			"type":          "request",
+			"connection_id": p.CLIOptions.Manage.Delete.Connection.Id,
+		},
+	})
+
 	resp, err := client.DeleteConnection(ctx, &protos.DeleteConnectionRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -76,6 +98,13 @@ func (p *Plumber) HandleCreateConnectionCmd(ctx context.Context, client protos.P
 	if err != nil {
 		return errors.Wrap(err, "failed to generate connection options")
 	}
+
+	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "create_connection", &mixpanel.Event{
+		Properties: map[string]interface{}{
+			"backend": p.CLIOptions.Global.XBackend,
+			"type":    "request",
+		},
+	})
 
 	resp, err := client.CreateConnection(ctx, &protos.CreateConnectionRequest{
 		Auth: &common.Auth{

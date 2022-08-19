@@ -4,7 +4,9 @@ import (
 	"context"
 	"strings"
 
+	"github.com/dukex/mixpanel"
 	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
@@ -12,6 +14,13 @@ import (
 )
 
 func (p *Plumber) HandleGetTunnelCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "get_tunnel", &mixpanel.Event{
+		Properties: map[string]interface{}{
+			"type":      "request",
+			"tunnel_id": p.CLIOptions.Manage.Get.Tunnel.Id,
+		},
+	})
+
 	resp, err := client.GetTunnel(ctx, &protos.GetTunnelRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -32,6 +41,12 @@ func (p *Plumber) HandleGetTunnelCmd(ctx context.Context, client protos.PlumberS
 }
 
 func (p *Plumber) HandleGetAllTunnelsCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "get_all_tunnels", &mixpanel.Event{
+		Properties: map[string]interface{}{
+			"type": "request",
+		},
+	})
+
 	resp, err := client.GetAllTunnels(ctx, &protos.GetAllTunnelsRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -50,6 +65,12 @@ func (p *Plumber) HandleGetAllTunnelsCmd(ctx context.Context, client protos.Plum
 }
 
 func (p *Plumber) HandleCreateTunnelCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "create_tunnel", &mixpanel.Event{
+		Properties: map[string]interface{}{
+			"type": "request",
+		},
+	})
+
 	// Create tunnel options from CLI opts
 	tunnelOpts, err := generateTunnelOptionsForManageCreate(p.CLIOptions)
 	if err != nil {
@@ -74,6 +95,13 @@ func (p *Plumber) HandleCreateTunnelCmd(ctx context.Context, client protos.Plumb
 }
 
 func (p *Plumber) HandleDeleteTunnelCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "delete_tunnel", &mixpanel.Event{
+		Properties: map[string]interface{}{
+			"type":      "request",
+			"tunnel_id": p.CLIOptions.Manage.Delete.Tunnel.Id,
+		},
+	})
+
 	resp, err := client.DeleteTunnel(ctx, &protos.DeleteTunnelRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -93,6 +121,13 @@ func (p *Plumber) HandleDeleteTunnelCmd(ctx context.Context, client protos.Plumb
 }
 
 func (p *Plumber) HandleStopTunnelCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "stop_tunnel", &mixpanel.Event{
+		Properties: map[string]interface{}{
+			"type":      "request",
+			"tunnel_id": p.CLIOptions.Manage.Stop.Tunnel.Id,
+		},
+	})
+
 	resp, err := client.StopTunnel(ctx, &protos.StopTunnelRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -112,6 +147,13 @@ func (p *Plumber) HandleStopTunnelCmd(ctx context.Context, client protos.Plumber
 }
 
 func (p *Plumber) HandleResumeTunnelCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "resume_tunnel", &mixpanel.Event{
+		Properties: map[string]interface{}{
+			"type":      "request",
+			"tunnel_id": p.CLIOptions.Manage.Resume.Tunnel.Id,
+		},
+	})
+
 	resp, err := client.ResumeTunnel(ctx, &protos.ResumeTunnelRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,

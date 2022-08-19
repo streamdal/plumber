@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/batchcorp/plumber/backends/batch"
+	"github.com/dukex/mixpanel"
+	uuid "github.com/satori/go.uuid"
 )
 
 // HandleBatchCmd handles all commands related to Batch.sh API
@@ -13,6 +15,12 @@ func (p *Plumber) HandleBatchCmd() error {
 
 	// Less typing
 	cmd := p.CLIOptions.Global.XFullCommand
+
+	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "batch", &mixpanel.Event{
+		Properties: map[string]interface{}{
+			"command": cmd,
+		},
+	})
 
 	switch {
 	case strings.HasPrefix(cmd, "batch login"):

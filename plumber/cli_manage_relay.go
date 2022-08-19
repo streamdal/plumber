@@ -4,7 +4,9 @@ import (
 	"context"
 	"strings"
 
+	"github.com/dukex/mixpanel"
 	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
@@ -12,6 +14,13 @@ import (
 )
 
 func (p *Plumber) HandleGetRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "get_relay", &mixpanel.Event{
+		Properties: map[string]interface{}{
+			"type":     "request",
+			"relay_id": p.CLIOptions.Manage.Get.Relay.Id,
+		},
+	})
+
 	resp, err := client.GetRelay(ctx, &protos.GetRelayRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -32,6 +41,12 @@ func (p *Plumber) HandleGetRelayCmd(ctx context.Context, client protos.PlumberSe
 }
 
 func (p *Plumber) HandleGetAllRelaysCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "get_all_relays", &mixpanel.Event{
+		Properties: map[string]interface{}{
+			"type": "request",
+		},
+	})
+
 	resp, err := client.GetAllRelays(ctx, &protos.GetAllRelaysRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -50,6 +65,13 @@ func (p *Plumber) HandleGetAllRelaysCmd(ctx context.Context, client protos.Plumb
 }
 
 func (p *Plumber) HandleResumeRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "resume_relay", &mixpanel.Event{
+		Properties: map[string]interface{}{
+			"type":     "request",
+			"relay_id": p.CLIOptions.Manage.Resume.Relay.Id,
+		},
+	})
+
 	resp, err := client.ResumeRelay(ctx, &protos.ResumeRelayRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -69,6 +91,13 @@ func (p *Plumber) HandleResumeRelayCmd(ctx context.Context, client protos.Plumbe
 }
 
 func (p *Plumber) HandleStopRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "stop_relay", &mixpanel.Event{
+		Properties: map[string]interface{}{
+			"type":     "request",
+			"relay_id": p.CLIOptions.Manage.Stop.Relay.Id,
+		},
+	})
+
 	resp, err := client.StopRelay(ctx, &protos.StopRelayRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -88,6 +117,13 @@ func (p *Plumber) HandleStopRelayCmd(ctx context.Context, client protos.PlumberS
 }
 
 func (p *Plumber) HandleDeleteRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "delete_relay", &mixpanel.Event{
+		Properties: map[string]interface{}{
+			"type":     "request",
+			"relay_id": p.CLIOptions.Manage.Delete.Relay.Id,
+		},
+	})
+
 	resp, err := client.DeleteRelay(ctx, &protos.DeleteRelayRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -107,6 +143,12 @@ func (p *Plumber) HandleDeleteRelayCmd(ctx context.Context, client protos.Plumbe
 }
 
 func (p *Plumber) HandleCreateRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.AsyncTrackServerAnalytics(uuid.NewV4().String(), "create_relay", &mixpanel.Event{
+		Properties: map[string]interface{}{
+			"type": "request",
+		},
+	})
+
 	// Create relay options from CLI opts
 	relayOpts, err := generateRelayOptionsForManageCreate(p.CLIOptions)
 	if err != nil {

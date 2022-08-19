@@ -6,18 +6,23 @@ package config
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 	"sync"
 
+	"github.com/Masterminds/semver"
+	"github.com/batchcorp/plumber/kv"
+	"github.com/batchcorp/plumber/options"
+	stypes "github.com/batchcorp/plumber/server/types"
 	"github.com/imdario/mergo"
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
-
-	"github.com/batchcorp/plumber/kv"
-	stypes "github.com/batchcorp/plumber/server/types"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 const (
@@ -28,11 +33,13 @@ const (
 
 // Config stores Account IDs and the auth_token cookie
 type Config struct {
-	ClusterID string `json:"-"` // This comes from an environment variable
-	PlumberID string `json:"plumber_id"`
-	Token     string `json:"token"`
-	TeamID    string `json:"team_id"`
-	UserID    string `json:"user_id"`
+	ClusterID       string `json:"-"` // This comes from an environment variable
+	PlumberID       string `json:"plumber_id"`
+	Token           string `json:"token"`
+	TeamID          string `json:"team_id"`
+	UserID          string `json:"user_id"`
+	EnableAnalytics bool   `json:"enable_analytics"`
+	LastVersion     string `json:"last_version"`
 
 	Connections      map[string]*stypes.Connection `json:"connections"`
 	Relays           map[string]*stypes.Relay      `json:"relays"`
@@ -52,6 +59,10 @@ func New(enableCluster bool, k kv.IKV) (*Config, error) {
 	var cfg *Config
 	var err error
 
+	defer func() {
+		cfg.LastVersion = options.VERSION
+	}()
+
 	if enableCluster {
 		if k == nil {
 			return nil, errors.New("key value store not initialized - are you running in server mode?")
@@ -65,27 +76,152 @@ func New(enableCluster bool, k kv.IKV) (*Config, error) {
 
 			return nil, errors.Wrap(err, "unable to fetch config from kv")
 		}
-
-		return cfg, nil
 	}
 
 	// Not in cluster mode - attempt to read config from disk
-	if exists(ConfigFilename) {
+	if cfg == nil && exists(ConfigFilename) {
 		cfg, err = fetchConfigFromFile(ConfigFilename)
 		if err != nil {
 			logrus.Errorf("unable to load config: %s", err)
 		}
 	}
 
+	var initialRun bool
+
 	if cfg == nil {
+		initialRun = true
+
 		cfg = newConfig(false, nil)
+	}
+
+	// Should we perform an interactive config?
+	if requireReconfig(initialRun, cfg) {
+		cfg.Configure()
 	}
 
 	return cfg, nil
 }
 
+func requireReconfig(initialRun bool, cfg *Config) bool {
+	// Don't configure if NOT in terminal
+	if !terminal.IsTerminal(int(os.Stderr.Fd())) {
+		return false
+	}
+
+	// Should not ever reach this case but avoid a panic just incase
+	if cfg == nil {
+		return false
+	}
+
+	// Brand new config
+	if initialRun || cfg.LastVersion == "" {
+		return true
+	}
+
+	// Reconfig when major version changes between runs
+	currentVersion, err := semver.NewVersion(options.VERSION)
+	if err != nil {
+		logrus.Warningf("unable to parse current version: %s", err)
+		return false
+	}
+
+	lastVersion, err := semver.NewVersion(cfg.LastVersion)
+	if err != nil {
+		logrus.Warningf("unable to parse last version: %s", err)
+		return false
+	}
+
+	if currentVersion.Major() != lastVersion.Major() {
+		return true
+	}
+
+	// Shouldn't ever hit this
+	return false
+}
+
+func (c *Config) Configure() {
+	analyticsDescription := `If analytics are enabled, plumber will collect the following anonymous usage statistics:
+
+> General
+	- PlumberID (a unique, randomly generated ID for this plumber instance)
+	- What version of plumber is being used
+	- What OS is being used
+	- What mode is plumber ran in (CLI or server)
+	- Number of errors encountered
+
+> For CLI
+	- What action is taken (read or write)
+	- What backend is used (kafka, redis, nats, etc.)
+	- What data format is used for reading or writing (json, protobuf, etc.)
+	- If reading, whether continuous mode is used
+	- If using protobuf, whether file descriptors are used
+
+> For server
+	- How many connections, relays, tunnels are configured
+	- Uptime of the server
+	- ClusterID
+	- gRPC methods used (create relay, stop tunnel, etc.)
+
+NOTE: We do NOT collect any personally identifiable or confidential information.
+
+You can read this statement here: https://docs.batch.sh/plumber/analytics
+`
+
+	enableAnalytics, err := askYesNo("Do you want to enable analytics?", "N", analyticsDescription)
+	if err != nil {
+		c.log.Fatalf("unable to configure plumber: %s", err)
+	}
+
+	if enableAnalytics {
+		fmt.Println("Thank you for participating! This will help us improve plumber :)")
+	}
+
+	c.EnableAnalytics = enableAnalytics
+}
+
+func askYesNo(question, defaultAnswer, description string) (bool, error) {
+	fmt.Println()
+
+	if description != "" {
+		fmt.Println(description + "\n")
+	}
+
+	if defaultAnswer != "" {
+		fmt.Printf(question+" [y/n (default: %s)]: ", defaultAnswer)
+	} else {
+		fmt.Print(question + " [y/n]: ")
+	}
+
+	var answer string
+
+	i, err := fmt.Scan(&answer)
+	if err != nil {
+		return false, fmt.Errorf("unable to read input: %s", err)
+	}
+
+	if i == 0 {
+		if defaultAnswer != "" {
+			answer = defaultAnswer
+		}
+	}
+
+	answer = strings.ToLower(answer)
+
+	if answer == "y" || answer == "yes" {
+		return true, nil
+	}
+
+	if answer == "n" || answer == "no" {
+		return false, nil
+	}
+
+	fmt.Println("invalid answer")
+	return askYesNo(question, defaultAnswer, description)
+}
+
 func newConfig(enableCluster bool, k kv.IKV) *Config {
 	return &Config{
+		PlumberID:        uuid.NewV4().String(),
 		Connections:      make(map[string]*stypes.Connection),
 		Relays:           make(map[string]*stypes.Relay),
 		Tunnels:          make(map[string]*stypes.Tunnel),
@@ -101,7 +237,7 @@ func newConfig(enableCluster bool, k kv.IKV) *Config {
 
 // Save is a convenience method of persisting the config to KV store or disk
 func (c *Config) Save() error {
-	data, err := json.Marshal(c)
+	data, err := json.MarshalIndent(c, "", "\t")
 	if err != nil {
 		return errors.Wrap(err, "unable to marshal config to JSON")
 	}

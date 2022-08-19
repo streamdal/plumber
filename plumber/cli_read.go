@@ -3,7 +3,10 @@ package plumber
 import (
 	"os"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
+	"github.com/dukex/mixpanel"
 	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/backends"
@@ -35,6 +38,35 @@ func (p *Plumber) HandleReadCmd() error {
 
 		p.log.Debug("Read() exited, calling MainShutdownFunc()")
 		p.MainShutdownFunc()
+	}()
+
+	// Fire off a goroutine to (potentially) post usage analytics
+	go func() {
+		event := &mixpanel.Event{
+			Properties: map[string]interface{}{
+				"continuous":  p.CLIOptions.Read.Continuous,
+				"backend":     backend.Name(),
+				"decode_type": "unset",
+			},
+		}
+
+		if p.CLIOptions.Read.DecodeOptions != nil {
+			event.Properties["decode_type"] = p.CLIOptions.Read.DecodeOptions.DecodeType.String()
+
+			if p.CLIOptions.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_PROTOBUF {
+				// Using FD's or dir?
+				if p.CLIOptions.Read.DecodeOptions.ProtobufSettings.ProtobufDescriptorSet != "" {
+					event.Properties["protobuf_type"] = "fds"
+				} else {
+					event.Properties["protobuf_type"] = "dir"
+				}
+
+				// Set envelope info
+				event.Properties["protobuf_envelope"] = p.CLIOptions.Read.DecodeOptions.ProtobufSettings.ProtobufEnvelopeType.String()
+			}
+		}
+
+		p.Config.Analytics.Track(uuid.NewV4().String(), "read", event)
 	}()
 
 MAIN:

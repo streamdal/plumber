@@ -6,7 +6,9 @@ import (
 	"net"
 	"time"
 
+	"github.com/dukex/mixpanel"
 	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
@@ -162,6 +164,15 @@ func (p *Plumber) startGRPCServer() error {
 	protos.RegisterPlumberServerServer(grpcServer, plumberServer)
 
 	go p.watchServiceShutdown(grpcServer)
+
+	p.Analytics.AsyncTrack(uuid.NewV4().String(), "server", &mixpanel.Event{
+		Properties: map[string]interface{}{
+			"cluster_id":     p.CLIOptions.Server.ClusterId,
+			"node_id":        p.CLIOptions.Server.NodeId,
+			"use_tls":        p.CLIOptions.Server.UseTls,
+			"enable_cluster": p.CLIOptions.Server.EnableCluster,
+		},
+	})
 
 	p.log.Debugf("starting gRPC server on %s", p.CLIOptions.Server.GrpcListenAddress)
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/batchcorp/plumber/analytics"
 	dpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/mcuadros/go-lookup"
 	"github.com/pkg/errors"
@@ -34,6 +35,7 @@ var (
 
 // Config contains configurable options for instantiating a new Plumber
 type Config struct {
+	Analytics          analytics.IAnalytics
 	PersistentConfig   *config.Config
 	Actions            actions.IActions
 	ServiceShutdownCtx context.Context
@@ -77,8 +79,9 @@ func New(cfg *Config) (*Plumber, error) {
 
 		var connCfg *opts.ConnectionOptions
 
-		// TODO: Improve this comment
-		// "manage" requires us to fill out "create" options differently
+		// 'manage' does not utilize connection options (and has a slightly diff
+		// syntax from other CLI actions); due to this, we avoid generating them
+		// altogether.
 		if cfg.CLIOptions.Global.XAction != "manage" {
 			connCfg, err = generateConnectionOptions(cfg.CLIOptions)
 		}

@@ -9,10 +9,12 @@ import (
 
 	"github.com/batchcorp/natty"
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/dukex/mixpanel"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 	"github.com/hokaccha/go-prettyjson"
 	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -55,6 +57,12 @@ func (p *Plumber) HandleManageCmd() error {
 	client := protos.NewPlumberServerClient(conn)
 
 	cmd := p.CLIOptions.Global.XCommands[1] + " " + p.CLIOptions.Global.XCommands[2]
+
+	p.Analytics.AsyncTrack(uuid.NewV4().String(), "manage", &mixpanel.Event{
+		Properties: map[string]interface{}{
+			"cmd": cmd,
+		},
+	})
 
 	switch cmd {
 	// Get
@@ -133,6 +141,33 @@ func (p *Plumber) displayJSON(input map[string]string) {
 	}
 
 	fmt.Println(string(data))
+}
+
+func (p *Plumber) AsyncTrackServerAnalytics(distinctID string, method string, event *mixpanel.Event) {
+	if event == nil {
+		p.log.Warningf("analytics event is nil - nothing to do")
+		return
+	}
+
+	if _, ok := event.Properties["cluster_id"]; !ok {
+		event.Properties["cluster_id"] = p.CLIOptions.Server.ClusterId
+	}
+
+	if _, ok := event.Properties["node_id"]; !ok {
+		event.Properties["node_id"] = p.CLIOptions.Server.NodeId
+	}
+
+	if _, ok := event.Properties["use_tls"]; !ok {
+		event.Properties["use_tls"] = p.CLIOptions.Server.UseTls
+	}
+
+	if _, ok := event.Properties["enable_cluster"]; !ok {
+		event.Properties["enable_cluster"] = p.CLIOptions.Server.EnableCluster
+	}
+
+	event.Properties["method"] = method
+
+	p.Analytics.AsyncTrack(distinctID, "server", event)
 }
 
 func (p *Plumber) displayProtobuf(msg proto.Message) error {
