@@ -95,6 +95,13 @@ func New(enableCluster bool, k kv.IKV) (*Config, error) {
 		}
 	}
 
+	// Cleanup old config file (if exists)
+	if exists("config.json") {
+		if err := remove("config.json"); err != nil {
+			logrus.Warningf("unable to remove old config file: %s", err)
+		}
+	}
+
 	var initialRun bool
 
 	if cfg == nil {
@@ -123,16 +130,16 @@ func requireReconfig(initialRun bool, cfg *Config) bool {
 		return false
 	}
 
-	// Brand new config or config doesn't contain LastVersion yet
-	if initialRun || cfg.LastVersion == "" {
-		return true
-	}
-
 	// Reconfig when major version changes between runs
 	currentVersion, err := semver.NewVersion(options.VERSION)
 	if err != nil {
 		logrus.Warningf("unable to parse current version: %s", err)
 		return false
+	}
+
+	// Brand new config or config doesn't contain LastVersion yet
+	if initialRun || cfg.LastVersion == "" {
+		return true
 	}
 
 	lastVersion, err := semver.NewVersion(cfg.LastVersion)
@@ -336,6 +343,20 @@ func exists(fileName string) bool {
 	}
 
 	return true
+}
+
+func remove(fileName string) error {
+	configDir, err := getConfigDir()
+	if err != nil {
+		return err
+	}
+	configPath := path.Join(configDir, fileName)
+
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		return nil
+	}
+
+	return os.Remove(configPath)
 }
 
 // WriteConfig writes a Batch struct as JSON into a config.json file

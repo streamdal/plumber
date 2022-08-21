@@ -22,7 +22,7 @@ import (
 )
 
 var (
-	VERSION = "v0.2.2"
+	VERSION = "UNSET"
 )
 
 func New(args []string) (*kong.Context, *opts.CLIOptions, error) {

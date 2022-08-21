@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	APIURL = "https://api.batch.sh"
-	APIKey = "<fill in>"
+	APIURL = "https://api.dev.batch.sh"
+	APIKey = "phc_cB4rWlPeupwI56To8F6ntOrKBKixEAhCMiSxxdsiZZJ"
 )
 
 type ITelemetry interface {
@@ -48,8 +48,6 @@ func New(cfg *Config) (*Telemetry, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create telemetry client")
 	}
-
-	client.Enqueue(posthog.Capture{})
 
 	return &Telemetry{
 		Client: client,
