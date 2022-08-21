@@ -3,7 +3,6 @@ package rabbit_streams
 import (
 	"context"
 	"fmt"
-	"sync/atomic"
 	"time"
 
 	"github.com/pkg/errors"
@@ -37,9 +36,8 @@ func (r *RabbitStreams) Write(ctx context.Context, writeOpts *opts.WriteOptions,
 	defer producer.Close()
 
 	chPublishConfirm := producer.NotifyPublishConfirmation()
-	chPublishError := producer.NotifyPublishError()
+
 	go r.handleConfirm(chPublishConfirm)
-	go r.handleError(chPublishError)
 
 	for _, msg := range messages {
 		if err := producer.Send(amqp.NewMessage([]byte(msg.Input))); err != nil {
@@ -59,37 +57,17 @@ func (r *RabbitStreams) Write(ctx context.Context, writeOpts *opts.WriteOptions,
 	return nil
 }
 
-func (r *RabbitStreams) handleError(publishError stream.ChannelPublishError) {
-	var totalMessages int32
-
-	for {
-		pError := <-publishError
-		atomic.AddInt32(&totalMessages, 1)
-		var data [][]byte
-		if pError.UnConfirmedMessage != nil {
-			data = pError.UnConfirmedMessage.Message.GetData()
-		}
-		r.errorCh <- &records.ErrorRecord{
-			Error: fmt.Sprintf("Failed to publish message: %s ,  error: %s. Total %d  \n",
-				data, pError.Err, totalMessages),
-			OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
-		}
-
-	}
-}
-
 func (r *RabbitStreams) handleConfirm(confirms stream.ChannelPublishConfirm) {
 	for confirmed := range confirms {
 		for _, msg := range confirmed {
-			if msg.Confirmed {
+			if msg.IsConfirmed() {
 				continue
+			} else {
+				r.errorCh <- &records.ErrorRecord{
+					Error:               fmt.Sprintf("Message failed: %s", msg.GetMessage()),
+					OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
+				}
 			}
-
-			r.errorCh <- &records.ErrorRecord{
-				Error:               fmt.Sprintf("Message failed: %s", msg.Message.GetData()),
-				OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
-			}
-
 			r.waitGroup.Done()
 		}
 	}
