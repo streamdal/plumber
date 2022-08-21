@@ -41,27 +41,30 @@ type Client struct {
 	tuneState            TuneState
 	coordinator          *Coordinator
 	broker               *Broker
-	plainCRCBuffer       []byte
+	tcpParameters        *TCPParameters
 
 	mutex            *sync.Mutex
 	metadataListener metadataListener
 	lastHeartBeat    HeartBeat
 }
 
-func newClient(connectionName string, broker *Broker) *Client {
+func newClient(connectionName string, broker *Broker, tcpParameters *TCPParameters) *Client {
 	var clientBroker = broker
 	if broker == nil {
 		clientBroker = newBrokerDefault()
+	}
+	if tcpParameters == nil {
+		tcpParameters = newTCPParameterDefault()
 	}
 
 	c := &Client{
 		coordinator:          NewCoordinator(),
 		broker:               clientBroker,
+		tcpParameters:        tcpParameters,
 		destructor:           &sync.Once{},
 		mutex:                &sync.Mutex{},
 		clientProperties:     ClientProperties{items: make(map[string]string)},
 		connectionProperties: ConnectionProperties{},
-		plainCRCBuffer:       make([]byte, 4096),
 		lastHeartBeat: HeartBeat{
 			value: time.Now(),
 		},
@@ -72,11 +75,6 @@ func newClient(connectionName string, broker *Broker) *Client {
 	}
 	c.setConnectionName(connectionName)
 	return c
-}
-
-func NewDirectClient(broker *Broker) (*Client, error) {
-	client := newClient("direct-connection", broker)
-	return client, client.connect()
 }
 
 func (c *Client) getSocket() *socket {
@@ -119,49 +117,47 @@ func (c *Client) connect() error {
 			return err
 		}
 		host, port := u.Hostname(), u.Port()
-		c.tuneState.requestedHeartbeat = 60
-		c.tuneState.requestedMaxFrameSize = 1048576
+		c.tuneState.requestedMaxFrameSize = c.tcpParameters.RequestedMaxFrameSize
+		c.tuneState.requestedHeartbeat = int(c.tcpParameters.RequestedHeartbeat.Seconds())
 
-		var dialer = &net.Dialer{
-			Control: controlFunc,
+		servAddr := net.JoinHostPort(host, port)
+		tcpAddr, _ := net.ResolveTCPAddr("tcp", servAddr)
+		connection, errorConnection := net.DialTCP("tcp", nil, tcpAddr)
+		if errorConnection != nil {
+			logs.LogDebug("%s", errorConnection)
+			return errorConnection
 		}
 
-		var connection net.Conn
-		var errorConnection error
+		if err = connection.SetWriteBuffer(c.tcpParameters.WriteBuffer); err != nil {
+			logs.LogError("Failed to SetWriteBuffer to %d due to %v", c.tcpParameters.WriteBuffer, err)
+			return err
+		}
+		if err = connection.SetReadBuffer(c.tcpParameters.ReadBuffer); err != nil {
+			logs.LogError("Failed to SetReadBuffer to %d due to %v", c.tcpParameters.ReadBuffer, err)
+			return err
+		}
+		if err = connection.SetNoDelay(c.tcpParameters.NoDelay); err != nil {
+			logs.LogError("Failed to SetNoDelay to %b due to %v", c.tcpParameters.NoDelay, err)
+			return err
+		}
+
 		if c.broker.isTLS() {
 			conf := &tls.Config{}
-
-			if c.broker.tlsConfig != nil {
-				conf = c.broker.tlsConfig
+			if c.tcpParameters.tlsConfig != nil {
+				conf = c.tcpParameters.tlsConfig
 			}
-
-			var tlsDial = &tls.Dialer{
-				NetDialer: dialer,
-				Config:    conf,
-			}
-
-			connection, errorConnection = tlsDial.Dial("tcp", net.JoinHostPort(host, port))
-			if errorConnection != nil {
-				logs.LogDebug("TLS error connection %s", errorConnection)
-				return errorConnection
-			}
-
+			c.setSocketConnection(tls.Client(connection, conf))
 		} else {
-			connection, errorConnection = dialer.Dial("tcp", net.JoinHostPort(host, port))
-			if errorConnection != nil {
-				logs.LogDebug("%s", errorConnection)
-				return errorConnection
-			}
+			c.setSocketConnection(connection)
 		}
 
-		c.setSocketConnection(connection)
 		c.socket.setOpen()
 
 		go c.handleResponse()
 		err2 := c.peerProperties()
 
 		if err2 != nil {
-			logs.LogDebug("%s", err2)
+			logs.LogError("Can't set the peer-properties. Check if the stream server is running/reachable")
 			return err2
 		}
 		pwd, _ := u.User.Password()
@@ -371,7 +367,7 @@ func (c *Client) closeHartBeat() {
 	c.destructor.Do(func() {
 		r, err := c.coordinator.GetResponseByName("heartbeat")
 		if err != nil {
-			logs.LogWarn("error removing heartbeat: %s", err)
+			logs.LogDebug("error removing heartbeat: %s", err)
 		} else {
 			r.code <- Code{id: closeChannel}
 		}
@@ -380,7 +376,6 @@ func (c *Client) closeHartBeat() {
 }
 
 func (c *Client) Close() error {
-
 	for _, p := range c.coordinator.Producers() {
 		err := c.coordinator.RemoveProducerById(p.(*Producer).id, Event{
 			Command:    CommandClose,
@@ -394,6 +389,7 @@ func (c *Client) Close() error {
 			logs.LogWarn("error removing producer: %s", err)
 		}
 	}
+
 	for _, cs := range c.coordinator.consumers {
 		err := c.coordinator.RemoveConsumerById(cs.(*Consumer).ID, Event{
 			Command:    CommandClose,
@@ -407,12 +403,10 @@ func (c *Client) Close() error {
 		}
 	}
 
-	//c.mutex.Lock()
 	if c.metadataListener != nil {
 		close(c.metadataListener)
 		c.metadataListener = nil
 	}
-	//c.mutex.Unlock()
 
 	var err error
 	if c.getSocket().isOpen() {
@@ -468,6 +462,23 @@ func (c *Client) DeclarePublisher(streamName string, options *ProducerOptions) (
 			minBatchPublishingDelay, maxBatchPublishingDelay)
 	}
 
+	if options.SubEntrySize < minSubEntrySize || options.SubEntrySize > maxSubEntrySize {
+		return nil, fmt.Errorf("SubEntrySize values must be between %d and %d",
+			minSubEntrySize, maxSubEntrySize)
+	}
+
+	if !options.isSubEntriesBatching() {
+		if options.Compression.enabled {
+			return nil, fmt.Errorf("sub-entry batching must be enabled to enable compression")
+		}
+	}
+
+	if !options.isSubEntriesBatching() {
+		if options.Compression.value != None && options.Compression.value != GZIP {
+			return nil, fmt.Errorf("compression values valid are: %d (None) %d (Gzip)", None, GZIP)
+		}
+	}
+
 	producer, err := c.coordinator.NewProducer(&ProducerOptions{
 		client:               c,
 		streamName:           streamName,
@@ -475,6 +486,8 @@ func (c *Client) DeclarePublisher(streamName string, options *ProducerOptions) (
 		QueueSize:            options.QueueSize,
 		BatchSize:            options.BatchSize,
 		BatchPublishingDelay: options.BatchPublishingDelay,
+		SubEntrySize:         options.SubEntrySize,
+		Compression:          options.Compression,
 	})
 
 	if err != nil {
@@ -512,7 +525,8 @@ func (c *Client) internalDeclarePublisher(streamName string, producer *Producer)
 	res := c.handleWrite(b.Bytes(), resp)
 
 	if publisherReferenceSize > 0 {
-		producer.sequence = c.queryPublisherSequence(producer.options.Name, streamName)
+		v, _ := c.queryPublisherSequence(producer.options.Name, streamName)
+		producer.sequence = v
 	}
 
 	return res
@@ -547,7 +561,7 @@ func (c *Client) metaData(streams ...string) *StreamsMetadata {
 	return data.(*StreamsMetadata)
 }
 
-func (c *Client) queryPublisherSequence(publisherReference string, stream string) int64 {
+func (c *Client) queryPublisherSequence(publisherReference string, stream string) (int64, error) {
 
 	length := 2 + 2 + 4 + 2 + len(publisherReference) + 2 + len(stream)
 	resp := c.coordinator.NewResponse(commandQueryPublisherSequence)
@@ -557,10 +571,13 @@ func (c *Client) queryPublisherSequence(publisherReference string, stream string
 
 	writeString(b, publisherReference)
 	writeString(b, stream)
-	c.handleWriteWithResponse(b.Bytes(), resp, false)
+	err := c.handleWriteWithResponse(b.Bytes(), resp, false)
 	sequence := <-resp.data
 	_ = c.coordinator.RemoveResponseById(resp.correlationid)
-	return sequence.(int64)
+	if err.Err != nil {
+		return 0, err.Err
+	}
+	return sequence.(int64), nil
 
 }
 
@@ -575,7 +592,7 @@ func (c *Client) BrokerLeader(stream string) (*Broker, error) {
 		return nil, lookErrorCode(streamMetadata.responseCode)
 	}
 	if streamMetadata.Leader == nil {
-		return nil, fmt.Errorf("leader error for stream for stream: %s", stream)
+		return nil, LeaderNotReady
 	}
 
 	streamMetadata.Leader.advPort = streamMetadata.Leader.Port
@@ -595,16 +612,28 @@ func (c *Client) StreamExists(stream string) bool {
 func (c *Client) BrokerForConsumer(stream string) (*Broker, error) {
 	streamsMetadata := c.metaData(stream)
 	if streamsMetadata == nil {
-		return nil, fmt.Errorf("leader error for stream for stream: %s", stream)
+		return nil, fmt.Errorf("leader error for stream: %s", stream)
 	}
 
 	streamMetadata := streamsMetadata.Get(stream)
 	if streamMetadata.responseCode != responseCodeOk {
 		return nil, lookErrorCode(streamMetadata.responseCode)
 	}
-	var brokers []*Broker
+
+	if streamMetadata.Leader == nil {
+		return nil, LeaderNotReady
+	}
+
+	brokers := make([]*Broker, 0, 1+len(streamMetadata.Replicas))
 	brokers = append(brokers, streamMetadata.Leader)
-	brokers = append(brokers, streamMetadata.Replicas...)
+	for idx, replica := range streamMetadata.Replicas {
+		if replica == nil {
+			logs.LogWarn("Stream %s replica not ready: %d", stream, idx)
+			continue
+		}
+		brokers = append(brokers, replica)
+	}
+
 	rand.Seed(time.Now().UnixNano())
 	n := rand.Intn(len(brokers))
 	return brokers[n], nil
@@ -645,6 +674,27 @@ func (c *Client) DeclareStream(streamName string, options *StreamOptions) error 
 
 }
 
+func (c *Client) queryOffset(consumerName string, streamName string) (int64, error) {
+	length := 2 + 2 + 4 + 2 + len(consumerName) + 2 + len(streamName)
+
+	resp := c.coordinator.NewResponse(CommandQueryOffset)
+	correlationId := resp.correlationid
+	var b = bytes.NewBuffer(make([]byte, 0, length+4))
+	writeProtocolHeader(b, length, CommandQueryOffset,
+		correlationId)
+
+	writeString(b, consumerName)
+	writeString(b, streamName)
+	err := c.handleWriteWithResponse(b.Bytes(), resp, false)
+	offset := <-resp.data
+	_ = c.coordinator.RemoveResponseById(resp.correlationid)
+	if err.Err != nil {
+		return 0, err.Err
+	}
+
+	return offset.(int64), nil
+}
+
 func (c *Client) DeclareSubscriber(streamName string,
 	messagesHandler MessagesHandler,
 	options *ConsumerOptions) (*Consumer, error) {
@@ -656,30 +706,40 @@ func (c *Client) DeclareSubscriber(streamName string,
 		return nil, fmt.Errorf("specify a valid Offset")
 	}
 
+	if options.autoCommitStrategy.flushInterval < 1*time.Second {
+		return nil, fmt.Errorf("flush internal must be bigger than one second")
+	}
+
+	if options.autoCommitStrategy.messageCountBeforeStorage < 1 {
+		return nil, fmt.Errorf("message count before storage must be bigger than one")
+	}
+
+	if options.Offset.isLastConsumed() {
+		lastOffset, err := c.queryOffset(options.ConsumerName, streamName)
+		switch err {
+		case nil, OffsetNotFoundError:
+			if err == OffsetNotFoundError {
+				options.Offset.typeOfs = typeFirst
+				options.Offset.offset = 0
+				break
+			} else {
+				options.Offset.offset = lastOffset
+				options.Offset.typeOfs = typeOffset
+				break
+			}
+		default:
+			return nil, err
+		}
+	}
+
 	options.client = c
 	options.streamName = streamName
 	consumer := c.coordinator.NewConsumer(messagesHandler, options)
+
 	length := 2 + 2 + 4 + 1 + 2 + len(streamName) + 2 + 2
 	if options.Offset.isOffset() ||
 		options.Offset.isTimestamp() {
 		length += 8
-	}
-
-	if options.Offset.isLastConsumed() {
-		lastOffset, err := consumer.QueryOffset()
-		if err != nil {
-			_ = c.coordinator.RemoveConsumerById(consumer.ID, Event{
-				Command:    CommandQueryOffset,
-				StreamName: streamName,
-				Name:       consumer.GetName(),
-				Reason:     "error QueryOffset",
-				Err:        err,
-			})
-			return nil, err
-		}
-		options.Offset.offset = lastOffset
-		// here we change the type since typeLastConsumed is not part of the protocol
-		options.Offset.typeOfs = typeOffset
 	}
 
 	// copy the option offset to the consumer offset
@@ -714,13 +774,21 @@ func (c *Client) DeclareSubscriber(streamName string,
 					return
 				}
 
-			case data := <-consumer.response.data:
-				consumer.setCurrentOffset(data.(int64))
-
-			case messages := <-consumer.response.messages:
-				for _, message := range messages {
-					consumer.MessagesHandler(ConsumerContext{Consumer: consumer}, message)
+			case offsetMessages := <-consumer.response.offsetMessages:
+				for _, offMessage := range offsetMessages {
+					consumer.setCurrentOffset(offMessage.offset)
+					consumer.MessagesHandler(ConsumerContext{Consumer: consumer}, offMessage.message)
+					if consumer.options.autocommit {
+						consumer.messageCountBeforeStorage += 1
+						if consumer.messageCountBeforeStorage >= consumer.options.autoCommitStrategy.messageCountBeforeStorage {
+							consumer.cacheStoreOffset()
+							consumer.messageCountBeforeStorage = 0
+						}
+					}
 				}
+
+			case <-time.After(consumer.options.autoCommitStrategy.flushInterval):
+				consumer.cacheStoreOffset()
 
 			}
 		}

@@ -24,7 +24,7 @@ require (
 	github.com/go-stomp/stomp v2.1.4+incompatible
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2
-	github.com/google/uuid v1.2.0
+	github.com/google/uuid v1.3.0
 	github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
 	github.com/imdario/mergo v0.3.13
 	github.com/jackc/pgx v3.2.0+incompatible
@@ -32,7 +32,6 @@ require (
 	github.com/json-iterator/go v1.1.11
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/kataras/tablewriter v0.0.0-20180708051242-e063d29b7c23
-	github.com/kr/text v0.2.0 // indirect
 	github.com/kubemq-io/kubemq-go v1.7.2
 	github.com/lensesio/tableprinter v0.0.0-20201125135848-89e81fc956e7
 	github.com/linkedin/goavro/v2 v2.9.8
@@ -42,15 +41,15 @@ require (
 	github.com/mcuadros/go-lookup v0.0.0-20200831155250-80f87a4fa5ee
 	github.com/nats-io/nats-streaming-server v0.24.1 // indirect
 	github.com/nats-io/nats.go v1.13.1-0.20220121202836-972a071d373d
-	github.com/nats-io/nkeys v0.3.0 // indirect
+	github.com/nats-io/nkeys v0.3.0
 	github.com/nats-io/stan.go v0.10.2
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.18.1
+	github.com/onsi/gomega v1.20.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.0
-	github.com/rabbitmq/rabbitmq-stream-go-client v0.1.0-beta
+	github.com/rabbitmq/rabbitmq-stream-go-client v1.0.1-rc.2
 	github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/satori/go.uuid v1.2.0

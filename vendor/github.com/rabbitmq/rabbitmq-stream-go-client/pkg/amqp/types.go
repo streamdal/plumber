@@ -1,3 +1,26 @@
+//MIT License
+//
+//Copyright (C) 2017 Kale Blankenship
+//Portions Copyright (C) Microsoft Corporation
+//
+//Permission is hereby granted, free of charge, to any person obtaining a copy
+//of this software and associated documentation files (the "Software"), to deal
+//in the Software without restriction, including without limitation the rights
+//to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//copies of the Software, and to permit persons to whom the Software is
+//furnished to do so, subject to the following conditions:
+//
+//The above copyright notice and this permission notice shall be included in all
+//copies or substantial portions of the Software.
+//
+//THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+//SOFTWARE
+
 package amqp
 
 import (
@@ -391,20 +414,31 @@ type Message struct {
 }
 
 type AMQP10 struct {
-	publishingId int64
-	message      *Message
-	Properties   *MessageProperties
+	publishingId          int64
+	hasPublishingId       bool
+	message               *Message
+	Properties            *MessageProperties
+	Annotations           Annotations
+	header                *MessageHeader
+	amqpData              interface{}
+	ApplicationProperties map[string]interface{}
 }
 
 func NewMessage(data []byte) *AMQP10 {
 	return &AMQP10{
-		message:      newMessage(data),
-		publishingId: -1,
+		message:         newMessage(data),
+		publishingId:    0,
+		hasPublishingId: false,
 	}
 }
 
 func (amqp *AMQP10) SetPublishingId(id int64) {
+	amqp.hasPublishingId = true
 	amqp.publishingId = id
+}
+
+func (amqp *AMQP10) HasPublishingId() bool {
+	return amqp.hasPublishingId
 }
 
 func (amqp *AMQP10) GetPublishingId() int64 {
@@ -413,6 +447,8 @@ func (amqp *AMQP10) GetPublishingId() int64 {
 
 func (amqp *AMQP10) MarshalBinary() ([]byte, error) {
 	amqp.message.Properties = amqp.Properties
+	amqp.message.ApplicationProperties = amqp.ApplicationProperties
+	amqp.message.Annotations = amqp.Annotations
 	return amqp.message.MarshalBinary()
 }
 
@@ -424,9 +460,24 @@ func (amqp *AMQP10) GetData() [][]byte {
 	return amqp.message.Data
 }
 
-func (amqp *AMQP10) Message() *Message {
-	return amqp.message
+func (amqp *AMQP10) GetMessageProperties() *MessageProperties {
+	return amqp.message.Properties
+}
 
+func (amqp *AMQP10) GetMessageAnnotations() Annotations {
+	return amqp.message.Annotations
+}
+
+func (amqp *AMQP10) GetApplicationProperties() map[string]interface{} {
+	return amqp.message.ApplicationProperties
+}
+
+func (amqp *AMQP10) GetMessageHeader() *MessageHeader {
+	return amqp.message.Header
+}
+
+func (amqp *AMQP10) GetAMQPValue() interface{} {
+	return amqp.message.Value
 }
 
 // NewMessage returns a *Message with data as the payload.

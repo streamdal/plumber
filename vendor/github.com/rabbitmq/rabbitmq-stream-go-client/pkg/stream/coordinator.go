@@ -23,10 +23,17 @@ type Code struct {
 	id uint16
 }
 
+type offsetMessage struct {
+	message *amqp.Message
+	offset  int64
+}
+
+type offsetMessages = []*offsetMessage
+
 type Response struct {
 	code               chan Code
 	data               chan interface{}
-	messages           chan []*amqp.Message
+	offsetMessages     chan offsetMessages
 	commandDescription string
 	correlationid      int
 }
@@ -55,7 +62,8 @@ func (coordinator *Coordinator) NewProducer(
 	var producer = &Producer{id: lastId,
 		options:             parameters,
 		mutex:               &sync.Mutex{},
-		unConfirmedMessages: map[int64]*UnConfirmedMessage{},
+		mutexPending:        &sync.Mutex{},
+		unConfirmedMessages: map[int64]*ConfirmationStatus{},
 		status:              open,
 		messageSequenceCh:   make(chan messageSequence, size),
 		pendingMessages: pendingMessagesSequence{
@@ -91,7 +99,7 @@ func (coordinator *Coordinator) RemoveProducerById(id uint8, reason Event) error
 	reason.Name = producer.GetName()
 	tentatives := 0
 	for producer.lenUnConfirmed() > 0 && tentatives < 3 {
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(200 * time.Millisecond)
 		tentatives++
 	}
 	producer.FlushUnConfirmedMessages()
@@ -111,7 +119,7 @@ func (coordinator *Coordinator) RemoveResponseById(id interface{}) error {
 	err = coordinator.removeById(fmt.Sprintf("%d", id), coordinator.responses)
 	close(resp.code)
 	close(resp.data)
-	close(resp.messages)
+	close(resp.offsetMessages)
 	return err
 }
 
@@ -125,7 +133,7 @@ func newResponse(commandDescription string) *Response {
 	res.commandDescription = commandDescription
 	res.code = make(chan Code, 1)
 	res.data = make(chan interface{})
-	res.messages = make(chan []*amqp.Message, 100)
+	res.offsetMessages = make(chan offsetMessages, 100)
 	return res
 }
 

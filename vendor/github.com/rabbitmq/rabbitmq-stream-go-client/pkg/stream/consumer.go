@@ -6,6 +6,7 @@ import (
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/amqp"
 	logs "github.com/rabbitmq/rabbitmq-stream-go-client/pkg/logs"
 	"sync"
+	"time"
 )
 
 type Consumer struct {
@@ -18,7 +19,15 @@ type Consumer struct {
 	// different form ConsumerOptions.offset. ConsumerOptions.offset is just the configuration
 	// and won't change. currentOffset is the status of the offset
 	currentOffset int64
-	closeHandler  chan Event
+
+	// Remembers the last stored offset (manual or automatic) to avoid to store always the same values
+	lastStoredOffset int64
+
+	closeHandler chan Event
+	// see autocommit strategy
+	// it is needed to trigger the
+	// auto-commit after messageCountBeforeStorage
+	messageCountBeforeStorage int
 
 	status int
 }
@@ -62,6 +71,23 @@ func (consumer *Consumer) GetOffset() int64 {
 	return res
 }
 
+func (consumer *Consumer) GetLastStoredOffset() int64 {
+	consumer.mutex.Lock()
+	res := consumer.lastStoredOffset
+	consumer.mutex.Unlock()
+	return res
+}
+
+func (consumer *Consumer) updateLastStoredOffset() bool {
+	consumer.mutex.Lock()
+	defer consumer.mutex.Unlock()
+	if consumer.lastStoredOffset < consumer.currentOffset {
+		consumer.lastStoredOffset = consumer.currentOffset
+		return true
+	}
+	return false
+}
+
 func (consumer *Consumer) NotifyClose() ChannelClose {
 	consumer.mutex.Lock()
 	defer consumer.mutex.Unlock()
@@ -76,18 +102,44 @@ type ConsumerContext struct {
 
 type MessagesHandler func(consumerContext ConsumerContext, message *amqp.Message)
 
-type /**/ ConsumerOptions struct {
-	client       *Client
-	ConsumerName string
-	streamName   string
-	autocommit   bool
-	Offset       OffsetSpecification
+type AutoCommitStrategy struct {
+	messageCountBeforeStorage int
+	flushInterval             time.Duration
+}
+
+func (ac *AutoCommitStrategy) SetCountBeforeStorage(messageCountBeforeStorage int) *AutoCommitStrategy {
+	ac.messageCountBeforeStorage = messageCountBeforeStorage
+	return ac
+}
+func (ac *AutoCommitStrategy) SetFlushInterval(flushInterval time.Duration) *AutoCommitStrategy {
+	ac.flushInterval = flushInterval
+	return ac
+}
+
+func NewAutoCommitStrategy() *AutoCommitStrategy {
+	return &AutoCommitStrategy{
+		messageCountBeforeStorage: 10_000,
+		flushInterval:             5 * time.Second,
+	}
+}
+
+type ConsumerOptions struct {
+	client             *Client
+	ConsumerName       string
+	streamName         string
+	autocommit         bool
+	autoCommitStrategy *AutoCommitStrategy
+	Offset             OffsetSpecification
+	CRCCheck           bool
 }
 
 func NewConsumerOptions() *ConsumerOptions {
 	return &ConsumerOptions{
-		Offset:     OffsetSpecification{}.Last(),
-		autocommit: true}
+		Offset:             OffsetSpecification{}.Last(),
+		autocommit:         false,
+		autoCommitStrategy: NewAutoCommitStrategy(),
+		CRCCheck:           false,
+	}
 }
 
 func (c *ConsumerOptions) SetConsumerName(consumerName string) *ConsumerOptions {
@@ -95,11 +147,22 @@ func (c *ConsumerOptions) SetConsumerName(consumerName string) *ConsumerOptions 
 	return c
 }
 
-//func (c *ConsumerOptions) AutoCommit() *ConsumerOptions {
-//	c.autocommit = true
-//	return c
-//}
-func (c *ConsumerOptions) ManualCommit() *ConsumerOptions {
+func (c *ConsumerOptions) SetCRCCheck(CRCCheck bool) *ConsumerOptions {
+	c.CRCCheck = CRCCheck
+	return c
+}
+
+func (c *ConsumerOptions) SetAutoCommit(autoCommitStrategy *AutoCommitStrategy) *ConsumerOptions {
+	c.autocommit = true
+	if autoCommitStrategy == nil {
+		c.autoCommitStrategy = NewAutoCommitStrategy()
+	} else {
+		c.autoCommitStrategy = autoCommitStrategy
+	}
+	return c
+}
+
+func (c *ConsumerOptions) SetManualCommit() *ConsumerOptions {
 	c.autocommit = false
 	return c
 }
@@ -124,6 +187,8 @@ func (consumer *Consumer) Close() error {
 	if consumer.getStatus() == closed {
 		return AlreadyClosed
 	}
+	consumer.cacheStoreOffset()
+
 	consumer.setStatus(closed)
 	_, errGet := consumer.options.client.coordinator.GetConsumerById(consumer.ID)
 	if errGet != nil {
@@ -170,10 +235,39 @@ func (consumer *Consumer) Close() error {
 	return err.Err
 }
 
+func (consumer *Consumer) cacheStoreOffset() {
+	if consumer.options.autocommit {
+		err := consumer.internalStoreOffset()
+		if err != nil {
+			logs.LogError("cache Store Offset error : %s", err)
+		}
+	}
+}
+
 func (consumer *Consumer) StoreOffset() error {
+	return consumer.internalStoreOffset()
+}
+func (consumer *Consumer) StoreCustomOffset(offset int64) error {
+	consumer.mutex.Lock()
+	defer consumer.mutex.Unlock()
+
+	if consumer.lastStoredOffset < offset {
+		consumer.lastStoredOffset = offset
+		return consumer.writeOffsetToSocket(offset)
+	}
+	return nil
+}
+func (consumer *Consumer) internalStoreOffset() error {
 	if consumer.options.streamName == "" {
 		return fmt.Errorf("stream Name can't be empty")
 	}
+
+	if consumer.updateLastStoredOffset() {
+		return consumer.writeOffsetToSocket(consumer.GetOffset())
+	}
+	return nil
+}
+func (consumer *Consumer) writeOffsetToSocket(offset int64) error {
 	length := 2 + 2 + 2 + len(consumer.options.ConsumerName) + 2 +
 		len(consumer.options.streamName) + 8
 	var b = bytes.NewBuffer(make([]byte, 0, length+4))
@@ -182,33 +276,11 @@ func (consumer *Consumer) StoreOffset() error {
 	writeString(b, consumer.options.ConsumerName)
 	writeString(b, consumer.options.streamName)
 
-	writeLong(b, consumer.GetOffset())
+	writeLong(b, offset)
 	return consumer.options.client.socket.writeAndFlush(b.Bytes())
-
 }
-
 func (consumer *Consumer) QueryOffset() (int64, error) {
-	length := 2 + 2 + 4 + 2 + len(consumer.options.ConsumerName) + 2 + len(consumer.options.streamName)
-
-	resp := consumer.options.client.coordinator.NewResponse(CommandQueryOffset)
-	correlationId := resp.correlationid
-	var b = bytes.NewBuffer(make([]byte, 0, length+4))
-	writeProtocolHeader(b, length, CommandQueryOffset,
-		correlationId)
-
-	writeString(b, consumer.options.ConsumerName)
-	writeString(b, consumer.options.streamName)
-	err := consumer.options.client.handleWriteWithResponse(b.Bytes(), resp, false)
-	if err.Err != nil {
-		return 0, err.Err
-
-	}
-
-	offset := <-resp.data
-	_ = consumer.options.client.coordinator.RemoveResponseById(resp.correlationid)
-
-	return offset.(int64), nil
-
+	return consumer.options.client.queryOffset(consumer.options.ConsumerName, consumer.options.streamName)
 }
 
 /*
