@@ -6,7 +6,6 @@ import (
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/logs"
 	"net"
 	"sync"
-	"sync/atomic"
 )
 
 type socket struct {
@@ -18,19 +17,23 @@ type socket struct {
 }
 
 func (sck *socket) setOpen() {
-	atomic.StoreInt32(&sck.closed, 1)
+	sck.mutex.Lock()
+	defer sck.mutex.Unlock()
+	sck.closed = 1
 }
 
 func (sck *socket) isOpen() bool {
 	sck.mutex.Lock()
 	defer sck.mutex.Unlock()
-	return atomic.LoadInt32(&sck.closed) == 1
+	return sck.closed == 1
 }
 func (sck *socket) shutdown(err error) {
 	if !sck.isOpen() {
 		return
 	}
-	atomic.StoreInt32(&sck.closed, 0)
+	sck.mutex.Lock()
+	sck.closed = 0
+	sck.mutex.Unlock()
 
 	sck.destructor.Do(func() {
 		sck.mutex.Lock()
@@ -42,12 +45,6 @@ func (sck *socket) shutdown(err error) {
 	})
 
 }
-
-//func (sck *socket) SetConnect(value bool) {
-//	sck.mutex.Lock()
-//	defer sck.mutex.Unlock()
-//	sck.connected = value
-//}
 
 func (sck *socket) writeAndFlush(buffer []byte) error {
 	sck.mutex.Lock()
