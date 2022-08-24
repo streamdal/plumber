@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/batchcorp/plumber/telemetry"
 	"github.com/sirupsen/logrus"
@@ -77,14 +78,20 @@ func main() {
 		var err error
 
 		as, err = telemetry.New(&telemetry.Config{
-			Token:     MixPanelToken,
-			PlumberID: persistentConfig.PlumberID,
+			Token:      MixPanelToken,
+			PlumberID:  persistentConfig.PlumberID,
+			CLIOptions: cliOpts,
 		})
 		if err != nil {
 			logrus.Fatalf("unable to create telemetry client: %s", err)
 		}
+
+		logrus.Debug("telemetry enabled")
+
+		// Making sure that we give enough time for telemetry to finish
+		defer time.Sleep(time.Second)
 	} else {
-		as = &telemetry.NoopTelemtry{}
+		as = &telemetry.NoopTelemetry{}
 	}
 
 	// We only want to intercept interrupt signals in relay or server mode

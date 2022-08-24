@@ -15,7 +15,7 @@ func (p *Plumber) HandleTunnelCmd() error {
 		return errors.Wrap(err, "unable to instantiate backend")
 	}
 
-	p.AsyncTrackManageTelemetry(posthog.Capture{
+	p.Telemetry.Enqueue(posthog.Capture{
 		Event:      "command_tunnel",
 		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{

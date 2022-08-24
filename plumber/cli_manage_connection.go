@@ -14,11 +14,10 @@ import (
 )
 
 func (p *Plumber) HandleGetConnectionCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.AsyncTrackManageTelemetry(posthog.Capture{
+	p.EnqueueManage(posthog.Capture{
 		Event:      "command_manage",
 		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
-			"type":          "request",
 			"connection_id": p.CLIOptions.Manage.Get.Connection.Id,
 			"method":        "get_connection",
 		},
@@ -44,11 +43,10 @@ func (p *Plumber) HandleGetConnectionCmd(ctx context.Context, client protos.Plum
 }
 
 func (p *Plumber) HandleGetAllConnectionsCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.AsyncTrackManageTelemetry(posthog.Capture{
+	p.EnqueueManage(posthog.Capture{
 		Event:      "command_manage",
 		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
-			"type":   "request",
 			"method": "get_all_connections",
 		},
 	})
@@ -72,11 +70,10 @@ func (p *Plumber) HandleGetAllConnectionsCmd(ctx context.Context, client protos.
 }
 
 func (p *Plumber) HandleDeleteConnectionCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.AsyncTrackManageTelemetry(posthog.Capture{
+	p.EnqueueManage(posthog.Capture{
 		Event:      "command_manage",
 		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
-			"type":          "request",
 			"method":        "delete_connection",
 			"connection_id": p.CLIOptions.Manage.Delete.Connection.Id,
 		},
@@ -107,12 +104,11 @@ func (p *Plumber) HandleCreateConnectionCmd(ctx context.Context, client protos.P
 		return errors.Wrap(err, "failed to generate connection options")
 	}
 
-	p.AsyncTrackManageTelemetry(posthog.Capture{
+	p.EnqueueManage(posthog.Capture{
 		Event:      "command_manage",
 		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
 			"backend": p.CLIOptions.Global.XBackend,
-			"type":    "request",
 			"method":  "create_connection",
 		},
 	})

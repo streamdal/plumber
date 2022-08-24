@@ -148,7 +148,6 @@ func (p *Plumber) startGRPCServer() error {
 	grpcServer := grpc.NewServer(opts...)
 
 	// Each plumber node needs a unique ID
-	p.PersistentConfig.PlumberID = p.CLIOptions.Server.NodeId
 	p.PersistentConfig.ClusterID = p.CLIOptions.Server.ClusterId
 
 	plumberServer := &server.Server{
@@ -164,14 +163,16 @@ func (p *Plumber) startGRPCServer() error {
 
 	go p.watchServiceShutdown(grpcServer)
 
-	p.Telemetry.AsyncEnqueue(posthog.Capture{
+	p.Telemetry.Enqueue(posthog.Capture{
 		Event:      "command_server",
 		DistinctId: p.PersistentConfig.ClusterID,
 		Properties: map[string]interface{}{
-			"cluster_id":     p.CLIOptions.Server.ClusterId,
-			"node_id":        p.CLIOptions.Server.NodeId,
-			"use_tls":        p.CLIOptions.Server.UseTls,
-			"enable_cluster": p.CLIOptions.Server.EnableCluster,
+			"cluster_id":             p.CLIOptions.Server.ClusterId,
+			"node_id":                p.CLIOptions.Server.NodeId,
+			"use_tls":                p.CLIOptions.Server.UseTls,
+			"enable_cluster":         p.CLIOptions.Server.EnableCluster,
+			"tls_skip_verify":        p.CLIOptions.Server.TlsSkipVerify,
+			"remote_control_enabled": p.CLIOptions.Server.RemoteControlEnabled,
 		},
 	})
 

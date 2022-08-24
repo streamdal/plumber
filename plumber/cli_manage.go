@@ -57,15 +57,6 @@ func (p *Plumber) HandleManageCmd() error {
 
 	cmd := p.CLIOptions.Global.XCommands[1] + " " + p.CLIOptions.Global.XCommands[2]
 
-	p.Telemetry.AsyncEnqueue(posthog.Capture{
-		Event:      "cli_manage",
-		DistinctId: p.PersistentConfig.PlumberID,
-
-		Properties: map[string]interface{}{
-			"cmd": cmd,
-		},
-	})
-
 	switch cmd {
 	// Get
 	case "get connection":
@@ -145,24 +136,36 @@ func (p *Plumber) displayJSON(input map[string]string) {
 	fmt.Println(string(data))
 }
 
-func (p *Plumber) AsyncTrackManageTelemetry(event posthog.Capture) {
-	if _, ok := event.Properties["cluster_id"]; !ok {
-		event.Properties["cluster_id"] = p.CLIOptions.Server.ClusterId
-	}
-
-	if _, ok := event.Properties["node_id"]; !ok {
-		event.Properties["node_id"] = p.CLIOptions.Server.NodeId
+func (p *Plumber) EnqueueManage(event posthog.Capture) {
+	if event.Properties == nil {
+		event.Properties = make(map[string]interface{})
 	}
 
 	if _, ok := event.Properties["use_tls"]; !ok {
-		event.Properties["use_tls"] = p.CLIOptions.Server.UseTls
+		event.Properties["use_tls"] = p.CLIOptions.Manage.GlobalOptions.ManageUseTls
 	}
 
-	if _, ok := event.Properties["enable_cluster"]; !ok {
-		event.Properties["enable_cluster"] = p.CLIOptions.Server.EnableCluster
+	if _, ok := event.Properties["insecure_tls"]; !ok {
+		event.Properties["insecure_tls"] = p.CLIOptions.Manage.GlobalOptions.ManageInsecureTls
 	}
 
-	p.Telemetry.AsyncEnqueue(event)
+	if _, ok := event.Properties["disable_pretty"]; !ok {
+		event.Properties["disable_pretty"] = p.CLIOptions.Manage.GlobalOptions.DisablePretty
+	}
+
+	event.Properties["default_manage_token"] = false
+
+	if p.CLIOptions.Manage.GlobalOptions.ManageToken == "batchcorp" {
+		event.Properties["default_manage_token"] = true
+	}
+
+	event.Properties["default_manage_address"] = false
+
+	if p.CLIOptions.Manage.GlobalOptions.ManageAddress == "localhost:9090" {
+		event.Properties["default_manage_address"] = true
+	}
+
+	p.Telemetry.Enqueue(event)
 }
 
 func (p *Plumber) displayProtobuf(msg proto.Message) error {

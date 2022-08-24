@@ -17,7 +17,6 @@ require (
 	github.com/batchcorp/pgoutput v0.3.2
 	github.com/batchcorp/plumber-schemas v0.0.166
 	github.com/batchcorp/rabbit v0.1.17
-	github.com/dukex/mixpanel v1.0.1
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fatih/color v1.12.0 // indirect
@@ -51,7 +50,7 @@ require (
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.18.1
 	github.com/pkg/errors v0.9.1
-	github.com/posthog/posthog-go v0.0.0-20220817142604-0b0bbf0f9c0f
+	github.com/posthog/posthog-go v0.0.0-20220817142604-0b0bbf0f9c0f // indirect
 	github.com/prometheus/client_golang v1.11.0
 	github.com/rabbitmq/rabbitmq-stream-go-client v0.1.0-beta
 	github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d

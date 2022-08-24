@@ -178,6 +178,8 @@ github.com/dimchansky/utfbom v1.1.0 h1:FcM3g+nofKgUteL8dm/UpdRXNC9KmADgTpLKsu0TR
 github.com/dimchansky/utfbom v1.1.0/go.mod h1:rO41eb7gLfo8SF1jd9F8HplJm1Fewwi4mQvIirEdv+8=
 github.com/dimfeld/httptreemux v5.0.1+incompatible h1:Qj3gVcDNoOthBAqftuD596rm4wg/adLLz5xh5CmpiCA=
 github.com/dimfeld/httptreemux v5.0.1+incompatible/go.mod h1:rbUlSV+CCpv/SuqUTP/8Bk2O3LyUV436/yaRGkhP6Z0=
+github.com/dselans/posthog-go v0.0.1 h1:OxL8ly6KL75TfnWWubFhs9KuGykkB56/N3NHRjA/FyU=
+github.com/dselans/posthog-go v0.0.1/go.mod h1:bEdtMZf1Tu00ofT0WOlPiPaWpbriwSIYO0cvlnpUNTY=
 github.com/dukex/mixpanel v1.0.1 h1:IQ3qBjtgltF044jU9+i6MubdDdpc8PKpK9yvfawRgeE=
 github.com/dukex/mixpanel v1.0.1/go.mod h1:080BDsRRMzAxViWT3OjlQaMW9nhaIEXDHHtGeDK60b8=
 github.com/dustin/go-humanize v1.0.0 h1:VSnTsYCnlFHaM2/igO1h6X3HA71jcobQuxemgkq4zYo=

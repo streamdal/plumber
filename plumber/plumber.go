@@ -31,6 +31,7 @@ var (
 	ErrMissingPersistentConfig = errors.New("PersistentConfig cannot be nil")
 	ErrMissingKongCtx          = errors.New("KongCtx cannot be nil")
 	ErrMissingActions          = errors.New("Actions cannot be nil")
+	ErrMissingTelemetry        = errors.New("Telemetry cannot be nil")
 )
 
 // Config contains configurable options for instantiating a new Plumber
@@ -231,6 +232,12 @@ func validateConfig(cfg *Config) error {
 
 	if cfg.Actions == nil {
 		return ErrMissingActions
+	}
+
+	if cfg.PersistentConfig.EnableTelemetry {
+		if cfg.Telemetry == nil {
+			return ErrMissingTelemetry
+		}
 	}
 
 	return nil

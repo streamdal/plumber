@@ -15,7 +15,7 @@ func (p *Plumber) HandleBatchCmd() error {
 	// Less typing
 	cmd := p.CLIOptions.Global.XFullCommand
 
-	p.Telemetry.AsyncEnqueue(posthog.Capture{
+	p.Telemetry.Enqueue(posthog.Capture{
 		Event:      "cli_batch",
 		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{

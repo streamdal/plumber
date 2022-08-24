@@ -3,7 +3,9 @@ package telemetry
 import (
 	"net/http"
 	"runtime"
+	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber/options"
 	"github.com/pkg/errors"
 	"github.com/posthog/posthog-go"
@@ -12,18 +14,20 @@ import (
 )
 
 const (
-	APIURL = "https://api.dev.batch.sh"
-	APIKey = "phc_cB4rWlPeupwI56To8F6ntOrKBKixEAhCMiSxxdsiZZJ"
+	APIURL = "https://telemetry.batch.sh"
+	APIKey = "phc_TyPT9AFk2cfB4YR0z3PJsDyViiZaXS1aQl9miHLvF8x"
 )
 
 type ITelemetry interface {
 	Enqueue(c posthog.Capture) error
-	AsyncEnqueue(c posthog.Capture)
 }
 
 type Config struct {
-	Token        string
-	PlumberID    string
+	Token      string
+	PlumberID  string
+	CLIOptions *opts.CLIOptions
+
+	// optional
 	RoundTripper http.RoundTripper
 }
 
@@ -33,7 +37,7 @@ type Telemetry struct {
 	log    *logrus.Entry
 }
 
-type NoopTelemtry struct{}
+type NoopTelemetry struct{}
 
 func New(cfg *Config) (*Telemetry, error) {
 	if err := validateConfig(cfg); err != nil {
@@ -42,7 +46,9 @@ func New(cfg *Config) (*Telemetry, error) {
 
 	client, err := posthog.NewWithConfig(APIKey, posthog.Config{
 		Endpoint:  APIURL,
-		Transport: cfg.RoundTripper,
+		Transport: cfg.RoundTripper, // posthog lib will instantiate a default roundtripper if nil
+		BatchSize: 1,
+		Interval:  250 * time.Millisecond,
 	})
 
 	if err != nil {
@@ -69,6 +75,10 @@ func validateConfig(cfg *Config) error {
 		return errors.New("config.PlumberID cannot be empty")
 	}
 
+	if cfg.CLIOptions == nil {
+		return errors.New("CLIOptions cannot be nil")
+	}
+
 	return nil
 }
 
@@ -80,12 +90,21 @@ func (t *Telemetry) Enqueue(c posthog.Capture) error {
 		return err
 	}
 
+	// This should _usually_ be already set to plumber ID
 	if c.DistinctId == "" {
 		c.DistinctId = uuid.NewV4().String()
 	}
 
 	if c.Properties == nil {
 		c.Properties = make(map[string]interface{})
+	}
+
+	if _, ok := c.Properties["debug"]; !ok {
+		c.Properties["debug"] = t.cfg.CLIOptions.Global.Debug
+	}
+
+	if _, ok := c.Properties["quiet"]; !ok {
+		c.Properties["debug"] = t.cfg.CLIOptions.Global.Quiet
 	}
 
 	if _, ok := c.Properties["version"]; !ok {
@@ -113,12 +132,6 @@ func (t *Telemetry) Enqueue(c posthog.Capture) error {
 	return nil
 }
 
-func (t *Telemetry) AsyncEnqueue(c posthog.Capture) {
-	go t.Enqueue(c)
-}
-
-func (t *NoopTelemtry) Enqueue(_ posthog.Capture) error {
+func (t *NoopTelemetry) Enqueue(_ posthog.Capture) error {
 	return nil
 }
-
-func (t *NoopTelemtry) AsyncEnqueue(_ posthog.Capture) {}

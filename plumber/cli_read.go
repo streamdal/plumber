@@ -39,35 +39,7 @@ func (p *Plumber) HandleReadCmd() error {
 	}()
 
 	// Fire off a goroutine to (potentially) post usage telemetry
-	go func() {
-		event := posthog.Capture{
-			Event:      "command_read",
-			DistinctId: p.PersistentConfig.PlumberID,
-			Properties: map[string]interface{}{
-				"continuous":  p.CLIOptions.Read.Continuous,
-				"backend":     backend.Name(),
-				"decode_type": "unset",
-			},
-		}
-
-		if p.CLIOptions.Read.DecodeOptions != nil {
-			event.Properties["decode_type"] = p.CLIOptions.Read.DecodeOptions.DecodeType.String()
-
-			if p.CLIOptions.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_PROTOBUF {
-				// Using FD's or dir?
-				if p.CLIOptions.Read.DecodeOptions.ProtobufSettings.ProtobufDescriptorSet != "" {
-					event.Properties["protobuf_type"] = "fds"
-				} else {
-					event.Properties["protobuf_type"] = "dir"
-				}
-
-				// Set envelope info
-				event.Properties["protobuf_envelope"] = p.CLIOptions.Read.DecodeOptions.ProtobufSettings.ProtobufEnvelopeType.String()
-			}
-		}
-
-		p.Config.Telemetry.Enqueue(event)
-	}()
+	go p.sendReadTelemetry(backend.Name())
 
 MAIN:
 	for {
@@ -108,4 +80,43 @@ MAIN:
 	}
 
 	return nil
+}
+
+func (p *Plumber) sendReadTelemetry(backend string) {
+	event := posthog.Capture{
+		Event:      "command_read",
+		DistinctId: p.PersistentConfig.PlumberID,
+		Properties: map[string]interface{}{
+			"continuous":  p.CLIOptions.Read.Continuous,
+			"backend":     backend,
+			"decode_type": "unset",
+		},
+	}
+
+	event.Properties["pretty"] = p.CLIOptions.Read.XCliOptions.Pretty
+	event.Properties["json"] = p.CLIOptions.Read.XCliOptions.Json
+	event.Properties["verbose_output"] = p.CLIOptions.Read.XCliOptions.VerboseOutput
+
+	if p.CLIOptions.Read.SampleOptions != nil {
+		event.Properties["sample_rate"] = p.CLIOptions.Read.SampleOptions.SampleRate
+		event.Properties["sample_interval_seconds"] = p.CLIOptions.Read.SampleOptions.SampleIntervalSeconds
+	}
+
+	if p.CLIOptions.Read.DecodeOptions != nil {
+		event.Properties["decode_type"] = p.CLIOptions.Read.DecodeOptions.DecodeType.String()
+
+		if p.CLIOptions.Read.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_PROTOBUF {
+			// Using FD's or dir?
+			if p.CLIOptions.Read.DecodeOptions.ProtobufSettings.ProtobufDescriptorSet != "" {
+				event.Properties["protobuf_type"] = "fds"
+			} else {
+				event.Properties["protobuf_type"] = "dir"
+			}
+
+			// Set envelope info
+			event.Properties["protobuf_envelope"] = p.CLIOptions.Read.DecodeOptions.ProtobufSettings.ProtobufEnvelopeType.String()
+		}
+	}
+
+	p.Config.Telemetry.Enqueue(event)
 }

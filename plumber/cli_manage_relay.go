@@ -12,11 +12,10 @@ import (
 )
 
 func (p *Plumber) HandleGetRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.AsyncTrackManageTelemetry(posthog.Capture{
+	p.EnqueueManage(posthog.Capture{
 		Event:      "command_manage",
 		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
-			"type":     "request",
 			"relay_id": p.CLIOptions.Manage.Get.Relay.Id,
 			"method":   "get_relay",
 		},
@@ -42,11 +41,10 @@ func (p *Plumber) HandleGetRelayCmd(ctx context.Context, client protos.PlumberSe
 }
 
 func (p *Plumber) HandleGetAllRelaysCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.AsyncTrackManageTelemetry(posthog.Capture{
+	p.EnqueueManage(posthog.Capture{
 		Event:      "command_manage",
 		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
-			"type":   "request",
 			"method": "get_all_relays",
 		},
 	})
@@ -69,11 +67,10 @@ func (p *Plumber) HandleGetAllRelaysCmd(ctx context.Context, client protos.Plumb
 }
 
 func (p *Plumber) HandleResumeRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.AsyncTrackManageTelemetry(posthog.Capture{
+	p.EnqueueManage(posthog.Capture{
 		Event:      "command_manage",
 		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
-			"type":     "request",
 			"relay_id": p.CLIOptions.Manage.Resume.Relay.Id,
 			"method":   "resume_relay",
 		},
@@ -98,11 +95,10 @@ func (p *Plumber) HandleResumeRelayCmd(ctx context.Context, client protos.Plumbe
 }
 
 func (p *Plumber) HandleStopRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.AsyncTrackManageTelemetry(posthog.Capture{
+	p.EnqueueManage(posthog.Capture{
 		Event:      "command_manage",
 		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
-			"type":     "request",
 			"relay_id": p.CLIOptions.Manage.Stop.Relay.Id,
 			"method":   "stop_relay",
 		},
@@ -127,11 +123,10 @@ func (p *Plumber) HandleStopRelayCmd(ctx context.Context, client protos.PlumberS
 }
 
 func (p *Plumber) HandleDeleteRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.AsyncTrackManageTelemetry(posthog.Capture{
+	p.EnqueueManage(posthog.Capture{
 		Event:      "command_manage",
 		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
-			"type":     "request",
 			"relay_id": p.CLIOptions.Manage.Delete.Relay.Id,
 			"method":   "delete_relay",
 		},
@@ -156,12 +151,14 @@ func (p *Plumber) HandleDeleteRelayCmd(ctx context.Context, client protos.Plumbe
 }
 
 func (p *Plumber) HandleCreateRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.AsyncTrackManageTelemetry(posthog.Capture{
+	p.EnqueueManage(posthog.Capture{
 		Event:      "command_manage",
 		DistinctId: p.PersistentConfig.PlumberID,
 		Properties: map[string]interface{}{
-			"type":   "request",
-			"method": "create_relay",
+			"method":        "create_relay",
+			"connection_id": p.CLIOptions.Manage.Create.Relay.ConnectionId,
+			"batch_size":    p.CLIOptions.Manage.Create.Relay.BatchSize,
+			"num_workers":   p.CLIOptions.Manage.Create.Relay.NumWorkers,
 		},
 	})
 
