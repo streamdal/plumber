@@ -2,7 +2,6 @@ package plumber
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
@@ -38,9 +37,6 @@ func (p *Plumber) HandleWriteCmd() error {
 	// Fire off a goroutine to (potentially) post usage telemetry
 	go p.doWriteTelemetry(backend.Name())
 
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-
 	go func() {
 		if err := backend.Write(ctx, p.CLIOptions.Write, errorCh, value...); err != nil {
 			p.log.Errorf("unable to complete write(s): %s", err)
@@ -66,8 +62,6 @@ MAIN:
 	if errRecord == nil {
 		p.log.Infof("Successfully wrote '%d' message(s)", len(value))
 	}
-
-	wg.Wait()
 
 	return nil
 }
