@@ -85,15 +85,12 @@ func main() {
 		}
 
 		logrus.Debug("telemetry enabled")
-		logrus.Debugf("Telemetry API KEY: %s", TELEMETRY_API_KEY)
 
 		// Making sure that we give enough time for telemetry to finish
 		defer time.Sleep(time.Second)
 	} else {
 		as = &telemetry.NoopTelemetry{}
 	}
-
-	logrus.Debugf("Plumber version: %s", options.VERSION)
 
 	// We only want to intercept interrupt signals in relay or server mode
 	if cliOpts.Global.XAction == "relay" || cliOpts.Global.XAction == "server" || cliOpts.Global.XAction == "read" {
