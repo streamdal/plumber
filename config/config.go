@@ -122,6 +122,7 @@ func New(enableCluster bool, k kv.IKV) (*Config, error) {
 func requireReconfig(initialRun bool, cfg *Config) bool {
 	// Don't configure if NOT in terminal
 	if !terminal.IsTerminal(int(os.Stderr.Fd())) {
+		logrus.Debugf("detected non-terminal output")
 		return false
 	}
 
@@ -160,6 +161,13 @@ func requireReconfig(initialRun bool, cfg *Config) bool {
 }
 
 func (c *Config) Configure() {
+	// No need to ask about telemetry if it's already enabled
+	if !c.EnableTelemetry {
+		c.askTelemetry()
+	}
+}
+
+func (c *Config) askTelemetry() {
 	telemetryDescription := `If telemetry is enabled, plumber will collect the following anonymous telemetry data:
 
 > General
