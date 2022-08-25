@@ -1,15 +1,15 @@
 package plumber
 
 import (
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-
 	"github.com/batchcorp/plumber/api"
 	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/util"
 	"github.com/batchcorp/plumber/validate"
+	"github.com/pkg/errors"
+	"github.com/posthog/posthog-go"
+	"github.com/sirupsen/logrus"
 )
 
 // HandleRelayCmd handles CLI relay mode. Container/envar mode is handled by processEnvRelayFlags
@@ -26,6 +26,14 @@ func (p *Plumber) HandleRelayCmd() error {
 	if err := p.startRelayService(); err != nil {
 		return errors.Wrap(err, "unable to start relay service")
 	}
+
+	p.Telemetry.Enqueue(posthog.Capture{
+		Event:      "command_relay",
+		DistinctId: p.PersistentConfig.PlumberID,
+		Properties: map[string]interface{}{
+			"backend": backend.Name(),
+		},
+	})
 
 	// Log message prints ID on exit
 	p.CLIOptions.Relay.XRelayId = "CLI"

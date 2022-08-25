@@ -12,3 +12,4 @@ data
 data/*
 c.out
 cover.html
+.*DS_Store*

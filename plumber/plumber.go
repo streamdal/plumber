@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/batchcorp/plumber/telemetry"
 	dpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/mcuadros/go-lookup"
 	"github.com/pkg/errors"
@@ -30,10 +31,12 @@ var (
 	ErrMissingPersistentConfig = errors.New("PersistentConfig cannot be nil")
 	ErrMissingKongCtx          = errors.New("KongCtx cannot be nil")
 	ErrMissingActions          = errors.New("Actions cannot be nil")
+	ErrMissingTelemetry        = errors.New("Telemetry cannot be nil")
 )
 
 // Config contains configurable options for instantiating a new Plumber
 type Config struct {
+	Telemetry          telemetry.ITelemetry
 	PersistentConfig   *config.Config
 	Actions            actions.IActions
 	ServiceShutdownCtx context.Context
@@ -77,8 +80,9 @@ func New(cfg *Config) (*Plumber, error) {
 
 		var connCfg *opts.ConnectionOptions
 
-		// TODO: Improve this comment
-		// "manage" requires us to fill out "create" options differently
+		// 'manage' does not utilize connection options (and has a slightly diff
+		// syntax from other CLI actions); due to this, we avoid generating them
+		// altogether.
 		if cfg.CLIOptions.Global.XAction != "manage" {
 			connCfg, err = generateConnectionOptions(cfg.CLIOptions)
 		}
@@ -228,6 +232,12 @@ func validateConfig(cfg *Config) error {
 
 	if cfg.Actions == nil {
 		return ErrMissingActions
+	}
+
+	if cfg.PersistentConfig.EnableTelemetry {
+		if cfg.Telemetry == nil {
+			return ErrMissingTelemetry
+		}
 	}
 
 	return nil

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/posthog/posthog-go"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 
@@ -147,7 +148,6 @@ func (p *Plumber) startGRPCServer() error {
 	grpcServer := grpc.NewServer(opts...)
 
 	// Each plumber node needs a unique ID
-	p.PersistentConfig.PlumberID = p.CLIOptions.Server.NodeId
 	p.PersistentConfig.ClusterID = p.CLIOptions.Server.ClusterId
 
 	plumberServer := &server.Server{
@@ -162,6 +162,19 @@ func (p *Plumber) startGRPCServer() error {
 	protos.RegisterPlumberServerServer(grpcServer, plumberServer)
 
 	go p.watchServiceShutdown(grpcServer)
+
+	p.Telemetry.Enqueue(posthog.Capture{
+		Event:      "command_server",
+		DistinctId: p.PersistentConfig.ClusterID,
+		Properties: map[string]interface{}{
+			"cluster_id":             p.CLIOptions.Server.ClusterId,
+			"node_id":                p.CLIOptions.Server.NodeId,
+			"use_tls":                p.CLIOptions.Server.UseTls,
+			"enable_cluster":         p.CLIOptions.Server.EnableCluster,
+			"tls_skip_verify":        p.CLIOptions.Server.TlsSkipVerify,
+			"remote_control_enabled": p.CLIOptions.Server.RemoteControlEnabled,
+		},
+	})
 
 	p.log.Debugf("starting gRPC server on %s", p.CLIOptions.Server.GrpcListenAddress)
 

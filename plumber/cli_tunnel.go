@@ -1,11 +1,11 @@
 package plumber
 
 import (
-	"github.com/pkg/errors"
-
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/tunnel"
+	"github.com/pkg/errors"
+	"github.com/posthog/posthog-go"
 )
 
 // HandleTunnelCmd handles tunnel destination mode commands
@@ -14,6 +14,14 @@ func (p *Plumber) HandleTunnelCmd() error {
 	if err != nil {
 		return errors.Wrap(err, "unable to instantiate backend")
 	}
+
+	p.Telemetry.Enqueue(posthog.Capture{
+		Event:      "command_tunnel",
+		DistinctId: p.PersistentConfig.PlumberID,
+		Properties: map[string]interface{}{
+			"backend": backend.Name(),
+		},
+	})
 
 	// Run up tunnel
 	// Plumber cluster ID purposefully left blank here so the destination becomes ephemeral

@@ -8,6 +8,7 @@ require (
 	cloud.google.com/go/pubsub v1.6.1
 	github.com/Azure/azure-event-hubs-go/v3 v3.3.16
 	github.com/Azure/azure-service-bus-go v0.11.5
+	github.com/Masterminds/semver v1.5.0
 	github.com/apache/pulsar-client-go v0.7.0
 	github.com/aws/aws-sdk-go v1.34.28
 	github.com/batchcorp/collector-schemas v0.0.16
@@ -48,6 +49,7 @@ require (
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.20.0
 	github.com/pkg/errors v0.9.1
+	github.com/posthog/posthog-go v0.0.0-20220817142604-0b0bbf0f9c0f // indirect
 	github.com/prometheus/client_golang v1.11.0
 	github.com/rabbitmq/rabbitmq-stream-go-client v1.0.1-rc.2
 	github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d

@@ -20,7 +20,7 @@ jobs:
         run: echo "GITHUB_SHORT_SHA=`git rev-parse --short HEAD`" >> $GITHUB_ENV
       - name: Build
         run: |
-          VERSION="$GITHUB_TAG ($GITHUB_SHORT_SHA)" make build
+          VERSION="$GITHUB_TAG-$GITHUB_SHORT_SHA" make build
       - name: Update nfpm version value
         run: |
           sed -i '/version/ s/"[^"][^"]*"/"${{ env.GITHUB_TAG }}"/' nfpm.yaml
