@@ -15,7 +15,6 @@ import (
 
 const (
 	APIURL = "https://telemetry.batch.sh"
-	APIKey = "phc_TyPT9AFk2cfB4YR0z3PJsDyViiZaXS1aQl9miHLvF8x"
 )
 
 type ITelemetry interface {
@@ -44,7 +43,7 @@ func New(cfg *Config) (*Telemetry, error) {
 		return nil, errors.Wrap(err, "unable to validate config")
 	}
 
-	client, err := posthog.NewWithConfig(APIKey, posthog.Config{
+	client, err := posthog.NewWithConfig(cfg.Token, posthog.Config{
 		Endpoint:  APIURL,
 		Transport: cfg.RoundTripper, // posthog lib will instantiate a default roundtripper if nil
 		BatchSize: 1,

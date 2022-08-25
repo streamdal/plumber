@@ -66,7 +66,8 @@ func New(enableCluster bool, k kv.IKV) (*Config, error) {
 	defer func() {
 		cfg.LastVersion = options.VERSION
 
-		// PlumberID was incorrectly written as plumber1 for a small period of time
+		// Old versions of plumber incorrectly defaulted plumber id to plumber1;
+		// everyone should have a unique plumber id
 		if cfg.PlumberID == "plumber1" {
 			cfg.PlumberID = getPlumberID()
 		}
@@ -130,7 +131,7 @@ func requireReconfig(initialRun bool, cfg *Config) bool {
 		return false
 	}
 
-	// Reconfig when major version changes between runs
+	// No reason to ask to reconfigure if we can't figure out old version
 	currentVersion, err := semver.NewVersion(options.VERSION)
 	if err != nil {
 		logrus.Warningf("unable to parse current version: %s", err)
@@ -142,13 +143,15 @@ func requireReconfig(initialRun bool, cfg *Config) bool {
 		return true
 	}
 
+	// We are probably dealing with an old plumber if we can't figure out the
+	// version - reconfigure
 	lastVersion, err := semver.NewVersion(cfg.LastVersion)
 	if err != nil {
 		logrus.Warningf("unable to parse last version: %s", err)
-		return false
+		return true
 	}
 
-	if currentVersion.Major() != lastVersion.Major() {
+	if currentVersion.Minor() != lastVersion.Minor() {
 		return true
 	}
 

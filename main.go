@@ -10,12 +10,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber/telemetry"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/ssh/terminal"
-
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/actions"
 	"github.com/batchcorp/plumber/config"
@@ -26,9 +25,8 @@ import (
 	"github.com/batchcorp/plumber/prometheus"
 )
 
-const (
-	// Note: Only used if telemetry are enabled (default: no)
-	MixPanelToken = "2d2995d51084155edc043905f2dc528f"
+var (
+	TELEMETRY_API_KEY = "UNSET"
 )
 
 func main() {
@@ -78,7 +76,7 @@ func main() {
 		var err error
 
 		as, err = telemetry.New(&telemetry.Config{
-			Token:      MixPanelToken,
+			Token:      TELEMETRY_API_KEY,
 			PlumberID:  persistentConfig.PlumberID,
 			CLIOptions: cliOpts,
 		})
@@ -87,12 +85,15 @@ func main() {
 		}
 
 		logrus.Debug("telemetry enabled")
+		logrus.Debugf("Telemetry API KEY: %s", TELEMETRY_API_KEY)
 
 		// Making sure that we give enough time for telemetry to finish
 		defer time.Sleep(time.Second)
 	} else {
 		as = &telemetry.NoopTelemetry{}
 	}
+
+	logrus.Debugf("Plumber version: %s", options.VERSION)
 
 	// We only want to intercept interrupt signals in relay or server mode
 	if cliOpts.Global.XAction == "relay" || cliOpts.Global.XAction == "server" || cliOpts.Global.XAction == "read" {
