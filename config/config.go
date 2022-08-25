@@ -190,7 +190,7 @@ You can read this statement here: https://docs.batch.sh/plumber/telemetry
 	}
 
 	if enableTelemetry {
-		fmt.Println("\nNICE! Thank you for opting in! This will help us improve plumber :)\n")
+		fmt.Printf("\nNICE! Thank you for opting in! This will help us improve plumber :)\n\n")
 	}
 
 	c.EnableTelemetry = enableTelemetry
