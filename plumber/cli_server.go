@@ -107,7 +107,7 @@ func (p *Plumber) runRemoteControl() bool {
 	}
 
 	if p.CLIOptions.Server.RemoteControlApiToken == "" {
-		p.log.Fatalf("Remote control requires --remote-control-api-token or PLUMBER_REMOTE_CONTROL_API_TOKEN to be specified")
+		p.log.Fatal("Remote control requires --remote-control-api-token or PLUMBER_REMOTE_CONTROL_API_TOKEN to be specified")
 	}
 
 	p.log.Debug("starting remote control server...")
