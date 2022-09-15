@@ -70,7 +70,7 @@ func getClientOptions(connOpts *opts.ConnectionOptions) *pulsar.ClientOptions {
 			// Certs inputted as strings
 			clientOpts.Authentication = pulsar.NewAuthenticationFromTLSCertSupplier(func() (*tls.Certificate, error) {
 				return &tls.Certificate{
-					Certificate: [][]byte{args.TlsClientCert},
+					Certificate: [][]byte{[]byte(args.TlsClientCert)},
 					PrivateKey:  args.TlsClientKey,
 				}, nil
 			})

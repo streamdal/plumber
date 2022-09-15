@@ -10,6 +10,7 @@ import (
 	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/prometheus"
 	"github.com/batchcorp/plumber/server/types"
+	"github.com/batchcorp/plumber/tunnel"
 	"github.com/batchcorp/plumber/validate"
 )
 
@@ -174,6 +175,7 @@ func (a *Actions) UpdateTunnel(ctx context.Context, tunnelID string, tunnelOpts 
 
 	if tunnelOpts.XActive {
 		if err := d.StartTunnel(5 * time.Second); err != nil {
+			d.Options.XActive = true
 			return nil, errors.Wrap(err, "unable to start tunnel")
 		}
 
@@ -215,6 +217,19 @@ func (a *Actions) DeleteTunnel(ctx context.Context, tunnelID string) error {
 
 	// Update metrics
 	prometheus.DecrPromGauge(prometheus.PlumberTunnels)
+
+	t, err := tunnel.New(tunnelCfg.Options, a.cfg.PersistentConfig.ClusterID)
+	if err != nil {
+		// Don't pass the error up stack here since the user can't act on it
+		a.log.Error(errors.Wrap(err, "unable to delete tunnel in dProxy service"))
+		return nil
+	}
+
+	if err := t.Delete(ctx, tunnelID); err != nil {
+		// Don't pass the error up stack here since the user can't act on it
+		a.log.Error(err)
+		return nil
+	}
 
 	return nil
 }

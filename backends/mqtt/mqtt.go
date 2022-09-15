@@ -3,11 +3,8 @@ package mqtt
 import (
 	"context"
 	"crypto/tls"
-	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"net/url"
-	"strings"
 
 	pahomqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/google/uuid"
@@ -29,9 +26,6 @@ const (
 
 var (
 	ErrInvalidAddress = errors.New("URI scheme must be ssl:// or tcp://")
-	ErrMissingTLSKey  = errors.New("--tls-client-key-file cannot be blank if using ssl")
-	ErrMissingTlsCert = errors.New("--tls-client-cert-file cannot be blank if using ssl")
-	ErrMissingTLSCA   = errors.New("--tls-ca-file cannot be blank if using ssl")
 	ErrWriteTimeout   = errors.New("write timeout must be greater than 0")
 	ErrEmptyTopic     = errors.New("Topic cannot be empty")
 )
@@ -103,7 +97,13 @@ func createClientOptions(args *args.MQTTConn, uri *url.URL) (*pahomqtt.ClientOpt
 	}
 
 	if uri.Scheme == "ssl" {
-		tlsConfig, err := generateTLSConfig(args)
+		tlsConfig, err := util.GenerateTLSConfig(
+			args.TlsOptions.TlsCaCert,
+			args.TlsOptions.TlsClientCert,
+			args.TlsOptions.TlsClientKey,
+			args.TlsOptions.TlsSkipVerify,
+			tls.NoClientCert, // TODO: MQTT supports TLS auth and so should we eventually
+		)
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to generate TLS config")
 		}
@@ -130,50 +130,6 @@ func createClientOptions(args *args.MQTTConn, uri *url.URL) (*pahomqtt.ClientOpt
 	return opts, nil
 }
 
-func generateTLSConfig(args *args.MQTTConn) (*tls.Config, error) {
-	certpool := x509.NewCertPool()
-
-	// Import client certificate/key pair
-	var cert tls.Certificate
-	var err error
-
-	if util.FileExists(args.TlsOptions.TlsClientCert) {
-		// CLI input, read from file
-		pemCerts, err := ioutil.ReadFile(string(args.TlsOptions.TlsClientCert))
-		if err == nil {
-			certpool.AppendCertsFromPEM(pemCerts)
-		}
-
-		cert, err = tls.LoadX509KeyPair(string(args.TlsOptions.TlsClientCert), string(args.TlsOptions.TlsClientKey))
-		if err != nil {
-			return nil, errors.Wrap(err, "unable to load ssl keypair")
-		}
-	} else if len(args.TlsOptions.TlsClientCert) > 0 {
-		// Server input
-		certpool.AppendCertsFromPEM(args.TlsOptions.TlsCaCert)
-
-		cert, err = tls.X509KeyPair(args.TlsOptions.TlsClientCert, args.TlsOptions.TlsClientKey)
-		if err != nil {
-			return nil, errors.Wrap(err, "unable to load ssl keypair")
-		}
-	}
-
-	// Just to print out the client certificate..
-	cert.Leaf, err = x509.ParseCertificate(cert.Certificate[0])
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to parse certificate")
-	}
-
-	// Create tls.Config with desired tls properties
-	return &tls.Config{
-		RootCAs:            certpool,
-		ClientAuth:         tls.NoClientCert,
-		ClientCAs:          nil,
-		InsecureSkipVerify: args.TlsOptions.TlsSkipVerify,
-		Certificates:       []tls.Certificate{cert},
-	}, nil
-}
-
 func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 	if connOpts == nil {
 		return validate.ErrMissingConnOpts
@@ -186,20 +142,6 @@ func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 	mqttOpts := connOpts.GetMqtt()
 	if mqttOpts == nil {
 		return validate.ErrMissingConnArgs
-	}
-
-	if strings.HasPrefix(mqttOpts.Address, "ssl") {
-		if len(mqttOpts.TlsOptions.TlsClientKey) == 0 {
-			return ErrMissingTLSKey
-		}
-
-		if len(mqttOpts.TlsOptions.TlsClientCert) == 0 {
-			return ErrMissingTlsCert
-		}
-
-		if len(mqttOpts.TlsOptions.TlsCaCert) == 0 {
-			return ErrMissingTLSCA
-		}
 	}
 
 	return nil

@@ -8,12 +8,13 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber/telemetry"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/ssh/terminal"
-
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/actions"
 	"github.com/batchcorp/plumber/config"
@@ -22,6 +23,10 @@ import (
 	"github.com/batchcorp/plumber/plumber"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/prometheus"
+)
+
+var (
+	TELEMETRY_API_KEY = "UNSET"
 )
 
 func main() {
@@ -64,8 +69,31 @@ func main() {
 	// Save config automatically on exit
 	defer persistentConfig.Save()
 
+	// If enabled, setup telemetry
+	var as telemetry.ITelemetry
+
+	if persistentConfig.EnableTelemetry {
+		var err error
+
+		as, err = telemetry.New(&telemetry.Config{
+			Token:      TELEMETRY_API_KEY,
+			PlumberID:  persistentConfig.PlumberID,
+			CLIOptions: cliOpts,
+		})
+		if err != nil {
+			logrus.Fatalf("unable to create telemetry client: %s", err)
+		}
+
+		logrus.Debug("telemetry enabled")
+
+		// Making sure that we give enough time for telemetry to finish
+		defer time.Sleep(time.Second)
+	} else {
+		as = &telemetry.NoopTelemetry{}
+	}
+
 	// We only want to intercept interrupt signals in relay or server mode
-	if cliOpts.Global.XAction == "relay" || cliOpts.Global.XAction == "server" {
+	if cliOpts.Global.XAction == "relay" || cliOpts.Global.XAction == "server" || cliOpts.Global.XAction == "read" {
 		logrus.Debug("Intercepting signals")
 
 		c := make(chan os.Signal, 1)
@@ -74,9 +102,8 @@ func main() {
 
 		go func() {
 			sig := <-c
-			logrus.Info("Shutting down plumber server...")
 			logrus.Debugf("Received system call: %+v", sig)
-
+			logrus.Info("Shutting down plumber...")
 			serviceShutdownFunc()
 		}()
 
@@ -102,8 +129,12 @@ func main() {
 	a, err := actions.New(&actions.Config{
 		PersistentConfig: persistentConfig,
 	})
+	if err != nil {
+		logrus.Fatal(err)
+	}
 
 	p, err := plumber.New(&plumber.Config{
+		Telemetry:          as,
 		PersistentConfig:   persistentConfig,
 		ServiceShutdownCtx: serviceCtx,
 		KongCtx:            kongCtx,

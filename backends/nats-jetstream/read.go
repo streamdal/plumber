@@ -3,6 +3,7 @@ package nats_jetstream
 import (
 	"context"
 	"encoding/json"
+	"strings"
 	"time"
 
 	"github.com/nats-io/nats.go"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/batchcorp/plumber/validate"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
@@ -20,19 +22,36 @@ func (n *NatsJetstream) Read(ctx context.Context, readOpts *opts.ReadOptions, re
 		return errors.Wrap(err, "invalid read options")
 	}
 
-	jsCtx, err := n.client.JetStream()
+	jsCtx, err := n.client.JetStream(nats.Context(ctx))
 	if err != nil {
 		return errors.Wrap(err, "failed to get jetstream context")
 	}
 
 	n.log.Info("Listening for message(s) ...")
 
-	var count int64
-
 	// nats.Subscribe is async, use channel to wait to exit
 	doneCh := make(chan struct{})
 
-	jsCtx.Subscribe(readOpts.NatsJetstream.Args.Stream, func(msg *nats.Msg) {
+	go func() {
+		// NATS library does not appear to be respecting contexts
+		// sub.Fetch() will block indefinitely regardless of the context
+		// passed to nats.Conn.JetStream(), so force an exit.
+		<-ctx.Done()
+		doneCh <- struct{}{}
+	}()
+
+	var count int64
+
+	var consumerInfo *nats.ConsumerInfo
+	var sub *nats.Subscription
+
+	handler := func(msg *nats.Msg) {
+		n.log.Debugf("Received new message on subject '%s'", msg.Subject)
+
+		if err := msg.Ack(); err != nil {
+			n.log.Warningf("unable to ack message")
+		}
+
 		count++
 
 		serializedMsg, err := json.Marshal(msg)
@@ -44,6 +63,21 @@ func (n *NatsJetstream) Read(ctx context.Context, readOpts *opts.ReadOptions, re
 			return
 		}
 
+		jsRecord := &records.NatsJetstream{
+			Stream: readOpts.NatsJetstream.Args.Stream,
+			Value:  msg.Data,
+		}
+
+		if consumerInfo != nil {
+			ci, err := msg.Sub.ConsumerInfo()
+			if err != nil {
+				n.log.Warningf("unable to fetch consumer info for msg: %s", err)
+			} else {
+				jsRecord.ConsumerName = ci.Name
+				jsRecord.Sequence = int64(ci.Delivered.Stream)
+			}
+		}
+
 		resultsChan <- &records.ReadRecord{
 			MessageId:           uuid.NewV4().String(),
 			Num:                 count,
@@ -51,21 +85,92 @@ func (n *NatsJetstream) Read(ctx context.Context, readOpts *opts.ReadOptions, re
 			Payload:             msg.Data,
 			XRaw:                serializedMsg,
 			Record: &records.ReadRecord_NatsJetstream{
-				NatsJetstream: &records.NatsJetstream{
-					Stream: readOpts.NatsJetstream.Args.Stream,
-					Value:  msg.Data,
-				},
+				NatsJetstream: jsRecord,
 			},
 		}
 
 		if !readOpts.Continuous {
 			doneCh <- struct{}{}
 		}
-	})
+	}
+
+	if readOpts.NatsJetstream.Args.CreateDurableConsumer || readOpts.NatsJetstream.Args.ExistingDurableConsumer {
+		consumerInfo, err = n.createConsumer(jsCtx, readOpts.NatsJetstream.Args)
+		if err != nil {
+			return errors.Wrap(err, "unable to create consumer")
+		}
+
+		sub, err = jsCtx.PullSubscribe(consumerInfo.Config.FilterSubject, consumerInfo.Name)
+	} else {
+		sub, err = jsCtx.Subscribe(readOpts.NatsJetstream.Args.Stream, handler)
+	}
+
+	if err != nil {
+		n.log.Errorf("unable to subscribe: %s", err)
+		return err
+	}
+
+	if sub.Type() == nats.PullSubscription {
+		go func() {
+		TOP:
+			for {
+				msgs, err := sub.Fetch(1, nats.MaxWait(60*time.Second))
+				if err != nil {
+					if strings.Contains(err.Error(), "timeout") {
+						continue
+					}
+				}
+
+				for _, m := range msgs {
+					handler(m)
+
+					if !readOpts.Continuous {
+						break TOP
+					}
+				}
+			}
+		}()
+	}
 
 	<-doneCh
 
+	// Don't use defer for these  since Read() is ran in a goroutine and there is no guarantee of execution of defers.
+	// Let these block in order to ensure proper cleanup and shutdown
+	sub.Unsubscribe()
+	n.cleanupConsumer(jsCtx, consumerInfo, readOpts.NatsJetstream.Args)
+
 	return nil
+}
+
+func (n *NatsJetstream) cleanupConsumer(jsCtx nats.JetStreamContext, ci *nats.ConsumerInfo, readArgs *args.NatsJetstreamReadArgs) {
+	defer n.log.Debug("Exited cleanup consumer")
+
+	// Nothing to do if no consumer info or read args
+	if ci == nil || readArgs == nil {
+		return
+	}
+
+	// Nothing to do
+	if !readArgs.CreateDurableConsumer && !readArgs.ExistingDurableConsumer {
+		return
+	}
+
+	// Nothing to do if no jsCtx
+	if jsCtx == nil {
+		return
+	}
+
+	// Nothing to do if consumer should be kept
+	if readArgs.KeepConsumer {
+		return
+	}
+
+	// Consumer should be deleted
+	if err := jsCtx.DeleteConsumer(ci.Stream, ci.Name); err != nil {
+		n.log.Errorf("unable to delete consumer during cleanup: %s", err)
+	}
+
+	n.log.Debugf("successfully deleted consumer '%s' during cleanup", ci.Name)
 }
 
 func validateReadOptions(readOpts *opts.ReadOptions) error {

@@ -8,15 +8,22 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/nats-io/nats.go"
+	"github.com/nats-io/nkeys"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 func DurationSec(durationSec interface{}) time.Duration {
 	if v, ok := durationSec.(int32); ok {
@@ -36,6 +43,19 @@ func DurationSec(durationSec interface{}) time.Duration {
 	}
 
 	return 0
+}
+
+// https://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-a-fixed-length-in-go
+var charRunes = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
+
+func RandomString(n int) string {
+	b := make([]rune, n)
+
+	for i := range b {
+		b[i] = charRunes[rand.Intn(len(charRunes))]
+	}
+
+	return string(b)
 }
 
 // Gunzip decompresses a slice of bytes and returns a slice of decompressed
@@ -140,24 +160,24 @@ func DerefInt16(v *int16) int16 {
 	return *v
 }
 
-func FileExists(path []byte) bool {
-	_, err := os.Stat(string(path))
+func FileExists(path string) bool {
+	_, err := os.Stat(path)
 	return err == nil
 }
 
-func GenerateTLSConfig(caCert, clientCert, clientKey []byte, skipVerify bool) (*tls.Config, error) {
+func GenerateTLSConfig(caCert, clientCert, clientKey string, skipVerify bool, mTLS tls.ClientAuthType) (*tls.Config, error) {
 	certpool := x509.NewCertPool()
 
 	if len(caCert) > 0 {
 		if FileExists(caCert) {
 			// CLI input, read from file
-			pemCerts, err := ioutil.ReadFile(string(caCert))
+			pemCerts, err := ioutil.ReadFile(caCert)
 			if err == nil {
 				certpool.AppendCertsFromPEM(pemCerts)
 			}
 		} else {
 			// Server input, contents of the certificate
-			certpool.AppendCertsFromPEM(caCert)
+			certpool.AppendCertsFromPEM([]byte(caCert))
 		}
 	}
 
@@ -167,13 +187,13 @@ func GenerateTLSConfig(caCert, clientCert, clientKey []byte, skipVerify bool) (*
 	if len(clientCert) > 0 && len(clientKey) > 0 {
 		if FileExists(clientCert) {
 			// CLI input, read from file
-			cert, err = tls.LoadX509KeyPair(string(clientCert), string(clientKey))
+			cert, err = tls.LoadX509KeyPair(clientCert, clientKey)
 			if err != nil {
 				return nil, errors.Wrap(err, "unable to load client certificate")
 			}
 		} else {
 			// Server input, contents of the certificate
-			cert, err = tls.X509KeyPair(clientCert, clientKey)
+			cert, err = tls.X509KeyPair([]byte(clientCert), []byte(clientKey))
 			if err != nil {
 				return nil, errors.Wrap(err, "unable to load client certificate")
 			}
@@ -188,10 +208,92 @@ func GenerateTLSConfig(caCert, clientCert, clientKey []byte, skipVerify bool) (*
 	// Create tls.Config with desired tls properties
 	return &tls.Config{
 		RootCAs:            certpool,
-		ClientAuth:         tls.NoClientCert,
+		ClientAuth:         mTLS,
 		ClientCAs:          nil,
 		InsecureSkipVerify: skipVerify,
 		Certificates:       []tls.Certificate{cert},
 		MinVersion:         tls.VersionTLS12,
 	}, nil
+}
+
+// GenerateNATSAuthJWT accepts either a path to a .creds file containing JWT credentials or the credentials
+// directly in string format, and returns the correct nats connection authentication options
+func GenerateNATSAuthJWT(creds string) ([]nats.Option, error) {
+	opts := make([]nats.Option, 0)
+
+	// Creds as a file
+	if FileExists(creds) {
+		return append(opts, nats.UserCredentials(creds)), nil
+	}
+
+	// Creds as string
+	userCB, err := nkeys.ParseDecoratedJWT([]byte(creds))
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to parse user credentials")
+	}
+
+	sigCB := func(nonce []byte) ([]byte, error) {
+		kp, err := nkeys.ParseDecoratedNKey([]byte(creds))
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to parse nkey from credentials")
+		}
+		defer kp.Wipe()
+
+		sig, err := kp.Sign(nonce)
+		if err != nil {
+			return nil, err
+		}
+		return sig, nil
+	}
+
+	jwtFunc := func(o *nats.Options) error {
+		o.UserJWT = func() (string, error) {
+			return userCB, nil
+		}
+		o.SignatureCB = sigCB
+		return nil
+	}
+	return append(opts, jwtFunc), nil
+}
+
+// GenerateNATSAuthNKey accepts either a path to a file containing a Nkey seed, or the Nkey seed
+// directly in string format, and returns the correct nats connection authentication options
+func GenerateNATSAuthNKey(nkeyPath string) ([]nats.Option, error) {
+	opts := make([]nats.Option, 0)
+
+	// Creds as a file
+	if FileExists(nkeyPath) {
+		// CLI, pass via filepath
+		nkeyCreds, err := nats.NkeyOptionFromSeed(nkeyPath)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to load nkey")
+		}
+
+		return append(opts, nkeyCreds), nil
+	}
+
+	// Server conn, pass via string
+	kp, err := nkeys.ParseDecoratedNKey([]byte(nkeyPath))
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to parse nkey data")
+	}
+
+	defer kp.Wipe()
+
+	pubKey, err := kp.PublicKey()
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to find public key in nkey data")
+	}
+	if !nkeys.IsValidPublicUserKey(pubKey) {
+		return nil, fmt.Errorf("not a valid nkey user seed")
+	}
+
+	sigCB := func(nonce []byte) ([]byte, error) {
+		sig, _ := kp.Sign(nonce)
+
+		return sig, nil
+	}
+
+	return append(opts, nats.Nkey(pubKey, sigCB)), nil
+
 }

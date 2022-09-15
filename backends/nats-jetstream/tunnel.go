@@ -23,7 +23,7 @@ func (n *NatsJetstream) Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOptio
 		return errors.Wrap(err, "unable to create tunnel")
 	}
 
-	stream := tunnelOpts.NatsJetstream.Args.Stream
+	stream := tunnelOpts.NatsJetstream.Args.Subject
 
 	outboundCh := tunnelSvc.Read()
 
@@ -59,8 +59,8 @@ func validateTunnelOptions(tunnelOpts *opts.TunnelOptions) error {
 		return validate.ErrEmptyBackendArgs
 	}
 
-	if tunnelOpts.NatsJetstream.Args.Stream == "" {
-		return ErrMissingStream
+	if tunnelOpts.NatsJetstream.Args.Subject == "" {
+		return ErrMissingSubject
 	}
 
 	return nil

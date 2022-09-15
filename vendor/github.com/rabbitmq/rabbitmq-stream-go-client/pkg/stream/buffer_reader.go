@@ -44,6 +44,12 @@ func readByte(readerStream io.Reader) uint8 {
 	return res
 }
 
+func readByteError(readerStream io.Reader) (uint8, error) {
+	var res uint8
+	err := binary.Read(readerStream, binary.BigEndian, &res)
+	return res, err
+}
+
 func readString(readerStream io.Reader) string {
 	lenString := readUShort(readerStream)
 	buff := make([]byte, lenString)

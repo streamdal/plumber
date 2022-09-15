@@ -8,9 +8,19 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/pkg/errors"
+	"github.com/posthog/posthog-go"
 )
 
 func (p *Plumber) HandleGetTunnelCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.EnqueueManage(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
+		Properties: map[string]interface{}{
+			"tunnel_id": p.CLIOptions.Manage.Get.Tunnel.Id,
+			"method":    "get_tunnel",
+		},
+	})
+
 	resp, err := client.GetTunnel(ctx, &protos.GetTunnelRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -31,6 +41,14 @@ func (p *Plumber) HandleGetTunnelCmd(ctx context.Context, client protos.PlumberS
 }
 
 func (p *Plumber) HandleGetAllTunnelsCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.EnqueueManage(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
+		Properties: map[string]interface{}{
+			"method": "get_all_tunnels",
+		},
+	})
+
 	resp, err := client.GetAllTunnels(ctx, &protos.GetAllTunnelsRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -49,6 +67,14 @@ func (p *Plumber) HandleGetAllTunnelsCmd(ctx context.Context, client protos.Plum
 }
 
 func (p *Plumber) HandleCreateTunnelCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.EnqueueManage(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
+		Properties: map[string]interface{}{
+			"method": "create_tunnel",
+		},
+	})
+
 	// Create tunnel options from CLI opts
 	tunnelOpts, err := generateTunnelOptionsForManageCreate(p.CLIOptions)
 	if err != nil {
@@ -73,6 +99,15 @@ func (p *Plumber) HandleCreateTunnelCmd(ctx context.Context, client protos.Plumb
 }
 
 func (p *Plumber) HandleDeleteTunnelCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.EnqueueManage(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
+		Properties: map[string]interface{}{
+			"tunnel_id": p.CLIOptions.Manage.Delete.Tunnel.Id,
+			"method":    "delete_tunnel",
+		},
+	})
+
 	resp, err := client.DeleteTunnel(ctx, &protos.DeleteTunnelRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -92,11 +127,20 @@ func (p *Plumber) HandleDeleteTunnelCmd(ctx context.Context, client protos.Plumb
 }
 
 func (p *Plumber) HandleStopTunnelCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.EnqueueManage(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
+		Properties: map[string]interface{}{
+			"tunnel_id": p.CLIOptions.Manage.Stop.Tunnel.Id,
+			"method":    "stop_tunnel",
+		},
+	})
+
 	resp, err := client.StopTunnel(ctx, &protos.StopTunnelRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
 		},
-		TunnelId: p.CLIOptions.Manage.Delete.Tunnel.Id,
+		TunnelId: p.CLIOptions.Manage.Stop.Tunnel.Id,
 	})
 
 	if err != nil {
@@ -111,11 +155,20 @@ func (p *Plumber) HandleStopTunnelCmd(ctx context.Context, client protos.Plumber
 }
 
 func (p *Plumber) HandleResumeTunnelCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.EnqueueManage(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
+		Properties: map[string]interface{}{
+			"tunnel_id": p.CLIOptions.Manage.Resume.Tunnel.Id,
+			"method":    "resume_tunnel",
+		},
+	})
+
 	resp, err := client.ResumeTunnel(ctx, &protos.ResumeTunnelRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
 		},
-		TunnelId: p.CLIOptions.Manage.Delete.Tunnel.Id,
+		TunnelId: p.CLIOptions.Manage.Resume.Tunnel.Id,
 	})
 
 	if err != nil {

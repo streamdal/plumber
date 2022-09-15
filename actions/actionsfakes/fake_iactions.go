@@ -121,11 +121,12 @@ type FakeIActions struct {
 		result1 *types.Tunnel
 		result2 error
 	}
-	UpdateRelayStub        func(context.Context, *opts.RelayOptions) (*types.Relay, error)
+	UpdateRelayStub        func(context.Context, string, *opts.RelayOptions) (*types.Relay, error)
 	updateRelayMutex       sync.RWMutex
 	updateRelayArgsForCall []struct {
 		arg1 context.Context
-		arg2 *opts.RelayOptions
+		arg2 string
+		arg3 *opts.RelayOptions
 	}
 	updateRelayReturns struct {
 		result1 *types.Relay
@@ -671,19 +672,20 @@ func (fake *FakeIActions) StopTunnelReturnsOnCall(i int, result1 *types.Tunnel, 
 	}{result1, result2}
 }
 
-func (fake *FakeIActions) UpdateRelay(arg1 context.Context, arg2 *opts.RelayOptions) (*types.Relay, error) {
+func (fake *FakeIActions) UpdateRelay(arg1 context.Context, arg2 string, arg3 *opts.RelayOptions) (*types.Relay, error) {
 	fake.updateRelayMutex.Lock()
 	ret, specificReturn := fake.updateRelayReturnsOnCall[len(fake.updateRelayArgsForCall)]
 	fake.updateRelayArgsForCall = append(fake.updateRelayArgsForCall, struct {
 		arg1 context.Context
-		arg2 *opts.RelayOptions
-	}{arg1, arg2})
+		arg2 string
+		arg3 *opts.RelayOptions
+	}{arg1, arg2, arg3})
 	stub := fake.UpdateRelayStub
 	fakeReturns := fake.updateRelayReturns
-	fake.recordInvocation("UpdateRelay", []interface{}{arg1, arg2})
+	fake.recordInvocation("UpdateRelay", []interface{}{arg1, arg2, arg3})
 	fake.updateRelayMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2)
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -697,17 +699,17 @@ func (fake *FakeIActions) UpdateRelayCallCount() int {
 	return len(fake.updateRelayArgsForCall)
 }
 
-func (fake *FakeIActions) UpdateRelayCalls(stub func(context.Context, *opts.RelayOptions) (*types.Relay, error)) {
+func (fake *FakeIActions) UpdateRelayCalls(stub func(context.Context, string, *opts.RelayOptions) (*types.Relay, error)) {
 	fake.updateRelayMutex.Lock()
 	defer fake.updateRelayMutex.Unlock()
 	fake.UpdateRelayStub = stub
 }
 
-func (fake *FakeIActions) UpdateRelayArgsForCall(i int) (context.Context, *opts.RelayOptions) {
+func (fake *FakeIActions) UpdateRelayArgsForCall(i int) (context.Context, string, *opts.RelayOptions) {
 	fake.updateRelayMutex.RLock()
 	defer fake.updateRelayMutex.RUnlock()
 	argsForCall := fake.updateRelayArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *FakeIActions) UpdateRelayReturns(result1 *types.Relay, result2 error) {

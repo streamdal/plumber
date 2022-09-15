@@ -15,27 +15,40 @@ jobs:
         uses: jakejarvis/wait-action@master
         with:
           time: '30s'
+      - name: Install Code Climate reporter
+        run: |
+          sudo curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+          sudo chmod +x ./cc-test-reporter
+          ./cc-test-reporter before-build
       - name: Test
         run: |
-          make test
-#  functional:
-#    name: Run functional tests
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v2
-#      - uses: actions/setup-go@v2
-#        with:
-#          go-version: '^1.15.4' # The Go version to download (if necessary) and use.
-#      - name: Start up dependencies
-#        run: docker-compose up -d
-#      - name: Wait for dependencies to start up
-#        uses: jakejarvis/wait-action@master
-#        with:
-#          time: '60s'
-#      - name: Test
-#        env:
-#          AWS_REGION: us-west-2
-#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#        run: |
-#          make test/functional
+          make test/coverage
+      - name: Upload coverage information
+        run: |
+          GIT_BRANCH="${GITHUB_HEAD_REF}" ./cc-test-reporter after-build -p github.com/batchcorp/plumber -r ${{ secrets.CC_TEST_REPORTER_ID }}
+
+  functional:
+    name: Run functional tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.15.4' # The Go version to download (if necessary) and use.
+      - name: Start up dependencies
+        run: docker-compose up -d
+      - name: Wait for dependencies to start up
+        uses: jakejarvis/wait-action@master
+        with:
+          time: '60s'
+      - name: Test
+        env:
+          AWS_REGION: us-west-2
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          TEST_API_TOKEN: ${{ secrets.TEST_API_TOKEN }}
+          TEST_COLLECTION_TOKEN: ${{ secrets.TEST_COLLECTION_TOKEN }}
+        run: |
+          go run main.go server &
+          sleep 5
+          go test --tags=functional

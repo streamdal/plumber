@@ -103,6 +103,8 @@ func (r *RabbitStreams) Read(ctx context.Context, readOpts *opts.ReadOptions, re
 	case closeEvent := <-closeCh:
 		// TODO: implement reconnect logic
 		r.log.Debugf("Stream closed by remote host: %s", closeEvent.Reason)
+	case <-ctx.Done():
+		return nil
 	}
 
 	return nil

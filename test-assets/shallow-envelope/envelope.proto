@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+option go_package = "github.com/batchcorp/plumber/test-assets/shallow-envelope/shallow";
+
 package shallow;
 
 // Represents a shallow envelope

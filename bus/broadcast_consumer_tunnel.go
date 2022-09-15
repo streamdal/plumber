@@ -4,16 +4,17 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber/validate"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (b *Bus) doCreateTunnel(ctx context.Context, msg *Message) error {
 	tunnelOptions := &opts.TunnelOptions{}
 	if err := proto.Unmarshal(msg.Data, tunnelOptions); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into protos.TunnelOptions")
+		return errors.Wrap(err, "unable to unmarshal message into opts.TunnelOptions")
 	}
 
 	if err := validate.TunnelOptionsForServer(tunnelOptions); err != nil {
@@ -32,7 +33,7 @@ func (b *Bus) doCreateTunnel(ctx context.Context, msg *Message) error {
 func (b *Bus) doUpdateTunnel(ctx context.Context, msg *Message) error {
 	tunnelOptions := &opts.TunnelOptions{}
 	if err := proto.Unmarshal(msg.Data, tunnelOptions); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into protos.TunnelOptions")
+		return errors.Wrap(err, "unable to unmarshal message into opts.TunnelOptions")
 	}
 
 	if tunnelOptions.XTunnelId == "" {
@@ -53,7 +54,7 @@ func (b *Bus) doStopTunnel(ctx context.Context, msg *Message) error {
 	// our cache.
 	tunnelOptions := &opts.TunnelOptions{}
 	if err := proto.Unmarshal(msg.Data, tunnelOptions); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into protos.TunnelOptions")
+		return errors.Wrap(err, "unable to unmarshal message into opts.TunnelOptions")
 	}
 
 	if tunnelOptions.XTunnelId == "" {
@@ -74,7 +75,7 @@ func (b *Bus) doResumeTunnel(ctx context.Context, msg *Message) error {
 	// our cache.
 	tunnelOptions := &opts.TunnelOptions{}
 	if err := proto.Unmarshal(msg.Data, tunnelOptions); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into protos.TunnelOptions")
+		return errors.Wrap(err, "unable to unmarshal message into opts.TunnelOptions")
 	}
 
 	if tunnelOptions.XTunnelId == "" {
@@ -95,7 +96,7 @@ func (b *Bus) doDeleteTunnel(ctx context.Context, msg *Message) error {
 	// our cache.
 	tunnelOptions := &opts.TunnelOptions{}
 	if err := proto.Unmarshal(msg.Data, tunnelOptions); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into protos.TunnelOptions")
+		return errors.Wrap(err, "unable to unmarshal message into opts.TunnelOptions")
 	}
 
 	if tunnelOptions.XTunnelId == "" {

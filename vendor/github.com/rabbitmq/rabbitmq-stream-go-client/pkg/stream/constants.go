@@ -2,9 +2,10 @@ package stream
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/pkg/errors"
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/logs"
-	"time"
 )
 
 // is needed to indicate the general status
@@ -18,6 +19,8 @@ const (
 const initBufferPublishSize = 2 + 2 + 1 + 4
 
 const (
+	ClientVersion = "1.0.1-rc.2"
+
 	commandDeclarePublisher       = 1
 	commandPublish                = 2
 	commandPublishConfirm         = 3
@@ -66,9 +69,11 @@ const (
 	responseCodeAccessRefused                 = uint16(16)
 	responseCodePreconditionFailed            = uint16(17)
 	responseCodePublisherDoesNotExist         = uint16(18)
+	responseCodeNoOffset                      = uint16(19)
 
 	/// responses out of protocol
-	closeChannel = uint16(60)
+	closeChannel         = uint16(60)
+	connectionCloseError = uint16(61)
 	///
 	defaultSocketCallTimeout = 10 * time.Second
 
@@ -76,7 +81,8 @@ const (
 	LocalhostUriConnection = "rabbitmq-stream://guest:guest@localhost:5552/%2f"
 
 	///
-	defaultSocketBuffer       = 4096
+	defaultWriteSocketBuffer  = 8092
+	defaultReadSocketBuffer   = 65536
 	defaultQueuePublisherSize = 10000
 	minQueuePublisherSize     = 100
 	maxQueuePublisherSize     = 1_000_000
@@ -84,13 +90,15 @@ const (
 	minBatchSize = 1
 	maxBatchSize = 10_000
 
+	minSubEntrySize = 1
+	maxSubEntrySize = 65535
+
 	minBatchPublishingDelay = 50
 	maxBatchPublishingDelay = 500
 
 	defaultBatchSize            = 100
 	defaultBatchPublishingDelay = 100
 	//
-	ClientVersion = "0.1.0-beta"
 
 	StreamTcpPort = "5552"
 )
@@ -104,8 +112,16 @@ var StreamAlreadyExists = errors.New("Stream Already Exists")
 var VirtualHostAccessFailure = errors.New("Virtual Host Access Failure")
 var SubscriptionIdDoesNotExist = errors.New("Subscription Id Does Not Exist")
 var PublisherDoesNotExist = errors.New("Publisher Does Not Exist")
+var OffsetNotFoundError = errors.New("Offset not found")
 var FrameTooLarge = errors.New("Frame Too Large, the buffer is too big")
 var CodeAccessRefused = errors.New("Resources Access Refused")
+var ConnectionClosed = errors.New("Can't send the message, connection closed")
+var StreamNotAvailable = errors.New("Stream Not Available")
+var UnknownFrame = errors.New("Unknown Frame")
+var InternalError = errors.New("Internal Error")
+var AuthenticationFailureLoopbackError = errors.New("Authentication Failure Loopback Error")
+
+var LeaderNotReady = errors.New("Leader not Ready yet")
 
 func lookErrorCode(errorCode uint16) error {
 	switch errorCode {
@@ -123,12 +139,22 @@ func lookErrorCode(errorCode uint16) error {
 		return SubscriptionIdDoesNotExist
 	case responseCodePublisherDoesNotExist:
 		return PublisherDoesNotExist
+	case responseCodeNoOffset:
+		return OffsetNotFoundError
 	case responseCodePreconditionFailed:
 		return PreconditionFailed
 	case responseCodeFrameTooLarge:
 		return FrameTooLarge
 	case responseCodeAccessRefused:
 		return CodeAccessRefused
+	case responseCodeStreamNotAvailable:
+		return StreamNotAvailable
+	case responseCodeUnknownFrame:
+		return UnknownFrame
+	case responseCodeInternalError:
+		return InternalError
+	case responseCodeAuthenticationFailureLoopback:
+		return AuthenticationFailureLoopbackError
 	default:
 		{
 			logs.LogWarn("Error not handled %d", errorCode)

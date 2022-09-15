@@ -10,9 +10,19 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/mcuadros/go-lookup"
 	"github.com/pkg/errors"
+	"github.com/posthog/posthog-go"
 )
 
 func (p *Plumber) HandleGetConnectionCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.EnqueueManage(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
+		Properties: map[string]interface{}{
+			"connection_id": p.CLIOptions.Manage.Get.Connection.Id,
+			"method":        "get_connection",
+		},
+	})
+
 	resp, err := client.GetConnection(ctx, &protos.GetConnectionRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -33,6 +43,14 @@ func (p *Plumber) HandleGetConnectionCmd(ctx context.Context, client protos.Plum
 }
 
 func (p *Plumber) HandleGetAllConnectionsCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.EnqueueManage(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
+		Properties: map[string]interface{}{
+			"method": "get_all_connections",
+		},
+	})
+
 	resp, err := client.GetAllConnections(ctx, &protos.GetAllConnectionsRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -52,6 +70,15 @@ func (p *Plumber) HandleGetAllConnectionsCmd(ctx context.Context, client protos.
 }
 
 func (p *Plumber) HandleDeleteConnectionCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	p.EnqueueManage(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
+		Properties: map[string]interface{}{
+			"method":        "delete_connection",
+			"connection_id": p.CLIOptions.Manage.Delete.Connection.Id,
+		},
+	})
+
 	resp, err := client.DeleteConnection(ctx, &protos.DeleteConnectionRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -76,6 +103,15 @@ func (p *Plumber) HandleCreateConnectionCmd(ctx context.Context, client protos.P
 	if err != nil {
 		return errors.Wrap(err, "failed to generate connection options")
 	}
+
+	p.EnqueueManage(posthog.Capture{
+		Event:      "command_manage",
+		DistinctId: p.PersistentConfig.PlumberID,
+		Properties: map[string]interface{}{
+			"backend": p.CLIOptions.Global.XBackend,
+			"method":  "create_connection",
+		},
+	})
 
 	resp, err := client.CreateConnection(ctx, &protos.CreateConnectionRequest{
 		Auth: &common.Auth{

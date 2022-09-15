@@ -5,7 +5,7 @@ BINARY   = plumber
 
 GO = CGO_ENABLED=$(CGO_ENABLED) GONOPROXY=github.com/batchcorp GOFLAGS=-mod=vendor go
 CGO_ENABLED ?= 0
-GO_BUILD_FLAGS = -ldflags '-X "github.com/batchcorp/plumber/options.VERSION=${VERSION}"'
+GO_BUILD_FLAGS = -ldflags "-X 'github.com/batchcorp/plumber/options.VERSION=${VERSION}' -X 'main.TELEMETRY_API_KEY=${TELEMETRY_API_KEY}'"
 
 # Pattern #1 example: "example : description = Description for example target"
 # Pattern #2 example: "### Example separator text
@@ -46,7 +46,7 @@ start/deps:
 
 .PHONY: build
 build: description = Build $(BINARY)
-build: clean build/linux build/darwin build/windows
+build: clean build/linux build/darwin build/darwin/arm64 build/windows
 
 .PHONY: build/linux
 build/linux: description = Build $(BINARY) for linux
@@ -57,6 +57,11 @@ build/linux: clean
 build/darwin: description = Build $(BINARY) for darwin
 build/darwin: clean
 	GOOS=darwin GOARCH=amd64 $(GO) build $(GO_BUILD_FLAGS) -o ./build/$(BINARY)-darwin
+
+.PHONY: build/darwin/arm64
+build/darwin/arm64: description = Build $(BINARY) for darwin/arm64 (Apple Silicon)
+build/darwin/arm64: clean
+	GOOS=darwin GOARCH=arm64 $(GO) build $(GO_BUILD_FLAGS) -o ./build/$(BINARY)-darwin-arm64
 
 .PHONY: build/windows
 build/windows: description = Build $(BINARY) for windows
@@ -119,6 +124,20 @@ testv: GOFLAGS=
 testv:
 	$(GO) test ./... -v
 
+.PHONY: test/coverage
+test/coverage: description = Run Go unit tests and output coverage information
+test/coverage: GOFLAGS=
+test/coverage:
+	$(GO) test ./... -coverprofile c.out
+
+.PHONY: test/dev
+test/dev: description = Run Go unit tests, output coverage information to a browser
+test/dev: GOFLAGS=
+test/dev:
+	$(GO) test ./... -coverprofile c.out
+	$(GO) tool cover -html=c.out -o cover.html
+	open cover.html
+
 .PHONY: test/functional
 test/functional: description = Run functional tests
 test/functional: GOFLAGS=
@@ -129,7 +148,6 @@ test/functional:
 test/fakes: description = Generate test fakes
 test/fakes: GOFLAGS=
 test/fakes:
-	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o tools/fake_tstorage.go github.com/nakabonne/tstorage.Storage &
 	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/pulsar/pulsarfakes/fake_pulsar.go github.com/apache/pulsar-client-go/pulsar.Client &
 	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/pulsar/pulsarfakes/fake_producer.go github.com/apache/pulsar-client-go/pulsar.Producer &
 	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/pulsar/pulsarfakes/fake_consumer.go github.com/apache/pulsar-client-go/pulsar.Consumer &

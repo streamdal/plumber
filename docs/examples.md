@@ -53,6 +53,7 @@
   * [Advanced Usage](#advanced-usage)
        * [Decoding protobuf encoded messages and viewing them live](#decoding-protobuf-encoded-messages-and-viewing-them-live)
        * [Shallow envelope protobuf messages](#shallow-envelope-protobuf-messages)
+       * [Using File Descriptor Sets](#using-file-descriptor-sets)
        * [Using Avro schemas when reading or writing](#using-avro-schemas-when-reading-or-writing)
 
 ## Consuming
@@ -85,11 +86,11 @@ plumber read aws-sqs --queue-name=orders --wait-time-seconds=20
 ##### RabbitMQ
 
 ```
-plumber read rabbit
+plumber read rabbit \
     --address="amqp://localhost:5672" \
     --exchange-name=testex \
-    --queue=testqueue \
-    --binding-key="orders.#"
+    --queue-name=testqueue \
+    --binding-key="orders.#" \
     --continuous
 ```
 
@@ -175,6 +176,25 @@ plumber read nats-streaming --address="nats://user:pass@nats.test.io:4222" --cha
 plumber read nats-jetstream --dsn="nats://user:pass@nats.test.io:4222" --stream "orders.>" --client-id "plumber"
 ```
 
+Create and use a durable consumer:
+
+```bash
+plumber read nats-jetstream --dsn="nats://user:pass@nats.test.io:4222" --stream foo --create-durable-consumer
+```
+
+Use an existing durable consumer:
+```bash
+plumber read nats-jetstream --dsn="nats://user:pass@nats.test.io:4222" --stream foo --existing-durable-consumer --consumer-name existing_consumer
+```
+
+Create a new durable consumer at a specific stream start sequence:
+
+```bash
+plumber read nats-jetstream --dsn="nats://user:pass@nats.test.io:4222" --stream foo --create-durable-consumer --consumer-start-sequence 42
+```
+
+NOTE: By default, `plumber` will remove any consumers it creates. To leave consumers untouched, set `--keep-consumer`.
+
 ##### Redis PubSub
 
 ```bash
@@ -196,7 +216,15 @@ plumber read gcp-pubsub --project-id=PROJECT_ID --sub-id=SUBSCRIPTION
 ##### MQTT
 
 ```bash
-plumber read mqtt --address tcp://localhost:1883 --topic iotdata -qos 1
+plumber read mqtt --address tcp://localhost:1883 --topic iotdata --qos-level at_least_once
+
+# Or connect with TLS:
+
+plumber read mqtt --address ssl://localhost:8883 --topic iotdata --qos-level at_least_once
+
+# TLS using certificates
+
+plumber read mqtt --address ssl://localhost:8883 --topic iotdata --qos-level at_least_once --tls-ca-cert=/path/to/ca_certificate.pem --tls-client-key=/path/to/client_key.pem --tls-client-cert=/path/to/client_certificate.pem
 ```
 
 #### Apache Pulsar
@@ -253,7 +281,7 @@ plumber write aws-sqs --queue-name=NewOrders --input="{\"order_id\": \"A-3458-65
 ##### RabbitMQ
 
 ```
-plumber write rabbit --address="aqmp://rabbit.yourdomain.net:5672" --exchange=NewOrders --routing-key="orders.oregon.coffee" --input="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+plumber write rabbit --address="amqp://rabbit.yourdomain.net:5672" --exchange-name=NewOrders --routing-key="orders.oregon.coffee" --input="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ##### RabbitMQ Streams
@@ -361,8 +389,17 @@ plumber write gcp-pubsub --topic-id=TOPIC --project-id=PROJECT_ID --input='{"Sen
 ##### MQTT
 
 ```bash
-plumber write mqtt --address tcp://localhost:1883 --topic iotdata -qos 1 --input "{\"id\": 123, \"temperature\": 15}"
+plumber write mqtt --address tcp://localhost:1883 --topic iotdata --qos-level at_least_once --input "{\"id\": 123, \"temperature\": 15}"
+
+# or connect with TLS:
+
+plumber write mqtt --address ssl://localhost:8883 --topic iotdata --qos-level at_least_once --input "{\"id\": 123, \"temperature\": 15}"
+
+# TLS using certificates
+
+plumber write mqtt --address ssl://localhost:8883 --topic iotdata --qos-level at_least_once --tls-ca-cert=/path/to/ca_certificate.pem --tls-client-key=/path/to/client_key.pem --tls-client-cert=/path/to/client_certificate.pem --input "{\"id\": 123, \"temperature\": 15}"
 ```
+
 ##### Apache Pulsar
 
 ```bash
@@ -393,7 +430,7 @@ $ docker run --name plumber-rabbit -p 8080:8080 \
     -e PLUMBER_RELAY_RABBIT_ROUTING_KEY=some.routing.key \
     -e PLUMBER_RELAY_RABBIT_QUEUE_EXCLUSIVE=false \
     -e PLUMBER_RELAY_RABBIT_QUEUE_DURABLE=true \
-    batchcorp/plumber rabbit
+    batchcorp/plumber plumber relay rabbit
 ```
 
 ##### Continuously relay messages from an SQS queue to a Batch.sh collection
@@ -404,7 +441,7 @@ docker run -d --name plumber-sqs -p 8080:8080 \
     -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
     -e PLUMBER_RELAY_SQS_QUEUE_NAME=TestQueue \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
-    batchcorp/plumber aws-sqs
+    batchcorp/plumber plumber relay aws-sqs
 ```
 
 ##### Continuously relay messages from an Azure queue to a Batch.sh collection
@@ -414,7 +451,7 @@ docker run -d --name plumber-azure -p 8080:8080 \
     -e SERVICEBUS_CONNECTION_STRING="Endpoint=sb://mybus.servicebus.windows.net/;SharedAccessKeyName..."
     -e PLUMBER_RELAY_AZURE_QUEUE_NAME=neworders \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
-    batchcorp/plumber azure-service-bus
+    batchcorp/plumber plumber relay azure-service-bus
 ```
 
 ##### Continuously relay messages from an Azure topic to a Batch.sh collection
@@ -425,7 +462,7 @@ docker run -d --name plumber-azure -p 8080:8080 \
     -e PLUMBER_RELAY_AZURE_TOPIC_NAME=neworders \
     -e PLUMBER_RELAY_AZURE_SUBSCRIPTION=some-sub \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
-    batchcorp/plumber azure-service-bus
+    batchcorp/plumber plumber relay azure-service-bus
 ```
 
 ##### Continuously relay messages from multiple Redis channels to a Batch.sh collection
@@ -435,7 +472,7 @@ docker run -d --name plumber-redis-pubsub -p 8080:8080 \
     -e PLUMBER_RELAY_REDIS_PUBSUB_ADDRESS=localhost:6379 \
     -e PLUMBER_RELAY_REDIS_PUBSUB_CHANNELS=channel1,channel2 \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
-    batchcorp/plumber redis-pubsub
+    batchcorp/plumber plumber relay redis-pubsub
 ```
 
 ##### Continuously relay messages from multiple Redis streams to a Batch.sh collection
@@ -445,21 +482,21 @@ docker run -d --name plumber-redis-streams -p 8080:8080 \
     -e PLUMBER_RELAY_REDIS_STREAMS_ADDRESS=localhost:6379 \
     -e PLUMBER_RELAY_REDIS_STREAMS_STREAMS=stream1,stream2 \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
-    batchcorp/plumber redis-streams
+    batchcorp/plumber plumber relay redis-streams
 ```
 
 ##### Continuously relay messages from a Kafka topic (on Confluent) to a Batch.sh collection (via CLI)
 
 ```
-export PLUMBER_RELAY_TOKEN="$YOUR-BATCHSH-TOKEN-HERE"
-export PLUMBER_RELAY_KAFKA_ADDRESS="pkc-4kgmg.us-west-2.aws.confluent.cloud:9092,pkc-5kgmg.us-west-2.aws.confluent.cloud:9092"
-export PLUMBER_RELAY_KAFKA_TOPIC="$YOUR_TOPIC"
-export PLUMBER_RELAY_KAFKA_INSECURE_TLS="true"
-export PLUMBER_RELAY_KAFKA_USERNAME="$YOUR_CONFLUENT_API_KEY"
-export PLUMBER_RELAY_KAFKA_PASSWORD="$YOUR_CONFLUENT_API_SECRET"
-export PLUMBER_RELAY_KAFKA_SASL_TYPE="plain"
-
-$ plumber relay kafka
+docker run -d --name plumber-kafka -p 8080:8080 \
+    -e PLUMBER_RELAY_TOKEN="$YOUR-BATCHSH-TOKEN-HERE"
+    -e PLUMBER_RELAY_KAFKA_ADDRESS="pkc-4kgmg.us-west-2.aws.confluent.cloud:9092,pkc-5kgmg.us-west-2.aws.confluent.cloud:9092"
+    -e PLUMBER_RELAY_KAFKA_TOPIC="$YOUR_TOPIC"
+    -e PLUMBER_RELAY_KAFKA_INSECURE_TLS="true"
+    -e PLUMBER_RELAY_KAFKA_USERNAME="$YOUR_CONFLUENT_API_KEY"
+    -e PLUMBER_RELAY_KAFKA_PASSWORD="$YOUR_CONFLUENT_API_SECRET"
+    -e PLUMBER_RELAY_KAFKA_SASL_TYPE="plain"
+    batchcorp/plumber plumber relay kafka
 ```
 
 ##### Continuously relay messages from a MQTT topic to a Batch.sh collection
@@ -470,7 +507,7 @@ docker run -d --name plumber-mqtt -p 8080:8080 \
     -e PLUMBER_RELAY_MQTT_TOPIC=iotdata \
     -e PLUMBER_RELAY_MQTT_QOS=1 \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
-    batchcorp/plumber:local mqtt
+    batchcorp/plumber plumber relay mqtt
 ```
 
 ##### Continuously relay messages from a NATS JetStream stream to a Batch.sh collection
@@ -481,7 +518,7 @@ docker run -d --name plumber-natsjs -p 8080:8080 \
     -e PLUMBER_RELAY_NATS_JETSTREAM_CLIENT_ID=plumber \
     -e PLUMBER_RELAY_NATS_JETSTREAM_STREAM=orders \
     -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
-    batchcorp/plumber:local mqtt
+    batchcorp/plumber plumber relay mqtt
 ```
 
 
@@ -500,7 +537,7 @@ docker run -d --name plumber-cdc-mongo -p 8080:8080 \
     -e PLUMBER_RELAY_CDCMONGO_DATABASE=mydb \
     -e PLUMBER_RELAY_CDCMONGO_COLLECTION=customers \
     -e PLUMBER_RELAY_TOKEN=YOUR_BATCHSH_TOKEN_HERE \
-    batchcorp/plumber cdc-mongo
+    batchcorp/plumber plumber relay cdc-mongo
 
 ```
 
@@ -602,6 +639,33 @@ plumber read kafka --topics testing \
   --protobuf-envelope-type shallow \
   --shallow-envelope-message shallow.Payload \
   --shallow-envelope-field-number=2 \
+  --decode-type protobuf
+```
+
+### Using File Descriptor Sets
+
+Plumber supports using protobuf file descriptor set files for decoding and encoding protobuf messages, instead of
+using a directory of `.proto` files. This method is more reliable than using `--protobuf-dirs` flag as it ensures
+that there won't be any include path issues.
+
+For help with generating an `.fds` file from your `.proto` files, see https://docs.batch.sh/platform/components/what-are-schemas#protocol-buffers
+
+#### Writing using FDS
+
+```bash
+plumber write kafka --topics fdstest1 \
+  --protobuf-descriptor-set test-assets/protobuf-any/sample/protos.fds \
+  --protobuf-root-message sample.Envelope \
+  --encode-type jsonpb \
+  --input-file test-assets/protobuf-any/payload.json
+```
+
+#### Reading using FDS
+
+```bash
+plumber read kafka --topics fdstest1 \
+  --protobuf-descriptor-set test-assets/protobuf-any/sample/protos.fds \
+  --protobuf-root-message sample.Envelope \
   --decode-type protobuf
 ```
 

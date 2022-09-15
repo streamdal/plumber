@@ -12,9 +12,13 @@ import (
 	"github.com/batchcorp/plumber/util"
 )
 
-func ProtobufOptionsForCLI(dirs []string, rootMessage string) error {
-	if len(dirs) == 0 {
-		return errors.New("at least one '--protobuf-dir' required when type " +
+var (
+	ErrMissingCLIOptions = errors.New("cli options cannot be nil")
+)
+
+func ProtobufOptionsForCLI(dirs []string, rootMessage, fdsFile string) error {
+	if len(dirs) == 0 && fdsFile == "" {
+		return errors.New("at least one '--protobuf-dirs' or --protobuf-descriptor-set required when type " +
 			"is set to 'protobuf'")
 	}
 
@@ -37,7 +41,7 @@ func RelayOptionsForCLI(relayOpts *opts.RelayOptions) error {
 	}
 
 	if relayOpts.XCliOptions == nil {
-		return errors.New("cli options cannot be nil")
+		return ErrMissingCLIOptions
 	}
 
 	return nil
@@ -45,23 +49,23 @@ func RelayOptionsForCLI(relayOpts *opts.RelayOptions) error {
 
 func ReadOptionsForCLI(readOpts *opts.ReadOptions) error {
 	if readOpts == nil {
-		return errors.New("read options cannot be nil")
+		return ErrMissingReadOptions
 	}
 
 	if readOpts.XCliOptions == nil {
-		return errors.New("cli options cannot be nil")
+		return ErrMissingCLIOptions
 	}
 
 	return nil
 }
 
-func WriteOptionsCLI(writeOpts *opts.WriteOptions) error {
+func WriteOptionsForCLI(writeOpts *opts.WriteOptions) error {
 	if writeOpts == nil {
 		return ErrEmptyWriteOpts
 	}
 
 	if writeOpts.XCliOptions == nil {
-		return errors.New("cli options cannot be nil")
+		return ErrMissingCLIOptions
 	}
 
 	if writeOpts.Record.Input == "" && writeOpts.XCliOptions.InputFile == "" && len(writeOpts.XCliOptions.InputStdin) == 0 {
@@ -82,16 +86,17 @@ func WriteOptionsCLI(writeOpts *opts.WriteOptions) error {
 	if writeOpts.EncodeOptions != nil {
 		// Protobuf
 		if writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_JSONPB {
-			if writeOpts.EncodeOptions.ProtobufSettings == nil {
+			pbSettings := writeOpts.EncodeOptions.ProtobufSettings
+			if pbSettings == nil {
 				return errors.New("protobuf settings cannot be unset if encode type is set to jsonpb")
 			}
 
-			if writeOpts.EncodeOptions.ProtobufSettings.ProtobufRootMessage == "" {
+			if pbSettings.ProtobufRootMessage == "" {
 				return errors.New("protobuf root message must be set if encode type is set to jsonpb")
 			}
 
-			if len(writeOpts.EncodeOptions.ProtobufSettings.ProtobufDirs) == 0 {
-				return errors.New("at least one protobuf dir must be specified if encode type is set to jsonpb")
+			if len(pbSettings.ProtobufDirs) == 0 && pbSettings.ProtobufDescriptorSet == "" {
+				return errors.New("either a protobuf directory or a descriptor set file must be specified if encode type is set to jsonpb")
 			}
 		}
 

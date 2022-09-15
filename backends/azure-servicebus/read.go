@@ -116,7 +116,9 @@ func (a *AzureServiceBus) readQueue(ctx context.Context, handler servicebus.Hand
 // readTopic reads messages from an ASB topic using the given subscription name
 func (a *AzureServiceBus) readTopic(ctx context.Context, handler servicebus.HandlerFunc, readOpts *opts.ReadOptions) error {
 	topic, err := a.client.NewTopic(readOpts.AzureServiceBus.Args.Topic)
-
+	if err != nil {
+		return errors.Wrap(err, "unable to create topic")
+	}
 	sub, err := topic.NewSubscription(readOpts.AzureServiceBus.Args.SubscriptionName)
 	if err != nil {
 		return errors.Wrap(err, "unable to create topic subscription")

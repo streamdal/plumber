@@ -7,9 +7,12 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/batchcorp/plumber/pb"
+
+	dpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
+
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
-	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
 
@@ -17,13 +20,12 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
-	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/serializers"
 )
 
 // GenerateWriteValue generates a slice of WriteRecords that can be passed to
 // backends to perform a write.
-func GenerateWriteValue(writeOpts *opts.WriteOptions, mds map[pb.MDType]*desc.MessageDescriptor) ([]*records.WriteRecord, error) {
+func GenerateWriteValue(writeOpts *opts.WriteOptions, fds *dpb.FileDescriptorSet) ([]*records.WriteRecord, error) {
 	writeValues := make([]*records.WriteRecord, 0)
 
 	if writeOpts == nil {
@@ -36,7 +38,7 @@ func GenerateWriteValue(writeOpts *opts.WriteOptions, mds map[pb.MDType]*desc.Me
 
 	// Input already provided
 	if writeOpts.Record.Input != "" {
-		wv, err := generateWriteValue([]byte(writeOpts.Record.Input), writeOpts, mds)
+		wv, err := generateWriteValue([]byte(writeOpts.Record.Input), writeOpts, fds)
 		if err != nil {
 			return nil, err
 		}
@@ -61,7 +63,7 @@ func GenerateWriteValue(writeOpts *opts.WriteOptions, mds map[pb.MDType]*desc.Me
 			return nil, fmt.Errorf("unable to read file '%s': %s", writeOpts.XCliOptions.InputFile, err)
 		}
 
-		wv, err := generateWriteValue(data, writeOpts, mds)
+		wv, err := generateWriteValue(data, writeOpts, fds)
 		if err != nil {
 			return nil, err
 		}
@@ -79,7 +81,7 @@ func GenerateWriteValue(writeOpts *opts.WriteOptions, mds map[pb.MDType]*desc.Me
 
 	// Stdin source
 	for _, data := range writeOpts.XCliOptions.InputStdin {
-		wv, err := generateWriteValue([]byte(data), writeOpts, mds)
+		wv, err := generateWriteValue([]byte(data), writeOpts, fds)
 		if err != nil {
 			return nil, err
 		}
@@ -98,7 +100,7 @@ func GenerateWriteValue(writeOpts *opts.WriteOptions, mds map[pb.MDType]*desc.Me
 }
 
 // generateWriteValue will transform input data into the required format for transmission
-func generateWriteValue(data []byte, writeOpts *opts.WriteOptions, mds map[pb.MDType]*desc.MessageDescriptor) ([]byte, error) {
+func generateWriteValue(data []byte, writeOpts *opts.WriteOptions, fds *dpb.FileDescriptorSet) ([]byte, error) {
 	// Input: Plain / unset
 	if writeOpts.EncodeOptions == nil ||
 		writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_UNSET {
@@ -136,64 +138,77 @@ func generateWriteValue(data []byte, writeOpts *opts.WriteOptions, mds map[pb.MD
 
 	// Input: JSONPB
 	if writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_JSONPB {
-		var convertErr error
-
-		if len(mds) == 0 {
-			return nil, errors.New("message descriptors cannot be empty")
-		}
-		if _, ok := mds[pb.MDEnvelope]; !ok {
-			return nil, errors.New("envelope message descriptor cannot be nil")
-		}
-
-		envelope := dynamic.NewMessage(mds[pb.MDEnvelope])
-
-		var payload *dynamic.Message
-		if writeOpts.EncodeOptions.GetProtobufSettings().ProtobufEnvelopeType == encoding.EnvelopeType_ENVELOPE_TYPE_SHALLOW {
-			payload = dynamic.NewMessage(mds[pb.MDPayload])
-		}
-
-		// Shallow envelope field ID, will default to 0 and be ignored if not shallow envelope
-		fieldID := writeOpts.EncodeOptions.GetProtobufSettings().ShallowEnvelopeFieldNumber
-
-		data, convertErr = ConvertJSONPBToProtobuf(data, envelope, payload, fieldID)
+		out, convertErr := ConvertJSONPBToProtobuf(data, writeOpts, fds)
 		if convertErr != nil {
 			return nil, errors.Wrap(convertErr, "unable to convert JSONPB to protobuf")
 		}
 
 		// Since AWS SQS works with strings only, we must convert it to base64
 		if writeOpts.AwsSqs != nil && writeOpts.AwsSqs.Args.QueueName != "" {
-			encoded := base64.StdEncoding.EncodeToString(data)
+			encoded := base64.StdEncoding.EncodeToString(out)
 			return []byte(encoded), nil
 		}
-		return data, nil
+
+		return out, nil
 	}
 
 	return nil, errors.New("unsupported --input-type")
 }
 
 // ConvertJSONPBToProtobuf converts input data from jsonpb -> protobuf -> bytes
-func ConvertJSONPBToProtobuf(data []byte, envelope, payload *dynamic.Message, payloadFieldID int32) ([]byte, error) {
-	if payload != nil {
-		return convertJSONPBToProtobufShallow(data, envelope, payload, payloadFieldID)
-	}
-
-	return convertJSONPBToProtobufDeep(data, envelope, payload)
-}
-
-// convertJSONPBToProtobufDeep converts a JSONPB message to a protobuf message using a deep envelope schema
-func convertJSONPBToProtobufDeep(data []byte, envelope, payload *dynamic.Message) ([]byte, error) {
-	buf := bytes.NewBuffer(data)
-	if err := jsonpb.Unmarshal(buf, envelope); err != nil {
-		return nil, errors.Wrap(err, "unable to unmarshal data into dynamic message")
-	}
-
-	// Now let's encode that into a proper protobuf message
-	pbBytes, err := proto.Marshal(envelope)
+func ConvertJSONPBToProtobuf(data []byte, writeOpts *opts.WriteOptions, fds *dpb.FileDescriptorSet) ([]byte, error) {
+	// TODO: memoize these so we don't have to do this for every message
+	descriptors, err := pb.GetAllMessageDescriptorsInFDS(fds)
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to marshal dynamic protobuf message to bytes")
+		return nil, err
 	}
 
-	return pbBytes, nil
+	protoOpts := writeOpts.EncodeOptions.ProtobufSettings
+
+	envelopeMD, err := pb.FindMessageDescriptorInFDS(fds, protoOpts.ProtobufRootMessage)
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to find envelope message descriptor '%s'", protoOpts.ProtobufRootMessage)
+	}
+
+	mf := dynamic.NewMessageFactoryWithDefaults()
+	resolver := dynamic.AnyResolver(mf, descriptors...)
+	unmarshaler := &jsonpb.Unmarshaler{AnyResolver: resolver}
+
+	envelope := mf.NewDynamicMessage(envelopeMD)
+	if envelope == nil {
+		return nil, errors.New("BUG: Got a nil message from dynamic.NewDynamicMessage")
+	}
+
+	if protoOpts.ProtobufEnvelopeType == encoding.EnvelopeType_ENVELOPE_TYPE_SHALLOW {
+		// Get payload MD
+		payloadMD, err := pb.FindMessageDescriptorInFDS(fds, protoOpts.ShallowEnvelopeMessage)
+		if err != nil {
+			return nil, errors.Wrapf(err, "unable to find payload message descriptor '%s'", protoOpts.ShallowEnvelopeMessage)
+		}
+
+		payload := mf.NewDynamicMessage(payloadMD)
+
+		// Get field name
+		field := envelope.FindFieldDescriptor(protoOpts.ShallowEnvelopeFieldNumber)
+		if field == nil {
+			return nil, fmt.Errorf("unable to find protobuf field '%d' in envelope message", protoOpts.ShallowEnvelopeFieldNumber)
+		}
+
+		return convertJSONPBToProtobufShallow(data, envelope, payload, protoOpts.ShallowEnvelopeFieldNumber)
+	}
+
+	// Unmarshal JSON into protobuf message
+	if err := unmarshaler.Unmarshal(bytes.NewReader(data), envelope); err != nil {
+		return nil, errors.Wrap(err, "unable to unmarshal envelope")
+	}
+
+	// Re-encode to bytes as if it just came in to collectors
+	out, err := proto.Marshal(envelope)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to marshal protobuf message")
+	}
+
+	return out, nil
 }
 
 // convertJSONPBToProtobufShallow converts a JSONPB message to a protobuf message using shallow envelope schemas
@@ -244,7 +259,7 @@ func convertJSONPBToProtobufShallow(data []byte, envelope, payload *dynamic.Mess
 		return nil, errors.Wrap(err, "unable to marshal envelope json")
 	}
 
-	// Payload data is no longer in the envelope JOSN. Unmarshal of the envelope will now succeeed
+	// Payload data is no longer in the envelope JOSN. Unmarshal of the envelope will now succeed
 	if err := jsonpb.Unmarshal(bytes.NewBuffer(envelopeJSONBytes), envelope); err != nil {
 		return nil, errors.Wrap(err, "unable to unmarshal envelope data into dynamic message")
 	}

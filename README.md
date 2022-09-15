@@ -2,7 +2,7 @@
 
 [![Master build status](https://github.com/batchcorp/plumber/workflows/master/badge.svg)](https://github.com/batchcorp/plumber/actions/workflows/master-test.yaml) [![Go Report Card](https://goreportcard.com/badge/github.com/batchcorp/plumber)](https://goreportcard.com/report/github.com/batchcorp/plumber)
 
-plumber is a CLI devtool for inspecting, piping, massaging and redirecting data
+plumber is a CLI devtool for inspecting, piping, messaging and redirecting data
 in message systems like Kafka, RabbitMQ , GCP PubSub and 
 [many more](#supported-messaging-systems). \[1]
 
@@ -12,6 +12,8 @@ The tool enables you to:
 * Write plain or encoded data to any system
 * Route data from one place to another
 * Decode protobuf/avro/thrift/JSON data in real-time
+  * Support for both Deep and Shallow protobuf envelope types
+  * Support for google.protobuf.Any fields
 * Relay data to the [Batch platform](https://batch.sh)
 * Ship change data capture events to [Batch platform](https://batch.sh)
 * [Replay events into a message system on your local network](https://docs.batch.sh/what-are/what-are-destinations/plumber-as-a-destination)
@@ -124,6 +126,7 @@ INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
 * [docs/examples.md](https://github.com/batchcorp/plumber/blob/master/docs/examples.md) for more usage examples
 * [docs/env.md](https://github.com/batchcorp/plumber/blob/master/docs/env.md) for list of supported environment variables
 * [docs/metrics.md](https://github.com/batchcorp/plumber/blob/master/docs/metrics.md) for information on metrics that plumber exposes
+* [docs/server.md](https://github.com/batchcorp/plumber/blob/master/docs/server.md) for examples on running plumber in server mode
 
 ## Getting Help
 
@@ -229,6 +232,8 @@ highly available cluster.
 
 You can read more about "server mode" [here](https://docs.batch.sh/plumber/server-mode).
 
+Server mode examples can be found in [docs/server.md](https://github.com/batchcorp/plumber/blob/master/docs/server.md)
+
 ## Acknowledgments
 
 **Huge** shoutout to [jhump](https://github.com/jhump) and for his excellent
@@ -244,6 +249,7 @@ To push a new plumber release:
 1. Watch the github action
 1. New release should be automatically created under https://github.com/batchcorp/plumber/releases/
 1. Update release to include any relevant info
+1. Update [homebrew](https://github.com/batchcorp/homebrew-public/blob/master/plumber.rb) SHA and version references
 
 ## Contribute
 

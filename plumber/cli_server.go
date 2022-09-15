@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/yamux"
 	"github.com/pkg/errors"
+	"github.com/posthog/posthog-go"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -72,15 +73,16 @@ func (p *Plumber) RunServer() error {
 
 	p.log.Info("plumber server started")
 
-	// Keep after startGRPCServer(). If dProxy is unreachable on start, these will block for a while
-	// and prevent gRPC server from starting.
-	if err := p.relaunchRelays(); err != nil {
-		p.log.Error(errors.Wrap(err, "failed to relaunch relays"))
-	}
+	// Running in a goroutine to prevent blocking of server startup due to possible long connect timeouts
+	go func() {
+		if err := p.relaunchRelays(); err != nil {
+			p.log.Error(errors.Wrap(err, "failed to relaunch relays"))
+		}
 
-	if err := p.relaunchTunnels(); err != nil {
-		p.log.Error(errors.Wrap(err, "failed to relaunch tunnels"))
-	}
+		if err := p.relaunchTunnels(); err != nil {
+			p.log.Error(errors.Wrap(err, "failed to relaunch tunnels"))
+		}
+	}()
 
 	go p.runRemoteControl()
 
@@ -264,7 +266,6 @@ func (p *Plumber) startGRPCServer(listener net.Listener, addr string) error {
 	grpcServer := grpc.NewServer(opts...)
 
 	// Each plumber node needs a unique ID
-	p.PersistentConfig.PlumberID = p.CLIOptions.Server.NodeId
 	p.PersistentConfig.ClusterID = p.CLIOptions.Server.ClusterId
 
 	plumberServer := &server.Server{
@@ -279,6 +280,21 @@ func (p *Plumber) startGRPCServer(listener net.Listener, addr string) error {
 	protos.RegisterPlumberServerServer(grpcServer, plumberServer)
 
 	go p.watchServiceShutdown(grpcServer)
+
+	p.Telemetry.Enqueue(posthog.Capture{
+		Event:      "command_server",
+		DistinctId: p.PersistentConfig.ClusterID,
+		Properties: map[string]interface{}{
+			"cluster_id":             p.CLIOptions.Server.ClusterId,
+			"node_id":                p.CLIOptions.Server.NodeId,
+			"use_tls":                p.CLIOptions.Server.UseTls,
+			"enable_cluster":         p.CLIOptions.Server.EnableCluster,
+			"tls_skip_verify":        p.CLIOptions.Server.TlsSkipVerify,
+			"remote_control_enabled": p.CLIOptions.Server.RemoteControlEnabled,
+		},
+	})
+
+	p.log.Debugf("starting gRPC server on %s", p.CLIOptions.Server.GrpcListenAddress)
 
 	errCh := make(chan error, 1)
 

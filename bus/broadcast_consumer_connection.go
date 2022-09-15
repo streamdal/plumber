@@ -16,7 +16,7 @@ func (b *Bus) doCreateConnection(_ context.Context, msg *Message) error {
 
 	connOpts := &opts.ConnectionOptions{}
 	if err := proto.Unmarshal(msg.Data, connOpts); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into protos.Connection")
+		return errors.Wrap(err, "unable to unmarshal message into opts.ConnectionOptions")
 	}
 
 	// Save connection to in-memory map
@@ -35,7 +35,7 @@ func (b *Bus) doUpdateConnection(_ context.Context, msg *Message) error {
 
 	connOpts := &opts.ConnectionOptions{}
 	if err := proto.Unmarshal(msg.Data, connOpts); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into protos.Connection")
+		return errors.Wrap(err, "unable to unmarshal message into opts.ConnectionOptions")
 	}
 
 	// Update connection in in-memory map
@@ -78,7 +78,7 @@ func (b *Bus) doDeleteConnection(ctx context.Context, msg *Message) error {
 
 	connOpts := &opts.ConnectionOptions{}
 	if err := proto.Unmarshal(msg.Data, connOpts); err != nil {
-		return errors.Wrap(err, "unable to unmarshal message into protos.Connection")
+		return errors.Wrap(err, "unable to unmarshal message into opts.ConnectionOptions")
 	}
 
 	if connOpts.XId == "" {

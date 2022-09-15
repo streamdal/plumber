@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jhump/protoreflect/desc"
+	"github.com/batchcorp/plumber/telemetry"
+	dpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/mcuadros/go-lookup"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -30,10 +31,12 @@ var (
 	ErrMissingPersistentConfig = errors.New("PersistentConfig cannot be nil")
 	ErrMissingKongCtx          = errors.New("KongCtx cannot be nil")
 	ErrMissingActions          = errors.New("Actions cannot be nil")
+	ErrMissingTelemetry        = errors.New("Telemetry cannot be nil")
 )
 
 // Config contains configurable options for instantiating a new Plumber
 type Config struct {
+	Telemetry          telemetry.ITelemetry
 	PersistentConfig   *config.Config
 	Actions            actions.IActions
 	ServiceShutdownCtx context.Context
@@ -49,7 +52,7 @@ type Plumber struct {
 	Bus     bus.IBus
 	RelayCh chan interface{}
 
-	cliMD       map[pb.MDType]*desc.MessageDescriptor
+	cliFDS      *dpb.FileDescriptorSet
 	cliConnOpts *opts.ConnectionOptions
 
 	log *logrus.Entry
@@ -70,15 +73,16 @@ func New(cfg *Config) (*Plumber, error) {
 	// If backend is filled out, we are in CLI-mode, performing an action that
 	// will need a connection and possibly a pb message descriptor.
 	if cfg.CLIOptions.Global.XBackend != "" {
-		mds, err := GenerateMessageDescriptors(cfg.CLIOptions)
+		fds, err := GenerateMessageDescriptors(cfg.CLIOptions)
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to populate protobuf message descriptors")
 		}
 
 		var connCfg *opts.ConnectionOptions
 
-		// TODO: Improve this comment
-		// "manage" requires us to fill out "create" options differently
+		// 'manage' does not utilize connection options (and has a slightly diff
+		// syntax from other CLI actions); due to this, we avoid generating them
+		// altogether.
 		if cfg.CLIOptions.Global.XAction != "manage" {
 			connCfg, err = generateConnectionOptions(cfg.CLIOptions)
 		}
@@ -87,7 +91,7 @@ func New(cfg *Config) (*Plumber, error) {
 			return nil, errors.Wrap(err, "unable to dynamic options config")
 		}
 
-		p.cliMD = mds
+		p.cliFDS = fds
 		p.cliConnOpts = connCfg
 	}
 
@@ -150,8 +154,7 @@ func (p *Plumber) Run() {
 		printer.PrintRelayOptions(p.CLIOptions)
 		err = p.HandleRelayCmd()
 	case "tunnel":
-		logrus.Fatal("tunnel mode not implemented")
-		//err = p.HandleTunnelCmd()
+		err = p.HandleTunnelCmd()
 	case "manage":
 		err = p.HandleManageCmd()
 	default:
@@ -163,84 +166,50 @@ func (p *Plumber) Run() {
 	}
 }
 
-func GenerateMessageDescriptors(cliOpts *opts.CLIOptions) (map[pb.MDType]*desc.MessageDescriptor, error) {
+func GenerateMessageDescriptors(cliOpts *opts.CLIOptions) (*dpb.FileDescriptorSet, error) {
 	if cliOpts.Read != nil && cliOpts.Read.DecodeOptions != nil {
-		return generateMessageDescriptorsRead(cliOpts)
+		return generateFileDescriptorsRead(cliOpts)
 	}
 
 	if cliOpts.Write != nil && cliOpts.Write.EncodeOptions != nil {
-		return generateMessageDescriptorsWrite(cliOpts)
+		return generateFileDescriptorsWrite(cliOpts)
 	}
 
 	return nil, nil
 }
 
-func generateMessageDescriptorsWrite(cliOpts *opts.CLIOptions) (map[pb.MDType]*desc.MessageDescriptor, error) {
+func generateFileDescriptorsWrite(cliOpts *opts.CLIOptions) (*dpb.FileDescriptorSet, error) {
 	if cliOpts.Write.EncodeOptions.EncodeType != encoding.EncodeType_ENCODE_TYPE_JSONPB {
 		return nil, nil
 	}
 
-	descriptors := make(map[pb.MDType]*desc.MessageDescriptor)
-
-	logrus.Debug("attempting to find encoding protobuf descriptors")
-
 	pbSettings := cliOpts.Write.EncodeOptions.ProtobufSettings
+	fdsFile := pbSettings.ProtobufDescriptorSet
 	pbDirs := pbSettings.ProtobufDirs
 	pbRootMessage := pbSettings.ProtobufRootMessage
 
-	if err := validate.ProtobufOptionsForCLI(pbDirs, pbRootMessage); err != nil {
+	if err := validate.ProtobufOptionsForCLI(pbDirs, pbRootMessage, fdsFile); err != nil {
 		return nil, errors.Wrap(err, "unable to validate protobuf settings for encode")
 	}
 
-	envelopeMD, err := pb.FindMessageDescriptor(pbDirs, pbRootMessage)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to find root message descriptor for encode")
-	}
-	descriptors[pb.MDEnvelope] = envelopeMD
-
-	if pbSettings.ProtobufEnvelopeType == encoding.EnvelopeType_ENVELOPE_TYPE_SHALLOW {
-		payloadMD, err := pb.FindMessageDescriptor(pbDirs, pbSettings.ShallowEnvelopeMessage)
-		if err != nil {
-			return nil, errors.Wrap(err, "unable to find shallow envelope payload message descriptor for decode")
-		}
-		descriptors[pb.MDPayload] = payloadMD
-	}
-
-	return descriptors, nil
+	return pb.ProcessDescriptors(pbDirs, fdsFile)
 }
 
-func generateMessageDescriptorsRead(cliOpts *opts.CLIOptions) (map[pb.MDType]*desc.MessageDescriptor, error) {
-	descriptors := make(map[pb.MDType]*desc.MessageDescriptor)
-
+func generateFileDescriptorsRead(cliOpts *opts.CLIOptions) (*dpb.FileDescriptorSet, error) {
 	if cliOpts.Read.DecodeOptions.DecodeType != encoding.DecodeType_DECODE_TYPE_PROTOBUF {
 		return nil, nil
 	}
 
-	logrus.Debug("attempting to find decoding protobuf descriptors")
-
 	pbSettings := cliOpts.Read.DecodeOptions.ProtobufSettings
+	fdsFile := pbSettings.ProtobufDescriptorSet
 	pbDirs := pbSettings.ProtobufDirs
 	pbRootMessage := pbSettings.ProtobufRootMessage
 
-	if err := validate.ProtobufOptionsForCLI(pbDirs, pbRootMessage); err != nil {
-		return nil, errors.Wrap(err, "unable to validate protobuf settings for decode")
+	if err := validate.ProtobufOptionsForCLI(pbDirs, pbRootMessage, fdsFile); err != nil {
+		return nil, errors.Wrap(err, "unable to validate protobuf settings for encode")
 	}
 
-	md, err := pb.FindMessageDescriptor(pbDirs, pbRootMessage)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to find root message descriptor for decode")
-	}
-	descriptors[pb.MDEnvelope] = md
-
-	if pbSettings.ProtobufEnvelopeType == encoding.EnvelopeType_ENVELOPE_TYPE_SHALLOW {
-		payloadMD, err := pb.FindMessageDescriptor(pbDirs, pbSettings.ShallowEnvelopeMessage)
-		if err != nil {
-			return nil, errors.Wrap(err, "unable to find shallow envelope payload message descriptor for decode")
-		}
-		descriptors[pb.MDPayload] = payloadMD
-	}
-
-	return descriptors, nil
+	return pb.ProcessDescriptors(pbDirs, fdsFile)
 }
 
 // validateConfig ensures all correct values for Config are passed
@@ -263,6 +232,12 @@ func validateConfig(cfg *Config) error {
 
 	if cfg.Actions == nil {
 		return ErrMissingActions
+	}
+
+	if cfg.PersistentConfig.EnableTelemetry {
+		if cfg.Telemetry == nil {
+			return ErrMissingTelemetry
+		}
 	}
 
 	return nil

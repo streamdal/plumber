@@ -1,38 +1,49 @@
-// Package config is used for storing and manipulating (server) state in plumber.
+// Package config is used for storing and manipulating the plumber config.
 // There should be, at most, a single instance of the plumber config that is
 // passed around between various components.
+//
+// If running in cluster mode, config will write the config to NATS. If running
+// locally, the config will be saved to ~/.batchsh/plumber.json
 package config
 
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 	"sync"
 
+	"github.com/Masterminds/semver"
+	"github.com/batchcorp/plumber/kv"
+	"github.com/batchcorp/plumber/options"
+	stypes "github.com/batchcorp/plumber/server/types"
 	"github.com/imdario/mergo"
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
-
-	"github.com/batchcorp/plumber/kv"
-	stypes "github.com/batchcorp/plumber/server/types"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 const (
-	ConfigFilename = "config.json"
+	ConfigDir      = ".batchsh"
+	ConfigFilename = "plumber.json"
 	KVConfigBucket = "plumber"
 	KVConfigKey    = "persistent-config"
 )
 
 // Config stores Account IDs and the auth_token cookie
 type Config struct {
-	ClusterID string `json:"-"` // This comes from an environment variable
-	PlumberID string `json:"plumber_id"`
-	Token     string `json:"token"`
-	TeamID    string `json:"team_id"`
-	UserID    string `json:"user_id"`
+	ClusterID       string `json:"-"` // This comes from an environment variable
+	PlumberID       string `json:"plumber_id"`
+	Token           string `json:"token"`
+	TeamID          string `json:"team_id"`
+	UserID          string `json:"user_id"`
+	EnableTelemetry bool   `json:"enable_telemetry"`
+	LastVersion     string `json:"last_version"`
 
 	Connections      map[string]*stypes.Connection `json:"connections"`
 	Relays           map[string]*stypes.Relay      `json:"relays"`
@@ -52,6 +63,16 @@ func New(enableCluster bool, k kv.IKV) (*Config, error) {
 	var cfg *Config
 	var err error
 
+	defer func() {
+		cfg.LastVersion = options.VERSION
+
+		// Old versions of plumber incorrectly defaulted plumber id to plumber1;
+		// everyone should have a unique plumber id
+		if cfg.PlumberID == "plumber1" {
+			cfg.PlumberID = getPlumberID()
+		}
+	}()
+
 	if enableCluster {
 		if k == nil {
 			return nil, errors.New("key value store not initialized - are you running in server mode?")
@@ -65,27 +86,164 @@ func New(enableCluster bool, k kv.IKV) (*Config, error) {
 
 			return nil, errors.Wrap(err, "unable to fetch config from kv")
 		}
-
-		return cfg, nil
 	}
 
 	// Not in cluster mode - attempt to read config from disk
-	if exists(ConfigFilename) {
+	if cfg == nil && exists(ConfigFilename) {
 		cfg, err = fetchConfigFromFile(ConfigFilename)
 		if err != nil {
 			logrus.Errorf("unable to load config: %s", err)
 		}
 	}
 
+	// Cleanup old config file (if exists)
+	if exists("config.json") {
+		if err := remove("config.json"); err != nil {
+			logrus.Warningf("unable to remove old config file: %s", err)
+		}
+	}
+
+	var initialRun bool
+
 	if cfg == nil {
+		initialRun = true
+
 		cfg = newConfig(false, nil)
+	}
+
+	// Should we perform an interactive config?
+	if requireReconfig(initialRun, cfg) {
+		cfg.Configure()
 	}
 
 	return cfg, nil
 }
 
+func requireReconfig(initialRun bool, cfg *Config) bool {
+	// Don't configure if NOT in terminal
+	if !terminal.IsTerminal(int(os.Stderr.Fd())) {
+		logrus.Debugf("detected non-terminal output")
+		return false
+	}
+
+	// Should not ever reach this case but avoid a panic just incase
+	if cfg == nil {
+		logrus.Warningf("bug? cfg is nil in requireReconfig")
+		return false
+	}
+
+	// No reason to ask to reconfigure if we can't figure out old version
+	currentVersion, err := semver.NewVersion(options.VERSION)
+	if err != nil {
+		logrus.Warningf("unable to parse current version: %s", err)
+		return false
+	}
+
+	// Brand new config or config doesn't contain LastVersion yet
+	if initialRun || cfg.LastVersion == "" {
+		return true
+	}
+
+	// We are probably dealing with an old plumber if we can't figure out the
+	// version - reconfigure
+	lastVersion, err := semver.NewVersion(cfg.LastVersion)
+	if err != nil {
+		logrus.Warningf("unable to parse last version: %s", err)
+		return true
+	}
+
+	if currentVersion.Minor() != lastVersion.Minor() {
+		return true
+	}
+
+	// Shouldn't ever hit this
+	return false
+}
+
+func (c *Config) Configure() {
+	// No need to ask about telemetry if it's already enabled
+	if !c.EnableTelemetry {
+		c.askTelemetry()
+	}
+}
+
+func (c *Config) askTelemetry() {
+	telemetryDescription := `If telemetry is enabled, plumber will collect the following anonymous telemetry data:
+
+> General
+	- PlumberID (a unique, randomly generated ID for this plumber instance)
+	- Plumber version
+	- OS and architecture
+	- Plumber mode (server or CLI)
+
+> For CLI
+	- Plumber action (read, write, relay, etc.)
+	- Backend used (kafka, rabbitmq, nats, etc.)
+	- Data format used for read or write (json, protobuf, etc.)
+	- If reading, whether continuous mode is used
+	- If using protobuf, whether file descriptors are used
+
+> For server
+	- Number of connections, relays, tunnels
+	- Server uptime
+	- ClusterID
+	- gRPC methods used (create relay, stop tunnel, etc.)
+
+NOTE: We do NOT collect ANY personally identifiable or confidential information.
+
+You can read this statement here: https://docs.batch.sh/plumber/telemetry
+`
+	fmt.Printf(telemetryDescription + "\n")
+
+	enableTelemetry, err := askYesNo("Do you want to enable telemetry?", "N")
+	if err != nil {
+		c.log.Fatalf("unable to configure plumber: %s", err)
+	}
+
+	if enableTelemetry {
+		fmt.Printf("\nNICE! Thank you for opting in! This will help us improve plumber :)\n\n")
+	}
+
+	c.EnableTelemetry = enableTelemetry
+}
+
+func askYesNo(question, defaultAnswer string) (bool, error) {
+	if defaultAnswer != "" {
+		fmt.Printf(question+" [y/n (default: %s)]: ", defaultAnswer)
+	} else {
+		fmt.Print(question + " [y/n]: ")
+	}
+
+	var answer string
+
+	i, err := fmt.Scan(&answer)
+	if err != nil {
+		return false, fmt.Errorf("unable to read input: %s", err)
+	}
+
+	if i == 0 {
+		if defaultAnswer != "" {
+			answer = defaultAnswer
+		}
+	}
+
+	answer = strings.ToLower(answer)
+
+	if answer == "y" || answer == "yes" {
+		return true, nil
+	}
+
+	if answer == "n" || answer == "no" {
+		return false, nil
+	}
+
+	fmt.Println("invalid input")
+	return askYesNo(question, defaultAnswer)
+}
+
 func newConfig(enableCluster bool, k kv.IKV) *Config {
 	return &Config{
+		PlumberID:        getPlumberID(),
 		Connections:      make(map[string]*stypes.Connection),
 		Relays:           make(map[string]*stypes.Relay),
 		Tunnels:          make(map[string]*stypes.Tunnel),
@@ -99,9 +257,13 @@ func newConfig(enableCluster bool, k kv.IKV) *Config {
 	}
 }
 
+func getPlumberID() string {
+	return uuid.NewV4().String()
+}
+
 // Save is a convenience method of persisting the config to KV store or disk
 func (c *Config) Save() error {
-	data, err := json.Marshal(c)
+	data, err := json.MarshalIndent(c, "", "\t")
 	if err != nil {
 		return errors.Wrap(err, "unable to marshal config to JSON")
 	}
@@ -192,6 +354,20 @@ func exists(fileName string) bool {
 	}
 
 	return true
+}
+
+func remove(fileName string) error {
+	configDir, err := getConfigDir()
+	if err != nil {
+		return err
+	}
+	configPath := path.Join(configDir, fileName)
+
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		return nil
+	}
+
+	return os.Remove(configPath)
 }
 
 // WriteConfig writes a Batch struct as JSON into a config.json file
@@ -288,7 +464,7 @@ func getConfigDir() (string, error) {
 		return "", errors.Wrap(err, "unable to locate user's home directory")
 	}
 
-	return path.Join(homeDir, ".batchsh"), nil
+	return path.Join(homeDir, ConfigDir), nil
 }
 
 // GetRelay returns a relay from the in-memory map
@@ -304,6 +480,9 @@ func (c *Config) GetRelay(relayID string) *stypes.Relay {
 // SetRelay saves a relay to in-memory map
 func (c *Config) SetRelay(relayID string, relay *stypes.Relay) {
 	c.RelaysMutex.Lock()
+	if c.Relays == nil {
+		c.Relays = make(map[string]*stypes.Relay)
+	}
 	c.Relays[relayID] = relay
 	c.RelaysMutex.Unlock()
 }
@@ -354,6 +533,9 @@ func (c *Config) SetTunnel(tunnelID string, tunnel *stypes.Tunnel) {
 	c.TunnelsMutex.Lock()
 	defer c.TunnelsMutex.Unlock()
 
+	if c.Tunnels == nil {
+		c.Tunnels = make(map[string]*stypes.Tunnel)
+	}
 	c.Tunnels[tunnelID] = tunnel
 }
 

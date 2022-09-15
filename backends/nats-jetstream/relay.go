@@ -23,6 +23,7 @@ func (n *NatsJetstream) Relay(ctx context.Context, relayOpts *opts.RelayOptions,
 		return errors.Wrap(err, "failed to get jetstream context")
 	}
 
+	// TODO: This should be a pull subscriber
 	jsCtx.Subscribe(relayOpts.NatsJetstream.Args.Stream, func(msg *nats.Msg) {
 		relayCh <- &types.RelayMessage{
 			Value: msg,

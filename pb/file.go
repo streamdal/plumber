@@ -1,6 +1,7 @@
 package pb
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -8,69 +9,85 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+
+	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
+	dpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jhump/protoreflect/desc"
 	"github.com/jhump/protoreflect/desc/protoparse"
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
 )
 
-// FindMessageDescriptor is a wrapper that will:
-//
-//   1. Recursively find all .proto files in a directory
-//   2. Attempt to read and parse all files as proto FileDescriptors
-//   3. Attempt to find the specified "protobufRootMessage" type in the parsed
-//      FileDescriptors; if found, return the related MessageDescriptor
-//
-// With the found MessageDescriptor, we are able to generate new dynamic
-// messages via dynamic.NewMessage(..).
-func FindMessageDescriptor(protobufDirs []string, protobufRootMessage string) (*desc.MessageDescriptor, error) {
-	files, err := getProtoFiles(protobufDirs)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to get proto files")
-	}
-
-	if len(files) == 0 {
-		return nil, fmt.Errorf("no .proto found in dir(s) '%v'", protobufDirs)
-	}
-
-	fds, err := readFileDescriptorsV1(files)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to read file descriptors")
-	}
-
-	md, err := FindMessageDescriptorInFDS(fds, protobufRootMessage)
-	if err != nil {
-		return nil, fmt.Errorf("unable to find message descriptor for message '%s': %s",
-			protobufRootMessage, err)
-	}
-
-	return md, nil
-}
-
 // DecodeProtobufToJSON is a wrapper for decoding/unmarshalling []byte of
 // protobuf into a dynamic.Message and then marshalling that into JSON.
-func DecodeProtobufToJSON(envelope, payload *dynamic.Message, data []byte, payloadFieldID int32) ([]byte, error) {
-	if err := proto.Unmarshal(data, envelope); err != nil {
+func DecodeProtobufToJSON(readOpts *opts.ReadOptions, fds *dpb.FileDescriptorSet, message []byte) ([]byte, error) {
+	// TODO: memoize these so we don't have to do this for every message
+	descriptors, err := GetAllMessageDescriptorsInFDS(fds)
+	if err != nil {
+		return nil, err
+	}
+
+	mf := dynamic.NewMessageFactoryWithDefaults()
+	resolver := dynamic.AnyResolver(mf, descriptors...)
+	marshaler := &jsonpb.Marshaler{AnyResolver: resolver}
+
+	protoOpts := readOpts.DecodeOptions.GetProtobufSettings()
+	if protoOpts == nil {
+		return nil, errors.New("protobuf settings cannot be nil")
+	}
+
+	envelopeMD, err := FindMessageDescriptorInFDS(fds, protoOpts.ProtobufRootMessage)
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to find envelope message descriptor '%s'", protoOpts.ProtobufRootMessage)
+	}
+
+	// SQS doesn't like binary
+	if readOpts.AwsSqs.Args.QueueName != "" {
+		// Our implementation of 'protobuf-over-sqs' encodes protobuf in b64
+		plain, err := base64.StdEncoding.DecodeString(string(message))
+		if err != nil {
+			return nil, fmt.Errorf("unable to decode base64 to protobuf")
+		}
+		message = plain
+	}
+
+	var payload *dynamic.Message
+	if protoOpts.ProtobufEnvelopeType == encoding.EnvelopeType_ENVELOPE_TYPE_SHALLOW {
+		payloadMD, err := FindMessageDescriptorInFDS(fds, protoOpts.ShallowEnvelopeMessage)
+		if err != nil {
+			return nil, errors.Wrapf(err, "unable to find payload message descriptor '%s'", protoOpts.ShallowEnvelopeMessage)
+		}
+
+		payload = dynamic.NewMessage(payloadMD)
+		if payload == nil {
+			return nil, errors.New("BUG: cannot create dynamic message for shallow envelope payload")
+		}
+	}
+
+	envelope := mf.NewDynamicMessage(envelopeMD)
+	if envelope == nil {
+		return nil, errors.New("BUG: cannot create dynamic message for envelope")
+	}
+
+	if err := proto.Unmarshal(message, envelope); err != nil {
 		return nil, fmt.Errorf("unable to unmarshal protobuf to dynamic message: %s", err)
 	}
 
-	// Deep envelope
+	// Not shallow envelope, short circuit and return JSON of the message
 	if payload == nil {
-		jsonData, err := envelope.MarshalJSONIndent()
+		jsonData, err := envelope.MarshalJSONPB(marshaler)
 		if err != nil {
-			return nil, fmt.Errorf("unable to marshal decoded message to JSON: %s", err)
+			return nil, errors.Wrap(err, "unable to marshal dynamic message into JSON")
 		}
 
 		return jsonData, nil
 	}
 
-	// Shallow envelope, we need to decode the fieldID with the payload message
-	if err := proto.Unmarshal(data, envelope); err != nil {
-		return nil, fmt.Errorf("unable to unmarshal protobuf to dynamic message: %s", err)
-	}
-
-	untypedPayload := envelope.GetFieldByNumber(int(payloadFieldID))
+	// Shallow envelope from here on out
+	untypedPayload := envelope.GetFieldByNumber(int(protoOpts.ShallowEnvelopeFieldNumber))
 
 	payloadData, ok := untypedPayload.([]byte)
 	if !ok {
@@ -82,13 +99,13 @@ func DecodeProtobufToJSON(envelope, payload *dynamic.Message, data []byte, paylo
 		return nil, errors.Wrap(err, "unable to unmarshal shallow envelope payload into dynamic message")
 	}
 
-	payloadFD := envelope.FindFieldDescriptor(payloadFieldID)
+	payloadFD := envelope.FindFieldDescriptor(protoOpts.ShallowEnvelopeFieldNumber)
 	if payloadFD == nil {
-		return nil, fmt.Errorf("unable to find field descriptor for fieldID '%d'", payloadFieldID)
+		return nil, fmt.Errorf("unable to find field descriptor for fieldID '%d'", protoOpts.ShallowEnvelopeFieldNumber)
 	}
 	mapName := payloadFD.GetJSONName()
 
-	out, err := mergePayloadIntoEnvelope(envelope, payload, mapName)
+	out, err := mergePayloadIntoEnvelope(envelope, payload, marshaler, mapName)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +113,7 @@ func DecodeProtobufToJSON(envelope, payload *dynamic.Message, data []byte, paylo
 	return out, nil
 }
 
-func mergePayloadIntoEnvelope(envelope, payload *dynamic.Message, mapName string) ([]byte, error) {
+func mergePayloadIntoEnvelope(envelope, payload *dynamic.Message, marshaler *jsonpb.Marshaler, mapName string) ([]byte, error) {
 	envelopeJSONData, err := envelope.MarshalJSON()
 	if err != nil {
 		err = errors.Wrap(err, "unable to marshal dynamic message into JSON")
@@ -109,7 +126,7 @@ func mergePayloadIntoEnvelope(envelope, payload *dynamic.Message, mapName string
 		return nil, err
 	}
 
-	payloadJSONData, err := payload.MarshalJSON()
+	payloadJSONData, err := payload.MarshalJSONPB(marshaler)
 	if err != nil {
 		err = errors.Wrap(err, "unable to marshal payload message into JSON")
 		return nil, err
@@ -133,11 +150,35 @@ func mergePayloadIntoEnvelope(envelope, payload *dynamic.Message, mapName string
 	return out, nil
 }
 
-func FindMessageDescriptorInFDS(fds []*desc.FileDescriptor, rootMessage string) (*desc.MessageDescriptor, error) {
-	for _, fd := range fds {
-		md := fd.FindMessage(rootMessage)
-		if md != nil {
-			return md, nil
+// GetAllMessageDescriptorsInFDS returns all file descriptors from a set.
+// The slice of descriptors is used for dynamic.AnyResolver to handle google.protobuf.Any typed fields
+func GetAllMessageDescriptorsInFDS(fds *dpb.FileDescriptorSet) ([]*desc.FileDescriptor, error) {
+	allDescriptors := make([]*desc.FileDescriptor, 0)
+
+	descriptors, err := desc.CreateFileDescriptorsFromSet(fds)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create file descriptor set")
+	}
+
+	for _, d := range descriptors {
+		allDescriptors = append(allDescriptors, d)
+	}
+
+	return allDescriptors, nil
+}
+
+func FindMessageDescriptorInFDS(fds *dpb.FileDescriptorSet, messageName string) (*desc.MessageDescriptor, error) {
+	descriptors, err := desc.CreateFileDescriptorsFromSet(fds)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create file descriptor set")
+	}
+
+	for _, d := range descriptors {
+		types := d.GetMessageTypes()
+		for _, md := range types {
+			if md.GetFullyQualifiedName() == messageName {
+				return md, nil
+			}
 		}
 	}
 
@@ -216,4 +257,52 @@ func getProtoFiles(dirs []string) (map[string][]string, error) {
 	}
 
 	return protos, nil
+}
+
+// ProcessDescriptors will return a protobuf file descriptor set that is generated
+// from either a bunch of .proto files in a directory, or directly from a .fds/.protoset file
+func ProcessDescriptors(pbDirs []string, fdsFile string) (*dpb.FileDescriptorSet, error) {
+	if fdsFile != "" {
+		return processDescriptorFile(fdsFile)
+	}
+
+	return processDescriptorDir(pbDirs)
+}
+
+// processDescriptorDir returns a protobuf file descriptor set from .proto files in a directory
+func processDescriptorDir(dirs []string) (*dpb.FileDescriptorSet, error) {
+	files, err := getProtoFiles(dirs)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to get proto files")
+	}
+
+	if len(files) == 0 {
+		return nil, fmt.Errorf("no .proto found in dir(s) '%v'", dirs)
+	}
+
+	fds, err := readFileDescriptorsV1(files)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to read file descriptors")
+	}
+
+	descriptorSet := desc.ToFileDescriptorSet(fds...)
+
+	return descriptorSet, nil
+}
+
+// processDescriptorDir returns a protobuf file descriptor set from a .protoset/.fds file
+func processDescriptorFile(fdsPath string) (*dpb.FileDescriptorSet, error) {
+	fdsBytes, err := ioutil.ReadFile(fdsPath)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to read descriptor set file")
+	}
+
+	// Unmarshal the descriptor file
+	fds := &dpb.FileDescriptorSet{}
+	if err := proto.Unmarshal(fdsBytes, fds); err != nil {
+		return nil, errors.Wrap(err, "unable to unmarshal descriptor file into file descriptor set")
+
+	}
+
+	return fds, nil
 }
