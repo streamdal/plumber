@@ -85,6 +85,9 @@
 | PLUMBER_RELAY_TIMEOUT_SECONDS | Connect timeout | 10 | false |
 | PLUMBER_RELAY_USE_TLS | Enable TLS usage |  | false |
 | PLUMBER_RELAY_KAFKA_INSECURE_TLS | Allow insecure TLS usage |  | false |
+| PLUMBER_RELAY_TLS_CA_CERT | TLS ca cert |  | false |
+| PLUMBER_RELAY_TLS_CLIENT_CERT | TLS client cert|  | false |
+| PLUMBER_RELAY_TLS_CLIENT_KEY | TLS client key |  | false |
 | PLUMBER_RELAY_KAFKA_SASL_TYPE | SASL authentication type (options: none plain scram) | none | false |
 | PLUMBER_RELAY_KAFKA_USERNAME | SASL Username |  | false |
 | PLUMBER_RELAY_KAFKA_PASSWORD | SASL Password. You will be prompted for the password if omitted |  | false |
