@@ -2,22 +2,22 @@ package server
 
 import (
 	"context"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
-	stypes "github.com/batchcorp/plumber/server/types"
 	"io/ioutil"
 	"sync"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/bus/busfakes"
 	"github.com/batchcorp/plumber/config"
+	stypes "github.com/batchcorp/plumber/server/types"
 	"github.com/batchcorp/plumber/validate"
 )
 
