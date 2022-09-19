@@ -27,7 +27,7 @@ func DecodeThrift(dirs []string, structName string, message []byte) ([]byte, err
 		return nil, errors.New("--thrift-dirs cannot be empty")
 	}
 	if structName == "" {
-		return nil, errors.New("--struct-name cannot be empty")
+		return nil, errors.New("--thrift-struct cannot be empty")
 	}
 
 	idlFiles, err := readThriftDirs(dirs)
