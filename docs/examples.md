@@ -17,7 +17,7 @@
        * [MQTT](#mqtt)
        * [Apache Pulsar](#apache-pulsar)
        * [NSQ](#nsq)
-       * [Thrift Decoding](#thrift-decoding)
+       * [Thrift Decoding with IDL files](#thrift-decoding-with-idl-files)
        * [AWS Kinesis](#aws-kinesis)
   * [Publishing](#publishing)
        * [AWS SQS](#aws-sqs-1)
@@ -241,6 +241,8 @@ plumber read nsq --lookupd-address localhost:4161 --topic orders --channel newor
 
 #### Thrift Decoding
 
+> **_NOTE:_** This method is deprecated. See [Thrift Decoding with IDL Files](#thrift-decoding-with-idl-files) for an improved method of reading thrift
+
 Plumber can decode thrift output, and display it as nested JSON. The key is the field's ID, and the
 value is the actual value in the message. Add the `--pretty` flag to colorize output.
 
@@ -256,6 +258,54 @@ plumber read kafka --topics orders --decode-type thrift --pretty
     "3": "2091.99"
   }
 }
+```
+
+#### Thrift Decoding with IDL files
+
+**NEW** Support for decoding with IDL files
+
+Plumber can now use your .thrift IDL files to decode the output with field/enum names
+
+```bash
+$ read kafka --topics thrifttest \
+      --thrift-struct sh.batch.schema.Account \
+      --thrift-dirs ./test-assets/thrift/schema/ \
+      --decode-type thrift \
+      --pretty
+```
+
+```json
+{
+  "emails": [
+    "gopher@golang.com",
+    "gopher2@golang.com"
+  ],
+  "id": 321,
+  "model": {
+    "includedvalue": "value of included struct"
+  },
+  "name": "Mark Gregan",
+  "permissions": [
+    "create",
+    "read",
+    "update",
+    "delete"
+  ],
+  "price": 1.23,
+  "subm": {
+    "value": "submessage value here"
+  },
+  "teams": {
+    "123": "554bf385-ce1f-4deb-9a99-8864c1df52b5"
+  },
+  "testconst": 1234,
+  "type": "VIP",
+  "unionthing": {
+    "thing_int": null,
+    "thing_string": "Daniel"
+  }
+}
+
 ```
 
 #### AWS Kinesis

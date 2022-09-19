@@ -4,14 +4,10 @@ import (
 	"encoding/base64"
 
 	dpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
-	jsoniter "github.com/json-iterator/go"
 	"github.com/pkg/errors"
-	thrifter "github.com/thrift-iterator/go"
-	"github.com/thrift-iterator/go/general"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-
 	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/serializers"
 	"github.com/batchcorp/plumber/util"
@@ -59,7 +55,8 @@ func Decode(readOpts *opts.ReadOptions, fds *dpb.FileDescriptorSet, message []by
 
 	// Thrift
 	if readOpts.DecodeOptions.DecodeType == encoding.DecodeType_DECODE_TYPE_THRIFT {
-		decoded, err := decodeThrift(message)
+		to := readOpts.DecodeOptions.ThriftSettings
+		decoded, err := serializers.DecodeThrift(to.ThriftDirs, to.ThriftStruct, message)
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to decode Thrift message")
 		}
@@ -87,21 +84,4 @@ func Decode(readOpts *opts.ReadOptions, fds *dpb.FileDescriptorSet, message []by
 	}
 
 	return data, nil
-}
-
-// decodeThrift decodes a thrift encoded message
-func decodeThrift(message []byte) ([]byte, error) {
-	var obj general.Struct
-
-	err := thrifter.Unmarshal(message, &obj)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to read thrift message")
-	}
-
-	// jsoniter is needed to marshal map[interface{}]interface{} types
-	js, err := jsoniter.Marshal(obj)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to marshal thrift message to json")
-	}
-	return js, nil
 }
