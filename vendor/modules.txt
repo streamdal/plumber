@@ -147,7 +147,7 @@ github.com/batchcorp/natty
 # github.com/batchcorp/pgoutput v0.3.2
 ## explicit
 github.com/batchcorp/pgoutput
-# github.com/batchcorp/plumber-schemas v0.0.166
+# github.com/batchcorp/plumber-schemas v0.0.168
 ## explicit
 github.com/batchcorp/plumber-schemas/build/go/protos
 github.com/batchcorp/plumber-schemas/build/go/protos/args
@@ -158,6 +158,19 @@ github.com/batchcorp/plumber-schemas/build/go/protos/records
 # github.com/batchcorp/rabbit v0.1.17
 ## explicit
 github.com/batchcorp/rabbit
+# github.com/batchcorp/thrift-iterator v0.0.0-20220918180557-4c4a158fc6e9
+github.com/batchcorp/thrift-iterator
+github.com/batchcorp/thrift-iterator/binding/codegen
+github.com/batchcorp/thrift-iterator/binding/reflection
+github.com/batchcorp/thrift-iterator/general
+github.com/batchcorp/thrift-iterator/protocol
+github.com/batchcorp/thrift-iterator/protocol/binary
+github.com/batchcorp/thrift-iterator/protocol/compact
+github.com/batchcorp/thrift-iterator/raw
+github.com/batchcorp/thrift-iterator/spi
+# github.com/batchcorp/thrifty v0.0.10
+## explicit
+github.com/batchcorp/thrifty
 # github.com/beorn7/perks v1.0.1
 github.com/beorn7/perks/quantile
 # github.com/cespare/xxhash/v2 v2.1.2
@@ -280,7 +293,7 @@ github.com/jhump/protoreflect/internal/codec
 github.com/jmespath/go-jmespath
 # github.com/jpillora/backoff v1.0.0
 github.com/jpillora/backoff
-# github.com/json-iterator/go v1.1.11
+# github.com/json-iterator/go v1.1.12
 ## explicit
 github.com/json-iterator/go
 # github.com/jstemmer/go-junit-report v0.9.1
@@ -343,7 +356,7 @@ github.com/mitchellh/go-homedir
 github.com/mitchellh/mapstructure
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 github.com/modern-go/concurrent
-# github.com/modern-go/reflect2 v1.0.1
+# github.com/modern-go/reflect2 v1.0.2
 github.com/modern-go/reflect2
 # github.com/mtibben/percent v0.2.1
 github.com/mtibben/percent
@@ -397,7 +410,7 @@ github.com/onsi/ginkgo/reporters/stenographer
 github.com/onsi/ginkgo/reporters/stenographer/support/go-colorable
 github.com/onsi/ginkgo/reporters/stenographer/support/go-isatty
 github.com/onsi/ginkgo/types
-# github.com/onsi/gomega v1.20.0
+# github.com/onsi/gomega v1.20.2
 ## explicit
 github.com/onsi/gomega
 github.com/onsi/gomega/format
@@ -491,19 +504,10 @@ github.com/spaolacci/murmur3
 # github.com/streadway/amqp v1.0.0
 ## explicit
 github.com/streadway/amqp
-# github.com/stretchr/testify v1.7.0
+# github.com/stretchr/testify v1.8.0
 github.com/stretchr/testify/assert
 # github.com/thrift-iterator/go v0.0.0-20190402154806-9b5a67519118
 ## explicit
-github.com/thrift-iterator/go
-github.com/thrift-iterator/go/binding/codegen
-github.com/thrift-iterator/go/binding/reflection
-github.com/thrift-iterator/go/general
-github.com/thrift-iterator/go/protocol
-github.com/thrift-iterator/go/protocol/binary
-github.com/thrift-iterator/go/protocol/compact
-github.com/thrift-iterator/go/raw
-github.com/thrift-iterator/go/spi
 # github.com/tidwall/gjson v1.9.3
 ## explicit
 github.com/tidwall/gjson
@@ -600,6 +604,10 @@ go.opencensus.io/trace/propagation
 go.opencensus.io/trace/tracestate
 # go.uber.org/atomic v1.7.0
 go.uber.org/atomic
+# go.uber.org/thriftrw v1.29.2
+go.uber.org/thriftrw/ast
+go.uber.org/thriftrw/idl
+go.uber.org/thriftrw/idl/internal
 # golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce
 ## explicit
 golang.org/x/crypto/ed25519
@@ -612,11 +620,11 @@ golang.org/x/crypto/ssh/terminal
 # golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 golang.org/x/lint
 golang.org/x/lint/golint
-# golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3
+# golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4
 golang.org/x/mod/internal/lazyregexp
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20220526153639-5463443f8c37
+# golang.org/x/net v0.0.0-20220722155237-a158d28d115b
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/html
@@ -637,10 +645,10 @@ golang.org/x/oauth2/google
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+# golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a
+# golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f
 golang.org/x/sys/execabs
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
@@ -669,12 +677,13 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-# golang.org/x/tools v0.1.10
+# golang.org/x/tools v0.1.12
 golang.org/x/tools/cmd/goimports
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/gcexportdata
 golang.org/x/tools/go/internal/gcimporter
 golang.org/x/tools/go/internal/packagesdriver
+golang.org/x/tools/go/internal/pkgbits
 golang.org/x/tools/go/packages
 golang.org/x/tools/go/types/typeutil
 golang.org/x/tools/imports
@@ -689,9 +698,6 @@ golang.org/x/tools/internal/imports
 golang.org/x/tools/internal/packagesinternal
 golang.org/x/tools/internal/typeparams
 golang.org/x/tools/internal/typesinternal
-# golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
-golang.org/x/xerrors
-golang.org/x/xerrors/internal
 # google.golang.org/api v0.29.0
 ## explicit
 google.golang.org/api/internal
@@ -781,7 +787,7 @@ google.golang.org/grpc/serviceconfig
 google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
-# google.golang.org/protobuf v1.28.0
+# google.golang.org/protobuf v1.28.1
 ## explicit
 google.golang.org/protobuf/cmd/protoc-gen-go/internal_gengo
 google.golang.org/protobuf/compiler/protogen

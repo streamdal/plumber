@@ -317,7 +317,7 @@ var _ = Describe("Functional", func() {
 			})
 
 			Context("thrift decoding", func() {
-				XIt("should work", func() {
+				It("should work", func() {
 					// First write the message to Kafka
 					writeCmd := exec.Command(
 						binary,
@@ -349,6 +349,8 @@ var _ = Describe("Functional", func() {
 						"kafka",
 						"--topics", kafkaTopic,
 						"--decode-type", "thrift",
+						"--thrift-struct", "sh.batch.schema.Account",
+						"--thrift-dirs", "test-assets/thrift/schema/",
 					)
 
 					readOutput, err := readCmd.CombinedOutput()
@@ -361,7 +363,8 @@ var _ = Describe("Functional", func() {
 					}
 
 					readGot := string(readOutput)
-					Expect(readGot).To(ContainSubstring(`{"1":"submessage value here"}`))
+					Expect(readGot).To(ContainSubstring(`"name":"Mark Gregan"`))
+
 				})
 			})
 
@@ -2240,7 +2243,7 @@ var _ = Describe("Functional", func() {
 						"create",
 						"relay",
 						"kafka",
-						"--batchsh-grpc-address", "grpc-collector.dev.batch.sh:9000",
+						"--batchsh-grpc-address", "grpc-collector.dev.batch.sh:443",
 						"--connection-id", connId,
 						"--collection-token", testCollectionToken,
 						"--topics", "foo",
@@ -2503,7 +2506,7 @@ var _ = Describe("Functional", func() {
 						"create",
 						"relay",
 						"rabbit",
-						"--batchsh-grpc-address", "grpc-collector.dev.batch.sh:9000",
+						"--batchsh-grpc-address", "grpc-collector.dev.batch.sh:443",
 						"--connection-id", connId,
 						"--collection-token", testCollectionToken,
 						"--exchange-name", exchangeName,

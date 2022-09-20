@@ -15,8 +15,9 @@ require (
 	github.com/batchcorp/kong v0.2.17-batch-fix
 	github.com/batchcorp/natty v0.0.16
 	github.com/batchcorp/pgoutput v0.3.2
-	github.com/batchcorp/plumber-schemas v0.0.166
+	github.com/batchcorp/plumber-schemas v0.0.168
 	github.com/batchcorp/rabbit v0.1.17
+	github.com/batchcorp/thrifty v0.0.10
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/fatih/color v1.12.0 // indirect
@@ -30,7 +31,7 @@ require (
 	github.com/imdario/mergo v0.3.13
 	github.com/jackc/pgx v3.2.0+incompatible
 	github.com/jhump/protoreflect v1.10.1
-	github.com/json-iterator/go v1.1.11
+	github.com/json-iterator/go v1.1.12
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/kataras/tablewriter v0.0.0-20180708051242-e063d29b7c23
 	github.com/kubemq-io/kubemq-go v1.7.2
@@ -47,9 +48,9 @@ require (
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.20.0
+	github.com/onsi/gomega v1.20.2
 	github.com/pkg/errors v0.9.1
-	github.com/posthog/posthog-go v0.0.0-20220817142604-0b0bbf0f9c0f // indirect
+	github.com/posthog/posthog-go v0.0.0-20220817142604-0b0bbf0f9c0f
 	github.com/prometheus/client_golang v1.11.0
 	github.com/rabbitmq/rabbitmq-stream-go-client v1.0.1-rc.2
 	github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d
@@ -68,5 +69,5 @@ require (
 	google.golang.org/api v0.29.0
 	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c // indirect
 	google.golang.org/grpc v1.40.0
-	google.golang.org/protobuf v1.28.0
+	google.golang.org/protobuf v1.28.1
 )
