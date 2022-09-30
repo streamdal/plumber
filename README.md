@@ -255,4 +255,4 @@ To push a new plumber release:
 
 We love contributions! Prior to sending us a PR, open an issue to discuss what
 you intend to work on. When ready to open PR - add good tests and let's get this
-thing merged! For further guidance check out our [contributing guide](https://github.com/batchcorp/CONTRIBUTING.md)
+thing merged! For further guidance check out our [contributing guide](https://github.com/batchcorp/plumber/blob/master/CONTRIBUTING.md).
