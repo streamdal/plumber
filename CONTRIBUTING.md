@@ -31,3 +31,7 @@ When you have a feature request, please open an issue and describe the feature y
 
 `plumber` uses [gingko](https://onsi.github.io/ginkgo/) and [gomega](https://onsi.github.io/gomega/) for testing. We'd prefer tests to be written using these frameworks and suggest
 taking a look at existing tests or the [gingko](https://onsi.github.io/ginkgo/#writing-specs) documentation for more information. We're happy to help if you have any questions.
+
+## Vendoring
+
+We still use `/vendor`! It may have been a bit since you've used it, but if you happen to need to update a dependency, make sure to run `go mod vendor` after updating your code to ensure that any dependencies are updated in the vendor cache as well.
