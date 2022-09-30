@@ -1,3 +1,13 @@
+---
+name: Feature Request
+about: Create a feature request
+title: ''
+labels: ''
+assignees: ''
+
+---
+
+
 **What would you like to see added?**
 
 A clear and concise description of what you would like to see added to `plumber`.
