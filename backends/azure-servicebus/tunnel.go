@@ -3,7 +3,7 @@ package azure_servicebus
 import (
 	"context"
 
-	serviceBus "github.com/Azure/azure-service-bus-go"
+	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -21,25 +21,22 @@ func (a *AzureServiceBus) Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOpt
 
 	llog := logrus.WithField("pkg", "azure/tunnel")
 
-	var queue *serviceBus.Queue
-	var topic *serviceBus.Topic
-	var err error
+	var queueOrTopic string
 
 	if tunnelOpts.AzureServiceBus.Args.Queue != "" {
-		queue, err = a.client.NewQueue(tunnelOpts.AzureServiceBus.Args.Queue)
-		if err != nil {
-			return errors.Wrap(err, "unable to create new azure service bus queue client")
-		}
-
-		defer queue.Close(ctx)
+		queueOrTopic = tunnelOpts.AzureServiceBus.Args.Queue
 	} else {
-		topic, err = a.client.NewTopic(tunnelOpts.AzureServiceBus.Args.Topic)
-		if err != nil {
-			return errors.Wrap(err, "unable to create new azure service bus topic client")
-		}
-
-		defer topic.Close(ctx)
+		queueOrTopic = tunnelOpts.AzureServiceBus.Args.Topic
 	}
+
+	sender, err := a.client.NewSender(queueOrTopic, nil)
+	if err != nil {
+		return errors.Wrap(err, "unable to create new azure service bus queue client")
+	}
+
+	defer func() {
+		_ = sender.Close(ctx)
+	}()
 
 	if err := tunnelSvc.Start(ctx, "Azure Service Bus", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create tunnel")
@@ -51,20 +48,11 @@ func (a *AzureServiceBus) Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOpt
 	for {
 		select {
 		case outbound := <-outboundCh:
-			msg := serviceBus.NewMessage(outbound.Blob)
+			msg := &azservicebus.Message{Body: outbound.Blob}
 
-			if queue != nil {
-				// Publishing to queue
-				if err := queue.Send(ctx, msg); err != nil {
-					llog.Errorf("Unable to replay message: %s", err)
-					break
-				}
-			} else {
-				// Publishing to topic
-				if err := topic.Send(ctx, msg); err != nil {
-					llog.Errorf("Unable to replay message: %s", err)
-					break
-				}
+			if err := sender.SendMessage(ctx, msg, nil); err != nil {
+				llog.Errorf("Unable to replay message: %s", err)
+				break
 			}
 
 			llog.Debugf("Replayed message to Azure Service Bus for replay '%s'", outbound.ReplayId)
@@ -73,8 +61,6 @@ func (a *AzureServiceBus) Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOpt
 			return nil
 		}
 	}
-
-	return nil
 }
 
 func validateTunnelOptions(tunnelOpts *opts.TunnelOptions) error {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	servicebus "github.com/Azure/azure-service-bus-go"
+	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
@@ -19,41 +19,28 @@ func (a *AzureServiceBus) Write(ctx context.Context, writeOpts *opts.WriteOption
 		return errors.Wrap(err, "invalid write options")
 	}
 
+	var queueOrTopic string
+
 	if writeOpts.AzureServiceBus.Args.Queue != "" {
-		queue, err := a.client.NewQueue(writeOpts.AzureServiceBus.Args.Queue)
-		if err != nil {
-			return errors.Wrap(err, "unable to create new azure service bus queue client")
-		}
-
-		defer queue.Close(ctx)
-
-		for _, msg := range messages {
-			msg := servicebus.NewMessage([]byte(msg.Input))
-			if err := queue.Send(ctx, msg); err != nil {
-				errorCh <- &records.ErrorRecord{
-					Error:               fmt.Sprintf("unable to publish message to azure service bus queue: %s", err),
-					OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
-				}
-			}
-		}
-
-		return nil
-
+		queueOrTopic = writeOpts.AzureServiceBus.Args.Queue
+	} else {
+		queueOrTopic = writeOpts.AzureServiceBus.Args.Topic
 	}
 
-	// Topic
-	topic, err := a.client.NewTopic(writeOpts.AzureServiceBus.Args.Topic)
+	sender, err := a.client.NewSender(queueOrTopic, nil)
 	if err != nil {
-		return errors.Wrap(err, "unable to create new azure service bus topic client")
+		return errors.Wrap(err, "unable to create new azure service bus sender client")
 	}
 
-	defer topic.Close(ctx)
+	defer func() {
+		_ = sender.Close(ctx)
+	}()
 
-	for _, msg := range messages {
-		msg := servicebus.NewMessage([]byte(msg.Input))
-		if err := topic.Send(ctx, msg); err != nil {
+	for i := range messages {
+		msg := &azservicebus.Message{Body: []byte(messages[i].Input)}
+		if err := sender.SendMessage(ctx, msg, nil); err != nil {
 			errorCh <- &records.ErrorRecord{
-				Error:               fmt.Sprintf("unable to publish message to azure service bus topic: %s", err),
+				Error:               fmt.Sprintf("unable to publish message to azure service bus queue/topic: %s", err),
 				OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
 			}
 		}
