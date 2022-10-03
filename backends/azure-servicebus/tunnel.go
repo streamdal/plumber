@@ -31,14 +31,14 @@ func (a *AzureServiceBus) Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOpt
 
 	sender, err := a.client.NewSender(queueOrTopic, nil)
 	if err != nil {
-		return errors.Wrap(err, "unable to create new azure service bus queue client")
+		return errors.Wrap(err, "unable to create new azure service bus sender client")
 	}
 
 	defer func() {
 		_ = sender.Close(ctx)
 	}()
 
-	if err := tunnelSvc.Start(ctx, "Azure Service Bus", errorCh); err != nil {
+	if err = tunnelSvc.Start(ctx, "Azure Service Bus", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create tunnel")
 	}
 
@@ -50,7 +50,7 @@ func (a *AzureServiceBus) Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOpt
 		case outbound := <-outboundCh:
 			msg := &azservicebus.Message{Body: outbound.Blob}
 
-			if err := sender.SendMessage(ctx, msg, nil); err != nil {
+			if err = sender.SendMessage(ctx, msg, nil); err != nil {
 				llog.Errorf("Unable to replay message: %s", err)
 				break
 			}

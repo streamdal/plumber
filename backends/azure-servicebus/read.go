@@ -22,15 +22,48 @@ func (a *AzureServiceBus) Read(ctx context.Context, readOpts *opts.ReadOptions, 
 
 	a.log.Info("Listening for message(s) ...")
 
+	var handler messageHandlerFunc = func(ctx context.Context, receiver *azservicebus.Receiver, msg *azservicebus.ReceivedMessage) error {
+		serializedMsg, err := json.Marshal(msg)
+		if err != nil {
+			return errors.Wrap(err, "unable to serialize message to JSON")
+		}
+
+		resultsChan <- &records.ReadRecord{
+			MessageId:           uuid.NewV4().String(),
+			Num:                 util.DerefInt64(msg.SequenceNumber),
+			ReceivedAtUnixTsUtc: time.Now().UTC().Unix(),
+			Payload:             msg.Body,
+			XRaw:                serializedMsg,
+			Record: &records.ReadRecord_AzureServiceBus{
+				AzureServiceBus: &records.AzureServiceBus{
+					ContentType:   util.DerefString(msg.ContentType),
+					CorrelationId: util.DerefString(msg.CorrelationID),
+					Value:         msg.Body,
+					DeliveryCount: msg.DeliveryCount,
+					SessionId:     util.DerefString(msg.SessionID),
+					//GroupSequence:    util.DerefUint32(msg.GroupSequence),
+					Id: msg.MessageID,
+					//Label:            msg.Label,
+					ReplyTo: util.DerefString(msg.ReplyTo),
+					//ReplyToGroupId:   msg.ReplyToGroupID,
+					To:               util.DerefString(msg.To),
+					Ttl:              int64(msg.TimeToLive.Seconds()),
+					LockToken:        string(msg.LockToken[:]),
+					SystemProperties: makeSystemProperties(msg),
+					UserProperties:   util.MapInterfaceToString(msg.ApplicationProperties),
+					//Format:           msg.Format,
+				},
+			},
+		}
+
+		return receiver.CompleteMessage(ctx, msg, nil)
+	}
+
 	if readOpts.AzureServiceBus.Args.Queue != "" {
-		return a.readQueue(ctx, resultsChan, readOpts)
+		return a.readQueue(ctx, handler, readOpts)
 	}
 
-	if readOpts.AzureServiceBus.Args.Topic != "" {
-		return a.readTopic(ctx, resultsChan, readOpts)
-	}
-
-	return nil
+	return a.readTopic(ctx, handler, readOpts)
 }
 
 func makeSystemProperties(p *azservicebus.ReceivedMessage) *records.AzureSystemProperties {
@@ -53,7 +86,7 @@ func makeSystemProperties(p *azservicebus.ReceivedMessage) *records.AzureSystemP
 }
 
 // readQueue reads messages from an ASB queue
-func (a *AzureServiceBus) readQueue(ctx context.Context, resultsChan chan *records.ReadRecord, readOpts *opts.ReadOptions) error {
+func (a *AzureServiceBus) readQueue(ctx context.Context, handler messageHandlerFunc, readOpts *opts.ReadOptions) error {
 	receiver, err := a.client.NewReceiverForQueue(readOpts.AzureServiceBus.Args.Queue, nil)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new azure service bus queue client")
@@ -70,7 +103,7 @@ func (a *AzureServiceBus) readQueue(ctx context.Context, resultsChan chan *recor
 		}
 
 		for i := range messages {
-			if err = a.handleMessage(ctx, resultsChan, receiver, messages[i]); err != nil {
+			if err = handler(ctx, receiver, messages[i]); err != nil {
 				return err
 			}
 
@@ -84,7 +117,7 @@ func (a *AzureServiceBus) readQueue(ctx context.Context, resultsChan chan *recor
 }
 
 // readTopic reads messages from an ASB topic using the given subscription name
-func (a *AzureServiceBus) readTopic(ctx context.Context, resultsChan chan *records.ReadRecord, readOpts *opts.ReadOptions) error {
+func (a *AzureServiceBus) readTopic(ctx context.Context, handler messageHandlerFunc, readOpts *opts.ReadOptions) error {
 	receiver, err := a.client.NewReceiverForSubscription(readOpts.AzureServiceBus.Args.Topic, readOpts.AzureServiceBus.Args.SubscriptionName, nil)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new azure service bus subscription client")
@@ -101,7 +134,7 @@ func (a *AzureServiceBus) readTopic(ctx context.Context, resultsChan chan *recor
 		}
 
 		for i := range messages {
-			if err = a.handleMessage(ctx, resultsChan, receiver, messages[i]); err != nil {
+			if err = handler(ctx, receiver, messages[i]); err != nil {
 				return err
 			}
 
@@ -112,43 +145,6 @@ func (a *AzureServiceBus) readTopic(ctx context.Context, resultsChan chan *recor
 	}
 
 	return nil
-}
-
-func (a *AzureServiceBus) handleMessage(ctx context.Context, resultsChan chan *records.ReadRecord, receiver *azservicebus.Receiver, msg *azservicebus.ReceivedMessage) error {
-	serializedMsg, err := json.Marshal(msg)
-	if err != nil {
-		return errors.Wrap(err, "unable to serialize message to JSON")
-	}
-
-	resultsChan <- &records.ReadRecord{
-		MessageId:           uuid.NewV4().String(),
-		Num:                 util.DerefInt64(msg.SequenceNumber),
-		ReceivedAtUnixTsUtc: time.Now().UTC().Unix(),
-		Payload:             msg.Body,
-		XRaw:                serializedMsg,
-		Record: &records.ReadRecord_AzureServiceBus{
-			AzureServiceBus: &records.AzureServiceBus{
-				ContentType:   util.DerefString(msg.ContentType),
-				CorrelationId: util.DerefString(msg.CorrelationID),
-				Value:         msg.Body,
-				DeliveryCount: msg.DeliveryCount,
-				SessionId:     util.DerefString(msg.SessionID),
-				//GroupSequence:    util.DerefUint32(msg.GroupSequence),
-				Id: msg.MessageID,
-				//Label:            msg.Label,
-				ReplyTo: util.DerefString(msg.ReplyTo),
-				//ReplyToGroupId:   msg.ReplyToGroupID,
-				To:               util.DerefString(msg.To),
-				Ttl:              int64(msg.TimeToLive.Seconds()),
-				LockToken:        string(msg.LockToken[:]),
-				SystemProperties: makeSystemProperties(msg),
-				UserProperties:   util.MapInterfaceToString(msg.ApplicationProperties),
-				//Format:           msg.Format,
-			},
-		},
-	}
-
-	return receiver.CompleteMessage(ctx, msg, nil)
 }
 
 func validateReadOptions(readOpts *opts.ReadOptions) error {

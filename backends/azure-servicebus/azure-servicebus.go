@@ -21,6 +21,8 @@ var (
 	ErrQueueAndTopic = errors.New("only one topic or queue can be specified")
 )
 
+type messageHandlerFunc func(ctx context.Context, receiver *azservicebus.Receiver, msg *azservicebus.ReceivedMessage) error
+
 type AzureServiceBus struct {
 	connOpts *opts.ConnectionOptions
 	connArgs *args.AzureServiceBusConn

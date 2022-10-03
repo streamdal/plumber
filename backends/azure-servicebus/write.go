@@ -38,7 +38,7 @@ func (a *AzureServiceBus) Write(ctx context.Context, writeOpts *opts.WriteOption
 
 	for i := range messages {
 		msg := &azservicebus.Message{Body: []byte(messages[i].Input)}
-		if err := sender.SendMessage(ctx, msg, nil); err != nil {
+		if err = sender.SendMessage(ctx, msg, nil); err != nil {
 			errorCh <- &records.ErrorRecord{
 				Error:               fmt.Sprintf("unable to publish message to azure service bus queue/topic: %s", err),
 				OccurredAtUnixTsUtc: time.Now().UTC().Unix(),
