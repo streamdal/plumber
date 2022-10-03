@@ -22,7 +22,11 @@ func (a *AzureServiceBus) Read(ctx context.Context, readOpts *opts.ReadOptions, 
 
 	a.log.Info("Listening for message(s) ...")
 
+	var count int64
+
 	var handler messageHandlerFunc = func(ctx context.Context, receiver *azservicebus.Receiver, msg *azservicebus.ReceivedMessage) error {
+		count++
+
 		serializedMsg, err := json.Marshal(msg)
 		if err != nil {
 			return errors.Wrap(err, "unable to serialize message to JSON")
@@ -30,7 +34,7 @@ func (a *AzureServiceBus) Read(ctx context.Context, readOpts *opts.ReadOptions, 
 
 		resultsChan <- &records.ReadRecord{
 			MessageId:           uuid.NewV4().String(),
-			Num:                 util.DerefInt64(msg.SequenceNumber),
+			Num:                 count,
 			ReceivedAtUnixTsUtc: time.Now().UTC().Unix(),
 			Payload:             msg.Body,
 			XRaw:                serializedMsg,
@@ -97,19 +101,12 @@ func (a *AzureServiceBus) readQueue(ctx context.Context, handler messageHandlerF
 	}()
 
 	for {
-		messages, err := receiver.ReceiveMessages(ctx, 1, nil)
-		if err != nil {
+		if err := a.handleMessages(ctx, receiver, handler); err != nil {
 			return err
 		}
 
-		for i := range messages {
-			if err = handler(ctx, receiver, messages[i]); err != nil {
-				return err
-			}
-
-			if !readOpts.Continuous {
-				return nil
-			}
+		if !readOpts.Continuous {
+			return nil
 		}
 	}
 
@@ -128,19 +125,27 @@ func (a *AzureServiceBus) readTopic(ctx context.Context, handler messageHandlerF
 	}()
 
 	for {
-		messages, err := receiver.ReceiveMessages(ctx, 1, nil)
-		if err != nil {
+		if err := a.handleMessages(ctx, receiver, handler); err != nil {
 			return err
 		}
 
-		for i := range messages {
-			if err = handler(ctx, receiver, messages[i]); err != nil {
-				return err
-			}
+		if !readOpts.Continuous {
+			return nil
+		}
+	}
 
-			if !readOpts.Continuous {
-				return nil
-			}
+	return nil
+}
+
+func (a *AzureServiceBus) handleMessages(ctx context.Context, receiver *azservicebus.Receiver, handler messageHandlerFunc) error {
+	messages, err := receiver.ReceiveMessages(ctx, 1, nil)
+	if err != nil {
+		return err
+	}
+
+	for i := range messages {
+		if err = handler(ctx, receiver, messages[i]); err != nil {
+			return err
 		}
 	}
 

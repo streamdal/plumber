@@ -65,15 +65,8 @@ func (a *AzureServiceBus) relayQueue(ctx context.Context, handler messageHandler
 	}()
 
 	for {
-		messages, err := receiver.ReceiveMessages(ctx, 1, nil)
-		if err != nil {
-			return a.handleReceiverError(err)
-		}
-
-		for i := range messages {
-			if err = handler(ctx, receiver, messages[i]); err != nil {
-				return err
-			}
+		if err := a.handleRelayMessages(ctx, receiver, handler); err != nil {
+			return err
 		}
 	}
 
@@ -92,30 +85,34 @@ func (a *AzureServiceBus) relayTopic(ctx context.Context, handler messageHandler
 	}()
 
 	for {
-		messages, err := receiver.ReceiveMessages(ctx, 1, nil)
-		if err != nil {
-			return a.handleReceiverError(err)
-		}
-
-		for i := range messages {
-			if err = handler(ctx, receiver, messages[i]); err != nil {
-				return err
-			}
+		if err := a.handleRelayMessages(ctx, receiver, handler); err != nil {
+			return err
 		}
 	}
 
 	return nil
 }
 
-func (a *AzureServiceBus) handleReceiverError(err error) error {
-	if err == context.Canceled {
-		a.log.Debug("Received shutdown signal, exiting relayer")
-		return nil
+func (a *AzureServiceBus) handleRelayMessages(ctx context.Context, receiver *azservicebus.Receiver, handler messageHandlerFunc) error {
+	messages, err := receiver.ReceiveMessages(ctx, 1, nil)
+	if err != nil {
+		if err == context.Canceled {
+			a.log.Debug("Received shutdown signal, exiting relayer")
+			return nil
+		}
+
+		prometheus.IncrPromCounter("plumber_read_errors", 1)
+
+		return err
 	}
 
-	prometheus.IncrPromCounter("plumber_read_errors", 1)
+	for i := range messages {
+		if err = handler(ctx, receiver, messages[i]); err != nil {
+			return err
+		}
+	}
 
-	return err
+	return nil
 }
 
 func validateRelayOpts(relayOpts *opts.RelayOptions) error {
