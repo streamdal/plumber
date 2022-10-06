@@ -2,16 +2,20 @@ package kafka
 
 import (
 	"context"
-
-	"github.com/batchcorp/plumber/validate"
+	"encoding/base64"
 
 	"github.com/pkg/errors"
+	"github.com/segmentio/kafka-go"
 	skafka "github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
 
+	"github.com/batchcorp/collector-schemas/build/go/protos/events"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
 	"github.com/batchcorp/plumber/tunnel"
+	"github.com/batchcorp/plumber/util"
+	"github.com/batchcorp/plumber/validate"
 )
 
 // Tunnels starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages
@@ -42,11 +46,18 @@ MAIN:
 	for {
 		select {
 		case outbound := <-outboundCh:
+			headers := make([]kafka.Header, 0)
+
+			if len(outbound.Metadata) > 0 {
+				headers = k.generateKafkaHeaders(outbound)
+			}
+
 			for _, topic := range opts.Kafka.Args.Topics {
 				if err := writer.WriteMessages(ctx, skafka.Message{
-					Topic: topic,
-					Key:   []byte(opts.Kafka.Args.Key),
-					Value: outbound.Blob,
+					Topic:   topic,
+					Key:     []byte(opts.Kafka.Args.Key),
+					Value:   outbound.Blob,
+					Headers: headers,
 				}); err != nil {
 					llog.Errorf("Unable to replay message: %s", err)
 					break MAIN
@@ -62,6 +73,28 @@ MAIN:
 	k.log.Debug("tunnel exiting")
 
 	return nil
+}
+
+func (k *Kafka) generateKafkaHeaders(o *events.Outbound) []kafka.Header {
+	headers := make([]kafka.Header, 0)
+
+	for mdKey, mdVal := range o.Metadata {
+		var value []byte
+		var err error
+		if util.IsBase64(mdVal) {
+			value, err = base64.StdEncoding.DecodeString(mdVal)
+			if err != nil {
+				k.log.Errorf("Unable to decode header '%s' with value '%s' for replay '%s'", mdKey, mdVal, o.ReplayId)
+				continue
+			}
+		} else {
+			value = []byte(mdVal)
+		}
+
+		headers = append(headers, kafka.Header{Key: mdKey, Value: value})
+	}
+
+	return headers
 }
 
 func validateTunnelOptions(tunnelOpts *opts.TunnelOptions) error {

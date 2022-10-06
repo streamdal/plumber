@@ -2,7 +2,10 @@ package util
 
 import (
 	"crypto/tls"
+	"encoding/base64"
 	"io/ioutil"
+	"math/rand"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -62,6 +65,31 @@ var _ = Describe("Utility Package", func() {
 			tlsConfig, err := GenerateTLSConfig(tlsCaCert, tlsClientCert, tlsClientKey, tlsSkipVerify, tls.NoClientCert)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(len(tlsConfig.Certificates)).To(Equal(1))
+		})
+	})
+
+	Context("IsBase64", func() {
+		It("returns correct value", func() {
+			// Some static cases
+			cases := map[string]bool{
+				"aGVsbG8gd29ybGQ=": true,
+				"sample string":    false,
+				"a":                false,
+				"1234":             false,
+			}
+
+			// Ten thousand base64 encoded random bytes
+			for i := 0; i < 10000; i++ {
+				randBytes := make([]byte, 32)
+				rand.Seed(time.Now().UnixNano())
+				rand.Read(randBytes)
+				randString := base64.StdEncoding.EncodeToString(randBytes)
+				cases[randString] = true
+			}
+
+			for v, want := range cases {
+				Expect(IsBase64(v)).To(Equal(want))
+			}
 		})
 	})
 })
