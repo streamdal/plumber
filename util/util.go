@@ -5,11 +5,13 @@ import (
 	"compress/gzip"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -296,4 +298,28 @@ func GenerateNATSAuthNKey(nkeyPath string) ([]nats.Option, error) {
 
 	return append(opts, nats.Nkey(pubKey, sigCB)), nil
 
+}
+
+// IsBase64 determines if a string is base64 encoded or not
+// We store bus headers in map[string]string and binary headers get encoded as base64
+// In order to replay headers properly, we need
+func IsBase64(v string) bool {
+	decoded, err := base64.StdEncoding.DecodeString(v)
+	if err != nil {
+		return false
+	}
+
+	// Definitely not base64
+	if base64.StdEncoding.EncodeToString(decoded) != v {
+		return false
+	}
+
+	// Might be base64, some numbers will pass DecodeString() 🤦: https://go.dev/play/p/vlDi7CLw2qu
+	num, err := strconv.Atoi(v)
+	if err == nil && fmt.Sprintf("%d", num) == v {
+		// Input is a number, return false
+		return false
+	}
+
+	return true
 }
