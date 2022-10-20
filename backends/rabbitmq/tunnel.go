@@ -29,6 +29,8 @@ func (r *RabbitMQ) Tunnel(ctx context.Context, opts *opts.TunnelOptions, tunnelS
 		r.client = producer
 	}
 
+	defer r.client.Close()
+
 	if err := tunnelSvc.Start(ctx, "RabbitMQ", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create tunnel")
 	}

@@ -27,6 +27,8 @@ func (r *RabbitMQ) Write(ctx context.Context, writeOpts *opts.WriteOptions, erro
 		r.client = producer
 	}
 
+	defer r.client.Close()
+
 	rk := writeOpts.Rabbit.Args.RoutingKey
 
 	for _, msg := range messages {

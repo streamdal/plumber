@@ -31,6 +31,8 @@ func (r *RabbitMQ) Read(ctx context.Context, readOpts *opts.ReadOptions, results
 		r.client = consumer
 	}
 
+	defer r.client.Close()
+
 	errCh := make(chan *rabbit.ConsumeError)
 	ctx, cancel := context.WithCancel(ctx)
 

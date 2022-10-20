@@ -19,7 +19,7 @@ func (b *Bus) doCreateRelay(ctx context.Context, msg *Message) error {
 	}
 
 	if err := validate.RelayOptionsForServer(relayOptions); err != nil {
-		return errors.Wrap(err, "relay option vailidation failed")
+		return errors.Wrap(err, "relay option validation failed")
 	}
 
 	if _, err := b.config.Actions.CreateRelay(ctx, relayOptions); err != nil {
