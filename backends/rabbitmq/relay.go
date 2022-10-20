@@ -31,6 +31,8 @@ func (r *RabbitMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, rela
 		r.client = consumer
 	}
 
+	defer r.client.Close()
+
 	errCh := make(chan *rabbit.ConsumeError)
 
 	go r.client.Consume(ctx, errCh, func(msg amqp.Delivery) error {
