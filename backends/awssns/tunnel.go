@@ -50,8 +50,6 @@ func (a *AWSSNS) Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOptions, tun
 			return nil
 		}
 	}
-
-	return nil
 }
 
 func validateTunnelOptions(tunnelOpts *opts.TunnelOptions) error {

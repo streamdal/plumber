@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sns"
+	"github.com/batchcorp/plumber/validate"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -22,6 +23,35 @@ var _ = Describe("AWS SNS Backend", func() {
 	defer GinkgoRecover()
 
 	Context("validateWriteOptions", func() {
+		It("Returns error on nil write options", func() {
+			err := validateWriteOptions(nil)
+
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(Equal(validate.ErrEmptyWriteOpts))
+		})
+
+		It("Returns error on empty backend group", func() {
+			writeOpts := &opts.WriteOptions{}
+
+			err := validateWriteOptions(writeOpts)
+
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(Equal(validate.ErrEmptyBackendGroup))
+		})
+
+		It("Returns error on empty backend args", func() {
+			writeOpts := &opts.WriteOptions{
+				AwsSns: &opts.WriteGroupAWSSNSOptions{
+					Args: nil,
+				},
+			}
+
+			err := validateWriteOptions(writeOpts)
+
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(Equal(validate.ErrEmptyBackendArgs))
+		})
+
 		It("Returns error on missing --topic flag", func() {
 			writeOpts := &opts.WriteOptions{
 				AwsSns: &opts.WriteGroupAWSSNSOptions{
@@ -68,6 +98,26 @@ var _ = Describe("AWS SNS Backend", func() {
 	})
 
 	Context("Write", func() {
+		It("Returns error on validating write options", func() {
+			fakeSNS := &snsfakes.FakeSNSAPI{}
+			connOpts := &opts.ConnectionOptions{
+				Conn: &opts.ConnectionOptions_AwsSns{
+					AwsSns: &args.AWSSNSConn{},
+				},
+			}
+
+			a := &AWSSNS{
+				connOpts: connOpts,
+				Service:  fakeSNS,
+				log:      logrus.NewEntry(&logrus.Logger{Out: ioutil.Discard}),
+			}
+
+			err := a.Write(context.Background(), nil, nil, nil)
+
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("unable to validate write options: write options cannot be nil"))
+		})
+
 		It("Returns error on failure to publish", func() {
 			expectedErr := errors.New("fake error")
 			fakeSNS := &snsfakes.FakeSNSAPI{}
