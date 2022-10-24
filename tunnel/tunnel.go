@@ -345,15 +345,15 @@ func (d *Client) handleReplayEvent(resp *events.Tunnel) error {
 
 	switch event.Type {
 	case events.ReplayEvent_CREATE_REPLAY:
-		llog.Debug("Replay starting")
+		llog.Infof("Replay '%s' starting", resp.ReplayId)
 	case events.ReplayEvent_PAUSE_REPLAY:
-		llog.Info("Replay paused")
+		llog.Infof("Replay '%s' paused", resp.ReplayId)
 	case events.ReplayEvent_RESUME_REPLAY:
-		llog.Info("Replay resuming")
+		llog.Infof("Replay '%s' resuming", resp.ReplayId)
 	case events.ReplayEvent_ABORT_REPLAY:
-		llog.Error("Replay aborted")
+		llog.Errorf("Replay '%s' aborted", resp.ReplayId)
 	case events.ReplayEvent_FINISH_REPLAY:
-		llog.Info("Replay finished!")
+		llog.Infof("Replay '%s' finished!", resp.ReplayId)
 	}
 
 	return nil
