@@ -3,6 +3,7 @@ package batch
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -10,12 +11,17 @@ import (
 
 // ReplayCollection is used to unmarshal the JSON results of a list replays API call
 type ReplayCollection struct {
-	Name string `db:"collection_name" json:"name"`
+	Name string `json:"name"`
 }
 
 // ReplayDestination is used to unmarshal the JSON results of a list replays API call
 type ReplayDestination struct {
-	Name string `db:"destination_name" json:"name"`
+	Name string `json:"name"`
+}
+
+// ReplayStage is used to unmarshal the JSON results of a list replays API call
+type ReplayStage struct {
+	Name string `json:"name"`
 }
 
 // Replay is used to unmarshal the JSON results of a list replays API call
@@ -29,6 +35,7 @@ type Replay struct {
 	Status             string `header:"Status" json:"status"`
 	*ReplayDestination `json:"destination"`
 	*ReplayCollection  `json:"collection"`
+	*ReplayStage       `json:"stage"`
 }
 
 // ReplayOutput is used for displaying replays as a table
@@ -37,7 +44,7 @@ type ReplayOutput struct {
 	ID          string `header:"Replay ID" json:"id"`
 	Type        string `header:"Type" json:"type"`
 	Query       string `header:"Query" json:"query"`
-	Collection  string `header:"Collection Name"`
+	Source      string `header:"Source"`
 	Destination string `header:"Destination Name"`
 	Paused      bool   `header:"Is Paused" json:"paused"`
 	Status      string `header:"Status" json:"status"`
@@ -65,7 +72,7 @@ func (b *Batch) ListReplays() error {
 func (b *Batch) listReplays() ([]ReplayOutput, error) {
 	res, _, err := b.Get("/v1/replay", nil)
 	if err != nil {
-		return nil, errReplayListFailed
+		return nil, errors.Wrap(err, errReplayListFailed.Error())
 	}
 
 	replays := make([]*Replay, 0)
@@ -85,17 +92,27 @@ func (b *Batch) listReplays() ([]ReplayOutput, error) {
 			continue
 		}
 
-		output = append(output, ReplayOutput{
+		row := ReplayOutput{
 			ID:          r.ID,
 			Name:        r.Name,
-			Type:        r.Type,
+			Type:        strings.Title(r.Type),
 			Query:       r.Query,
-			Collection:  r.ReplayCollection.Name,
 			Destination: r.ReplayDestination.Name,
 			Paused:      r.Paused,
-			Status:      r.Status,
-		})
+			Status:      strings.Title(r.Status),
+		}
+
+		if r.ReplayCollection != nil {
+			row.Source = fmt.Sprintf("Collection - %s", r.ReplayCollection.Name)
+		} else if r.ReplayStage != nil {
+			row.Source = fmt.Sprintf("Dead Letter Stage - %s", r.ReplayStage.Name)
+		}
+
+		output = append(output, row)
+
 	}
+
+	fmt.Printf("%#v\n", output)
 
 	return output, nil
 }

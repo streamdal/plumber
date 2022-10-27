@@ -10,7 +10,6 @@ type SchemaOutput struct {
 	Name     string `header:"Name" json:"name"`
 	ID       string `header:"Schema ID" json:"id"`
 	Type     string `header:"Type" json:"type"`
-	RootType string `header:"Protobuf Root Type" json:"root_type"`
 	Archived bool   `header:"Is Archived" json:"archived"`
 }
 
