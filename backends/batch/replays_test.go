@@ -27,11 +27,11 @@ var _ = Describe("Replays", func() {
 			Expect(len(output)).To(Equal(0))
 		})
 
-		It("lists replays", func() {
+		It("lists replays with collection source", func() {
 			apiResponse := `[{
 			  "id": "44da12e6-6dfd-4f11-a952-6863958acf05",
 			  "name": "Test Replay",
-			  "type": "kafka",
+			  "type": "single",
 			  "query": "*",
 			  "paused": false,
 			  "collection": {"name": "Test Collection"},
@@ -45,10 +45,35 @@ var _ = Describe("Replays", func() {
 			Expect(len(output)).To(Equal(1))
 			Expect(output[0].ID).To(Equal("44da12e6-6dfd-4f11-a952-6863958acf05"))
 			Expect(output[0].Name).To(Equal("Test Replay"))
-			Expect(output[0].Type).To(Equal("kafka"))
+			Expect(output[0].Type).To(Equal("Single"))
 			Expect(output[0].Query).To(Equal("*"))
 			Expect(output[0].Paused).To(BeFalse())
-			Expect(output[0].Collection).To(Equal("Test Collection"))
+			Expect(output[0].Source).To(Equal("Collection - Test Collection"))
+			Expect(output[0].Destination).To(Equal("Test Destination"))
+		})
+
+		It("lists replays with dead letter stage source", func() {
+			apiResponse := `[{
+			  "id": "44da12e6-6dfd-4f11-a952-6863958acf05",
+			  "name": "Test Replay",
+			  "type": "single",
+			  "query": "*",
+			  "paused": false,
+			  "stage": {"name": "Test Stage"},
+			  "destination": {"name": "Test Destination"}
+			}]`
+
+			b := BatchWithMockResponse(200, apiResponse)
+
+			output, err := b.listReplays()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(len(output)).To(Equal(1))
+			Expect(output[0].ID).To(Equal("44da12e6-6dfd-4f11-a952-6863958acf05"))
+			Expect(output[0].Name).To(Equal("Test Replay"))
+			Expect(output[0].Type).To(Equal("Single"))
+			Expect(output[0].Query).To(Equal("*"))
+			Expect(output[0].Paused).To(BeFalse())
+			Expect(output[0].Source).To(Equal("Dead Letter Stage - Test Stage"))
 			Expect(output[0].Destination).To(Equal("Test Destination"))
 		})
 	})
