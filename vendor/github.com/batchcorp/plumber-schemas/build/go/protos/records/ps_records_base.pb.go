@@ -451,8 +451,8 @@ type WriteRecord struct {
 	// to contain the encoded payload _before_ passing it to the backend.
 	// @gotags: kong:"help='Input string',name=input,xor=input,default"
 	Input string `protobuf:"bytes,1,opt,name=input,proto3" json:"input,omitempty" kong:"help='Input string',name=input,xor=input,default"`
-	// @gotags: kong:"help='Optional metadata a backend may use (key1:value,key2:value,etc)',name=input-metadata"
-	InputMetadata        map[string]string `protobuf:"bytes,2,rep,name=input_metadata,json=inputMetadata,proto3" json:"input_metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3" kong:"help='Optional metadata a backend may use (key1:value,key2:value,etc)',name=input-metadata"`
+	// @gotags: kong:"help='Optional metadata a backend may use (key1=value,key2=value,etc)',name=input-metadata"
+	InputMetadata        map[string]string `protobuf:"bytes,2,rep,name=input_metadata,json=inputMetadata,proto3" json:"input_metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3" kong:"help='Optional metadata a backend may use (key1=value,key2=value,etc)',name=input-metadata"`
 	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
 	XXX_unrecognized     []byte            `json:"-"`
 	XXX_sizecache        int32             `json:"-"`

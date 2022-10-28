@@ -40,7 +40,6 @@ var _ = Describe("Batch", func() {
 			Expect(output[0].ID).To(Equal("44da12e6-6dfd-4f11-a952-6863958acf05"))
 			Expect(output[0].Name).To(Equal("Test Schema"))
 			Expect(output[0].Type).To(Equal("json"))
-			Expect(output[0].RootType).To(Equal(""))
 			Expect(output[0].Archived).To(BeFalse())
 		})
 	})

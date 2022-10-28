@@ -185,10 +185,14 @@ func (b *Batch) CreateCollection() error {
 
 	// Create collection
 	p := map[string]interface{}{
-		"schema_id":   b.Opts.Batch.Create.Collection.SchemaId,
-		"name":        b.Opts.Batch.Create.Collection.Name,
-		"notes":       b.Opts.Batch.Create.Collection.Notes,
-		"datalake_id": datalakeID,
+		"schema_id":             b.Opts.Batch.Create.Collection.SchemaId,
+		"name":                  b.Opts.Batch.Create.Collection.Name,
+		"notes":                 b.Opts.Batch.Create.Collection.Notes,
+		"datalake_id":           datalakeID,
+		"envelope_type":         b.Opts.Batch.Create.Collection.EnvelopeType,
+		"envelope_root_message": b.Opts.Batch.Create.Collection.EnvelopeRootMessage,
+		"payload_field_id":      b.Opts.Batch.Create.Collection.PayloadFieldId,
+		"payload_root_message":  b.Opts.Batch.Create.Collection.PayloadFieldMessage,
 	}
 
 	res, code, err := b.Post("/v1/collection", p)
