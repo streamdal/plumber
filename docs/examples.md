@@ -210,7 +210,7 @@ plumber read redis-streams --address="localhost:6379" --streams="new-orders"
 ##### GCP Pub/Sub
 
 ```bash
-plumber read gcp-pubsub --project-id=PROJECT_ID --sub-id=SUBSCRIPTION
+plumber read gcp-pubsub --project-id=PROJECT_ID --subscription-id=SUBSCRIPTION
 ```
 
 ##### MQTT
