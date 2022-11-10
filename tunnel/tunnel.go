@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
+	"os"
 	"time"
 
 	"github.com/pkg/errors"
@@ -290,6 +291,8 @@ func (d *Client) handleResponse(_ context.Context, resp *events.Tunnel) error {
 		return d.handleOutboundMessage(resp)
 	case events.Tunnel_REPLAY_EVENT:
 		return d.handleReplayEvent(resp)
+	case events.Tunnel_TUNNEL_EVENT:
+		return d.handleTunnelEvent(resp)
 	case events.Tunnel_UNSET:
 		// Noop used by dproxy to keep connection open
 		return nil
@@ -338,7 +341,7 @@ func (d *Client) handleOutboundMessage(resp *events.Tunnel) error {
 	return nil
 }
 
-// handleOutboundMessage handles a REPLAY_MESSAGE payload from a Tunnel protobuf message
+// handleReplayEvent handles a REPLAY_MESSAGE payload from a Tunnel protobuf message
 func (d *Client) handleReplayEvent(resp *events.Tunnel) error {
 	llog := d.log.WithField("replay_id", resp.ReplayId)
 	event := resp.GetReplayMessage()
@@ -354,6 +357,18 @@ func (d *Client) handleReplayEvent(resp *events.Tunnel) error {
 		llog.Errorf("Replay '%s' aborted", resp.ReplayId)
 	case events.ReplayEvent_FINISH_REPLAY:
 		llog.Infof("Replay '%s' finished!", resp.ReplayId)
+	}
+
+	return nil
+}
+
+func (d *Client) handleTunnelEvent(resp *events.Tunnel) error {
+	event := resp.GetTunnelEvent()
+
+	switch event.Type {
+	case events.TunnelEvent_FORCE_DISCONNECT:
+		d.log.Error("Tunnel deleted, plumber exiting")
+		os.Exit(0)
 	}
 
 	return nil
