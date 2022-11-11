@@ -7,7 +7,9 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+
 	"github.com/batchcorp/plumber/backends"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/prometheus"
 	"github.com/batchcorp/plumber/server/types"
 	"github.com/batchcorp/plumber/tunnel"
@@ -42,6 +44,8 @@ func (a *Actions) CreateTunnel(reqCtx context.Context, tunnelOpts *opts.TunnelOp
 		Backend:          be,
 		Options:          tunnelOpts,
 		PlumberClusterID: a.cfg.PersistentConfig.ClusterID,
+		PlumberID:        a.cfg.PersistentConfig.PlumberID,
+		PlumberVersion:   options.VERSION,
 	}
 
 	// If a tunnel is in the process of starting and it gets deleted, we must have
@@ -218,7 +222,11 @@ func (a *Actions) DeleteTunnel(ctx context.Context, tunnelID string) error {
 	// Update metrics
 	prometheus.DecrPromGauge(prometheus.PlumberTunnels)
 
-	t, err := tunnel.New(tunnelCfg.Options, a.cfg.PersistentConfig.ClusterID)
+	t, err := tunnel.New(tunnelCfg.Options, &tunnel.Config{
+		PlumberVersion:   options.VERSION,
+		PlumberClusterID: a.cfg.PersistentConfig.ClusterID,
+		PlumberID:        a.cfg.PersistentConfig.PlumberID,
+	})
 	if err != nil {
 		// Don't pass the error up stack here since the user can't act on it
 		a.log.Error(errors.Wrap(err, "unable to delete tunnel in dProxy service"))

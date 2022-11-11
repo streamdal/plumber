@@ -60,13 +60,21 @@ type Client struct {
 	Token             string
 	log               *logrus.Entry
 	PlumberClusterID  string
+	PlumberID         string
+	PlumberVersion    string
 	OutboundMessageCh chan *events.Outbound
 
 	Options *opts.TunnelOptions
 }
 
+type Config struct {
+	PlumberVersion   string
+	PlumberClusterID string
+	PlumberID        string
+}
+
 // New validates CLI options and returns a new Client struct
-func New(opts *opts.TunnelOptions, plumberClusterID string) (ITunnel, error) {
+func New(opts *opts.TunnelOptions, cfg *Config) (ITunnel, error) {
 	if err := validateTunnelOptions(opts); err != nil {
 		return nil, errors.Wrap(err, "unable to validate tunnel options")
 	}
@@ -86,7 +94,9 @@ func New(opts *opts.TunnelOptions, plumberClusterID string) (ITunnel, error) {
 		Token:             opts.ApiToken,
 		OutboundMessageCh: make(chan *events.Outbound, 1),
 		Options:           opts,
-		PlumberClusterID:  plumberClusterID,
+		PlumberClusterID:  cfg.PlumberClusterID,
+		PlumberID:         cfg.PlumberID,
+		PlumberVersion:    cfg.PlumberVersion,
 		log:               logrus.WithField("pkg", "tunnel"),
 	}
 
@@ -270,6 +280,8 @@ func (d *Client) connect(ctx context.Context, bus string) (services.DProxy_Conne
 				PlumberClusterId: d.PlumberClusterID,
 				Name:             d.Options.Name,
 				TunnelId:         d.Options.XTunnelId,
+				PlumberVersion:   "",
+				PlumberId:        d.PlumberID,
 			},
 		},
 	}

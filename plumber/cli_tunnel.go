@@ -1,11 +1,14 @@
 package plumber
 
 import (
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/backends"
-	"github.com/batchcorp/plumber/tunnel"
 	"github.com/pkg/errors"
 	"github.com/posthog/posthog-go"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
+	"github.com/batchcorp/plumber/backends"
+	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/tunnel"
 )
 
 // HandleTunnelCmd handles tunnel destination mode commands
@@ -25,7 +28,11 @@ func (p *Plumber) HandleTunnelCmd() error {
 
 	// Run up tunnel
 	// Plumber cluster ID purposefully left blank here so the destination becomes ephemeral
-	tunnelSvc, err := tunnel.New(p.CLIOptions.Tunnel, "")
+	tunnelSvc, err := tunnel.New(p.CLIOptions.Tunnel, &tunnel.Config{
+		PlumberVersion:   options.VERSION,
+		PlumberClusterID: p.PersistentConfig.ClusterID,
+		PlumberID:        p.PersistentConfig.PlumberID,
+	})
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}

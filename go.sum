@@ -123,6 +123,8 @@ github.com/batchcorp/collector-schemas v0.0.18 h1:AeNPSeoanJYZb4M9kVv8LzJRUQOb9y
 github.com/batchcorp/collector-schemas v0.0.18/go.mod h1:qSVA1UcrApoLX2mS4cj+aH+IvNwcSfm50vWa0UAN/WU=
 github.com/batchcorp/collector-schemas v0.0.19 h1:0t/A6emEQiF51WhuUqCkv3M0AkLJ8RxXxQ3MawB84Mg=
 github.com/batchcorp/collector-schemas v0.0.19/go.mod h1:qSVA1UcrApoLX2mS4cj+aH+IvNwcSfm50vWa0UAN/WU=
+github.com/batchcorp/collector-schemas v0.0.20 h1:0xk5QXeyfTtIqSGoxxbJb6CzSiT5mIZp6s3ZxvAO5BE=
+github.com/batchcorp/collector-schemas v0.0.20/go.mod h1:qSVA1UcrApoLX2mS4cj+aH+IvNwcSfm50vWa0UAN/WU=
 github.com/batchcorp/kong v0.2.17-batch-fix h1:H6sOfst2NcL2T/EZVNLukG7YRimJDHg9DhbRq7gE+KQ=
 github.com/batchcorp/kong v0.2.17-batch-fix/go.mod h1:ut4pbR4KLPWzKHbpEHZspWpRqjFr4UiPY3D2xf2tzf8=
 github.com/batchcorp/natty v0.0.16 h1:RN20W2rlA1GtPzY3ioYIjqY0UlIFnH9Rs2c1nWajxcU=

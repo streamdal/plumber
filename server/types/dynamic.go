@@ -14,6 +14,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/batchcorp/plumber/backends"
+	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/tunnel"
 	"github.com/batchcorp/plumber/util"
 )
@@ -27,6 +28,8 @@ type Tunnel struct {
 	Options          *opts.TunnelOptions `json:"config"`
 	TunnelService    tunnel.ITunnel
 	PlumberClusterID string `json:"-"`
+	PlumberID        string `json:"-"`
+	PlumberVersion   string `json:"-"`
 
 	log *logrus.Entry
 }
@@ -42,7 +45,11 @@ func (d *Tunnel) StartTunnel(delay time.Duration) error {
 	d.log.Debugf("Plumber cluster ID: %s", d.PlumberClusterID)
 
 	// Create a new tunnel
-	tunnelSvc, err := tunnel.New(d.Options, d.PlumberClusterID)
+	tunnelSvc, err := tunnel.New(d.Options, &tunnel.Config{
+		PlumberVersion:   options.VERSION,
+		PlumberClusterID: d.PlumberClusterID,
+		PlumberID:        d.PlumberID,
+	})
 	if err != nil {
 		return errors.Wrap(err, "could not establish connection to Batch")
 	}
