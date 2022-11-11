@@ -218,18 +218,11 @@ func askYesNo(question, defaultAnswer string) (bool, error) {
 	var answer string
 
 	i, err := fmt.Scanln(&answer)
-	if err != nil {
-		// Scan() doesn't return on only newline and empty string
-		// Scanln() will error on only new line and empty string
-		if strings.Contains(err.Error(), "expected newline") {
-			if defaultAnswer != "" {
-				answer = defaultAnswer
-			} else {
-				return false, fmt.Errorf("unable to read input: %s", err)
-			}
-		} else {
-			return false, fmt.Errorf("unable to read input: %s", err)
-		}
+
+	// Scan() doesn't return on only newline and empty string
+	// Scanln() will error on only new line and empty string
+	if err != nil && !strings.Contains(err.Error(), "unexpected newline") {
+		return false, fmt.Errorf("unable to read input: %s", err)
 	}
 
 	if i == 0 {
