@@ -17,15 +17,16 @@ import (
 	"sync"
 
 	"github.com/Masterminds/semver"
-	"github.com/batchcorp/plumber/kv"
-	"github.com/batchcorp/plumber/options"
-	stypes "github.com/batchcorp/plumber/server/types"
 	"github.com/imdario/mergo"
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh/terminal"
+
+	"github.com/batchcorp/plumber/kv"
+	"github.com/batchcorp/plumber/options"
+	stypes "github.com/batchcorp/plumber/server/types"
 )
 
 const (
@@ -216,8 +217,11 @@ func askYesNo(question, defaultAnswer string) (bool, error) {
 
 	var answer string
 
-	i, err := fmt.Scan(&answer)
-	if err != nil {
+	i, err := fmt.Scanln(&answer)
+
+	// Scan() doesn't return on only newline and empty string
+	// Scanln() will error on only new line and empty string
+	if err != nil && !strings.Contains(err.Error(), "unexpected newline") {
 		return false, fmt.Errorf("unable to read input: %s", err)
 	}
 
