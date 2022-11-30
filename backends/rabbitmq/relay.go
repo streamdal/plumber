@@ -2,6 +2,7 @@ package rabbitmq
 
 import (
 	"context"
+	"regexp"
 	"time"
 
 	"github.com/pkg/errors"
@@ -21,6 +22,17 @@ func (r *RabbitMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, rela
 		return errors.Wrap(err, "unable to verify options")
 	}
 
+	var excludeRegexp *regexp.Regexp
+
+	if relayOpts.Rabbit.Args.ExcludeBindingKeyRegex != "" {
+		var err error
+
+		excludeRegexp, err = regexp.Compile(relayOpts.Rabbit.Args.ExcludeBindingKeyRegex)
+		if err != nil {
+			return errors.Wrap(err, "unable to compile exclude regex")
+		}
+	}
+
 	// Check if nil to allow unit testing injection into struct
 	if r.client == nil {
 		consumer, err := r.newRabbitForRead(relayOpts.Rabbit.Args)
@@ -36,6 +48,12 @@ func (r *RabbitMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, rela
 	errCh := make(chan *rabbit.ConsumeError)
 
 	go r.client.Consume(ctx, errCh, func(msg amqp.Delivery) error {
+		if excludeRegexp != nil && excludeRegexp.Match([]byte(msg.RoutingKey)) {
+			r.log.Debugf("consumed message for routing key '%s' matches filter '%s' - skipping",
+				msg.RoutingKey, relayOpts.Rabbit.Args.ExcludeBindingKeyRegex)
+
+			return nil
+		}
 
 		if msg.Body == nil {
 			// Ignore empty messages

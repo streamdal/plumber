@@ -228,6 +228,7 @@
 | PLUMBER_RELAY_RABBIT_AUTOACK | Automatically acknowledge receipt of read/received messages | true | false |
 | PLUMBER_RELAY_CONSUMER_TAG | How to identify the consumer to RabbitMQ | plumber | false |
 | PLUMBER_RELAY_RABBIT_QUEUE_AUTO_DELETE | Whether to auto-delete the queue after plumber has disconnected | true | false |
+| PLUMBER_RELAY_RABBIT_BINDING_KEY_EXCLUDE_REGEX | Exclude messages with routing key matching regex |  | false |
 
 ### Redis PubSub
 

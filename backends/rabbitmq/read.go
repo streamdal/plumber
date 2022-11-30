@@ -25,10 +25,10 @@ func (r *RabbitMQ) Read(ctx context.Context, readOpts *opts.ReadOptions, results
 
 	var excludeRegexp *regexp.Regexp
 
-	if readOpts.Rabbit.Args.ExcludeRoutingKeyRegex != "" {
+	if readOpts.Rabbit.Args.ExcludeBindingKeyRegex != "" {
 		var err error
 
-		excludeRegexp, err = regexp.Compile(readOpts.Rabbit.Args.ExcludeRoutingKeyRegex)
+		excludeRegexp, err = regexp.Compile(readOpts.Rabbit.Args.ExcludeBindingKeyRegex)
 		if err != nil {
 			return errors.Wrap(err, "unable to compile exclude regex")
 		}
@@ -55,7 +55,7 @@ func (r *RabbitMQ) Read(ctx context.Context, readOpts *opts.ReadOptions, results
 	go r.client.Consume(ctx, errCh, func(msg amqp.Delivery) error {
 		if excludeRegexp != nil && excludeRegexp.Match([]byte(msg.RoutingKey)) {
 			r.log.Debugf("consumed message for routing key '%s' matches filter '%s' - skipping",
-				msg.RoutingKey, readOpts.Rabbit.Args.ExcludeRoutingKeyRegex)
+				msg.RoutingKey, readOpts.Rabbit.Args.ExcludeBindingKeyRegex)
 
 			return nil
 		}
