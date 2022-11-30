@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/batchcorp/plumber/validate"
@@ -20,6 +21,17 @@ import (
 func (r *RabbitMQ) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan chan *records.ReadRecord, errorChan chan *records.ErrorRecord) error {
 	if err := validateReadOptions(readOpts); err != nil {
 		return errors.Wrap(err, "unable to validate read config")
+	}
+
+	var excludeRegexp *regexp.Regexp
+
+	if readOpts.Rabbit.Args.ExcludeBindingKeyRegex != "" {
+		var err error
+
+		excludeRegexp, err = regexp.Compile(readOpts.Rabbit.Args.ExcludeBindingKeyRegex)
+		if err != nil {
+			return errors.Wrap(err, "unable to compile exclude regex")
+		}
 	}
 
 	// Check if nil to allow unit testing injection into struct
@@ -41,6 +53,13 @@ func (r *RabbitMQ) Read(ctx context.Context, readOpts *opts.ReadOptions, results
 	r.log.Info("Listening for messages...")
 
 	go r.client.Consume(ctx, errCh, func(msg amqp.Delivery) error {
+		if excludeRegexp != nil && excludeRegexp.Match([]byte(msg.RoutingKey)) {
+			r.log.Debugf("consumed message for routing key '%s' matches filter '%s' - skipping",
+				msg.RoutingKey, readOpts.Rabbit.Args.ExcludeBindingKeyRegex)
+
+			return nil
+		}
+
 		count++
 
 		serializedMsg, err := json.Marshal(msg)
