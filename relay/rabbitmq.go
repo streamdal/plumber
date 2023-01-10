@@ -72,6 +72,7 @@ func (r *Relay) convertMessagesToAMQPSinkRecords(messages []interface{}) ([]*rec
 			AppId:           relayMessage.Value.AppId,
 			ReplyTo:         relayMessage.Value.ReplyTo,
 			CorrelationId:   relayMessage.Value.CorrelationId,
+			DeadLetter:      relayMessage.Options.DeadLetter,
 		})
 	}
 
