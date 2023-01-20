@@ -43,9 +43,10 @@ func (r *Relay) convertMessagesToNATSRecords(messages []interface{}) ([]*records
 		}
 
 		sinkRecords = append(sinkRecords, &records.NATSRecord{
-			Subject:   relayMessage.Value.Subject,
-			Value:     relayMessage.Value.Data,
-			Timestamp: time.Now().UTC().UnixNano(),
+			Subject:         relayMessage.Value.Subject,
+			Value:           relayMessage.Value.Data,
+			Timestamp:       time.Now().UTC().UnixNano(),
+			ForceDeadLetter: r.DeadLetter,
 		})
 	}
 

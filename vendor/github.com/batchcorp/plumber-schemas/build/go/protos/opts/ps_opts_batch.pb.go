@@ -73,8 +73,8 @@ func (BatchReplayType) EnumDescriptor() ([]byte, []int) {
 type BatchOptions struct {
 	// @gotags: kong:"help='How to output results (options: table json)',default=table,type=pbenum,pbenum_lowercase"
 	OutputType BatchOutputType `protobuf:"varint,1,opt,name=output_type,json=outputType,proto3,enum=protos.opts.BatchOutputType" json:"output_type,omitempty" kong:"help='How to output results (options: table json)',default=table,type=pbenum,pbenum_lowercase"`
-	// @gotags: kong:"help='Alternative URL to use for Batch API',default='https://api.batch.sh'"
-	ApiUrl string `protobuf:"bytes,2,opt,name=api_url,json=apiUrl,proto3" json:"api_url,omitempty" kong:"help='Alternative URL to use for Batch API',default='https://api.batch.sh'"`
+	// @gotags: kong:"help='Alternative URL to use for Batch API',default='https://api.streamdal.com'"
+	ApiUrl string `protobuf:"bytes,2,opt,name=api_url,json=apiUrl,proto3" json:"api_url,omitempty" kong:"help='Alternative URL to use for Batch API',default='https://api.streamdal.com'"`
 	// @gotags: kong:"cmd,help='Login to the Batch platform'"
 	Login *BatchLoginOptions `protobuf:"bytes,3,opt,name=login,proto3" json:"login,omitempty" kong:"cmd,help='Login to the Batch platform'"`
 	// @gotags: kong:"cmd,help='Login to Batch'"

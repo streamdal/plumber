@@ -71,6 +71,7 @@ func (r *Relay) convertMessagesToGCPRecords(messages []interface{}) ([]*records.
 			PublishTime:     relayMessage.Value.PublishTime.UnixNano(),
 			DeliveryAttempt: derefIntToInt32(relayMessage.Value.DeliveryAttempt),
 			OrderingKey:     relayMessage.Value.OrderingKey,
+			ForceDeadLetter: r.DeadLetter,
 		})
 	}
 

@@ -65,9 +65,10 @@ func (r *Relay) convertMessagesToMongoRecords(messages []interface{}) ([]*record
 		}
 
 		sinkRecords = append(sinkRecords, &records.GenericRecord{
-			Source:    hostname,
-			Body:      []byte(relayMessage.Value.String()),
-			Timestamp: time.Now().UTC().UnixNano(),
+			Source:          hostname,
+			Body:            []byte(relayMessage.Value.String()),
+			Timestamp:       time.Now().UTC().UnixNano(),
+			ForceDeadLetter: r.DeadLetter,
 		})
 	}
 

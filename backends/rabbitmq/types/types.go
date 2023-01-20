@@ -9,6 +9,4 @@ type RelayMessage struct {
 	Options *RelayMessageOptions
 }
 
-type RelayMessageOptions struct {
-	DeadLetter bool
-}
+type RelayMessageOptions struct{}

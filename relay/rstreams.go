@@ -81,11 +81,12 @@ func (r *Relay) convertMessagesToRedisStreamsSinkRecords(messages []interface{})
 
 		// Create a sink record
 		sinkRecords = append(sinkRecords, &records.RedisStreamsRecord{
-			Id:        relayMessage.ID,
-			Key:       relayMessage.Key,
-			Value:     string(relayMessage.Value),
-			Stream:    relayMessage.Stream,
-			Timestamp: time.Now().UTC().UnixNano(),
+			Id:              relayMessage.ID,
+			Key:             relayMessage.Key,
+			Value:           string(relayMessage.Value),
+			Stream:          relayMessage.Stream,
+			Timestamp:       time.Now().UTC().UnixNano(),
+			ForceDeadLetter: r.DeadLetter,
 		})
 	}
 

@@ -127,10 +127,10 @@ type CLIOptions struct {
 	Read *ReadOptions `protobuf:"bytes,2,opt,name=read,proto3" json:"read,omitempty" kong:"cmd,help='Read message(s) from messaging system'"`
 	// @gotags: kong:"cmd,help='Write message(s) to messaging system'"
 	Write *WriteOptions `protobuf:"bytes,3,opt,name=write,proto3" json:"write,omitempty" kong:"cmd,help='Write message(s) to messaging system'"`
-	// @gotags: kong:"cmd,help='Relay message(s) from messaging system to Batch'"
-	Relay *RelayOptions `protobuf:"bytes,4,opt,name=relay,proto3" json:"relay,omitempty" kong:"cmd,help='Relay message(s) from messaging system to Batch'"`
-	// @gotags: kong:"cmd,help='Use plumber as a destination tunnel in Batch.sh'"
-	Tunnel *TunnelOptions `protobuf:"bytes,5,opt,name=tunnel,proto3" json:"tunnel,omitempty" kong:"cmd,help='Use plumber as a destination tunnel in Batch.sh'"`
+	// @gotags: kong:"cmd,help='Relay message(s) from messaging system to Streamdal'"
+	Relay *RelayOptions `protobuf:"bytes,4,opt,name=relay,proto3" json:"relay,omitempty" kong:"cmd,help='Relay message(s) from messaging system to Streamdal'"`
+	// @gotags: kong:"cmd,help='Use plumber as a destination tunnel in Streamdal'"
+	Tunnel *TunnelOptions `protobuf:"bytes,5,opt,name=tunnel,proto3" json:"tunnel,omitempty" kong:"cmd,help='Use plumber as a destination tunnel in Streamdal'"`
 	// @gotags: kong:"cmd,help='Control Batch resources via the public API'"
 	Batch *BatchOptions `protobuf:"bytes,6,opt,name=batch,proto3" json:"batch,omitempty" kong:"cmd,help='Control Batch resources via the public API'"`
 	// @gotags: kong:"cmd,help='Run plumber in server mode'"

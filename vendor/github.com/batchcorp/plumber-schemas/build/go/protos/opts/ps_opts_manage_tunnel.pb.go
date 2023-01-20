@@ -70,8 +70,8 @@ type CreateTunnelOptions struct {
 	Name string `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty" kong:"help='Name for the tunnel (auto-generated if left empty)'"`
 	// @gotags: kong:"help='Notes associated with the tunnel'"
 	Notes string `protobuf:"bytes,5,opt,name=notes,proto3" json:"notes,omitempty" kong:"help='Notes associated with the tunnel'"`
-	// @gotags: kong:"help='Tunnel API address',default='dproxy.batch.sh:443'"
-	XTunnelAddress string `protobuf:"bytes,6,opt,name=_tunnel_address,json=TunnelAddress,proto3" json:"_tunnel_address,omitempty" kong:"help='Tunnel API address',default='dproxy.batch.sh:443'"`
+	// @gotags: kong:"help='Tunnel API address',default='dproxy.streamdal.com:443'"
+	XTunnelAddress string `protobuf:"bytes,6,opt,name=_tunnel_address,json=TunnelAddress,proto3" json:"_tunnel_address,omitempty" kong:"help='Tunnel API address',default='dproxy.streamdal.com:443'"`
 	// @gotags: kong:"help='Tunnel API initial connection timeout',default=5"
 	XTunnelTimeoutSeconds uint32 `protobuf:"varint,7,opt,name=_tunnel_timeout_seconds,json=TunnelTimeoutSeconds,proto3" json:"_tunnel_timeout_seconds,omitempty" kong:"help='Tunnel API initial connection timeout',default=5"`
 	// @gotags: kong:"help='Use gRPC insecure mode when talking to Batch Tunnel API'"

@@ -73,13 +73,14 @@ func (r *Relay) convertMessagesToNSQRecords(messages []interface{}) ([]*records.
 		}
 
 		sinkRecords = append(sinkRecords, &records.NSQRecord{
-			Id:          fmt.Sprintf("%s", relayMessage.Value.ID),
-			Topic:       relayMessage.Options.Topic,
-			Channel:     relayMessage.Options.Channel,
-			Attempts:    int32(relayMessage.Value.Attempts),
-			NsqdAddress: relayMessage.Value.NSQDAddress,
-			Value:       relayMessage.Value.Body,
-			Timestamp:   time.Now().UTC().UnixNano(),
+			Id:              fmt.Sprintf("%s", relayMessage.Value.ID),
+			Topic:           relayMessage.Options.Topic,
+			Channel:         relayMessage.Options.Channel,
+			Attempts:        int32(relayMessage.Value.Attempts),
+			NsqdAddress:     relayMessage.Value.NSQDAddress,
+			Value:           relayMessage.Value.Body,
+			Timestamp:       time.Now().UTC().UnixNano(),
+			ForceDeadLetter: r.DeadLetter,
 		})
 	}
 

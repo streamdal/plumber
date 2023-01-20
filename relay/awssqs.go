@@ -100,6 +100,7 @@ func (r *Relay) convertMessagesToSQSSinkRecords(messages []interface{}) ([]*reco
 			Receipt:           *relayMessage.Value.ReceiptHandle,
 			Body:              []byte(*relayMessage.Value.Body),
 			Timestamp:         time.Now().UTC().UnixNano(),
+			ForceDeadLetter:   r.DeadLetter,
 		}
 
 		for k, v := range relayMessage.Value.Attributes {

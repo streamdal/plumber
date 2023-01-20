@@ -132,7 +132,7 @@ github.com/aws/aws-sdk-go/service/sqs
 github.com/aws/aws-sdk-go/service/sqs/sqsiface
 github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/service/sts/stsiface
-# github.com/batchcorp/collector-schemas v0.0.21
+# github.com/batchcorp/collector-schemas v0.0.22
 ## explicit
 github.com/batchcorp/collector-schemas/build/go/protos/common
 github.com/batchcorp/collector-schemas/build/go/protos/events
@@ -147,7 +147,7 @@ github.com/batchcorp/natty
 # github.com/batchcorp/pgoutput v0.3.2
 ## explicit
 github.com/batchcorp/pgoutput
-# github.com/batchcorp/plumber-schemas v0.0.173
+# github.com/batchcorp/plumber-schemas v0.0.174-0.20230120175931-73c0981a9e05
 ## explicit
 github.com/batchcorp/plumber-schemas/build/go/protos
 github.com/batchcorp/plumber-schemas/build/go/protos/args

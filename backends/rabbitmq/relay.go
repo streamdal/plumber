@@ -66,10 +66,8 @@ func (r *RabbitMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, rela
 		r.log.Debugf("Writing message to relay channel: %s", msg.Body)
 
 		relayCh <- &rtypes.RelayMessage{
-			Value: &msg,
-			Options: &rtypes.RelayMessageOptions{
-				DeadLetter: relayOpts.Rabbit.Args.DeadLetter,
-			},
+			Value:   &msg,
+			Options: &rtypes.RelayMessageOptions{},
 		}
 
 		return nil
