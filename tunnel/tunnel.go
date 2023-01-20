@@ -24,7 +24,7 @@ import (
 const (
 	// DefaultTunnelAddress is the default address that the tunnel pkg will
 	// use if an alternate address is not specified
-	DefaultTunnelAddress = "dproxy.batch.sh:443"
+	DefaultTunnelAddress = "dproxy.streamdal.com:443"
 
 	// ReconnectSleep determines the length of time to wait between reconnect attempts to dProxy
 	ReconnectSleep = time.Second * 5

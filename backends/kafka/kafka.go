@@ -107,6 +107,7 @@ func NewReaderForRead(dialer *skafka.Dialer, connArgs *args.KafkaConn, readArgs 
 		MaxBytes:         int(readArgs.MaxBytes),
 		QueueCapacity:    int(readArgs.QueueCapacity),
 		RebalanceTimeout: util.DurationSec(readArgs.RebalanceTimeoutSeconds),
+		StartOffset:      skafka.LastOffset,
 	}
 
 	if readArgs.UseConsumerGroup {

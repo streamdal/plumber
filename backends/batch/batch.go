@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	DefaultAPIURL = "https://api.batch.sh"
+	DefaultAPIURL = "https://api.streamdal.com"
 )
 
 type IBatch interface {
@@ -112,7 +112,7 @@ func (b *Batch) getCookieJar(path string) *cookiejar.Jar {
 	return j
 }
 
-// Get makes a GET request to the Batch.sh API
+// Get makes a GET request to the Streamdal API
 func (b *Batch) Get(path string, queryParams map[string]string) ([]byte, int, error) {
 
 	if b.Client.Jar == nil {
@@ -151,7 +151,7 @@ func (b *Batch) Get(path string, queryParams map[string]string) ([]byte, int, er
 	return contents, resp.StatusCode, nil
 }
 
-// Post makes a POST request to the Batch.sh API
+// Post makes a POST request to the Streamdal API
 func (b *Batch) Post(path string, params map[string]interface{}) ([]byte, int, error) {
 	if b.Client.Jar == nil {
 		b.Client.Jar = b.getCookieJar(path)

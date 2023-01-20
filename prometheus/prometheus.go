@@ -75,7 +75,7 @@ func InitPrometheusMetrics() {
 
 	prometheusGauges[PlumberRelayRate] = promauto.NewGauge(prometheus.GaugeOpts{
 		Name: PlumberRelayRate,
-		Help: "Current rare of messages being relayed to Batch.sh",
+		Help: "Current rare of messages being relayed to Streamdal",
 	})
 
 	prometheusGauges[PlumberRelayWorkers] = promauto.NewGauge(prometheus.GaugeOpts{
@@ -85,12 +85,12 @@ func InitPrometheusMetrics() {
 
 	prometheusCounters[PlumberRelayTotalEvents] = promauto.NewCounter(prometheus.CounterOpts{
 		Name: PlumberRelayTotalEvents,
-		Help: "Total number of events relayed to Batch.sh",
+		Help: "Total number of events relayed to Streamdal",
 	})
 
 	prometheusCounters[PlumberRelayErrors] = promauto.NewCounter(prometheus.CounterOpts{
 		Name: PlumberRelayErrors,
-		Help: "Total number of errors while relaying events to Batch.sh",
+		Help: "Total number of errors while relaying events to Streamdal",
 	})
 
 	prometheusCounters[PlumberReadErrors] = promauto.NewCounter(prometheus.CounterOpts{

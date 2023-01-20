@@ -5,16 +5,17 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber/options"
 	"github.com/pkg/errors"
 	"github.com/posthog/posthog-go"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber/options"
 )
 
 const (
-	APIURL = "https://telemetry.batch.sh"
+	APIURL = "https://telemetry.streamdal.com"
 )
 
 type ITelemetry interface {

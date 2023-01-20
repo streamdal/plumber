@@ -62,7 +62,7 @@ var _ = Describe("Batch", func() {
 				"author": {
 				  "id": "c1c6c497-8594-4ae8-84ca-616172a007b3",
 				  "name": "Test User",
-				  "email": "testuser@batch.sh"
+				  "email": "testuser@streamdal.com"
 				},
 				"plan": {
 				  "id": "c4ec4d4e-63e3-4f71-94fa-80028fc9f3b9",
