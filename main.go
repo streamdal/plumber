@@ -10,11 +10,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber/telemetry"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/ssh/terminal"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
 	"github.com/batchcorp/plumber/actions"
 	"github.com/batchcorp/plumber/config"
@@ -23,6 +23,7 @@ import (
 	"github.com/batchcorp/plumber/plumber"
 	"github.com/batchcorp/plumber/printer"
 	"github.com/batchcorp/plumber/prometheus"
+	"github.com/batchcorp/plumber/telemetry"
 )
 
 var (
@@ -158,7 +159,7 @@ func readFromStdin(opts *opts.CLIOptions) {
 		logrus.Fatal(err)
 	}
 
-	if info.Mode()&os.ModeCharDevice != 0 || info.Size() <= 0 {
+	if info.Mode()&os.ModeCharDevice != 0 {
 		return
 	}
 
