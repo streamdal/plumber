@@ -273,6 +273,8 @@ var _ = Describe("Functional", func() {
 						cmd := exec.Command(binary, "read", "kafka",
 							"--address", kafkaAddress,
 							"--topics", kafkaTopic,
+							"--read-offset", "0",
+							"--use-consumer-group=false",
 						)
 
 						readOut, err := cmd.CombinedOutput()
@@ -351,6 +353,8 @@ var _ = Describe("Functional", func() {
 						"--decode-type", "thrift",
 						"--thrift-struct", "sh.batch.schema.Account",
 						"--thrift-dirs", "test-assets/thrift/schema/",
+						"--read-offset", "0",
+						"--use-consumer-group=false",
 					)
 
 					readOutput, err := readCmd.CombinedOutput()
@@ -402,6 +406,8 @@ var _ = Describe("Functional", func() {
 						"--decode-type", "protobuf",
 						"--protobuf-root-message", "sample.Envelope",
 						"--protobuf-descriptor-set", "./test-assets/protobuf-any/sample/protos.fds",
+						"--read-offset", "0",
+						"--use-consumer-group=false",
 					)
 
 					readOutput, err := readCmd.CombinedOutput()
@@ -452,6 +458,8 @@ var _ = Describe("Functional", func() {
 						"--protobuf-envelope-type", "shallow",
 						"--shallow-envelope-field-number", "2",
 						"--shallow-envelope-message", "shallow.Payload",
+						"--read-offset", "0",
+						"--use-consumer-group=false",
 					)
 
 					readOutput, err := readCmd.CombinedOutput()
@@ -2368,7 +2376,7 @@ var _ = Describe("Functional", func() {
 						"create",
 						"tunnel",
 						"kafka",
-						"--x-tunnel-address", "dproxy.dev.streamdal.com:443",
+						"--x-tunnel-address", "dproxy.dev.batch.sh:443",
 						"--connection-id", connId,
 						"--tunnel-token", batchAPIToken,
 						"--topics", "foo",
@@ -2643,7 +2651,7 @@ var _ = Describe("Functional", func() {
 						"create",
 						"tunnel",
 						"rabbit",
-						"--x-tunnel-address", "dproxy.dev.streamdal.com:443",
+						"--x-tunnel-address", "dproxy.dev.batch.sh:443",
 						"--connection-id", connId,
 						"--tunnel-token", batchAPIToken,
 						"--exchange-name", exchangeName,
