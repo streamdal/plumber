@@ -127,6 +127,8 @@ github.com/batchcorp/collector-schemas v0.0.20 h1:0xk5QXeyfTtIqSGoxxbJb6CzSiT5mI
 github.com/batchcorp/collector-schemas v0.0.20/go.mod h1:qSVA1UcrApoLX2mS4cj+aH+IvNwcSfm50vWa0UAN/WU=
 github.com/batchcorp/collector-schemas v0.0.21 h1:6H8v8PaLgPoF1JcqoHT3TwSHe12WzN2xgz1cOpUXgxw=
 github.com/batchcorp/collector-schemas v0.0.21/go.mod h1:qSVA1UcrApoLX2mS4cj+aH+IvNwcSfm50vWa0UAN/WU=
+github.com/batchcorp/collector-schemas v0.0.22 h1:ItpTpIZ/eV9J4E+J0KKYvMmh9owE3nVTWS+z9qRyi78=
+github.com/batchcorp/collector-schemas v0.0.22/go.mod h1:qSVA1UcrApoLX2mS4cj+aH+IvNwcSfm50vWa0UAN/WU=
 github.com/batchcorp/kong v0.2.17-batch-fix h1:H6sOfst2NcL2T/EZVNLukG7YRimJDHg9DhbRq7gE+KQ=
 github.com/batchcorp/kong v0.2.17-batch-fix/go.mod h1:ut4pbR4KLPWzKHbpEHZspWpRqjFr4UiPY3D2xf2tzf8=
 github.com/batchcorp/natty v0.0.16 h1:RN20W2rlA1GtPzY3ioYIjqY0UlIFnH9Rs2c1nWajxcU=
@@ -147,6 +149,10 @@ github.com/batchcorp/plumber-schemas v0.0.172 h1:0aS9EBpjzyTfFPMmTx30eu3mGGrYPyT
 github.com/batchcorp/plumber-schemas v0.0.172/go.mod h1:KxBXjHwZhPZoJryfv0c+aGFntx+rw2euYOqcNgqQlik=
 github.com/batchcorp/plumber-schemas v0.0.173 h1:pV3yYWLf34rXe8FT87UmKJS67EEVQp4todn3CCKbEPE=
 github.com/batchcorp/plumber-schemas v0.0.173/go.mod h1:KxBXjHwZhPZoJryfv0c+aGFntx+rw2euYOqcNgqQlik=
+github.com/batchcorp/plumber-schemas v0.0.174-0.20230120175931-73c0981a9e05 h1:RkUKPIgpypyLaWIn1yKzTU3uQdEfiPHKChfaxHGbc+0=
+github.com/batchcorp/plumber-schemas v0.0.174-0.20230120175931-73c0981a9e05/go.mod h1:KxBXjHwZhPZoJryfv0c+aGFntx+rw2euYOqcNgqQlik=
+github.com/batchcorp/plumber-schemas v0.0.174 h1:p6r9zpLtCSMuFEW2RIuDU/60ML1fkB4i0TCLvwdDOBQ=
+github.com/batchcorp/plumber-schemas v0.0.174/go.mod h1:KxBXjHwZhPZoJryfv0c+aGFntx+rw2euYOqcNgqQlik=
 github.com/batchcorp/plz v0.9.2 h1:bPqb+sn7OUrpHjeTEI9YO4BJS9IQ7AstDDz2gn+tcn8=
 github.com/batchcorp/plz v0.9.2/go.mod h1:3gacX+hQo+xvl0vtLqCMufzxuNCwt4geAVOMt2LQYfE=
 github.com/batchcorp/rabbit v0.1.17 h1:dui1W7FLTrNxyVlDN+G+6d8LXz8HBhVAcUethXql9vQ=

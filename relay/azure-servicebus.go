@@ -70,21 +70,22 @@ func (r *Relay) convertMessagesToAzureSinkRecords(messages []interface{}) ([]*re
 		}
 
 		r := &records.AzureSinkRecord{
-			ContentType:    relayMessage.Value.ContentType,
-			CorrelationId:  relayMessage.Value.CorrelationID,
-			Data:           relayMessage.Value.Data,
-			DeliveryCount:  relayMessage.Value.DeliveryCount,
-			SessionId:      *relayMessage.Value.SessionID,
-			GroupSequence:  *relayMessage.Value.GroupSequence,
-			Id:             relayMessage.Value.ID,
-			Label:          relayMessage.Value.Label,
-			ReplyTo:        relayMessage.Value.ReplyTo,
-			ReplyToGroupId: relayMessage.Value.ReplyToGroupID,
-			To:             relayMessage.Value.To,
-			Ttl:            relayMessage.Value.TTL.Nanoseconds(),
-			LockToken:      relayMessage.Value.LockToken.String(),
-			UserProperties: convertMapStringInterface(relayMessage.Value.UserProperties),
-			Format:         0,
+			ContentType:     relayMessage.Value.ContentType,
+			CorrelationId:   relayMessage.Value.CorrelationID,
+			Data:            relayMessage.Value.Data,
+			DeliveryCount:   relayMessage.Value.DeliveryCount,
+			SessionId:       *relayMessage.Value.SessionID,
+			GroupSequence:   *relayMessage.Value.GroupSequence,
+			Id:              relayMessage.Value.ID,
+			Label:           relayMessage.Value.Label,
+			ReplyTo:         relayMessage.Value.ReplyTo,
+			ReplyToGroupId:  relayMessage.Value.ReplyToGroupID,
+			To:              relayMessage.Value.To,
+			Ttl:             relayMessage.Value.TTL.Nanoseconds(),
+			LockToken:       relayMessage.Value.LockToken.String(),
+			UserProperties:  convertMapStringInterface(relayMessage.Value.UserProperties),
+			Format:          0,
+			ForceDeadLetter: r.DeadLetter,
 		}
 
 		if relayMessage.Value.SystemProperties != nil {

@@ -56,7 +56,7 @@ var (
 	errNoCollections          = errors.New("you have no collections")
 	errCollectionsFailed      = errors.New("unable to get list of collections")
 	errCreateCollectionFailed = errors.New("failed to create collection")
-	errNoDataLake             = errors.New("you have no datalake; please contact batch.sh support")
+	errNoDataLake             = errors.New("you have no datalake; please contact Streamdal support")
 )
 
 // ListCollections lists all of an account's collections

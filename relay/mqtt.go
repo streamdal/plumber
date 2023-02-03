@@ -59,13 +59,14 @@ func (r *Relay) convertMessagesToMQTTRecords(messages []interface{}) ([]*records
 		}
 
 		sinkRecords = append(sinkRecords, &records.MQTTRecord{
-			Id:        uint32(relayMessage.Value.MessageID()),
-			Topic:     relayMessage.Value.Topic(),
-			Duplicate: relayMessage.Value.Duplicate(),
-			Retained:  relayMessage.Value.Retained(),
-			Qos:       uint32(relayMessage.Value.Qos()),
-			Value:     relayMessage.Value.Payload(),
-			Timestamp: time.Now().UTC().UnixNano(),
+			Id:              uint32(relayMessage.Value.MessageID()),
+			Topic:           relayMessage.Value.Topic(),
+			Duplicate:       relayMessage.Value.Duplicate(),
+			Retained:        relayMessage.Value.Retained(),
+			Qos:             uint32(relayMessage.Value.Qos()),
+			Value:           relayMessage.Value.Payload(),
+			Timestamp:       time.Now().UTC().UnixNano(),
+			ForceDeadLetter: r.DeadLetter,
 		})
 	}
 

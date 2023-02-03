@@ -116,7 +116,7 @@ var _ = Describe("Replays", func() {
     "author": {
         "id": "1503e318-9c87-4e86-ab6c-fda235cb4bde",
         "name": "mark test",
-        "email": "mark-new@batch.sh"
+        "email": "mark-new@streamdal.com"
     },
     "inserted_at": "2021-04-01T14:35:00.840143Z",
     "updated_at": "2021-04-01T14:35:00.840143Z"

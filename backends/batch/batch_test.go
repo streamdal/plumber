@@ -26,7 +26,7 @@ func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return f(req), nil
 }
 
-//newHttpClient returns *http.Client with Transport replaced to avoid making real calls
+// newHttpClient returns *http.Client with Transport replaced to avoid making real calls
 func newHttpClient(fn RoundTripFunc) *http.Client {
 	return &http.Client{
 		Transport: RoundTripFunc(fn),
@@ -64,7 +64,7 @@ var _ = Describe("Batch", func() {
 
 			b := &Batch{
 				PersistentConfig: &config.Config{Token: Token},
-				ApiUrl:           "https://api.batch.sh",
+				ApiUrl:           "https://api.streamdal.com",
 			}
 
 			jar := b.getCookieJar("/v1/collection")

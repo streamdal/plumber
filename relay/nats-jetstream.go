@@ -42,9 +42,10 @@ func (r *Relay) convertMessagesToNATSJetStreamRecords(messages []interface{}) ([
 		}
 
 		sinkRecords = append(sinkRecords, &records.NATSJetStreamRecord{
-			Stream:    relayMessage.Options.Stream,
-			Value:     relayMessage.Value.Data,
-			Timestamp: time.Now().UTC().UnixNano(),
+			Stream:          relayMessage.Options.Stream,
+			Value:           relayMessage.Value.Data,
+			Timestamp:       time.Now().UTC().UnixNano(),
+			ForceDeadLetter: r.DeadLetter,
 		})
 	}
 

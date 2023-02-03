@@ -1,9 +1,10 @@
 package validate
 
 import (
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
 var _ = Describe("Validate Server", func() {
@@ -63,7 +64,7 @@ var _ = Describe("Validate Server", func() {
 			err := RelayOptionsForServer(relayOptions)
 
 			Expect(err).ToNot(HaveOccurred())
-			Expect(relayOptions.XBatchshGrpcAddress).To(Equal("grpc-collector.batch.sh:9000"))
+			Expect(relayOptions.XBatchshGrpcAddress).To(Equal("grpc-collector.streamdal.com:9000"))
 			Expect(relayOptions.XBatchshGrpcTimeoutSeconds).To(BeEquivalentTo(5))
 		})
 

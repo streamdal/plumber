@@ -62,13 +62,14 @@ func (r *Relay) convertMessagesToKafkaSinkRecords(messages []interface{}) ([]*re
 		}
 
 		sinkRecords = append(sinkRecords, &records.KafkaSinkRecord{
-			Topic:     relayMessage.Value.Topic,
-			Key:       relayMessage.Value.Key,
-			Value:     relayMessage.Value.Value,
-			Timestamp: time.Now().UTC().UnixNano(),
-			Offset:    relayMessage.Value.Offset,
-			Partition: int32(relayMessage.Value.Partition),
-			Headers:   convertKafkaHeaders(relayMessage.Value.Headers),
+			Topic:           relayMessage.Value.Topic,
+			Key:             relayMessage.Value.Key,
+			Value:           relayMessage.Value.Value,
+			Timestamp:       time.Now().UTC().UnixNano(),
+			Offset:          relayMessage.Value.Offset,
+			Partition:       int32(relayMessage.Value.Partition),
+			Headers:         convertKafkaHeaders(relayMessage.Value.Headers),
+			ForceDeadLetter: r.DeadLetter,
 		})
 	}
 

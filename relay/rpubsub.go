@@ -59,9 +59,10 @@ func (r *Relay) convertMessagesToRedisPubSubSinkRecords(messages []interface{}) 
 		}
 
 		sinkRecords = append(sinkRecords, &records.RedisRecord{
-			Payload:   relayMessage.Value.Payload,
-			Channel:   relayMessage.Value.Channel,
-			Timestamp: time.Now().UTC().UnixNano(),
+			Payload:         relayMessage.Value.Payload,
+			Channel:         relayMessage.Value.Channel,
+			Timestamp:       time.Now().UTC().UnixNano(),
+			ForceDeadLetter: r.DeadLetter,
 		})
 	}
 

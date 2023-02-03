@@ -50,6 +50,7 @@ func (r *Relay) convertMessagesToNATSStreamingRecords(messages []interface{}) ([
 			RedeliveryCount: relayMessage.Value.RedeliveryCount,
 			Crc32:           relayMessage.Value.CRC32,
 			Timestamp:       time.Now().UTC().UnixNano(),
+			ForceDeadLetter: r.DeadLetter,
 		})
 	}
 

@@ -71,9 +71,10 @@ func (r *Relay) convertMessagesToPostgresRecords(messages []interface{}) ([]*rec
 		}
 
 		sinkRecords = append(sinkRecords, &records.GenericRecord{
-			Body:      body,
-			Source:    hostname,
-			Timestamp: time.Now().UTC().UnixNano(),
+			Body:            body,
+			Source:          hostname,
+			Timestamp:       time.Now().UTC().UnixNano(),
+			ForceDeadLetter: r.DeadLetter,
 		})
 	}
 

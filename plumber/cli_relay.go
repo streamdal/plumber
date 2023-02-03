@@ -1,15 +1,16 @@
 package plumber
 
 import (
+	"github.com/pkg/errors"
+	"github.com/posthog/posthog-go"
+	"github.com/sirupsen/logrus"
+
 	"github.com/batchcorp/plumber/api"
 	"github.com/batchcorp/plumber/backends"
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/util"
 	"github.com/batchcorp/plumber/validate"
-	"github.com/pkg/errors"
-	"github.com/posthog/posthog-go"
-	"github.com/sirupsen/logrus"
 )
 
 // HandleRelayCmd handles CLI relay mode. Container/envar mode is handled by processEnvRelayFlags
@@ -68,6 +69,7 @@ func (p *Plumber) startRelayService() error {
 		ServiceShutdownCtx: p.ServiceShutdownCtx,
 		MainShutdownFunc:   p.MainShutdownFunc,
 		MainShutdownCtx:    p.MainShutdownCtx,
+		DeadLetter:         p.CLIOptions.Relay.DeadLetter,
 	}
 
 	grpcRelayer, err := relay.New(relayCfg)

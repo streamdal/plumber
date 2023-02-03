@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	GRPCCollectorAddress      = "grpc-collector.batch.sh:9000"
+	GRPCCollectorAddress      = "grpc-collector.streamdal.com:9000"
 	GRPCDefaultTimeoutSeconds = 5
 )
 

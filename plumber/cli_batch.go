@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/batchcorp/plumber/backends/batch"
 	"github.com/posthog/posthog-go"
+
+	"github.com/batchcorp/plumber/backends/batch"
 )
 
-// HandleBatchCmd handles all commands related to Batch.sh API
+// HandleBatchCmd handles all commands related to Streamdal API
 func (p *Plumber) HandleBatchCmd() error {
 	b := batch.New(p.CLIOptions, p.PersistentConfig)
 

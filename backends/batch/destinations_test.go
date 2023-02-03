@@ -45,7 +45,7 @@ var _ = Describe("Batch", func() {
 				"author": {
 				  "id": "c1c6c497-8594-4ae8-84ca-616172a007b3",
 				  "name": "Mark Gregan",
-				  "email": "mark@batch.sh"
+				  "email": "mark@streamdal.com"
 				},
 				"inserted_at": "2021-02-13T01:35:42.807576Z",
 				"updated_at": "2021-02-13T01:35:42.807576Z"
@@ -84,7 +84,7 @@ var _ = Describe("Batch", func() {
 				"author": {
 					"id": "1503e318-9c87-4e86-ab6c-fda235cb4bde",
 					"name": "mark test",
-					"email": "mark-new@batch.sh"
+					"email": "mark-new@streamdal.com"
 				},
 				"inserted_at": "2021-04-01T15:15:00.835626Z",
 				"updated_at": "2021-04-01T15:15:00.835626Z"

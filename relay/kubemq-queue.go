@@ -59,12 +59,13 @@ func (r *Relay) convertMessagesToKubeMQRecords(messages []interface{}) ([]*recor
 		}
 
 		sinkRecords = append(sinkRecords, &records.KubeMQRecord{
-			Id:        relayMessage.Value.MessageID,
-			Channel:   relayMessage.Value.Channel,
-			ClientId:  relayMessage.Value.ClientID,
-			Value:     relayMessage.Value.Body,
-			Timestamp: time.Now().UTC().UnixNano(),
-			Sequence:  int64(relayMessage.Value.Attributes.Sequence),
+			Id:              relayMessage.Value.MessageID,
+			Channel:         relayMessage.Value.Channel,
+			ClientId:        relayMessage.Value.ClientID,
+			Value:           relayMessage.Value.Body,
+			Timestamp:       time.Now().UTC().UnixNano(),
+			Sequence:        int64(relayMessage.Value.Attributes.Sequence),
+			ForceDeadLetter: r.DeadLetter,
 		})
 	}
 

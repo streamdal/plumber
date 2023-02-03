@@ -35,7 +35,7 @@ var (
 	errMissingPassword = errors.New("you must enter a password")
 )
 
-// Login attempts to login to the Batch.sh API using credentials supplied via stdin
+// Login attempts to login to the Streamdal API using credentials supplied via stdin
 func (b *Batch) Login() error {
 
 	// No credentials, or expired, ask for username/password
@@ -70,7 +70,7 @@ func (b *Batch) Login() error {
 	return nil
 }
 
-// Logout logs a user out of the Batch.sh API and clears saved credentials
+// Logout logs a user out of the Streamdal API and clears saved credentials
 func (b *Batch) Logout() error {
 	// Perform APi logout
 	b.Post("/auth/logout", nil)
@@ -87,7 +87,7 @@ func (b *Batch) Logout() error {
 	return nil
 }
 
-// Authenticate makes an API call to the Batch.sh API with the given account's credentials
+// Authenticate makes an API call to the Streamdal API with the given account's credentials
 func (b *Batch) Authenticate(username, password string) (*AuthResponse, error) {
 	res, code, err := b.Post("/v1/login", map[string]interface{}{
 		"email":    username,
