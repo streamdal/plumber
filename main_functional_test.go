@@ -273,6 +273,8 @@ var _ = Describe("Functional", func() {
 						cmd := exec.Command(binary, "read", "kafka",
 							"--address", kafkaAddress,
 							"--topics", kafkaTopic,
+							"--read-offset", "0",
+							"--use-consumer-group=false",
 						)
 
 						readOut, err := cmd.CombinedOutput()
