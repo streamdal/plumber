@@ -40,7 +40,7 @@ var _ = Describe("Relay", func() {
 			Bus:     fakeBus,
 			Actions: fakeActions,
 
-			AuthToken:        "batchcorp",
+			AuthToken:        "streamdal",
 			PersistentConfig: pConfig,
 			Log:              logrus.NewEntry(logger),
 		}
@@ -84,7 +84,7 @@ var _ = Describe("Relay", func() {
 			p.PersistentConfig.SetRelay(relayId, relay)
 
 			delRequest := &protos.DeleteRelayRequest{
-				Auth:    &common.Auth{Token: "batchcorp"},
+				Auth:    &common.Auth{Token: "streamdal"},
 				RelayId: relayId,
 			}
 
@@ -146,7 +146,7 @@ var _ = Describe("Relay", func() {
 			}
 
 			resp, err := p.GetAllRelays(context.Background(), &protos.GetAllRelaysRequest{
-				Auth: &common.Auth{Token: "batchcorp"},
+				Auth: &common.Auth{Token: "streamdal"},
 			})
 
 			Expect(err).ToNot(HaveOccurred())

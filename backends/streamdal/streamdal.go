@@ -1,7 +1,7 @@
-// Package batch is used for interacting with the Batch platform's API. This
+// Package batch is used for interacting with the Streamdal platform's API. This
 // backend is a non-traditional backend and does not implement the Backend
 // interface; it should be used independently.
-package batch
+package streamdal
 
 import (
 	"bytes"
@@ -40,7 +40,7 @@ type IBatch interface {
 	Delete(path string) (content []byte, statusCode int, err error)
 }
 
-type Batch struct {
+type Streamdal struct {
 	PersistentConfig *config.Config
 	Log              *logrus.Entry
 	Opts             *opts.CLIOptions
@@ -65,23 +65,23 @@ type BlunderErrorResponse struct {
 // PrinterFunc is a function that will be used to display output to the user's console
 type PrinterFunc func(v interface{})
 
-var errNotAuthenticated = errors.New("you are not authenticated. run `plumber batch login`")
+var errNotAuthenticated = errors.New("you are not authenticated. run `plumber streamdal login`")
 
-// New creates a new instance of a Batch struct with defaults
-func New(cliOpts *opts.CLIOptions, cfg *config.Config) *Batch {
+// New creates a new instance of a Streamdal struct with defaults
+func New(cliOpts *opts.CLIOptions, cfg *config.Config) *Streamdal {
 	printer := printTable
 
-	if cliOpts.Batch.OutputType == opts.BatchOutputType_JSON {
+	if cliOpts.Streamdal.OutputType == opts.StreamdalOutputType_JSON {
 		printer = printJSON
 	}
 
-	b := &Batch{
+	b := &Streamdal{
 		PersistentConfig: cfg,
 		Log:              logrus.WithField("pkg", "batch"),
 		Opts:             cliOpts,
 		Client:           &http.Client{},
 		Printer:          printer,
-		ApiUrl:           cliOpts.Batch.ApiUrl,
+		ApiUrl:           cliOpts.Streamdal.ApiUrl,
 	}
 
 	if b.ApiUrl == "" {
@@ -92,7 +92,7 @@ func New(cliOpts *opts.CLIOptions, cfg *config.Config) *Batch {
 }
 
 // getCookieJar builds a cookiejar, containing auth_token, to be used with http.Client
-func (b *Batch) getCookieJar(path string) *cookiejar.Jar {
+func (b *Streamdal) getCookieJar(path string) *cookiejar.Jar {
 	cookies := make([]*http.Cookie, 0)
 
 	u, _ := url.Parse(b.ApiUrl + path)
@@ -113,7 +113,7 @@ func (b *Batch) getCookieJar(path string) *cookiejar.Jar {
 }
 
 // Get makes a GET request to the Streamdal API
-func (b *Batch) Get(path string, queryParams map[string]string) ([]byte, int, error) {
+func (b *Streamdal) Get(path string, queryParams map[string]string) ([]byte, int, error) {
 
 	if b.Client.Jar == nil {
 		b.Client.Jar = b.getCookieJar(path)
@@ -138,7 +138,7 @@ func (b *Batch) Get(path string, queryParams map[string]string) ([]byte, int, er
 
 	defer resp.Body.Close()
 
-	// Advise user to use `plumber batch login` first
+	// Advise user to use `plumber streamdal login` first
 	if resp.StatusCode == http.StatusUnauthorized {
 		return nil, 0, errNotAuthenticated
 	}
@@ -152,7 +152,7 @@ func (b *Batch) Get(path string, queryParams map[string]string) ([]byte, int, er
 }
 
 // Post makes a POST request to the Streamdal API
-func (b *Batch) Post(path string, params map[string]interface{}) ([]byte, int, error) {
+func (b *Streamdal) Post(path string, params map[string]interface{}) ([]byte, int, error) {
 	if b.Client.Jar == nil {
 		b.Client.Jar = b.getCookieJar(path)
 	}
@@ -175,7 +175,7 @@ func (b *Batch) Post(path string, params map[string]interface{}) ([]byte, int, e
 	}
 	defer resp.Body.Close()
 
-	// Advise user to use `plumber batch login` first
+	// Advise user to use `plumber streamdal login` first
 	if resp.StatusCode == http.StatusUnauthorized {
 		return nil, 0, errNotAuthenticated
 	}
@@ -195,7 +195,7 @@ func (b *Batch) Post(path string, params map[string]interface{}) ([]byte, int, e
 	return contents, resp.StatusCode, nil
 }
 
-func (b *Batch) Delete(path string) ([]byte, int, error) {
+func (b *Streamdal) Delete(path string) ([]byte, int, error) {
 	if b.Client.Jar == nil {
 		b.Client.Jar = b.getCookieJar(path)
 	}
@@ -213,7 +213,7 @@ func (b *Batch) Delete(path string) ([]byte, int, error) {
 	}
 	defer resp.Body.Close()
 
-	// Advise user to use `plumber batch login` first
+	// Advise user to use `plumber streamdal login` first
 	if resp.StatusCode == http.StatusUnauthorized {
 		return nil, 0, errNotAuthenticated
 	}

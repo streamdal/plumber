@@ -43,11 +43,11 @@ func (r *Relay) StartRelay(delay time.Duration) error {
 
 	relayCfg := &relay.Config{
 		Token:              r.Options.CollectionToken,
-		GRPCAddress:        r.Options.XBatchshGrpcAddress,
+		GRPCAddress:        r.Options.XStreamdalGrpcAddress,
 		NumWorkers:         5,
-		Timeout:            util.DurationSec(r.Options.XBatchshGrpcTimeoutSeconds),
+		Timeout:            util.DurationSec(r.Options.XStreamdalGrpcTimeoutSeconds),
 		RelayCh:            relayCh,
-		DisableTLS:         r.Options.XBatchshGrpcDisableTls,
+		DisableTLS:         r.Options.XStreamdalGrpcDisableTls,
 		BatchSize:          r.Options.BatchSize,
 		Type:               r.Backend.Name(),
 		ServiceShutdownCtx: r.CancelCtx,

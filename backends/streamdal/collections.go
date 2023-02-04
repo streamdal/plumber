@@ -1,4 +1,4 @@
-package batch
+package streamdal
 
 import (
 	"bufio"
@@ -60,7 +60,7 @@ var (
 )
 
 // ListCollections lists all of an account's collections
-func (b *Batch) ListCollections() error {
+func (b *Streamdal) ListCollections() error {
 	output, err := b.listCollections()
 	if err != nil {
 		return err
@@ -70,7 +70,7 @@ func (b *Batch) ListCollections() error {
 	return nil
 }
 
-func (b *Batch) listCollections() ([]CollectionOutput, error) {
+func (b *Streamdal) listCollections() ([]CollectionOutput, error) {
 	res, _, err := b.Get("/v1/collection", nil)
 	if err != nil {
 		return nil, err
@@ -106,19 +106,19 @@ func (b *Batch) listCollections() ([]CollectionOutput, error) {
 }
 
 // SearchCollection queries a collection
-func (b *Batch) SearchCollection() error {
-	return b.search(PageSize*int(b.Opts.Batch.Search.Page), PageSize, int(b.Opts.Batch.Search.Page))
+func (b *Streamdal) SearchCollection() error {
+	return b.search(PageSize*int(b.Opts.Streamdal.Search.Page), PageSize, int(b.Opts.Streamdal.Search.Page))
 }
 
 // search recursively displays pages of (PageSize) results until no more are available
-func (b *Batch) search(from, size, page int) error {
+func (b *Streamdal) search(from, size, page int) error {
 	p := map[string]interface{}{
-		"query": b.Opts.Batch.Search.Query,
+		"query": b.Opts.Streamdal.Search.Query,
 		"from":  from,
 		"size":  size,
 	}
 
-	res, _, err := b.Post("/v1/collection/"+b.Opts.Batch.Search.CollectionId+"/search", p)
+	res, _, err := b.Post("/v1/collection/"+b.Opts.Streamdal.Search.CollectionId+"/search", p)
 	if err != nil {
 		return errors.Wrap(err, "unable to complete search request")
 	}
@@ -128,7 +128,7 @@ func (b *Batch) search(from, size, page int) error {
 		return errors.Wrap(err, "failed to search collection")
 	}
 
-	// Our JSON output should be human readable
+	// Our JSON output should be human-readable
 	m, err := json.MarshalIndent(results.Data, "", "  ")
 	if err != nil {
 		return errors.Wrap(err, "could not display search results")
@@ -158,7 +158,7 @@ func (b *Batch) search(from, size, page int) error {
 	return nil
 }
 
-func (b *Batch) getDataLakeID() (string, error) {
+func (b *Streamdal) getDataLakeID() (string, error) {
 	res, _, err := b.Get("/v1/datalake", nil)
 	if err != nil {
 		return "", err
@@ -176,7 +176,7 @@ func (b *Batch) getDataLakeID() (string, error) {
 	return lakes[0].ID, nil
 }
 
-func (b *Batch) CreateCollection() error {
+func (b *Streamdal) CreateCollection() error {
 	// Get datalake ID
 	datalakeID, err := b.getDataLakeID()
 	if err != nil {
@@ -185,14 +185,14 @@ func (b *Batch) CreateCollection() error {
 
 	// Create collection
 	p := map[string]interface{}{
-		"schema_id":             b.Opts.Batch.Create.Collection.SchemaId,
-		"name":                  b.Opts.Batch.Create.Collection.Name,
-		"notes":                 b.Opts.Batch.Create.Collection.Notes,
+		"schema_id":             b.Opts.Streamdal.Create.Collection.SchemaId,
+		"name":                  b.Opts.Streamdal.Create.Collection.Name,
+		"notes":                 b.Opts.Streamdal.Create.Collection.Notes,
 		"datalake_id":           datalakeID,
-		"envelope_type":         b.Opts.Batch.Create.Collection.EnvelopeType,
-		"envelope_root_message": b.Opts.Batch.Create.Collection.EnvelopeRootMessage,
-		"payload_field_id":      b.Opts.Batch.Create.Collection.PayloadFieldId,
-		"payload_root_message":  b.Opts.Batch.Create.Collection.PayloadFieldMessage,
+		"envelope_type":         b.Opts.Streamdal.Create.Collection.EnvelopeType,
+		"envelope_root_message": b.Opts.Streamdal.Create.Collection.EnvelopeRootMessage,
+		"payload_field_id":      b.Opts.Streamdal.Create.Collection.PayloadFieldId,
+		"payload_root_message":  b.Opts.Streamdal.Create.Collection.PayloadFieldMessage,
 	}
 
 	res, code, err := b.Post("/v1/collection", p)

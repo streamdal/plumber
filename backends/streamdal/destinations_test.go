@@ -1,4 +1,4 @@
-package batch
+package streamdal
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -7,10 +7,10 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
-var _ = Describe("Batch", func() {
+var _ = Describe("Streamdal", func() {
 	Context("ListDestinations", func() {
 		It("returns an error when empty", func() {
-			b := BatchWithMockResponse(200, `[]`)
+			b := StreamdalWithMockResponse(200, `[]`)
 
 			output, err := b.listDestinations()
 			Expect(err).To(Equal(errNoDestinations))
@@ -18,7 +18,7 @@ var _ = Describe("Batch", func() {
 		})
 
 		It("returns error on a bad response", func() {
-			b := BatchWithMockResponse(200, `{}`)
+			b := StreamdalWithMockResponse(200, `{}`)
 
 			output, err := b.listDestinations()
 			Expect(err).To(Equal(errDestinationsFailed))
@@ -52,7 +52,7 @@ var _ = Describe("Batch", func() {
 			  }
 			]`
 
-			b := BatchWithMockResponse(200, apiResponse)
+			b := StreamdalWithMockResponse(200, apiResponse)
 
 			output, err := b.listDestinations()
 			Expect(err).ToNot(HaveOccurred())
@@ -90,8 +90,8 @@ var _ = Describe("Batch", func() {
 				"updated_at": "2021-04-01T15:15:00.835626Z"
 			}`
 
-			b := BatchWithMockResponse(200, apiResponse)
-			//b.Opts.Batch.DestinationMetadata = &options.DestinationMetadata{}
+			b := StreamdalWithMockResponse(200, apiResponse)
+			//b.Opts.Streamdal.DestinationMetadata = &options.DestinationMetadata{}
 
 			destination, err := b.createDestination("http")
 			Expect(err).ToNot(HaveOccurred())
@@ -101,11 +101,11 @@ var _ = Describe("Batch", func() {
 
 	Context("getDestinationMetadataHTTP", func() {
 		It("returns correct map", func() {
-			b := &Batch{
+			b := &Streamdal{
 				Opts: &opts.CLIOptions{
-					Batch: &opts.BatchOptions{
-						Create: &opts.BatchCreateOptions{
-							Destination: &opts.BatchCreateDestinationOptions{
+					Streamdal: &opts.StreamdalOptions{
+						Create: &opts.StreamdalCreateOptions{
+							Destination: &opts.StreamdalCreateDestinationOptions{
 								Name:                "testing",
 								Notes:               "some notes",
 								XApiDestinationType: "http",

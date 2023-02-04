@@ -192,7 +192,7 @@ func (c *Config) askTelemetry() {
 
 NOTE: We do NOT collect ANY personally identifiable or confidential information.
 
-You can read this statement here: https://docs.batch.sh/plumber/telemetry
+You can read this statement here: https://docs.streamdal.com/plumber/telemetry
 `
 	fmt.Printf(telemetryDescription + "\n")
 

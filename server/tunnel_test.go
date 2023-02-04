@@ -39,7 +39,7 @@ var _ = Describe("Tunnel", func() {
 			Bus:     fakeBus,
 			Actions: fakeActions,
 
-			AuthToken:        "batchcorp",
+			AuthToken:        "streamdal",
 			PersistentConfig: pConfig,
 			Log:              logrus.NewEntry(logger),
 		}
@@ -87,7 +87,7 @@ var _ = Describe("Tunnel", func() {
 			}
 
 			resp, err := p.GetAllTunnels(context.Background(), &protos.GetAllTunnelsRequest{
-				Auth: &common.Auth{Token: "batchcorp"},
+				Auth: &common.Auth{Token: "streamdal"},
 			})
 
 			Expect(err).ToNot(HaveOccurred())
@@ -136,7 +136,7 @@ var _ = Describe("Tunnel", func() {
 			p.PersistentConfig.SetTunnel(tunnelId, tunnel)
 
 			delRequest := &protos.DeleteTunnelRequest{
-				Auth:     &common.Auth{Token: "batchcorp"},
+				Auth:     &common.Auth{Token: "streamdal"},
 				TunnelId: tunnelId,
 			}
 

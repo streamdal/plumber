@@ -59,11 +59,11 @@ func (p *Plumber) HandleRelayCmd() error {
 func (p *Plumber) startRelayService() error {
 	relayCfg := &relay.Config{
 		Token:              p.CLIOptions.Relay.CollectionToken,
-		GRPCAddress:        p.CLIOptions.Relay.XBatchshGrpcAddress,
+		GRPCAddress:        p.CLIOptions.Relay.XStreamdalGrpcAddress,
 		NumWorkers:         p.CLIOptions.Relay.NumWorkers,
-		Timeout:            util.DurationSec(p.CLIOptions.Relay.XBatchshGrpcTimeoutSeconds),
+		Timeout:            util.DurationSec(p.CLIOptions.Relay.XStreamdalGrpcTimeoutSeconds),
 		RelayCh:            p.RelayCh,
-		DisableTLS:         p.CLIOptions.Relay.XBatchshGrpcDisableTls,
+		DisableTLS:         p.CLIOptions.Relay.XStreamdalGrpcDisableTls,
 		BatchSize:          p.CLIOptions.Relay.BatchSize,
 		Type:               p.CLIOptions.Global.XBackend,
 		ServiceShutdownCtx: p.ServiceShutdownCtx,

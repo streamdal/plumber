@@ -189,7 +189,7 @@ func PrintRelayOptions(cliOpts *opts.CLIOptions) {
 	logrus.Info("")
 	logrus.Infof("- %-24s%-6s", "RelayType", cliOpts.Global.XBackend)
 	logrus.Infof("- %-24s%-6s", "Collection token", cliOpts.Relay.CollectionToken)
-	logrus.Infof("- %-24s%-6s", "Batch collector address", cliOpts.Relay.XBatchshGrpcAddress)
+	logrus.Infof("- %-24s%-6s", "Streamdal collector address", cliOpts.Relay.XStreamdalGrpcAddress)
 	logrus.Infof("- %-24s%-6d", "Num workers", cliOpts.Relay.NumWorkers)
 	logrus.Infof("- %-24s%-6d", "Batch size", cliOpts.Relay.BatchSize)
 	logrus.Infof("- %-24s%-6v", "Stats enabled", cliOpts.Relay.StatsEnable)

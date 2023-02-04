@@ -38,18 +38,18 @@
        * [NSQ](#nsq-1)
        * [AWS Kinesis](#aws-kinesis-1)
   * [Relay Mode](#relay-mode)
-       * [Continuously relay messages from your RabbitMQ instance to a Batch.sh collection](#continuously-relay-messages-from-your-rabbitmq-instance-to-a-batchsh-collection)
-       * [Continuously relay messages from an SQS queue to a Batch.sh collection](#continuously-relay-messages-from-an-sqs-queue-to-a-batchsh-collection)
-       * [Continuously relay messages from an Azure queue to a Batch.sh collection](#continuously-relay-messages-from-an-azure-queue-to-a-batchsh-collection)
-       * [Continuously relay messages from an Azure topic to a Batch.sh collection](#continuously-relay-messages-from-an-azure-topic-to-a-batchsh-collection)
-       * [Continuously relay messages for multiple Redis channels to a Batch.sh collection](#continuously-relay-messages-from-multiple-redis-channels-to-a-batchsh-collection)
-       * [Continuously relay messages for multiple Redis streams to a Batch.sh collection](#continuously-relay-messages-from-multiple-redis-streams-to-a-batchsh-collection)
-       * [Continuously relay messages from a Kafka topic (on Confluent) to a Batch.sh collection (via CLI)](#continuously-relay-messages-from-a-kafka-topic-on-confluent-to-a-batchsh-collection-via-cli)
-       * [Continuously relay messages from a MQTT topic to a Batch.sh collection](#continuously-relay-messages-from-a-mqtt-topic-to-a-batchsh-collection)
-       * [Continuously relay messages from a NATS JetStream stream to a Batch.sh collection](#continuously-relay-messages-from-a-nats-jetstream-stream-to-a-batchsh-collection)
+       * [Continuously relay messages from your RabbitMQ instance to a Streamdal collection](#continuously-relay-messages-from-your-rabbitmq-instance-to-a-streamdal-collection)
+       * [Continuously relay messages from an SQS queue to a Streamdal collection](#continuously-relay-messages-from-an-sqs-queue-to-a-streamdal-collection)
+       * [Continuously relay messages from an Azure queue to a Streamdal collection](#continuously-relay-messages-from-an-azure-queue-to-a-streamdal-collection)
+       * [Continuously relay messages from an Azure topic to a Streamdal collection](#continuously-relay-messages-from-an-azure-topic-to-a-streamdal-collection)
+       * [Continuously relay messages for multiple Redis channels to a Streamdal collection](#continuously-relay-messages-from-multiple-redis-channels-to-a-streamdal-collection)
+       * [Continuously relay messages for multiple Redis streams to a Streamdal collection](#continuously-relay-messages-from-multiple-redis-streams-to-a-streamdal-collection)
+       * [Continuously relay messages from a Kafka topic (on Confluent) to a Streamdal collection (via CLI)](#continuously-relay-messages-from-a-kafka-topic-on-confluent-to-a-streamdal-collection-via-cli)
+       * [Continuously relay messages from a MQTT topic to a Streamdal collection](#continuously-relay-messages-from-a-mqtt-topic-to-a-streamdal-collection)
+       * [Continuously relay messages from a NATS JetStream stream to a Streamdal collection](#continuously-relay-messages-from-a-nats-jetstream-stream-to-a-streamdal-collection)
   * [Change Data Capture](#change-data-capture)
-       * [Continuously relay Postgres change events to a Batch.sh collection](#continuously-relay-postgres-change-events-to-a-batchsh-collection)
-       * [Continuously relay MongoDB change stream events to a Batch.sh collection](#continuously-relay-mongodb-change-stream-events-to-a-batchsh-collection)
+       * [Continuously relay Postgres change events to a Streamdal collection](#continuously-relay-postgres-change-events-to-a-streamdal-collection)
+       * [Continuously relay MongoDB change stream events to a Streamdal collection](#continuously-relay-mongodb-change-stream-events-to-a-streamdal-collection)
   * [Advanced Usage](#advanced-usage)
        * [Decoding protobuf encoded messages and viewing them live](#decoding-protobuf-encoded-messages-and-viewing-them-live)
        * [Shallow envelope protobuf messages](#shallow-envelope-protobuf-messages)
@@ -470,11 +470,11 @@ plumber write kinesis --stream teststream --partition-key orders --input "{\"ord
 
 ## Relay Mode
 
-##### Continuously relay messages from your RabbitMQ instance to a Batch.sh collection
+##### Continuously relay messages from your RabbitMQ instance to a Streamdal collection
 
 ```bash
 $ docker run --name plumber-rabbit -p 8080:8080 \
-    -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
+    -e PLUMBER_RELAY_TOKEN=$YOUR-STREAMDAL-TOKEN-HERE \
     -e PLUMBER_RELAY_RABBIT_EXCHANGE=my_exchange \
     -e PLUMBER_RELAY_RABBIT_QUEUE=my_queue \
     -e PLUMBER_RELAY_RABBIT_ROUTING_KEY=some.routing.key \
@@ -483,63 +483,63 @@ $ docker run --name plumber-rabbit -p 8080:8080 \
     batchcorp/plumber plumber relay rabbit
 ```
 
-##### Continuously relay messages from an SQS queue to a Batch.sh collection
+##### Continuously relay messages from an SQS queue to a Streamdal collection
 
 ```bash
 docker run -d --name plumber-sqs -p 8080:8080 \
     -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
     -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
     -e PLUMBER_RELAY_SQS_QUEUE_NAME=TestQueue \
-    -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
+    -e PLUMBER_RELAY_TOKEN=$YOUR-STREAMDAL-TOKEN-HERE \
     batchcorp/plumber plumber relay aws-sqs
 ```
 
-##### Continuously relay messages from an Azure queue to a Batch.sh collection
+##### Continuously relay messages from an Azure queue to a Streamdal collection
 
 ```bash
 docker run -d --name plumber-azure -p 8080:8080 \
     -e SERVICEBUS_CONNECTION_STRING="Endpoint=sb://mybus.servicebus.windows.net/;SharedAccessKeyName..."
     -e PLUMBER_RELAY_AZURE_QUEUE_NAME=neworders \
-    -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
+    -e PLUMBER_RELAY_TOKEN=$YOUR-STREAMDAL-TOKEN-HERE \
     batchcorp/plumber plumber relay azure-service-bus
 ```
 
-##### Continuously relay messages from an Azure topic to a Batch.sh collection
+##### Continuously relay messages from an Azure topic to a Streamdal collection
 
 ```bash
 docker run -d --name plumber-azure -p 8080:8080 \
     -e SERVICEBUS_CONNECTION_STRING="Endpoint=sb://mybus.servicebus.windows.net/;SharedAccessKeyName..."
     -e PLUMBER_RELAY_AZURE_TOPIC_NAME=neworders \
     -e PLUMBER_RELAY_AZURE_SUBSCRIPTION=some-sub \
-    -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
+    -e PLUMBER_RELAY_TOKEN=$YOUR-STREAMDAL-TOKEN-HERE \
     batchcorp/plumber plumber relay azure-service-bus
 ```
 
-##### Continuously relay messages from multiple Redis channels to a Batch.sh collection
+##### Continuously relay messages from multiple Redis channels to a Streamdal collection
 
 ```bash
 docker run -d --name plumber-redis-pubsub -p 8080:8080 \
     -e PLUMBER_RELAY_REDIS_PUBSUB_ADDRESS=localhost:6379 \
     -e PLUMBER_RELAY_REDIS_PUBSUB_CHANNELS=channel1,channel2 \
-    -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
+    -e PLUMBER_RELAY_TOKEN=$YOUR-STREAMDAL-TOKEN-HERE \
     batchcorp/plumber plumber relay redis-pubsub
 ```
 
-##### Continuously relay messages from multiple Redis streams to a Batch.sh collection
+##### Continuously relay messages from multiple Redis streams to a Streamdal collection
 
 ```bash
 docker run -d --name plumber-redis-streams -p 8080:8080 \
     -e PLUMBER_RELAY_REDIS_STREAMS_ADDRESS=localhost:6379 \
     -e PLUMBER_RELAY_REDIS_STREAMS_STREAMS=stream1,stream2 \
-    -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
+    -e PLUMBER_RELAY_TOKEN=$YOUR-STREAMDAL-TOKEN-HERE \
     batchcorp/plumber plumber relay redis-streams
 ```
 
-##### Continuously relay messages from a Kafka topic (on Confluent) to a Batch.sh collection (via CLI)
+##### Continuously relay messages from a Kafka topic (on Confluent) to a Streamdal collection (via CLI)
 
 ```
 docker run -d --name plumber-kafka -p 8080:8080 \
-    -e PLUMBER_RELAY_TOKEN="$YOUR-BATCHSH-TOKEN-HERE"
+    -e PLUMBER_RELAY_TOKEN="$YOUR-STREAMDAL-TOKEN-HERE"
     -e PLUMBER_RELAY_KAFKA_ADDRESS="pkc-4kgmg.us-west-2.aws.confluent.cloud:9092,pkc-5kgmg.us-west-2.aws.confluent.cloud:9092"
     -e PLUMBER_RELAY_KAFKA_TOPIC="$YOUR_TOPIC"
     -e PLUMBER_RELAY_KAFKA_INSECURE_TLS="true"
@@ -549,49 +549,49 @@ docker run -d --name plumber-kafka -p 8080:8080 \
     batchcorp/plumber plumber relay kafka
 ```
 
-##### Continuously relay messages from a MQTT topic to a Batch.sh collection
+##### Continuously relay messages from a MQTT topic to a Streamdal collection
 
 ```bash
 docker run -d --name plumber-mqtt -p 8080:8080 \
     -e PLUMBER_RELAY_MQTT_ADDRESS=tcp://localhost:1883 \
     -e PLUMBER_RELAY_MQTT_TOPIC=iotdata \
     -e PLUMBER_RELAY_MQTT_QOS=1 \
-    -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
+    -e PLUMBER_RELAY_TOKEN=$YOUR-STREAMDAL-TOKEN-HERE \
     batchcorp/plumber plumber relay mqtt
 ```
 
-##### Continuously relay messages from a NATS JetStream stream to a Batch.sh collection
+##### Continuously relay messages from a NATS JetStream stream to a Streamdal collection
 
 ```bash
 docker run -d --name plumber-natsjs -p 8080:8080 \
     -e PLUMBER_RELAY_NATS_JETSTREAM_DSN=nats://localhost:4222 \
     -e PLUMBER_RELAY_NATS_JETSTREAM_CLIENT_ID=plumber \
     -e PLUMBER_RELAY_NATS_JETSTREAM_STREAM=orders \
-    -e PLUMBER_RELAY_TOKEN=$YOUR-BATCHSH-TOKEN-HERE \
+    -e PLUMBER_RELAY_TOKEN=$YOUR-STREAMDAL-TOKEN-HERE \
     batchcorp/plumber plumber relay mqtt
 ```
 
 
 ## Change Data Capture
 
-##### Continuously relay Postgres change events to a Batch.sh collection
+##### Continuously relay Postgres change events to a Streamdal collection
 
-See documentation at https://docs.batch.sh/event-ingestion/change-data-capture/postgresql for instructions on setting
+See documentation at https://docs.streamdal.com/event-ingestion/change-data-capture/postgresql for instructions on setting
 up PostgreSQL CDC.
 
-##### Continuously relay MongoDB change stream events to a Batch.sh collection
+##### Continuously relay MongoDB change stream events to a Streamdal collection
 
 ```bash
 docker run -d --name plumber-cdc-mongo -p 8080:8080 \
     -e PLUMBER_RELAY_CDCMONGO_DSN=mongodb://mongo.mysite.com:27017 \
     -e PLUMBER_RELAY_CDCMONGO_DATABASE=mydb \
     -e PLUMBER_RELAY_CDCMONGO_COLLECTION=customers \
-    -e PLUMBER_RELAY_TOKEN=YOUR_BATCHSH_TOKEN_HERE \
+    -e PLUMBER_RELAY_TOKEN=YOUR_STREAMDAL_TOKEN_HERE \
     batchcorp/plumber plumber relay cdc-mongo
 
 ```
 
-For more advanced mongo usage, see documentation at https://docs.batch.sh/event-ingestion/change-data-capture/mongodb
+For more advanced mongo usage, see documentation at https://docs.streamdal.com/event-ingestion/change-data-capture/mongodb
 
 ## Advanced Usage
 
@@ -698,7 +698,7 @@ Plumber supports using protobuf file descriptor set files for decoding and encod
 using a directory of `.proto` files. This method is more reliable than using `--protobuf-dirs` flag as it ensures
 that there won't be any include path issues.
 
-For help with generating an `.fds` file from your `.proto` files, see https://docs.batch.sh/platform/components/what-are-schemas#protocol-buffers
+For help with generating an `.fds` file from your `.proto` files, see https://docs.streamdal.com/platform/components/what-are-schemas#protocol-buffers
 
 #### Writing using FDS
 

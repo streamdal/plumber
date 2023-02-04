@@ -1,4 +1,4 @@
-package batch
+package streamdal
 
 import (
 	"bytes"
@@ -22,7 +22,7 @@ func TestAuthenticate(t *testing.T) {
 	  }
 	}`
 
-	b := BatchWithMockResponse(200, apiResponse)
+	b := StreamdalWithMockResponse(200, apiResponse)
 
 	output, err := b.Authenticate("test@streamdal.com", "password123")
 	g.Expect(err).ToNot(HaveOccurred())

@@ -30,8 +30,8 @@ type TunnelOptions struct {
 	XGrpcAddress string `protobuf:"bytes,3,opt,name=_grpc_address,json=GrpcAddress,proto3" json:"_grpc_address,omitempty" kong:"help='Tunnel API address',default='dproxy.streamdal.com:443'"`
 	// @gotags: kong:"help='Tunnel API initial connection timeout',default=5"
 	XGrpcTimeoutSeconds uint32 `protobuf:"varint,4,opt,name=_grpc_timeout_seconds,json=GrpcTimeoutSeconds,proto3" json:"_grpc_timeout_seconds,omitempty" kong:"help='Tunnel API initial connection timeout',default=5"`
-	// @gotags: kong:"help='Use gRPC insecure mode when talking to Batch'"
-	XGrpcInsecure bool `protobuf:"varint,5,opt,name=_grpc_insecure,json=GrpcInsecure,proto3" json:"_grpc_insecure,omitempty" kong:"help='Use gRPC insecure mode when talking to Batch'"`
+	// @gotags: kong:"help='Use gRPC insecure mode when talking to Streamdal'"
+	XGrpcInsecure bool `protobuf:"varint,5,opt,name=_grpc_insecure,json=GrpcInsecure,proto3" json:"_grpc_insecure,omitempty" kong:"help='Use gRPC insecure mode when talking to Streamdal'"`
 	// Optional for server and CLI
 	// NOTE: CLI-based tunnels will be treated as ephemeral.
 	// @gotags: kong:"help='Name to identify tunnel in Streamdal console. If omitted, your IP address will be used'"

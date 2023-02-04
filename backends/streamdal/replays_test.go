@@ -1,4 +1,4 @@
-package batch
+package streamdal
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -12,7 +12,7 @@ var _ = Describe("Replays", func() {
 
 	Context("listReplays", func() {
 		It("returns an error when empty", func() {
-			b := BatchWithMockResponse(200, `[]`)
+			b := StreamdalWithMockResponse(200, `[]`)
 
 			output, err := b.listReplays()
 			Expect(err).To(Equal(errNoReplays))
@@ -20,7 +20,7 @@ var _ = Describe("Replays", func() {
 		})
 
 		It("returns error on a bad response", func() {
-			b := BatchWithMockResponse(200, `{}`)
+			b := StreamdalWithMockResponse(200, `{}`)
 
 			output, err := b.listReplays()
 			Expect(err).To(Equal(errReplayListFailed))
@@ -38,7 +38,7 @@ var _ = Describe("Replays", func() {
 			  "destination": {"name": "Test Destination"}
 			}]`
 
-			b := BatchWithMockResponse(200, apiResponse)
+			b := StreamdalWithMockResponse(200, apiResponse)
 
 			output, err := b.listReplays()
 			Expect(err).ToNot(HaveOccurred())
@@ -63,7 +63,7 @@ var _ = Describe("Replays", func() {
 			  "destination": {"name": "Test Destination"}
 			}]`
 
-			b := BatchWithMockResponse(200, apiResponse)
+			b := StreamdalWithMockResponse(200, apiResponse)
 
 			output, err := b.listReplays()
 			Expect(err).ToNot(HaveOccurred())
@@ -121,7 +121,7 @@ var _ = Describe("Replays", func() {
     "inserted_at": "2021-04-01T14:35:00.840143Z",
     "updated_at": "2021-04-01T14:35:00.840143Z"
 }`
-		b := BatchWithMockResponse(200, apiResponse)
+		b := StreamdalWithMockResponse(200, apiResponse)
 		replay, err := b.createReplay("*")
 
 		Expect(err).ToNot(HaveOccurred())
@@ -130,11 +130,11 @@ var _ = Describe("Replays", func() {
 
 	Context("generateReplayQuery", func() {
 		It("handles wildcard", func() {
-			b := &Batch{
+			b := &Streamdal{
 				Opts: &opts.CLIOptions{
-					Batch: &opts.BatchOptions{
-						Create: &opts.BatchCreateOptions{
-							Replay: &opts.BatchCreateReplayOptions{
+					Streamdal: &opts.StreamdalOptions{
+						Create: &opts.StreamdalCreateOptions{
+							Replay: &opts.StreamdalCreateReplayOptions{
 								Name:          "",
 								Type:          0,
 								Notes:         "",
@@ -155,11 +155,11 @@ var _ = Describe("Replays", func() {
 		})
 
 		It("handles query with a field", func() {
-			b := &Batch{
+			b := &Streamdal{
 				Opts: &opts.CLIOptions{
-					Batch: &opts.BatchOptions{
-						Create: &opts.BatchCreateOptions{
-							Replay: &opts.BatchCreateReplayOptions{
+					Streamdal: &opts.StreamdalOptions{
+						Create: &opts.StreamdalCreateOptions{
+							Replay: &opts.StreamdalCreateReplayOptions{
 								Name:          "",
 								Type:          0,
 								Notes:         "",

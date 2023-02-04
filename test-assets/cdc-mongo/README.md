@@ -17,7 +17,7 @@
 6. Start plumber: `plumber read mongo --database plumbertest --follow`
 7. Back in `mongo` console, insert some data
    ```
-   db.plumbertest.insert({name:"Mark",company:"Batch.sh"})
+   db.plumbertest.insert({name:"Mark",company:"Streamdal"})
    ```
 8. Plumber should output change set
    ```json
@@ -40,7 +40,7 @@
          "_id": {
           "$oid": "6078c08fd6d1c97307ef0253"
          },
-         "company": "Batch.sh",
+         "company": "Streamdal",
          "name": "Mark"
       },
       "ns": {

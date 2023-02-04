@@ -14,9 +14,9 @@ The tool enables you to:
 * Decode protobuf/avro/thrift/JSON data in real-time
   * Support for both Deep and Shallow protobuf envelope types
   * Support for google.protobuf.Any fields
-* Relay data to the [Batch platform](https://batch.sh)
-* Ship change data capture events to [Batch platform](https://batch.sh)
-* [Replay events into a message system on your local network](https://docs.batch.sh/what-are/what-are-destinations/plumber-as-a-destination)
+* Relay data to the [Streamdal platform](https://streamdal.com)
+* Ship change data capture events to [Streamdal platform](https://streamdal.com)
+* [Replay events into a message system on your local network](https://docs.streamdal.com/what-are/what-are-destinations/plumber-as-a-destination)
 * And _many_ other features (for a full list: `plumber -h`)
 
 <sub>\[1] It's like `curl` for messaging systems.</sub>
@@ -159,7 +159,7 @@ $ plumber read kafka --help
 ## Hmm, what is this Batch thing?
 
 We are distributed system enthusiasts that started a company called
-[Batch](https://batch.sh). 
+[Streamdal](https://streamdal.com). 
 
 Our company focuses on solving data stream observability for complex systems
 and workflows. Our goal is to allow _everyone_ to build asynchronous systems,
@@ -183,7 +183,7 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 * RabbitMQ Streams 
 * Google Cloud Platform PubSub
 * MQTT
-* Amazon Kinesis Streams **(NEW)**
+* Amazon Kinesis Streams 
 * Amazon SQS
 * Amazon SNS (Publishing)
 * ActiveMQ (STOMP protocol)
@@ -223,14 +223,14 @@ in the Batch platform as a _replay destination_.
 This mitigates the need make firewall changes to replay messages from a Batch
 collection back to your message bus.
 
-See https://docs.batch.sh/what-are/what-are-destinations/plumber-as-a-destination
+See https://docs.streamdal.com/what-are/what-are-destinations/plumber-as-a-destination
 for full documentation.
 
 ## High Performance & High Availability
 `plumber` comes with a "server" mode which will cause plumber to operate as a
 highly available cluster.
 
-You can read more about "server mode" [here](https://docs.batch.sh/plumber/server-mode).
+You can read more about "server mode" [here](https://docs.streamdal.com/plumber/server-mode).
 
 Server mode examples can be found in [docs/server.md](https://github.com/batchcorp/plumber/blob/master/docs/server.md)
 

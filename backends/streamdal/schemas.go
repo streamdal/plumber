@@ -1,4 +1,4 @@
-package batch
+package streamdal
 
 import (
 	"encoding/json"
@@ -19,7 +19,7 @@ var (
 )
 
 // ListSchemas lists all of an account's schemas
-func (b *Batch) ListSchemas() error {
+func (b *Streamdal) ListSchemas() error {
 	output, err := b.listSchemas()
 	if err != nil {
 		return err
@@ -30,7 +30,7 @@ func (b *Batch) ListSchemas() error {
 	return nil
 }
 
-func (b *Batch) listSchemas() ([]SchemaOutput, error) {
+func (b *Streamdal) listSchemas() ([]SchemaOutput, error) {
 
 	res, _, err := b.Get("/v1/schema", nil)
 	if err != nil {

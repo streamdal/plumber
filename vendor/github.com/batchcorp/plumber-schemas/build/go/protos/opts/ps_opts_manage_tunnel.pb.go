@@ -64,8 +64,8 @@ func (m *GetTunnelOptions) GetId() string {
 type CreateTunnelOptions struct {
 	// @gotags: kong:"help='Connection ID for the tunnel to use',required=true"
 	ConnectionId string `protobuf:"bytes,1,opt,name=connection_id,json=connectionId,proto3" json:"connection_id,omitempty" kong:"help='Connection ID for the tunnel to use',required=true"`
-	// @gotags: kong:"help='Batch API token (create in settings -> security)',required=true"
-	TunnelToken string `protobuf:"bytes,3,opt,name=tunnel_token,json=tunnelToken,proto3" json:"tunnel_token,omitempty" kong:"help='Batch API token (create in settings -> security)',required=true"`
+	// @gotags: kong:"help='Streamdal API token (create in settings -> security)',required=true"
+	TunnelToken string `protobuf:"bytes,3,opt,name=tunnel_token,json=tunnelToken,proto3" json:"tunnel_token,omitempty" kong:"help='Streamdal API token (create in settings -> security)',required=true"`
 	// @gotags: kong:"help='Name for the tunnel (auto-generated if left empty)'"
 	Name string `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty" kong:"help='Name for the tunnel (auto-generated if left empty)'"`
 	// @gotags: kong:"help='Notes associated with the tunnel'"
@@ -74,8 +74,8 @@ type CreateTunnelOptions struct {
 	XTunnelAddress string `protobuf:"bytes,6,opt,name=_tunnel_address,json=TunnelAddress,proto3" json:"_tunnel_address,omitempty" kong:"help='Tunnel API address',default='dproxy.streamdal.com:443'"`
 	// @gotags: kong:"help='Tunnel API initial connection timeout',default=5"
 	XTunnelTimeoutSeconds uint32 `protobuf:"varint,7,opt,name=_tunnel_timeout_seconds,json=TunnelTimeoutSeconds,proto3" json:"_tunnel_timeout_seconds,omitempty" kong:"help='Tunnel API initial connection timeout',default=5"`
-	// @gotags: kong:"help='Use gRPC insecure mode when talking to Batch Tunnel API'"
-	XTunnelInsecure bool `protobuf:"varint,8,opt,name=_tunnel_insecure,json=TunnelInsecure,proto3" json:"_tunnel_insecure,omitempty" kong:"help='Use gRPC insecure mode when talking to Batch Tunnel API'"`
+	// @gotags: kong:"help='Use gRPC insecure mode when talking to Streamdal Tunnel API'"
+	XTunnelInsecure bool `protobuf:"varint,8,opt,name=_tunnel_insecure,json=TunnelInsecure,proto3" json:"_tunnel_insecure,omitempty" kong:"help='Use gRPC insecure mode when talking to Streamdal Tunnel API'"`
 	// @gotags: kong:"cmd,help='Apache Kafka'"
 	Kafka *args.KafkaWriteArgs `protobuf:"bytes,100,opt,name=kafka,proto3" json:"kafka,omitempty" kong:"cmd,help='Apache Kafka'"`
 	// @gotags: kong:"cmd,help='Apache ActiveMQ'"

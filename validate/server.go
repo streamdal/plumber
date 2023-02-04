@@ -51,12 +51,12 @@ func RelayOptionsForServer(relayOptions *opts.RelayOptions) error {
 		return ErrMissingConnectionId
 	}
 
-	if relayOptions.XBatchshGrpcAddress == "" {
-		relayOptions.XBatchshGrpcAddress = GRPCCollectorAddress
+	if relayOptions.XStreamdalGrpcAddress == "" {
+		relayOptions.XStreamdalGrpcAddress = GRPCCollectorAddress
 	}
 
-	if relayOptions.XBatchshGrpcTimeoutSeconds == 0 {
-		relayOptions.XBatchshGrpcTimeoutSeconds = GRPCDefaultTimeoutSeconds
+	if relayOptions.XStreamdalGrpcTimeoutSeconds == 0 {
+		relayOptions.XStreamdalGrpcTimeoutSeconds = GRPCDefaultTimeoutSeconds
 	}
 
 	return nil

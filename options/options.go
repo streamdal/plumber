@@ -101,8 +101,8 @@ func unsetUnusedOptions(kongCtx *kong.Context, cliOptions *opts.CLIOptions) {
 		cliOptions.Write = nil
 	case "tunnel":
 		unsetUnusedTunnelOpts(cliOptions)
-	case "batch":
-		unsetUnusedBatchOpts(cliOptions)
+	case "streamdal":
+		unsetUnusedStreamdalOpts(cliOptions)
 	}
 }
 
@@ -110,7 +110,7 @@ func unsetUnusedTunnelOpts(cliOptions *opts.CLIOptions) {
 	// TODO: unset unused backends
 }
 
-func unsetUnusedBatchOpts(cliOptions *opts.CLIOptions) {
+func unsetUnusedStreamdalOpts(cliOptions *opts.CLIOptions) {
 	// TODO: Unset unused backends
 }
 
@@ -191,13 +191,13 @@ func NewCLIOptions() *opts.CLIOptions {
 		Global: &opts.GlobalCLIOptions{
 			XCommands: make([]string, 0),
 		},
-		Server: &opts.ServerOptions{},
-		Read:   newReadOptions(),
-		Write:  newWriteOptions(),
-		Relay:  newRelayOptions(),
-		Tunnel: newTunnelOptions(),
-		Batch:  newBatchOptions(),
-		Manage: newManageOptions(),
+		Server:    &opts.ServerOptions{},
+		Read:      newReadOptions(),
+		Write:     newWriteOptions(),
+		Relay:     newRelayOptions(),
+		Tunnel:    newTunnelOptions(),
+		Streamdal: newStreamdalOptions(),
+		Manage:    newManageOptions(),
 	}
 }
 
@@ -543,15 +543,15 @@ func newTunnelOptions() *opts.TunnelOptions {
 	}
 }
 
-func newBatchOptions() *opts.BatchOptions {
-	return &opts.BatchOptions{
-		Login:  &opts.BatchLoginOptions{},
-		Logout: &opts.BatchLogoutOptions{},
-		List:   &opts.BatchListOptions{},
-		Create: &opts.BatchCreateOptions{
-			Collection: &opts.BatchCreateCollectionOptions{},
-			Replay:     &opts.BatchCreateReplayOptions{},
-			Destination: &opts.BatchCreateDestinationOptions{
+func newStreamdalOptions() *opts.StreamdalOptions {
+	return &opts.StreamdalOptions{
+		Login:  &opts.StreamdalLoginOptions{},
+		Logout: &opts.StreamdalLogoutOptions{},
+		List:   &opts.StreamdalListOptions{},
+		Create: &opts.StreamdalCreateOptions{
+			Collection: &opts.StreamdalCreateCollectionOptions{},
+			Replay:     &opts.StreamdalCreateReplayOptions{},
+			Destination: &opts.StreamdalCreateDestinationOptions{
 				Kafka: &opts.WriteGroupKafkaOptions{
 					XConn: &args.KafkaConn{},
 					Args: &args.KafkaWriteArgs{
@@ -578,9 +578,9 @@ func newBatchOptions() *opts.BatchOptions {
 				},
 			},
 		},
-		Search: &opts.BatchSearchOptions{},
-		Archive: &opts.BatchArchiveOptions{
-			Replay: &opts.BatchArchiveReplayOptions{},
+		Search: &opts.StreamdalSearchOptions{},
+		Archive: &opts.StreamdalArchiveOptions{
+			Replay: &opts.StreamdalArchiveReplayOptions{},
 		},
 	}
 }

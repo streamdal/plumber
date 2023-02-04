@@ -45,7 +45,7 @@ func (g *GCPPubSub) Relay(ctx context.Context, relayOpts *opts.RelayOptions, rel
 
 	sub := g.client.Subscription(relayOpts.GcpPubsub.Args.SubscriptionId)
 
-	g.log.Infof("Relaying GCP pubsub messages from '%s' queue -> '%s'", sub.ID(), relayOpts.XBatchshGrpcAddress)
+	g.log.Infof("Relaying GCP pubsub messages from '%s' queue -> '%s'", sub.ID(), relayOpts.XStreamdalGrpcAddress)
 
 	for {
 		select {
