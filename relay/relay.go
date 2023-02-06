@@ -191,7 +191,7 @@ func NewConnection(address, token string, timeout time.Duration, disableTLS, noC
 		ctx = context.Background()
 	}
 
-	md := metadata.Pairs("batch-token", token)
+	md := metadata.Pairs("streamdal-token", token)
 	outCtx := metadata.NewOutgoingContext(ctx, md)
 
 	return conn, outCtx, nil
