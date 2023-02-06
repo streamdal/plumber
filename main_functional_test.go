@@ -2998,6 +2998,7 @@ func createRabbitConnection(binary string) string {
 		"connection",
 		"rabbit",
 		"--name", connName,
+		"--manage-token", "streamdal",
 		"--address", "amqp://localhost",
 	)
 	out, err := createConnCmd.CombinedOutput()
