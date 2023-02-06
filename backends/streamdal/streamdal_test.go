@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/batchcorp/plumber/server/types"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -16,6 +14,7 @@ import (
 
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/server/types"
 )
 
 var logger = &logrus.Logger{Out: ioutil.Discard}
