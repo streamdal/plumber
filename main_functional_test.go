@@ -2224,7 +2224,7 @@ var _ = Describe("Functional", func() {
 		})
 	})
 
-	FDescribe("manage subcommand", func() {
+	Describe("manage subcommand", func() {
 		Describe("kafka", func() {
 			Describe("relay", func() {
 				var connId string
