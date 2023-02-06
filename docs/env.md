@@ -2,31 +2,31 @@
 
 ## Server
 
-| **Environment Variable** | **Description** | **Default** | **Required** |
-| ------------------------ | --------------- | ----------- | ------------ |
-| PLUMBER_SERVER_NODE_ID | Unique ID that identifies this plumber node | plumber1 | **true** |
+| **Environment Variable** | **Description** | **Default**                          | **Required** |
+| ------------------------ | --------------- |--------------------------------------| ------------ |
+| PLUMBER_SERVER_NODE_ID | Unique ID that identifies this plumber node | plumber1                             | **true** |
 | PLUMBER_SERVER_CLUSTER_ID | ID of the plumber cluster (has to be the same across all nodes) | aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa | **true** |
-| PLUMBER_SERVER_GRPC_LISTEN_ADDRESS | Host:port that the gRPC server will bind to | 127.0.0.1:9090 | false |
-| PLUMBER_SERVER_AUTH_TOKEN | All gRPC requests require this auth token to be set | batchcorp | **true** |
-| PLUMBER_SERVER_INITIAL_CLUSTER | InitialCluster should contain comma separated list of key=value pairs of host:port entries for ALL peers in the cluster. (Example: server1=http://192.168.1.10:2380 | plumber1=http://127.0.0.1:2380 | **true** |
-| PLUMBER_SERVER_ADVERTISE_PEER_URL | Address of _this_ plumber instance etcd server interface. Example: http://local-ip:2380 | http://127.0.0.1:2380 | false |
-| PLUMBER_SERVER_ADVERTISE_CLIENT_URL | Address of _this_ plumber instance etcd client interface. Example: http://local-ip:2379 | http://127.0.0.1:2379 | **true** |
-| PLUMBER_SERVER_LISTENER_PEER_URL | Address that _this_ plumber instance etcd server should listen on. Example: http://local-ip:2380 | http://127.0.0.1:2380 | false |
-| PLUMBER_SERVER_LISTENER_CLIENT_URL | Address that _this_ plumber instance etcd client should listen on. Example: http://local-ip:2379 | http://127.0.0.1:2379 | false |
-| PLUMBER_SERVER_PEER_TOKEN | Secret token that ALL cluster members should use/share. This node will NOT be able to join the cluster IF this token does not match on one of the plumber instances. | secret | false |
+| PLUMBER_SERVER_GRPC_LISTEN_ADDRESS | Host:port that the gRPC server will bind to | 127.0.0.1:9090                       | false |
+| PLUMBER_SERVER_AUTH_TOKEN | All gRPC requests require this auth token to be set | streamdal                            | **true** |
+| PLUMBER_SERVER_INITIAL_CLUSTER | InitialCluster should contain comma separated list of key=value pairs of host:port entries for ALL peers in the cluster. (Example: server1=http://192.168.1.10:2380 | plumber1=http://127.0.0.1:2380       | **true** |
+| PLUMBER_SERVER_ADVERTISE_PEER_URL | Address of _this_ plumber instance etcd server interface. Example: http://local-ip:2380 | http://127.0.0.1:2380                | false |
+| PLUMBER_SERVER_ADVERTISE_CLIENT_URL | Address of _this_ plumber instance etcd client interface. Example: http://local-ip:2379 | http://127.0.0.1:2379                | **true** |
+| PLUMBER_SERVER_LISTENER_PEER_URL | Address that _this_ plumber instance etcd server should listen on. Example: http://local-ip:2380 | http://127.0.0.1:2380                | false |
+| PLUMBER_SERVER_LISTENER_CLIENT_URL | Address that _this_ plumber instance etcd client should listen on. Example: http://local-ip:2379 | http://127.0.0.1:2379                | false |
+| PLUMBER_SERVER_PEER_TOKEN | Secret token that ALL cluster members should use/share. This node will NOT be able to join the cluster IF this token does not match on one of the plumber instances. | secret                               | false |
 
 ## Relay
 
-| **Environment Variable** | **Description** | **Default** | **Required** |
-| ------------------------ | --------------- | ----------- | ------------ |
-| PLUMBER_RELAY_HTTP_LISTEN_ADDRESS | What address to bind the built-in HTTP server to | localhost:9191 | false |
-| PLUMBER_RELAY_TOKEN | Secret collection token |  | **true** |
-| PLUMBER_RELAY_BATCH_SIZE | How many messages to send in a single batch | 1000 | false |
-| PLUMBER_RELAY_BATCH_MAX_RETRY | How many times plumber will try re-sending a batch | 3 | false |
-| PLUMBER_RELAY_NUM_WORKERS |  | 10 | false |
-| PLUMBER_RELAY_GRPC_ADDRESS | Alternative collector to relay events to | grpc-collector.batch.sh:9000 | false |
-| PLUMBER_RELAY_GRPC_DISABLE_TLS | Whether to use TLS with collector | false | false |
-| PLUMBER_RELAY_GRPC_TIMEOUT | How long to wait before giving up talking to the gRPC collector | 5 | false |
+| **Environment Variable** | **Description** | **Default**                       | **Required** |
+| ------------------------ | --------------- |-----------------------------------| ------------ |
+| PLUMBER_RELAY_HTTP_LISTEN_ADDRESS | What address to bind the built-in HTTP server to | localhost:9191                    | false |
+| PLUMBER_RELAY_TOKEN | Secret collection token |                                   | **true** |
+| PLUMBER_RELAY_BATCH_SIZE | How many messages to send in a single batch | 1000                              | false |
+| PLUMBER_RELAY_BATCH_MAX_RETRY | How many times plumber will try re-sending a batch | 3                                 | false |
+| PLUMBER_RELAY_NUM_WORKERS |  | 10                                | false |
+| PLUMBER_RELAY_GRPC_ADDRESS | Alternative collector to relay events to | grpc-collector.streamdal.com:9000 | false |
+| PLUMBER_RELAY_GRPC_DISABLE_TLS | Whether to use TLS with collector | false                             | false |
+| PLUMBER_RELAY_GRPC_TIMEOUT | How long to wait before giving up talking to the gRPC collector | 5                                 | false |
 
 ## Backends
 

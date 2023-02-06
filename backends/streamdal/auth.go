@@ -1,4 +1,4 @@
-package batch
+package streamdal
 
 import (
 	"bufio"
@@ -36,7 +36,7 @@ var (
 )
 
 // Login attempts to login to the Streamdal API using credentials supplied via stdin
-func (b *Batch) Login() error {
+func (b *Streamdal) Login() error {
 
 	// No credentials, or expired, ask for username/password
 	username, err := readUsername(os.Stdin)
@@ -71,7 +71,7 @@ func (b *Batch) Login() error {
 }
 
 // Logout logs a user out of the Streamdal API and clears saved credentials
-func (b *Batch) Logout() error {
+func (b *Streamdal) Logout() error {
 	// Perform APi logout
 	b.Post("/auth/logout", nil)
 
@@ -88,7 +88,7 @@ func (b *Batch) Logout() error {
 }
 
 // Authenticate makes an API call to the Streamdal API with the given account's credentials
-func (b *Batch) Authenticate(username, password string) (*AuthResponse, error) {
+func (b *Streamdal) Authenticate(username, password string) (*AuthResponse, error) {
 	res, code, err := b.Post("/v1/login", map[string]interface{}{
 		"email":    username,
 		"password": password,

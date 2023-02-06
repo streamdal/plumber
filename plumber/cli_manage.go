@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/batchcorp/natty"
-	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 	"github.com/hokaccha/go-prettyjson"
@@ -16,6 +14,9 @@ import (
 	"github.com/posthog/posthog-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+
+	"github.com/batchcorp/natty"
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
 )
 
 func (p *Plumber) HandleManageCmd() error {
@@ -155,7 +156,7 @@ func (p *Plumber) EnqueueManage(event posthog.Capture) {
 
 	event.Properties["default_manage_token"] = false
 
-	if p.CLIOptions.Manage.GlobalOptions.ManageToken == "batchcorp" {
+	if p.CLIOptions.Manage.GlobalOptions.ManageToken == "streamdal" {
 		event.Properties["default_manage_token"] = true
 	}
 

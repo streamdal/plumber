@@ -2251,7 +2251,8 @@ var _ = Describe("Functional", func() {
 						"create",
 						"relay",
 						"kafka",
-						"--batchsh-grpc-address", "grpc-collector.dev.streamdal.com:443",
+						"--manage-token", "streamdal",
+						"--streamdal-grpc-address", "grpc-collector.dev.streamdal.com:443",
 						"--connection-id", connId,
 						"--collection-token", testCollectionToken,
 						"--topics", "foo",
@@ -2282,6 +2283,7 @@ var _ = Describe("Functional", func() {
 						"manage",
 						"get",
 						"relay",
+						"--manage-token", "streamdal",
 						"--id", relayId,
 					)
 					out, err := getRelayCmd.CombinedOutput()
@@ -2303,6 +2305,7 @@ var _ = Describe("Functional", func() {
 						"manage",
 						"stop",
 						"relay",
+						"--manage-token", "streamdal",
 						"--id", relayId,
 					)
 					out, err := stopRelayCmd.CombinedOutput()
@@ -2321,6 +2324,7 @@ var _ = Describe("Functional", func() {
 						"manage",
 						"resume",
 						"relay",
+						"--manage-token", "streamdal",
 						"--id", relayId,
 					)
 					out, err := resumeRelayCmd.CombinedOutput()
@@ -2339,6 +2343,7 @@ var _ = Describe("Functional", func() {
 						"manage",
 						"delete",
 						"relay",
+						"--manage-token", "streamdal",
 						"--id", relayId,
 					)
 					out, err := deleteRelayCmd.CombinedOutput()
@@ -2376,7 +2381,8 @@ var _ = Describe("Functional", func() {
 						"create",
 						"tunnel",
 						"kafka",
-						"--x-tunnel-address", "dproxy.dev.batch.sh:443",
+						"--manage-token", "streamdal",
+						"--x-tunnel-address", "dproxy.dev.streamdal.com:443",
 						"--connection-id", connId,
 						"--tunnel-token", batchAPIToken,
 						"--topics", "foo",
@@ -2407,6 +2413,7 @@ var _ = Describe("Functional", func() {
 						"manage",
 						"get",
 						"tunnel",
+						"--manage-token", "streamdal",
 						"--id", tunnelId,
 					)
 					out, err := getTunnelCmd.CombinedOutput()
@@ -2428,6 +2435,7 @@ var _ = Describe("Functional", func() {
 						"manage",
 						"stop",
 						"tunnel",
+						"--manage-token", "streamdal",
 						"--id", tunnelId,
 					)
 					out, err := stopTunnelCmd.CombinedOutput()
@@ -2446,6 +2454,7 @@ var _ = Describe("Functional", func() {
 						"manage",
 						"resume",
 						"tunnel",
+						"--manage-token", "streamdal",
 						"--id", tunnelId,
 					)
 					out, err := resumeTunnelCmd.CombinedOutput()
@@ -2464,6 +2473,7 @@ var _ = Describe("Functional", func() {
 						"manage",
 						"delete",
 						"tunnel",
+						"--manage-token", "streamdal",
 						"--id", tunnelId,
 					)
 					out, err := deleteTunnelCmd.CombinedOutput()
@@ -2514,7 +2524,8 @@ var _ = Describe("Functional", func() {
 						"create",
 						"relay",
 						"rabbit",
-						"--batchsh-grpc-address", "grpc-collector.dev.streamdal.com:443",
+						"--manage-token", "streamdal",
+						"--streamdal-grpc-address", "grpc-collector.dev.streamdal.com:443",
 						"--connection-id", connId,
 						"--collection-token", testCollectionToken,
 						"--exchange-name", exchangeName,
@@ -2547,6 +2558,7 @@ var _ = Describe("Functional", func() {
 						"manage",
 						"get",
 						"relay",
+						"--manage-token", "streamdal",
 						"--id", relayId,
 					)
 					out, err := getRelayCmd.CombinedOutput()
@@ -2568,6 +2580,7 @@ var _ = Describe("Functional", func() {
 						"manage",
 						"stop",
 						"relay",
+						"--manage-token", "streamdal",
 						"--id", relayId,
 					)
 					out, err := stopRelayCmd.CombinedOutput()
@@ -2586,6 +2599,7 @@ var _ = Describe("Functional", func() {
 						"manage",
 						"resume",
 						"relay",
+						"--manage-token", "streamdal",
 						"--id", relayId,
 					)
 					out, err := resumeRelayCmd.CombinedOutput()
@@ -2604,6 +2618,7 @@ var _ = Describe("Functional", func() {
 						"manage",
 						"delete",
 						"relay",
+						"--manage-token", "streamdal",
 						"--id", relayId,
 					)
 					out, err := deleteRelayCmd.CombinedOutput()
@@ -2651,7 +2666,8 @@ var _ = Describe("Functional", func() {
 						"create",
 						"tunnel",
 						"rabbit",
-						"--x-tunnel-address", "dproxy.dev.batch.sh:443",
+						"--manage-token", "streamdal",
+						"--x-tunnel-address", "dproxy.dev.streamdal.com:443",
 						"--connection-id", connId,
 						"--tunnel-token", batchAPIToken,
 						"--exchange-name", exchangeName,
@@ -2683,6 +2699,7 @@ var _ = Describe("Functional", func() {
 						"manage",
 						"get",
 						"tunnel",
+						"--manage-token", "streamdal",
 						"--id", tunnelId,
 					)
 					out, err := getTunnelCmd.CombinedOutput()
@@ -2704,6 +2721,7 @@ var _ = Describe("Functional", func() {
 						"manage",
 						"stop",
 						"tunnel",
+						"--manage-token", "streamdal",
 						"--id", tunnelId,
 					)
 					out, err := stopTunnelCmd.CombinedOutput()
@@ -2722,6 +2740,7 @@ var _ = Describe("Functional", func() {
 						"manage",
 						"resume",
 						"tunnel",
+						"--manage-token", "streamdal",
 						"--id", tunnelId,
 					)
 					out, err := resumeTunnelCmd.CombinedOutput()
@@ -2740,6 +2759,7 @@ var _ = Describe("Functional", func() {
 						"manage",
 						"delete",
 						"tunnel",
+						"--manage-token", "streamdal",
 						"--id", tunnelId,
 					)
 					out, err := deleteTunnelCmd.CombinedOutput()
@@ -2848,6 +2868,7 @@ func createKafkaConnection(binary string) string {
 		"create",
 		"connection",
 		"kafka",
+		"--manage-token", "streamdal",
 		"--name", connName,
 		"--address", "localhost:9092",
 	)
@@ -2865,6 +2886,7 @@ func deleteConnection(binary string, connId string) {
 		"manage",
 		"delete",
 		"connection",
+		"--manage-token", "streamdal",
 		"--id", connId,
 	)
 	_, err := deleteConnCmd.CombinedOutput()
@@ -2976,6 +2998,7 @@ func createRabbitConnection(binary string) string {
 		"connection",
 		"rabbit",
 		"--name", connName,
+		"--manage-token", "streamdal",
 		"--address", "amqp://localhost",
 	)
 	out, err := createConnCmd.CombinedOutput()

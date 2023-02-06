@@ -1,4 +1,4 @@
-package batch
+package streamdal
 
 import (
 	"testing"
@@ -12,5 +12,5 @@ func TestAPISuite(t *testing.T) {
 	logrus.SetLevel(logrus.FatalLevel)
 
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Batch Test Suite")
+	RunSpecs(t, "Streamdal Test Suite")
 }

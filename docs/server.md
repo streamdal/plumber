@@ -1,6 +1,6 @@
 # Server Mode
 
-For full documentation, see: https://docs.batch.sh/plumber/server-mode
+For full documentation, see: https://docs.streamdal.com/plumber/server-mode
 
 Below are  examples on how to run plumber in server mode
 

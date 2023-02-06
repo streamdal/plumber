@@ -124,9 +124,9 @@ func (m *SourceManager) GetSourceId() string {
 
 type Auth struct {
 	Token string `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
-	// Filled out by batch. Not intended to be used by plumber.
+	// Filled out by Streamdal. Not intended to be used by plumber.
 	XForeman *Foreman `protobuf:"bytes,2,opt,name=_foreman,json=Foreman,proto3" json:"_foreman,omitempty"`
-	// Filled out by batch. Not intended to be used by Plumber.
+	// Filled out by Streamdal. Not intended to be used by Plumber.
 	XSourceManager       *SourceManager `protobuf:"bytes,3,opt,name=_source_manager,json=SourceManager,proto3" json:"_source_manager,omitempty"`
 	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
 	XXX_unrecognized     []byte         `json:"-"`

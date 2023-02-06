@@ -57,15 +57,15 @@ var _ = Describe("Validate Server", func() {
 
 		It("falls back to the default GRPCCollectorAddress and GRPCTimeout if none is given", func() {
 			relayOptions := &opts.RelayOptions{
-				XBatchshGrpcAddress: "",
-				CollectionToken:     "TOKEN",
-				ConnectionId:        "ConnId",
+				XStreamdalGrpcAddress: "",
+				CollectionToken:       "TOKEN",
+				ConnectionId:          "ConnId",
 			}
 			err := RelayOptionsForServer(relayOptions)
 
 			Expect(err).ToNot(HaveOccurred())
-			Expect(relayOptions.XBatchshGrpcAddress).To(Equal("grpc-collector.streamdal.com:9000"))
-			Expect(relayOptions.XBatchshGrpcTimeoutSeconds).To(BeEquivalentTo(5))
+			Expect(relayOptions.XStreamdalGrpcAddress).To(Equal("grpc-collector.streamdal.com:9000"))
+			Expect(relayOptions.XStreamdalGrpcTimeoutSeconds).To(BeEquivalentTo(5))
 		})
 
 	})

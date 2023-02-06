@@ -1,14 +1,14 @@
-package batch
+package streamdal
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Batch", func() {
+var _ = Describe("Streamdal", func() {
 	Context("ListSchemas", func() {
 		It("returns error when no schemas exist", func() {
-			b := BatchWithMockResponse(200, `[]`)
+			b := StreamdalWithMockResponse(200, `[]`)
 
 			output, err := b.listSchemas()
 			Expect(err).To(Equal(errNoSchemas))
@@ -16,7 +16,7 @@ var _ = Describe("Batch", func() {
 		})
 
 		It("returns error on a bad response", func() {
-			b := BatchWithMockResponse(200, `{}`)
+			b := StreamdalWithMockResponse(200, `{}`)
 
 			output, err := b.listSchemas()
 			Expect(err).To(Equal(errSchemaFailed))
@@ -32,7 +32,7 @@ var _ = Describe("Batch", func() {
 			  "archived": false
 			}]`
 
-			b := BatchWithMockResponse(200, apiResponse)
+			b := StreamdalWithMockResponse(200, apiResponse)
 
 			output, err := b.listSchemas()
 			Expect(err).ToNot(HaveOccurred())

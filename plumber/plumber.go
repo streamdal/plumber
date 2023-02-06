@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/batchcorp/plumber/telemetry"
 	dpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/mcuadros/go-lookup"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber/telemetry"
 
 	"github.com/batchcorp/kong"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
@@ -144,8 +145,8 @@ func (p *Plumber) Run() {
 	switch p.CLIOptions.Global.XAction {
 	case "server":
 		err = p.RunServer()
-	case "batch":
-		err = p.HandleBatchCmd()
+	case "streamdal":
+		err = p.HandleStreamdalCmd()
 	case "read":
 		err = p.HandleReadCmd()
 	case "write":

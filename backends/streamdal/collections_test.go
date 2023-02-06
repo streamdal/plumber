@@ -1,14 +1,14 @@
-package batch
+package streamdal
 
 import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Batch", func() {
+var _ = Describe("Streamdal", func() {
 	Context("ListCollections", func() {
 		It("returns an error when empty", func() {
-			b := BatchWithMockResponse(200, `[]`)
+			b := StreamdalWithMockResponse(200, `[]`)
 
 			output, err := b.listCollections()
 			Expect(err).To(Equal(errNoCollections))
@@ -16,7 +16,7 @@ var _ = Describe("Batch", func() {
 		})
 
 		It("returns error on a bad response", func() {
-			b := BatchWithMockResponse(200, `{}`)
+			b := StreamdalWithMockResponse(200, `{}`)
 
 			output, err := b.listCollections()
 			Expect(err).To(Equal(errCollectionsFailed))
@@ -87,7 +87,7 @@ var _ = Describe("Batch", func() {
 			  }
 			]`
 
-			b := BatchWithMockResponse(200, apiResponse)
+			b := StreamdalWithMockResponse(200, apiResponse)
 
 			output, err := b.listCollections()
 			Expect(err).ToNot(HaveOccurred())
@@ -105,7 +105,7 @@ var _ = Describe("Batch", func() {
 		It("returns an error when no datalakes exist", func() {
 			apiResponse := `[]`
 
-			b := BatchWithMockResponse(200, apiResponse)
+			b := StreamdalWithMockResponse(200, apiResponse)
 
 			output, err := b.getDataLakeID()
 			Expect(err).To(HaveOccurred())
@@ -128,7 +128,7 @@ var _ = Describe("Batch", func() {
 			  }
 			]`
 
-			b := BatchWithMockResponse(200, apiResponse)
+			b := StreamdalWithMockResponse(200, apiResponse)
 
 			output, err := b.getDataLakeID()
 			Expect(err).ToNot(HaveOccurred())

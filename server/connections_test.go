@@ -32,7 +32,7 @@ var _ = Describe("Connection", func() {
 
 		p = &Server{
 			Bus:       fakeBus,
-			AuthToken: "batchcorp",
+			AuthToken: "streamdal",
 			PersistentConfig: &config.Config{
 				ConnectionsMutex: &sync.RWMutex{},
 				Connections:      map[string]*stypes.Connection{},
@@ -68,7 +68,7 @@ var _ = Describe("Connection", func() {
 			p.PersistentConfig.SetConnection(connID, &stypes.Connection{Connection: conn})
 
 			resp, err := p.GetConnection(context.Background(), &protos.GetConnectionRequest{
-				Auth:         &common.Auth{Token: "batchcorp"},
+				Auth:         &common.Auth{Token: "streamdal"},
 				ConnectionId: connID,
 			})
 
@@ -102,7 +102,7 @@ var _ = Describe("Connection", func() {
 			}
 
 			resp, err := p.GetAllConnections(context.Background(), &protos.GetAllConnectionsRequest{
-				Auth: &common.Auth{Token: "batchcorp"},
+				Auth: &common.Auth{Token: "streamdal"},
 			})
 
 			Expect(err).ToNot(HaveOccurred())
@@ -144,7 +144,7 @@ var _ = Describe("Connection", func() {
 			}
 
 			resp, err := p.CreateConnection(context.Background(), &protos.CreateConnectionRequest{
-				Auth:    &common.Auth{Token: "batchcorp"},
+				Auth:    &common.Auth{Token: "streamdal"},
 				Options: conn,
 			})
 
@@ -190,7 +190,7 @@ var _ = Describe("Connection", func() {
 			}
 
 			_, err := p.UpdateConnection(context.Background(), &protos.UpdateConnectionRequest{
-				Auth:         &common.Auth{Token: "batchcorp"},
+				Auth:         &common.Auth{Token: "streamdal"},
 				ConnectionId: connID,
 				Options:      newConn,
 			})
@@ -231,7 +231,7 @@ var _ = Describe("Connection", func() {
 			p.PersistentConfig.SetConnection(connID, &stypes.Connection{Connection: conn})
 
 			resp, err := p.DeleteConnection(context.Background(), &protos.DeleteConnectionRequest{
-				Auth:         &common.Auth{Token: "batchcorp"},
+				Auth:         &common.Auth{Token: "streamdal"},
 				ConnectionId: connID,
 			})
 

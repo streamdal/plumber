@@ -1,4 +1,4 @@
-package batch
+package streamdal
 
 import (
 	"encoding/json"
@@ -58,7 +58,7 @@ var (
 )
 
 // ListReplays lists all of an account's replays
-func (b *Batch) ListReplays() error {
+func (b *Streamdal) ListReplays() error {
 	output, err := b.listReplays()
 	if err != nil {
 		return err
@@ -69,7 +69,7 @@ func (b *Batch) ListReplays() error {
 	return nil
 }
 
-func (b *Batch) listReplays() ([]ReplayOutput, error) {
+func (b *Streamdal) listReplays() ([]ReplayOutput, error) {
 	res, _, err := b.Get("/v1/replay", nil)
 	if err != nil {
 		return nil, errors.Wrap(err, errReplayListFailed.Error())
@@ -118,7 +118,7 @@ func (b *Batch) listReplays() ([]ReplayOutput, error) {
 }
 
 // ArchiveReplay archives a replay
-func (b *Batch) ArchiveReplay() error {
+func (b *Streamdal) ArchiveReplay() error {
 	if err := b.archiveReplay(); err != nil {
 		return err
 	}
@@ -128,8 +128,8 @@ func (b *Batch) ArchiveReplay() error {
 	return nil
 }
 
-func (b *Batch) archiveReplay() error {
-	res, code, err := b.Delete("/v1/replay/" + b.Opts.Batch.Archive.Replay.ReplayId)
+func (b *Streamdal) archiveReplay() error {
+	res, code, err := b.Delete("/v1/replay/" + b.Opts.Streamdal.Archive.Replay.ReplayId)
 	if err != nil {
 		return errors.Wrap(err, errReplayArchiveFailed.Error())
 	}
@@ -151,25 +151,25 @@ func (b *Batch) archiveReplay() error {
 	return nil
 }
 
-func (b *Batch) pauseReplay() error {
+func (b *Streamdal) pauseReplay() error {
 	// TODO
 
 	return nil
 }
 
-func (b *Batch) resumeReplay() error {
+func (b *Streamdal) resumeReplay() error {
 	// TODO
 
 	return nil
 }
 
-func (b *Batch) createReplay(query string) (*Replay, error) {
+func (b *Streamdal) createReplay(query string) (*Replay, error) {
 	p := map[string]interface{}{
-		"name":           b.Opts.Batch.Create.Replay.Name,
-		"type":           b.Opts.Batch.Create.Replay.Type, // TODO: This is probably incorrect (why? ~ds)
+		"name":           b.Opts.Streamdal.Create.Replay.Name,
+		"type":           b.Opts.Streamdal.Create.Replay.Type,
 		"query":          query,
-		"collection_id":  b.Opts.Batch.Create.Replay.CollectionId,
-		"destination_id": b.Opts.Batch.Create.Replay.DestinationId,
+		"collection_id":  b.Opts.Streamdal.Create.Replay.CollectionId,
+		"destination_id": b.Opts.Streamdal.Create.Replay.DestinationId,
 	}
 
 	res, code, err := b.Post("/v1/replay", p)
@@ -196,7 +196,7 @@ func (b *Batch) createReplay(query string) (*Replay, error) {
 	return replay, nil
 }
 
-func (b *Batch) CreateReplay() error {
+func (b *Streamdal) CreateReplay() error {
 
 	query, err := b.generateReplayQuery()
 	if err != nil {
@@ -215,20 +215,20 @@ func (b *Batch) CreateReplay() error {
 	return nil
 }
 
-func (b *Batch) generateReplayQuery() (string, error) {
-	from, err := time.Parse("2006-01-02T15:04:05Z", b.Opts.Batch.Create.Replay.FromTimestamp)
+func (b *Streamdal) generateReplayQuery() (string, error) {
+	from, err := time.Parse("2006-01-02T15:04:05Z", b.Opts.Streamdal.Create.Replay.FromTimestamp)
 	if err != nil {
-		return "", fmt.Errorf("--from-timestamp '%s' is not a valid RFC3339 date", b.Opts.Batch.Create.Replay.FromTimestamp)
+		return "", fmt.Errorf("--from-timestamp '%s' is not a valid RFC3339 date", b.Opts.Streamdal.Create.Replay.FromTimestamp)
 	}
 
-	to, err := time.Parse("2006-01-02T15:04:05Z", b.Opts.Batch.Create.Replay.ToTimestamp)
+	to, err := time.Parse("2006-01-02T15:04:05Z", b.Opts.Streamdal.Create.Replay.ToTimestamp)
 	if err != nil {
-		return "", fmt.Errorf("--to-timestamp '%s' is not a valid RFC3339 date", b.Opts.Batch.Create.Replay.ToTimestamp)
+		return "", fmt.Errorf("--to-timestamp '%s' is not a valid RFC3339 date", b.Opts.Streamdal.Create.Replay.ToTimestamp)
 	}
 
-	if b.Opts.Batch.Create.Replay.Query == "*" {
+	if b.Opts.Streamdal.Create.Replay.Query == "*" {
 		return fmt.Sprintf("batch.info.date_human: [%s TO %s]", from.Format(time.RFC3339), to.Format(time.RFC3339)), nil
 	}
 
-	return fmt.Sprintf("%s AND batch.info.date_human: [%s TO %s]", b.Opts.Batch.Create.Replay.Query, from.Format(time.RFC3339), to.Format(time.RFC3339)), nil
+	return fmt.Sprintf("%s AND batch.info.date_human: [%s TO %s]", b.Opts.Streamdal.Create.Replay.Query, from.Format(time.RFC3339), to.Format(time.RFC3339)), nil
 }

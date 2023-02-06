@@ -1,12 +1,10 @@
-package batch
+package streamdal
 
 import (
 	"bytes"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-
-	"github.com/batchcorp/plumber/server/types"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -16,6 +14,7 @@ import (
 
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/options"
+	"github.com/batchcorp/plumber/server/types"
 )
 
 var logger = &logrus.Logger{Out: ioutil.Discard}
@@ -33,7 +32,7 @@ func newHttpClient(fn RoundTripFunc) *http.Client {
 	}
 }
 
-func BatchWithMockResponse(httpCode int, responseBody string) *Batch {
+func StreamdalWithMockResponse(httpCode int, responseBody string) *Streamdal {
 	client := newHttpClient(func(req *http.Request) *http.Response {
 		return &http.Response{
 			StatusCode: httpCode,
@@ -41,7 +40,7 @@ func BatchWithMockResponse(httpCode int, responseBody string) *Batch {
 		}
 	})
 
-	return &Batch{
+	return &Streamdal{
 		Log:    logrus.NewEntry(logger),
 		Client: client,
 		Opts:   options.NewCLIOptions(),
@@ -51,18 +50,18 @@ func BatchWithMockResponse(httpCode int, responseBody string) *Batch {
 	}
 }
 
-var _ = Describe("Batch", func() {
+var _ = Describe("Streamdal", func() {
 	Context("New", func() {
-		It("returns a new instance of Batch struct", func() {
-			b := New(&opts.CLIOptions{Batch: &opts.BatchOptions{}}, &config.Config{})
-			Expect(b).To(BeAssignableToTypeOf(&Batch{}))
+		It("returns a new instance of Streamdal struct", func() {
+			b := New(&opts.CLIOptions{Streamdal: &opts.StreamdalOptions{}}, &config.Config{})
+			Expect(b).To(BeAssignableToTypeOf(&Streamdal{}))
 		})
 	})
 	Context("getCookieJar", func() {
 		It("returns cookie jar with auth_token", func() {
 			const Token = "testin123"
 
-			b := &Batch{
+			b := &Streamdal{
 				PersistentConfig: &config.Config{Token: Token},
 				ApiUrl:           "https://api.streamdal.com",
 			}
@@ -79,7 +78,7 @@ var _ = Describe("Batch", func() {
 	})
 	Context("Post", func() {
 		It("returns unauthenticated error", func() {
-			b := BatchWithMockResponse(http.StatusUnauthorized, "")
+			b := StreamdalWithMockResponse(http.StatusUnauthorized, "")
 
 			_, _, err := b.Post("/", nil)
 			Expect(err).To(HaveOccurred())
