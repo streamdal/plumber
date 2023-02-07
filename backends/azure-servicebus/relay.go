@@ -3,7 +3,7 @@ package azure_servicebus
 import (
 	"context"
 
-	servicebus "github.com/Azure/azure-service-bus-go"
+	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
@@ -14,26 +14,26 @@ import (
 	"github.com/batchcorp/plumber/validate"
 )
 
-func (a *AzureServiceBus) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan<- *records.ErrorRecord) error {
+func (a *AzureServiceBus) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, _ chan<- *records.ErrorRecord) error {
 	if err := validateRelayOpts(relayOpts); err != nil {
 		return errors.Wrap(err, "invalid relay options")
 	}
 
-	var handler servicebus.HandlerFunc = func(ctx context.Context, msg *servicebus.Message) error {
+	var handler messageHandlerFunc = func(ctx context.Context, receiver *azservicebus.Receiver, msg *azservicebus.ReceivedMessage) error {
 		a.log.Debug("Writing message to relay channel")
 
 		// This might be nil if no user properties were sent with the original message
-		if msg.UserProperties == nil {
-			msg.UserProperties = make(map[string]interface{}, 0)
+		if msg.ApplicationProperties == nil {
+			msg.ApplicationProperties = make(map[string]interface{}, 0)
 		}
 
 		// Azure's Message struct does not include this information for some reason
 		// Seems like it would be good to have. Prefixed with plumber to avoid collisions with user data
 		if relayOpts.AzureServiceBus.Args.Queue != "" {
-			msg.UserProperties["plumber_queue"] = relayOpts.AzureServiceBus.Args.Queue
+			msg.ApplicationProperties["plumber_queue"] = relayOpts.AzureServiceBus.Args.Queue
 		} else {
-			msg.UserProperties["plumber_topic"] = relayOpts.AzureServiceBus.Args.Topic
-			msg.UserProperties["plumber_subscription"] = relayOpts.AzureServiceBus.Args.SubscriptionName
+			msg.ApplicationProperties["plumber_topic"] = relayOpts.AzureServiceBus.Args.Topic
+			msg.ApplicationProperties["plumber_subscription"] = relayOpts.AzureServiceBus.Args.SubscriptionName
 		}
 
 		prometheus.Incr("azure-servicebus-relay-consumer", 1)
@@ -43,8 +43,7 @@ func (a *AzureServiceBus) Relay(ctx context.Context, relayOpts *opts.RelayOption
 			Options: &types.RelayMessageOptions{},
 		}
 
-		defer msg.Complete(ctx)
-		return nil
+		return receiver.CompleteMessage(ctx, msg, nil)
 	}
 
 	if relayOpts.AzureServiceBus.Args.Queue != "" {
@@ -55,22 +54,18 @@ func (a *AzureServiceBus) Relay(ctx context.Context, relayOpts *opts.RelayOption
 }
 
 // relayQueue reads messages from an ASB queue
-func (a *AzureServiceBus) relayQueue(ctx context.Context, handler servicebus.HandlerFunc, relayOpts *opts.RelayOptions) error {
-	queue, err := a.client.NewQueue(relayOpts.AzureServiceBus.Args.Queue)
+func (a *AzureServiceBus) relayQueue(ctx context.Context, handler messageHandlerFunc, relayOpts *opts.RelayOptions) error {
+	receiver, err := a.client.NewReceiverForQueue(relayOpts.AzureServiceBus.Args.Queue, nil)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new azure service bus queue client")
 	}
 
-	defer queue.Close(context.Background())
+	defer func() {
+		_ = receiver.Close(context.Background())
+	}()
+
 	for {
-		if err := queue.ReceiveOne(ctx, handler); err != nil {
-			if err == context.Canceled {
-				a.log.Debug("Received shutdown signal, exiting relayer")
-				return nil
-			}
-
-			prometheus.IncrPromCounter("plumber_read_errors", 1)
-
+		if err := a.handleRelayMessages(ctx, receiver, handler); err != nil {
 			return err
 		}
 	}
@@ -79,28 +74,40 @@ func (a *AzureServiceBus) relayQueue(ctx context.Context, handler servicebus.Han
 }
 
 // relayTopic reads messages from an ASB topic using the given subscription name
-func (a *AzureServiceBus) relayTopic(ctx context.Context, handler servicebus.HandlerFunc, relayOpts *opts.RelayOptions) error {
-	topic, err := a.client.NewTopic(relayOpts.AzureServiceBus.Args.Topic)
+func (a *AzureServiceBus) relayTopic(ctx context.Context, handler messageHandlerFunc, relayOpts *opts.RelayOptions) error {
+	receiver, err := a.client.NewReceiverForSubscription(relayOpts.AzureServiceBus.Args.Topic, relayOpts.AzureServiceBus.Args.SubscriptionName, nil)
 	if err != nil {
-		return errors.Wrap(err, "unable to create new azure service bus topic client")
+		return errors.Wrap(err, "unable to create new azure service bus subscription client")
 	}
 
-	sub, err := topic.NewSubscription(relayOpts.AzureServiceBus.Args.SubscriptionName)
-	if err != nil {
-		return errors.Wrap(err, "unable to create topic subscription")
-	}
-
-	defer sub.Close(context.Background())
+	defer func() {
+		_ = receiver.Close(context.Background())
+	}()
 
 	for {
-		if err := sub.ReceiveOne(ctx, handler); err != nil {
-			if err == context.Canceled {
-				a.log.Debug("Received shutdown signal, exiting relayer")
-				return nil
-			}
+		if err := a.handleRelayMessages(ctx, receiver, handler); err != nil {
+			return err
+		}
+	}
 
-			prometheus.IncrPromCounter("plumber_read_errors", 1)
+	return nil
+}
 
+func (a *AzureServiceBus) handleRelayMessages(ctx context.Context, receiver *azservicebus.Receiver, handler messageHandlerFunc) error {
+	messages, err := receiver.ReceiveMessages(ctx, 1, nil)
+	if err != nil {
+		if err == context.Canceled {
+			a.log.Debug("Received shutdown signal, exiting relayer")
+			return nil
+		}
+
+		prometheus.IncrPromCounter("plumber_read_errors", 1)
+
+		return err
+	}
+
+	for i := range messages {
+		if err = handler(ctx, receiver, messages[i]); err != nil {
 			return err
 		}
 	}
@@ -110,7 +117,7 @@ func (a *AzureServiceBus) relayTopic(ctx context.Context, handler servicebus.Han
 
 func validateRelayOpts(relayOpts *opts.RelayOptions) error {
 	if relayOpts == nil {
-		return validate.ErrMissingReadOptions
+		return validate.ErrMissingRelayOptions
 	}
 
 	if relayOpts.AzureServiceBus == nil {

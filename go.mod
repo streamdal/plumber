@@ -7,7 +7,8 @@ replace github.com/v2pro/plz => github.com/batchcorp/plz v0.9.2
 require (
 	cloud.google.com/go/pubsub v1.6.1
 	github.com/Azure/azure-event-hubs-go/v3 v3.3.16
-	github.com/Azure/azure-service-bus-go v0.11.5
+	github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus v1.1.0
+	github.com/Azure/go-amqp v0.16.4 // indirect
 	github.com/Masterminds/semver v1.5.0
 	github.com/apache/pulsar-client-go v0.7.0
 	github.com/aws/aws-sdk-go v1.34.28
@@ -31,7 +32,6 @@ require (
 	github.com/imdario/mergo v0.3.13
 	github.com/jackc/pgx v3.2.0+incompatible
 	github.com/jhump/protoreflect v1.10.1
-	github.com/json-iterator/go v1.1.12
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/kataras/tablewriter v0.0.0-20180708051242-e063d29b7c23
 	github.com/kubemq-io/kubemq-go v1.7.2
@@ -41,6 +41,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.10 // indirect
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.3.0
 	github.com/mcuadros/go-lookup v0.0.0-20200831155250-80f87a4fa5ee
+	github.com/mitchellh/mapstructure v1.3.3 // indirect
 	github.com/nats-io/nats-streaming-server v0.24.1 // indirect
 	github.com/nats-io/nats.go v1.13.1-0.20220121202836-972a071d373d
 	github.com/nats-io/nkeys v0.3.0
@@ -59,15 +60,12 @@ require (
 	github.com/segmentio/kafka-go v0.4.16
 	github.com/sirupsen/logrus v1.8.1
 	github.com/streadway/amqp v1.0.0
-	github.com/thrift-iterator/go v0.0.0-20190402154806-9b5a67519118
 	github.com/tidwall/gjson v1.9.3
-	github.com/v2pro/plz v0.0.0-20200805122259-422184e41b6e // indirect
-	github.com/v2pro/quokka v0.0.0-20171201153428-382cb39c6ee6 // indirect
-	github.com/v2pro/wombat v0.0.0-20180402055224-a56dbdcddef2 // indirect
 	go.mongodb.org/mongo-driver v1.7.3
-	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce
+	golang.org/x/crypto v0.0.0-20220511200225-c6db032c6c88
 	google.golang.org/api v0.29.0
 	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c // indirect
 	google.golang.org/grpc v1.40.0
 	google.golang.org/protobuf v1.28.1
+	nhooyr.io/websocket v1.8.7 // indirect
 )

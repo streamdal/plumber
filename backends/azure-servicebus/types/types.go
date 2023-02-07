@@ -1,10 +1,12 @@
 package types
 
-import servicebus "github.com/Azure/azure-service-bus-go"
+import (
+	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
+)
 
 // RelayMessage encapsulates a kafka message that is read by relay.Run()
 type RelayMessage struct {
-	Value   *servicebus.Message
+	Value   *azservicebus.ReceivedMessage
 	Options *RelayMessageOptions
 }
 

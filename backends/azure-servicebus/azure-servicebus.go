@@ -3,7 +3,7 @@ package azure_servicebus
 import (
 	"context"
 
-	servicebus "github.com/Azure/azure-service-bus-go"
+	"github.com/Azure/azure-sdk-for-go/sdk/messaging/azservicebus"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -21,10 +21,12 @@ var (
 	ErrQueueAndTopic = errors.New("only one topic or queue can be specified")
 )
 
+type messageHandlerFunc func(ctx context.Context, receiver *azservicebus.Receiver, msg *azservicebus.ReceivedMessage) error
+
 type AzureServiceBus struct {
 	connOpts *opts.ConnectionOptions
 	connArgs *args.AzureServiceBusConn
-	client   *servicebus.Namespace
+	client   *azservicebus.Client
 	log      *logrus.Entry
 }
 
@@ -33,7 +35,7 @@ func New(connOpts *opts.ConnectionOptions) (*AzureServiceBus, error) {
 		return nil, errors.Wrap(err, "invalid connection options")
 	}
 
-	client, err := servicebus.NewNamespace(servicebus.NamespaceWithConnectionString(connOpts.GetAzureServiceBus().ConnectionString))
+	client, err := azservicebus.NewClientFromConnectionString(connOpts.GetAzureServiceBus().ConnectionString, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create new azure service bus client")
 	}
