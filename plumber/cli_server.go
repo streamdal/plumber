@@ -2,14 +2,17 @@ package plumber
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net"
 	"time"
 
+	"github.com/hashicorp/yamux"
 	"github.com/pkg/errors"
 	"github.com/posthog/posthog-go"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber/api"
@@ -58,8 +61,13 @@ func (p *Plumber) RunServer() error {
 
 	p.Bus = b
 
-	// Launch gRPC server (blocks)
-	if err := p.startGRPCServer(); err != nil {
+	lis, err := net.Listen("tcp", p.CLIOptions.Server.GrpcListenAddress)
+	if err != nil {
+		return fmt.Errorf("unable to listen on '%s': %s", p.CLIOptions.Server.GrpcListenAddress, err)
+	}
+
+	// Launch gRPC server
+	if err := p.startGRPCServer(lis, p.CLIOptions.Server.GrpcListenAddress); err != nil {
 		p.log.Fatalf("unable to run gRPC server: %s", err)
 	}
 
@@ -76,6 +84,8 @@ func (p *Plumber) RunServer() error {
 		}
 	}()
 
+	go p.runRemoteControl()
+
 	// Wait for shutdown
 	select {
 	case <-p.ServiceShutdownCtx.Done():
@@ -89,6 +99,119 @@ func (p *Plumber) RunServer() error {
 	}
 
 	return nil
+}
+
+func (p *Plumber) runRemoteControl() bool {
+	if !p.CLIOptions.Server.RemoteControlEnabled {
+		return true
+	}
+
+	if p.CLIOptions.Server.RemoteControlApiToken == "" {
+		p.log.Fatal("Remote control requires --remote-control-api-token or PLUMBER_REMOTE_CONTROL_API_TOKEN to be specified")
+	}
+
+	p.log.Debug("starting remote control server...")
+
+	foremanAddr := p.Config.CLIOptions.Server.RemoteControlAddress
+
+	// Establish a regular TCP connection to the foreman service
+	conn, err := net.DialTimeout("tcp", foremanAddr, time.Second*5)
+	if err != nil {
+		p.log.Errorf("failed to register with remote control server. remote control not available: %s", err)
+		return false
+	}
+
+	// Establish two-way communication with the foreman service
+	// We will talk gRPC to Foreman, and Foreman will talk gRPC to us
+	foremanConn, err := yamux.Client(conn, yamux.DefaultConfig())
+	if err != nil {
+		p.log.Errorf("couldn't create yamux server: %s", err)
+		return false
+	}
+
+	dialOpts := make([]grpc.DialOption, 0)
+
+	if p.Config.CLIOptions.Server.RemoteControlDisableTls {
+		dialOpts = append(dialOpts, grpc.WithInsecure())
+	} else {
+		dialOpts = append(dialOpts, grpc.WithTransportCredentials(credentials.NewTLS(
+			&tls.Config{
+				InsecureSkipVerify: true,
+			},
+		)))
+	}
+
+	dialOpts = append(dialOpts, grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
+		return foremanConn.Open()
+	}))
+
+	// Establish Plumber -> Foreman gRPC connection over our yamux session
+	foremanGRPCConn, err := grpc.Dial(foremanAddr, dialOpts...)
+	if err != nil {
+		p.log.Errorf("failed to create grpc client: %s", err)
+		conn.Close()
+		return false
+	}
+
+	// Register ourselves with the foreman service
+	client := protos.NewForemanClientClient(foremanGRPCConn)
+	authResp, err := client.Register(context.Background(), &protos.RegisterRequest{
+		ApiToken:     p.Config.CLIOptions.Server.RemoteControlApiToken,
+		ClusterId:    p.Config.CLIOptions.Server.ClusterId,
+		PlumberToken: p.Config.CLIOptions.Server.AuthToken,
+		NodeId:       p.Config.CLIOptions.Server.NodeId,
+	})
+	if err != nil {
+		p.log.Errorf("failed to register with remote control server. remote control not available: %s", err)
+		conn.Close()
+		foremanGRPCConn.Close()
+		return false
+	}
+
+	if !authResp.Success {
+		p.log.Errorf("failed to register with remote control server. remote control not available: %s", authResp.Message)
+		conn.Close()
+		foremanGRPCConn.Close()
+		return false
+	}
+
+	// Start a second plumber gRPC server over the yamux session so that
+	// Foreman can send gRPC calls to this Plumber instance
+	if err := p.startGRPCServer(foremanConn, foremanAddr); err != nil {
+		p.log.Fatalf("unable to run remote control gRPC server: %s", err)
+	}
+
+	// Monitor for connection loss and attempt to reconnect
+	go p.watchForForemanDisconnect(foremanConn)
+
+	return true
+}
+
+// watchForForemanDisconnect watches for a disconnect from the foreman plumber control service
+// If it detects a disconnect, it will attempt to continually retry the connection
+func (p *Plumber) watchForForemanDisconnect(sess *yamux.Session) {
+	ch := sess.CloseChan()
+
+	// Block until connection is closed/lost
+	<-ch
+
+	// Try to reconnect w/backoff
+	var i int
+	for {
+		retry := ForemanReconnectPolicy.Duration(i)
+		p.log.Errorf("No connection to remote control server. Remote control not available, attempting "+
+			"reconnect in %s", retry.String())
+		time.Sleep(retry)
+
+		if ok := p.runRemoteControl(); ok {
+			p.log.Info("Reconnected successfully to remote control server")
+			// Reconnected successfully, exit out of this goroutine
+			// Another one will be started for the new connection in runRemoteControl()
+			return
+		}
+
+		i++
+	}
 }
 
 func (p *Plumber) relaunchRelays() error {
@@ -137,12 +260,7 @@ func (p *Plumber) relaunchTunnels() error {
 
 }
 
-func (p *Plumber) startGRPCServer() error {
-	lis, err := net.Listen("tcp", p.CLIOptions.Server.GrpcListenAddress)
-	if err != nil {
-		return fmt.Errorf("unable to listen on '%s': %s", p.CLIOptions.Server.GrpcListenAddress, err)
-	}
-
+func (p *Plumber) startGRPCServer(listener net.Listener, addr string) error {
 	var opts []grpc.ServerOption
 
 	grpcServer := grpc.NewServer(opts...)
@@ -181,10 +299,12 @@ func (p *Plumber) startGRPCServer() error {
 	errCh := make(chan error, 1)
 
 	go func() {
-		if err := grpcServer.Serve(lis); err != nil {
+		if err := grpcServer.Serve(listener); err != nil {
 			errCh <- errors.Wrap(err, "unable to start gRPC server")
 		}
 	}()
+
+	p.log.Debugf("started gRPC server on %s", addr)
 
 	afterCh := time.After(5 * time.Second)
 

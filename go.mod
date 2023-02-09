@@ -6,6 +6,7 @@ replace github.com/v2pro/plz => github.com/batchcorp/plz v0.9.2
 
 require (
 	cloud.google.com/go/pubsub v1.6.1
+	github.com/99designs/keyring v1.1.5 // indirect
 	github.com/Azure/azure-event-hubs-go/v3 v3.3.16
 	github.com/Azure/azure-service-bus-go v0.11.5
 	github.com/Masterminds/semver v1.5.0
@@ -27,6 +28,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.3.0
+	github.com/hashicorp/yamux v0.0.0-20211028200310-0bc27b27de87
 	github.com/hokaccha/go-prettyjson v0.0.0-20210113012101-fb4e108d2519
 	github.com/imdario/mergo v0.3.13
 	github.com/jackc/pgx v3.2.0+incompatible
