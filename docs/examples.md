@@ -19,6 +19,7 @@
        * [NSQ](#nsq)
        * [Thrift Decoding with IDL files](#thrift-decoding-with-idl-files)
        * [AWS Kinesis](#aws-kinesis)
+       * [Memphis](#memphis)
   * [Publishing](#publishing)
        * [AWS SQS](#aws-sqs-1)
        * [AWS SNS](#aws-sns)
@@ -37,6 +38,7 @@
        * [Apache Pulsar](#apache-pulsar-1)
        * [NSQ](#nsq-1)
        * [AWS Kinesis](#aws-kinesis-1)
+       * [Memphis](#memphis-1)
   * [Relay Mode](#relay-mode)
        * [Continuously relay messages from your RabbitMQ instance to a Streamdal collection](#continuously-relay-messages-from-your-rabbitmq-instance-to-a-streamdal-collection)
        * [Continuously relay messages from an SQS queue to a Streamdal collection](#continuously-relay-messages-from-an-sqs-queue-to-a-streamdal-collection)
@@ -320,6 +322,12 @@ Read from all shards
 plumber read kinesis --stream orders --continuous
 ```
 
+##### Memphis
+
+```bash
+plumber read memphis --address localhost:6666 --station myevents
+```
+
 ## Publishing
 
 ##### AWS SQS
@@ -466,6 +474,12 @@ plumber write nsq --nsqd-address localhost:4050 --topic orders --input="{\"order
 
 ```bash
 plumber write kinesis --stream teststream --partition-key orders --input "{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+```
+
+##### Memphis
+
+```bash
+plumber write memphis --address localhost:6666 --station myevents --input "{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ## Relay Mode
