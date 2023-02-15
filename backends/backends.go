@@ -16,6 +16,7 @@ import (
 	"github.com/batchcorp/plumber/backends/gcppubsub"
 	"github.com/batchcorp/plumber/backends/kafka"
 	kubemqQueue "github.com/batchcorp/plumber/backends/kubemq-queue"
+	"github.com/batchcorp/plumber/backends/memphis"
 	"github.com/batchcorp/plumber/backends/mqtt"
 	"github.com/batchcorp/plumber/backends/nats"
 	natsJetstream "github.com/batchcorp/plumber/backends/nats-jetstream"
@@ -132,6 +133,8 @@ func New(connOpts *opts.ConnectionOptions) (Backend, error) {
 		be, err = natsJetstream.New(connOpts)
 	case *opts.ConnectionOptions_AwsKinesis:
 		be, err = awskinesis.New(connOpts)
+	case *opts.ConnectionOptions_Memphis:
+		be, err = memphis.New(connOpts)
 	default:
 		return nil, errors.New("unknown backend")
 

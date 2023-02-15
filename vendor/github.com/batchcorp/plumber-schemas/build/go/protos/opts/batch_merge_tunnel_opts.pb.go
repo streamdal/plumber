@@ -26,6 +26,8 @@ func MergeTunnelOptions(backend string, tunnelOpts *TunnelOptions, createTunnelO
 		tunnelOpts.Kafka = &TunnelGroupKafkaOptions{Args: createTunnelOpts.Kafka}
 	case "kubemqqueue":
 		tunnelOpts.KubemqQueue = &TunnelGroupKubeMQQueueOptions{Args: createTunnelOpts.KubemqQueue}
+	case "memphis":
+		tunnelOpts.Memphis = &TunnelGroupMemphisOptions{Args: createTunnelOpts.Memphis}
 	case "mqtt":
 		tunnelOpts.Mqtt = &TunnelGroupMQTTOptions{Args: createTunnelOpts.Mqtt}
 	case "nats":

@@ -40,14 +40,15 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/nats-io/nats.go/util"
 	"github.com/nats-io/nkeys"
 	"github.com/nats-io/nuid"
+
+	"github.com/nats-io/nats.go/util"
 )
 
 // Default Constants
 const (
-	Version                   = "1.13.0"
+	Version                   = "1.19.0"
 	DefaultURL                = "nats://127.0.0.1:4222"
 	DefaultPort               = 4222
 	DefaultMaxReconnect       = 60
@@ -82,82 +83,62 @@ const (
 
 	// ACCOUNT_AUTHENTICATION_EXPIRED_ERR is for when nats server account authorization has expired.
 	ACCOUNT_AUTHENTICATION_EXPIRED_ERR = "account authentication expired"
+
+	// MAX_CONNECTIONS_ERR is for when nats server denies the connection due to server max_connections limit
+	MAX_CONNECTIONS_ERR = "maximum connections exceeded"
 )
 
 // Errors
 var (
-	ErrConnectionClosed             = errors.New("nats: connection closed")
-	ErrConnectionDraining           = errors.New("nats: connection draining")
-	ErrDrainTimeout                 = errors.New("nats: draining connection timed out")
-	ErrConnectionReconnecting       = errors.New("nats: connection reconnecting")
-	ErrSecureConnRequired           = errors.New("nats: secure connection required")
-	ErrSecureConnWanted             = errors.New("nats: secure connection not available")
-	ErrBadSubscription              = errors.New("nats: invalid subscription")
-	ErrTypeSubscription             = errors.New("nats: invalid subscription type")
-	ErrBadSubject                   = errors.New("nats: invalid subject")
-	ErrBadQueueName                 = errors.New("nats: invalid queue name")
-	ErrSlowConsumer                 = errors.New("nats: slow consumer, messages dropped")
-	ErrTimeout                      = errors.New("nats: timeout")
-	ErrBadTimeout                   = errors.New("nats: timeout invalid")
-	ErrAuthorization                = errors.New("nats: authorization violation")
-	ErrAuthExpired                  = errors.New("nats: authentication expired")
-	ErrAuthRevoked                  = errors.New("nats: authentication revoked")
-	ErrAccountAuthExpired           = errors.New("nats: account authentication expired")
-	ErrNoServers                    = errors.New("nats: no servers available for connection")
-	ErrJsonParse                    = errors.New("nats: connect message, json parse error")
-	ErrChanArg                      = errors.New("nats: argument needs to be a channel type")
-	ErrMaxPayload                   = errors.New("nats: maximum payload exceeded")
-	ErrMaxMessages                  = errors.New("nats: maximum messages delivered")
-	ErrSyncSubRequired              = errors.New("nats: illegal call on an async subscription")
-	ErrMultipleTLSConfigs           = errors.New("nats: multiple tls.Configs not allowed")
-	ErrNoInfoReceived               = errors.New("nats: protocol exception, INFO not received")
-	ErrReconnectBufExceeded         = errors.New("nats: outbound buffer limit exceeded")
-	ErrInvalidConnection            = errors.New("nats: invalid connection")
-	ErrInvalidMsg                   = errors.New("nats: invalid message or message nil")
-	ErrInvalidArg                   = errors.New("nats: invalid argument")
-	ErrInvalidContext               = errors.New("nats: invalid context")
-	ErrNoDeadlineContext            = errors.New("nats: context requires a deadline")
-	ErrNoEchoNotSupported           = errors.New("nats: no echo option not supported by this server")
-	ErrClientIDNotSupported         = errors.New("nats: client ID not supported by this server")
-	ErrUserButNoSigCB               = errors.New("nats: user callback defined without a signature handler")
-	ErrNkeyButNoSigCB               = errors.New("nats: nkey defined without a signature handler")
-	ErrNoUserCB                     = errors.New("nats: user callback not defined")
-	ErrNkeyAndUser                  = errors.New("nats: user callback and nkey defined")
-	ErrNkeysNotSupported            = errors.New("nats: nkeys not supported by the server")
-	ErrStaleConnection              = errors.New("nats: " + STALE_CONNECTION)
-	ErrTokenAlreadySet              = errors.New("nats: token and token handler both set")
-	ErrMsgNotBound                  = errors.New("nats: message is not bound to subscription/connection")
-	ErrMsgNoReply                   = errors.New("nats: message does not have a reply")
-	ErrClientIPNotSupported         = errors.New("nats: client IP not supported by this server")
-	ErrDisconnected                 = errors.New("nats: server is disconnected")
-	ErrHeadersNotSupported          = errors.New("nats: headers not supported by this server")
-	ErrBadHeaderMsg                 = errors.New("nats: message could not decode headers")
-	ErrNoResponders                 = errors.New("nats: no responders available for request")
-	ErrNoContextOrTimeout           = errors.New("nats: no context or timeout given")
-	ErrPullModeNotAllowed           = errors.New("nats: pull based not supported")
-	ErrJetStreamNotEnabled          = errors.New("nats: jetstream not enabled")
-	ErrJetStreamBadPre              = errors.New("nats: jetstream api prefix not valid")
-	ErrNoStreamResponse             = errors.New("nats: no response from stream")
-	ErrNotJSMessage                 = errors.New("nats: not a jetstream message")
-	ErrInvalidStreamName            = errors.New("nats: invalid stream name")
-	ErrInvalidDurableName           = errors.New("nats: invalid durable name")
-	ErrNoMatchingStream             = errors.New("nats: no stream matches subject")
-	ErrSubjectMismatch              = errors.New("nats: subject does not match consumer")
-	ErrContextAndTimeout            = errors.New("nats: context and timeout can not both be set")
-	ErrInvalidJSAck                 = errors.New("nats: invalid jetstream publish response")
-	ErrMultiStreamUnsupported       = errors.New("nats: multiple streams are not supported")
-	ErrStreamNameRequired           = errors.New("nats: stream name is required")
-	ErrStreamNotFound               = errors.New("nats: stream not found")
-	ErrConsumerNotFound             = errors.New("nats: consumer not found")
-	ErrConsumerNameRequired         = errors.New("nats: consumer name is required")
-	ErrConsumerConfigRequired       = errors.New("nats: consumer configuration is required")
-	ErrStreamSnapshotConfigRequired = errors.New("nats: stream snapshot configuration is required")
-	ErrDeliverSubjectRequired       = errors.New("nats: deliver subject is required")
-	ErrPullSubscribeToPushConsumer  = errors.New("nats: cannot pull subscribe to push based consumer")
-	ErrPullSubscribeRequired        = errors.New("nats: must use pull subscribe to bind to pull based consumer")
-	ErrConsumerNotActive            = errors.New("nats: consumer not active")
-	ErrMsgNotFound                  = errors.New("nats: message not found")
-	ErrMsgAlreadyAckd               = errors.New("nats: message was already acknowledged")
+	ErrConnectionClosed       = errors.New("nats: connection closed")
+	ErrConnectionDraining     = errors.New("nats: connection draining")
+	ErrDrainTimeout           = errors.New("nats: draining connection timed out")
+	ErrConnectionReconnecting = errors.New("nats: connection reconnecting")
+	ErrSecureConnRequired     = errors.New("nats: secure connection required")
+	ErrSecureConnWanted       = errors.New("nats: secure connection not available")
+	ErrBadSubscription        = errors.New("nats: invalid subscription")
+	ErrTypeSubscription       = errors.New("nats: invalid subscription type")
+	ErrBadSubject             = errors.New("nats: invalid subject")
+	ErrBadQueueName           = errors.New("nats: invalid queue name")
+	ErrSlowConsumer           = errors.New("nats: slow consumer, messages dropped")
+	ErrTimeout                = errors.New("nats: timeout")
+	ErrBadTimeout             = errors.New("nats: timeout invalid")
+	ErrAuthorization          = errors.New("nats: authorization violation")
+	ErrAuthExpired            = errors.New("nats: authentication expired")
+	ErrAuthRevoked            = errors.New("nats: authentication revoked")
+	ErrAccountAuthExpired     = errors.New("nats: account authentication expired")
+	ErrNoServers              = errors.New("nats: no servers available for connection")
+	ErrJsonParse              = errors.New("nats: connect message, json parse error")
+	ErrChanArg                = errors.New("nats: argument needs to be a channel type")
+	ErrMaxPayload             = errors.New("nats: maximum payload exceeded")
+	ErrMaxMessages            = errors.New("nats: maximum messages delivered")
+	ErrSyncSubRequired        = errors.New("nats: illegal call on an async subscription")
+	ErrMultipleTLSConfigs     = errors.New("nats: multiple tls.Configs not allowed")
+	ErrNoInfoReceived         = errors.New("nats: protocol exception, INFO not received")
+	ErrReconnectBufExceeded   = errors.New("nats: outbound buffer limit exceeded")
+	ErrInvalidConnection      = errors.New("nats: invalid connection")
+	ErrInvalidMsg             = errors.New("nats: invalid message or message nil")
+	ErrInvalidArg             = errors.New("nats: invalid argument")
+	ErrInvalidContext         = errors.New("nats: invalid context")
+	ErrNoDeadlineContext      = errors.New("nats: context requires a deadline")
+	ErrNoEchoNotSupported     = errors.New("nats: no echo option not supported by this server")
+	ErrClientIDNotSupported   = errors.New("nats: client ID not supported by this server")
+	ErrUserButNoSigCB         = errors.New("nats: user callback defined without a signature handler")
+	ErrNkeyButNoSigCB         = errors.New("nats: nkey defined without a signature handler")
+	ErrNoUserCB               = errors.New("nats: user callback not defined")
+	ErrNkeyAndUser            = errors.New("nats: user callback and nkey defined")
+	ErrNkeysNotSupported      = errors.New("nats: nkeys not supported by the server")
+	ErrStaleConnection        = errors.New("nats: " + STALE_CONNECTION)
+	ErrTokenAlreadySet        = errors.New("nats: token and token handler both set")
+	ErrMsgNotBound            = errors.New("nats: message is not bound to subscription/connection")
+	ErrMsgNoReply             = errors.New("nats: message does not have a reply")
+	ErrClientIPNotSupported   = errors.New("nats: client IP not supported by this server")
+	ErrDisconnected           = errors.New("nats: server is disconnected")
+	ErrHeadersNotSupported    = errors.New("nats: headers not supported by this server")
+	ErrBadHeaderMsg           = errors.New("nats: message could not decode headers")
+	ErrNoResponders           = errors.New("nats: no responders available for request")
+	ErrMaxConnectionsExceeded = errors.New("nats: server maximum connections exceeded")
+	ErrConnectionNotTLS       = errors.New("nats: connection is not tls")
 )
 
 func init() {
@@ -272,6 +253,10 @@ type CustomDialer interface {
 	Dial(network, address string) (net.Conn, error)
 }
 
+type InProcessConnProvider interface {
+	InProcessConn() (net.Conn, error)
+}
+
 // Options can be used to create a customized connection.
 type Options struct {
 
@@ -279,6 +264,11 @@ type Options struct {
 	// will be connecting. If the Servers option is also set, it
 	// then becomes the first server in the Servers array.
 	Url string
+
+	// InProcessServer represents a NATS server running within the
+	// same process. If this is set then we will attempt to connect
+	// to the server directly rather than using external TCP conns.
+	InProcessServer InProcessConnProvider
 
 	// Servers is a configured set of servers which this client
 	// will use when attempting to connect.
@@ -320,10 +310,12 @@ type Options struct {
 	// MaxReconnect sets the number of reconnect attempts that will be
 	// tried before giving up. If negative, then it will never give up
 	// trying to reconnect.
+	// Defaults to 60.
 	MaxReconnect int
 
 	// ReconnectWait sets the time to backoff after attempting a reconnect
 	// to a server that we were already connected to previously.
+	// Defaults to 2s.
 	ReconnectWait time.Duration
 
 	// CustomReconnectDelayCB is invoked after the library tried every
@@ -336,18 +328,20 @@ type Options struct {
 
 	// ReconnectJitter sets the upper bound for a random delay added to
 	// ReconnectWait during a reconnect when no TLS is used.
-	// Note that any jitter is capped with ReconnectJitterMax.
+	// Defaults to 100ms.
 	ReconnectJitter time.Duration
 
 	// ReconnectJitterTLS sets the upper bound for a random delay added to
 	// ReconnectWait during a reconnect when TLS is used.
-	// Note that any jitter is capped with ReconnectJitterMax.
+	// Defaults to 1s.
 	ReconnectJitterTLS time.Duration
 
 	// Timeout sets the timeout for a Dial operation on a connection.
+	// Defaults to 2s.
 	Timeout time.Duration
 
 	// DrainTimeout sets the timeout for a Drain Operation to complete.
+	// Defaults to 30s.
 	DrainTimeout time.Duration
 
 	// FlusherTimeout is the maximum time to wait for write operations
@@ -356,10 +350,12 @@ type Options struct {
 
 	// PingInterval is the period at which the client will be sending ping
 	// commands to the server, disabled if 0 or negative.
+	// Defaults to 2m.
 	PingInterval time.Duration
 
 	// MaxPingsOut is the maximum number of pending ping commands that can
 	// be awaiting a response before raising an ErrStaleConnection error.
+	// Defaults to 2.
 	MaxPingsOut int
 
 	// ClosedCB sets the closed handler that is called when a client will
@@ -392,12 +388,14 @@ type Options struct {
 
 	// ReconnectBufSize is the size of the backing bufio during reconnect.
 	// Once this has been exhausted publish operations will return an error.
+	// Defaults to 8388608 bytes (8MB).
 	ReconnectBufSize int
 
 	// SubChanLen is the size of the buffered channel used between the socket
 	// Go routine and the message delivery for SyncSubscriptions.
 	// NOTE: This does not affect AsyncSubscriptions which are
 	// dictated by PendingLimits()
+	// Defaults to 65536.
 	SubChanLen int
 
 	// UserJWT sets the callback handler that will fetch a user's JWT.
@@ -443,7 +441,7 @@ type Options struct {
 
 	// LameDuckModeHandler sets the callback to invoke when the server notifies
 	// the connection that it entered lame duck mode, that is, going to
-	// gradually disconnect all its connections before shuting down. This is
+	// gradually disconnect all its connections before shutting down. This is
 	// often used in deployments when upgrading NATS Servers.
 	LameDuckModeHandler ConnHandler
 
@@ -459,6 +457,10 @@ type Options struct {
 	// For websocket connections, indicates to the server that the connection
 	// supports compression. If the server does too, then data will be compressed.
 	Compression bool
+
+	// For websocket connections, adds a path to connections url.
+	// This is useful when connecting to NATS behind a proxy.
+	ProxyPath string
 
 	// InboxPrefix allows the default _INBOX prefix to be customized
 	InboxPrefix string
@@ -586,6 +588,7 @@ type Subscription struct {
 	pHead *Msg
 	pTail *Msg
 	pCond *sync.Cond
+	pDone func()
 
 	// Pending stats, async subscriptions, high-speed etc.
 	pMsgs       int
@@ -600,31 +603,63 @@ type Subscription struct {
 // Msg represents a message delivered by NATS. This structure is used
 // by Subscribers and PublishMsg().
 //
-// Types of Acknowledgements
+// # Types of Acknowledgements
 //
 // In case using JetStream, there are multiple ways to ack a Msg:
 //
-//   // Acknowledgement that a message has been processed.
-//   msg.Ack()
+//	// Acknowledgement that a message has been processed.
+//	msg.Ack()
 //
-//   // Negatively acknowledges a message.
-//   msg.Nak()
+//	// Negatively acknowledges a message.
+//	msg.Nak()
 //
-//   // Terminate a message so that it is not redelivered further.
-//   msg.Term()
+//	// Terminate a message so that it is not redelivered further.
+//	msg.Term()
 //
-//   // Signal the server that the message is being worked on and reset redelivery timer.
-//   msg.InProgress()
-//
+//	// Signal the server that the message is being worked on and reset redelivery timer.
+//	msg.InProgress()
 type Msg struct {
 	Subject string
 	Reply   string
 	Header  Header
 	Data    []byte
 	Sub     *Subscription
+	// Internal
 	next    *Msg
+	wsz     int
 	barrier *barrierInfo
 	ackd    uint32
+}
+
+// Compares two msgs, ignores sub but checks all other public fields.
+func (m *Msg) Equal(msg *Msg) bool {
+	if m == msg {
+		return true
+	}
+	if m == nil || msg == nil {
+		return false
+	}
+	if m.Subject != msg.Subject || m.Reply != msg.Reply {
+		return false
+	}
+	if !bytes.Equal(m.Data, msg.Data) {
+		return false
+	}
+	if len(m.Header) != len(msg.Header) {
+		return false
+	}
+	for k, v := range m.Header {
+		val, ok := msg.Header[k]
+		if !ok || len(v) != len(val) {
+			return false
+		}
+		for i, hdr := range v {
+			if hdr != val[i] {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func (m *Msg) headerBytes() ([]byte, error) {
@@ -759,6 +794,15 @@ func Name(name string) Option {
 	}
 }
 
+// InProcessServer is an Option that will try to establish a direction to a NATS server
+// running within the process instead of dialing via TCP.
+func InProcessServer(server InProcessConnProvider) Option {
+	return func(o *Options) error {
+		o.InProcessServer = server
+		return nil
+	}
+}
+
 // Secure is an Option to enable TLS secure connections that skip server verification by default.
 // Pass a TLS Configuration for proper TLS.
 // NOTE: This should NOT be used in a production setting.
@@ -847,6 +891,7 @@ func NoEcho() Option {
 }
 
 // ReconnectWait is an Option to set the wait time between reconnect attempts.
+// Defaults to 2s.
 func ReconnectWait(t time.Duration) Option {
 	return func(o *Options) error {
 		o.ReconnectWait = t
@@ -855,6 +900,7 @@ func ReconnectWait(t time.Duration) Option {
 }
 
 // MaxReconnects is an Option to set the maximum number of reconnect attempts.
+// Defaults to 60.
 func MaxReconnects(max int) Option {
 	return func(o *Options) error {
 		o.MaxReconnect = max
@@ -863,6 +909,7 @@ func MaxReconnects(max int) Option {
 }
 
 // ReconnectJitter is an Option to set the upper bound of a random delay added ReconnectWait.
+// Defaults to 100ms and 1s, respectively.
 func ReconnectJitter(jitter, jitterForTLS time.Duration) Option {
 	return func(o *Options) error {
 		o.ReconnectJitter = jitter
@@ -881,6 +928,7 @@ func CustomReconnectDelay(cb ReconnectDelayHandler) Option {
 }
 
 // PingInterval is an Option to set the period for client ping commands.
+// Defaults to 2m.
 func PingInterval(t time.Duration) Option {
 	return func(o *Options) error {
 		o.PingInterval = t
@@ -889,7 +937,8 @@ func PingInterval(t time.Duration) Option {
 }
 
 // MaxPingsOutstanding is an Option to set the maximum number of ping requests
-// that can go un-answered by the server before closing the connection.
+// that can go unanswered by the server before closing the connection.
+// Defaults to 2.
 func MaxPingsOutstanding(max int) Option {
 	return func(o *Options) error {
 		o.MaxPingsOut = max
@@ -898,6 +947,7 @@ func MaxPingsOutstanding(max int) Option {
 }
 
 // ReconnectBufSize sets the buffer size of messages kept while busy reconnecting.
+// Defaults to 8388608 bytes (8MB).
 func ReconnectBufSize(size int) Option {
 	return func(o *Options) error {
 		o.ReconnectBufSize = size
@@ -906,6 +956,7 @@ func ReconnectBufSize(size int) Option {
 }
 
 // Timeout is an Option to set the timeout for Dial on a connection.
+// Defaults to 2s.
 func Timeout(t time.Duration) Option {
 	return func(o *Options) error {
 		o.Timeout = t
@@ -922,6 +973,7 @@ func FlusherTimeout(t time.Duration) Option {
 }
 
 // DrainTimeout is an Option to set the timeout for draining a connection.
+// Defaults to 30s.
 func DrainTimeout(t time.Duration) Option {
 	return func(o *Options) error {
 		o.DrainTimeout = t
@@ -1032,6 +1084,28 @@ func UserCredentials(userOrChainedFile string, seedFiles ...string) Option {
 	return UserJWT(userCB, sigCB)
 }
 
+// UserJWTAndSeed is a convenience function that takes the JWT and seed
+// values as strings.
+func UserJWTAndSeed(jwt string, seed string) Option {
+	userCB := func() (string, error) {
+		return jwt, nil
+	}
+
+	sigCB := func(nonce []byte) ([]byte, error) {
+		kp, err := nkeys.FromSeed([]byte(seed))
+		if err != nil {
+			return nil, fmt.Errorf("unable to extract key pair from seed: %v", err)
+		}
+		// Wipe our key on exit.
+		defer kp.Wipe()
+
+		sig, _ := kp.Sign(nonce)
+		return sig, nil
+	}
+
+	return UserJWT(userCB, sigCB)
+}
+
 // UserJWT will set the callbacks to retrieve the user's JWT and
 // the signature callback to sign the server nonce. This an the Nkey
 // option are mutually exclusive.
@@ -1064,6 +1138,7 @@ func Nkey(pubKey string, sigCB SignatureHandler) Option {
 
 // SyncQueueLen will set the maximum queue len for the internal
 // channel used for SubscribeSync().
+// Defaults to 65536.
 func SyncQueueLen(max int) Option {
 	return func(o *Options) error {
 		o.SubChanLen = max
@@ -1111,7 +1186,7 @@ func NoCallbacksAfterClientClose() Option {
 
 // LameDuckModeHandler sets the callback to invoke when the server notifies
 // the connection that it entered lame duck mode, that is, going to
-// gradually disconnect all its connections before shuting down. This is
+// gradually disconnect all its connections before shutting down. This is
 // often used in deployments when upgrading NATS Servers.
 func LameDuckModeHandler(cb ConnHandler) Option {
 	return func(o *Options) error {
@@ -1139,11 +1214,20 @@ func Compression(enabled bool) Option {
 	}
 }
 
+// ProxyPath is an option for websocket connections that adds a path to connections url.
+// This is useful when connecting to NATS behind a proxy.
+func ProxyPath(path string) Option {
+	return func(o *Options) error {
+		o.ProxyPath = path
+		return nil
+	}
+}
+
 // CustomInboxPrefix configures the request + reply inbox prefix
 func CustomInboxPrefix(p string) Option {
 	return func(o *Options) error {
 		if p == "" || strings.Contains(p, ">") || strings.Contains(p, "*") || strings.HasSuffix(p, ".") {
-			return fmt.Errorf("nats: invald custom prefix")
+			return fmt.Errorf("nats: invalid custom prefix")
 		}
 		o.InboxPrefix = p
 		return nil
@@ -1217,10 +1301,15 @@ func (nc *Conn) SetErrorHandler(cb ErrHandler) {
 // Return an array of urls, even if only one.
 func processUrlString(url string) []string {
 	urls := strings.Split(url, ",")
-	for i, s := range urls {
-		urls[i] = strings.TrimSpace(s)
+	var j int
+	for _, s := range urls {
+		u := strings.TrimSpace(s)
+		if len(u) > 0 {
+			urls[j] = u
+			j++
+		}
 	}
-	return urls
+	return urls[:j]
 }
 
 // Connect will attempt to connect to a NATS server with multiple options.
@@ -1254,7 +1343,7 @@ func (o Options) Connect() (*Conn, error) {
 		return nil, ErrNkeyButNoSigCB
 	}
 
-	// Allow custom Dialer for connecting using DialTimeout by default
+	// Allow custom Dialer for connecting using a timeout by default
 	if nc.Opts.Dialer == nil {
 		nc.Opts.Dialer = &net.Dialer{
 			Timeout: nc.Opts.Timeout,
@@ -1434,7 +1523,7 @@ func (nc *Conn) setupServerPool() error {
 
 	// Check for Scheme hint to move to TLS mode.
 	for _, srv := range nc.srvPool {
-		if srv.url.Scheme == tlsScheme {
+		if srv.url.Scheme == tlsScheme || srv.url.Scheme == wsSchemeTLS {
 			// FIXME(dlc), this is for all in the pool, should be case by case.
 			nc.Opts.Secure = true
 			if nc.Opts.TLSConfig == nil {
@@ -1648,6 +1737,17 @@ func (w *natsWriter) doneWithPending() {
 	w.pending = nil
 }
 
+// Notify the reader that we are done with the connect, where "read" operations
+// happen synchronously and under the connection lock. After this point, "read"
+// will be happening from the read loop, without the connection lock.
+//
+// Note: this runs under the connection lock.
+func (r *natsReader) doneWithConnect() {
+	if wsr, ok := r.r.(*websocketReader); ok {
+		wsr.doneWithConnect()
+	}
+}
+
 func (r *natsReader) Read() ([]byte, error) {
 	if r.off >= 0 {
 		off := r.off
@@ -1694,6 +1794,18 @@ func (nc *Conn) createConn() (err error) {
 	}
 	if _, cur := nc.currentServer(); cur == nil {
 		return ErrNoServers
+	}
+
+	// If we have a reference to an in-process server then establish a
+	// connection using that.
+	if nc.Opts.InProcessServer != nil {
+		conn, err := nc.Opts.InProcessServer.InProcessConn()
+		if err != nil {
+			return fmt.Errorf("failed to get in-process connection: %w", err)
+		}
+		nc.conn = conn
+		nc.bindToNewConn()
+		return nil
 	}
 
 	// We will auto-expand host names if they resolve to multiple IPs
@@ -1774,6 +1886,24 @@ func (nc *Conn) makeTLSConn() error {
 	return nil
 }
 
+// TLSConnectionState retrieves the state of the TLS connection to the server
+func (nc *Conn) TLSConnectionState() (tls.ConnectionState, error) {
+	if !nc.isConnected() {
+		return tls.ConnectionState{}, ErrDisconnected
+	}
+
+	nc.mu.RLock()
+	conn := nc.conn
+	nc.mu.RUnlock()
+
+	tc, ok := conn.(*tls.Conn)
+	if !ok {
+		return tls.ConnectionState{}, ErrConnectionNotTLS
+	}
+
+	return tc.ConnectionState(), nil
+}
+
 // waitForExits will wait for all socket watcher Go routines to
 // be shutdown before proceeding.
 func (nc *Conn) waitForExits() {
@@ -1800,6 +1930,21 @@ func (nc *Conn) ConnectedUrl() string {
 		return _EMPTY_
 	}
 	return nc.current.url.String()
+}
+
+// ConnectedUrlRedacted reports the connected server's URL with passwords redacted
+func (nc *Conn) ConnectedUrlRedacted() string {
+	if nc == nil {
+		return _EMPTY_
+	}
+
+	nc.mu.RLock()
+	defer nc.mu.RUnlock()
+
+	if nc.status != CONNECTED {
+		return _EMPTY_
+	}
+	return nc.current.url.Redacted()
 }
 
 // ConnectedAddr returns the connected server's IP
@@ -1869,7 +2014,7 @@ func versionComponents(version string) (major, minor, patch int, err error) {
 	return major, minor, patch, err
 }
 
-// Check for mininum server requirement.
+// Check for minimum server requirement.
 func (nc *Conn) serverMinVersion(major, minor, patch int) bool {
 	smajor, sminor, spatch, _ := versionComponents(nc.ConnectedServerVersion())
 	if smajor < major || (smajor == major && sminor < minor) || (smajor == major && sminor == minor && spatch < patch) {
@@ -1960,6 +2105,10 @@ func (nc *Conn) processConnectInit() error {
 	nc.wg.Add(2)
 	go nc.readLoop()
 	go nc.flusher()
+
+	// Notify the reader that we are done with the connect handshake, where
+	// reads were done synchronously and under the connection lock.
+	nc.br.doneWithConnect()
 
 	return nil
 }
@@ -2137,7 +2286,7 @@ func (nc *Conn) connectProto() (string, error) {
 		}
 		sigraw, err := o.SignatureCB([]byte(nc.info.Nonce))
 		if err != nil {
-			return _EMPTY_, err
+			return _EMPTY_, fmt.Errorf("error signing nonce: %v", err)
 		}
 		sig = base64.RawURLEncoding.EncodeToString(sigraw)
 	}
@@ -2172,6 +2321,19 @@ func normalizeErr(line string) string {
 	s := strings.TrimSpace(strings.TrimPrefix(line, _ERR_OP_))
 	s = strings.TrimLeft(strings.TrimRight(s, "'"), "'")
 	return s
+}
+
+// natsProtoErr represents an -ERR protocol message sent by the server.
+type natsProtoErr struct {
+	description string
+}
+
+func (nerr *natsProtoErr) Error() string {
+	return fmt.Sprintf("nats: %s", nerr.description)
+}
+
+func (nerr *natsProtoErr) Is(err error) bool {
+	return strings.ToLower(nerr.Error()) == err.Error()
 }
 
 // Send a connect protocol message to the server, issue user/password if
@@ -2228,8 +2390,7 @@ func (nc *Conn) sendConnect() error {
 				// in doReconnect()).
 				nc.processAuthError(authErr)
 			}
-
-			return errors.New("nats: " + proto)
+			return &natsProtoErr{proto}
 		}
 
 		// Notify that we got an unexpected protocol.
@@ -2275,7 +2436,7 @@ func parseControl(line string, c *control) {
 	}
 }
 
-// flushReconnectPending will push the pending items that were
+// flushReconnectPendingItems will push the pending items that were
 // gathered while we were in a RECONNECTING state to the socket.
 func (nc *Conn) flushReconnectPendingItems() error {
 	return nc.bw.flushPendingBuffer()
@@ -2696,7 +2857,13 @@ func (nc *Conn) waitForMsgs(s *Subscription) {
 		}
 		s.pHead = m.next
 	}
+	// Now check for pDone
+	done := s.pDone
 	s.mu.Unlock()
+
+	if done != nil {
+		done()
+	}
 }
 
 // Used for debugging and simulating loss for certain tests.
@@ -2786,7 +2953,14 @@ func (nc *Conn) processMsg(data []byte) {
 	}
 
 	// FIXME(dlc): Should we recycle these containers?
-	m := &Msg{Header: h, Data: msgPayload, Subject: subj, Reply: reply, Sub: sub}
+	m := &Msg{
+		Subject: subj,
+		Reply:   reply,
+		Header:  h,
+		Data:    msgPayload,
+		Sub:     sub,
+		wsz:     len(data) + len(subj) + len(reply),
+	}
 
 	// Check for message filters.
 	if mf != nil {
@@ -2811,13 +2985,13 @@ func (nc *Conn) processMsg(data []byte) {
 		if h != nil {
 			ctrlMsg, ctrlType = isJSControlMessage(m)
 			if ctrlMsg && ctrlType == jsCtrlHB {
-				// Check if the hearbeat has a "Consumer Stalled" header, if
+				// Check if the heartbeat has a "Consumer Stalled" header, if
 				// so, the value is the FC reply to send a nil message to.
 				// We will send it at the end of this function.
 				fcReply = m.Header.Get(consumerStalledHdr)
 			}
 		}
-		// Check for ordered consumer here. If checkOrdered returns true that means it detected a gap.
+		// Check for ordered consumer here. If checkOrderedMsgs returns true that means it detected a gap.
 		if !ctrlMsg && jsi.ordered && sub.checkOrderedMsgs(m) {
 			sub.mu.Unlock()
 			return
@@ -2999,6 +3173,9 @@ func (nc *Conn) flusher() {
 				if nc.err == nil {
 					nc.err = err
 				}
+				if nc.Opts.AsyncErrorCB != nil {
+					nc.ach.push(func() { nc.Opts.AsyncErrorCB(nc, nil, err) })
+				}
 			}
 		}
 		nc.mu.Unlock()
@@ -3163,7 +3340,7 @@ func checkAuthError(e string) error {
 }
 
 // processErr processes any error messages from the server and
-// sets the connection's lastError.
+// sets the connection's LastError.
 func (nc *Conn) processErr(ie string) {
 	// Trim, remove quotes
 	ne := normalizeErr(ie)
@@ -3175,6 +3352,8 @@ func (nc *Conn) processErr(ie string) {
 	// FIXME(dlc) - process Slow Consumer signals special.
 	if e == STALE_CONNECTION {
 		nc.processOpErr(ErrStaleConnection)
+	} else if e == MAX_CONNECTIONS_ERR {
+		nc.processOpErr(ErrMaxConnectionsExceeded)
 	} else if strings.HasPrefix(e, PERMISSIONS_ERR) {
 		nc.processPermissionsViolation(ne)
 	} else if authErr := checkAuthError(e); authErr != nil {
@@ -3345,21 +3524,10 @@ func (nc *Conn) PublishMsg(m *Msg) error {
 	if m == nil {
 		return ErrInvalidMsg
 	}
-
-	var hdr []byte
-	var err error
-
-	if len(m.Header) > 0 {
-		if !nc.info.Headers {
-			return ErrHeadersNotSupported
-		}
-
-		hdr, err = m.headerBytes()
-		if err != nil {
-			return err
-		}
+	hdr, err := m.headerBytes()
+	if err != nil {
+		return err
 	}
-
 	return nc.publish(m.Subject, m.Reply, hdr, m.Data)
 }
 
@@ -3370,7 +3538,7 @@ func (nc *Conn) PublishRequest(subj, reply string, data []byte) error {
 	return nc.publish(subj, reply, nil, data)
 }
 
-// Used for handrolled itoa
+// Used for handrolled Itoa
 const digits = "0123456789"
 
 // publish is the internal function to publish messages to a nats-server.
@@ -3384,6 +3552,12 @@ func (nc *Conn) publish(subj, reply string, hdr, data []byte) error {
 		return ErrBadSubject
 	}
 	nc.mu.Lock()
+
+	// Check if headers attempted to be sent to server that does not support them.
+	if len(hdr) > 0 && !nc.info.Headers {
+		nc.mu.Unlock()
+		return ErrHeadersNotSupported
+	}
 
 	if nc.isClosed() {
 		nc.mu.Unlock()
@@ -3555,17 +3729,12 @@ func (nc *Conn) createNewRequestAndSend(subj string, hdr, data []byte) (chan *Ms
 // RequestMsg will send a request payload including optional headers and deliver
 // the response message, or an error, including a timeout if no message was received properly.
 func (nc *Conn) RequestMsg(msg *Msg, timeout time.Duration) (*Msg, error) {
-	var hdr []byte
-	var err error
-
-	if len(msg.Header) > 0 {
-		if !nc.info.Headers {
-			return nil, ErrHeadersNotSupported
-		}
-		hdr, err = msg.headerBytes()
-		if err != nil {
-			return nil, err
-		}
+	if msg == nil {
+		return nil, ErrInvalidMsg
+	}
+	hdr, err := msg.headerBytes()
+	if err != nil {
+		return nil, err
 	}
 
 	return nc.request(msg.Subject, hdr, msg.Data, timeout)
@@ -3636,7 +3805,7 @@ func (nc *Conn) newRequest(subj string, hdr, data []byte, timeout time.Duration)
 // with the Inbox reply and return the first reply received.
 // This is optimized for the case of multiple responses.
 func (nc *Conn) oldRequest(subj string, hdr, data []byte, timeout time.Duration) (*Msg, error) {
-	inbox := nc.newInbox()
+	inbox := nc.NewInbox()
 	ch := make(chan *Msg, RequestChanLen)
 
 	s, err := nc.subscribe(inbox, _EMPTY_, nil, ch, true, nil)
@@ -3675,7 +3844,8 @@ func NewInbox() string {
 	return string(b[:])
 }
 
-func (nc *Conn) newInbox() string {
+// Create a new inbox that is prefix aware.
+func (nc *Conn) NewInbox() string {
 	if nc.Opts.InboxPrefix == _EMPTY_ {
 		return NewInbox()
 	}
@@ -3689,7 +3859,7 @@ func (nc *Conn) newInbox() string {
 
 // Function to init new response structures.
 func (nc *Conn) initNewResp() {
-	nc.respSubPrefix = fmt.Sprintf("%s.", nc.newInbox())
+	nc.respSubPrefix = fmt.Sprintf("%s.", nc.NewInbox())
 	nc.respSubLen = len(nc.respSubPrefix)
 	nc.respSub = fmt.Sprintf("%s*", nc.respSubPrefix)
 	nc.respMap = make(map[string]chan *Msg)
@@ -4703,7 +4873,7 @@ func (nc *Conn) close(status Status, doCBs bool, err error) {
 	nc.stopPingTimer()
 	nc.ptmr = nil
 
-	// Need to close and set tcp conn to nil if reconnect loop has stopped,
+	// Need to close and set TCP conn to nil if reconnect loop has stopped,
 	// otherwise we would incorrectly invoke Disconnect handler (if set)
 	// down below.
 	if nc.ar && nc.conn != nil {
@@ -4726,7 +4896,7 @@ func (nc *Conn) close(status Status, doCBs bool, err error) {
 			close(s.mch)
 		}
 		s.mch = nil
-		// Mark as invalid, for signaling to deliverMsgs
+		// Mark as invalid, for signaling to waitForMsgs
 		s.closed = true
 		// Mark connection closed in subscription
 		s.connClosed = true
@@ -4756,7 +4926,7 @@ func (nc *Conn) close(status Status, doCBs bool, err error) {
 		}
 	}
 	// If this is terminal, then we have to notify the asyncCB handler that
-	// it can exit once all async cbs have been dispatched.
+	// it can exit once all async callbacks have been dispatched.
 	if status == CLOSED {
 		nc.ach.close()
 	}
@@ -5230,7 +5400,7 @@ func nkeyPairFromSeedFile(seedFile string) (nkeys.KeyPair, error) {
 func sigHandler(nonce []byte, seedFile string) ([]byte, error) {
 	kp, err := nkeyPairFromSeedFile(seedFile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to extract key pair from file %q: %v", seedFile, err)
 	}
 	// Wipe our key on exit.
 	defer kp.Wipe()

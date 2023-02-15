@@ -198,6 +198,7 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 * Apache Pulsar
 * NSQ
 * KubeMQ
+* Memphis - **NEW!**
 
 NOTE: If your messaging tech is not supported - submit an issue and we'll do
 our best to make it happen!
