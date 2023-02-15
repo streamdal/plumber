@@ -1,7 +1,7 @@
 # This Dockerfile utilizes a multi-stage builds
-ARG ALPINE_VERSION=3.12
+ARG ALPINE_VERSION=3.14
 
-FROM golang:1.16-alpine$ALPINE_VERSION AS builder
+FROM golang:1.18-alpine$ALPINE_VERSION AS builder
 
 # Install necessary build tools
 RUN apk --update add make bash curl git
