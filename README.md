@@ -156,7 +156,7 @@ $ plumber read kafka --help
 * Observe, relay and archive messaging data
 * Single-binary, zero-config, easy-install
 
-## Hmm, what is this Batch thing?
+## Hmm, what is this Streamdal thing?
 
 We are distributed system enthusiasts that started a company called
 [Streamdal](https://streamdal.com). 
@@ -198,6 +198,7 @@ We consider ourselves "internet plumbers" of sort - so the name seemed to fit :)
 * Apache Pulsar
 * NSQ
 * KubeMQ
+* Memphis - **NEW!**
 
 NOTE: If your messaging tech is not supported - submit an issue and we'll do
 our best to make it happen!
@@ -218,9 +219,9 @@ ie. `--queue-declare` is `true` by default. To make it false, use `--no-queue-de
 
 `plumber` can now act as a replay destination (tunnel). Tunnel mode allows you to
 run an instance of plumber, on your local network, which will then be available
-in the Batch platform as a _replay destination_.
+in the Streamdal platform as a _replay destination_.
 
-This mitigates the need make firewall changes to replay messages from a Batch
+This mitigates the need make firewall changes to replay messages from a Streamdal
 collection back to your message bus.
 
 See https://docs.streamdal.com/what-are/what-are-destinations/plumber-as-a-destination
