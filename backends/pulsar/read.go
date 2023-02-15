@@ -22,9 +22,10 @@ func (p *Pulsar) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsCh
 	}
 
 	consumer, err := p.client.Subscribe(pulsar.ConsumerOptions{
-		Topic:            readOpts.Pulsar.Args.Topic,
-		SubscriptionName: readOpts.Pulsar.Args.SubscriptionName,
-		Type:             getSubscriptionType(readOpts),
+		Topic:                       readOpts.Pulsar.Args.Topic,
+		SubscriptionName:            readOpts.Pulsar.Args.SubscriptionName,
+		Type:                        getSubscriptionType(readOpts),
+		SubscriptionInitialPosition: getSubscriptionInitialPosition(readOpts),
 	})
 	if err != nil {
 		return errors.Wrap(err, "unable to create pulsar subscription")
@@ -108,6 +109,15 @@ func getSubscriptionType(readOpts *opts.ReadOptions) pulsar.SubscriptionType {
 		return pulsar.KeyShared
 	default:
 		return pulsar.Shared
+	}
+}
+
+func getSubscriptionInitialPosition(readOpts *opts.ReadOptions) pulsar.SubscriptionInitialPosition {
+	switch readOpts.Pulsar.Args.InitialPosition.String() {
+	case "PULSAR_EARLIEST":
+		return pulsar.SubscriptionPositionEarliest
+	default:
+		return pulsar.SubscriptionPositionLatest
 	}
 }
 

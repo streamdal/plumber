@@ -121,6 +121,22 @@ var _ = Describe("Pulsar Backend", func() {
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(Equal(validate.ErrMissingClientCert))
 		})
+		It("validates authentication conflict", func() {
+			connOpts := &opts.ConnectionOptions{
+				Conn: &opts.ConnectionOptions_Pulsar{
+					Pulsar: &args.PulsarConn{
+						Dsn:                   "test",
+						TlsClientCert:         "test",
+						TlsClientKey:          "test",
+						Token:                 "test",
+						ConnectTimeoutSeconds: 1,
+					},
+				},
+			}
+			err := validateBaseConnOpts(connOpts)
+			Expect(err).To(HaveOccurred())
+			Expect(err).To(Equal(ErrAuthConflict))
+		})
 		It("validates connect timeout", func() {
 			connOpts := &opts.ConnectionOptions{
 				Conn: &opts.ConnectionOptions_Pulsar{

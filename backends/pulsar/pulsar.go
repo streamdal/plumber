@@ -21,6 +21,7 @@ const BackendName = "pulsar"
 var (
 	ErrEmptyTopic            = errors.New("topic cannot be empty")
 	ErrEmptySubscriptionName = errors.New("subscription name cannot be empty")
+	ErrAuthConflict          = errors.New("multiple authentication methods cannot be provided")
 )
 
 type Pulsar struct {
@@ -59,6 +60,10 @@ func getClientOptions(connOpts *opts.ConnectionOptions) *pulsar.ClientOptions {
 		TLSAllowInsecureConnection: args.TlsSkipVerify,
 	}
 
+	if len(args.ListenerName) > 0 {
+		clientOpts.ListenerName = args.ListenerName
+	}
+
 	if len(args.TlsClientCert) > 0 && len(args.TlsClientKey) > 0 {
 		if util.FileExists(args.TlsClientCert) {
 			// Certs inputted as files
@@ -73,6 +78,16 @@ func getClientOptions(connOpts *opts.ConnectionOptions) *pulsar.ClientOptions {
 					Certificate: [][]byte{[]byte(args.TlsClientCert)},
 					PrivateKey:  args.TlsClientKey,
 				}, nil
+			})
+		}
+	}
+
+	if len(args.Token) > 0 {
+		if util.FileExists(args.Token) {
+			clientOpts.Authentication = pulsar.NewAuthenticationTokenFromFile(args.Token)
+		} else {
+			clientOpts.Authentication = pulsar.NewAuthenticationTokenFromSupplier(func() (string, error) {
+				return args.Token, nil
 			})
 		}
 	}
@@ -121,6 +136,10 @@ func validateBaseConnOpts(connOpts *opts.ConnectionOptions) error {
 
 	if len(pulsarOpts.TlsClientKey) > 0 && len(pulsarOpts.TlsClientCert) == 0 {
 		return validate.ErrMissingClientCert
+	}
+
+	if len(pulsarOpts.Token) > 0 && (len(pulsarOpts.TlsClientCert) > 0 || len(pulsarOpts.TlsClientKey) > 0) {
+		return ErrAuthConflict
 	}
 
 	return nil

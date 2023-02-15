@@ -15,7 +15,7 @@ require (
 	github.com/batchcorp/kong v0.2.17-batch-fix
 	github.com/batchcorp/natty v0.0.16
 	github.com/batchcorp/pgoutput v0.3.2
-	github.com/batchcorp/plumber-schemas v0.0.175
+	github.com/batchcorp/plumber-schemas v0.0.176
 	github.com/batchcorp/rabbit v0.1.17
 	github.com/batchcorp/thrifty v0.0.10
 	github.com/dustin/go-humanize v1.0.0 // indirect
@@ -31,7 +31,7 @@ require (
 	github.com/imdario/mergo v0.3.13
 	github.com/jackc/pgx v3.2.0+incompatible
 	github.com/jhump/protoreflect v1.10.1
-	github.com/json-iterator/go v1.1.12
+	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/kataras/tablewriter v0.0.0-20180708051242-e063d29b7c23
 	github.com/kubemq-io/kubemq-go v1.7.2
@@ -59,7 +59,7 @@ require (
 	github.com/segmentio/kafka-go v0.4.16
 	github.com/sirupsen/logrus v1.8.1
 	github.com/streadway/amqp v1.0.0
-	github.com/thrift-iterator/go v0.0.0-20190402154806-9b5a67519118
+	github.com/thrift-iterator/go v0.0.0-20190402154806-9b5a67519118 // indirect
 	github.com/tidwall/gjson v1.9.3
 	github.com/v2pro/plz v0.0.0-20200805122259-422184e41b6e // indirect
 	github.com/v2pro/quokka v0.0.0-20171201153428-382cb39c6ee6 // indirect
