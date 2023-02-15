@@ -1,0 +1,57 @@
+services:
+  mongo:
+    image: "memphisos/mongo:4.2"
+    restart: on-failure
+    pull_policy: always
+    networks:
+      - memphis
+  memphis-cluster:
+    image: "memphisos/memphis-broker:latest"
+    healthcheck:
+      test: wget http://127.0.0.1:9000 --spider || exit 1
+      interval: 10s
+      retries: 30
+      start_period: 5s
+    restart: on-failure
+    pull_policy: always
+    networks:
+      - memphis
+    ports:
+      - "9000:9000"
+      - "6666:6666"
+      - "7770:7770"
+      - "8222:8222"
+    environment:
+      - ROOT_PASSWORD=memphis
+      - CONNECTION_TOKEN=memphis
+      - DOCKER_ENV=true
+      - ANALYTICS=true
+      - LOGS_RETENTION_IN_DAYS=3
+      - JWT_SECRET=JWT_TEST_PURPOSE
+      - REFRESH_JWT_SECRET=REFRESH_JWT_TEST_PURPOSE
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: >
+      -js --auth=memphis --websocket_no_tls=true -m 8222
+  memphis-http-proxy:
+    image: "memphisos/memphis-http-proxy:latest"
+    depends_on:
+      memphis-cluster:
+        condition: service_healthy
+    restart: on-failure
+    pull_policy: always
+    networks:
+      - memphis
+    ports:
+      - "4444:4444"
+    environment:
+      - JWT_SECRET=JWT_TEST_PURPOSE
+      - REFRESH_JWT_SECRET=REFRESH_JWT_TEST_PURPOSE
+      - CONNECTION_TOKEN=memphis
+      - ROOT_USER=root
+      - MEMPHIS_HOST=memphis-cluster
+      - HTTP_PORT=4444
+networks:
+  memphis:
+    ipam:
+      driver: default
