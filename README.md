@@ -1,6 +1,6 @@
 ![Brief Demo](./assets/plumber_logo_full.png)
 
-[![Master build status](https://github.com/batchcorp/plumber/workflows/master/badge.svg)](https://github.com/batchcorp/plumber/actions/workflows/master-test.yaml) [![Go Report Card](https://goreportcard.com/badge/github.com/batchcorp/plumber)](https://goreportcard.com/report/github.com/batchcorp/plumber)
+[![Master build status](https://github.com/batchcorp/plumber/workflows/master/badge.svg)](https://github.com/batchcorp/plumber/actions/workflows/master-test.yaml) [![Go Report Card](https://goreportcard.com/badge/github.com/batchcorp/plumber)](https://goreportcard.com/report/github.com/batchcorp/plumber) [![slack](https://img.shields.io/badge/slack-streamdal-brightgreen.svg?logo=slack)](https://launchpass.com/streamdal)
 
 plumber is a CLI devtool for inspecting, piping, messaging and redirecting data
 in message systems like Kafka, RabbitMQ , GCP PubSub and 
