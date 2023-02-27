@@ -164,7 +164,7 @@ github.com/batchcorp/natty
 # github.com/batchcorp/pgoutput v0.3.2
 ## explicit; go 1.15
 github.com/batchcorp/pgoutput
-# github.com/batchcorp/plumber-schemas v0.0.177
+# github.com/batchcorp/plumber-schemas v0.0.178
 ## explicit; go 1.16
 github.com/batchcorp/plumber-schemas/build/go/protos
 github.com/batchcorp/plumber-schemas/build/go/protos/args
