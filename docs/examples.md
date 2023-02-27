@@ -379,7 +379,7 @@ Publishing to a topic
 ```bash
 export SERVICEBUS_CONNECTION_STRING="Endpoint=sb://plumbertopictest.servicebus.windows.net/;SharedAccessKeyName=...."
 
-plumber write azure --topic="new-orders" --input="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+plumber write azure-service-bus --topic="new-orders" --input="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 Publishing to a queue
@@ -387,7 +387,7 @@ Publishing to a queue
 ```bash
 export SERVICEBUS_CONNECTION_STRING="Endpoint=sb://plumbertopictest.servicebus.windows.net/;SharedAccessKeyName=...."
 
-plumber write azure --queue="new-orders" --input="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
+plumber write azure-service-bus --queue="new-orders" --input="{\"order_id\": \"A-3458-654-1\", \"status\": \"processed\"}"
 ```
 
 ##### Azure Event Hub
