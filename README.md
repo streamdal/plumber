@@ -115,7 +115,7 @@ INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
 $ cat mydata.json
 [{"key": "value1"},{"key": "value2"}]
 
-$ cat mydata.json | plumber write kafka --topics foo --json-array
+$ cat mydata.json | plumber write kafka --topics foo --input-as-json-array
 
 INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
 INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
