@@ -62,10 +62,10 @@ func (m *AzureServiceBusConn) GetConnectionString() string {
 }
 
 type AzureServiceBusReadArgs struct {
-	// @gotags: kong:"help='Queue name',env='PLUMBER_RELAY_AZURE_QUEUE_NAME',required"
-	Queue string `protobuf:"bytes,1,opt,name=queue,proto3" json:"queue,omitempty" kong:"help='Queue name',env='PLUMBER_RELAY_AZURE_QUEUE_NAME',required"`
-	// @gotags: kong:"help='Topic name',env='PLUMBER_RELAY_AZURE_TOPIC_NAME',required"
-	Topic string `protobuf:"bytes,2,opt,name=topic,proto3" json:"topic,omitempty" kong:"help='Topic name',env='PLUMBER_RELAY_AZURE_TOPIC_NAME',required"`
+	// @gotags: kong:"help='Queue name',env='PLUMBER_RELAY_AZURE_QUEUE_NAME',xor=asb_read"
+	Queue string `protobuf:"bytes,1,opt,name=queue,proto3" json:"queue,omitempty" kong:"help='Queue name',env='PLUMBER_RELAY_AZURE_QUEUE_NAME',xor=asb_read"`
+	// @gotags: kong:"help='Topic name',env='PLUMBER_RELAY_AZURE_TOPIC_NAME',xor=asb_read"
+	Topic string `protobuf:"bytes,2,opt,name=topic,proto3" json:"topic,omitempty" kong:"help='Topic name',env='PLUMBER_RELAY_AZURE_TOPIC_NAME',xor=asb_read"`
 	// @gotags: kong:"help='Subscription name',env='PLUMBER_RELAY_AZURE_SUBSCRIPTION',required"
 	SubscriptionName     string   `protobuf:"bytes,3,opt,name=subscription_name,json=subscriptionName,proto3" json:"subscription_name,omitempty" kong:"help='Subscription name',env='PLUMBER_RELAY_AZURE_SUBSCRIPTION',required"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -120,10 +120,10 @@ func (m *AzureServiceBusReadArgs) GetSubscriptionName() string {
 }
 
 type AzureServiceBusWriteArgs struct {
-	// @gotags: kong:"help='Queue name',required"
-	Queue string `protobuf:"bytes,1,opt,name=queue,proto3" json:"queue,omitempty" kong:"help='Queue name',required"`
-	// @gotags: kong:"help='Topic name',required"
-	Topic                string   `protobuf:"bytes,2,opt,name=topic,proto3" json:"topic,omitempty" kong:"help='Topic name',required"`
+	// @gotags: kong:"help='Queue name',xor=asb_write"
+	Queue string `protobuf:"bytes,1,opt,name=queue,proto3" json:"queue,omitempty" kong:"help='Queue name',xor=asb_write"`
+	// @gotags: kong:"help='Topic name',xor=asb_write"
+	Topic                string   `protobuf:"bytes,2,opt,name=topic,proto3" json:"topic,omitempty" kong:"help='Topic name',xor=asb_write"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`

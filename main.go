@@ -190,7 +190,7 @@ func convertJSONInput(value string) []string {
 
 	jsonArray := gjson.Parse(value)
 	if !jsonArray.IsArray() {
-		logrus.Fatal("--json-array option was passed, but input data is not a valid JSON array")
+		logrus.Fatal("--input-as-json-array option was passed, but input data is not a valid JSON array")
 	}
 
 	jsonArray.ForEach(func(key, value gjson.Result) bool {
