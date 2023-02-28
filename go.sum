@@ -127,6 +127,8 @@ github.com/batchcorp/pgoutput v0.3.2 h1:Jck/nJLwXWmsNHF2iEfjFWrsds5LLGtqu6y6TjjU
 github.com/batchcorp/pgoutput v0.3.2/go.mod h1:xzkr73rAlqUdvt2oMAQav1lIt6xnG8bqYYXt4GrXM/I=
 github.com/batchcorp/plumber-schemas v0.0.178 h1:wgp0oHIiMr2qJ8CjLjOh5bjKZILCfpVEJxPQ5yzOEiI=
 github.com/batchcorp/plumber-schemas v0.0.178/go.mod h1:KxBXjHwZhPZoJryfv0c+aGFntx+rw2euYOqcNgqQlik=
+github.com/batchcorp/plumber-schemas v0.0.179 h1:hW6IQCrphka7ronqvnjEucSpzCmhn5+Nxq00kSWIreE=
+github.com/batchcorp/plumber-schemas v0.0.179/go.mod h1:KxBXjHwZhPZoJryfv0c+aGFntx+rw2euYOqcNgqQlik=
 github.com/batchcorp/plz v0.9.2 h1:bPqb+sn7OUrpHjeTEI9YO4BJS9IQ7AstDDz2gn+tcn8=
 github.com/batchcorp/plz v0.9.2/go.mod h1:3gacX+hQo+xvl0vtLqCMufzxuNCwt4geAVOMt2LQYfE=
 github.com/batchcorp/rabbit v0.1.17 h1:dui1W7FLTrNxyVlDN+G+6d8LXz8HBhVAcUethXql9vQ=
