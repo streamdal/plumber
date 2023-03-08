@@ -65,6 +65,12 @@ func New(enableCluster bool, k kv.IKV) (*Config, error) {
 	var err error
 
 	defer func() {
+		// When config is nil and an error is returned from New(),
+		// allow this defer to exit without panicking
+		if cfg == nil {
+			return
+		}
+
 		cfg.LastVersion = options.VERSION
 
 		// Old versions of plumber incorrectly defaulted plumber id to plumber1;
@@ -329,6 +335,16 @@ func fetchConfigFromFile(fileName string) (*Config, error) {
 }
 
 func readConfigBytes(data []byte) (*Config, error) {
+	// Hack: handle flag name change in marshaled data when upgrading plumber cluster
+	// Some flags were changed in v2, such as BatchshGRPCCollectorAddress, which is now
+	// StreamdalGRPCCollectorAddress
+	tmp := string(data)
+	if strings.Contains(tmp, "\"Batchsh") {
+		tmp = strings.Replace(tmp, "\"Batchsh", "\"Streamdal", -1)
+		println(tmp)
+		data = []byte(tmp)
+	}
+
 	cfg := &Config{
 		ConnectionsMutex: &sync.RWMutex{},
 		RelaysMutex:      &sync.RWMutex{},
