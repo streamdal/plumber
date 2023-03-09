@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	cenats "github.com/cloudevents/sdk-go/protocol/nats/v2"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
 
@@ -14,9 +16,13 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
-func (n *NatsJetstream) Write(_ context.Context, writeOpts *opts.WriteOptions, errorCh chan<- *records.ErrorRecord, messages ...*records.WriteRecord) error {
+func (n *NatsJetstream) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh chan<- *records.ErrorRecord, messages ...*records.WriteRecord) error {
 	if err := validateWriteOptions(writeOpts); err != nil {
 		return errors.Wrap(err, "invalid write options")
+	}
+
+	if writeOpts.NatsJetstream.CloudEvent.Cloudevent {
+		return n.writeCloudEvents(ctx, writeOpts, errorCh, messages...)
 	}
 
 	jsCtx, err := n.client.JetStream(nats.PublishAsyncMaxPending(256))
@@ -31,6 +37,40 @@ func (n *NatsJetstream) Write(_ context.Context, writeOpts *opts.WriteOptions, e
 			util.WriteError(n.log, errorCh, fmt.Errorf("unable to publish message to subject '%s': %s", stream, err))
 			continue
 		}
+	}
+
+	return nil
+}
+
+func (n *NatsJetstream) writeCloudEvents(_ context.Context, writeOpts *opts.WriteOptions, errorCh chan<- *records.ErrorRecord, messages ...*records.WriteRecord) error {
+	subject := writeOpts.NatsJetstream.Args.Subject
+
+	sender, err := cenats.NewSenderFromConn(n.client, subject)
+	if err != nil {
+		return errors.Wrap(err, "unable to create new cloudevents sender")
+	}
+
+	// Not performing sender.Close() here since plumber handles connection closing
+
+	c, err := cloudevents.NewClient(sender)
+	if err != nil {
+		return errors.Wrap(err, "failed to create cloudevents client")
+	}
+
+	for i, msg := range messages {
+		e, err := util.GenCloudEvent(writeOpts.NatsJetstream.CloudEvent, msg)
+		if err != nil {
+			util.WriteError(n.log, errorCh, errors.Wrap(err, "unable to generate cloudevents event"))
+			continue
+		}
+
+		result := c.Send(context.Background(), *e)
+		if cloudevents.IsUndelivered(result) {
+			util.WriteError(n.log, errorCh, fmt.Errorf("unable to publish message to subject '%s': %s", subject, result))
+			continue
+		}
+
+		n.log.Debugf("sent: %d, accepted: %t", i, cloudevents.IsACK(result))
 	}
 
 	return nil
