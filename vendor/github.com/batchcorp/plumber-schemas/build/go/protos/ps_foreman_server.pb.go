@@ -169,47 +169,55 @@ func init() {
 func init() { proto.RegisterFile("ps_foreman_server.proto", fileDescriptor_f45a754b4dc96eaa) }
 
 var fileDescriptor_f45a754b4dc96eaa = []byte{
-	// 625 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x96, 0x5f, 0x6f, 0xd3, 0x30,
-	0x14, 0xc5, 0xd5, 0x21, 0x8d, 0xd5, 0x5d, 0xc7, 0xc8, 0x90, 0x5a, 0xba, 0x8e, 0x95, 0x3e, 0xed,
-	0x85, 0x46, 0x1a, 0x88, 0x37, 0x24, 0x46, 0x61, 0x51, 0xa5, 0xa1, 0xa1, 0xae, 0x93, 0x10, 0x2f,
-	0x51, 0x9a, 0xde, 0xad, 0x15, 0x49, 0x6c, 0x62, 0x07, 0x89, 0xef, 0xc2, 0x87, 0x45, 0xc9, 0x75,
-	0xea, 0x7f, 0x29, 0x4f, 0x55, 0xce, 0xb9, 0xf7, 0x97, 0x13, 0x5f, 0xc7, 0x29, 0xe9, 0x31, 0x1e,
-	0x3e, 0xd0, 0x1c, 0xd2, 0x28, 0x0b, 0x39, 0xe4, 0xbf, 0x21, 0x9f, 0xb0, 0x9c, 0x0a, 0xea, 0xed,
-	0x57, 0x3f, 0x7c, 0x70, 0xcc, 0x78, 0x18, 0xd3, 0x2c, 0x83, 0x58, 0xa0, 0x33, 0x38, 0x62, 0x3c,
-	0xcc, 0x21, 0x89, 0xfe, 0xc8, 0xeb, 0x67, 0x8c, 0x1b, 0xad, 0x95, 0x20, 0x8a, 0x2c, 0x83, 0x04,
-	0x85, 0xf1, 0x17, 0xd2, 0xf9, 0x96, 0x14, 0xe9, 0x12, 0xf2, 0x59, 0xf6, 0x40, 0xbd, 0x1e, 0x79,
-	0x2a, 0x20, 0x4a, 0xc3, 0xcd, 0xaa, 0xdf, 0x1a, 0xb5, 0x2e, 0xda, 0xf3, 0xfd, 0xf2, 0x72, 0xb6,
-	0xf2, 0xce, 0x08, 0x89, 0x93, 0x82, 0x0b, 0xc8, 0x4b, 0x6f, 0xaf, 0xf2, 0xda, 0x52, 0x99, 0xad,
-	0xc6, 0x5f, 0xc9, 0xc9, 0xcd, 0x86, 0x0b, 0x89, 0xe2, 0x73, 0xf8, 0x55, 0x00, 0x17, 0x65, 0x57,
-	0x54, 0x88, 0x75, 0x28, 0xe8, 0x4f, 0xc8, 0x24, 0xb1, 0x5d, 0x2a, 0x8b, 0x52, 0xd0, 0xef, 0xb6,
-	0xa7, 0xdf, 0x6d, 0x1c, 0x90, 0x17, 0x26, 0x8e, 0x33, 0x9a, 0x71, 0xf0, 0x7c, 0x72, 0xc0, 0xa4,
-	0xd6, 0x6f, 0x8d, 0x9e, 0x5c, 0x74, 0x2e, 0x4f, 0xf0, 0x39, 0xf8, 0x44, 0x7b, 0x8a, 0xf9, 0xb6,
-	0xe8, 0xf2, 0x6f, 0x97, 0x74, 0xaf, 0x71, 0x0d, 0xef, 0xaa, 0x75, 0xf0, 0x66, 0xe4, 0x50, 0x47,
-	0x7b, 0xa7, 0x35, 0xa0, 0x21, 0xff, 0x60, 0xd8, 0x6c, 0xca, 0x34, 0xdf, 0xc9, 0xf3, 0x00, 0xc4,
-	0x55, 0x92, 0x4c, 0x71, 0x08, 0x1b, 0x9a, 0x71, 0x6f, 0x54, 0xb7, 0x38, 0x56, 0x0d, 0x7d, 0xfd,
-	0x9f, 0x0a, 0x49, 0xbe, 0x21, 0xdd, 0x00, 0x84, 0x72, 0xbc, 0xa1, 0xd6, 0xa3, 0xe4, 0x9a, 0x78,
-	0xb6, 0xc3, 0x95, 0xb4, 0x7b, 0x72, 0x3c, 0xcd, 0x21, 0x12, 0xa0, 0x01, 0xcf, 0xeb, 0x16, 0xdb,
-	0xa9, 0x99, 0xa3, 0xdd, 0x05, 0x12, 0x7b, 0x4b, 0x8e, 0x16, 0xc0, 0xf5, 0x94, 0xdb, 0x1c, 0xa6,
-	0x5e, 0x23, 0x5f, 0xed, 0xb2, 0x55, 0xce, 0x7b, 0xb6, 0xda, 0x91, 0xd3, 0x76, 0x9c, 0x9c, 0x6e,
-	0x81, 0xc2, 0x7e, 0x86, 0x04, 0x9a, 0xb1, 0xb6, 0xe3, 0x60, 0xdd, 0x02, 0x89, 0x9d, 0x91, 0x43,
-	0x1c, 0xe0, 0xbc, 0x7c, 0xe1, 0xb4, 0x8d, 0xa4, 0xab, 0xce, 0x46, 0x32, 0x4d, 0x89, 0xfa, 0x40,
-	0x0e, 0x02, 0x10, 0x95, 0xe8, 0xf5, 0xb4, 0xca, 0x4a, 0xa9, 0x11, 0x7d, 0xd7, 0x90, 0xed, 0xd7,
-	0xa4, 0x83, 0x43, 0x42, 0xc2, 0xc0, 0x9c, 0x9c, 0x01, 0x39, 0x6d, 0xf4, 0x14, 0x07, 0x17, 0xd1,
-	0xe2, 0x68, 0xa2, 0xc3, 0x31, 0x3c, 0xc5, 0x99, 0x03, 0x2f, 0x52, 0x9b, 0xa3, 0x89, 0x0e, 0xc7,
-	0xf0, 0x24, 0xe7, 0x23, 0x69, 0xdf, 0x09, 0xca, 0x90, 0xb2, 0x7d, 0xfc, 0xad, 0x54, 0x33, 0x5e,
-	0x36, 0x38, 0x2a, 0x09, 0xce, 0xcf, 0x4a, 0xa2, 0x89, 0x4e, 0x12, 0xc3, 0x53, 0x49, 0x02, 0x10,
-	0x8b, 0xea, 0xe0, 0xf4, 0xf4, 0x41, 0xa0, 0xe4, 0x24, 0xd1, 0x1c, 0xe3, 0x8d, 0xbe, 0x4a, 0x12,
-	0xd4, 0xb9, 0x67, 0xed, 0x08, 0x29, 0x37, 0xbd, 0xd1, 0xba, 0xab, 0xf6, 0x1e, 0x0e, 0x50, 0x46,
-	0xb2, 0xc6, 0x6a, 0xa6, 0x1a, 0x36, 0x9b, 0x12, 0x35, 0x25, 0xa4, 0x5c, 0x37, 0x09, 0x32, 0xd6,
-	0xd2, 0xc4, 0x0c, 0x9a, 0x2c, 0x95, 0x07, 0x07, 0x68, 0xe7, 0xd1, 0x55, 0x27, 0x8f, 0x69, 0x2a,
-	0x14, 0xee, 0x29, 0x1b, 0xa5, 0xab, 0x0e, 0xca, 0x34, 0x15, 0x0a, 0x87, 0x69, 0xa3, 0x74, 0xd5,
-	0x41, 0x99, 0xa6, 0x3a, 0x43, 0x02, 0x10, 0xf8, 0x09, 0xb9, 0x65, 0x78, 0xd2, 0x9f, 0x6b, 0x33,
-	0x32, 0x1c, 0xe7, 0x0c, 0x71, 0x0b, 0x10, 0xfb, 0xe9, 0xfd, 0x8f, 0x77, 0x8f, 0x1b, 0xb1, 0x2e,
-	0x96, 0x93, 0x98, 0xa6, 0xfe, 0x32, 0x12, 0xf1, 0x3a, 0xa6, 0x39, 0xf3, 0xe5, 0xf7, 0xeb, 0x0d,
-	0x8f, 0xd7, 0x90, 0x46, 0xdc, 0x5f, 0x16, 0x9b, 0x64, 0xe5, 0x3f, 0x52, 0x1f, 0x81, 0x4b, 0xfc,
-	0x07, 0xf0, 0xf6, 0x5f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x71, 0xb8, 0x8b, 0x00, 0x23, 0x08, 0x00,
-	0x00,
+	// 762 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x96, 0x5f, 0x4f, 0xdb, 0x30,
+	0x14, 0xc5, 0x05, 0x93, 0xd8, 0x6a, 0x60, 0x63, 0x06, 0x09, 0x28, 0x65, 0x94, 0x3e, 0xf1, 0x32,
+	0x2a, 0xb1, 0x69, 0xcf, 0x63, 0x30, 0xaa, 0x4a, 0x4c, 0x4c, 0x05, 0xa4, 0x69, 0x7b, 0xa8, 0xd2,
+	0xd4, 0xd0, 0x68, 0x49, 0x9c, 0xc5, 0xce, 0xbe, 0xf8, 0xbe, 0xc0, 0x94, 0xf8, 0xba, 0xbe, 0xfe,
+	0x93, 0x3e, 0x21, 0xce, 0xb9, 0xf9, 0xf5, 0xe4, 0xda, 0xbe, 0x31, 0xd9, 0x2f, 0xc4, 0xf4, 0x89,
+	0x97, 0x2c, 0x8b, 0xf2, 0xa9, 0x60, 0xe5, 0x5f, 0x56, 0x9e, 0x17, 0x25, 0x97, 0x9c, 0x6e, 0x34,
+	0x7f, 0x44, 0x77, 0xa7, 0x10, 0xd3, 0x78, 0x11, 0xe5, 0x39, 0x4b, 0x95, 0xa3, 0x14, 0x9e, 0xe7,
+	0x2c, 0x96, 0xa0, 0xec, 0x15, 0x62, 0x3a, 0x67, 0x42, 0x26, 0x79, 0x24, 0x13, 0x9e, 0x83, 0xfa,
+	0xa6, 0x10, 0x16, 0x52, 0x09, 0xbc, 0x2a, 0x63, 0x86, 0x04, 0x59, 0x19, 0xf4, 0xe0, 0x2b, 0xd9,
+	0xfc, 0x9e, 0x56, 0xd9, 0x8c, 0x95, 0xe3, 0xfc, 0x89, 0xd3, 0x7d, 0xf2, 0x52, 0xb2, 0x28, 0x9b,
+	0x26, 0xf3, 0x83, 0xb5, 0xfe, 0xda, 0x59, 0x67, 0xb2, 0x51, 0xff, 0x3b, 0x9e, 0xd3, 0x63, 0x42,
+	0xe2, 0xb4, 0x12, 0x92, 0x95, 0xb5, 0xb7, 0xde, 0x78, 0x1d, 0x50, 0xc6, 0xf3, 0xc1, 0x37, 0xb2,
+	0x7b, 0x9b, 0x08, 0x09, 0x28, 0x31, 0x61, 0x7f, 0x2a, 0x26, 0x64, 0xfd, 0x54, 0x54, 0xc9, 0xc5,
+	0x54, 0xf2, 0xdf, 0x2c, 0x07, 0x62, 0xa7, 0x56, 0x1e, 0x6a, 0x01, 0xff, 0xda, 0x3a, 0xfe, 0xb5,
+	0xc1, 0x88, 0xec, 0xd9, 0x38, 0x51, 0xf0, 0x5c, 0x30, 0x3a, 0x24, 0xaf, 0x0a, 0xd0, 0x0e, 0xd6,
+	0xfa, 0x2f, 0xce, 0x36, 0x2f, 0x76, 0xd5, 0x7b, 0x88, 0x73, 0xf4, 0x16, 0x93, 0x65, 0xd1, 0xc5,
+	0xbf, 0x5d, 0xb2, 0x7d, 0xa3, 0x9a, 0x7d, 0xdf, 0x34, 0x86, 0x8e, 0xc9, 0x16, 0x46, 0xd3, 0x23,
+	0x0d, 0x08, 0xe4, 0xef, 0xf6, 0xc2, 0x26, 0xa4, 0xf9, 0x41, 0xde, 0x8e, 0x98, 0xbc, 0x4c, 0xd3,
+	0x2b, 0xb5, 0x36, 0x09, 0xcf, 0x05, 0xed, 0xeb, 0x47, 0x3c, 0x4b, 0x43, 0x4f, 0x57, 0x54, 0x00,
+	0xf9, 0x96, 0x6c, 0x8f, 0x98, 0x34, 0x0e, 0xed, 0xa1, 0x67, 0x8c, 0xac, 0x89, 0xc7, 0x2d, 0x2e,
+	0xd0, 0x1e, 0xc9, 0xce, 0x55, 0xc9, 0x22, 0xc9, 0x10, 0xf0, 0x44, 0x3f, 0xe2, 0x3a, 0x9a, 0xd9,
+	0x6f, 0x2f, 0x00, 0xec, 0x1d, 0x79, 0xfd, 0xc0, 0x04, 0x4e, 0xb9, 0xcc, 0x61, 0xeb, 0x1a, 0xf9,
+	0xae, 0xcd, 0x36, 0x39, 0x1f, 0x8b, 0x79, 0x4b, 0x4e, 0xd7, 0xf1, 0x72, 0xfa, 0x05, 0x06, 0x7b,
+	0xcd, 0x52, 0x16, 0xc6, 0xba, 0x8e, 0x87, 0xf5, 0x0b, 0x00, 0xfb, 0x99, 0x74, 0x46, 0x4c, 0xde,
+	0x37, 0xa7, 0x8b, 0x1e, 0xa0, 0x15, 0x50, 0x92, 0x06, 0x1d, 0x06, 0x1c, 0x6b, 0x95, 0x2f, 0xd3,
+	0x54, 0xe9, 0xc2, 0x5a, 0x65, 0x23, 0x87, 0x56, 0x19, 0xbb, 0x40, 0x1b, 0x93, 0x2d, 0xb5, 0x54,
+	0x10, 0xe9, 0xc8, 0x5e, 0x40, 0x3b, 0x55, 0x2f, 0x6c, 0x1a, 0x94, 0xea, 0xa6, 0x8b, 0xc2, 0xaa,
+	0x87, 0xb2, 0x4d, 0x83, 0x52, 0x1d, 0x74, 0x51, 0x58, 0xf5, 0x50, 0xb6, 0x69, 0xf6, 0xdb, 0x88,
+	0xc9, 0x6b, 0x33, 0xf5, 0x28, 0xee, 0x08, 0xd2, 0xbd, 0xfd, 0xe6, 0xda, 0x00, 0xfc, 0x45, 0xa8,
+	0x6a, 0x25, 0x32, 0x05, 0x75, 0x8e, 0x27, 0xf6, 0x34, 0x78, 0xb0, 0xaa, 0xc4, 0x0c, 0x07, 0xd5,
+	0x5b, 0x1c, 0xd8, 0x39, 0x54, 0x81, 0xcc, 0xa7, 0x2b, 0x2a, 0x0c, 0x59, 0xb5, 0x3a, 0x48, 0xf6,
+	0x2c, 0x8f, 0x1c, 0xa8, 0x30, 0x64, 0xd5, 0xf9, 0x20, 0xd9, 0xb3, 0x3c, 0x72, 0xa0, 0x02, 0xc8,
+	0x57, 0x84, 0xd4, 0xb3, 0x49, 0x7d, 0xd5, 0x28, 0x3e, 0x13, 0xa0, 0x69, 0x56, 0x37, 0x64, 0x59,
+	0x1b, 0xa0, 0x1e, 0x99, 0xca, 0x10, 0xd4, 0x39, 0x12, 0x5a, 0x0f, 0x6d, 0x00, 0xcb, 0x36, 0x07,
+	0x10, 0xa6, 0x1b, 0x04, 0x73, 0x8e, 0x85, 0x93, 0xed, 0xb8, 0xc5, 0x35, 0x34, 0x98, 0x41, 0x2e,
+	0xcd, 0x92, 0x3d, 0x9a, 0xe3, 0x1a, 0x1a, 0x8c, 0x1e, 0x97, 0x66, 0xc9, 0x1e, 0xcd, 0x71, 0x81,
+	0x76, 0x43, 0x36, 0xef, 0x25, 0x2f, 0x34, 0x6b, 0xd9, 0x65, 0x24, 0x6a, 0xd2, 0x51, 0xd0, 0x33,
+	0xa9, 0x26, 0x4c, 0x54, 0x99, 0x9f, 0xca, 0x92, 0xbd, 0x54, 0x8e, 0x6b, 0x8d, 0xd0, 0x87, 0xe6,
+	0x3e, 0x62, 0x8d, 0x50, 0x25, 0x85, 0x46, 0xa8, 0x76, 0xdc, 0x11, 0xaa, 0x74, 0x6f, 0x84, 0x82,
+	0xdc, 0x32, 0x42, 0x97, 0xae, 0x3b, 0x42, 0x21, 0x92, 0x33, 0x42, 0xed, 0x54, 0xbd, 0xb0, 0x69,
+	0x36, 0x7c, 0xdd, 0x3f, 0x00, 0x1d, 0xe2, 0x9e, 0xda, 0x98, 0x6e, 0xc8, 0x32, 0x79, 0x54, 0xe3,
+	0xdc, 0x3c, 0x58, 0xf5, 0xf2, 0xd8, 0xa6, 0x3b, 0xd2, 0x5d, 0x14, 0x56, 0x5b, 0x46, 0xba, 0x8f,
+	0x52, 0x9b, 0xcc, 0x45, 0x61, 0xb5, 0x65, 0xa4, 0x3b, 0xa8, 0x47, 0xb2, 0x53, 0x7f, 0x16, 0x9b,
+	0x9b, 0xd9, 0x5d, 0xa1, 0xe6, 0xef, 0x09, 0xfe, 0x60, 0x62, 0xc7, 0xfb, 0x34, 0xfb, 0x05, 0x0a,
+	0xfb, 0xe5, 0xd3, 0xcf, 0x8f, 0xcf, 0x89, 0x5c, 0x54, 0xb3, 0xf3, 0x98, 0x67, 0xc3, 0x59, 0x24,
+	0xe3, 0x45, 0xcc, 0xcb, 0x62, 0x08, 0xd7, 0xc2, 0xf7, 0x22, 0x5e, 0xb0, 0x2c, 0x12, 0xc3, 0x59,
+	0x95, 0xa4, 0xf3, 0xe1, 0x33, 0x1f, 0x2a, 0xe0, 0x4c, 0xdd, 0xc0, 0x3f, 0xfc, 0x0f, 0x00, 0x00,
+	0xff, 0xff, 0xc4, 0xe7, 0x45, 0x6e, 0xa3, 0x0b, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -239,13 +247,23 @@ type ForemanServerClient interface {
 	UpdateConnection(ctx context.Context, in *UpdateConnectionRequest, opts ...grpc.CallOption) (*UpdateConnectionResponse, error)
 	// If there are any active connections, delete will cause them to get closed
 	DeleteConnection(ctx context.Context, in *DeleteConnectionRequest, opts ...grpc.CallOption) (*DeleteConnectionResponse, error)
-	GetAllRelays(ctx context.Context, in *GetAllRelaysRequest, opts ...grpc.CallOption) (*GetAllRelaysResponse, error)
-	GetRelay(ctx context.Context, in *GetRelayRequest, opts ...grpc.CallOption) (*GetRelayResponse, error)
-	CreateRelay(ctx context.Context, in *CreateRelayRequest, opts ...grpc.CallOption) (*CreateRelayResponse, error)
-	UpdateRelay(ctx context.Context, in *UpdateRelayRequest, opts ...grpc.CallOption) (*UpdateRelayResponse, error)
-	ResumeRelay(ctx context.Context, in *ResumeRelayRequest, opts ...grpc.CallOption) (*ResumeRelayResponse, error)
-	StopRelay(ctx context.Context, in *StopRelayRequest, opts ...grpc.CallOption) (*StopRelayResponse, error)
-	DeleteRelay(ctx context.Context, in *DeleteRelayRequest, opts ...grpc.CallOption) (*DeleteRelayResponse, error)
+	GetSource(ctx context.Context, in *GetSourceRequest, opts ...grpc.CallOption) (*GetSourceResponse, error)
+	GetAllSources(ctx context.Context, in *GetAllSourcesRequest, opts ...grpc.CallOption) (*GetAllSourcesResponse, error)
+	CreateSource(ctx context.Context, in *CreateSourceRequest, opts ...grpc.CallOption) (*CreateSourceResponse, error)
+	UpdateSource(ctx context.Context, in *UpdateSourceRequest, opts ...grpc.CallOption) (*UpdateSourceResponse, error)
+	DeleteSource(ctx context.Context, in *DeleteSourceRequest, opts ...grpc.CallOption) (*DeleteSourceResponse, error)
+	GetDestination(ctx context.Context, in *GetDestinationRequest, opts ...grpc.CallOption) (*GetDestinationResponse, error)
+	GetAllDestinations(ctx context.Context, in *GetAllDestinationsRequest, opts ...grpc.CallOption) (*GetAllDestinationsResponse, error)
+	CreateDestination(ctx context.Context, in *CreateDestinationRequest, opts ...grpc.CallOption) (*CreateDestinationResponse, error)
+	UpdateDestination(ctx context.Context, in *UpdateDestinationRequest, opts ...grpc.CallOption) (*UpdateDestinationResponse, error)
+	DeleteDestination(ctx context.Context, in *DeleteDestinationRequest, opts ...grpc.CallOption) (*DeleteDestinationResponse, error)
+	GetChannel(ctx context.Context, in *GetChannelRequest, opts ...grpc.CallOption) (*GetChannelResponse, error)
+	GetAllChannels(ctx context.Context, in *GetAllChannelsRequest, opts ...grpc.CallOption) (*GetAllChannelsResponse, error)
+	CreateChannel(ctx context.Context, in *CreateChannelRequest, opts ...grpc.CallOption) (*CreateChannelResponse, error)
+	UpdateChannel(ctx context.Context, in *UpdateChannelRequest, opts ...grpc.CallOption) (*UpdateChannelResponse, error)
+	DeleteChannel(ctx context.Context, in *DeleteChannelRequest, opts ...grpc.CallOption) (*DeleteChannelResponse, error)
+	StopChannel(ctx context.Context, in *StopChannelRequest, opts ...grpc.CallOption) (*StopChannelResponse, error)
+	ResumeChannel(ctx context.Context, in *ResumeChannelRequest, opts ...grpc.CallOption) (*ResumeChannelResponse, error)
 	GetTunnel(ctx context.Context, in *GetTunnelRequest, opts ...grpc.CallOption) (*GetTunnelResponse, error)
 	GetAllTunnels(ctx context.Context, in *GetAllTunnelsRequest, opts ...grpc.CallOption) (*GetAllTunnelsResponse, error)
 	CreateTunnel(ctx context.Context, in *CreateTunnelRequest, opts ...grpc.CallOption) (*CreateTunnelResponse, error)
@@ -327,63 +345,153 @@ func (c *foremanServerClient) DeleteConnection(ctx context.Context, in *DeleteCo
 	return out, nil
 }
 
-func (c *foremanServerClient) GetAllRelays(ctx context.Context, in *GetAllRelaysRequest, opts ...grpc.CallOption) (*GetAllRelaysResponse, error) {
-	out := new(GetAllRelaysResponse)
-	err := c.cc.Invoke(ctx, "/protos.ForemanServer/GetAllRelays", in, out, opts...)
+func (c *foremanServerClient) GetSource(ctx context.Context, in *GetSourceRequest, opts ...grpc.CallOption) (*GetSourceResponse, error) {
+	out := new(GetSourceResponse)
+	err := c.cc.Invoke(ctx, "/protos.ForemanServer/GetSource", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *foremanServerClient) GetRelay(ctx context.Context, in *GetRelayRequest, opts ...grpc.CallOption) (*GetRelayResponse, error) {
-	out := new(GetRelayResponse)
-	err := c.cc.Invoke(ctx, "/protos.ForemanServer/GetRelay", in, out, opts...)
+func (c *foremanServerClient) GetAllSources(ctx context.Context, in *GetAllSourcesRequest, opts ...grpc.CallOption) (*GetAllSourcesResponse, error) {
+	out := new(GetAllSourcesResponse)
+	err := c.cc.Invoke(ctx, "/protos.ForemanServer/GetAllSources", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *foremanServerClient) CreateRelay(ctx context.Context, in *CreateRelayRequest, opts ...grpc.CallOption) (*CreateRelayResponse, error) {
-	out := new(CreateRelayResponse)
-	err := c.cc.Invoke(ctx, "/protos.ForemanServer/CreateRelay", in, out, opts...)
+func (c *foremanServerClient) CreateSource(ctx context.Context, in *CreateSourceRequest, opts ...grpc.CallOption) (*CreateSourceResponse, error) {
+	out := new(CreateSourceResponse)
+	err := c.cc.Invoke(ctx, "/protos.ForemanServer/CreateSource", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *foremanServerClient) UpdateRelay(ctx context.Context, in *UpdateRelayRequest, opts ...grpc.CallOption) (*UpdateRelayResponse, error) {
-	out := new(UpdateRelayResponse)
-	err := c.cc.Invoke(ctx, "/protos.ForemanServer/UpdateRelay", in, out, opts...)
+func (c *foremanServerClient) UpdateSource(ctx context.Context, in *UpdateSourceRequest, opts ...grpc.CallOption) (*UpdateSourceResponse, error) {
+	out := new(UpdateSourceResponse)
+	err := c.cc.Invoke(ctx, "/protos.ForemanServer/UpdateSource", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *foremanServerClient) ResumeRelay(ctx context.Context, in *ResumeRelayRequest, opts ...grpc.CallOption) (*ResumeRelayResponse, error) {
-	out := new(ResumeRelayResponse)
-	err := c.cc.Invoke(ctx, "/protos.ForemanServer/ResumeRelay", in, out, opts...)
+func (c *foremanServerClient) DeleteSource(ctx context.Context, in *DeleteSourceRequest, opts ...grpc.CallOption) (*DeleteSourceResponse, error) {
+	out := new(DeleteSourceResponse)
+	err := c.cc.Invoke(ctx, "/protos.ForemanServer/DeleteSource", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *foremanServerClient) StopRelay(ctx context.Context, in *StopRelayRequest, opts ...grpc.CallOption) (*StopRelayResponse, error) {
-	out := new(StopRelayResponse)
-	err := c.cc.Invoke(ctx, "/protos.ForemanServer/StopRelay", in, out, opts...)
+func (c *foremanServerClient) GetDestination(ctx context.Context, in *GetDestinationRequest, opts ...grpc.CallOption) (*GetDestinationResponse, error) {
+	out := new(GetDestinationResponse)
+	err := c.cc.Invoke(ctx, "/protos.ForemanServer/GetDestination", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *foremanServerClient) DeleteRelay(ctx context.Context, in *DeleteRelayRequest, opts ...grpc.CallOption) (*DeleteRelayResponse, error) {
-	out := new(DeleteRelayResponse)
-	err := c.cc.Invoke(ctx, "/protos.ForemanServer/DeleteRelay", in, out, opts...)
+func (c *foremanServerClient) GetAllDestinations(ctx context.Context, in *GetAllDestinationsRequest, opts ...grpc.CallOption) (*GetAllDestinationsResponse, error) {
+	out := new(GetAllDestinationsResponse)
+	err := c.cc.Invoke(ctx, "/protos.ForemanServer/GetAllDestinations", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *foremanServerClient) CreateDestination(ctx context.Context, in *CreateDestinationRequest, opts ...grpc.CallOption) (*CreateDestinationResponse, error) {
+	out := new(CreateDestinationResponse)
+	err := c.cc.Invoke(ctx, "/protos.ForemanServer/CreateDestination", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *foremanServerClient) UpdateDestination(ctx context.Context, in *UpdateDestinationRequest, opts ...grpc.CallOption) (*UpdateDestinationResponse, error) {
+	out := new(UpdateDestinationResponse)
+	err := c.cc.Invoke(ctx, "/protos.ForemanServer/UpdateDestination", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *foremanServerClient) DeleteDestination(ctx context.Context, in *DeleteDestinationRequest, opts ...grpc.CallOption) (*DeleteDestinationResponse, error) {
+	out := new(DeleteDestinationResponse)
+	err := c.cc.Invoke(ctx, "/protos.ForemanServer/DeleteDestination", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *foremanServerClient) GetChannel(ctx context.Context, in *GetChannelRequest, opts ...grpc.CallOption) (*GetChannelResponse, error) {
+	out := new(GetChannelResponse)
+	err := c.cc.Invoke(ctx, "/protos.ForemanServer/GetChannel", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *foremanServerClient) GetAllChannels(ctx context.Context, in *GetAllChannelsRequest, opts ...grpc.CallOption) (*GetAllChannelsResponse, error) {
+	out := new(GetAllChannelsResponse)
+	err := c.cc.Invoke(ctx, "/protos.ForemanServer/GetAllChannels", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *foremanServerClient) CreateChannel(ctx context.Context, in *CreateChannelRequest, opts ...grpc.CallOption) (*CreateChannelResponse, error) {
+	out := new(CreateChannelResponse)
+	err := c.cc.Invoke(ctx, "/protos.ForemanServer/CreateChannel", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *foremanServerClient) UpdateChannel(ctx context.Context, in *UpdateChannelRequest, opts ...grpc.CallOption) (*UpdateChannelResponse, error) {
+	out := new(UpdateChannelResponse)
+	err := c.cc.Invoke(ctx, "/protos.ForemanServer/UpdateChannel", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *foremanServerClient) DeleteChannel(ctx context.Context, in *DeleteChannelRequest, opts ...grpc.CallOption) (*DeleteChannelResponse, error) {
+	out := new(DeleteChannelResponse)
+	err := c.cc.Invoke(ctx, "/protos.ForemanServer/DeleteChannel", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *foremanServerClient) StopChannel(ctx context.Context, in *StopChannelRequest, opts ...grpc.CallOption) (*StopChannelResponse, error) {
+	out := new(StopChannelResponse)
+	err := c.cc.Invoke(ctx, "/protos.ForemanServer/StopChannel", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *foremanServerClient) ResumeChannel(ctx context.Context, in *ResumeChannelRequest, opts ...grpc.CallOption) (*ResumeChannelResponse, error) {
+	out := new(ResumeChannelResponse)
+	err := c.cc.Invoke(ctx, "/protos.ForemanServer/ResumeChannel", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -479,13 +587,23 @@ type ForemanServerServer interface {
 	UpdateConnection(context.Context, *UpdateConnectionRequest) (*UpdateConnectionResponse, error)
 	// If there are any active connections, delete will cause them to get closed
 	DeleteConnection(context.Context, *DeleteConnectionRequest) (*DeleteConnectionResponse, error)
-	GetAllRelays(context.Context, *GetAllRelaysRequest) (*GetAllRelaysResponse, error)
-	GetRelay(context.Context, *GetRelayRequest) (*GetRelayResponse, error)
-	CreateRelay(context.Context, *CreateRelayRequest) (*CreateRelayResponse, error)
-	UpdateRelay(context.Context, *UpdateRelayRequest) (*UpdateRelayResponse, error)
-	ResumeRelay(context.Context, *ResumeRelayRequest) (*ResumeRelayResponse, error)
-	StopRelay(context.Context, *StopRelayRequest) (*StopRelayResponse, error)
-	DeleteRelay(context.Context, *DeleteRelayRequest) (*DeleteRelayResponse, error)
+	GetSource(context.Context, *GetSourceRequest) (*GetSourceResponse, error)
+	GetAllSources(context.Context, *GetAllSourcesRequest) (*GetAllSourcesResponse, error)
+	CreateSource(context.Context, *CreateSourceRequest) (*CreateSourceResponse, error)
+	UpdateSource(context.Context, *UpdateSourceRequest) (*UpdateSourceResponse, error)
+	DeleteSource(context.Context, *DeleteSourceRequest) (*DeleteSourceResponse, error)
+	GetDestination(context.Context, *GetDestinationRequest) (*GetDestinationResponse, error)
+	GetAllDestinations(context.Context, *GetAllDestinationsRequest) (*GetAllDestinationsResponse, error)
+	CreateDestination(context.Context, *CreateDestinationRequest) (*CreateDestinationResponse, error)
+	UpdateDestination(context.Context, *UpdateDestinationRequest) (*UpdateDestinationResponse, error)
+	DeleteDestination(context.Context, *DeleteDestinationRequest) (*DeleteDestinationResponse, error)
+	GetChannel(context.Context, *GetChannelRequest) (*GetChannelResponse, error)
+	GetAllChannels(context.Context, *GetAllChannelsRequest) (*GetAllChannelsResponse, error)
+	CreateChannel(context.Context, *CreateChannelRequest) (*CreateChannelResponse, error)
+	UpdateChannel(context.Context, *UpdateChannelRequest) (*UpdateChannelResponse, error)
+	DeleteChannel(context.Context, *DeleteChannelRequest) (*DeleteChannelResponse, error)
+	StopChannel(context.Context, *StopChannelRequest) (*StopChannelResponse, error)
+	ResumeChannel(context.Context, *ResumeChannelRequest) (*ResumeChannelResponse, error)
 	GetTunnel(context.Context, *GetTunnelRequest) (*GetTunnelResponse, error)
 	GetAllTunnels(context.Context, *GetAllTunnelsRequest) (*GetAllTunnelsResponse, error)
 	CreateTunnel(context.Context, *CreateTunnelRequest) (*CreateTunnelResponse, error)
@@ -521,26 +639,56 @@ func (*UnimplementedForemanServerServer) UpdateConnection(ctx context.Context, r
 func (*UnimplementedForemanServerServer) DeleteConnection(ctx context.Context, req *DeleteConnectionRequest) (*DeleteConnectionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteConnection not implemented")
 }
-func (*UnimplementedForemanServerServer) GetAllRelays(ctx context.Context, req *GetAllRelaysRequest) (*GetAllRelaysResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAllRelays not implemented")
+func (*UnimplementedForemanServerServer) GetSource(ctx context.Context, req *GetSourceRequest) (*GetSourceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetSource not implemented")
 }
-func (*UnimplementedForemanServerServer) GetRelay(ctx context.Context, req *GetRelayRequest) (*GetRelayResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetRelay not implemented")
+func (*UnimplementedForemanServerServer) GetAllSources(ctx context.Context, req *GetAllSourcesRequest) (*GetAllSourcesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllSources not implemented")
 }
-func (*UnimplementedForemanServerServer) CreateRelay(ctx context.Context, req *CreateRelayRequest) (*CreateRelayResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateRelay not implemented")
+func (*UnimplementedForemanServerServer) CreateSource(ctx context.Context, req *CreateSourceRequest) (*CreateSourceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateSource not implemented")
 }
-func (*UnimplementedForemanServerServer) UpdateRelay(ctx context.Context, req *UpdateRelayRequest) (*UpdateRelayResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateRelay not implemented")
+func (*UnimplementedForemanServerServer) UpdateSource(ctx context.Context, req *UpdateSourceRequest) (*UpdateSourceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateSource not implemented")
 }
-func (*UnimplementedForemanServerServer) ResumeRelay(ctx context.Context, req *ResumeRelayRequest) (*ResumeRelayResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ResumeRelay not implemented")
+func (*UnimplementedForemanServerServer) DeleteSource(ctx context.Context, req *DeleteSourceRequest) (*DeleteSourceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteSource not implemented")
 }
-func (*UnimplementedForemanServerServer) StopRelay(ctx context.Context, req *StopRelayRequest) (*StopRelayResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StopRelay not implemented")
+func (*UnimplementedForemanServerServer) GetDestination(ctx context.Context, req *GetDestinationRequest) (*GetDestinationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDestination not implemented")
 }
-func (*UnimplementedForemanServerServer) DeleteRelay(ctx context.Context, req *DeleteRelayRequest) (*DeleteRelayResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteRelay not implemented")
+func (*UnimplementedForemanServerServer) GetAllDestinations(ctx context.Context, req *GetAllDestinationsRequest) (*GetAllDestinationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllDestinations not implemented")
+}
+func (*UnimplementedForemanServerServer) CreateDestination(ctx context.Context, req *CreateDestinationRequest) (*CreateDestinationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateDestination not implemented")
+}
+func (*UnimplementedForemanServerServer) UpdateDestination(ctx context.Context, req *UpdateDestinationRequest) (*UpdateDestinationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateDestination not implemented")
+}
+func (*UnimplementedForemanServerServer) DeleteDestination(ctx context.Context, req *DeleteDestinationRequest) (*DeleteDestinationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteDestination not implemented")
+}
+func (*UnimplementedForemanServerServer) GetChannel(ctx context.Context, req *GetChannelRequest) (*GetChannelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetChannel not implemented")
+}
+func (*UnimplementedForemanServerServer) GetAllChannels(ctx context.Context, req *GetAllChannelsRequest) (*GetAllChannelsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllChannels not implemented")
+}
+func (*UnimplementedForemanServerServer) CreateChannel(ctx context.Context, req *CreateChannelRequest) (*CreateChannelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateChannel not implemented")
+}
+func (*UnimplementedForemanServerServer) UpdateChannel(ctx context.Context, req *UpdateChannelRequest) (*UpdateChannelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateChannel not implemented")
+}
+func (*UnimplementedForemanServerServer) DeleteChannel(ctx context.Context, req *DeleteChannelRequest) (*DeleteChannelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteChannel not implemented")
+}
+func (*UnimplementedForemanServerServer) StopChannel(ctx context.Context, req *StopChannelRequest) (*StopChannelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StopChannel not implemented")
+}
+func (*UnimplementedForemanServerServer) ResumeChannel(ctx context.Context, req *ResumeChannelRequest) (*ResumeChannelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ResumeChannel not implemented")
 }
 func (*UnimplementedForemanServerServer) GetTunnel(ctx context.Context, req *GetTunnelRequest) (*GetTunnelResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTunnel not implemented")
@@ -697,128 +845,308 @@ func _ForemanServer_DeleteConnection_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ForemanServer_GetAllRelays_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAllRelaysRequest)
+func _ForemanServer_GetSource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSourceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ForemanServerServer).GetAllRelays(ctx, in)
+		return srv.(ForemanServerServer).GetSource(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.ForemanServer/GetAllRelays",
+		FullMethod: "/protos.ForemanServer/GetSource",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ForemanServerServer).GetAllRelays(ctx, req.(*GetAllRelaysRequest))
+		return srv.(ForemanServerServer).GetSource(ctx, req.(*GetSourceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ForemanServer_GetRelay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRelayRequest)
+func _ForemanServer_GetAllSources_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllSourcesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ForemanServerServer).GetRelay(ctx, in)
+		return srv.(ForemanServerServer).GetAllSources(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.ForemanServer/GetRelay",
+		FullMethod: "/protos.ForemanServer/GetAllSources",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ForemanServerServer).GetRelay(ctx, req.(*GetRelayRequest))
+		return srv.(ForemanServerServer).GetAllSources(ctx, req.(*GetAllSourcesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ForemanServer_CreateRelay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateRelayRequest)
+func _ForemanServer_CreateSource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateSourceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ForemanServerServer).CreateRelay(ctx, in)
+		return srv.(ForemanServerServer).CreateSource(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.ForemanServer/CreateRelay",
+		FullMethod: "/protos.ForemanServer/CreateSource",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ForemanServerServer).CreateRelay(ctx, req.(*CreateRelayRequest))
+		return srv.(ForemanServerServer).CreateSource(ctx, req.(*CreateSourceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ForemanServer_UpdateRelay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateRelayRequest)
+func _ForemanServer_UpdateSource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateSourceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ForemanServerServer).UpdateRelay(ctx, in)
+		return srv.(ForemanServerServer).UpdateSource(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.ForemanServer/UpdateRelay",
+		FullMethod: "/protos.ForemanServer/UpdateSource",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ForemanServerServer).UpdateRelay(ctx, req.(*UpdateRelayRequest))
+		return srv.(ForemanServerServer).UpdateSource(ctx, req.(*UpdateSourceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ForemanServer_ResumeRelay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ResumeRelayRequest)
+func _ForemanServer_DeleteSource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteSourceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ForemanServerServer).ResumeRelay(ctx, in)
+		return srv.(ForemanServerServer).DeleteSource(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.ForemanServer/ResumeRelay",
+		FullMethod: "/protos.ForemanServer/DeleteSource",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ForemanServerServer).ResumeRelay(ctx, req.(*ResumeRelayRequest))
+		return srv.(ForemanServerServer).DeleteSource(ctx, req.(*DeleteSourceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ForemanServer_StopRelay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StopRelayRequest)
+func _ForemanServer_GetDestination_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDestinationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ForemanServerServer).StopRelay(ctx, in)
+		return srv.(ForemanServerServer).GetDestination(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.ForemanServer/StopRelay",
+		FullMethod: "/protos.ForemanServer/GetDestination",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ForemanServerServer).StopRelay(ctx, req.(*StopRelayRequest))
+		return srv.(ForemanServerServer).GetDestination(ctx, req.(*GetDestinationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ForemanServer_DeleteRelay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteRelayRequest)
+func _ForemanServer_GetAllDestinations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllDestinationsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ForemanServerServer).DeleteRelay(ctx, in)
+		return srv.(ForemanServerServer).GetAllDestinations(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.ForemanServer/DeleteRelay",
+		FullMethod: "/protos.ForemanServer/GetAllDestinations",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ForemanServerServer).DeleteRelay(ctx, req.(*DeleteRelayRequest))
+		return srv.(ForemanServerServer).GetAllDestinations(ctx, req.(*GetAllDestinationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ForemanServer_CreateDestination_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateDestinationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ForemanServerServer).CreateDestination(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.ForemanServer/CreateDestination",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ForemanServerServer).CreateDestination(ctx, req.(*CreateDestinationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ForemanServer_UpdateDestination_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateDestinationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ForemanServerServer).UpdateDestination(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.ForemanServer/UpdateDestination",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ForemanServerServer).UpdateDestination(ctx, req.(*UpdateDestinationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ForemanServer_DeleteDestination_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteDestinationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ForemanServerServer).DeleteDestination(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.ForemanServer/DeleteDestination",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ForemanServerServer).DeleteDestination(ctx, req.(*DeleteDestinationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ForemanServer_GetChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetChannelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ForemanServerServer).GetChannel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.ForemanServer/GetChannel",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ForemanServerServer).GetChannel(ctx, req.(*GetChannelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ForemanServer_GetAllChannels_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllChannelsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ForemanServerServer).GetAllChannels(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.ForemanServer/GetAllChannels",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ForemanServerServer).GetAllChannels(ctx, req.(*GetAllChannelsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ForemanServer_CreateChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateChannelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ForemanServerServer).CreateChannel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.ForemanServer/CreateChannel",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ForemanServerServer).CreateChannel(ctx, req.(*CreateChannelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ForemanServer_UpdateChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateChannelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ForemanServerServer).UpdateChannel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.ForemanServer/UpdateChannel",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ForemanServerServer).UpdateChannel(ctx, req.(*UpdateChannelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ForemanServer_DeleteChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteChannelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ForemanServerServer).DeleteChannel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.ForemanServer/DeleteChannel",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ForemanServerServer).DeleteChannel(ctx, req.(*DeleteChannelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ForemanServer_StopChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StopChannelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ForemanServerServer).StopChannel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.ForemanServer/StopChannel",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ForemanServerServer).StopChannel(ctx, req.(*StopChannelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ForemanServer_ResumeChannel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResumeChannelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ForemanServerServer).ResumeChannel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.ForemanServer/ResumeChannel",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ForemanServerServer).ResumeChannel(ctx, req.(*ResumeChannelRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1000,32 +1328,72 @@ var _ForemanServer_serviceDesc = grpc.ServiceDesc{
 			Handler:    _ForemanServer_DeleteConnection_Handler,
 		},
 		{
-			MethodName: "GetAllRelays",
-			Handler:    _ForemanServer_GetAllRelays_Handler,
+			MethodName: "GetSource",
+			Handler:    _ForemanServer_GetSource_Handler,
 		},
 		{
-			MethodName: "GetRelay",
-			Handler:    _ForemanServer_GetRelay_Handler,
+			MethodName: "GetAllSources",
+			Handler:    _ForemanServer_GetAllSources_Handler,
 		},
 		{
-			MethodName: "CreateRelay",
-			Handler:    _ForemanServer_CreateRelay_Handler,
+			MethodName: "CreateSource",
+			Handler:    _ForemanServer_CreateSource_Handler,
 		},
 		{
-			MethodName: "UpdateRelay",
-			Handler:    _ForemanServer_UpdateRelay_Handler,
+			MethodName: "UpdateSource",
+			Handler:    _ForemanServer_UpdateSource_Handler,
 		},
 		{
-			MethodName: "ResumeRelay",
-			Handler:    _ForemanServer_ResumeRelay_Handler,
+			MethodName: "DeleteSource",
+			Handler:    _ForemanServer_DeleteSource_Handler,
 		},
 		{
-			MethodName: "StopRelay",
-			Handler:    _ForemanServer_StopRelay_Handler,
+			MethodName: "GetDestination",
+			Handler:    _ForemanServer_GetDestination_Handler,
 		},
 		{
-			MethodName: "DeleteRelay",
-			Handler:    _ForemanServer_DeleteRelay_Handler,
+			MethodName: "GetAllDestinations",
+			Handler:    _ForemanServer_GetAllDestinations_Handler,
+		},
+		{
+			MethodName: "CreateDestination",
+			Handler:    _ForemanServer_CreateDestination_Handler,
+		},
+		{
+			MethodName: "UpdateDestination",
+			Handler:    _ForemanServer_UpdateDestination_Handler,
+		},
+		{
+			MethodName: "DeleteDestination",
+			Handler:    _ForemanServer_DeleteDestination_Handler,
+		},
+		{
+			MethodName: "GetChannel",
+			Handler:    _ForemanServer_GetChannel_Handler,
+		},
+		{
+			MethodName: "GetAllChannels",
+			Handler:    _ForemanServer_GetAllChannels_Handler,
+		},
+		{
+			MethodName: "CreateChannel",
+			Handler:    _ForemanServer_CreateChannel_Handler,
+		},
+		{
+			MethodName: "UpdateChannel",
+			Handler:    _ForemanServer_UpdateChannel_Handler,
+		},
+		{
+			MethodName: "DeleteChannel",
+			Handler:    _ForemanServer_DeleteChannel_Handler,
+		},
+		{
+			MethodName: "StopChannel",
+			Handler:    _ForemanServer_StopChannel_Handler,
+		},
+		{
+			MethodName: "ResumeChannel",
+			Handler:    _ForemanServer_ResumeChannel_Handler,
 		},
 		{
 			MethodName: "GetTunnel",

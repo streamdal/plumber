@@ -412,13 +412,13 @@ func newRelayOptions() *opts.RelayOptions {
 			XConn: &args.KafkaConn{
 				Address: make([]string, 0),
 			},
-			Args: &args.KafkaRelayArgs{
+			Args: &args.KafkaSourceArgs{
 				Topics: make([]string, 0),
 			},
 		},
 		AwsSqs: &opts.RelayGroupAWSSQSOptions{
 			XConn: &args.AWSSQSConn{},
-			Args:  &args.AWSSQSRelayArgs{},
+			Args:  &args.AWSSQSSourceArgs{},
 		},
 		Mongo: &opts.RelayGroupMongoOptions{
 			XConn: &args.MongoConn{},
@@ -628,10 +628,10 @@ func newManageOptions() *opts.ManageOptions {
 				AwsKinesis:  &args.AWSKinesisConn{},
 			},
 			Relay: &opts.CreateRelayOptions{
-				Kafka: &args.KafkaRelayArgs{
+				Kafka: &args.KafkaSourceArgs{
 					Topics: make([]string, 0),
 				},
-				AwsSqs:          &args.AWSSQSRelayArgs{},
+				AwsSqs:          &args.AWSSQSSourceArgs{},
 				Mongo:           &args.MongoReadArgs{},
 				Nsq:             &args.NSQReadArgs{},
 				Rabbit:          &args.RabbitReadArgs{},

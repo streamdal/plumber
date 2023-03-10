@@ -128,35 +128,35 @@ func NewReaderForRead(dialer *skafka.Dialer, connArgs *args.KafkaConn, readArgs 
 	return r, nil
 }
 
-func NewReaderForRelay(dialer *skafka.Dialer, connArgs *args.KafkaConn, relayArgs *args.KafkaRelayArgs) (*skafka.Reader, error) {
+func NewReaderForRelay(dialer *skafka.Dialer, connArgs *args.KafkaConn, sourceArgs *args.KafkaSourceArgs) (*skafka.Reader, error) {
 	rc := skafka.ReaderConfig{
 		Brokers:          connArgs.Address,
-		CommitInterval:   util.DurationSec(relayArgs.CommitIntervalSeconds),
+		CommitInterval:   util.DurationSec(sourceArgs.CommitIntervalSeconds),
 		Dialer:           dialer,
-		MaxWait:          util.DurationSec(relayArgs.MaxWaitSeconds),
-		MinBytes:         int(relayArgs.MinBytes),
-		MaxBytes:         int(relayArgs.MaxBytes),
-		QueueCapacity:    int(relayArgs.QueueCapacity),
-		RebalanceTimeout: util.DurationSec(relayArgs.RebalanceTimeoutSeconds),
+		MaxWait:          util.DurationSec(sourceArgs.MaxWaitSeconds),
+		MinBytes:         int(sourceArgs.MinBytes),
+		MaxBytes:         int(sourceArgs.MaxBytes),
+		QueueCapacity:    int(sourceArgs.QueueCapacity),
+		RebalanceTimeout: util.DurationSec(sourceArgs.RebalanceTimeoutSeconds),
 	}
 
-	if relayArgs.UseConsumerGroup {
-		if relayArgs.ConsumerGroupName == "" {
-			relayArgs.ConsumerGroupName = DefaultConsumerGroupName
+	if sourceArgs.UseConsumerGroup {
+		if sourceArgs.ConsumerGroupName == "" {
+			sourceArgs.ConsumerGroupName = DefaultConsumerGroupName
 		} else {
-			rc.GroupID = relayArgs.ConsumerGroupName
+			rc.GroupID = sourceArgs.ConsumerGroupName
 		}
 
-		rc.GroupTopics = relayArgs.Topics
+		rc.GroupTopics = sourceArgs.Topics
 
 	} else {
-		rc.Topic = relayArgs.Topics[0]
+		rc.Topic = sourceArgs.Topics[0]
 	}
 
 	r := skafka.NewReader(rc)
 
-	if !relayArgs.UseConsumerGroup {
-		if err := r.SetOffset(relayArgs.ReadOffset); err != nil {
+	if !sourceArgs.UseConsumerGroup {
+		if err := r.SetOffset(sourceArgs.ReadOffset); err != nil {
 			return nil, errors.Wrap(err, "unable to set read offset")
 		}
 	}
