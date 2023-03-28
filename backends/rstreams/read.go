@@ -44,6 +44,10 @@ func (r *RedisStreams) Read(ctx context.Context, readOpts *opts.ReadOptions, res
 		}).Result()
 
 		if err != nil {
+			// Don't report ctrl+c as an error
+			if errors.Is(err, context.Canceled) {
+				return nil
+			}
 			return fmt.Errorf("unable to read from streamsResult: %s", err)
 		}
 
