@@ -62,7 +62,7 @@ jobs:
       - name: Trigger Helm Update
         uses: peter-evans/repository-dispatch@v1
         with:
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          token: ${{ secrets.DISPATCH_TOKEN }}
           repository: batchcorp/plumber-helm
           event-type: trigger-plumber-helm-workflow
           client-payload: '{"plumber-version": "${{ env.GITHUB_TAG }}"}'
