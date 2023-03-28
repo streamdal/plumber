@@ -2,6 +2,7 @@ VERSION ?= $(shell git rev-parse --short HEAD)
 SHORT_SHA ?= $(shell git rev-parse --short HEAD)
 GIT_TAG ?= $(shell git describe --tags --abbrev=0)
 BINARY   = plumber
+ARCH ?= $(shell uname -m)
 
 GO = CGO_ENABLED=$(CGO_ENABLED) GONOPROXY=github.com/batchcorp GOFLAGS=-mod=vendor go
 CGO_ENABLED ?= 0
@@ -46,22 +47,43 @@ start/deps:
 
 .PHONY: build
 build: description = Build $(BINARY)
-build: clean build/linux build/darwin build/darwin/arm64 build/windows
+build: clean build/linux build/darwin build/darwin-arm64 build/windows
 
 .PHONY: build/linux
 build/linux: description = Build $(BINARY) for linux
 build/linux: clean
 	GOOS=linux GOARCH=amd64 $(GO) build $(GO_BUILD_FLAGS) -o ./build/$(BINARY)-linux
 
+.PHONY: build/linux-amd64
+build/linux-amd64: description = Build $(BINARY) for linux
+build/linux-amd64: clean
+	GOOS=linux GOARCH=amd64 $(GO) build $(GO_BUILD_FLAGS) -o ./build/$(BINARY)-linux-amd64
+
+	
+.PHONY: build/linux-x86_64
+build/linux-x86_64: description = Build $(BINARY) for linux
+build/linux-x86_64: clean
+	GOOS=linux GOARCH=amd64 $(GO) build $(GO_BUILD_FLAGS) -o ./build/$(BINARY)-linux-amd64
+
+.PHONY: build/linux-arm64
+build/linux-arm64: description = Build $(BINARY) for linux
+build/linux-arm64: clean
+	GOOS=linux GOARCH=arm64 $(GO) build $(GO_BUILD_FLAGS) -o ./build/$(BINARY)-linux-arm64
+
 .PHONY: build/darwin
 build/darwin: description = Build $(BINARY) for darwin
 build/darwin: clean
 	GOOS=darwin GOARCH=amd64 $(GO) build $(GO_BUILD_FLAGS) -o ./build/$(BINARY)-darwin
 
-.PHONY: build/darwin/arm64
-build/darwin/arm64: description = Build $(BINARY) for darwin/arm64 (Apple Silicon)
-build/darwin/arm64: clean
+.PHONY: build/darwin-arm64
+build/darwin-arm64: description = Build $(BINARY) for darwin/arm64 (Apple Silicon)
+build/darwin-arm64: clean
 	GOOS=darwin GOARCH=arm64 $(GO) build $(GO_BUILD_FLAGS) -o ./build/$(BINARY)-darwin-arm64
+
+.PHONY: build/darwin-amd64
+build/darwin-amd64: description = Build $(BINARY) for darwin/amd64 (Intel)
+build/darwin-amd64: clean
+	GOOS=darwin GOARCH=amd64 $(GO) build $(GO_BUILD_FLAGS) -o ./build/$(BINARY)-darwin-amd64
 
 .PHONY: build/windows
 build/windows: description = Build $(BINARY) for windows
@@ -84,11 +106,18 @@ generate/docs:
 
 docker/build: description = Build docker image
 docker/build:
-	docker build \
+	docker buildx build --push --platform=linux/amd64,linux/arm64 \
 	-t batchcorp/$(BINARY):$(SHORT_SHA) \
 	-t batchcorp/$(BINARY):$(GIT_TAG) \
 	-t batchcorp/$(BINARY):latest \
 	-t batchcorp/$(BINARY):local \
+	-f ./Dockerfile .
+
+.PHONY: docker/build/local
+docker/build/local: description = Build docker image
+docker/build/local:
+	docker build -t batchcorp/$(SERVICE):$(VERSION) --build-arg TARGETOS=linux --build-arg TARGETARCH=arm64 \
+	-t batchcorp/$(SERVICE):latest \
 	-f ./Dockerfile .
 
 .PHONY: docker/push
