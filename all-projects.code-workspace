@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../event-generator"
+		},
+		{
+			"path": "../health"
+		},
+		{
+			"path": "../dproxy"
+		}
+	],
+	"settings": {
+		"sourcegraph.url": "http://desktop"
+	}
+}
