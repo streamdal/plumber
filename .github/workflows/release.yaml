@@ -51,8 +51,6 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build docker image
         run: make docker/build
-      - name: Push docker image
-        run: make docker/push
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
