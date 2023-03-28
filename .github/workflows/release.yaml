@@ -65,4 +65,4 @@ jobs:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           repository: batchcorp/plumber-helm
           event-type: trigger-plumber-helm-workflow
-          client-payload: "{'plumber-version': ${{ env.GITHUB_TAG }}}"
+          client-payload: '{"plumber-version": "${{ env.GITHUB_TAG }}"}'
