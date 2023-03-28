@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -12,6 +13,7 @@ import (
 	"github.com/batchcorp/plumber/validate"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
@@ -58,6 +60,10 @@ func (s *Server) CreateConnection(ctx context.Context, req *protos.CreateConnect
 	connOpts.XId = uuid.NewV4().String()
 
 	if err := validate.ConnectionOptionsForServer(connOpts); err != nil {
+		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
+	}
+
+	if err := applyConnOptDefaults(connOpts); err != nil {
 		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
 	}
 
@@ -144,6 +150,10 @@ func (s *Server) UpdateConnection(ctx context.Context, req *protos.UpdateConnect
 		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
 	}
 
+	if err := applyConnOptDefaults(req.Options); err != nil {
+		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
+	}
+
 	// Re-assign connection options so we can update in-mem + etcd
 	conn.Connection = req.Options
 
@@ -219,4 +229,31 @@ func (s *Server) DeleteConnection(ctx context.Context, req *protos.DeleteConnect
 			RequestId: requestID,
 		},
 	}, nil
+}
+
+// applyConnOptDefaults makes any necessary changes to connection
+// options before calling gRPC methods on Plumber server.
+func applyConnOptDefaults(connOpts *opts.ConnectionOptions) error {
+	if gcpOpts := connOpts.GetGcpPubsub(); gcpOpts != nil {
+		if err := applyConnOptDefaultsGcpPubSub(gcpOpts); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func applyConnOptDefaultsGcpPubSub(gcpOpts *args.GCPPubSubConn) error {
+	if gcpOpts.CredentialsFile != "" {
+		// Read credentials file into CredentialsJson field
+		creds, err := os.ReadFile(gcpOpts.CredentialsFile)
+		if err != nil {
+			return errors.Wrap(err, "unable to read GCP credentials JSON file")
+		}
+
+		gcpOpts.CredentialsJson = string(creds)
+		gcpOpts.CredentialsFile = ""
+	}
+
+	return nil
 }
