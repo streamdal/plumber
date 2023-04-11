@@ -39,8 +39,6 @@ type Telemetry struct {
 
 type NoopTelemetry struct{}
 
-type NoopLogger struct{}
-
 func New(cfg *Config) (*Telemetry, error) {
 	if err := validateConfig(cfg); err != nil {
 		return nil, errors.Wrap(err, "unable to validate config")
@@ -137,12 +135,4 @@ func (t *Telemetry) Enqueue(c posthog.Capture) error {
 
 func (t *NoopTelemetry) Enqueue(_ posthog.Capture) error {
 	return nil
-}
-
-func (l *NoopLogger) Logf(format string, args ...interface{}) {
-	// NOOP
-}
-
-func (l *NoopLogger) Errorf(format string, args ...interface{}) {
-	// NOOP
 }
