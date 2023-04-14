@@ -4,17 +4,16 @@ import (
 	"context"
 	"io/ioutil"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/backends/nats-streaming/stanfakes"
-
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+	"github.com/batchcorp/plumber/backends/nats-streaming/stanfakes"
 	"github.com/batchcorp/plumber/validate"
 )
 
@@ -35,6 +34,7 @@ var _ = Describe("Nats Streaming Backend", func() {
 					Channel: "test",
 				},
 			},
+			EncodeOptions: &encoding.EncodeOptions{},
 		}
 	})
 

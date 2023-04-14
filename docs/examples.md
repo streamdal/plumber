@@ -57,6 +57,7 @@
        * [Shallow envelope protobuf messages](#shallow-envelope-protobuf-messages)
        * [Using File Descriptor Sets](#using-file-descriptor-sets)
        * [Using Avro schemas when reading or writing](#using-avro-schemas-when-reading-or-writing)
+       * [Publish CloudEvents](#publish-cloudevents)
 
 ## Consuming
 
@@ -737,4 +738,23 @@ plumber read kafka --topics fdstest1 \
 ```bash
 $ plumber write kafka --topics=orders --avro-schema-file=some_schema.avsc --input-file=your_data.json
 $ plumber read kafka --topics=orders --avro-schema-file=some_schema.avsc
+```
+
+#### Publish CloudEvents
+
+> **_NOTE:_**  CloudEvents are currently only supported for: Kafka, NATS, NATS Streaming, and NATS JetStream
+
+Plumber supports emitting [CloudEvent](https://github.com/cloudevents/spec) messages.
+
+By default, if the contents of `--input` or `--input-file` represents a valid cloudevent in JSON format, the data
+will be unmarshaled into a cloud event. Any `--ce-*` flags specified will override their respective values in the event
+before the event is published.
+
+If the value of `--input` or `--input-file` is not a valid cloudevent in JSON format, a new cloudevent will be created
+and the input will be set as the _data_ field's value. Other fields will be set using the values supplied via `--ce-*` flags.
+
+**Example Kafka publish:**
+
+```bash
+plumber write kafka --encode-type cloudevent --topics myevents --input-file test-assets/cloudevents/example.json
 ```

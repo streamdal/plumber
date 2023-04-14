@@ -5,14 +5,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-
-	"github.com/batchcorp/plumber/pb"
-
-	dpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
+	"os"
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
+	dpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/jhump/protoreflect/dynamic"
 	"github.com/pkg/errors"
 
@@ -20,6 +17,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
+	"github.com/batchcorp/plumber/pb"
 	"github.com/batchcorp/plumber/serializers"
 )
 
@@ -58,7 +56,7 @@ func GenerateWriteValue(writeOpts *opts.WriteOptions, fds *dpb.FileDescriptorSet
 
 	// File source
 	if writeOpts.XCliOptions.InputFile != "" {
-		data, err := ioutil.ReadFile(writeOpts.XCliOptions.InputFile)
+		data, err := os.ReadFile(writeOpts.XCliOptions.InputFile)
 		if err != nil {
 			return nil, fmt.Errorf("unable to read file '%s': %s", writeOpts.XCliOptions.InputFile, err)
 		}
@@ -103,8 +101,8 @@ func GenerateWriteValue(writeOpts *opts.WriteOptions, fds *dpb.FileDescriptorSet
 func generateWriteValue(data []byte, writeOpts *opts.WriteOptions, fds *dpb.FileDescriptorSet) ([]byte, error) {
 	// Input: Plain / unset
 	if writeOpts.EncodeOptions == nil ||
-		writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_UNSET {
-
+		writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_UNSET ||
+		writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_CLOUDEVENT {
 		return data, nil
 	}
 
