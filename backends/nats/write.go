@@ -23,7 +23,7 @@ func (n *Nats) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh 
 		return errors.Wrap(err, "unable to validate write options")
 	}
 
-	if writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_CLOUDEVENT {
+	if writeOpts.EncodeOptions != nil && writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_CLOUDEVENT {
 		return n.writeCloudEvents(ctx, writeOpts, errorCh, messages...)
 	}
 

@@ -30,7 +30,7 @@ func (k *Kafka) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh
 		return errors.Wrap(err, "unable to verify write options")
 	}
 
-	if writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_CLOUDEVENT {
+	if writeOpts.EncodeOptions != nil && writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_CLOUDEVENT {
 		return k.writeCloudEvents(ctx, writeOpts, errorCh, messages...)
 	}
 

@@ -22,7 +22,7 @@ func (n *NatsStreaming) Write(ctx context.Context, writeOpts *opts.WriteOptions,
 		return errors.Wrap(err, "invalid write options")
 	}
 
-	if writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_CLOUDEVENT {
+	if writeOpts.EncodeOptions != nil && writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_CLOUDEVENT {
 		return n.writeCloudEvents(ctx, writeOpts, errorCh, messages...)
 	}
 
