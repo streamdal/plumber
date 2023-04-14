@@ -49,6 +49,7 @@ func New(cfg *Config) (*Telemetry, error) {
 		Transport: cfg.RoundTripper, // posthog lib will instantiate a default roundtripper if nil
 		BatchSize: 1,
 		Interval:  250 * time.Millisecond,
+		Logger:    &NoopLogger{},
 	})
 
 	if err != nil {
