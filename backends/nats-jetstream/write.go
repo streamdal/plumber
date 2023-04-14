@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
+
 	cenats "github.com/cloudevents/sdk-go/protocol/nats/v2"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/nats-io/nats.go"
@@ -21,7 +23,7 @@ func (n *NatsJetstream) Write(ctx context.Context, writeOpts *opts.WriteOptions,
 		return errors.Wrap(err, "invalid write options")
 	}
 
-	if writeOpts.NatsJetstream.CloudEvent.Cloudevent {
+	if writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_CLOUDEVENT {
 		return n.writeCloudEvents(ctx, writeOpts, errorCh, messages...)
 	}
 
@@ -58,7 +60,7 @@ func (n *NatsJetstream) writeCloudEvents(_ context.Context, writeOpts *opts.Writ
 	}
 
 	for i, msg := range messages {
-		e, err := util.GenCloudEvent(writeOpts.NatsJetstream.CloudEvent, msg)
+		e, err := util.GenCloudEvent(writeOpts.EncodeOptions.CloudeventSettings, msg)
 		if err != nil {
 			util.WriteError(n.log, errorCh, errors.Wrap(err, "unable to generate cloudevents event"))
 			continue

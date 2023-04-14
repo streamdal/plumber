@@ -5,11 +5,11 @@ import (
 	"github.com/cloudevents/sdk-go/v2/event"
 	"github.com/pkg/errors"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/cloudevent"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
-func GenCloudEvent(cfg *cloudevent.CloudEventOptions, msg *records.WriteRecord) (*event.Event, error) {
+func GenCloudEvent(cfg *encoding.CloudEventSettings, msg *records.WriteRecord) (*event.Event, error) {
 	if cfg == nil {
 		return nil, errors.New("cloud event options cannot be nil")
 	}
@@ -20,7 +20,12 @@ func GenCloudEvent(cfg *cloudevent.CloudEventOptions, msg *records.WriteRecord) 
 
 	e := cloudevents.NewEvent(cfg.CeSpecVersion)
 
-	e.SetData("application/json", []byte(msg.Input))
+	// Try to unmarshal entire input to see if it's a valid cloud event in JSON format
+	if err := e.UnmarshalJSON([]byte(msg.Input)); err != nil {
+		// Input is not entire cloud event, most likely just plain JSON.
+		// Set the input as the data field and then set all other values based on flags.
+		e.SetData("application/json", []byte(msg.Input))
+	}
 
 	if cfg.CeId != "" {
 		e.SetID(cfg.CeId)

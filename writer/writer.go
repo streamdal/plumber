@@ -103,7 +103,8 @@ func GenerateWriteValue(writeOpts *opts.WriteOptions, fds *dpb.FileDescriptorSet
 func generateWriteValue(data []byte, writeOpts *opts.WriteOptions, fds *dpb.FileDescriptorSet) ([]byte, error) {
 	// Input: Plain / unset
 	if writeOpts.EncodeOptions == nil ||
-		writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_UNSET {
+		writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_UNSET ||
+		writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_CLOUDEVENT {
 
 		return data, nil
 	}

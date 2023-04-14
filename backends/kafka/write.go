@@ -12,6 +12,7 @@ import (
 	skafka "github.com/segmentio/kafka-go"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
@@ -29,7 +30,7 @@ func (k *Kafka) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh
 		return errors.Wrap(err, "unable to verify write options")
 	}
 
-	if writeOpts.Kafka.CloudEvent.Cloudevent {
+	if writeOpts.EncodeOptions.EncodeType == encoding.EncodeType_ENCODE_TYPE_CLOUDEVENT {
 		return k.writeCloudEvents(ctx, writeOpts, errorCh, messages...)
 	}
 
@@ -105,7 +106,7 @@ func (k *Kafka) writeCloudEvents(ctx context.Context, writeOpts *opts.WriteOptio
 		}
 
 		for i, msg := range messages {
-			e, err := util.GenCloudEvent(writeOpts.Kafka.CloudEvent, msg)
+			e, err := util.GenCloudEvent(writeOpts.EncodeOptions.CloudeventSettings, msg)
 			if err != nil {
 				util.WriteError(k.log, errorCh, errors.Wrap(err, "unable to generate cloudevents event"))
 				continue
