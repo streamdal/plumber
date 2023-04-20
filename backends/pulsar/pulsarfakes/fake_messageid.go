@@ -18,6 +18,16 @@ type FakeMessageID struct {
 	batchIdxReturnsOnCall map[int]struct {
 		result1 int32
 	}
+	BatchSizeStub        func() int32
+	batchSizeMutex       sync.RWMutex
+	batchSizeArgsForCall []struct {
+	}
+	batchSizeReturns struct {
+		result1 int32
+	}
+	batchSizeReturnsOnCall map[int]struct {
+		result1 int32
+	}
 	EntryIDStub        func() int64
 	entryIDMutex       sync.RWMutex
 	entryIDArgsForCall []struct {
@@ -57,6 +67,16 @@ type FakeMessageID struct {
 	}
 	serializeReturnsOnCall map[int]struct {
 		result1 []byte
+	}
+	StringStub        func() string
+	stringMutex       sync.RWMutex
+	stringArgsForCall []struct {
+	}
+	stringReturns struct {
+		result1 string
+	}
+	stringReturnsOnCall map[int]struct {
+		result1 string
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
@@ -111,6 +131,59 @@ func (fake *FakeMessageID) BatchIdxReturnsOnCall(i int, result1 int32) {
 		})
 	}
 	fake.batchIdxReturnsOnCall[i] = struct {
+		result1 int32
+	}{result1}
+}
+
+func (fake *FakeMessageID) BatchSize() int32 {
+	fake.batchSizeMutex.Lock()
+	ret, specificReturn := fake.batchSizeReturnsOnCall[len(fake.batchSizeArgsForCall)]
+	fake.batchSizeArgsForCall = append(fake.batchSizeArgsForCall, struct {
+	}{})
+	stub := fake.BatchSizeStub
+	fakeReturns := fake.batchSizeReturns
+	fake.recordInvocation("BatchSize", []interface{}{})
+	fake.batchSizeMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeMessageID) BatchSizeCallCount() int {
+	fake.batchSizeMutex.RLock()
+	defer fake.batchSizeMutex.RUnlock()
+	return len(fake.batchSizeArgsForCall)
+}
+
+func (fake *FakeMessageID) BatchSizeCalls(stub func() int32) {
+	fake.batchSizeMutex.Lock()
+	defer fake.batchSizeMutex.Unlock()
+	fake.BatchSizeStub = stub
+}
+
+func (fake *FakeMessageID) BatchSizeReturns(result1 int32) {
+	fake.batchSizeMutex.Lock()
+	defer fake.batchSizeMutex.Unlock()
+	fake.BatchSizeStub = nil
+	fake.batchSizeReturns = struct {
+		result1 int32
+	}{result1}
+}
+
+func (fake *FakeMessageID) BatchSizeReturnsOnCall(i int, result1 int32) {
+	fake.batchSizeMutex.Lock()
+	defer fake.batchSizeMutex.Unlock()
+	fake.BatchSizeStub = nil
+	if fake.batchSizeReturnsOnCall == nil {
+		fake.batchSizeReturnsOnCall = make(map[int]struct {
+			result1 int32
+		})
+	}
+	fake.batchSizeReturnsOnCall[i] = struct {
 		result1 int32
 	}{result1}
 }
@@ -327,11 +400,66 @@ func (fake *FakeMessageID) SerializeReturnsOnCall(i int, result1 []byte) {
 	}{result1}
 }
 
+func (fake *FakeMessageID) String() string {
+	fake.stringMutex.Lock()
+	ret, specificReturn := fake.stringReturnsOnCall[len(fake.stringArgsForCall)]
+	fake.stringArgsForCall = append(fake.stringArgsForCall, struct {
+	}{})
+	stub := fake.StringStub
+	fakeReturns := fake.stringReturns
+	fake.recordInvocation("String", []interface{}{})
+	fake.stringMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeMessageID) StringCallCount() int {
+	fake.stringMutex.RLock()
+	defer fake.stringMutex.RUnlock()
+	return len(fake.stringArgsForCall)
+}
+
+func (fake *FakeMessageID) StringCalls(stub func() string) {
+	fake.stringMutex.Lock()
+	defer fake.stringMutex.Unlock()
+	fake.StringStub = stub
+}
+
+func (fake *FakeMessageID) StringReturns(result1 string) {
+	fake.stringMutex.Lock()
+	defer fake.stringMutex.Unlock()
+	fake.StringStub = nil
+	fake.stringReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeMessageID) StringReturnsOnCall(i int, result1 string) {
+	fake.stringMutex.Lock()
+	defer fake.stringMutex.Unlock()
+	fake.StringStub = nil
+	if fake.stringReturnsOnCall == nil {
+		fake.stringReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.stringReturnsOnCall[i] = struct {
+		result1 string
+	}{result1}
+}
+
 func (fake *FakeMessageID) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.batchIdxMutex.RLock()
 	defer fake.batchIdxMutex.RUnlock()
+	fake.batchSizeMutex.RLock()
+	defer fake.batchSizeMutex.RUnlock()
 	fake.entryIDMutex.RLock()
 	defer fake.entryIDMutex.RUnlock()
 	fake.ledgerIDMutex.RLock()
@@ -340,6 +468,8 @@ func (fake *FakeMessageID) Invocations() map[string][][]interface{} {
 	defer fake.partitionIdxMutex.RUnlock()
 	fake.serializeMutex.RLock()
 	defer fake.serializeMutex.RUnlock()
+	fake.stringMutex.RLock()
+	defer fake.stringMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

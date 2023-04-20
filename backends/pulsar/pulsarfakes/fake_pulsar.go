@@ -38,6 +38,19 @@ type FakeClient struct {
 		result1 pulsar.Reader
 		result2 error
 	}
+	CreateTableViewStub        func(pulsar.TableViewOptions) (pulsar.TableView, error)
+	createTableViewMutex       sync.RWMutex
+	createTableViewArgsForCall []struct {
+		arg1 pulsar.TableViewOptions
+	}
+	createTableViewReturns struct {
+		result1 pulsar.TableView
+		result2 error
+	}
+	createTableViewReturnsOnCall map[int]struct {
+		result1 pulsar.TableView
+		result2 error
+	}
 	SubscribeStub        func(pulsar.ConsumerOptions) (pulsar.Consumer, error)
 	subscribeMutex       sync.RWMutex
 	subscribeArgsForCall []struct {
@@ -220,6 +233,70 @@ func (fake *FakeClient) CreateReaderReturnsOnCall(i int, result1 pulsar.Reader, 
 	}{result1, result2}
 }
 
+func (fake *FakeClient) CreateTableView(arg1 pulsar.TableViewOptions) (pulsar.TableView, error) {
+	fake.createTableViewMutex.Lock()
+	ret, specificReturn := fake.createTableViewReturnsOnCall[len(fake.createTableViewArgsForCall)]
+	fake.createTableViewArgsForCall = append(fake.createTableViewArgsForCall, struct {
+		arg1 pulsar.TableViewOptions
+	}{arg1})
+	stub := fake.CreateTableViewStub
+	fakeReturns := fake.createTableViewReturns
+	fake.recordInvocation("CreateTableView", []interface{}{arg1})
+	fake.createTableViewMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeClient) CreateTableViewCallCount() int {
+	fake.createTableViewMutex.RLock()
+	defer fake.createTableViewMutex.RUnlock()
+	return len(fake.createTableViewArgsForCall)
+}
+
+func (fake *FakeClient) CreateTableViewCalls(stub func(pulsar.TableViewOptions) (pulsar.TableView, error)) {
+	fake.createTableViewMutex.Lock()
+	defer fake.createTableViewMutex.Unlock()
+	fake.CreateTableViewStub = stub
+}
+
+func (fake *FakeClient) CreateTableViewArgsForCall(i int) pulsar.TableViewOptions {
+	fake.createTableViewMutex.RLock()
+	defer fake.createTableViewMutex.RUnlock()
+	argsForCall := fake.createTableViewArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeClient) CreateTableViewReturns(result1 pulsar.TableView, result2 error) {
+	fake.createTableViewMutex.Lock()
+	defer fake.createTableViewMutex.Unlock()
+	fake.CreateTableViewStub = nil
+	fake.createTableViewReturns = struct {
+		result1 pulsar.TableView
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) CreateTableViewReturnsOnCall(i int, result1 pulsar.TableView, result2 error) {
+	fake.createTableViewMutex.Lock()
+	defer fake.createTableViewMutex.Unlock()
+	fake.CreateTableViewStub = nil
+	if fake.createTableViewReturnsOnCall == nil {
+		fake.createTableViewReturnsOnCall = make(map[int]struct {
+			result1 pulsar.TableView
+			result2 error
+		})
+	}
+	fake.createTableViewReturnsOnCall[i] = struct {
+		result1 pulsar.TableView
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeClient) Subscribe(arg1 pulsar.ConsumerOptions) (pulsar.Consumer, error) {
 	fake.subscribeMutex.Lock()
 	ret, specificReturn := fake.subscribeReturnsOnCall[len(fake.subscribeArgsForCall)]
@@ -357,6 +434,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.createProducerMutex.RUnlock()
 	fake.createReaderMutex.RLock()
 	defer fake.createReaderMutex.RUnlock()
+	fake.createTableViewMutex.RLock()
+	defer fake.createTableViewMutex.RUnlock()
 	fake.subscribeMutex.RLock()
 	defer fake.subscribeMutex.RUnlock()
 	fake.topicPartitionsMutex.RLock()
