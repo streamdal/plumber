@@ -17,7 +17,7 @@
 
 package crypto
 
-import "io/ioutil"
+import "os"
 
 // FileKeyReader default implementation of KeyReader
 type FileKeyReader struct {
@@ -43,7 +43,7 @@ func (d *FileKeyReader) PrivateKey(keyName string, keyMeta map[string]string) (*
 }
 
 func readKey(keyName, path string, keyMeta map[string]string) (*EncryptionKeyInfo, error) {
-	key, err := ioutil.ReadFile(path)
+	key, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}

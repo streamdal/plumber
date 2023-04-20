@@ -1,5 +1,6 @@
+#ifndef USE_EXTERNAL_ZSTD
 /*
- * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
+ * Copyright (c) Yann Collet, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
@@ -242,7 +243,11 @@ extern "C" {
 *  Basic Types
 *****************************************************************/
 #if  !defined (__VMS) && (defined (__cplusplus) || (defined (__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 */) )
-# include <stdint.h>
+# if defined(_AIX)
+#  include <inttypes.h>
+# else
+#  include <stdint.h> /* intptr_t */
+# endif
   typedef  uint8_t BYTE;
   typedef uint16_t U16;
   typedef  int16_t S16;
@@ -1314,7 +1319,7 @@ size_t HUFv07_readStats(BYTE* huffWeight, size_t hwSize, U32* rankStats,
 
     if (!srcSize) return ERROR(srcSize_wrong);
     iSize = ip[0];
-    //memset(huffWeight, 0, hwSize);   /* is not necessary, even though some analyzer complain ... */
+    /* memset(huffWeight, 0, hwSize); */   /* is not necessary, even though some analyzer complain ... */
 
     if (iSize >= 128)  { /* special header */
         if (iSize >= (242)) {  /* RLE */
@@ -1784,7 +1789,7 @@ size_t HUFv07_readDTableX2 (HUFv07_DTable* DTable, const void* src, size_t srcSi
     HUFv07_DEltX2* const dt = (HUFv07_DEltX2*)dtPtr;
 
     HUFv07_STATIC_ASSERT(sizeof(DTableDesc) == sizeof(HUFv07_DTable));
-    //memset(huffWeight, 0, sizeof(huffWeight));   /* is not necessary, even though some analyzer complain ... */
+    /* memset(huffWeight, 0, sizeof(huffWeight)); */   /* is not necessary, even though some analyzer complain ... */
 
     iSize = HUFv07_readStats(huffWeight, HUFv07_SYMBOLVALUE_MAX + 1, rankVal, &nbSymbols, &tableLog, src, srcSize);
     if (HUFv07_isError(iSize)) return iSize;
@@ -2148,7 +2153,7 @@ size_t HUFv07_readDTableX4 (HUFv07_DTable* DTable, const void* src, size_t srcSi
 
     HUFv07_STATIC_ASSERT(sizeof(HUFv07_DEltX4) == sizeof(HUFv07_DTable));   /* if compilation fails here, assertion is false */
     if (maxTableLog > HUFv07_TABLELOG_ABSOLUTEMAX) return ERROR(tableLog_tooLarge);
-    //memset(weightList, 0, sizeof(weightList));   /* is not necessary, even though some analyzer complain ... */
+    /* memset(weightList, 0, sizeof(weightList)); */   /* is not necessary, even though some analyzer complain ... */
 
     iSize = HUFv07_readStats(weightList, HUFv07_SYMBOLVALUE_MAX + 1, rankStats, &nbSymbols, &tableLog, src, srcSize);
     if (HUFv07_isError(iSize)) return iSize;
@@ -2530,8 +2535,8 @@ size_t HUFv07_decompress (void* dst, size_t dstSize, const void* cSrc, size_t cS
         return decompress[algoNb](dst, dstSize, cSrc, cSrcSize);
     }
 
-    //return HUFv07_decompress4X2(dst, dstSize, cSrc, cSrcSize);   /* multi-streams single-symbol decoding */
-    //return HUFv07_decompress4X4(dst, dstSize, cSrc, cSrcSize);   /* multi-streams double-symbols decoding */
+    /* return HUFv07_decompress4X2(dst, dstSize, cSrc, cSrcSize); */   /* multi-streams single-symbol decoding */
+    /* return HUFv07_decompress4X4(dst, dstSize, cSrc, cSrcSize); */   /* multi-streams double-symbols decoding */
 }
 
 size_t HUFv07_decompress4X_DCtx (HUFv07_DTable* dctx, void* dst, size_t dstSize, const void* cSrc, size_t cSrcSize)
@@ -3254,7 +3259,7 @@ typedef struct
 *   Provides the size of compressed block from block header `src` */
 static size_t ZSTDv07_getcBlockSize(const void* src, size_t srcSize, blockProperties_t* bpPtr)
 {
-    const BYTE* const in = (const BYTE* const)src;
+    const BYTE* const in = (const BYTE*)src;
     U32 cSize;
 
     if (srcSize < ZSTDv07_blockHeaderSize) return ERROR(srcSize_wrong);
@@ -3272,7 +3277,9 @@ static size_t ZSTDv07_getcBlockSize(const void* src, size_t srcSize, blockProper
 static size_t ZSTDv07_copyRawBlock(void* dst, size_t dstCapacity, const void* src, size_t srcSize)
 {
     if (srcSize > dstCapacity) return ERROR(dstSize_tooSmall);
-    memcpy(dst, src, srcSize);
+    if (srcSize > 0) {
+        memcpy(dst, src, srcSize);
+    }
     return srcSize;
 }
 
@@ -3447,7 +3454,7 @@ static size_t ZSTDv07_decodeSeqHeaders(int* nbSeqPtr,
                              FSEv07_DTable* DTableLL, FSEv07_DTable* DTableML, FSEv07_DTable* DTableOffb, U32 flagRepeatTable,
                              const void* src, size_t srcSize)
 {
-    const BYTE* const istart = (const BYTE* const)src;
+    const BYTE* const istart = (const BYTE*)src;
     const BYTE* const iend = istart + srcSize;
     const BYTE* ip = istart;
 
@@ -3666,7 +3673,7 @@ static size_t ZSTDv07_decompressSequences(
 {
     const BYTE* ip = (const BYTE*)seqStart;
     const BYTE* const iend = ip + seqSize;
-    BYTE* const ostart = (BYTE* const)dst;
+    BYTE* const ostart = (BYTE*)dst;
     BYTE* const oend = ostart + maxDstSize;
     BYTE* op = ostart;
     const BYTE* litPtr = dctx->litPtr;
@@ -3712,10 +3719,12 @@ static size_t ZSTDv07_decompressSequences(
 
     /* last literal segment */
     {   size_t const lastLLSize = litEnd - litPtr;
-        //if (litPtr > litEnd) return ERROR(corruption_detected);   /* too many literals already used */
+        /* if (litPtr > litEnd) return ERROR(corruption_detected); */   /* too many literals already used */
         if (lastLLSize > (size_t)(oend-op)) return ERROR(dstSize_tooSmall);
-        memcpy(op, litPtr, lastLLSize);
-        op += lastLLSize;
+        if (lastLLSize > 0) {
+            memcpy(op, litPtr, lastLLSize);
+            op += lastLLSize;
+        }
     }
 
     return op-ostart;
@@ -3776,7 +3785,9 @@ ZSTDLIBv07_API size_t ZSTDv07_insertBlock(ZSTDv07_DCtx* dctx, const void* blockS
 static size_t ZSTDv07_generateNxBytes(void* dst, size_t dstCapacity, BYTE byte, size_t length)
 {
     if (length > dstCapacity) return ERROR(dstSize_tooSmall);
-    memset(dst, byte, length);
+    if (length > 0) {
+        memset(dst, byte, length);
+    }
     return length;
 }
 
@@ -3789,7 +3800,7 @@ static size_t ZSTDv07_decompressFrame(ZSTDv07_DCtx* dctx,
 {
     const BYTE* ip = (const BYTE*)src;
     const BYTE* const iend = ip + srcSize;
-    BYTE* const ostart = (BYTE* const)dst;
+    BYTE* const ostart = (BYTE*)dst;
     BYTE* const oend = ostart + dstCapacity;
     BYTE* op = ostart;
     size_t remainingSize = srcSize;
@@ -4378,7 +4389,9 @@ size_t ZBUFFv07_decompressInit(ZBUFFv07_DCtx* zbd)
 MEM_STATIC size_t ZBUFFv07_limitCopy(void* dst, size_t dstCapacity, const void* src, size_t srcSize)
 {
     size_t const length = MIN(dstCapacity, srcSize);
-    memcpy(dst, src, length);
+    if (length > 0) {
+        memcpy(dst, src, length);
+    }
     return length;
 }
 
@@ -4531,3 +4544,5 @@ size_t ZBUFFv07_decompressContinue(ZBUFFv07_DCtx* zbd,
 ***************************************/
 size_t ZBUFFv07_recommendedDInSize(void)  { return ZSTDv07_BLOCKSIZE_ABSOLUTEMAX + ZSTDv07_blockHeaderSize /* block header size*/ ; }
 size_t ZBUFFv07_recommendedDOutSize(void) { return ZSTDv07_BLOCKSIZE_ABSOLUTEMAX; }
+
+#endif /* USE_EXTERNAL_ZSTD */

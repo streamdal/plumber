@@ -750,6 +750,16 @@ type Policy struct {
 	// If true, we should store action and resource in their original case
 	//
 	CaseSensitive *bool `json:"caseSensitive,omitempty" rdl:"optional"`
+
+	//
+	// optional version string, defaults to 0
+	//
+	Version SimpleName `json:"version,omitempty" rdl:"optional"`
+
+	//
+	// if multi-version policy then indicates active version
+	//
+	Active *bool `json:"active,omitempty" rdl:"optional"`
 }
 
 //
@@ -805,6 +815,12 @@ func (self *Policy) Validate() error {
 	}
 	if self.Assertions == nil {
 		return fmt.Errorf("Policy: Missing required field: assertions")
+	}
+	if self.Version != "" {
+		val := rdl.Validate(ZTSSchema(), "SimpleName", self.Version)
+		if !val.Valid {
+			return fmt.Errorf("Policy.version does not contain a valid SimpleName (%v)", val.Error)
+		}
 	}
 	return nil
 }
@@ -896,12 +912,12 @@ type SignedPolicyData struct {
 	//
 	// zms signature generated based on the domain policies object
 	//
-	ZmsSignature string `json:"zmsSignature"`
+	ZmsSignature string `json:"zmsSignature,omitempty" rdl:"optional"`
 
 	//
 	// the identifier of the zms key used to generate the signature
 	//
-	ZmsKeyId string `json:"zmsKeyId"`
+	ZmsKeyId string `json:"zmsKeyId,omitempty" rdl:"optional"`
 
 	//
 	// when the domain itself was last modified
@@ -960,17 +976,13 @@ func (self *SignedPolicyData) Validate() error {
 	if self.PolicyData == nil {
 		return fmt.Errorf("SignedPolicyData: Missing required field: policyData")
 	}
-	if self.ZmsSignature == "" {
-		return fmt.Errorf("SignedPolicyData.zmsSignature is missing but is a required field")
-	} else {
+	if self.ZmsSignature != "" {
 		val := rdl.Validate(ZTSSchema(), "String", self.ZmsSignature)
 		if !val.Valid {
 			return fmt.Errorf("SignedPolicyData.zmsSignature does not contain a valid String (%v)", val.Error)
 		}
 	}
-	if self.ZmsKeyId == "" {
-		return fmt.Errorf("SignedPolicyData.zmsKeyId is missing but is a required field")
-	} else {
+	if self.ZmsKeyId != "" {
 		val := rdl.Validate(ZTSSchema(), "String", self.ZmsKeyId)
 		if !val.Valid {
 			return fmt.Errorf("SignedPolicyData.zmsKeyId does not contain a valid String (%v)", val.Error)
@@ -1073,36 +1085,182 @@ func (self *DomainSignedPolicyData) Validate() error {
 }
 
 //
-// RoleToken - A representation of a signed RoleToken
+// JWSPolicyData - SignedPolicyData using flattened JWS JSON Serialization
+// syntax. https://tools.ietf.org/html/rfc7515#section-7.2.2
 //
-type RoleToken struct {
-	Token      string `json:"token"`
-	ExpiryTime int64  `json:"expiryTime"`
+type JWSPolicyData struct {
+	Payload   string            `json:"payload"`
+	Protected string            `json:"protected"`
+	Header    map[string]string `json:"header"`
+	Signature string            `json:"signature"`
 }
 
 //
-// NewRoleToken - creates an initialized RoleToken instance, returns a pointer to it
+// NewJWSPolicyData - creates an initialized JWSPolicyData instance, returns a pointer to it
 //
-func NewRoleToken(init ...*RoleToken) *RoleToken {
-	var o *RoleToken
+func NewJWSPolicyData(init ...*JWSPolicyData) *JWSPolicyData {
+	var o *JWSPolicyData
 	if len(init) == 1 {
 		o = init[0]
 	} else {
-		o = new(RoleToken)
+		o = new(JWSPolicyData)
+	}
+	return o.Init()
+}
+
+//
+// Init - sets up the instance according to its default field values, if any
+//
+func (self *JWSPolicyData) Init() *JWSPolicyData {
+	if self.Header == nil {
+		self.Header = make(map[string]string)
+	}
+	return self
+}
+
+type rawJWSPolicyData JWSPolicyData
+
+//
+// UnmarshalJSON is defined for proper JSON decoding of a JWSPolicyData
+//
+func (self *JWSPolicyData) UnmarshalJSON(b []byte) error {
+	var m rawJWSPolicyData
+	err := json.Unmarshal(b, &m)
+	if err == nil {
+		o := JWSPolicyData(m)
+		*self = *((&o).Init())
+		err = self.Validate()
+	}
+	return err
+}
+
+//
+// Validate - checks for missing required fields, etc
+//
+func (self *JWSPolicyData) Validate() error {
+	if self.Payload == "" {
+		return fmt.Errorf("JWSPolicyData.payload is missing but is a required field")
+	} else {
+		val := rdl.Validate(ZTSSchema(), "String", self.Payload)
+		if !val.Valid {
+			return fmt.Errorf("JWSPolicyData.payload does not contain a valid String (%v)", val.Error)
+		}
+	}
+	if self.Protected == "" {
+		return fmt.Errorf("JWSPolicyData.protected is missing but is a required field")
+	} else {
+		val := rdl.Validate(ZTSSchema(), "String", self.Protected)
+		if !val.Valid {
+			return fmt.Errorf("JWSPolicyData.protected does not contain a valid String (%v)", val.Error)
+		}
+	}
+	if self.Header == nil {
+		return fmt.Errorf("JWSPolicyData: Missing required field: header")
+	}
+	if self.Signature == "" {
+		return fmt.Errorf("JWSPolicyData.signature is missing but is a required field")
+	} else {
+		val := rdl.Validate(ZTSSchema(), "String", self.Signature)
+		if !val.Valid {
+			return fmt.Errorf("JWSPolicyData.signature does not contain a valid String (%v)", val.Error)
+		}
+	}
+	return nil
+}
+
+//
+// SignedPolicyRequest -
+//
+type SignedPolicyRequest struct {
+	PolicyVersions map[string]string `json:"policyVersions"`
+
+	//
+	// true if signature must be in P1363 format instead of ASN.1 DER
+	//
+	SignatureP1363Format bool `json:"signatureP1363Format"`
+}
+
+//
+// NewSignedPolicyRequest - creates an initialized SignedPolicyRequest instance, returns a pointer to it
+//
+func NewSignedPolicyRequest(init ...*SignedPolicyRequest) *SignedPolicyRequest {
+	var o *SignedPolicyRequest
+	if len(init) == 1 {
+		o = init[0]
+	} else {
+		o = new(SignedPolicyRequest)
+	}
+	return o.Init()
+}
+
+//
+// Init - sets up the instance according to its default field values, if any
+//
+func (self *SignedPolicyRequest) Init() *SignedPolicyRequest {
+	if self.PolicyVersions == nil {
+		self.PolicyVersions = make(map[string]string)
+	}
+	return self
+}
+
+type rawSignedPolicyRequest SignedPolicyRequest
+
+//
+// UnmarshalJSON is defined for proper JSON decoding of a SignedPolicyRequest
+//
+func (self *SignedPolicyRequest) UnmarshalJSON(b []byte) error {
+	var m rawSignedPolicyRequest
+	err := json.Unmarshal(b, &m)
+	if err == nil {
+		o := SignedPolicyRequest(m)
+		*self = *((&o).Init())
+		err = self.Validate()
+	}
+	return err
+}
+
+//
+// Validate - checks for missing required fields, etc
+//
+func (self *SignedPolicyRequest) Validate() error {
+	if self.PolicyVersions == nil {
+		return fmt.Errorf("SignedPolicyRequest: Missing required field: policyVersions")
+	}
+	return nil
+}
+
+//
+// RoleCertificate - Copyright Athenz Authors Licensed under the terms of the
+// Apache version 2.0 license. See LICENSE file for terms. RoleCertificate - a
+// role certificate
+//
+type RoleCertificate struct {
+	X509Certificate string `json:"x509Certificate"`
+}
+
+//
+// NewRoleCertificate - creates an initialized RoleCertificate instance, returns a pointer to it
+//
+func NewRoleCertificate(init ...*RoleCertificate) *RoleCertificate {
+	var o *RoleCertificate
+	if len(init) == 1 {
+		o = init[0]
+	} else {
+		o = new(RoleCertificate)
 	}
 	return o
 }
 
-type rawRoleToken RoleToken
+type rawRoleCertificate RoleCertificate
 
 //
-// UnmarshalJSON is defined for proper JSON decoding of a RoleToken
+// UnmarshalJSON is defined for proper JSON decoding of a RoleCertificate
 //
-func (self *RoleToken) UnmarshalJSON(b []byte) error {
-	var m rawRoleToken
+func (self *RoleCertificate) UnmarshalJSON(b []byte) error {
+	var m rawRoleCertificate
 	err := json.Unmarshal(b, &m)
 	if err == nil {
-		o := RoleToken(m)
+		o := RoleCertificate(m)
 		*self = o
 		err = self.Validate()
 	}
@@ -1112,13 +1270,13 @@ func (self *RoleToken) UnmarshalJSON(b []byte) error {
 //
 // Validate - checks for missing required fields, etc
 //
-func (self *RoleToken) Validate() error {
-	if self.Token == "" {
-		return fmt.Errorf("RoleToken.token is missing but is a required field")
+func (self *RoleCertificate) Validate() error {
+	if self.X509Certificate == "" {
+		return fmt.Errorf("RoleCertificate.x509Certificate is missing but is a required field")
 	} else {
-		val := rdl.Validate(ZTSSchema(), "String", self.Token)
+		val := rdl.Validate(ZTSSchema(), "String", self.X509Certificate)
 		if !val.Valid {
-			return fmt.Errorf("RoleToken.token does not contain a valid String (%v)", val.Error)
+			return fmt.Errorf("RoleCertificate.x509Certificate does not contain a valid String (%v)", val.Error)
 		}
 	}
 	return nil
@@ -1126,16 +1284,37 @@ func (self *RoleToken) Validate() error {
 
 //
 // RoleCertificateRequest - RoleCertificateRequest - a certificate signing
-// request
+// request. By including the optional previous Certificate NotBefore and
+// NotAfter dates would all the server to correctly prioritize this request in
+// case the certificate signer is under heavy load and it can't sign all
+// submitted requests from the Athenz Server.
 //
 type RoleCertificateRequest struct {
+
+	//
+	// role certificate singing request
+	//
 	Csr string `json:"csr"`
 
 	//
 	// this request is proxy for this principal
 	//
 	ProxyForPrincipal EntityName `json:"proxyForPrincipal,omitempty" rdl:"optional"`
-	ExpiryTime        int64      `json:"expiryTime"`
+
+	//
+	// request an expiry time for the role certificate
+	//
+	ExpiryTime int64 `json:"expiryTime"`
+
+	//
+	// previous role certificate not before date
+	//
+	PrevCertNotBefore *rdl.Timestamp `json:"prevCertNotBefore,omitempty" rdl:"optional"`
+
+	//
+	// previous role certificate not after date
+	//
+	PrevCertNotAfter *rdl.Timestamp `json:"prevCertNotAfter,omitempty" rdl:"optional"`
 }
 
 //
@@ -1185,53 +1364,6 @@ func (self *RoleCertificateRequest) Validate() error {
 			return fmt.Errorf("RoleCertificateRequest.proxyForPrincipal does not contain a valid EntityName (%v)", val.Error)
 		}
 	}
-	return nil
-}
-
-//
-// Access - Access can be checked and returned as this resource.
-//
-type Access struct {
-
-	//
-	// true (allowed) or false (denied)
-	//
-	Granted bool `json:"granted"`
-}
-
-//
-// NewAccess - creates an initialized Access instance, returns a pointer to it
-//
-func NewAccess(init ...*Access) *Access {
-	var o *Access
-	if len(init) == 1 {
-		o = init[0]
-	} else {
-		o = new(Access)
-	}
-	return o
-}
-
-type rawAccess Access
-
-//
-// UnmarshalJSON is defined for proper JSON decoding of a Access
-//
-func (self *Access) UnmarshalJSON(b []byte) error {
-	var m rawAccess
-	err := json.Unmarshal(b, &m)
-	if err == nil {
-		o := Access(m)
-		*self = o
-		err = self.Validate()
-	}
-	return err
-}
-
-//
-// Validate - checks for missing required fields, etc
-//
-func (self *Access) Validate() error {
 	return nil
 }
 
@@ -1288,6 +1420,105 @@ func (self *RoleAccess) Validate() error {
 	if self.Roles == nil {
 		return fmt.Errorf("RoleAccess: Missing required field: roles")
 	}
+	return nil
+}
+
+//
+// RoleToken - A representation of a signed RoleToken
+//
+type RoleToken struct {
+	Token      string `json:"token"`
+	ExpiryTime int64  `json:"expiryTime"`
+}
+
+//
+// NewRoleToken - creates an initialized RoleToken instance, returns a pointer to it
+//
+func NewRoleToken(init ...*RoleToken) *RoleToken {
+	var o *RoleToken
+	if len(init) == 1 {
+		o = init[0]
+	} else {
+		o = new(RoleToken)
+	}
+	return o
+}
+
+type rawRoleToken RoleToken
+
+//
+// UnmarshalJSON is defined for proper JSON decoding of a RoleToken
+//
+func (self *RoleToken) UnmarshalJSON(b []byte) error {
+	var m rawRoleToken
+	err := json.Unmarshal(b, &m)
+	if err == nil {
+		o := RoleToken(m)
+		*self = o
+		err = self.Validate()
+	}
+	return err
+}
+
+//
+// Validate - checks for missing required fields, etc
+//
+func (self *RoleToken) Validate() error {
+	if self.Token == "" {
+		return fmt.Errorf("RoleToken.token is missing but is a required field")
+	} else {
+		val := rdl.Validate(ZTSSchema(), "String", self.Token)
+		if !val.Valid {
+			return fmt.Errorf("RoleToken.token does not contain a valid String (%v)", val.Error)
+		}
+	}
+	return nil
+}
+
+//
+// Access - Access can be checked and returned as this resource.
+//
+type Access struct {
+
+	//
+	// true (allowed) or false (denied)
+	//
+	Granted bool `json:"granted"`
+}
+
+//
+// NewAccess - creates an initialized Access instance, returns a pointer to it
+//
+func NewAccess(init ...*Access) *Access {
+	var o *Access
+	if len(init) == 1 {
+		o = init[0]
+	} else {
+		o = new(Access)
+	}
+	return o
+}
+
+type rawAccess Access
+
+//
+// UnmarshalJSON is defined for proper JSON decoding of a Access
+//
+func (self *Access) UnmarshalJSON(b []byte) error {
+	var m rawAccess
+	err := json.Unmarshal(b, &m)
+	if err == nil {
+		o := Access(m)
+		*self = o
+		err = self.Validate()
+	}
+	return err
+}
+
+//
+// Validate - checks for missing required fields, etc
+//
+func (self *Access) Validate() error {
 	return nil
 }
 
@@ -2613,6 +2844,16 @@ type SSHCertRequestMeta struct {
 	// ssh host cert request is for this instance id
 	//
 	InstanceId PathElement `json:"instanceId,omitempty" rdl:"optional"`
+
+	//
+	// previous ssh certificate validity from date
+	//
+	PrevCertValidFrom *rdl.Timestamp `json:"prevCertValidFrom,omitempty" rdl:"optional"`
+
+	//
+	// previous ssh certificate validity to date
+	//
+	PrevCertValidTo *rdl.Timestamp `json:"prevCertValidTo,omitempty" rdl:"optional"`
 }
 
 //
@@ -3244,59 +3485,6 @@ func (self *JWKList) Validate() error {
 // AccessTokenRequest -
 //
 type AccessTokenRequest string
-
-//
-// RoleCertificate - Copyright 2019 Oath Holdings Inc Licensed under the terms
-// of the Apache version 2.0 license. See LICENSE file for terms.
-// RoleCertificate - a role certificate
-//
-type RoleCertificate struct {
-	X509Certificate string `json:"x509Certificate"`
-}
-
-//
-// NewRoleCertificate - creates an initialized RoleCertificate instance, returns a pointer to it
-//
-func NewRoleCertificate(init ...*RoleCertificate) *RoleCertificate {
-	var o *RoleCertificate
-	if len(init) == 1 {
-		o = init[0]
-	} else {
-		o = new(RoleCertificate)
-	}
-	return o
-}
-
-type rawRoleCertificate RoleCertificate
-
-//
-// UnmarshalJSON is defined for proper JSON decoding of a RoleCertificate
-//
-func (self *RoleCertificate) UnmarshalJSON(b []byte) error {
-	var m rawRoleCertificate
-	err := json.Unmarshal(b, &m)
-	if err == nil {
-		o := RoleCertificate(m)
-		*self = o
-		err = self.Validate()
-	}
-	return err
-}
-
-//
-// Validate - checks for missing required fields, etc
-//
-func (self *RoleCertificate) Validate() error {
-	if self.X509Certificate == "" {
-		return fmt.Errorf("RoleCertificate.x509Certificate is missing but is a required field")
-	} else {
-		val := rdl.Validate(ZTSSchema(), "String", self.X509Certificate)
-		if !val.Valid {
-			return fmt.Errorf("RoleCertificate.x509Certificate does not contain a valid String (%v)", val.Error)
-		}
-	}
-	return nil
-}
 
 //
 // Workload -

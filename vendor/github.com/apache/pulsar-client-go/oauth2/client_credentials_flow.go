@@ -100,6 +100,7 @@ func (c *ClientCredentialsFlow) Authorize(audience string) (*AuthorizationGrant,
 		ClientID:          c.keyfile.ClientID,
 		ClientCredentials: c.keyfile,
 		TokenEndpoint:     c.oidcWellKnownEndpoints.TokenEndpoint,
+		Scopes:            c.options.AdditionalScopes,
 	}
 
 	// test the credentials and obtain an initial access token
@@ -139,6 +140,7 @@ func (g *ClientCredentialsGrantRefresher) Refresh(grant *AuthorizationGrant) (*A
 		Audience:      grant.Audience,
 		ClientID:      grant.ClientCredentials.ClientID,
 		ClientSecret:  grant.ClientCredentials.ClientSecret,
+		Scopes:        grant.Scopes,
 	}
 	tr, err := g.exchanger.ExchangeClientCredentials(exchangeRequest)
 	if err != nil {
@@ -153,6 +155,7 @@ func (g *ClientCredentialsGrantRefresher) Refresh(grant *AuthorizationGrant) (*A
 		ClientCredentials: grant.ClientCredentials,
 		TokenEndpoint:     grant.TokenEndpoint,
 		Token:             &token,
+		Scopes:            grant.Scopes,
 	}
 	return grant, nil
 }

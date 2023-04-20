@@ -40,14 +40,18 @@ type Metrics struct {
 	dlqCounter         *prometheus.CounterVec
 	processingTime     *prometheus.HistogramVec
 
-	producersOpened     *prometheus.CounterVec
-	producersClosed     *prometheus.CounterVec
-	producersPartitions *prometheus.GaugeVec
-	consumersOpened     *prometheus.CounterVec
-	consumersClosed     *prometheus.CounterVec
-	consumersPartitions *prometheus.GaugeVec
-	readersOpened       *prometheus.CounterVec
-	readersClosed       *prometheus.CounterVec
+	producersOpened            *prometheus.CounterVec
+	producersClosed            *prometheus.CounterVec
+	producersReconnectFailure  *prometheus.CounterVec
+	producersReconnectMaxRetry *prometheus.CounterVec
+	producersPartitions        *prometheus.GaugeVec
+	consumersOpened            *prometheus.CounterVec
+	consumersClosed            *prometheus.CounterVec
+	consumersReconnectFailure  *prometheus.CounterVec
+	consumersReconnectMaxRetry *prometheus.CounterVec
+	consumersPartitions        *prometheus.GaugeVec
+	readersOpened              *prometheus.CounterVec
+	readersClosed              *prometheus.CounterVec
 
 	// Metrics that are not labeled with specificity are immediately available
 	ConnectionsOpened                     prometheus.Counter
@@ -78,17 +82,23 @@ type LeveledMetrics struct {
 	DlqCounter         prometheus.Counter
 	ProcessingTime     prometheus.Observer
 
-	ProducersOpened     prometheus.Counter
-	ProducersClosed     prometheus.Counter
-	ProducersPartitions prometheus.Gauge
-	ConsumersOpened     prometheus.Counter
-	ConsumersClosed     prometheus.Counter
-	ConsumersPartitions prometheus.Gauge
-	ReadersOpened       prometheus.Counter
-	ReadersClosed       prometheus.Counter
+	ProducersOpened            prometheus.Counter
+	ProducersClosed            prometheus.Counter
+	ProducersReconnectFailure  prometheus.Counter
+	ProducersReconnectMaxRetry prometheus.Counter
+	ProducersPartitions        prometheus.Gauge
+	ConsumersOpened            prometheus.Counter
+	ConsumersClosed            prometheus.Counter
+	ConsumersReconnectFailure  prometheus.Counter
+	ConsumersReconnectMaxRetry prometheus.Counter
+	ConsumersPartitions        prometheus.Gauge
+	ReadersOpened              prometheus.Counter
+	ReadersClosed              prometheus.Counter
 }
 
-func NewMetricsProvider(metricsCardinality int, userDefinedLabels map[string]string) *Metrics {
+// NewMetricsProvider returns metrics registered to registerer.
+func NewMetricsProvider(metricsCardinality int, userDefinedLabels map[string]string,
+	registerer prometheus.Registerer) *Metrics {
 	constLabels := map[string]string{
 		"client": "go",
 	}
@@ -175,6 +185,18 @@ func NewMetricsProvider(metricsCardinality int, userDefinedLabels map[string]str
 			ConstLabels: constLabels,
 		}, metricsLevelLabels),
 
+		producersReconnectFailure: prometheus.NewCounterVec(prometheus.CounterOpts{
+			Name:        "pulsar_client_producers_reconnect_failure",
+			Help:        "Counter of reconnect failure of producers",
+			ConstLabels: constLabels,
+		}, metricsLevelLabels),
+
+		producersReconnectMaxRetry: prometheus.NewCounterVec(prometheus.CounterOpts{
+			Name:        "pulsar_client_producers_reconnect_max_retry",
+			Help:        "Counter of producer reconnect max retry reached",
+			ConstLabels: constLabels,
+		}, metricsLevelLabels),
+
 		consumersOpened: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Name:        "pulsar_client_consumers_opened",
 			Help:        "Counter of consumers created by the client",
@@ -184,6 +206,18 @@ func NewMetricsProvider(metricsCardinality int, userDefinedLabels map[string]str
 		consumersClosed: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Name:        "pulsar_client_consumers_closed",
 			Help:        "Counter of consumers closed by the client",
+			ConstLabels: constLabels,
+		}, metricsLevelLabels),
+
+		consumersReconnectFailure: prometheus.NewCounterVec(prometheus.CounterOpts{
+			Name:        "pulsar_client_consumers_reconnect_failure",
+			Help:        "Counter of reconnect failure of consumers",
+			ConstLabels: constLabels,
+		}, metricsLevelLabels),
+
+		consumersReconnectMaxRetry: prometheus.NewCounterVec(prometheus.CounterOpts{
+			Name:        "pulsar_client_consumers_reconnect_max_retry",
+			Help:        "Counter of consumer reconnect max retry reached",
 			ConstLabels: constLabels,
 		}, metricsLevelLabels),
 
@@ -297,181 +331,205 @@ func NewMetricsProvider(metricsCardinality int, userDefinedLabels map[string]str
 		}),
 	}
 
-	err := prometheus.DefaultRegisterer.Register(metrics.messagesPublished)
+	err := registerer.Register(metrics.messagesPublished)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.messagesPublished = are.ExistingCollector.(*prometheus.CounterVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.bytesPublished)
+	err = registerer.Register(metrics.bytesPublished)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.bytesPublished = are.ExistingCollector.(*prometheus.CounterVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.messagesPending)
+	err = registerer.Register(metrics.messagesPending)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.messagesPending = are.ExistingCollector.(*prometheus.GaugeVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.bytesPending)
+	err = registerer.Register(metrics.bytesPending)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.bytesPending = are.ExistingCollector.(*prometheus.GaugeVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.publishErrors)
+	err = registerer.Register(metrics.publishErrors)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.publishErrors = are.ExistingCollector.(*prometheus.CounterVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.publishLatency)
+	err = registerer.Register(metrics.publishLatency)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.publishLatency = are.ExistingCollector.(*prometheus.HistogramVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.publishRPCLatency)
+	err = registerer.Register(metrics.publishRPCLatency)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.publishRPCLatency = are.ExistingCollector.(*prometheus.HistogramVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.messagesReceived)
+	err = registerer.Register(metrics.messagesReceived)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.messagesReceived = are.ExistingCollector.(*prometheus.CounterVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.bytesReceived)
+	err = registerer.Register(metrics.bytesReceived)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.bytesReceived = are.ExistingCollector.(*prometheus.CounterVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.prefetchedMessages)
+	err = registerer.Register(metrics.prefetchedMessages)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.prefetchedMessages = are.ExistingCollector.(*prometheus.GaugeVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.prefetchedBytes)
+	err = registerer.Register(metrics.prefetchedBytes)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.prefetchedBytes = are.ExistingCollector.(*prometheus.GaugeVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.acksCounter)
+	err = registerer.Register(metrics.acksCounter)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.acksCounter = are.ExistingCollector.(*prometheus.CounterVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.nacksCounter)
+	err = registerer.Register(metrics.nacksCounter)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.nacksCounter = are.ExistingCollector.(*prometheus.CounterVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.dlqCounter)
+	err = registerer.Register(metrics.dlqCounter)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.dlqCounter = are.ExistingCollector.(*prometheus.CounterVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.processingTime)
+	err = registerer.Register(metrics.processingTime)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.processingTime = are.ExistingCollector.(*prometheus.HistogramVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.producersOpened)
+	err = registerer.Register(metrics.producersOpened)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.producersOpened = are.ExistingCollector.(*prometheus.CounterVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.producersClosed)
+	err = registerer.Register(metrics.producersClosed)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.producersClosed = are.ExistingCollector.(*prometheus.CounterVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.producersPartitions)
+	err = registerer.Register(metrics.producersReconnectFailure)
+	if err != nil {
+		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
+			metrics.producersReconnectFailure = are.ExistingCollector.(*prometheus.CounterVec)
+		}
+	}
+	err = registerer.Register(metrics.producersReconnectMaxRetry)
+	if err != nil {
+		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
+			metrics.producersReconnectMaxRetry = are.ExistingCollector.(*prometheus.CounterVec)
+		}
+	}
+	err = registerer.Register(metrics.producersPartitions)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.producersPartitions = are.ExistingCollector.(*prometheus.GaugeVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.consumersOpened)
+	err = registerer.Register(metrics.consumersOpened)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.consumersOpened = are.ExistingCollector.(*prometheus.CounterVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.consumersClosed)
+	err = registerer.Register(metrics.consumersClosed)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.consumersClosed = are.ExistingCollector.(*prometheus.CounterVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.consumersPartitions)
+	err = registerer.Register(metrics.consumersReconnectFailure)
+	if err != nil {
+		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
+			metrics.consumersReconnectFailure = are.ExistingCollector.(*prometheus.CounterVec)
+		}
+	}
+	err = registerer.Register(metrics.consumersReconnectMaxRetry)
+	if err != nil {
+		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
+			metrics.consumersReconnectMaxRetry = are.ExistingCollector.(*prometheus.CounterVec)
+		}
+	}
+	err = registerer.Register(metrics.consumersPartitions)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.consumersPartitions = are.ExistingCollector.(*prometheus.GaugeVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.readersOpened)
+	err = registerer.Register(metrics.readersOpened)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.readersOpened = are.ExistingCollector.(*prometheus.CounterVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.readersClosed)
+	err = registerer.Register(metrics.readersClosed)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.readersClosed = are.ExistingCollector.(*prometheus.CounterVec)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.ConnectionsOpened)
+	err = registerer.Register(metrics.ConnectionsOpened)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.ConnectionsOpened = are.ExistingCollector.(prometheus.Counter)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.ConnectionsClosed)
+	err = registerer.Register(metrics.ConnectionsClosed)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.ConnectionsClosed = are.ExistingCollector.(prometheus.Counter)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.ConnectionsEstablishmentErrors)
+	err = registerer.Register(metrics.ConnectionsEstablishmentErrors)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.ConnectionsEstablishmentErrors = are.ExistingCollector.(prometheus.Counter)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.ConnectionsHandshakeErrors)
+	err = registerer.Register(metrics.ConnectionsHandshakeErrors)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.ConnectionsHandshakeErrors = are.ExistingCollector.(prometheus.Counter)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.LookupRequestsCount)
+	err = registerer.Register(metrics.LookupRequestsCount)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.LookupRequestsCount = are.ExistingCollector.(prometheus.Counter)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.PartitionedTopicMetadataRequestsCount)
+	err = registerer.Register(metrics.PartitionedTopicMetadataRequestsCount)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.PartitionedTopicMetadataRequestsCount = are.ExistingCollector.(prometheus.Counter)
 		}
 	}
-	err = prometheus.DefaultRegisterer.Register(metrics.RPCRequestCount)
+	err = registerer.Register(metrics.RPCRequestCount)
 	if err != nil {
 		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
 			metrics.RPCRequestCount = are.ExistingCollector.(prometheus.Counter)
@@ -482,7 +540,10 @@ func NewMetricsProvider(metricsCardinality int, userDefinedLabels map[string]str
 
 func (mp *Metrics) GetLeveledMetrics(t string) *LeveledMetrics {
 	labels := make(map[string]string, 3)
-	tn, _ := ParseTopicName(t)
+	tn, err := ParseTopicName(t)
+	if err != nil {
+		return nil
+	}
 	topic := TopicNameWithoutPartitionPart(tn)
 	switch mp.metricsLevel {
 	case 4:
@@ -514,14 +575,18 @@ func (mp *Metrics) GetLeveledMetrics(t string) *LeveledMetrics {
 		DlqCounter:         mp.dlqCounter.With(labels),
 		ProcessingTime:     mp.processingTime.With(labels),
 
-		ProducersOpened:     mp.producersOpened.With(labels),
-		ProducersClosed:     mp.producersClosed.With(labels),
-		ProducersPartitions: mp.producersPartitions.With(labels),
-		ConsumersOpened:     mp.consumersOpened.With(labels),
-		ConsumersClosed:     mp.consumersClosed.With(labels),
-		ConsumersPartitions: mp.consumersPartitions.With(labels),
-		ReadersOpened:       mp.readersOpened.With(labels),
-		ReadersClosed:       mp.readersClosed.With(labels),
+		ProducersOpened:            mp.producersOpened.With(labels),
+		ProducersClosed:            mp.producersClosed.With(labels),
+		ProducersReconnectFailure:  mp.producersReconnectFailure.With(labels),
+		ProducersReconnectMaxRetry: mp.producersReconnectMaxRetry.With(labels),
+		ProducersPartitions:        mp.producersPartitions.With(labels),
+		ConsumersOpened:            mp.consumersOpened.With(labels),
+		ConsumersClosed:            mp.consumersClosed.With(labels),
+		ConsumersReconnectFailure:  mp.consumersReconnectFailure.With(labels),
+		ConsumersReconnectMaxRetry: mp.consumersReconnectMaxRetry.With(labels),
+		ConsumersPartitions:        mp.consumersPartitions.With(labels),
+		ReadersOpened:              mp.readersOpened.With(labels),
+		ReadersClosed:              mp.readersClosed.With(labels),
 	}
 
 	return lm

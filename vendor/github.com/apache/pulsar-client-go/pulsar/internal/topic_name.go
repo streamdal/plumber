@@ -107,6 +107,9 @@ func ParseTopicName(topic string) (*TopicName, error) {
 }
 
 func TopicNameWithoutPartitionPart(tn *TopicName) string {
+	if tn == nil {
+		return ""
+	}
 	if tn.Partition < 0 {
 		return tn.Name
 	}

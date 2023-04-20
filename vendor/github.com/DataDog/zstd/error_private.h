@@ -1,5 +1,6 @@
+#ifndef USE_EXTERNAL_ZSTD
 /*
- * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
+ * Copyright (c) Yann Collet, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
@@ -21,8 +22,8 @@ extern "C" {
 /* ****************************************
 *  Dependencies
 ******************************************/
-#include <stddef.h>        /* size_t */
 #include "zstd_errors.h"  /* enum list */
+#include "zstd_deps.h"       /* size_t */
 
 
 /* ****************************************
@@ -49,13 +50,17 @@ typedef ZSTD_ErrorCode ERR_enum;
 /*-****************************************
 *  Error codes handling
 ******************************************/
-#undef ERROR   /* reported already defined on VS 2015 (Rich Geldreich) */
+#undef ERROR   /* already defined on Visual Studio */
 #define ERROR(name) ZSTD_ERROR(name)
 #define ZSTD_ERROR(name) ((size_t)-PREFIX(name))
 
 ERR_STATIC unsigned ERR_isError(size_t code) { return (code > ERROR(maxCode)); }
 
 ERR_STATIC ERR_enum ERR_getErrorCode(size_t code) { if (!ERR_isError(code)) return (ERR_enum)0; return (ERR_enum) (0-code); }
+
+/* check and forward error code */
+#define CHECK_V_F(e, f) size_t const e = f; if (ERR_isError(e)) return e
+#define CHECK_F(f)   { CHECK_V_F(_var_err__, f); }
 
 
 /*-****************************************
@@ -74,3 +79,5 @@ ERR_STATIC const char* ERR_getErrorName(size_t code)
 #endif
 
 #endif /* ERROR_H_MODULE */
+
+#endif /* USE_EXTERNAL_ZSTD */

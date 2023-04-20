@@ -60,19 +60,19 @@ func (l *logrusWrapper) WithError(err error) Entry {
 }
 
 func (l *logrusWrapper) Debug(args ...interface{}) {
-	l.l.Debug(args)
+	l.l.Debug(args...)
 }
 
 func (l *logrusWrapper) Info(args ...interface{}) {
-	l.l.Info(args)
+	l.l.Info(args...)
 }
 
 func (l *logrusWrapper) Warn(args ...interface{}) {
-	l.l.Warn(args)
+	l.l.Warn(args...)
 }
 
 func (l *logrusWrapper) Error(args ...interface{}) {
-	l.l.Error(args)
+	l.l.Error(args...)
 }
 
 func (l *logrusWrapper) Debugf(format string, args ...interface{}) {
@@ -108,19 +108,19 @@ func (l logrusEntry) WithField(name string, value interface{}) Entry {
 }
 
 func (l logrusEntry) Debug(args ...interface{}) {
-	l.e.Debug(args)
+	l.e.Debug(args...)
 }
 
 func (l logrusEntry) Info(args ...interface{}) {
-	l.e.Info(args)
+	l.e.Info(args...)
 }
 
 func (l logrusEntry) Warn(args ...interface{}) {
-	l.e.Warn(args)
+	l.e.Warn(args...)
 }
 
 func (l logrusEntry) Error(args ...interface{}) {
-	l.e.Error(args)
+	l.e.Error(args...)
 }
 
 func (l logrusEntry) Debugf(format string, args ...interface{}) {

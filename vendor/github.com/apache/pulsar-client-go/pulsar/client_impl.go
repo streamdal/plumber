@@ -22,16 +22,21 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/sirupsen/logrus"
-
+	"github.com/apache/pulsar-client-go/pulsar/auth"
 	"github.com/apache/pulsar-client-go/pulsar/internal"
-	"github.com/apache/pulsar-client-go/pulsar/internal/auth"
 	"github.com/apache/pulsar-client-go/pulsar/log"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/sirupsen/logrus"
 )
 
 const (
-	defaultConnectionTimeout = 10 * time.Second
-	defaultOperationTimeout  = 30 * time.Second
+	defaultConnectionTimeout           = 10 * time.Second
+	defaultOperationTimeout            = 30 * time.Second
+	defaultKeepAliveInterval           = 30 * time.Second
+	defaultMemoryLimitBytes            = 64 * 1024 * 1024
+	defaultMemoryLimitTriggerThreshold = 0.95
+	defaultConnMaxIdleTime             = 180 * time.Second
+	minConnMaxIdleTime                 = 60 * time.Second
 )
 
 type client struct {
@@ -40,6 +45,8 @@ type client struct {
 	handlers      internal.ClientHandlers
 	lookupService internal.LookupService
 	metrics       *internal.Metrics
+	tcClient      *transactionCoordinatorClient
+	memLimit      internal.MemoryLimitController
 
 	log log.Logger
 }
@@ -50,6 +57,16 @@ func newClient(options ClientOptions) (Client, error) {
 		logger = options.Logger
 	} else {
 		logger = log.NewLoggerWithLogrus(logrus.StandardLogger())
+	}
+
+	connectionMaxIdleTime := options.ConnectionMaxIdleTime
+	if connectionMaxIdleTime == 0 {
+		connectionMaxIdleTime = defaultConnMaxIdleTime
+	} else if connectionMaxIdleTime > 0 && connectionMaxIdleTime < minConnMaxIdleTime {
+		return nil, newError(InvalidConfiguration, fmt.Sprintf("Connection max idle time should be at least %f "+
+			"seconds", minConnMaxIdleTime.Seconds()))
+	} else {
+		logger.Debugf("Disable auto release idle connections")
 	}
 
 	if options.URL == "" {
@@ -69,8 +86,11 @@ func newClient(options ClientOptions) (Client, error) {
 	case "pulsar+ssl", "https":
 		tlsConfig = &internal.TLSOptions{
 			AllowInsecureConnection: options.TLSAllowInsecureConnection,
+			KeyFile:                 options.TLSKeyFilePath,
+			CertFile:                options.TLSCertificateFile,
 			TrustCertsFilePath:      options.TLSTrustCertsFilePath,
 			ValidateHostname:        options.TLSValidateHostname,
+			ServerName:              url.Hostname(),
 		}
 	default:
 		return nil, newError(InvalidConfiguration, fmt.Sprintf("Invalid URL scheme '%s'", url.Scheme))
@@ -111,18 +131,35 @@ func newClient(options ClientOptions) (Client, error) {
 		options.MetricsCardinality = MetricsCardinalityNamespace
 	}
 
+	if options.MetricsRegisterer == nil {
+		options.MetricsRegisterer = prometheus.DefaultRegisterer
+	}
+
 	var metrics *internal.Metrics
 	if options.CustomMetricsLabels != nil {
-		metrics = internal.NewMetricsProvider(int(options.MetricsCardinality), options.CustomMetricsLabels)
+		metrics = internal.NewMetricsProvider(
+			int(options.MetricsCardinality), options.CustomMetricsLabels, options.MetricsRegisterer)
 	} else {
-		metrics = internal.NewMetricsProvider(int(options.MetricsCardinality), map[string]string{})
+		metrics = internal.NewMetricsProvider(
+			int(options.MetricsCardinality), map[string]string{}, options.MetricsRegisterer)
+	}
+
+	keepAliveInterval := options.KeepAliveInterval
+	if keepAliveInterval.Nanoseconds() == 0 {
+		keepAliveInterval = defaultKeepAliveInterval
+	}
+
+	memLimitBytes := options.MemoryLimitBytes
+	if memLimitBytes == 0 {
+		memLimitBytes = defaultMemoryLimitBytes
 	}
 
 	c := &client{
-		cnxPool: internal.NewConnectionPool(tlsConfig, authProvider, connectionTimeout, maxConnectionsPerHost, logger,
-			metrics),
-		log:     logger,
-		metrics: metrics,
+		cnxPool: internal.NewConnectionPool(tlsConfig, authProvider, connectionTimeout, keepAliveInterval,
+			maxConnectionsPerHost, logger, metrics, connectionMaxIdleTime),
+		log:      logger,
+		metrics:  metrics,
+		memLimit: internal.NewMemoryLimitController(memLimitBytes, defaultMemoryLimitTriggerThreshold),
 	}
 	serviceNameResolver := internal.NewPulsarServiceNameResolver(url)
 
@@ -146,6 +183,14 @@ func newClient(options ClientOptions) (Client, error) {
 	}
 
 	c.handlers = internal.NewClientHandlers()
+
+	if options.EnableTransaction {
+		c.tcClient = newTransactionCoordinatorClientImpl(c)
+		err = c.tcClient.start()
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	return c, nil
 }
@@ -174,6 +219,15 @@ func (c *client) CreateReader(options ReaderOptions) (Reader, error) {
 	}
 	c.handlers.Add(reader)
 	return reader, nil
+}
+
+func (c *client) CreateTableView(options TableViewOptions) (TableView, error) {
+	tableView, err := newTableView(c, options)
+	if err != nil {
+		return nil, err
+	}
+	c.handlers.Add(tableView)
+	return tableView, nil
 }
 
 func (c *client) TopicPartitions(topic string) ([]string, error) {

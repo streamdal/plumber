@@ -15,5 +15,5 @@ unzip mr.zip
 
 # Build and run tests
 go build
-PAYLOAD=$(pwd)/mr go test -v
-PAYLOAD=$(pwd)/mr go test -bench .
+DISABLE_BIG_TESTS=1 PAYLOAD=$(pwd)/mr go test -v
+DISABLE_BIG_TESTS=1 PAYLOAD=$(pwd)/mr go test -bench .

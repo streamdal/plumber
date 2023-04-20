@@ -1,5 +1,6 @@
+#ifndef USE_EXTERNAL_ZSTD
 /*
- * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
+ * Copyright (c) Yann Collet, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
@@ -23,9 +24,13 @@
 /* Unix Large Files support (>4GB) */
 #define _FILE_OFFSET_BITS 64
 #if (defined(__sun__) && (!defined(__LP64__)))   /* Sun Solaris 32-bits requires specific definitions */
+#  ifndef _LARGEFILE_SOURCE
 #  define _LARGEFILE_SOURCE
+#  endif
 #elif ! defined(__LP64__)                        /* No point defining Large file for 64 bit */
+#  ifndef _LARGEFILE64_SOURCE
 #  define _LARGEFILE64_SOURCE
+#  endif
 #endif
 
 
@@ -37,17 +42,19 @@
 #include <stdio.h>         /* fprintf, fopen, ftello64 */
 #include <time.h>          /* clock */
 
-#include "mem.h"           /* read */
-#include "fse.h"           /* FSE_normalizeCount, FSE_writeNCount */
-#define HUF_STATIC_LINKING_ONLY
-#include "huf.h"           /* HUF_buildCTable, HUF_writeCTable */
-#include "zstd_internal.h" /* includes zstd.h */
-#include "xxhash.h"        /* XXH64 */
-#include "divsufsort.h"
 #ifndef ZDICT_STATIC_LINKING_ONLY
 #  define ZDICT_STATIC_LINKING_ONLY
 #endif
+#define HUF_STATIC_LINKING_ONLY
+
+#include "mem.h"           /* read */
+#include "fse.h"           /* FSE_normalizeCount, FSE_writeNCount */
+#include "huf.h"           /* HUF_buildCTable, HUF_writeCTable */
+#include "zstd_internal.h" /* includes zstd.h */
+#include "xxhash.h"        /* XXH64 */
+#include "zstd_compress_internal.h" /* ZSTD_loadCEntropy() */
 #include "zdict.h"
+#include "divsufsort.h"
 
 
 /*-*************************************
@@ -61,14 +68,15 @@
 
 #define NOISELENGTH 32
 
-static const int g_compressionLevel_default = 3;
 static const U32 g_selectivity_default = 9;
 
 
 /*-*************************************
 *  Console display
 ***************************************/
+#undef  DISPLAY
 #define DISPLAY(...)         { fprintf(stderr, __VA_ARGS__); fflush( stderr ); }
+#undef  DISPLAYLEVEL
 #define DISPLAYLEVEL(l, ...) if (notificationLevel>=l) { DISPLAY(__VA_ARGS__); }    /* 0 : no display;   1: errors;   2: default;  3: details;  4: debug */
 
 static clock_t ZDICT_clockSpan(clock_t nPrevious) { return clock() - nPrevious; }
@@ -99,6 +107,26 @@ unsigned ZDICT_getDictID(const void* dictBuffer, size_t dictSize)
     return MEM_readLE32((const char*)dictBuffer + 4);
 }
 
+size_t ZDICT_getDictHeaderSize(const void* dictBuffer, size_t dictSize)
+{
+    size_t headerSize;
+    if (dictSize <= 8 || MEM_readLE32(dictBuffer) != ZSTD_MAGIC_DICTIONARY) return ERROR(dictionary_corrupted);
+
+    {   ZSTD_compressedBlockState_t* bs = (ZSTD_compressedBlockState_t*)malloc(sizeof(ZSTD_compressedBlockState_t));
+        U32* wksp = (U32*)malloc(HUF_WORKSPACE_SIZE);
+        if (!bs || !wksp) {
+            headerSize = ERROR(memory_allocation);
+        } else {
+            ZSTD_reset_compressedBlockState(bs);
+            headerSize = ZSTD_loadCEntropy(bs, wksp, dictBuffer, dictSize);
+        }
+
+        free(bs);
+        free(wksp);
+    }
+
+    return headerSize;
+}
 
 /*-********************************************************
 *  Dictionary training functions
@@ -508,6 +536,7 @@ static size_t ZDICT_trainBuffer_legacy(dictItem* dictList, U32 dictListSize,
     clock_t displayClock = 0;
     clock_t const refreshRate = CLOCKS_PER_SEC * 3 / 10;
 
+#   undef  DISPLAYUPDATE
 #   define DISPLAYUPDATE(l, ...) if (notificationLevel>=l) { \
             if (ZDICT_clockSpan(displayClock) > refreshRate)  \
             { displayClock = clock(); DISPLAY(__VA_ARGS__); \
@@ -588,12 +617,12 @@ typedef struct
 
 #define MAXREPOFFSET 1024
 
-static void ZDICT_countEStats(EStats_ress_t esr, ZSTD_parameters params,
+static void ZDICT_countEStats(EStats_ress_t esr, const ZSTD_parameters* params,
                               unsigned* countLit, unsigned* offsetcodeCount, unsigned* matchlengthCount, unsigned* litlengthCount, U32* repOffsets,
                               const void* src, size_t srcSize,
                               U32 notificationLevel)
 {
-    size_t const blockSizeMax = MIN (ZSTD_BLOCKSIZE_MAX, 1 << params.cParams.windowLog);
+    size_t const blockSizeMax = MIN (ZSTD_BLOCKSIZE_MAX, 1 << params->cParams.windowLog);
     size_t cSize;
 
     if (srcSize > blockSizeMax) srcSize = blockSizeMax;   /* protection vs large samples */
@@ -682,7 +711,7 @@ static void ZDICT_flatLit(unsigned* countLit)
 
 #define OFFCODE_MAX 30  /* only applicable to first block */
 static size_t ZDICT_analyzeEntropy(void*  dstBuffer, size_t maxDstSize,
-                                   unsigned compressionLevel,
+                                   int compressionLevel,
                              const void*  srcBuffer, const size_t* fileSizes, unsigned nbFiles,
                              const void* dictBuffer, size_t  dictBufferSize,
                                    unsigned notificationLevel)
@@ -717,7 +746,7 @@ static size_t ZDICT_analyzeEntropy(void*  dstBuffer, size_t maxDstSize,
     memset(repOffset, 0, sizeof(repOffset));
     repOffset[1] = repOffset[4] = repOffset[8] = 1;
     memset(bestRepOffset, 0, sizeof(bestRepOffset));
-    if (compressionLevel==0) compressionLevel = g_compressionLevel_default;
+    if (compressionLevel==0) compressionLevel = ZSTD_CLEVEL_DEFAULT;
     params = ZSTD_getParams(compressionLevel, averageSampleSize, dictBufferSize);
 
     esr.dict = ZSTD_createCDict_advanced(dictBuffer, dictBufferSize, ZSTD_dlm_byRef, ZSTD_dct_rawContent, params.cParams, ZSTD_defaultCMem);
@@ -731,7 +760,7 @@ static size_t ZDICT_analyzeEntropy(void*  dstBuffer, size_t maxDstSize,
 
     /* collect stats on all samples */
     for (u=0; u<nbFiles; u++) {
-        ZDICT_countEStats(esr, params,
+        ZDICT_countEStats(esr, &params,
                           countLit, offcodeCount, matchLengthCount, litLengthCount, repOffset,
                          (const char*)srcBuffer + pos, fileSizes[u],
                           notificationLevel);
@@ -762,7 +791,7 @@ static size_t ZDICT_analyzeEntropy(void*  dstBuffer, size_t maxDstSize,
     /* note : the result of this phase should be used to better appreciate the impact on statistics */
 
     total=0; for (u=0; u<=offcodeMax; u++) total+=offcodeCount[u];
-    errorCode = FSE_normalizeCount(offcodeNCount, Offlog, offcodeCount, total, offcodeMax);
+    errorCode = FSE_normalizeCount(offcodeNCount, Offlog, offcodeCount, total, offcodeMax, /* useLowProbCount */ 1);
     if (FSE_isError(errorCode)) {
         eSize = errorCode;
         DISPLAYLEVEL(1, "FSE_normalizeCount error with offcodeCount \n");
@@ -771,7 +800,7 @@ static size_t ZDICT_analyzeEntropy(void*  dstBuffer, size_t maxDstSize,
     Offlog = (U32)errorCode;
 
     total=0; for (u=0; u<=MaxML; u++) total+=matchLengthCount[u];
-    errorCode = FSE_normalizeCount(matchLengthNCount, mlLog, matchLengthCount, total, MaxML);
+    errorCode = FSE_normalizeCount(matchLengthNCount, mlLog, matchLengthCount, total, MaxML, /* useLowProbCount */ 1);
     if (FSE_isError(errorCode)) {
         eSize = errorCode;
         DISPLAYLEVEL(1, "FSE_normalizeCount error with matchLengthCount \n");
@@ -780,7 +809,7 @@ static size_t ZDICT_analyzeEntropy(void*  dstBuffer, size_t maxDstSize,
     mlLog = (U32)errorCode;
 
     total=0; for (u=0; u<=MaxLL; u++) total+=litLengthCount[u];
-    errorCode = FSE_normalizeCount(litLengthNCount, llLog, litLengthCount, total, MaxLL);
+    errorCode = FSE_normalizeCount(litLengthNCount, llLog, litLengthCount, total, MaxLL, /* useLowProbCount */ 1);
     if (FSE_isError(errorCode)) {
         eSize = errorCode;
         DISPLAYLEVEL(1, "FSE_normalizeCount error with litLengthCount \n");
@@ -869,7 +898,7 @@ size_t ZDICT_finalizeDictionary(void* dictBuffer, size_t dictBufferCapacity,
     size_t hSize;
 #define HBUFFSIZE 256   /* should prove large enough for all entropy headers */
     BYTE header[HBUFFSIZE];
-    int const compressionLevel = (params.compressionLevel == 0) ? g_compressionLevel_default : params.compressionLevel;
+    int const compressionLevel = (params.compressionLevel == 0) ? ZSTD_CLEVEL_DEFAULT : params.compressionLevel;
     U32 const notificationLevel = params.notificationLevel;
 
     /* check conditions */
@@ -915,7 +944,7 @@ static size_t ZDICT_addEntropyTablesFromBuffer_advanced(
         const void* samplesBuffer, const size_t* samplesSizes, unsigned nbSamples,
         ZDICT_params_t params)
 {
-    int const compressionLevel = (params.compressionLevel == 0) ? g_compressionLevel_default : params.compressionLevel;
+    int const compressionLevel = (params.compressionLevel == 0) ? ZSTD_CLEVEL_DEFAULT : params.compressionLevel;
     U32 const notificationLevel = params.notificationLevel;
     size_t hSize = 8;
 
@@ -944,16 +973,11 @@ static size_t ZDICT_addEntropyTablesFromBuffer_advanced(
     return MIN(dictBufferCapacity, hSize+dictContentSize);
 }
 
-/* Hidden declaration for dbio.c */
-size_t ZDICT_trainFromBuffer_unsafe_legacy(
-                            void* dictBuffer, size_t maxDictSize,
-                            const void* samplesBuffer, const size_t* samplesSizes, unsigned nbSamples,
-                            ZDICT_legacy_params_t params);
 /*! ZDICT_trainFromBuffer_unsafe_legacy() :
-*   Warning : `samplesBuffer` must be followed by noisy guard band.
+*   Warning : `samplesBuffer` must be followed by noisy guard band !!!
 *   @return : size of dictionary, or an error code which can be tested with ZDICT_isError()
 */
-size_t ZDICT_trainFromBuffer_unsafe_legacy(
+static size_t ZDICT_trainFromBuffer_unsafe_legacy(
                             void* dictBuffer, size_t maxDictSize,
                             const void* samplesBuffer, const size_t* samplesSizes, unsigned nbSamples,
                             ZDICT_legacy_params_t params)
@@ -1090,8 +1114,8 @@ size_t ZDICT_trainFromBuffer(void* dictBuffer, size_t dictBufferCapacity,
     memset(&params, 0, sizeof(params));
     params.d = 8;
     params.steps = 4;
-    /* Default to level 6 since no compression level information is available */
-    params.zParams.compressionLevel = 3;
+    /* Use default level since no compression level information is available */
+    params.zParams.compressionLevel = ZSTD_CLEVEL_DEFAULT;
 #if defined(DEBUGLEVEL) && (DEBUGLEVEL>=1)
     params.zParams.notificationLevel = DEBUGLEVEL;
 #endif
@@ -1109,3 +1133,5 @@ size_t ZDICT_addEntropyTablesFromBuffer(void* dictBuffer, size_t dictContentSize
                                                      samplesBuffer, samplesSizes, nbSamples,
                                                      params);
 }
+
+#endif /* USE_EXTERNAL_ZSTD */

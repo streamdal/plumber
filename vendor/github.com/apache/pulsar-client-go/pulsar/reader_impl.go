@@ -23,6 +23,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/apache/pulsar-client-go/pulsar/crypto"
 	"github.com/apache/pulsar-client-go/pulsar/internal"
 	"github.com/apache/pulsar-client-go/pulsar/log"
 )
@@ -36,7 +37,7 @@ type reader struct {
 	client              *client
 	pc                  *partitionConsumer
 	messageCh           chan ConsumerMessage
-	lastMessageInBroker trackingMessageID
+	lastMessageInBroker *trackingMessageID
 	log                 log.Logger
 	metrics             *internal.LeveledMetrics
 }
@@ -50,8 +51,8 @@ func newReader(client *client, options ReaderOptions) (Reader, error) {
 		return nil, newError(InvalidConfiguration, "StartMessageID is required")
 	}
 
-	startMessageID, ok := toTrackingMessageID(options.StartMessageID)
-	if !ok {
+	var startMessageID *trackingMessageID
+	if !checkMessageIDType(options.StartMessageID) {
 		// a custom type satisfying MessageID may not be a messageID or trackingMessageID
 		// so re-create messageID using its data
 		deserMsgID, err := deserializeMessageID(options.StartMessageID.Serialize())
@@ -59,37 +60,63 @@ func newReader(client *client, options ReaderOptions) (Reader, error) {
 			return nil, err
 		}
 		// de-serialized MessageID is a messageID
-		startMessageID = trackingMessageID{
-			messageID:    deserMsgID.(messageID),
-			receivedTime: time.Now(),
-		}
+		startMessageID = toTrackingMessageID(deserMsgID)
+	} else {
+		startMessageID = toTrackingMessageID(options.StartMessageID)
 	}
 
-	subscriptionName := options.SubscriptionRolePrefix
+	subscriptionName := options.SubscriptionName
 	if subscriptionName == "" {
-		subscriptionName = "reader"
+		subscriptionName = options.SubscriptionRolePrefix
+		if subscriptionName == "" {
+			subscriptionName = "reader"
+		}
+		subscriptionName += "-" + generateRandomName()
 	}
-	subscriptionName += "-" + generateRandomName()
 
 	receiverQueueSize := options.ReceiverQueueSize
 	if receiverQueueSize <= 0 {
 		receiverQueueSize = defaultReceiverQueueSize
 	}
 
+	// decryption is enabled, use default message crypto if not provided
+	if options.Decryption != nil && options.Decryption.MessageCrypto == nil {
+		messageCrypto, err := crypto.NewDefaultMessageCrypto("decrypt",
+			false,
+			client.log.SubLogger(log.Fields{"topic": options.Topic}))
+		if err != nil {
+			return nil, err
+		}
+		options.Decryption.MessageCrypto = messageCrypto
+	}
+
+	if options.MaxPendingChunkedMessage == 0 {
+		options.MaxPendingChunkedMessage = 100
+	}
+
+	if options.ExpireTimeOfIncompleteChunk == 0 {
+		options.ExpireTimeOfIncompleteChunk = time.Minute
+	}
+
 	consumerOptions := &partitionConsumerOpts{
-		topic:                      options.Topic,
-		consumerName:               options.Name,
-		subscription:               subscriptionName,
-		subscriptionType:           Exclusive,
-		receiverQueueSize:          receiverQueueSize,
-		startMessageID:             startMessageID,
-		startMessageIDInclusive:    options.StartMessageIDInclusive,
-		subscriptionMode:           nonDurable,
-		readCompacted:              options.ReadCompacted,
-		metadata:                   options.Properties,
-		nackRedeliveryDelay:        defaultNackRedeliveryDelay,
-		replicateSubscriptionState: false,
-		decryption:                 options.Decryption,
+		topic:                       options.Topic,
+		consumerName:                options.Name,
+		subscription:                subscriptionName,
+		subscriptionType:            Exclusive,
+		receiverQueueSize:           receiverQueueSize,
+		startMessageID:              startMessageID,
+		startMessageIDInclusive:     options.StartMessageIDInclusive,
+		subscriptionMode:            nonDurable,
+		readCompacted:               options.ReadCompacted,
+		metadata:                    options.Properties,
+		nackRedeliveryDelay:         defaultNackRedeliveryDelay,
+		replicateSubscriptionState:  false,
+		decryption:                  options.Decryption,
+		schema:                      options.Schema,
+		backoffPolicy:               options.BackoffPolicy,
+		maxPendingChunkedMessage:    options.MaxPendingChunkedMessage,
+		expireTimeOfIncompleteChunk: options.ExpireTimeOfIncompleteChunk,
+		autoAckIncompleteChunk:      options.AutoAckIncompleteChunk,
 	}
 
 	reader := &reader{
@@ -131,12 +158,10 @@ func (r *reader) Next(ctx context.Context) (Message, error) {
 			// Acknowledge message immediately because the reader is based on non-durable subscription. When it reconnects,
 			// it will specify the subscription position anyway
 			msgID := cm.Message.ID()
-			if mid, ok := toTrackingMessageID(msgID); ok {
-				r.pc.lastDequeuedMsg = mid
-				r.pc.AckID(mid)
-				return cm.Message, nil
-			}
-			return nil, newError(InvalidMessage, fmt.Sprintf("invalid message id type %T", msgID))
+			mid := toTrackingMessageID(msgID)
+			r.pc.lastDequeuedMsg = mid
+			r.pc.AckID(mid)
+			return cm.Message, nil
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		}
@@ -144,7 +169,7 @@ func (r *reader) Next(ctx context.Context) (Message, error) {
 }
 
 func (r *reader) HasNext() bool {
-	if !r.lastMessageInBroker.Undefined() && r.hasMoreMessages() {
+	if r.lastMessageInBroker != nil && r.hasMoreMessages() {
 		return true
 	}
 
@@ -163,16 +188,18 @@ func (r *reader) HasNext() bool {
 }
 
 func (r *reader) hasMoreMessages() bool {
-	if !r.pc.lastDequeuedMsg.Undefined() {
+	if r.pc.lastDequeuedMsg != nil {
 		return r.lastMessageInBroker.isEntryIDValid() && r.lastMessageInBroker.greater(r.pc.lastDequeuedMsg.messageID)
 	}
 
 	if r.pc.options.startMessageIDInclusive {
-		return r.lastMessageInBroker.isEntryIDValid() && r.lastMessageInBroker.greaterEqual(r.pc.startMessageID.messageID)
+		return r.lastMessageInBroker.isEntryIDValid() &&
+			r.lastMessageInBroker.greaterEqual(r.pc.startMessageID.get().messageID)
 	}
 
 	// Non-inclusive
-	return r.lastMessageInBroker.isEntryIDValid() && r.lastMessageInBroker.greater(r.pc.startMessageID.messageID)
+	return r.lastMessageInBroker.isEntryIDValid() &&
+		r.lastMessageInBroker.greater(r.pc.startMessageID.get().messageID)
 }
 
 func (r *reader) Close() {
@@ -181,29 +208,30 @@ func (r *reader) Close() {
 	r.metrics.ReadersClosed.Inc()
 }
 
-func (r *reader) messageID(msgID MessageID) (trackingMessageID, bool) {
-	mid, ok := toTrackingMessageID(msgID)
-	if !ok {
-		r.log.Warnf("invalid message id type %T", msgID)
-		return trackingMessageID{}, false
-	}
+func (r *reader) messageID(msgID MessageID) *trackingMessageID {
+	mid := toTrackingMessageID(msgID)
 
 	partition := int(mid.partitionIdx)
 	// did we receive a valid partition index?
 	if partition < 0 {
 		r.log.Warnf("invalid partition index %d expected", partition)
-		return trackingMessageID{}, false
+		return nil
 	}
 
-	return mid, true
+	return mid
 }
 
 func (r *reader) Seek(msgID MessageID) error {
 	r.Lock()
 	defer r.Unlock()
 
-	mid, ok := r.messageID(msgID)
-	if !ok {
+	if !checkMessageIDType(msgID) {
+		r.log.Warnf("invalid message id type %T", msgID)
+		return fmt.Errorf("invalid message id type %T", msgID)
+	}
+
+	mid := r.messageID(msgID)
+	if mid == nil {
 		return nil
 	}
 

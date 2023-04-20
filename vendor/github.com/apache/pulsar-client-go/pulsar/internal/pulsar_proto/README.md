@@ -1,13 +1,11 @@
+protoc-gen-go:
 
-
-```
-go get github.com/gogo/protobuf/protoc-gen-gogofast
-go get github.com/gogo/protobuf/proto
-go get github.com/gogo/protobuf/gogoproto
+```shell
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 ```
 
 Generate code: 
 
-```
-protoc -I=. -I=$GOPATH/src -I=$GOPATH/src/github.com/gogo/protobuf/protobuf --gogofast_out=. PulsarApi.proto
+```shell
+protoc --go_out=. --go_opt=paths=source_relative PulsarApi.proto
 ```

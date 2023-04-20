@@ -117,7 +117,7 @@ func (f *KeyringStore) WhoAmI(audience string) (string, error) {
 	defer f.lock.Unlock()
 
 	key := hashKeyringKey(audience)
-	authItem, err := f.kr.GetMetadata(key)
+	authItem, err := f.kr.Get(key)
 	if err != nil {
 		if err == keyring.ErrKeyNotFound {
 			return "", ErrNoAuthenticationData

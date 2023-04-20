@@ -17,7 +17,11 @@
 
 package pulsar
 
-import "fmt"
+import (
+	"fmt"
+
+	proto "github.com/apache/pulsar-client-go/pulsar/internal/pulsar_proto"
+)
 
 // Result used to represent pulsar processing is an alias of type int.
 type Result int
@@ -101,6 +105,15 @@ const (
 	SeekFailed
 	// ProducerClosed means producer already been closed
 	ProducerClosed
+	// SchemaFailure means the payload could not be encoded using the Schema
+	SchemaFailure
+	// InvalidStatus means the component status is not as expected.
+	InvalidStatus
+	// TransactionNoFoundError The transaction is not exist in the transaction coordinator, It may be an error txn
+	// or already ended.
+	TransactionNoFoundError
+	// ClientMemoryBufferIsFull client limit buffer is full
+	ClientMemoryBufferIsFull
 )
 
 // Error implement error interface, composed of two parts: msg and result.
@@ -205,7 +218,24 @@ func getResultStr(r Result) string {
 		return "SeekFailed"
 	case ProducerClosed:
 		return "ProducerClosed"
+	case SchemaFailure:
+		return "SchemaFailure"
+	case ClientMemoryBufferIsFull:
+		return "ClientMemoryBufferIsFull"
+	case TransactionNoFoundError:
+		return "TransactionNoFoundError"
 	default:
 		return fmt.Sprintf("Result(%d)", r)
+	}
+}
+
+func getErrorFromServerError(serverError *proto.ServerError) error {
+	switch *serverError {
+	case proto.ServerError_TransactionNotFound:
+		return newError(TransactionNoFoundError, serverError.String())
+	case proto.ServerError_InvalidTxnStatus:
+		return newError(InvalidStatus, serverError.String())
+	default:
+		return newError(UnknownError, serverError.String())
 	}
 }

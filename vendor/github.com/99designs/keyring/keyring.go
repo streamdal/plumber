@@ -1,6 +1,4 @@
-// Package keyring provides a uniform API over a range of desktop credential storage engines
-//
-// See project homepage at https://github.com/99designs/keyring for more background
+// Package keyring provides a uniform API over a range of desktop credential storage engines.
 package keyring
 
 import (
@@ -9,14 +7,15 @@ import (
 	"time"
 )
 
-// A BackendType is an identifier for a credential storage service
+// BackendType is an identifier for a credential storage service.
 type BackendType string
 
-// All currently supported secure storage backends
+// All currently supported secure storage backends.
 const (
 	InvalidBackend       BackendType = ""
 	SecretServiceBackend BackendType = "secret-service"
 	KeychainBackend      BackendType = "keychain"
+	KeyCtlBackend        BackendType = "keyctl"
 	KWalletBackend       BackendType = "kwallet"
 	WinCredBackend       BackendType = "wincred"
 	FileBackend          BackendType = "file"
@@ -33,6 +32,7 @@ var backendOrder = []BackendType{
 	// Linux
 	SecretServiceBackend,
 	KWalletBackend,
+	KeyCtlBackend,
 	// General
 	PassBackend,
 	FileBackend,
@@ -40,7 +40,7 @@ var backendOrder = []BackendType{
 
 var supportedBackends = map[BackendType]opener{}
 
-// AvailableBackends provides a slice of all available backend keys on the current OS
+// AvailableBackends provides a slice of all available backend keys on the current OS.
 func AvailableBackends() []BackendType {
 	b := []BackendType{}
 	for _, k := range backendOrder {
@@ -54,7 +54,7 @@ func AvailableBackends() []BackendType {
 
 type opener func(cfg Config) (Keyring, error)
 
-// Open will open a specific keyring backend
+// Open will open a specific keyring backend.
 func Open(cfg Config) (Keyring, error) {
 	if cfg.AllowedBackends == nil {
 		cfg.AllowedBackends = AvailableBackends()
@@ -73,7 +73,7 @@ func Open(cfg Config) (Keyring, error) {
 	return nil, ErrNoAvailImpl
 }
 
-// Item is a thing stored on the keyring
+// Item is a thing stored on the keyring.
 type Item struct {
 	Key         string
 	Data        []byte
@@ -95,7 +95,7 @@ type Metadata struct {
 	ModificationTime time.Time
 }
 
-// Keyring provides the uniform interface over the underlying backends
+// Keyring provides the uniform interface over the underlying backends.
 type Keyring interface {
 	// Returns an Item matching the key or ErrKeyNotFound
 	Get(key string) (Item, error)
@@ -109,18 +109,21 @@ type Keyring interface {
 	Keys() ([]string, error)
 }
 
-// ErrNoAvailImpl is returned by Open when a backend cannot be found
+// ErrNoAvailImpl is returned by Open when a backend cannot be found.
 var ErrNoAvailImpl = errors.New("Specified keyring backend not available")
 
-// ErrKeyNotFound is returned by Keyring Get when the item is not on the keyring
+// ErrKeyNotFound is returned by Keyring Get when the item is not on the keyring.
 var ErrKeyNotFound = errors.New("The specified item could not be found in the keyring")
 
 // ErrMetadataNeedsCredentials is returned when Metadata is called against a
 // backend which requires credentials even to see metadata.
 var ErrMetadataNeedsCredentials = errors.New("The keyring backend requires credentials for metadata access")
 
+// ErrMetadataNotSupported is returned when Metadata is not available for the backend.
+var ErrMetadataNotSupported = errors.New("The keyring backend does not support metadata access")
+
 var (
-	// Debug specifies whether to print debugging output
+	// Debug specifies whether to print debugging output.
 	Debug bool
 )
 

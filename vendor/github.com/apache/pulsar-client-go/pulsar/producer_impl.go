@@ -19,11 +19,13 @@ package pulsar
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"sync/atomic"
 	"time"
 	"unsafe"
 
+	"github.com/apache/pulsar-client-go/pulsar/crypto"
 	"github.com/apache/pulsar-client-go/pulsar/internal"
 	"github.com/apache/pulsar-client-go/pulsar/log"
 )
@@ -92,6 +94,10 @@ func newProducer(client *client, options *ProducerOptions) (*producer, error) {
 		options.PartitionsAutoDiscoveryInterval = defaultPartitionsAutoDiscoveryInterval
 	}
 
+	if !options.DisableBatching && options.EnableChunking {
+		return nil, fmt.Errorf("batching and chunking can not be enabled together")
+	}
+
 	p := &producer{
 		options: options,
 		topic:   options.Topic,
@@ -121,6 +127,25 @@ func newProducer(client *client, options *ProducerOptions) (*producer, error) {
 	if options.Schema != nil && options.Schema.GetSchemaInfo() != nil {
 		if options.Schema.GetSchemaInfo().Type == NONE {
 			options.Schema = NewBytesSchema(nil)
+		}
+	}
+
+	encryption := options.Encryption
+	// add default message crypto if not provided
+	if encryption != nil && len(encryption.Keys) > 0 {
+		if encryption.KeyReader == nil {
+			return nil, fmt.Errorf("encryption is enabled, KeyReader can not be nil")
+		}
+
+		if encryption.MessageCrypto == nil {
+			logCtx := fmt.Sprintf("[%v] [%v]", p.topic, p.options.Name)
+			messageCrypto, err := crypto.NewDefaultMessageCrypto(logCtx,
+				true,
+				client.log.SubLogger(log.Fields{"topic": p.topic}))
+			if err != nil {
+				return nil, fmt.Errorf("unable to get MessageCrypto instance. Producer creation is abandoned. %v", err)
+			}
+			p.options.Encryption.MessageCrypto = messageCrypto
 		}
 	}
 

@@ -20,6 +20,8 @@ package pulsar
 import (
 	"context"
 	"time"
+
+	"github.com/apache/pulsar-client-go/pulsar/internal"
 )
 
 type HashingScheme int
@@ -46,25 +48,39 @@ const (
 	// Default compression level
 	Default CompressionLevel = iota
 
-	// Faster compression, with lower compression ration
+	// Faster compression, with lower compression ratio
 	Faster
 
 	// Higher compression rate, but slower
 	Better
 )
 
-// TopicMetadata is a interface of topic metadata
+type ProducerAccessMode int
+
+const (
+	// ProducerAccessModeShared is default multiple producers can publish on a topic.
+	ProducerAccessModeShared ProducerAccessMode = iota
+
+	// ProducerAccessModeExclusive is required exclusive access for producer.
+	// Fail immediately if there's already a producer connected.
+	ProducerAccessModeExclusive
+
+	// ProducerAccessModeWaitForExclusive is pending until producer can acquire exclusive access.
+	ProducerAccessModeWaitForExclusive
+)
+
+// TopicMetadata represents a topic metadata.
 type TopicMetadata interface {
-	// NumPartitions get the number of partitions for the specific topic
+	// NumPartitions returns the number of partitions for a particular topic.
 	NumPartitions() uint32
 }
 
 type ProducerOptions struct {
-	// Topic specify the topic this producer will be publishing on.
+	// Topic specifies the topic this producer will be publishing on.
 	// This argument is required when constructing the producer.
 	Topic string
 
-	// Name specify a name for the producer
+	// Name specifies a name for the producer.
 	// If not assigned, the system will generate a globally unique name which can be access with
 	// Producer.ProducerName().
 	// When specifying a name, it is up to the user to ensure that, for a given topic, the producer name is unique
@@ -72,24 +88,24 @@ type ProducerOptions struct {
 	// a topic.
 	Name string
 
-	// Properties attach a set of application defined properties to the producer
+	// Properties specifies a set of application defined properties for the producer.
 	// This properties will be visible in the topic stats
 	Properties map[string]string
 
-	// SendTimeout set the timeout for a message that not be acknowledged by server since sent.
+	// SendTimeout specifies the timeout for a message that has not been acknowledged by the server since sent.
 	// Send and SendAsync returns an error after timeout.
 	// Default is 30 seconds, negative such as -1 to disable.
 	SendTimeout time.Duration
 
-	// DisableBlockIfQueueFull control whether Send and SendAsync block if producer's message queue is full.
+	// DisableBlockIfQueueFull controls whether Send and SendAsync block if producer's message queue is full.
 	// Default is false, if set to true then Send and SendAsync return error when queue is full.
 	DisableBlockIfQueueFull bool
 
-	// MaxPendingMessages set the max size of the queue holding the messages pending to receive an
+	// MaxPendingMessages specifies the max size of the queue holding the messages pending to receive an
 	// acknowledgment from the broker.
 	MaxPendingMessages int
 
-	// HashingScheme change the `HashingScheme` used to chose the partition on where to publish a particular message.
+	// HashingScheme is used to define the partition on where to publish a particular message.
 	// Standard hashing functions available are:
 	//
 	//  - `JavaStringHash` : Java String.hashCode() equivalent
@@ -99,7 +115,7 @@ type ProducerOptions struct {
 	// Default is `JavaStringHash`.
 	HashingScheme
 
-	// CompressionType set the compression type for the producer.
+	// CompressionType specifies the compression type for the producer.
 	// By default, message payloads are not compressed. Supported compression types are:
 	//  - LZ4
 	//  - ZLIB
@@ -109,18 +125,18 @@ type ProducerOptions struct {
 	// release in order to be able to receive messages compressed with ZSTD.
 	CompressionType
 
-	// Define the desired compression level. Options:
+	// CompressionLevel defines the desired compression level. Options:
 	// - Default
 	// - Faster
 	// - Better
 	CompressionLevel
 
-	// MessageRouter set a custom message routing policy by passing an implementation of MessageRouter
+	// MessageRouter represents a custom message routing policy by passing an implementation of MessageRouter
 	// The router is a function that given a particular message and the topic metadata, returns the
 	// partition index where the message should be routed to
 	MessageRouter func(*ProducerMessage, TopicMetadata) int
 
-	// DisableBatching control whether automatic batching of messages is enabled for the producer. By default batching
+	// DisableBatching controls whether automatic batching of messages is enabled for the producer. By default batching
 	// is enabled.
 	// When batching is enabled, multiple calls to Producer.sendAsync can result in a single batch to be sent to the
 	// broker, leading to better throughput, especially when publishing small messages. If compression is enabled,
@@ -130,28 +146,34 @@ type ProducerOptions struct {
 	// Setting `DisableBatching: true` will make the producer to send messages individually
 	DisableBatching bool
 
-	// BatchingMaxPublishDelay set the time period within which the messages sent will be batched (default: 10ms)
+	// BatchingMaxPublishDelay specifies the time period within which the messages sent will be batched (default: 10ms)
 	// if batch messages are enabled. If set to a non zero value, messages will be queued until this time
 	// interval or until
 	BatchingMaxPublishDelay time.Duration
 
-	// BatchingMaxMessages set the maximum number of messages permitted in a batch. (default: 1000)
+	// BatchingMaxMessages specifies the maximum number of messages permitted in a batch. (default: 1000)
 	// If set to a value greater than 1, messages will be queued until this threshold is reached or
 	// BatchingMaxSize (see below) has been reached or the batch interval has elapsed.
 	BatchingMaxMessages uint
 
-	// BatchingMaxSize sets the maximum number of bytes permitted in a batch. (default 128 KB)
+	// BatchingMaxSize specifies the maximum number of bytes permitted in a batch. (default 128 KB)
 	// If set to a value greater than 1, messages will be queued until this threshold is reached or
 	// BatchingMaxMessages (see above) has been reached or the batch interval has elapsed.
 	BatchingMaxSize uint
 
-	// A chain of interceptors, These interceptors will be called at some points defined in ProducerInterceptor interface
+	// Interceptors is a chain of interceptors, These interceptors will be called at some points defined
+	// in ProducerInterceptor interface
 	Interceptors ProducerInterceptors
 
+	// Schema represents the schema implementation.
 	Schema Schema
 
-	// MaxReconnectToBroker set the maximum retry number of reconnectToBroker. (default: ultimate)
+	// MaxReconnectToBroker specifies the maximum retry number of reconnectToBroker. (default: ultimate)
 	MaxReconnectToBroker *uint
+
+	// BackoffPolicy parameterize the following options in the reconnection logic to
+	// allow users to customize the reconnection logic (minBackoff, maxBackoff and jitterPercentage)
+	BackoffPolicy internal.BackoffPolicy
 
 	// BatcherBuilderType sets the batch builder type (default DefaultBatchBuilder)
 	// This will be used to create batch container when batching is enabled.
@@ -164,8 +186,27 @@ type ProducerOptions struct {
 	// Default is 1 minute
 	PartitionsAutoDiscoveryInterval time.Duration
 
-	// Encryption necessary fields to perform encryption of message
+	// Disable multiple Schame Version
+	// Default false
+	DisableMultiSchema bool
+
+	// Encryption specifies the fields required to encrypt a message
 	Encryption *ProducerEncryptionInfo
+
+	// EnableChunking controls whether automatic chunking of messages is enabled for the producer. By default, chunking
+	// is disabled.
+	// Chunking can not be enabled when batching is enabled.
+	EnableChunking bool
+
+	// ChunkMaxMessageSize is the max size of single chunk payload.
+	// It will actually only take effect if it is smaller than the maxMessageSize from the broker.
+	ChunkMaxMessageSize uint
+
+	// The type of access to the topic that the producer requires. (default ProducerAccessModeShared)
+	// Options:
+	// - ProducerAccessModeShared
+	// - ProducerAccessModeExclusive
+	ProducerAccessMode
 }
 
 // Producer is used to publish messages on a topic

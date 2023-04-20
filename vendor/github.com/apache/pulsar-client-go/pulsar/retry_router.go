@@ -35,6 +35,7 @@ const (
 	SysPropertyRetryTopic      = "RETRY_TOPIC"
 	SysPropertyReconsumeTimes  = "RECONSUMETIMES"
 	SysPropertyOriginMessageID = "ORIGIN_MESSAGE_IDY_TIME"
+	PropertyOriginMessageID    = "ORIGIN_MESSAGE_ID"
 )
 
 type RetryMessage struct {
@@ -123,13 +124,17 @@ func (r *retryRouter) getProducer() Producer {
 	}
 
 	// Retry to create producer indefinitely
-	backoff := &internal.Backoff{}
+	backoff := &internal.DefaultBackoff{}
 	for {
-		producer, err := r.client.CreateProducer(ProducerOptions{
-			Topic:                   r.policy.RetryLetterTopic,
-			CompressionType:         LZ4,
-			BatchingMaxPublishDelay: 100 * time.Millisecond,
-		})
+		opt := r.policy.ProducerOptions
+		opt.Topic = r.policy.RetryLetterTopic
+		// the origin code sets to LZ4 compression with no options
+		// so the new design allows compression type to be overwritten but still set lz4 by default
+		if r.policy.ProducerOptions.CompressionType == NoCompression {
+			opt.CompressionType = LZ4
+		}
+
+		producer, err := r.client.CreateProducer(opt)
 
 		if err != nil {
 			r.log.WithError(err).Error("Failed to create RLQ producer")

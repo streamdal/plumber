@@ -1,3 +1,6 @@
+//go:build !windows
+// +build !windows
+
 package keyring
 
 import (
@@ -12,20 +15,37 @@ import (
 
 func init() {
 	supportedBackends[PassBackend] = opener(func(cfg Config) (Keyring, error) {
+		var err error
+
 		pass := &passKeyring{
 			passcmd: cfg.PassCmd,
 			dir:     cfg.PassDir,
 			prefix:  cfg.PassPrefix,
 		}
-		if cfg.PassCmd == "" {
+
+		if pass.passcmd == "" {
 			pass.passcmd = "pass"
 		}
-		if cfg.PassDir == "" {
-			pass.dir = filepath.Join(os.Getenv("HOME"), ".password-store")
+
+		if pass.dir == "" {
+			if passDir, found := os.LookupEnv("PASSWORD_STORE_DIR"); found {
+				pass.dir = passDir
+			} else {
+				homeDir, err := os.UserHomeDir()
+				if err != nil {
+					return nil, err
+				}
+				pass.dir = filepath.Join(homeDir, ".password-store")
+			}
+		}
+
+		pass.dir, err = ExpandTilde(pass.dir)
+		if err != nil {
+			return nil, err
 		}
 
 		// fail if the pass program is not available
-		_, err := exec.LookPath(pass.passcmd)
+		_, err = exec.LookPath(pass.passcmd)
 		if err != nil {
 			return nil, errors.New("The pass program is not available")
 		}
@@ -40,14 +60,14 @@ type passKeyring struct {
 	prefix  string
 }
 
-func (k *passKeyring) pass(args ...string) (*exec.Cmd, error) {
+func (k *passKeyring) pass(args ...string) *exec.Cmd {
 	cmd := exec.Command(k.passcmd, args...)
 	if k.dir != "" {
 		cmd.Env = append(os.Environ(), fmt.Sprintf("PASSWORD_STORE_DIR=%s", k.dir))
 	}
 	cmd.Stderr = os.Stderr
 
-	return cmd, nil
+	return cmd
 }
 
 func (k *passKeyring) Get(key string) (Item, error) {
@@ -56,11 +76,7 @@ func (k *passKeyring) Get(key string) (Item, error) {
 	}
 
 	name := filepath.Join(k.prefix, key)
-	cmd, err := k.pass("show", name)
-	if err != nil {
-		return Item{}, err
-	}
-
+	cmd := k.pass("show", name)
 	output, err := cmd.Output()
 	if err != nil {
 		return Item{}, err
@@ -83,11 +99,7 @@ func (k *passKeyring) Set(i Item) error {
 	}
 
 	name := filepath.Join(k.prefix, i.Key)
-	cmd, err := k.pass("insert", "-m", "-f", name)
-	if err != nil {
-		return err
-	}
-
+	cmd := k.pass("insert", "-m", "-f", name)
 	cmd.Stdin = strings.NewReader(string(bytes))
 
 	err = cmd.Run()
@@ -104,12 +116,8 @@ func (k *passKeyring) Remove(key string) error {
 	}
 
 	name := filepath.Join(k.prefix, key)
-	cmd, err := k.pass("rm", "-f", name)
-	if err != nil {
-		return err
-	}
-
-	err = cmd.Run()
+	cmd := k.pass("rm", "-f", name)
+	err := cmd.Run()
 	if err != nil {
 		return err
 	}
@@ -120,10 +128,8 @@ func (k *passKeyring) Remove(key string) error {
 func (k *passKeyring) itemExists(key string) bool {
 	var path = filepath.Join(k.dir, k.prefix, key+".gpg")
 	_, err := os.Stat(path)
-	if err != nil {
-		return false
-	}
-	return true
+
+	return err == nil
 }
 
 func (k *passKeyring) Keys() ([]string, error) {

@@ -26,20 +26,25 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-// Backoff computes the delay before retrying an action.
+// BackoffPolicy parameterize the following options in the reconnection logic to
+// allow users to customize the reconnection logic (minBackoff, maxBackoff and jitterPercentage)
+type BackoffPolicy interface {
+	Next() time.Duration
+}
+
+// DefaultBackoff computes the delay before retrying an action.
 // It uses an exponential backoff with jitter. The jitter represents up to 20 percents of the delay.
-type Backoff struct {
+type DefaultBackoff struct {
 	backoff time.Duration
 }
 
-const (
-	minBackoff       = 100 * time.Millisecond
-	maxBackoff       = 60 * time.Second
-	jitterPercentage = 0.2
-)
+const maxBackoff = 60 * time.Second
 
 // Next returns the delay to wait before next retry
-func (b *Backoff) Next() time.Duration {
+func (b *DefaultBackoff) Next() time.Duration {
+	minBackoff := 100 * time.Millisecond
+	jitterPercentage := 0.2
+
 	// Double the delay each time
 	b.backoff += b.backoff
 	if b.backoff.Nanoseconds() < minBackoff.Nanoseconds() {
@@ -50,4 +55,9 @@ func (b *Backoff) Next() time.Duration {
 	jitter := rand.Float64() * float64(b.backoff) * jitterPercentage
 
 	return b.backoff + time.Duration(jitter)
+}
+
+// IsMaxBackoffReached evaluates if the max number of retries is reached
+func (b *DefaultBackoff) IsMaxBackoffReached() bool {
+	return b.backoff >= maxBackoff
 }

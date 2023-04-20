@@ -1,12 +1,17 @@
+//go:build windows
 // +build windows
 
 package keyring
 
 import (
 	"strings"
+	"syscall"
 
 	"github.com/danieljoos/wincred"
 )
+
+// ERROR_NOT_FOUND from https://docs.microsoft.com/en-us/windows/win32/debug/system-error-codes--1000-1299-
+const elementNotFoundError = syscall.Errno(1168)
 
 type windowsKeyring struct {
 	name   string
@@ -35,7 +40,7 @@ func init() {
 func (k *windowsKeyring) Get(key string) (Item, error) {
 	cred, err := wincred.GetGenericCredential(k.credentialName(key))
 	if err != nil {
-		if err.Error() == "Element not found." {
+		if err == elementNotFoundError {
 			return Item{}, ErrKeyNotFound
 		}
 		return Item{}, err
@@ -53,7 +58,7 @@ func (k *windowsKeyring) Get(key string) (Item, error) {
 // for this backend.
 // TODO: This is a stub. Look into whether pass would support metadata in a usable way for keyring.
 func (k *windowsKeyring) GetMetadata(_ string) (Metadata, error) {
-	return Metadata{}, ErrMetadataNeedsCredentials
+	return Metadata{}, ErrMetadataNotSupported
 }
 
 func (k *windowsKeyring) Set(item Item) error {
@@ -65,7 +70,7 @@ func (k *windowsKeyring) Set(item Item) error {
 func (k *windowsKeyring) Remove(key string) error {
 	cred, err := wincred.GetGenericCredential(k.credentialName(key))
 	if err != nil {
-		if err.Error() == "Element not found." {
+		if err == elementNotFoundError {
 			return ErrKeyNotFound
 		}
 		return err

@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"mime"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -71,6 +72,7 @@ type ClientCredentialsExchangeRequest struct {
 	ClientID      string
 	ClientSecret  string
 	Audience      string
+	Scopes        []string
 }
 
 // DeviceCodeExchangeRequest is used to request the exchange of
@@ -195,7 +197,13 @@ func (ce *TokenRetriever) newClientCredentialsRequest(req ClientCredentialsExcha
 	uv.Set("grant_type", "client_credentials")
 	uv.Set("client_id", req.ClientID)
 	uv.Set("client_secret", req.ClientSecret)
-	uv.Set("audience", req.Audience)
+	if len(req.Scopes) > 0 {
+		uv.Set("scope", strings.Join(req.Scopes, " "))
+	}
+	if req.Audience != "" {
+		// Audience is an Auth0 extension; other providers use scopes to similar effect.
+		uv.Set("audience", req.Audience)
+	}
 
 	euv := uv.Encode()
 
@@ -235,9 +243,16 @@ func (ce *TokenRetriever) handleAuthTokensResponse(resp *http.Response) (*TokenR
 	if resp.Body != nil {
 		defer resp.Body.Close()
 	}
-
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		if resp.Header.Get("Content-Type") == "application/json" {
+		cth := resp.Header.Get("Content-Type")
+		if cth == "" {
+			cth = "application/json"
+		}
+		ct, _, err := mime.ParseMediaType(cth)
+		if err != nil {
+			return nil, fmt.Errorf("unprocessable content type: %s: %w", cth, err)
+		}
+		if ct == "application/json" {
 			er := TokenErrorResponse{}
 			err := json.NewDecoder(resp.Body).Decode(&er)
 			if err != nil {
