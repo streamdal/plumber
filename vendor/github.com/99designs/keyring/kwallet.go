@@ -1,3 +1,4 @@
+//go:build linux
 // +build linux
 
 package keyring
@@ -15,7 +16,6 @@ const (
 )
 
 func init() {
-
 	if os.Getenv("DISABLE_KWALLET") == "1" {
 		return
 	}
@@ -89,6 +89,9 @@ func (k *kwalletKeyring) Get(key string) (Item, error) {
 	data, err := k.wallet.ReadEntry(k.handle, k.folder, key, k.appID)
 	if err != nil {
 		return Item{}, err
+	}
+	if len(data) == 0 {
+		return Item{}, ErrKeyNotFound
 	}
 
 	item := Item{}
@@ -168,7 +171,7 @@ func newKwallet() (*kwalletBinding, error) {
 	}, nil
 }
 
-// Dumb Dbus bindings for kwallet bindings with types
+// Dumb Dbus bindings for kwallet bindings with types.
 type kwalletBinding struct {
 	dbus dbus.BusObject
 }

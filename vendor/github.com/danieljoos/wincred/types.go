@@ -6,7 +6,7 @@ import (
 
 // CredentialPersistence describes one of three persistence modes of a credential.
 // A detailed description of the available modes can be found on
-// MSDN: https://msdn.microsoft.com/en-us/library/windows/desktop/aa374788(v=vs.85).aspx
+// Docs: https://docs.microsoft.com/en-us/windows/desktop/api/wincred/ns-wincred-_credentialw
 type CredentialPersistence uint32
 
 const (
@@ -52,8 +52,8 @@ type Credential struct {
 // secrets.
 //
 // More information about the available kinds of credentials of the Windows
-// Credential Management API can be found on MSDN:
-// https://msdn.microsoft.com/en-us/library/windows/desktop/aa380517(v=vs.85).aspx
+// Credential Management API can be found on Docs:
+// https://docs.microsoft.com/en-us/windows/desktop/SecAuthN/kinds-of-credentials
 type GenericCredential struct {
 	Credential
 }
@@ -62,8 +62,8 @@ type GenericCredential struct {
 // operating system for user logon.
 //
 // More information about the available kinds of credentials of the Windows
-// Credential Management API can be found on MSDN:
-// https://msdn.microsoft.com/en-us/library/windows/desktop/aa380517(v=vs.85).aspx
+// Credential Management API can be found on Docs:
+// https://docs.microsoft.com/en-us/windows/desktop/SecAuthN/kinds-of-credentials
 type DomainPassword struct {
 	Credential
 }

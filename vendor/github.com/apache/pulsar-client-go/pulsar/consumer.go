@@ -20,9 +20,11 @@ package pulsar
 import (
 	"context"
 	"time"
+
+	"github.com/apache/pulsar-client-go/pulsar/internal"
 )
 
-// Pair of a Consumer and Message
+// ConsumerMessage represents a pair of a Consumer and Message.
 type ConsumerMessage struct {
 	Consumer
 	Message
@@ -53,111 +55,193 @@ const (
 type SubscriptionInitialPosition int
 
 const (
-	// Latest position which means the start consuming position will be the last message
+	// SubscriptionPositionLatest is the latest position which means the start consuming position
+	// will be the last message
 	SubscriptionPositionLatest SubscriptionInitialPosition = iota
 
-	// Earliest position which means the start consuming position will be the first message
+	// SubscriptionPositionEarliest is the earliest position which means the start consuming position
+	// will be the first message
 	SubscriptionPositionEarliest
 )
 
-// Configuration for Dead Letter Queue consumer policy
+// DLQPolicy represents the configuration for the Dead Letter Queue consumer policy.
 type DLQPolicy struct {
-	// Maximum number of times that a message will be delivered before being sent to the dead letter queue.
+	// MaxDeliveries specifies the maximum number of times that a message will be delivered before being
+	// sent to the dead letter queue.
 	MaxDeliveries uint32
 
-	// Name of the topic where the failing messages will be sent.
+	// DeadLetterTopic specifies the name of the topic where the failing messages will be sent.
 	DeadLetterTopic string
 
-	// Name of the topic where the retry messages will be sent.
+	// ProducerOptions is the producer options to produce messages to the DLQ and RLQ topic
+	ProducerOptions ProducerOptions
+
+	// RetryLetterTopic specifies the name of the topic where the retry messages will be sent.
 	RetryLetterTopic string
 }
 
-// ConsumerOptions is used to configure and create instances of Consumer
+// AckGroupingOptions controls how to group ACK requests
+// If maxSize is 0 or 1, any ACK request will be sent immediately.
+// Otherwise, the ACK requests will be cached until one of the following conditions meets:
+// 1. There are `MaxSize` pending ACK requests.
+// 2. `MaxTime` is greater than 1 microsecond and ACK requests have been cached for `maxTime`.
+// Specially, for cumulative acknowledgment, only the latest ACK is cached and it will only be sent after `MaxTime`.
+type AckGroupingOptions struct {
+	// The maximum number of ACK requests to cache
+	MaxSize uint32
+
+	// The maximum time to cache ACK requests
+	MaxTime time.Duration
+}
+
+// ConsumerOptions is used to configure and create instances of Consumer.
 type ConsumerOptions struct {
-	// Specify the topic this consumer will subscribe on.
+	// Topic specifies the topic this consumer will subscribe on.
 	// Either a topic, a list of topics or a topics pattern are required when subscribing
 	Topic string
 
-	// Specify a list of topics this consumer will subscribe on.
+	// Topics specifies a list of topics this consumer will subscribe on.
 	// Either a topic, a list of topics or a topics pattern are required when subscribing
 	Topics []string
 
-	// Specify a regular expression to subscribe to multiple topics under the same namespace.
+	// TopicsPattern specifies a regular expression to subscribe to multiple topics under the same namespace.
 	// Either a topic, a list of topics or a topics pattern are required when subscribing
 	TopicsPattern string
 
-	// Specify the interval in which to poll for new partitions or new topics if using a TopicsPattern.
+	// AutoDiscoveryPeriod specifies the interval in which to poll for new partitions or new topics
+	// if using a TopicsPattern.
 	AutoDiscoveryPeriod time.Duration
 
-	// Specify the subscription name for this consumer
+	// SubscriptionName specifies the subscription name for this consumer
 	// This argument is required when subscribing
 	SubscriptionName string
 
-	// Attach a set of application defined properties to the consumer
-	// This properties will be visible in the topic stats
+	// Properties represents a set of application defined properties for the consumer.
+	// Those properties will be visible in the topic stats
 	Properties map[string]string
 
-	// Select the subscription type to be used when subscribing to the topic.
+	// SubscriptionProperties specify the subscription properties for this subscription.
+	//
+	// > Notice: SubscriptionProperties are immutable, and consumers under the same subscription will fail to create a
+	// > subscription if they use different properties.
+	SubscriptionProperties map[string]string
+
+	// Type specifies the subscription type to be used when subscribing to a topic.
 	// Default is `Exclusive`
 	Type SubscriptionType
 
-	// InitialPosition at which the cursor will be set when subscribe
+	// SubscriptionInitialPosition is the initial position at which the cursor will be set when subscribe
 	// Default is `Latest`
 	SubscriptionInitialPosition
 
-	// Configuration for Dead Letter Queue consumer policy.
+	// EventListener will be called when active consumer changed (in failover subscription type)
+	EventListener ConsumerEventListener
+
+	// DLQ represents the configuration for Dead Letter Queue consumer policy.
 	// eg. route the message to topic X after N failed attempts at processing it
 	// By default is nil and there's no DLQ
 	DLQ *DLQPolicy
 
-	// Configuration for Key Shared consumer policy.
+	// KeySharedPolicy represents the configuration for Key Shared consumer policy.
 	KeySharedPolicy *KeySharedPolicy
 
-	// Auto retry send messages to default filled DLQPolicy topics
+	// RetryEnable determines whether to automatically retry sending messages to default filled DLQPolicy topics.
 	// Default is false
 	RetryEnable bool
 
-	// Sets a `MessageChannel` for the consumer
+	// MessageChannel sets a `MessageChannel` for the consumer
 	// When a message is received, it will be pushed to the channel for consumption
 	MessageChannel chan ConsumerMessage
 
-	// Sets the size of the consumer receive queue.
+	// ReceiverQueueSize sets the size of the consumer receive queue.
 	// The consumer receive queue controls how many messages can be accumulated by the `Consumer` before the
 	// application calls `Consumer.receive()`. Using a higher value could potentially increase the consumer
 	// throughput at the expense of bigger memory utilization.
 	// Default value is `1000` messages and should be good for most use cases.
 	ReceiverQueueSize int
 
-	// The delay after which to redeliver the messages that failed to be
-	// processed. Default is 1min. (See `Consumer.Nack()`)
+	// EnableAutoScaledReceiverQueueSize, if enabled, the consumer receive queue will be auto-scaled
+	// by the consumer actual throughput. The ReceiverQueueSize will be the maximum size which consumer
+	// receive queue can be scaled.
+	// Default is false.
+	EnableAutoScaledReceiverQueueSize bool
+
+	// NackRedeliveryDelay specifies the delay after which to redeliver the messages that failed to be
+	// processed. Default is 1 min. (See `Consumer.Nack()`)
 	NackRedeliveryDelay time.Duration
 
-	// Set the consumer name.
+	// Name specifies the consumer name.
 	Name string
 
-	// If enabled, the consumer will read messages from the compacted topic rather than reading the full message backlog
-	// of the topic. This means that, if the topic has been compacted, the consumer will only see the latest value for
-	// each key in the topic, up until the point in the topic message backlog that has been compacted. Beyond that
-	// point, the messages will be sent as normal.
+	// ReadCompacted, if enabled, the consumer will read messages from the compacted topic rather than reading the
+	// full message backlog of the topic. This means that, if the topic has been compacted, the consumer will only
+	// see the latest value for each key in the topic, up until the point in the topic message backlog that has been
+	// compacted. Beyond that point, the messages will be sent as normal.
 	//
 	// ReadCompacted can only be enabled subscriptions to persistent topics, which have a single active consumer (i.e.
 	//  failure or exclusive subscriptions). Attempting to enable it on subscriptions to a non-persistent topics or on a
 	//  shared subscription, will lead to the subscription call throwing a PulsarClientException.
 	ReadCompacted bool
 
-	// Mark the subscription as replicated to keep it in sync across clusters
+	// ReplicateSubscriptionState marks the subscription as replicated to keep it in sync across clusters
 	ReplicateSubscriptionState bool
 
-	// A chain of interceptors, These interceptors will be called at some points defined in ConsumerInterceptor interface.
+	// Interceptors is a chain of interceptors. These interceptors will be called at some points defined in
+	// ConsumerInterceptor interface.
 	Interceptors ConsumerInterceptors
 
+	// Schema represents the schema implementation.
 	Schema Schema
 
-	// MaxReconnectToBroker set the maximum retry number of reconnectToBroker. (default: ultimate)
+	// MaxReconnectToBroker sets the maximum retry number of reconnectToBroker. (default: ultimate)
 	MaxReconnectToBroker *uint
 
-	// Decryption decryption related fields to decrypt the encrypted message
+	// BackoffPolicy parameterize the following options in the reconnection logic to
+	// allow users to customize the reconnection logic (minBackoff, maxBackoff and jitterPercentage)
+	BackoffPolicy internal.BackoffPolicy
+
+	// Decryption represents the encryption related fields required by the consumer to decrypt a message.
 	Decryption *MessageDecryptionInfo
+
+	// EnableDefaultNackBackoffPolicy, if enabled, the default implementation of NackBackoffPolicy will be used
+	// to calculate the delay time of
+	// nack backoff, Default: false.
+	EnableDefaultNackBackoffPolicy bool
+
+	// NackBackoffPolicy is a redelivery backoff mechanism which we can achieve redelivery with different
+	// delays according to the number of times the message is retried.
+	//
+	// > Notice: the NackBackoffPolicy will not work with `consumer.NackID(MessageID)`
+	// > because we are not able to get the redeliveryCount from the message ID.
+	NackBackoffPolicy NackBackoffPolicy
+
+	// AckWithResponse is a return value added to Ack Command, and its purpose is to confirm whether Ack Command
+	// is executed correctly on the Broker side. When set to true, the error information returned by the Ack
+	// method contains the return value of the Ack Command processed by the Broker side; when set to false, the
+	// error information of the Ack method only contains errors that may occur in the Go SDK's own processing.
+	// Default: false
+	AckWithResponse bool
+
+	// MaxPendingChunkedMessage sets the maximum pending chunked messages. (default: 100)
+	MaxPendingChunkedMessage int
+
+	// ExpireTimeOfIncompleteChunk sets the expiry time of discarding incomplete chunked message. (default: 60 seconds)
+	ExpireTimeOfIncompleteChunk time.Duration
+
+	// AutoAckIncompleteChunk sets whether consumer auto acknowledges incomplete chunked message when it should
+	// be removed (e.g.the chunked message pending queue is full). (default: false)
+	AutoAckIncompleteChunk bool
+
+	// Enable or disable batch index acknowledgment. To enable this feature, ensure batch index acknowledgment
+	// is enabled on the broker side. (default: false)
+	EnableBatchIndexAcknowledgment bool
+
+	// Controls how to group ACK requests, the default value is nil, which means:
+	// MaxSize: 1000
+	// MaxTime: 100*time.Millisecond
+	// NOTE: This option does not work if AckWithResponse is true
+	//	because there are only synchronous APIs for acknowledgment
+	AckGroupingOptions *AckGroupingOptions
 }
 
 // Consumer is an interface that abstracts behavior of Pulsar's consumer
@@ -176,24 +260,35 @@ type Consumer interface {
 	Chan() <-chan ConsumerMessage
 
 	// Ack the consumption of a single message
-	Ack(Message)
+	Ack(Message) error
 
 	// AckID the consumption of a single message, identified by its MessageID
-	AckID(MessageID)
+	AckID(MessageID) error
+
+	// AckCumulative the reception of all the messages in the stream up to (and including)
+	// the provided message.
+	AckCumulative(msg Message) error
+
+	// AckIDCumulative the reception of all the messages in the stream up to (and including)
+	// the provided message, identified by its MessageID
+	AckIDCumulative(msgID MessageID) error
 
 	// ReconsumeLater mark a message for redelivery after custom delay
 	ReconsumeLater(msg Message, delay time.Duration)
 
-	// Acknowledge the failure to process a single message.
+	// ReconsumeLaterWithCustomProperties mark a message for redelivery after custom delay with custom properties
+	ReconsumeLaterWithCustomProperties(msg Message, customProperties map[string]string, delay time.Duration)
+
+	// Nack acknowledges the failure to process a single message.
 	//
 	// When a message is "negatively acked" it will be marked for redelivery after
 	// some fixed delay. The delay is configurable when constructing the consumer
-	// with ConsumerOptions.NAckRedeliveryDelay .
+	// with ConsumerOptions.NackRedeliveryDelay .
 	//
 	// This call is not blocking.
 	Nack(Message)
 
-	// Acknowledge the failure to process a single message.
+	// NackID acknowledges the failure to process a single message.
 	//
 	// When a message is "negatively acked" it will be marked for redelivery after
 	// some fixed delay. The delay is configurable when constructing the consumer
@@ -205,20 +300,17 @@ type Consumer interface {
 	// Close the consumer and stop the broker to push more messages
 	Close()
 
-	// Reset the subscription associated with this consumer to a specific message id.
+	// Seek resets the subscription associated with this consumer to a specific message id.
 	// The message id can either be a specific message or represent the first or last messages in the topic.
 	//
 	// Note: this operation can only be done on non-partitioned topics. For these, one can rather perform the
 	//       seek() on the individual partitions.
 	Seek(MessageID) error
 
-	// Reset the subscription associated with this consumer to a specific message publish time.
+	// SeekByTime resets the subscription associated with this consumer to a specific message publish time.
 	//
-	// Note: this operation can only be done on non-partitioned topics. For these, one can rather perform the seek() on
-	// the individual partitions.
-	//
-	// @param timestamp
-	//            the message publish time where to reposition the subscription
+	// @param time
+	//            the message publish time when to reposition the subscription
 	//
 	SeekByTime(time time.Time) error
 

@@ -22,12 +22,14 @@ import (
 	"time"
 
 	"github.com/apache/pulsar-client-go/oauth2/clock"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 	"golang.org/x/oauth2"
 )
 
 const (
 	ClaimNameUserName = "https://pulsar.apache.org/username"
+	ClaimNameName     = "name"
+	ClaimNameSubject  = "sub"
 )
 
 // Flow abstracts an OAuth 2.0 authentication and authorization flow
@@ -74,6 +76,10 @@ type AuthorizationGrant struct {
 	// Token contains an access token in the client credentials grant type,
 	// and a refresh token in the device authorization grant type
 	Token *oauth2.Token `json:"token,omitempty"`
+
+	// Scopes contains the scopes associated with the grant, or the scopes
+	// to request in the client credentials grant type
+	Scopes []string `json:"scopes,omitempty"`
 }
 
 // TokenResult holds token information
@@ -101,6 +107,7 @@ func convertToOAuth2Token(token *TokenResult, clock clock.Clock) oauth2.Token {
 }
 
 // ExtractUserName extracts the username claim from an authorization grant
+// conforms to draft-ietf-oauth-access-token-jwt
 func ExtractUserName(token oauth2.Token) (string, error) {
 	p := jwt.Parser{}
 	claims := jwt.MapClaims{}
@@ -108,6 +115,12 @@ func ExtractUserName(token oauth2.Token) (string, error) {
 		return "", fmt.Errorf("unable to decode the access token: %v", err)
 	}
 	username, ok := claims[ClaimNameUserName]
+	if !ok {
+		username, ok = claims[ClaimNameName]
+	}
+	if !ok {
+		username, ok = claims[ClaimNameSubject]
+	}
 	if !ok {
 		return "", fmt.Errorf("access token doesn't contain a username claim")
 	}

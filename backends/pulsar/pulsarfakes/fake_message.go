@@ -9,6 +9,16 @@ import (
 )
 
 type FakeMessage struct {
+	BrokerPublishTimeStub        func() *time.Time
+	brokerPublishTimeMutex       sync.RWMutex
+	brokerPublishTimeArgsForCall []struct {
+	}
+	brokerPublishTimeReturns struct {
+		result1 *time.Time
+	}
+	brokerPublishTimeReturnsOnCall map[int]struct {
+		result1 *time.Time
+	}
 	EventTimeStub        func() time.Time
 	eventTimeMutex       sync.RWMutex
 	eventTimeArgsForCall []struct {
@@ -59,6 +69,16 @@ type FakeMessage struct {
 	}
 	iDReturnsOnCall map[int]struct {
 		result1 pulsar.MessageID
+	}
+	IndexStub        func() *uint64
+	indexMutex       sync.RWMutex
+	indexArgsForCall []struct {
+	}
+	indexReturns struct {
+		result1 *uint64
+	}
+	indexReturnsOnCall map[int]struct {
+		result1 *uint64
 	}
 	IsReplicatedStub        func() bool
 	isReplicatedMutex       sync.RWMutex
@@ -140,6 +160,16 @@ type FakeMessage struct {
 	redeliveryCountReturnsOnCall map[int]struct {
 		result1 uint32
 	}
+	SchemaVersionStub        func() []byte
+	schemaVersionMutex       sync.RWMutex
+	schemaVersionArgsForCall []struct {
+	}
+	schemaVersionReturns struct {
+		result1 []byte
+	}
+	schemaVersionReturnsOnCall map[int]struct {
+		result1 []byte
+	}
 	TopicStub        func() string
 	topicMutex       sync.RWMutex
 	topicArgsForCall []struct {
@@ -152,6 +182,59 @@ type FakeMessage struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeMessage) BrokerPublishTime() *time.Time {
+	fake.brokerPublishTimeMutex.Lock()
+	ret, specificReturn := fake.brokerPublishTimeReturnsOnCall[len(fake.brokerPublishTimeArgsForCall)]
+	fake.brokerPublishTimeArgsForCall = append(fake.brokerPublishTimeArgsForCall, struct {
+	}{})
+	stub := fake.BrokerPublishTimeStub
+	fakeReturns := fake.brokerPublishTimeReturns
+	fake.recordInvocation("BrokerPublishTime", []interface{}{})
+	fake.brokerPublishTimeMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeMessage) BrokerPublishTimeCallCount() int {
+	fake.brokerPublishTimeMutex.RLock()
+	defer fake.brokerPublishTimeMutex.RUnlock()
+	return len(fake.brokerPublishTimeArgsForCall)
+}
+
+func (fake *FakeMessage) BrokerPublishTimeCalls(stub func() *time.Time) {
+	fake.brokerPublishTimeMutex.Lock()
+	defer fake.brokerPublishTimeMutex.Unlock()
+	fake.BrokerPublishTimeStub = stub
+}
+
+func (fake *FakeMessage) BrokerPublishTimeReturns(result1 *time.Time) {
+	fake.brokerPublishTimeMutex.Lock()
+	defer fake.brokerPublishTimeMutex.Unlock()
+	fake.BrokerPublishTimeStub = nil
+	fake.brokerPublishTimeReturns = struct {
+		result1 *time.Time
+	}{result1}
+}
+
+func (fake *FakeMessage) BrokerPublishTimeReturnsOnCall(i int, result1 *time.Time) {
+	fake.brokerPublishTimeMutex.Lock()
+	defer fake.brokerPublishTimeMutex.Unlock()
+	fake.BrokerPublishTimeStub = nil
+	if fake.brokerPublishTimeReturnsOnCall == nil {
+		fake.brokerPublishTimeReturnsOnCall = make(map[int]struct {
+			result1 *time.Time
+		})
+	}
+	fake.brokerPublishTimeReturnsOnCall[i] = struct {
+		result1 *time.Time
+	}{result1}
 }
 
 func (fake *FakeMessage) EventTime() time.Time {
@@ -424,6 +507,59 @@ func (fake *FakeMessage) IDReturnsOnCall(i int, result1 pulsar.MessageID) {
 	}
 	fake.iDReturnsOnCall[i] = struct {
 		result1 pulsar.MessageID
+	}{result1}
+}
+
+func (fake *FakeMessage) Index() *uint64 {
+	fake.indexMutex.Lock()
+	ret, specificReturn := fake.indexReturnsOnCall[len(fake.indexArgsForCall)]
+	fake.indexArgsForCall = append(fake.indexArgsForCall, struct {
+	}{})
+	stub := fake.IndexStub
+	fakeReturns := fake.indexReturns
+	fake.recordInvocation("Index", []interface{}{})
+	fake.indexMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeMessage) IndexCallCount() int {
+	fake.indexMutex.RLock()
+	defer fake.indexMutex.RUnlock()
+	return len(fake.indexArgsForCall)
+}
+
+func (fake *FakeMessage) IndexCalls(stub func() *uint64) {
+	fake.indexMutex.Lock()
+	defer fake.indexMutex.Unlock()
+	fake.IndexStub = stub
+}
+
+func (fake *FakeMessage) IndexReturns(result1 *uint64) {
+	fake.indexMutex.Lock()
+	defer fake.indexMutex.Unlock()
+	fake.IndexStub = nil
+	fake.indexReturns = struct {
+		result1 *uint64
+	}{result1}
+}
+
+func (fake *FakeMessage) IndexReturnsOnCall(i int, result1 *uint64) {
+	fake.indexMutex.Lock()
+	defer fake.indexMutex.Unlock()
+	fake.IndexStub = nil
+	if fake.indexReturnsOnCall == nil {
+		fake.indexReturnsOnCall = make(map[int]struct {
+			result1 *uint64
+		})
+	}
+	fake.indexReturnsOnCall[i] = struct {
+		result1 *uint64
 	}{result1}
 }
 
@@ -851,6 +987,59 @@ func (fake *FakeMessage) RedeliveryCountReturnsOnCall(i int, result1 uint32) {
 	}{result1}
 }
 
+func (fake *FakeMessage) SchemaVersion() []byte {
+	fake.schemaVersionMutex.Lock()
+	ret, specificReturn := fake.schemaVersionReturnsOnCall[len(fake.schemaVersionArgsForCall)]
+	fake.schemaVersionArgsForCall = append(fake.schemaVersionArgsForCall, struct {
+	}{})
+	stub := fake.SchemaVersionStub
+	fakeReturns := fake.schemaVersionReturns
+	fake.recordInvocation("SchemaVersion", []interface{}{})
+	fake.schemaVersionMutex.Unlock()
+	if stub != nil {
+		return stub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeMessage) SchemaVersionCallCount() int {
+	fake.schemaVersionMutex.RLock()
+	defer fake.schemaVersionMutex.RUnlock()
+	return len(fake.schemaVersionArgsForCall)
+}
+
+func (fake *FakeMessage) SchemaVersionCalls(stub func() []byte) {
+	fake.schemaVersionMutex.Lock()
+	defer fake.schemaVersionMutex.Unlock()
+	fake.SchemaVersionStub = stub
+}
+
+func (fake *FakeMessage) SchemaVersionReturns(result1 []byte) {
+	fake.schemaVersionMutex.Lock()
+	defer fake.schemaVersionMutex.Unlock()
+	fake.SchemaVersionStub = nil
+	fake.schemaVersionReturns = struct {
+		result1 []byte
+	}{result1}
+}
+
+func (fake *FakeMessage) SchemaVersionReturnsOnCall(i int, result1 []byte) {
+	fake.schemaVersionMutex.Lock()
+	defer fake.schemaVersionMutex.Unlock()
+	fake.SchemaVersionStub = nil
+	if fake.schemaVersionReturnsOnCall == nil {
+		fake.schemaVersionReturnsOnCall = make(map[int]struct {
+			result1 []byte
+		})
+	}
+	fake.schemaVersionReturnsOnCall[i] = struct {
+		result1 []byte
+	}{result1}
+}
+
 func (fake *FakeMessage) Topic() string {
 	fake.topicMutex.Lock()
 	ret, specificReturn := fake.topicReturnsOnCall[len(fake.topicArgsForCall)]
@@ -907,6 +1096,8 @@ func (fake *FakeMessage) TopicReturnsOnCall(i int, result1 string) {
 func (fake *FakeMessage) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.brokerPublishTimeMutex.RLock()
+	defer fake.brokerPublishTimeMutex.RUnlock()
 	fake.eventTimeMutex.RLock()
 	defer fake.eventTimeMutex.RUnlock()
 	fake.getEncryptionContextMutex.RLock()
@@ -917,6 +1108,8 @@ func (fake *FakeMessage) Invocations() map[string][][]interface{} {
 	defer fake.getSchemaValueMutex.RUnlock()
 	fake.iDMutex.RLock()
 	defer fake.iDMutex.RUnlock()
+	fake.indexMutex.RLock()
+	defer fake.indexMutex.RUnlock()
 	fake.isReplicatedMutex.RLock()
 	defer fake.isReplicatedMutex.RUnlock()
 	fake.keyMutex.RLock()
@@ -933,6 +1126,8 @@ func (fake *FakeMessage) Invocations() map[string][][]interface{} {
 	defer fake.publishTimeMutex.RUnlock()
 	fake.redeliveryCountMutex.RLock()
 	defer fake.redeliveryCountMutex.RUnlock()
+	fake.schemaVersionMutex.RLock()
+	defer fake.schemaVersionMutex.RUnlock()
 	fake.topicMutex.RLock()
 	defer fake.topicMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

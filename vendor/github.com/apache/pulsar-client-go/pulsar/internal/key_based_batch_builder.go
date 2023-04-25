@@ -84,7 +84,7 @@ func (h *keyBasedBatches) Val(key string) *batchContainer {
 // NewKeyBasedBatchBuilder init batch builder and return BatchBuilder
 // pointer. Build a new key based batch message container.
 func NewKeyBasedBatchBuilder(
-	maxMessages uint, maxBatchSize uint, producerName string, producerID uint64,
+	maxMessages uint, maxBatchSize uint, maxMessageSize uint32, producerName string, producerID uint64,
 	compressionType pb.CompressionType, level compression.Level,
 	bufferPool BuffersPool, logger log.Logger, encryptor crypto.Encryptor,
 ) (BatchBuilder, error) {
@@ -92,7 +92,7 @@ func NewKeyBasedBatchBuilder(
 	bb := &keyBasedBatchContainer{
 		batches: newKeyBasedBatches(),
 		batchContainer: newBatchContainer(
-			maxMessages, maxBatchSize, producerName, producerID,
+			maxMessages, maxBatchSize, maxMessageSize, producerName, producerID,
 			compressionType, level, bufferPool, logger, encryptor,
 		),
 		compressionType: compressionType,
@@ -106,18 +106,24 @@ func NewKeyBasedBatchBuilder(
 	return bb, nil
 }
 
-// IsFull check if the size in the current batch exceeds the maximum size allowed by the batch
+// IsFull checks if the size in the current batch meets or exceeds the maximum size allowed by the batch
 func (bc *keyBasedBatchContainer) IsFull() bool {
-	return bc.numMessages >= bc.maxMessages || bc.buffer.ReadableBytes() > uint32(bc.maxBatchSize)
+	return bc.numMessages >= bc.maxMessages || bc.buffer.ReadableBytes() >= uint32(bc.maxBatchSize)
 }
 
 func (bc *keyBasedBatchContainer) IsMultiBatches() bool {
 	return true
 }
 
+// hasSpace should return true if and only if the batch container can accommodate another message of length payload.
 func (bc *keyBasedBatchContainer) hasSpace(payload []byte) bool {
+	if bc.numMessages == 0 {
+		// allow to add at least one message
+		// and a single max message size is checked in the producer partition, therefore no need to validate batch size
+		return true
+	}
 	msgSize := uint32(len(payload))
-	return bc.numMessages+1 < bc.maxMessages || (bc.buffer.ReadableBytes()+msgSize) < uint32(bc.maxBatchSize)
+	return bc.numMessages+1 <= bc.maxMessages && bc.buffer.ReadableBytes()+msgSize <= uint32(bc.maxBatchSize)
 }
 
 // Add will add single message to key-based batch with message key.
@@ -125,6 +131,7 @@ func (bc *keyBasedBatchContainer) Add(
 	metadata *pb.SingleMessageMetadata, sequenceIDGenerator *uint64,
 	payload []byte,
 	callback interface{}, replicateTo []string, deliverAt time.Time,
+	schemaVersion []byte, multiSchemaEnabled bool,
 ) bool {
 	if replicateTo != nil && bc.numMessages != 0 {
 		// If the current batch is not empty and we're trying to set the replication clusters,
@@ -144,7 +151,7 @@ func (bc *keyBasedBatchContainer) Add(
 	if batchPart == nil {
 		// create batchContainer for new key
 		t := newBatchContainer(
-			bc.maxMessages, bc.maxBatchSize, bc.producerName, bc.producerID,
+			bc.maxMessages, bc.maxBatchSize, bc.maxMessageSize, bc.producerName, bc.producerID,
 			bc.compressionType, bc.level, bc.buffersPool, bc.log, bc.encryptor,
 		)
 		batchPart = &t
@@ -152,10 +159,14 @@ func (bc *keyBasedBatchContainer) Add(
 	}
 
 	// add message to batch container
-	batchPart.Add(
+	add := batchPart.Add(
 		metadata, sequenceIDGenerator, payload, callback, replicateTo,
 		deliverAt,
+		schemaVersion, multiSchemaEnabled,
 	)
+	if !add {
+		return false
+	}
 	addSingleMessageToBatch(bc.buffer, metadata, payload)
 
 	bc.numMessages++

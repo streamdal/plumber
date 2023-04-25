@@ -146,6 +146,7 @@ func (p *DeviceCodeFlow) Authorize(audience string) (*AuthorizationGrant, error)
 		ClientID:      p.options.ClientID,
 		TokenEndpoint: p.oidcWellKnownEndpoints.TokenEndpoint,
 		Token:         &token,
+		Scopes:        additionalScopes,
 	}
 	return grant, nil
 }
@@ -198,6 +199,7 @@ func (g *DeviceAuthorizationGrantRefresher) Refresh(grant *AuthorizationGrant) (
 		ClientID:      grant.ClientID,
 		Token:         &token,
 		TokenEndpoint: grant.TokenEndpoint,
+		Scopes:        grant.Scopes,
 	}
 	return grant, nil
 }

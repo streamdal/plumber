@@ -1,5 +1,6 @@
+#ifndef USE_EXTERNAL_ZSTD
 /*
- * Copyright (c) 2016-present, Yann Collet, Facebook, Inc.
+ * Copyright (c) Yann Collet, Facebook, Inc.
  * All rights reserved.
  *
  * This source code is licensed under both the BSD-style license (found in the
@@ -16,7 +17,7 @@ extern "C" {
 #endif
 
 
-#include <stddef.h>   /* size_t */
+#include "zstd_deps.h"
 #define ZSTD_STATIC_LINKING_ONLY   /* ZSTD_customMem */
 #include "zstd.h"
 
@@ -82,3 +83,5 @@ int POOL_tryAdd(POOL_ctx* ctx, POOL_function function, void* opaque);
 #endif
 
 #endif
+
+#endif /* USE_EXTERNAL_ZSTD */

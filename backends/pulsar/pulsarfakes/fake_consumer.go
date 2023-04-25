@@ -10,15 +10,49 @@ import (
 )
 
 type FakeConsumer struct {
-	AckStub        func(pulsar.Message)
+	AckStub        func(pulsar.Message) error
 	ackMutex       sync.RWMutex
 	ackArgsForCall []struct {
 		arg1 pulsar.Message
 	}
-	AckIDStub        func(pulsar.MessageID)
+	ackReturns struct {
+		result1 error
+	}
+	ackReturnsOnCall map[int]struct {
+		result1 error
+	}
+	AckCumulativeStub        func(pulsar.Message) error
+	ackCumulativeMutex       sync.RWMutex
+	ackCumulativeArgsForCall []struct {
+		arg1 pulsar.Message
+	}
+	ackCumulativeReturns struct {
+		result1 error
+	}
+	ackCumulativeReturnsOnCall map[int]struct {
+		result1 error
+	}
+	AckIDStub        func(pulsar.MessageID) error
 	ackIDMutex       sync.RWMutex
 	ackIDArgsForCall []struct {
 		arg1 pulsar.MessageID
+	}
+	ackIDReturns struct {
+		result1 error
+	}
+	ackIDReturnsOnCall map[int]struct {
+		result1 error
+	}
+	AckIDCumulativeStub        func(pulsar.MessageID) error
+	ackIDCumulativeMutex       sync.RWMutex
+	ackIDCumulativeArgsForCall []struct {
+		arg1 pulsar.MessageID
+	}
+	ackIDCumulativeReturns struct {
+		result1 error
+	}
+	ackIDCumulativeReturnsOnCall map[int]struct {
+		result1 error
 	}
 	ChanStub        func() <-chan pulsar.ConsumerMessage
 	chanMutex       sync.RWMutex
@@ -73,6 +107,13 @@ type FakeConsumer struct {
 		arg1 pulsar.Message
 		arg2 time.Duration
 	}
+	ReconsumeLaterWithCustomPropertiesStub        func(pulsar.Message, map[string]string, time.Duration)
+	reconsumeLaterWithCustomPropertiesMutex       sync.RWMutex
+	reconsumeLaterWithCustomPropertiesArgsForCall []struct {
+		arg1 pulsar.Message
+		arg2 map[string]string
+		arg3 time.Duration
+	}
 	SeekStub        func(pulsar.MessageID) error
 	seekMutex       sync.RWMutex
 	seekArgsForCall []struct {
@@ -119,17 +160,23 @@ type FakeConsumer struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeConsumer) Ack(arg1 pulsar.Message) {
+func (fake *FakeConsumer) Ack(arg1 pulsar.Message) error {
 	fake.ackMutex.Lock()
+	ret, specificReturn := fake.ackReturnsOnCall[len(fake.ackArgsForCall)]
 	fake.ackArgsForCall = append(fake.ackArgsForCall, struct {
 		arg1 pulsar.Message
 	}{arg1})
 	stub := fake.AckStub
+	fakeReturns := fake.ackReturns
 	fake.recordInvocation("Ack", []interface{}{arg1})
 	fake.ackMutex.Unlock()
 	if stub != nil {
-		fake.AckStub(arg1)
+		return stub(arg1)
 	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
 }
 
 func (fake *FakeConsumer) AckCallCount() int {
@@ -138,7 +185,7 @@ func (fake *FakeConsumer) AckCallCount() int {
 	return len(fake.ackArgsForCall)
 }
 
-func (fake *FakeConsumer) AckCalls(stub func(pulsar.Message)) {
+func (fake *FakeConsumer) AckCalls(stub func(pulsar.Message) error) {
 	fake.ackMutex.Lock()
 	defer fake.ackMutex.Unlock()
 	fake.AckStub = stub
@@ -151,17 +198,107 @@ func (fake *FakeConsumer) AckArgsForCall(i int) pulsar.Message {
 	return argsForCall.arg1
 }
 
-func (fake *FakeConsumer) AckID(arg1 pulsar.MessageID) {
+func (fake *FakeConsumer) AckReturns(result1 error) {
+	fake.ackMutex.Lock()
+	defer fake.ackMutex.Unlock()
+	fake.AckStub = nil
+	fake.ackReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeConsumer) AckReturnsOnCall(i int, result1 error) {
+	fake.ackMutex.Lock()
+	defer fake.ackMutex.Unlock()
+	fake.AckStub = nil
+	if fake.ackReturnsOnCall == nil {
+		fake.ackReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.ackReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeConsumer) AckCumulative(arg1 pulsar.Message) error {
+	fake.ackCumulativeMutex.Lock()
+	ret, specificReturn := fake.ackCumulativeReturnsOnCall[len(fake.ackCumulativeArgsForCall)]
+	fake.ackCumulativeArgsForCall = append(fake.ackCumulativeArgsForCall, struct {
+		arg1 pulsar.Message
+	}{arg1})
+	stub := fake.AckCumulativeStub
+	fakeReturns := fake.ackCumulativeReturns
+	fake.recordInvocation("AckCumulative", []interface{}{arg1})
+	fake.ackCumulativeMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeConsumer) AckCumulativeCallCount() int {
+	fake.ackCumulativeMutex.RLock()
+	defer fake.ackCumulativeMutex.RUnlock()
+	return len(fake.ackCumulativeArgsForCall)
+}
+
+func (fake *FakeConsumer) AckCumulativeCalls(stub func(pulsar.Message) error) {
+	fake.ackCumulativeMutex.Lock()
+	defer fake.ackCumulativeMutex.Unlock()
+	fake.AckCumulativeStub = stub
+}
+
+func (fake *FakeConsumer) AckCumulativeArgsForCall(i int) pulsar.Message {
+	fake.ackCumulativeMutex.RLock()
+	defer fake.ackCumulativeMutex.RUnlock()
+	argsForCall := fake.ackCumulativeArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeConsumer) AckCumulativeReturns(result1 error) {
+	fake.ackCumulativeMutex.Lock()
+	defer fake.ackCumulativeMutex.Unlock()
+	fake.AckCumulativeStub = nil
+	fake.ackCumulativeReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeConsumer) AckCumulativeReturnsOnCall(i int, result1 error) {
+	fake.ackCumulativeMutex.Lock()
+	defer fake.ackCumulativeMutex.Unlock()
+	fake.AckCumulativeStub = nil
+	if fake.ackCumulativeReturnsOnCall == nil {
+		fake.ackCumulativeReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.ackCumulativeReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeConsumer) AckID(arg1 pulsar.MessageID) error {
 	fake.ackIDMutex.Lock()
+	ret, specificReturn := fake.ackIDReturnsOnCall[len(fake.ackIDArgsForCall)]
 	fake.ackIDArgsForCall = append(fake.ackIDArgsForCall, struct {
 		arg1 pulsar.MessageID
 	}{arg1})
 	stub := fake.AckIDStub
+	fakeReturns := fake.ackIDReturns
 	fake.recordInvocation("AckID", []interface{}{arg1})
 	fake.ackIDMutex.Unlock()
 	if stub != nil {
-		fake.AckIDStub(arg1)
+		return stub(arg1)
 	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
 }
 
 func (fake *FakeConsumer) AckIDCallCount() int {
@@ -170,7 +307,7 @@ func (fake *FakeConsumer) AckIDCallCount() int {
 	return len(fake.ackIDArgsForCall)
 }
 
-func (fake *FakeConsumer) AckIDCalls(stub func(pulsar.MessageID)) {
+func (fake *FakeConsumer) AckIDCalls(stub func(pulsar.MessageID) error) {
 	fake.ackIDMutex.Lock()
 	defer fake.ackIDMutex.Unlock()
 	fake.AckIDStub = stub
@@ -181,6 +318,90 @@ func (fake *FakeConsumer) AckIDArgsForCall(i int) pulsar.MessageID {
 	defer fake.ackIDMutex.RUnlock()
 	argsForCall := fake.ackIDArgsForCall[i]
 	return argsForCall.arg1
+}
+
+func (fake *FakeConsumer) AckIDReturns(result1 error) {
+	fake.ackIDMutex.Lock()
+	defer fake.ackIDMutex.Unlock()
+	fake.AckIDStub = nil
+	fake.ackIDReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeConsumer) AckIDReturnsOnCall(i int, result1 error) {
+	fake.ackIDMutex.Lock()
+	defer fake.ackIDMutex.Unlock()
+	fake.AckIDStub = nil
+	if fake.ackIDReturnsOnCall == nil {
+		fake.ackIDReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.ackIDReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeConsumer) AckIDCumulative(arg1 pulsar.MessageID) error {
+	fake.ackIDCumulativeMutex.Lock()
+	ret, specificReturn := fake.ackIDCumulativeReturnsOnCall[len(fake.ackIDCumulativeArgsForCall)]
+	fake.ackIDCumulativeArgsForCall = append(fake.ackIDCumulativeArgsForCall, struct {
+		arg1 pulsar.MessageID
+	}{arg1})
+	stub := fake.AckIDCumulativeStub
+	fakeReturns := fake.ackIDCumulativeReturns
+	fake.recordInvocation("AckIDCumulative", []interface{}{arg1})
+	fake.ackIDCumulativeMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeConsumer) AckIDCumulativeCallCount() int {
+	fake.ackIDCumulativeMutex.RLock()
+	defer fake.ackIDCumulativeMutex.RUnlock()
+	return len(fake.ackIDCumulativeArgsForCall)
+}
+
+func (fake *FakeConsumer) AckIDCumulativeCalls(stub func(pulsar.MessageID) error) {
+	fake.ackIDCumulativeMutex.Lock()
+	defer fake.ackIDCumulativeMutex.Unlock()
+	fake.AckIDCumulativeStub = stub
+}
+
+func (fake *FakeConsumer) AckIDCumulativeArgsForCall(i int) pulsar.MessageID {
+	fake.ackIDCumulativeMutex.RLock()
+	defer fake.ackIDCumulativeMutex.RUnlock()
+	argsForCall := fake.ackIDCumulativeArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeConsumer) AckIDCumulativeReturns(result1 error) {
+	fake.ackIDCumulativeMutex.Lock()
+	defer fake.ackIDCumulativeMutex.Unlock()
+	fake.AckIDCumulativeStub = nil
+	fake.ackIDCumulativeReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeConsumer) AckIDCumulativeReturnsOnCall(i int, result1 error) {
+	fake.ackIDCumulativeMutex.Lock()
+	defer fake.ackIDCumulativeMutex.Unlock()
+	fake.AckIDCumulativeStub = nil
+	if fake.ackIDCumulativeReturnsOnCall == nil {
+		fake.ackIDCumulativeReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.ackIDCumulativeReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeConsumer) Chan() <-chan pulsar.ConsumerMessage {
@@ -474,6 +695,40 @@ func (fake *FakeConsumer) ReconsumeLaterArgsForCall(i int) (pulsar.Message, time
 	return argsForCall.arg1, argsForCall.arg2
 }
 
+func (fake *FakeConsumer) ReconsumeLaterWithCustomProperties(arg1 pulsar.Message, arg2 map[string]string, arg3 time.Duration) {
+	fake.reconsumeLaterWithCustomPropertiesMutex.Lock()
+	fake.reconsumeLaterWithCustomPropertiesArgsForCall = append(fake.reconsumeLaterWithCustomPropertiesArgsForCall, struct {
+		arg1 pulsar.Message
+		arg2 map[string]string
+		arg3 time.Duration
+	}{arg1, arg2, arg3})
+	stub := fake.ReconsumeLaterWithCustomPropertiesStub
+	fake.recordInvocation("ReconsumeLaterWithCustomProperties", []interface{}{arg1, arg2, arg3})
+	fake.reconsumeLaterWithCustomPropertiesMutex.Unlock()
+	if stub != nil {
+		fake.ReconsumeLaterWithCustomPropertiesStub(arg1, arg2, arg3)
+	}
+}
+
+func (fake *FakeConsumer) ReconsumeLaterWithCustomPropertiesCallCount() int {
+	fake.reconsumeLaterWithCustomPropertiesMutex.RLock()
+	defer fake.reconsumeLaterWithCustomPropertiesMutex.RUnlock()
+	return len(fake.reconsumeLaterWithCustomPropertiesArgsForCall)
+}
+
+func (fake *FakeConsumer) ReconsumeLaterWithCustomPropertiesCalls(stub func(pulsar.Message, map[string]string, time.Duration)) {
+	fake.reconsumeLaterWithCustomPropertiesMutex.Lock()
+	defer fake.reconsumeLaterWithCustomPropertiesMutex.Unlock()
+	fake.ReconsumeLaterWithCustomPropertiesStub = stub
+}
+
+func (fake *FakeConsumer) ReconsumeLaterWithCustomPropertiesArgsForCall(i int) (pulsar.Message, map[string]string, time.Duration) {
+	fake.reconsumeLaterWithCustomPropertiesMutex.RLock()
+	defer fake.reconsumeLaterWithCustomPropertiesMutex.RUnlock()
+	argsForCall := fake.reconsumeLaterWithCustomPropertiesArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
 func (fake *FakeConsumer) Seek(arg1 pulsar.MessageID) error {
 	fake.seekMutex.Lock()
 	ret, specificReturn := fake.seekReturnsOnCall[len(fake.seekArgsForCall)]
@@ -707,8 +962,12 @@ func (fake *FakeConsumer) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.ackMutex.RLock()
 	defer fake.ackMutex.RUnlock()
+	fake.ackCumulativeMutex.RLock()
+	defer fake.ackCumulativeMutex.RUnlock()
 	fake.ackIDMutex.RLock()
 	defer fake.ackIDMutex.RUnlock()
+	fake.ackIDCumulativeMutex.RLock()
+	defer fake.ackIDCumulativeMutex.RUnlock()
 	fake.chanMutex.RLock()
 	defer fake.chanMutex.RUnlock()
 	fake.closeMutex.RLock()
@@ -723,6 +982,8 @@ func (fake *FakeConsumer) Invocations() map[string][][]interface{} {
 	defer fake.receiveMutex.RUnlock()
 	fake.reconsumeLaterMutex.RLock()
 	defer fake.reconsumeLaterMutex.RUnlock()
+	fake.reconsumeLaterWithCustomPropertiesMutex.RLock()
+	defer fake.reconsumeLaterWithCustomPropertiesMutex.RUnlock()
 	fake.seekMutex.RLock()
 	defer fake.seekMutex.RUnlock()
 	fake.seekByTimeMutex.RLock()

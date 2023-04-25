@@ -6,11 +6,9 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	jose "github.com/dvsekhvalnov/jose2go"
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/mtibben/percent"
 )
 
@@ -39,16 +37,9 @@ func (k *fileKeyring) resolveDir() (string, error) {
 		return "", fmt.Errorf("No directory provided for file keyring")
 	}
 
-	dir := k.dir
-
-	// expand tilde for home directory
-	if strings.HasPrefix(dir, "~") {
-		home, err := homedir.Dir()
-		if err != nil {
-			return "", err
-		}
-		dir = strings.Replace(dir, "~", home, 1)
-		debugf("Expanded file dir to %s", dir)
+	dir, err := ExpandTilde(k.dir)
+	if err != nil {
+		return "", err
 	}
 
 	stat, err := os.Stat(dir)
@@ -68,7 +59,7 @@ func (k *fileKeyring) unlock() error {
 	}
 
 	if k.password == "" {
-		pwd, err := k.passwordFunc(fmt.Sprintf("Enter passphrase to unlock %s", dir))
+		pwd, err := k.passwordFunc(fmt.Sprintf("Enter passphrase to unlock %q", dir))
 		if err != nil {
 			return err
 		}

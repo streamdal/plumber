@@ -21,8 +21,9 @@ import (
 	"crypto/tls"
 	"time"
 
-	"github.com/apache/pulsar-client-go/pulsar/internal/auth"
+	"github.com/apache/pulsar-client-go/pulsar/auth"
 	"github.com/apache/pulsar-client-go/pulsar/log"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 // NewClient Creates a pulsar client instance
@@ -78,6 +79,11 @@ func NewAuthenticationOAuth2(authParams map[string]string) Authentication {
 	return oauth
 }
 
+// NewAuthenticationBasic Creates Basic Authentication provider
+func NewAuthenticationBasic(username, password string) (Authentication, error) {
+	return auth.NewAuthenticationBasic(username, password)
+}
+
 // ClientOptions is used to construct a Pulsar Client instance.
 type ClientOptions struct {
 	// Configure the service URL for the Pulsar service.
@@ -92,9 +98,18 @@ type ClientOptions struct {
 	// operation will be marked as failed
 	OperationTimeout time.Duration
 
+	// Configure the ping send and check interval, default to 30 seconds.
+	KeepAliveInterval time.Duration
+
 	// Configure the authentication provider. (default: no authentication)
 	// Example: `Authentication: NewAuthenticationTLS("my-cert.pem", "my-key.pem")`
 	Authentication
+
+	// Set the path to the TLS key file
+	TLSKeyFilePath string
+
+	// Set the path to the TLS certificate file
+	TLSCertificateFile string
 
 	// Set the path to the trusted TLS certificate file
 	TLSTrustCertsFilePath string
@@ -123,6 +138,20 @@ type ClientOptions struct {
 
 	// Add custom labels to all the metrics reported by this client instance
 	CustomMetricsLabels map[string]string
+
+	// Specify metric registerer used to register metrics.
+	// Default prometheus.DefaultRegisterer
+	MetricsRegisterer prometheus.Registerer
+
+	// Release the connection if it is not used for more than ConnectionMaxIdleTime.
+	// Default is 60 seconds, negative such as -1 to disable.
+	ConnectionMaxIdleTime time.Duration
+
+	EnableTransaction bool
+
+	// Limit of client memory usage (in byte). The 64M default can guarantee a high producer throughput.
+	// Config less than 0 indicates off memory limit.
+	MemoryLimitBytes int64
 }
 
 // Client represents a pulsar client
@@ -140,6 +169,10 @@ type Client interface {
 	// CreateReader Creates a Reader instance.
 	// This method will block until the reader is created successfully.
 	CreateReader(ReaderOptions) (Reader, error)
+
+	// CreateTableView creates a table view instance.
+	// This method will block until the table view is created successfully.
+	CreateTableView(TableViewOptions) (TableView, error)
 
 	// TopicPartitions Fetches the list of partitions for a given topic
 	//

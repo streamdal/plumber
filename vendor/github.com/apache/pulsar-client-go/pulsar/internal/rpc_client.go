@@ -26,7 +26,7 @@ import (
 	"github.com/apache/pulsar-client-go/pulsar/log"
 
 	pb "github.com/apache/pulsar-client-go/pulsar/internal/pulsar_proto"
-	"github.com/gogo/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 )
 
 var (
@@ -91,7 +91,7 @@ func (c *rpcClient) RequestToAnyBroker(requestID uint64, cmdType pb.BaseCommand_
 	var host *url.URL
 	var rpcResult *RPCResult
 	startTime := time.Now()
-	backoff := Backoff{100 * time.Millisecond}
+	backoff := DefaultBackoff{100 * time.Millisecond}
 	// we can retry these requests because this kind of request is
 	// not specific to any particular broker
 	for time.Since(startTime) < c.requestTimeout {
@@ -129,14 +129,24 @@ func (c *rpcClient) Request(logicalAddr *url.URL, physicalAddr *url.URL, request
 			Cnx:      cnx,
 			Response: response,
 		}, err}
-		close(ch)
 	})
 
-	select {
-	case res := <-ch:
-		return res.RPCResult, res.error
-	case <-time.After(c.requestTimeout):
-		return nil, ErrRequestTimeOut
+	timeoutCh := time.After(c.requestTimeout)
+	for {
+		select {
+		case res := <-ch:
+			// Ignoring producer not ready response.
+			// Continue to wait for the producer to create successfully
+			if res.error == nil && *res.RPCResult.Response.Type == pb.BaseCommand_PRODUCER_SUCCESS {
+				if !res.RPCResult.Response.ProducerSuccess.GetProducerReady() {
+					timeoutCh = nil
+					break
+				}
+			}
+			return res.RPCResult, res.error
+		case <-timeoutCh:
+			return nil, ErrRequestTimeOut
+		}
 	}
 }
 

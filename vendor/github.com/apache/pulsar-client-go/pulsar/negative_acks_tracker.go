@@ -35,26 +35,37 @@ type negativeAcksTracker struct {
 	doneOnce     sync.Once
 	negativeAcks map[messageID]time.Time
 	rc           redeliveryConsumer
+	nackBackoff  NackBackoffPolicy
 	tick         *time.Ticker
 	delay        time.Duration
 	log          log.Logger
 }
 
-func newNegativeAcksTracker(rc redeliveryConsumer, delay time.Duration, logger log.Logger) *negativeAcksTracker {
+func newNegativeAcksTracker(rc redeliveryConsumer, delay time.Duration,
+	nackBackoffPolicy NackBackoffPolicy, logger log.Logger) *negativeAcksTracker {
+
 	t := &negativeAcksTracker{
 		doneCh:       make(chan interface{}),
 		negativeAcks: make(map[messageID]time.Time),
 		rc:           rc,
-		tick:         time.NewTicker(delay / 3),
-		delay:        delay,
+		nackBackoff:  nackBackoffPolicy,
 		log:          logger,
 	}
+
+	if nackBackoffPolicy != nil {
+		firstDelayForNackBackoff := nackBackoffPolicy.Next(1)
+		t.delay = firstDelayForNackBackoff
+	} else {
+		t.delay = delay
+	}
+
+	t.tick = time.NewTicker(t.delay / 3)
 
 	go t.track()
 	return t
 }
 
-func (t *negativeAcksTracker) Add(msgID messageID) {
+func (t *negativeAcksTracker) Add(msgID *messageID) {
 	// Always clear up the batch index since we want to track the nack
 	// for the entire batch
 	batchMsgID := messageID{
@@ -73,6 +84,32 @@ func (t *negativeAcksTracker) Add(msgID messageID) {
 	}
 
 	targetTime := time.Now().Add(t.delay)
+	t.negativeAcks[batchMsgID] = targetTime
+}
+
+func (t *negativeAcksTracker) AddMessage(msg Message) {
+	nackBackoffDelay := t.nackBackoff.Next(msg.RedeliveryCount())
+
+	msgID := msg.ID()
+
+	// Always clear up the batch index since we want to track the nack
+	// for the entire batch
+	batchMsgID := messageID{
+		ledgerID: msgID.LedgerID(),
+		entryID:  msgID.EntryID(),
+		batchIdx: 0,
+	}
+
+	t.Lock()
+	defer t.Unlock()
+
+	_, present := t.negativeAcks[batchMsgID]
+	if present {
+		// The batch is already being tracked
+		return
+	}
+
+	targetTime := time.Now().Add(nackBackoffDelay)
 	t.negativeAcks[batchMsgID] = targetTime
 }
 
@@ -105,7 +142,6 @@ func (t *negativeAcksTracker) track() {
 					t.rc.Redeliver(msgIds)
 				}
 			}
-
 		}
 	}
 }

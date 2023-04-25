@@ -12,9 +12,11 @@ Extensively unit tested and cross tested (100+ tests) for compatibility with [jo
 
 
 ## Status
-Used in production. GA ready. Current version is 1.4.
+Used in production. GA ready. Current version is 1.5.
 
 ## Important
+v1.5 bug fix release
+
 v1.4 changes default behavior of inserting `typ=JWT` header if not overriden. As of 1.4 no
 extra headers added by library automatically. To mimic pre 1.4 behaviour use:
 ```Go

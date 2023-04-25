@@ -89,24 +89,37 @@ func (r *dlqRouter) run() {
 		select {
 		case cm := <-r.messageCh:
 			r.log.WithField("msgID", cm.ID()).Debug("Got message for DLQ")
-			producer := r.getProducer()
-
+			producer := r.getProducer(cm.Consumer.(*consumer).options.Schema)
 			msg := cm.Message.(*message)
 			msgID := msg.ID()
+
+			// properties associated with original message
+			properties := msg.Properties()
+
+			// include orinal message id in string format in properties
+			properties[PropertyOriginMessageID] = msgID.String()
+
+			// include original topic name of the message in properties
+			properties[SysPropertyRealTopic] = msg.Topic()
+
 			producer.SendAsync(context.Background(), &ProducerMessage{
 				Payload:             msg.Payload(),
 				Key:                 msg.Key(),
 				OrderingKey:         msg.OrderingKey(),
-				Properties:          msg.Properties(),
+				Properties:          properties,
 				EventTime:           msg.EventTime(),
 				ReplicationClusters: msg.replicationClusters,
-			}, func(MessageID, *ProducerMessage, error) {
-				r.log.WithField("msgID", msgID).Debug("Sent message to DLQ")
-
-				// The Producer ack might be coming from the connection go-routine that
-				// is also used by the consumer. In that case we would get a dead-lock
-				// if we'd try to ack.
-				go cm.Consumer.AckID(msgID)
+			}, func(messageID MessageID, producerMessage *ProducerMessage, err error) {
+				if err == nil {
+					r.log.WithField("msgID", msgID).Debug("Succeed to send message to DLQ")
+					// The Producer ack might be coming from the connection go-routine that
+					// is also used by the consumer. In that case we would get a dead-lock
+					// if we'd try to ack.
+					go cm.Consumer.AckID(msgID)
+				} else {
+					r.log.WithError(err).WithField("msgID", msgID).Debug("Failed to send message to DLQ")
+					go cm.Consumer.Nack(cm)
+				}
 			})
 
 		case <-r.closeCh:
@@ -127,20 +140,25 @@ func (r *dlqRouter) close() {
 	}
 }
 
-func (r *dlqRouter) getProducer() Producer {
+func (r *dlqRouter) getProducer(schema Schema) Producer {
 	if r.producer != nil {
 		// Producer was already initialized
 		return r.producer
 	}
 
 	// Retry to create producer indefinitely
-	backoff := &internal.Backoff{}
+	backoff := &internal.DefaultBackoff{}
 	for {
-		producer, err := r.client.CreateProducer(ProducerOptions{
-			Topic:                   r.policy.DeadLetterTopic,
-			CompressionType:         LZ4,
-			BatchingMaxPublishDelay: 100 * time.Millisecond,
-		})
+		opt := r.policy.ProducerOptions
+		opt.Topic = r.policy.DeadLetterTopic
+		opt.Schema = schema
+
+		// the origin code sets to LZ4 compression with no options
+		// so the new design allows compression type to be overwritten but still set lz4 by default
+		if r.policy.ProducerOptions.CompressionType == NoCompression {
+			opt.CompressionType = LZ4
+		}
+		producer, err := r.client.CreateProducer(opt)
 
 		if err != nil {
 			r.log.WithError(err).Error("Failed to create DLQ producer")

@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+//go:build cgo
 // +build cgo
 
 // If CGO is enabled, use ZSTD library that links with official

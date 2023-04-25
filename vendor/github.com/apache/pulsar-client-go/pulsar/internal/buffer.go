@@ -19,6 +19,8 @@ package internal
 
 import (
 	"encoding/binary"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Buffer is a variable-sized buffer of bytes with Read and Write methods.
@@ -35,6 +37,8 @@ type Buffer interface {
 	IsWritable() bool
 
 	Read(size uint32) []byte
+
+	Skip(size uint32)
 
 	Get(readerIndex uint32, size uint32) []byte
 
@@ -110,9 +114,18 @@ func (b *buffer) IsWritable() bool {
 }
 
 func (b *buffer) Read(size uint32) []byte {
+	// Check []byte slice size, avoid slice bounds out of range
+	if b.readerIdx+size > uint32(len(b.data)) {
+		log.Errorf("The input size [%d] > byte slice of data size [%d]", b.readerIdx+size, len(b.data))
+		return nil
+	}
 	res := b.data[b.readerIdx : b.readerIdx+size]
 	b.readerIdx += size
 	return res
+}
+
+func (b *buffer) Skip(size uint32) {
+	b.readerIdx += size
 }
 
 func (b *buffer) Get(readerIdx uint32, size uint32) []byte {

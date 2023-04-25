@@ -98,8 +98,12 @@ func (cp *LocalDeviceCodeProvider) newDeviceCodeRequest(
 	req *DeviceCodeRequest) (*http.Request, error) {
 	uv := url.Values{}
 	uv.Set("client_id", req.ClientID)
-	uv.Set("scope", strings.Join(req.Scopes, " "))
-	uv.Set("audience", req.Audience)
+	if len(req.Scopes) > 0 {
+		uv.Set("scope", strings.Join(req.Scopes, " "))
+	}
+	if req.Audience != "" {
+		uv.Set("audience", req.Audience)
+	}
 	euv := uv.Encode()
 
 	request, err := http.NewRequest("POST",

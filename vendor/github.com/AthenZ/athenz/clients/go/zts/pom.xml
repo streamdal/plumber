@@ -17,7 +17,7 @@
   <parent>
     <groupId>com.yahoo.athenz</groupId>
     <artifactId>athenz</artifactId>
-    <version>1.10.15</version>
+    <version>1.10.39</version>
     <relativePath>../../../pom.xml</relativePath>
   </parent>
 
