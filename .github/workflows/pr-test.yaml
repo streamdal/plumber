@@ -25,7 +25,7 @@ jobs:
           make test/coverage
       - name: Upload coverage information
         run: |
-          GIT_BRANCH="${GITHUB_HEAD_REF}" ./cc-test-reporter after-build -p github.com/batchcorp/plumber -r ${{ secrets.CC_TEST_REPORTER_ID }}
+          GIT_BRANCH="${GITHUB_HEAD_REF}" ./cc-test-reporter after-build -p github.com/streamdal/plumber -r ${{ secrets.CC_TEST_REPORTER_ID }}
 
   functional:
     name: Run functional tests

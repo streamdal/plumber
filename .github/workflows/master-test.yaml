@@ -28,7 +28,7 @@ jobs:
           make test/coverage
       - name: Upload coverage information
         run: |
-          GIT_BRANCH=master ./cc-test-reporter after-build -p github.com/batchcorp/plumber -r ${{ secrets.CC_TEST_REPORTER_ID }}
+          GIT_BRANCH=master ./cc-test-reporter after-build -p github.com/streamdal/plumber -r ${{ secrets.CC_TEST_REPORTER_ID }}
   functional:
     name: Run functional tests
     runs-on: ubuntu-latest

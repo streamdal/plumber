@@ -63,6 +63,6 @@ jobs:
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.DISPATCH_TOKEN }}
-          repository: batchcorp/plumber-helm
+          repository: streamdal/plumber-helm
           event-type: trigger-plumber-helm-workflow
           client-payload: '{"plumber-version": "${{ env.GITHUB_TAG }}"}'
