@@ -133,11 +133,9 @@ func (b *Batch) Send(ctx context.Context, txOptions *TxOptions) error {
 		b.conn.pendingReadyForQueryCount++
 	}
 
-	n, err := b.conn.conn.Write(buf)
+	_, err = b.conn.conn.Write(buf)
 	if err != nil {
-		if fatalWriteErr(n, err) {
-			b.conn.die(err)
-		}
+		b.die(err)
 		return err
 	}
 
@@ -270,6 +268,23 @@ func (b *Batch) Close() (err error) {
 		}
 	}
 
+	for b.conn.pendingReadyForQueryCount > 0 {
+		msg, err := b.conn.rxMsg()
+		if err != nil {
+			return err
+		}
+
+		switch msg := msg.(type) {
+		case *pgproto3.ErrorResponse:
+			return b.conn.rxErrorResponse(msg)
+		default:
+			err = b.conn.processContextFreeMsg(msg)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	if err = b.conn.ensureConnectionReadyForQuery(); err != nil {
 		return err
 	}
@@ -283,10 +298,13 @@ func (b *Batch) die(err error) {
 	}
 
 	b.err = err
-	b.conn.die(err)
+	if b.conn != nil {
+		err = b.conn.termContext(err)
+		b.conn.die(err)
 
-	if b.conn != nil && b.connPool != nil {
-		b.connPool.Release(b.conn)
+		if b.connPool != nil {
+			b.connPool.Release(b.conn)
+		}
 	}
 }
 

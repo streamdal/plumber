@@ -39,7 +39,7 @@ func (dst *UUID) Set(src interface{}) error {
 		}
 		*dst = UUID{Bytes: uuid, Status: Present}
 	default:
-		if originalSrc, ok := underlyingPtrType(src); ok {
+		if originalSrc, ok := underlyingUUIDType(src); ok {
 			return dst.Set(originalSrc)
 		}
 		return errors.Errorf("cannot convert %v to UUID", value)
@@ -87,6 +87,9 @@ func (src *UUID) AssignTo(dst interface{}) error {
 
 // parseUUID converts a string UUID in standard form to a byte array.
 func parseUUID(src string) (dst [16]byte, err error) {
+	if len(src) < 36 {
+		return dst, errors.Errorf("cannot parse UUID %v", src)
+	}
 	src = src[0:8] + src[9:13] + src[14:18] + src[19:23] + src[24:]
 	buf, err := hex.DecodeString(src)
 	if err != nil {

@@ -15,6 +15,10 @@ if err != nil {
 }
 ```
 
+## v4
+
+This is the `v3` version. `v4` has been released. Please use that for new development.
+
 ## Features
 
 pgx supports many additional features beyond what is available through database/sql.
@@ -80,11 +84,11 @@ skip tests for connection types that are not configured.
 To setup the normal test environment, first install these dependencies:
 
     go get github.com/cockroachdb/apd
+    go get github.com/gofrs/uuid
     go get github.com/hashicorp/go-version
     go get github.com/jackc/fake
     go get github.com/lib/pq
     go get github.com/pkg/errors
-    go get github.com/satori/go.uuid
     go get github.com/shopspring/decimal
     go get github.com/sirupsen/logrus
     go get go.uber.org/zap

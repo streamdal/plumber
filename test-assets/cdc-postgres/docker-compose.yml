@@ -1,7 +1,7 @@
 version: "3.4"
 services:
   postgres:
-    image: "postgres:11"
+    image: "postgres:15"
     container_name: "testpostgres"
     environment:
       - POSTGRES_USER=postgres
