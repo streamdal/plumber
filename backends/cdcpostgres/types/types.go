@@ -1,5 +1,13 @@
 package types
 
+type ChangeOperation string
+
+const (
+	ChangeOperationInsert ChangeOperation = "insert"
+	ChangeOperationUpdate ChangeOperation = "update"
+	ChangeOperationDelete ChangeOperation = "delete"
+)
+
 // RelayMessage encapsulates a ChangeRecord message that is read by relay.Run()
 type RelayMessage struct {
 	Value   *ChangeRecord
@@ -12,7 +20,7 @@ type ChangeRecord struct {
 	XID       int32                  `json:"xid"`
 	Timestamp int64                  `json:"timestamp"`
 	Table     string                 `json:"table"`
-	Operation string                 `json:"operation"`
+	Operation ChangeOperation        `json:"operation"`
 	Fields    map[string]interface{} `json:"fields"`
 	OldFields map[string]interface{} `json:"old_fields,omitempty"`
 }

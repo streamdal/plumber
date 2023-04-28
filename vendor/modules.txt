@@ -165,9 +165,6 @@ github.com/batchcorp/kong
 # github.com/batchcorp/natty v0.0.16
 ## explicit; go 1.16
 github.com/batchcorp/natty
-# github.com/batchcorp/pgoutput v0.3.2
-## explicit; go 1.15
-github.com/batchcorp/pgoutput
 # github.com/batchcorp/plumber-schemas v0.0.180
 ## explicit; go 1.16
 github.com/batchcorp/plumber-schemas/build/go/protos
@@ -684,6 +681,9 @@ github.com/spaolacci/murmur3
 # github.com/streadway/amqp v1.0.0
 ## explicit; go 1.10
 github.com/streadway/amqp
+# github.com/streamdal/pgoutput v0.3.3
+## explicit; go 1.15
+github.com/streamdal/pgoutput
 # github.com/stretchr/objx v0.5.0
 ## explicit; go 1.12
 # github.com/tidwall/gjson v1.9.3

@@ -128,8 +128,6 @@ github.com/batchcorp/kong v0.2.17-batch-fix h1:H6sOfst2NcL2T/EZVNLukG7YRimJDHg9D
 github.com/batchcorp/kong v0.2.17-batch-fix/go.mod h1:ut4pbR4KLPWzKHbpEHZspWpRqjFr4UiPY3D2xf2tzf8=
 github.com/batchcorp/natty v0.0.16 h1:RN20W2rlA1GtPzY3ioYIjqY0UlIFnH9Rs2c1nWajxcU=
 github.com/batchcorp/natty v0.0.16/go.mod h1:9vbgoZghKr/2FtueAquAlRacCSnEgfgTSA2eX2gpO54=
-github.com/batchcorp/pgoutput v0.3.2 h1:Jck/nJLwXWmsNHF2iEfjFWrsds5LLGtqu6y6TjjU8Aw=
-github.com/batchcorp/pgoutput v0.3.2/go.mod h1:xzkr73rAlqUdvt2oMAQav1lIt6xnG8bqYYXt4GrXM/I=
 github.com/batchcorp/plumber-schemas v0.0.180 h1:eIGaZVMQm/O50KE9eVCX4If3Hyf5Ts/N4ACLvhyiXvM=
 github.com/batchcorp/plumber-schemas v0.0.180/go.mod h1:0g9lX0S7Ec7JVa0kzAkJC3gWAFbwIUcK3/VJ0n68KhA=
 github.com/batchcorp/plz v0.9.2 h1:bPqb+sn7OUrpHjeTEI9YO4BJS9IQ7AstDDz2gn+tcn8=
@@ -725,6 +723,8 @@ github.com/spf13/pflag v1.0.5/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An
 github.com/spf13/viper v1.7.1/go.mod h1:8WkrPz2fc9jxqZNCJI/76HCieCp4Q8HaLFoCha5qpdg=
 github.com/streadway/amqp v1.0.0 h1:kuuDrUJFZL1QYL9hUNuCxNObNzB0bV/ZG5jV3RWAQgo=
 github.com/streadway/amqp v1.0.0/go.mod h1:AZpEONHx3DKn8O/DFsRAY58/XVQiIPMTMB1SddzLXVw=
+github.com/streamdal/pgoutput v0.3.3 h1:4XLuGQFzmMFQd4U/zy1X5lMICXduHp8vG7FlbYpUFn0=
+github.com/streamdal/pgoutput v0.3.3/go.mod h1:19V8kXi7a88guhXqvNpL2HH7sbnCYk0i93H4Q2i5iUA=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.2.0/go.mod h1:qt09Ya8vawLte6SNmTgCsAVtYtaKzEcn8ATUoHMkEqE=

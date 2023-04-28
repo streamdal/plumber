@@ -14,7 +14,6 @@ require (
 	github.com/batchcorp/collector-schemas v0.0.22
 	github.com/batchcorp/kong v0.2.17-batch-fix
 	github.com/batchcorp/natty v0.0.16
-	github.com/batchcorp/pgoutput v0.3.2
 	github.com/batchcorp/plumber-schemas v0.0.180
 	github.com/batchcorp/rabbit v0.1.17
 	github.com/batchcorp/thrifty v0.0.10
@@ -53,6 +52,7 @@ require (
 	github.com/segmentio/kafka-go v0.4.16
 	github.com/sirupsen/logrus v1.8.1
 	github.com/streadway/amqp v1.0.0
+	github.com/streamdal/pgoutput v0.3.3
 	github.com/tidwall/gjson v1.9.3
 	go.mongodb.org/mongo-driver v1.7.3
 	golang.org/x/crypto v0.8.0

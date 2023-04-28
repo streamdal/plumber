@@ -23,6 +23,8 @@ const (
 	TupleKindNull    TupleKind = 'n' // Identifies the data as NULL value.
 	TupleKindToasted           = 'u' // Identifies unchanged TOASTed value (the actual value is not sent).
 	TupleKindText              = 't' // Identifies the data as text formatted value.
+
+	UnknownToastValue = "__PLUMBER_TOAST_UNKNOWN__"
 )
 
 func (d *decoder) bool() bool {
@@ -93,7 +95,7 @@ func (d *decoder) tupledata() []Tuple {
 		case TupleKindNull:
 			fallthrough
 		case TupleKindToasted:
-			data[i] = Tuple{Flag: tk, Value: []byte{}}
+			data[i] = Tuple{Flag: tk, Value: []byte(UnknownToastValue)}
 		}
 	}
 	return data
