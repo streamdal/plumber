@@ -10,7 +10,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/pgoutput"
+	"github.com/streamdal/pgoutput"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
@@ -111,7 +112,7 @@ func handleInsert(set *pgoutput.RelationSet, v *pgoutput.Insert, changeRecord *t
 		XID:       changeRecord.XID,
 		Timestamp: changeRecord.Timestamp,
 		Table:     changeSet.Name,
-		Operation: "insert",
+		Operation: types.ChangeOperationInsert,
 		Fields:    make(map[string]interface{}, 0),
 	}
 
@@ -137,7 +138,7 @@ func handleUpdate(set *pgoutput.RelationSet, v *pgoutput.Update, changeRecord *t
 		XID:       changeRecord.XID,
 		Timestamp: changeRecord.Timestamp,
 		Table:     changeSet.Name,
-		Operation: "update",
+		Operation: types.ChangeOperationUpdate,
 		Fields:    make(map[string]interface{}, 0),
 		OldFields: make(map[string]interface{}, 0),
 	}
@@ -173,7 +174,7 @@ func handleDelete(set *pgoutput.RelationSet, v *pgoutput.Delete, changeRecord *t
 		XID:       changeRecord.XID,
 		Timestamp: changeRecord.Timestamp,
 		Table:     changeSet.Name,
-		Operation: "delete",
+		Operation: types.ChangeOperationDelete,
 		Fields:    make(map[string]interface{}, 0),
 	}
 

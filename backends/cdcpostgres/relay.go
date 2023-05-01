@@ -6,7 +6,8 @@ import (
 	"github.com/jackc/pgx"
 	"github.com/pkg/errors"
 
-	"github.com/batchcorp/pgoutput"
+	"github.com/streamdal/pgoutput"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 

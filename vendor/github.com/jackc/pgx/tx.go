@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"time"
 
 	"github.com/pkg/errors"
@@ -146,7 +147,8 @@ func (tx *Tx) CommitEx(ctx context.Context) error {
 // defer tx.Rollback() is safe even if tx.Commit() will be called first in a
 // non-error condition.
 func (tx *Tx) Rollback() error {
-	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
 	return tx.RollbackEx(ctx)
 }
 
@@ -235,6 +237,24 @@ func (tx *Tx) CopyFrom(tableName Identifier, columnNames []string, rowSrc CopyFr
 	}
 
 	return tx.conn.CopyFrom(tableName, columnNames, rowSrc)
+}
+
+// CopyFromReader delegates to the underlying *Conn
+func (tx *Tx) CopyFromReader(r io.Reader, sql string) (commandTag CommandTag, err error) {
+	if tx.status != TxStatusInProgress {
+		return CommandTag(""), ErrTxClosed
+	}
+
+	return tx.conn.CopyFromReader(r, sql)
+}
+
+// CopyToWriter delegates to the underlying *Conn
+func (tx *Tx) CopyToWriter(w io.Writer, sql string, args ...interface{}) (commandTag CommandTag, err error) {
+	if tx.status != TxStatusInProgress {
+		return CommandTag(""), ErrTxClosed
+	}
+
+	return tx.conn.CopyToWriter(w, sql, args...)
 }
 
 // Status returns the status of the transaction from the set of

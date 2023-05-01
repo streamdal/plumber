@@ -9,7 +9,8 @@ import (
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
-	"github.com/batchcorp/pgoutput"
+	"github.com/streamdal/pgoutput"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
@@ -22,6 +23,10 @@ func (c *CDCPostgres) Read(ctx context.Context, readOpts *opts.ReadOptions, resu
 	}
 
 	args := readOpts.Postgres.Args
+
+	// Wrap context so we can cancel on SIGTERM and if --continuous is not specified
+	// cancelFunc will only be called on INSERT/UPDATE/DELETE to allow for Begin/Commit/Relation messages to be processed
+	cdcCtx, cancelFunc := context.WithCancel(ctx)
 
 	defer c.client.Close()
 	set := pgoutput.NewRelationSet(nil)
@@ -73,7 +78,7 @@ func (c *CDCPostgres) Read(ctx context.Context, readOpts *opts.ReadOptions, resu
 			}
 
 			if !readOpts.Continuous {
-				ctx.Done()
+				cancelFunc()
 			}
 		case pgoutput.Update:
 			record, err := handleUpdate(set, &v, changeRecord)
@@ -104,7 +109,7 @@ func (c *CDCPostgres) Read(ctx context.Context, readOpts *opts.ReadOptions, resu
 			}
 
 			if !readOpts.Continuous {
-				ctx.Done()
+				cancelFunc()
 			}
 		case pgoutput.Delete:
 			record, err := handleDelete(set, &v, changeRecord)
@@ -135,15 +140,27 @@ func (c *CDCPostgres) Read(ctx context.Context, readOpts *opts.ReadOptions, resu
 			}
 
 			if !readOpts.Continuous {
-				ctx.Done()
+				cancelFunc()
 			}
 		}
+
 		return nil
 	}
 
 	c.log.Info("Listening for changes...")
 
-	return sub.Start(ctx, 0, handler)
+	go func() {
+		if err := sub.Start(cdcCtx, 0, handler); err != nil {
+			if !errors.Is(err, context.Canceled) {
+				c.log.Error(err)
+			}
+		}
+	}()
+
+	<-cdcCtx.Done()
+	time.Sleep(time.Second * 1)
+
+	return nil
 }
 
 // validateReadOptions ensures the correct CLI options are specified for the read action

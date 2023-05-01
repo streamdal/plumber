@@ -121,7 +121,7 @@ database/sql. The second is to use a pointer to a pointer.
 
     var foo pgtype.Varchar
     var bar *string
-    err := conn.QueryRow("select foo, bar from widgets where id=$1", 42).Scan(&a, &b)
+    err := conn.QueryRow("select foo, bar from widgets where id=$1", 42).Scan(&foo, &bar)
     if err != nil {
         return err
     }
@@ -225,7 +225,7 @@ notification.
         return nil
     }
 
-    if notification, err := conn.WaitForNotification(time.Second); err != nil {
+    if notification, err := conn.WaitForNotification(context.TODO()); err != nil {
         // do something with notification
     }
 
@@ -235,6 +235,13 @@ The pgx ConnConfig struct has a TLSConfig field. If this field is
 nil, then TLS will be disabled. If it is present, then it will be used to
 configure the TLS connection. This allows total configuration of the TLS
 connection.
+
+pgx has never explicitly supported Postgres < 9.6's `ssl_renegotiation` option.
+As of v3.3.0, it doesn't send `ssl_renegotiation: 0` either to support Redshift
+(https://github.com/jackc/pgx/pull/476). If you need TLS Renegotiation,
+consider supplying `ConnConfig.TLSConfig` with a non-zero `Renegotiation`
+value and if it's not the default on your server, set `ssl_renegotiation`
+via `ConnConfig.RuntimeParams`.
 
 Logging
 

@@ -2,6 +2,7 @@ package pgx
 
 import (
 	"context"
+	"io"
 	"sync"
 	"time"
 
@@ -27,7 +28,7 @@ type ConnPool struct {
 	resetCount           int
 	afterConnect         func(*Conn) error
 	logger               Logger
-	logLevel             int
+	logLevel             LogLevel
 	closed               bool
 	preparedStatements   map[string]*PreparedStatement
 	acquireTimeout       time.Duration
@@ -38,6 +39,12 @@ type ConnPoolStat struct {
 	MaxConnections       int // max simultaneous connections to use
 	CurrentConnections   int // current live connections
 	AvailableConnections int // unused live connections
+}
+
+// CheckedOutConnections returns the amount of connections that are currently
+// checked out from the pool.
+func (stat *ConnPoolStat) CheckedOutConnections() int {
+	return stat.CurrentConnections - stat.AvailableConnections
 }
 
 // ErrAcquireTimeout occurs when an attempt to acquire a connection times out.
@@ -103,6 +110,25 @@ func (p *ConnPool) Acquire() (*Conn, error) {
 	return c, err
 }
 
+func (p *ConnPool) AcquireEx(ctx context.Context) (*Conn, error) {
+	var deadline *time.Time
+
+	if p.acquireTimeout > 0 {
+		tmp := time.Now().Add(p.acquireTimeout)
+		deadline = &tmp
+	}
+
+	ctxDeadline, ok := ctx.Deadline()
+	if ok && (deadline == nil || ctxDeadline.Before(*deadline)) {
+		deadline = &ctxDeadline
+	}
+
+	p.cond.L.Lock()
+	c, err := p.acquire(deadline)
+	p.cond.L.Unlock()
+	return c, err
+}
+
 // deadlinePassed returns true if the given deadline has passed.
 func (p *ConnPool) deadlinePassed(deadline *time.Time) bool {
 	return deadline != nil && time.Now().After(*deadline)
@@ -115,10 +141,14 @@ func (p *ConnPool) acquire(deadline *time.Time) (*Conn, error) {
 	}
 
 	// A connection is available
-	if len(p.availableConnections) > 0 {
-		c := p.availableConnections[len(p.availableConnections)-1]
+	// The pool works like a queue. Available connection will be returned
+	// from the head. A new connection will be added to the tail.
+	numAvailable := len(p.availableConnections)
+	if numAvailable > 0 {
+		c := p.availableConnections[0]
 		c.poolResetCount = p.resetCount
-		p.availableConnections = p.availableConnections[:len(p.availableConnections)-1]
+		copy(p.availableConnections, p.availableConnections[1:])
+		p.availableConnections = p.availableConnections[:numAvailable-1]
 		return c, nil
 	}
 
@@ -308,7 +338,7 @@ func (p *ConnPool) createConnection() (*Conn, error) {
 func (p *ConnPool) createConnectionUnlocked() (*Conn, error) {
 	p.inProgressConnects++
 	p.cond.L.Unlock()
-	c, err := Connect(p.config)
+	c, err := connect(p.config, p.connInfo.DeepCopy())
 	p.cond.L.Lock()
 	p.inProgressConnects--
 
@@ -330,7 +360,8 @@ func (p *ConnPool) afterConnectionCreated(c *Conn) (*Conn, error) {
 	}
 
 	for _, ps := range p.preparedStatements {
-		if _, err := c.Prepare(ps.Name, ps.SQL); err != nil {
+		opts := &PrepareExOptions{ParameterOIDs: ps.ParameterOIDs}
+		if _, err := c.PrepareEx(context.Background(), ps.Name, ps.SQL, opts); err != nil {
 			c.die(err)
 			return nil, err
 		}
@@ -438,7 +469,7 @@ func (p *ConnPool) Prepare(name, sql string) (*PreparedStatement, error) {
 //
 // PrepareEx creates a prepared statement with name and sql. sql can contain placeholders
 // for bound parameters. These placeholders are referenced positional as $1, $2, etc.
-// It defers from Prepare as it allows additional options (such as parameter OIDs) to be passed via struct
+// It differs from Prepare as it allows additional options (such as parameter OIDs) to be passed via struct
 //
 // PrepareEx is idempotent; i.e. it is safe to call PrepareEx multiple times with the same
 // name and sql arguments. This allows a code path to PrepareEx and Query/Exec/Prepare without
@@ -539,6 +570,28 @@ func (p *ConnPool) CopyFrom(tableName Identifier, columnNames []string, rowSrc C
 	defer p.Release(c)
 
 	return c.CopyFrom(tableName, columnNames, rowSrc)
+}
+
+// CopyFromReader acquires a connection, delegates the call to that connection, and releases the connection
+func (p *ConnPool) CopyFromReader(r io.Reader, sql string) (CommandTag, error) {
+	c, err := p.Acquire()
+	if err != nil {
+		return "", err
+	}
+	defer p.Release(c)
+
+	return c.CopyFromReader(r, sql)
+}
+
+// CopyToWriter acquires a connection, delegates the call to that connection, and releases the connection
+func (p *ConnPool) CopyToWriter(w io.Writer, sql string, args ...interface{}) (CommandTag, error) {
+	c, err := p.Acquire()
+	if err != nil {
+		return "", err
+	}
+	defer p.Release(c)
+
+	return c.CopyToWriter(w, sql, args...)
 }
 
 // BeginBatch acquires a connection and begins a batch on that connection. When

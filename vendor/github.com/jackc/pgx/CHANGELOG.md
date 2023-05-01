@@ -1,3 +1,115 @@
+# 3.6.2 (January 24, 2020)
+
+* Fix Rows.Values() fallback to generic decoder (Matt Jibson)
+
+# 3.6.1 (January 11, 2020)
+
+## Features
+
+* Add PgError.SQLState method
+* Bit supports text format
+
+## Fixes
+
+* Fix multiple replication connections sharing minimalConnInfo
+
+# 3.6.0 (September 14, 2019)
+
+## Features
+
+* Improve zap logger (Nicholas Wilson)
+* Improve composite type support (David)
+* Connect multi-host support (Artemiy Ryabinkov)
+* Improve UUID to any [16]byte conversion (Nicholas Wilson)
+* Add database/sql repeatable read transaction support (Nathaniel Caza)
+* Load user-defined array type oids (Dmitriy Garanzha)
+* Add ConnPool.AcquireEx (Kale Blankenship)
+
+## Fixes
+
+* Remove 0 bytes when sanitizing identifiers
+* Terminate context prior to releasing when killing batch connection (Andrew S. Brown)
+* Do not ignore PostgreSQL errors from deferred constraints
+* Correct example for WaitForNotification (Ian Stapleton Cordasco)
+* Include ParameterOIDs when preparing statements on new pool connections (Kale Blankenship)
+* Fix DSN parsing with single quoted values (Joshua Barone)
+
+## Changes
+
+* Adjust default read buffer to match default PostgreSQL send buffer (Artemiy Ryabinkov)
+* Add https://github.com/gofrs/uuid extension (David Hudson)
+
+# 3.5.0 (June 29, 2019)
+
+## Features
+
+* Protocol support for PortalSuspended message (avivklas)
+* Read OIDs for composite types on connection init (Nick Jones)
+
+## Fixes
+
+* Hstore can have empty keys (Josh Leverette)
+* Fix -0 value for numeric type (David Hudson)
+* Log error message on rows-close error (Euan Kemp)
+
+## Changes
+
+* Explicitly cast binary string to bytea in simple protocol (jinhua luo)
+* Skip parse and sanitize simple query when no arguments (jinhua luo)
+
+# 3.4.0 (May 3, 2019)
+
+## Features
+
+* Improved .pgpass handling (Dmitry Smal)
+* Adds RowsAffected for CopyToWriter and CopyFromReader (Nikolay Vorobev)
+* Support binding of []int type to array integer (David Bariod)
+* Expose registered driver instance to aid integration with other libraries (PLATEL Kévin)
+* Allow normal queries on replication connections (Jan Vcelak)
+* Add support for creating a DB from pgx.Pool (fzerorubigd)
+* SCRAM authentication
+* pgtype.Date JSON marshal/unmarshal (Andrey Kuzmin)
+
+## Fixes
+
+* Fix encoding of ErrorResponse (Josh Leverette)
+* Use more detailed error output of unknown field (Ilya Sivanev)
+* "Temporary" Write errors no longer silently break connections.
+* Fix PreferSimpleProtocol overwrite (Ilya Sinelnikov)
+* Fix enum handling (Robert Lin)
+* Copy protocol fixes (Andrey)
+
+## Changes
+
+* Do not attempt recovery from any Write error.
+* Use LogLevel type instead of int for conn config
+
+# 3.3.0 (December 1, 2018)
+
+## Features
+
+* Add CopyFromReader and CopyToWriter (Murat Kabilov)
+* Add MacaddrArray (Anthony Regeda)
+* Add float types to FieldDescription.Type (David Yamnitsky)
+* Add CheckedOutConnections helper method (MOZGIII)
+* Add host query parameter to support Unix sockets (Jörg Thalheim)
+* Custom cancelation hook for use with PostgreSQL-like databases (James Hartig)
+* Added LastStmtSent for safe retry logic (James Hartig)
+
+## Fixes
+
+* Do not silently ignore assign NULL to \*string
+* Fix issue with JSON and driver.Valuer conversion
+* Fix race with stdlib Driver.configs Open (Greg Curtis)
+
+## Changes
+
+* Connection pool uses connections in queue order instead of stack. This
+  minimized the time any connection is idle vs. any other connection.
+  (Anthony Regeda)
+* FieldDescription.Modifier is int32 instead of uint32
+* tls: stop sending ssl_renegotiation_limit in startup message (Tejas Manohar)
+
 # 3.2.0 (August 7, 2018)
 
 ## Features

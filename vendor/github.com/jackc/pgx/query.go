@@ -69,6 +69,25 @@ func (rows *Rows) Close() {
 		return
 	}
 
+	// If there is no error and a batch operation is not in progress read until we get the ReadyForQuery message or the
+	// ErrorResponse. This is necessary to detect a deferred constraint violation where the ErrorResponse is sent after
+	// CommandComplete.
+	if rows.err == nil && rows.batch == nil && rows.conn.pendingReadyForQueryCount == 1 {
+		for rows.conn.pendingReadyForQueryCount > 0 {
+			msg, err := rows.conn.rxMsg()
+			if err != nil {
+				rows.err = err
+				break
+			}
+
+			err = rows.conn.processContextFreeMsg(msg)
+			if err != nil {
+				rows.err = err
+				break
+			}
+		}
+	}
+
 	if rows.unlockConn {
 		rows.conn.unlock()
 		rows.unlockConn = false
@@ -84,7 +103,7 @@ func (rows *Rows) Close() {
 			rows.conn.log(LogLevelInfo, "Query", map[string]interface{}{"sql": rows.sql, "args": logQueryArgs(rows.args), "time": endTime.Sub(rows.startTime), "rowCount": rows.rowCount})
 		}
 	} else if rows.conn.shouldLog(LogLevelError) {
-		rows.conn.log(LogLevelError, "Query", map[string]interface{}{"sql": rows.sql, "args": logQueryArgs(rows.args)})
+		rows.conn.log(LogLevelError, "Query", map[string]interface{}{"sql": rows.sql, "args": logQueryArgs(rows.args), "err": rows.err})
 	}
 
 	if rows.batch != nil && rows.err != nil {
@@ -137,7 +156,8 @@ func (rows *Rows) Next() bool {
 					rows.fields[i].DataTypeName = dt.Name
 					rows.fields[i].FormatCode = TextFormatCode
 				} else {
-					rows.fatal(errors.Errorf("unknown oid: %d", rows.fields[i].DataType))
+					fd := rows.fields[i]
+					rows.fatal(errors.Errorf("unknown oid: %d, name: %s", fd.DataType, fd.Name))
 					return false
 				}
 			}
@@ -259,7 +279,7 @@ func (rows *Rows) Scan(dest ...interface{}) (err error) {
 					}
 				}
 			} else {
-				rows.fatal(scanArgError{col: i, err: errors.Errorf("unknown oid: %v", fd.DataType)})
+				rows.fatal(scanArgError{col: i, err: errors.Errorf("unknown oid: %v, name: %s", fd.DataType, fd.Name)})
 			}
 		}
 
@@ -292,8 +312,8 @@ func (rows *Rows) Values() ([]interface{}, error) {
 
 			switch fd.FormatCode {
 			case TextFormatCode:
-				decoder := value.(pgtype.TextDecoder)
-				if decoder == nil {
+				decoder, ok := value.(pgtype.TextDecoder)
+				if !ok {
 					decoder = &pgtype.GenericText{}
 				}
 				err := decoder.DecodeText(rows.conn.ConnInfo, buf)
@@ -302,8 +322,8 @@ func (rows *Rows) Values() ([]interface{}, error) {
 				}
 				values = append(values, decoder.(pgtype.Value).Get())
 			case BinaryFormatCode:
-				decoder := value.(pgtype.BinaryDecoder)
-				if decoder == nil {
+				decoder, ok := value.(pgtype.BinaryDecoder)
+				if !ok {
 					decoder = &pgtype.GenericBinary{}
 				}
 				err := decoder.DecodeBinary(rows.conn.ConnInfo, buf)
@@ -368,6 +388,7 @@ type QueryExOptions struct {
 }
 
 func (c *Conn) QueryEx(ctx context.Context, sql string, options *QueryExOptions, args ...interface{}) (rows *Rows, err error) {
+	c.lastStmtSent = false
 	c.lastActivityTime = time.Now()
 	rows = c.getRows(sql, args)
 
@@ -395,6 +416,7 @@ func (c *Conn) QueryEx(ctx context.Context, sql string, options *QueryExOptions,
 	}
 
 	if (options == nil && c.config.PreferSimpleProtocol) || (options != nil && options.SimpleProtocol) {
+		c.lastStmtSent = true
 		err = c.sanitizeAndSendSimpleQuery(sql, args...)
 		if err != nil {
 			rows.fatal(err)
@@ -414,8 +436,9 @@ func (c *Conn) QueryEx(ctx context.Context, sql string, options *QueryExOptions,
 
 		buf = appendSync(buf)
 
-		n, err := c.conn.Write(buf)
-		if err != nil && fatalWriteErr(n, err) {
+		c.lastStmtSent = true
+		_, err = c.conn.Write(buf)
+		if err != nil {
 			rows.fatal(err)
 			c.die(err)
 			return rows, err
@@ -460,6 +483,7 @@ func (c *Conn) QueryEx(ctx context.Context, sql string, options *QueryExOptions,
 	rows.sql = ps.SQL
 	rows.fields = ps.FieldDescriptions
 
+	c.lastStmtSent = true
 	err = c.sendPreparedQuery(ps, args...)
 	if err != nil {
 		rows.fatal(err)
@@ -503,7 +527,8 @@ func (c *Conn) readUntilRowDescription() ([]FieldDescription, error) {
 				if dt, ok := c.ConnInfo.DataTypeForOID(fieldDescriptions[i].DataType); ok {
 					fieldDescriptions[i].DataTypeName = dt.Name
 				} else {
-					return nil, errors.Errorf("unknown oid: %d", fieldDescriptions[i].DataType)
+					fd := fieldDescriptions[i]
+					return nil, errors.Errorf("unknown oid: %d, name: %s", fd.DataType, fd.Name)
 				}
 			}
 			return fieldDescriptions, nil
@@ -516,6 +541,10 @@ func (c *Conn) readUntilRowDescription() ([]FieldDescription, error) {
 }
 
 func (c *Conn) sanitizeAndSendSimpleQuery(sql string, args ...interface{}) (err error) {
+	if len(args) == 0 {
+		return c.sendSimpleQuery(sql)
+	}
+
 	if c.RuntimeParams["standard_conforming_strings"] != "on" {
 		return errors.New("simple protocol queries must be run with standard_conforming_strings=on")
 	}
