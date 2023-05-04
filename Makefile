@@ -111,10 +111,6 @@ docker/build:
 	-t streamdal/$(BINARY):$(GIT_TAG) \
 	-t streamdal/$(BINARY):latest \
 	-t streamdal/$(BINARY):local \
-	-t batchcorp/$(BINARY):$(SHORT_SHA) \
-	-t batchcorp/$(BINARY):$(GIT_TAG) \
-	-t batchcorp/$(BINARY):latest \
-	-t batchcorp/$(BINARY):local \
 	-f ./Dockerfile .
 
 .PHONY: docker/build/local
