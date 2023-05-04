@@ -187,7 +187,7 @@ test/fakes:
 	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/pulsar/pulsarfakes/fake_message.go github.com/apache/pulsar-client-go/pulsar.Message &
 	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/pulsar/pulsarfakes/fake_messageid.go github.com/apache/pulsar-client-go/pulsar.MessageID &
 	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/mqtt/mqttfakes/fake_mqtt.go github.com/eclipse/paho.mqtt.golang.Client &
-	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/rabbitmq/rabbitfakes/fake_rabbit.go github.com/streamdal/rabbit.IRabbit &
+	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/rabbitmq/rabbitfakes/fake_rabbit.go github.com/batchcorp/rabbit.IRabbit &
 	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/awssns/snsfakes/fake_sns.go github.com/aws/aws-sdk-go/service/sns/snsiface.SNSAPI &
 	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/awssqs/sqsfakes/fake_sqs.go github.com/aws/aws-sdk-go/service/sqs/sqsiface.SQSAPI &
 	$(GO) run github.com/maxbrunsfeld/counterfeiter/v6 -o backends/awskinesis/kinesisfakes/fake_kinesis.go github.com/aws/aws-sdk-go/service/kinesis/kinesisiface.KinesisAPI &
