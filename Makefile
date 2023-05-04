@@ -4,9 +4,9 @@ GIT_TAG ?= $(shell git describe --tags --abbrev=0)
 BINARY   = plumber
 ARCH ?= $(shell uname -m)
 
-GO = CGO_ENABLED=$(CGO_ENABLED) GONOPROXY=github.com/batchcorp GOFLAGS=-mod=vendor go
+GO = CGO_ENABLED=$(CGO_ENABLED) GONOPROXY=github.com/streamdal GOFLAGS=-mod=vendor go
 CGO_ENABLED ?= 0
-GO_BUILD_FLAGS = -ldflags "-X 'github.com/batchcorp/plumber/options.VERSION=${VERSION}' -X 'main.TELEMETRY_API_KEY=${TELEMETRY_API_KEY}'"
+GO_BUILD_FLAGS = -ldflags "-X 'github.com/streamdal/plumber/options.VERSION=${VERSION}' -X 'main.TELEMETRY_API_KEY=${TELEMETRY_API_KEY}'"
 
 # Pattern #1 example: "example : description = Description for example target"
 # Pattern #2 example: "### Example separator text
@@ -107,6 +107,10 @@ generate/docs:
 docker/build: description = Build docker image
 docker/build:
 	docker buildx build --push --platform=linux/amd64,linux/arm64 \
+	-t streamdal/$(BINARY):$(SHORT_SHA) \
+	-t streamdal/$(BINARY):$(GIT_TAG) \
+	-t streamdal/$(BINARY):latest \
+	-t streamdal/$(BINARY):local \
 	-t batchcorp/$(BINARY):$(SHORT_SHA) \
 	-t batchcorp/$(BINARY):$(GIT_TAG) \
 	-t batchcorp/$(BINARY):latest \
@@ -116,16 +120,16 @@ docker/build:
 .PHONY: docker/build/local
 docker/build/local: description = Build docker image
 docker/build/local:
-	docker build -t batchcorp/$(SERVICE):$(VERSION) --build-arg TARGETOS=linux --build-arg TARGETARCH=arm64 \
-	-t batchcorp/$(SERVICE):latest \
+	docker build -t streamdal/$(SERVICE):$(VERSION) --build-arg TARGETOS=linux --build-arg TARGETARCH=arm64 \
+	-t streamdal/$(SERVICE):latest \
 	-f ./Dockerfile .
 
 .PHONY: docker/push
 docker/push: description = Push local docker image
 docker/push:
-	docker push batchcorp/$(BINARY):$(SHORT_SHA) && \
-	docker push batchcorp/$(BINARY):$(GIT_TAG) && \
-	docker push batchcorp/$(BINARY):latest
+	docker push streamdal/$(BINARY):$(SHORT_SHA) && \
+	docker push streamdal/$(BINARY):$(GIT_TAG) && \
+	docker push streamdal/$(BINARY):latest
 
 .PHONY: docker/run
 docker/run: description = Run local plumber in Docker
@@ -137,7 +141,7 @@ docker/run:
 		-e PLUMBER_RELAY_SQS_QUEUE_NAME=PlumberTestQueue \
 		-e PLUMBER_RELAY_SQS_AUTO_DELETE=true \
 		-e PLUMBER_DEBUG=true \
-		-d batchcorp/$(BINARY):local aws-sqs
+		-d streamdal/$(BINARY):local aws-sqs
 
 ### Test
 

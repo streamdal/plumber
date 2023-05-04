@@ -1,6 +1,6 @@
 ![Brief Demo](./assets/plumber_logo_full.png)
 
-[![Master build status](https://github.com/batchcorp/plumber/workflows/master/badge.svg)](https://github.com/batchcorp/plumber/actions/workflows/master-test.yaml) [![Go Report Card](https://goreportcard.com/badge/github.com/batchcorp/plumber)](https://goreportcard.com/report/github.com/batchcorp/plumber) [![slack](https://img.shields.io/badge/slack-streamdal-brightgreen.svg?logo=slack)](https://launchpass.com/streamdal)
+[![Master build status](https://github.com/streamdal/plumber/workflows/master/badge.svg)](https://github.com/streamdal/plumber/actions/workflows/master-test.yaml) [![Go Report Card](https://goreportcard.com/badge/github.com/streamdal/plumber)](https://goreportcard.com/report/github.com/streamdal/plumber) [![slack](https://img.shields.io/badge/slack-streamdal-brightgreen.svg?logo=slack)](https://launchpass.com/streamdal)
 
 plumber is a CLI devtool for inspecting, piping, messaging and redirecting data
 in message systems like Kafka, RabbitMQ , GCP PubSub and 
@@ -40,21 +40,21 @@ together or use it for debugging your event driven systems.
 ### Via brew
 
 ```bash
-$ brew tap batchcorp/public
+$ brew tap streamdal/public
 $ brew install plumber
 ```
 
 ### Manually
 
-* [macOS](https://github.com/batchcorp/plumber/releases/latest/download/plumber-darwin)
-* [Linux](https://github.com/batchcorp/plumber/releases/latest/download/plumber-linux)
-* [Windows](https://github.com/batchcorp/plumber/releases/latest/download/plumber-windows.exe)
+* [macOS](https://github.com/streamdal/plumber/releases/latest/download/plumber-darwin)
+* [Linux](https://github.com/streamdal/plumber/releases/latest/download/plumber-linux)
+* [Windows](https://github.com/streamdal/plumber/releases/latest/download/plumber-windows.exe)
 
 Plumber is a single binary, to install you simply need to download it, give it executable
 permissions and call it from your shell. Here's an example set of commands to do this:
 
 ```bash
-$ curl -L -o plumber https://github.com/batchcorp/plumber/releases/latest/download/plumber-darwin
+$ curl -L -o plumber https://github.com/streamdal/plumber/releases/latest/download/plumber-darwin
 $ chmod +x plumber
 $ mv plumber /usr/local/bin/plumber
 ```
@@ -123,10 +123,10 @@ INFO[0000] Successfully wrote message to topic 'foo'  pkg=kafka/write.go
 
 ## Documentation
 
-* [docs/examples.md](https://github.com/batchcorp/plumber/blob/master/docs/examples.md) for more usage examples
-* [docs/env.md](https://github.com/batchcorp/plumber/blob/master/docs/env.md) for list of supported environment variables
-* [docs/metrics.md](https://github.com/batchcorp/plumber/blob/master/docs/metrics.md) for information on metrics that plumber exposes
-* [docs/server.md](https://github.com/batchcorp/plumber/blob/master/docs/server.md) for examples on running plumber in server mode
+* [docs/examples.md](https://github.com/streamdal/plumber/blob/master/docs/examples.md) for more usage examples
+* [docs/env.md](https://github.com/streamdal/plumber/blob/master/docs/env.md) for list of supported environment variables
+* [docs/metrics.md](https://github.com/streamdal/plumber/blob/master/docs/metrics.md) for information on metrics that plumber exposes
+* [docs/server.md](https://github.com/streamdal/plumber/blob/master/docs/server.md) for examples on running plumber in server mode
 
 ## Getting Help
 
@@ -233,7 +233,7 @@ highly available cluster.
 
 You can read more about "server mode" [here](https://docs.streamdal.com/plumber/server-mode).
 
-Server mode examples can be found in [docs/server.md](https://github.com/batchcorp/plumber/blob/master/docs/server.md)
+Server mode examples can be found in [docs/server.md](https://github.com/streamdal/plumber/blob/master/docs/server.md)
 
 ## Acknowledgments
 
@@ -248,12 +248,12 @@ To push a new plumber release:
 1. `git tag v0.18.0 master`
 1. `git push origin v0.18.0`
 1. Watch the github action
-1. New release should be automatically created under https://github.com/batchcorp/plumber/releases/
+1. New release should be automatically created under https://github.com/streamdal/plumber/releases/
 1. Update release to include any relevant info
-1. Update [homebrew](https://github.com/batchcorp/homebrew-public/blob/master/plumber.rb) SHA and version references
+1. Update [homebrew](https://github.com/streamdal/homebrew-public/blob/master/plumber.rb) SHA and version references
 
 ## Contribute
 
 We love contributions! Prior to sending us a PR, open an issue to discuss what
 you intend to work on. When ready to open PR - add good tests and let's get this
-thing merged! For further guidance check out our [contributing guide](https://github.com/batchcorp/plumber/blob/master/CONTRIBUTING.md).
+thing merged! For further guidance check out our [contributing guide](https://github.com/streamdal/plumber/blob/master/CONTRIBUTING.md).
