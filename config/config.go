@@ -49,12 +49,14 @@ type Config struct {
 	Connections      map[string]*stypes.Connection `json:"connections"`
 	Relays           map[string]*stypes.Relay      `json:"relays"`
 	Tunnels          map[string]*stypes.Tunnel     `json:"tunnels"`
+	WasmFiles        map[string]*stypes.WasmFile   `json:"wasm_files"`
 	ConnectionsMutex *sync.RWMutex                 `json:"-"`
 	RelaysMutex      *sync.RWMutex                 `json:"-"`
 	TunnelsMutex     *sync.RWMutex                 `json:"-"`
+	WasmFilesMutex   *sync.RWMutex                 `json:"-"`
 
 	enableCluster bool
-	kv            kv.IKV
+	KV            kv.IKV
 	log           *logrus.Entry
 }
 
@@ -91,7 +93,7 @@ func New(enableCluster bool, k kv.IKV) (*Config, error) {
 				return newConfig(enableCluster, k), nil
 			}
 
-			return nil, errors.Wrap(err, "unable to fetch config from kv")
+			return nil, errors.Wrap(err, "unable to fetch config from KV")
 		}
 	}
 
@@ -257,11 +259,13 @@ func newConfig(enableCluster bool, k kv.IKV) *Config {
 		Connections:      make(map[string]*stypes.Connection),
 		Relays:           make(map[string]*stypes.Relay),
 		Tunnels:          make(map[string]*stypes.Tunnel),
+		WasmFiles:        make(map[string]*stypes.WasmFile),
 		ConnectionsMutex: &sync.RWMutex{},
 		RelaysMutex:      &sync.RWMutex{},
 		TunnelsMutex:     &sync.RWMutex{},
+		WasmFilesMutex:   &sync.RWMutex{},
 
-		kv:            k,
+		KV:            k,
 		enableCluster: enableCluster,
 		log:           logrus.WithField("pkg", "config"),
 	}
@@ -304,7 +308,7 @@ func fetchConfigFromKV(k kv.IKV) (*Config, error) {
 	}
 
 	cfg.enableCluster = true
-	cfg.kv = k
+	cfg.KV = k
 	cfg.log = logrus.WithField("pkg", "config")
 
 	return cfg, nil
@@ -393,7 +397,7 @@ func remove(fileName string) error {
 // WriteConfig writes a Batch struct as JSON into a config.json file
 func (c *Config) writeConfig(data []byte) error {
 	if c.enableCluster {
-		if err := c.kv.Put(context.Background(), KVConfigBucket, KVConfigKey, data); err != nil {
+		if err := c.KV.Put(context.Background(), KVConfigBucket, KVConfigKey, data); err != nil {
 			c.log.Errorf("unable to write config to KV: %v", err)
 
 			return errors.Wrap(err, "unable to write config to KV")
@@ -564,4 +568,32 @@ func (c *Config) DeleteTunnel(tunnelID string) {
 	c.TunnelsMutex.Lock()
 	defer c.TunnelsMutex.Unlock()
 	delete(c.Tunnels, tunnelID)
+}
+
+// GetWasmFile returns an in-progress read from the WasmFiles map
+func (c *Config) GetWasmFile(fileName string) *stypes.WasmFile {
+	c.WasmFilesMutex.RLock()
+	defer c.WasmFilesMutex.RUnlock()
+
+	r, _ := c.WasmFiles[fileName]
+
+	return r
+}
+
+// SetWasmFile adds an in-progress read to the WasmFiles map
+func (c *Config) SetWasmFile(fileName string, tunnel *stypes.WasmFile) {
+	c.WasmFilesMutex.Lock()
+	defer c.WasmFilesMutex.Unlock()
+
+	if c.WasmFiles == nil {
+		c.WasmFiles = make(map[string]*stypes.WasmFile)
+	}
+	c.WasmFiles[fileName] = tunnel
+}
+
+// DeleteWasmFile removes a tunnel from in-memory map
+func (c *Config) DeleteWasmFile(fileName string) {
+	c.TunnelsMutex.Lock()
+	defer c.TunnelsMutex.Unlock()
+	delete(c.Tunnels, fileName)
 }

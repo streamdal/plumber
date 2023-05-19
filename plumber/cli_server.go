@@ -157,6 +157,7 @@ func (p *Plumber) startGRPCServer() error {
 		Bus:              p.Bus,
 		Log:              logrus.WithField("pkg", "plumber/cli_server.go"),
 		CLIOptions:       p.CLIOptions,
+		KV:               p.PersistentConfig.KV,
 	}
 
 	protos.RegisterPlumberServerServer(grpcServer, plumberServer)

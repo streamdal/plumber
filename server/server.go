@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/batchcorp/plumber/kv"
+
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 
@@ -24,6 +26,7 @@ type Server struct {
 	Bus              bus.IBus
 	Log              *logrus.Entry
 	CLIOptions       *opts.CLIOptions
+	KV               kv.IKV
 }
 
 func (s *Server) GetServerOptions(_ context.Context, req *protos.GetServerOptionsRequest) (*protos.GetServerOptionsResponse, error) {
