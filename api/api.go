@@ -4,15 +4,18 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/batchcorp/plumber/config"
+
 	"github.com/julienschmidt/httprouter"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 )
 
 type API struct {
-	Version       string
-	ListenAddress string
-	log           *logrus.Entry
+	Version          string
+	ListenAddress    string
+	PersistentConfig *config.Config
+	log              *logrus.Entry
 }
 
 type ResponseJSON struct {
@@ -22,11 +25,12 @@ type ResponseJSON struct {
 	Errors  string            `json:"errors,omitempty"`
 }
 
-func Start(listenAddress, version string) (*http.Server, error) {
+func Start(cfg *config.Config, listenAddress, version string) (*http.Server, error) {
 	a := &API{
-		Version:       version,
-		ListenAddress: listenAddress,
-		log:           logrus.WithField("pkg", "api"),
+		Version:          version,
+		ListenAddress:    listenAddress,
+		PersistentConfig: cfg,
+		log:              logrus.WithField("pkg", "api"),
 	}
 
 	a.log.Debugf("starting API server on %s", listenAddress)
@@ -35,6 +39,19 @@ func Start(listenAddress, version string) (*http.Server, error) {
 
 	router.HandlerFunc("GET", "/health-check", a.healthCheckHandler)
 	router.HandlerFunc("GET", "/version", a.versionHandler)
+	//
+	//router.Handle("GET", "/v1/rule", a.getRulesHandler)
+	//router.Handle("POST", "/v1/rule", a.createRuleHandler)
+	//router.Handle("DELETE", "/v1/rule/:id", a.deleteRuleHandler)
+	//router.Handle("GET", "/v1/rule/:id", a.getRuleHandler)
+
+	router.Handle("GET", "/v1/ruleset", a.getRuleSetsHandler)
+	router.Handle("POST", "/v1/ruleset", a.createRuleSetHandler)
+	router.Handle("DELETE", "/v1/ruleset/:id", a.deleteRuleSetHandler)
+	router.Handle("GET", "/v1/ruleset/:id", a.getRuleSetsHandler)
+
+	router.Handle("GET", "/v1/wasm", a.getWasmsHandler)
+
 	router.Handler("GET", "/metrics", promhttp.Handler())
 
 	srv := &http.Server{

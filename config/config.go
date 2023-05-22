@@ -45,6 +45,7 @@ type Config struct {
 	UserID          string `json:"user_id"`
 	EnableTelemetry bool   `json:"enable_telemetry"`
 	LastVersion     string `json:"last_version"`
+	SlackToken      string `json:"slack_token"`
 
 	Connections      map[string]*stypes.Connection `json:"connections"`
 	Relays           map[string]*stypes.Relay      `json:"relays"`

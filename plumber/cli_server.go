@@ -28,12 +28,6 @@ func (p *Plumber) RunServer() error {
 
 	p.log.Infof("starting plumber server in '%s' mode...", mode)
 
-	// Launch HTTP server
-	srv, err := api.Start(p.CLIOptions.Server.HttpListenAddress, options.VERSION)
-	if err != nil {
-		logrus.Fatalf("unable to start API server: %s", err)
-	}
-
 	var b bus.IBus
 
 	if p.Config.CLIOptions.Server.EnableCluster {
@@ -64,6 +58,12 @@ func (p *Plumber) RunServer() error {
 	}
 
 	p.log.Info("plumber server started")
+
+	// Launch HTTP server
+	srv, err := api.Start(p, p.CLIOptions.Server.HttpListenAddress, options.VERSION)
+	if err != nil {
+		logrus.Fatalf("unable to start API server: %s", err)
+	}
 
 	// Running in a goroutine to prevent blocking of server startup due to possible long connect timeouts
 	go func() {
