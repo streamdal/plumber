@@ -53,6 +53,7 @@ type PlumberServerClient interface {
 	DownloadWasmFile(ctx context.Context, in *DownloadWasmFileRequest, opts ...grpc.CallOption) (*DownloadWasmFileResponse, error)
 	DeleteWasmFile(ctx context.Context, in *DeleteWasmFileRequest, opts ...grpc.CallOption) (*DeleteWasmFileResponse, error)
 	GetRules(ctx context.Context, in *GetDataQualityRulesRequest, opts ...grpc.CallOption) (*GetDataQualityRulesResponse, error)
+	SendRuleNotification(ctx context.Context, in *SendRuleNotificationRequest, opts ...grpc.CallOption) (*SendRuleNotificationResponse, error)
 	GetServerOptions(ctx context.Context, in *GetServerOptionsRequest, opts ...grpc.CallOption) (*GetServerOptionsResponse, error)
 }
 
@@ -289,6 +290,15 @@ func (c *plumberServerClient) GetRules(ctx context.Context, in *GetDataQualityRu
 	return out, nil
 }
 
+func (c *plumberServerClient) SendRuleNotification(ctx context.Context, in *SendRuleNotificationRequest, opts ...grpc.CallOption) (*SendRuleNotificationResponse, error) {
+	out := new(SendRuleNotificationResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/SendRuleNotification", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *plumberServerClient) GetServerOptions(ctx context.Context, in *GetServerOptionsRequest, opts ...grpc.CallOption) (*GetServerOptionsResponse, error) {
 	out := new(GetServerOptionsResponse)
 	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetServerOptions", in, out, opts...)
@@ -333,6 +343,7 @@ type PlumberServerServer interface {
 	DownloadWasmFile(context.Context, *DownloadWasmFileRequest) (*DownloadWasmFileResponse, error)
 	DeleteWasmFile(context.Context, *DeleteWasmFileRequest) (*DeleteWasmFileResponse, error)
 	GetRules(context.Context, *GetDataQualityRulesRequest) (*GetDataQualityRulesResponse, error)
+	SendRuleNotification(context.Context, *SendRuleNotificationRequest) (*SendRuleNotificationResponse, error)
 	GetServerOptions(context.Context, *GetServerOptionsRequest) (*GetServerOptionsResponse, error)
 }
 
@@ -414,6 +425,9 @@ func (UnimplementedPlumberServerServer) DeleteWasmFile(context.Context, *DeleteW
 }
 func (UnimplementedPlumberServerServer) GetRules(context.Context, *GetDataQualityRulesRequest) (*GetDataQualityRulesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRules not implemented")
+}
+func (UnimplementedPlumberServerServer) SendRuleNotification(context.Context, *SendRuleNotificationRequest) (*SendRuleNotificationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendRuleNotification not implemented")
 }
 func (UnimplementedPlumberServerServer) GetServerOptions(context.Context, *GetServerOptionsRequest) (*GetServerOptionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetServerOptions not implemented")
@@ -880,6 +894,24 @@ func _PlumberServer_GetRules_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PlumberServer_SendRuleNotification_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendRuleNotificationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlumberServerServer).SendRuleNotification(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.PlumberServer/SendRuleNotification",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlumberServerServer).SendRuleNotification(ctx, req.(*SendRuleNotificationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _PlumberServer_GetServerOptions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetServerOptionsRequest)
 	if err := dec(in); err != nil {
@@ -1004,6 +1036,10 @@ var PlumberServer_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetRules",
 			Handler:    _PlumberServer_GetRules_Handler,
+		},
+		{
+			MethodName: "SendRuleNotification",
+			Handler:    _PlumberServer_SendRuleNotification_Handler,
 		},
 		{
 			MethodName: "GetServerOptions",

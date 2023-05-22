@@ -2,4 +2,5 @@
 
 package common
 
+type IsRule_RuleConfig = isRule_RuleConfig
 type IsRule_FailureModeConfig = isRule_FailureModeConfig
