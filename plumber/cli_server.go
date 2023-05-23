@@ -60,7 +60,7 @@ func (p *Plumber) RunServer() error {
 	p.log.Info("plumber server started")
 
 	// Launch HTTP server
-	srv, err := api.Start(p, p.CLIOptions.Server.HttpListenAddress, options.VERSION)
+	srv, err := api.Start(p.PersistentConfig, p.CLIOptions.Server.HttpListenAddress, options.VERSION)
 	if err != nil {
 		logrus.Fatalf("unable to start API server: %s", err)
 	}

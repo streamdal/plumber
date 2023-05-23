@@ -79,7 +79,7 @@ func (p *Plumber) startRelayService() error {
 
 	// Launch HTTP server
 	go func() {
-		if _, err := api.Start(p.CLIOptions.Relay.XCliOptions.HttpListenAddress, options.VERSION); err != nil {
+		if _, err := api.Start(p.PersistentConfig, p.CLIOptions.Relay.XCliOptions.HttpListenAddress, options.VERSION); err != nil {
 			logrus.Fatalf("unable to start API server: %s", err)
 		}
 	}()

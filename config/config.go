@@ -51,10 +51,12 @@ type Config struct {
 	Relays           map[string]*stypes.Relay      `json:"relays"`
 	Tunnels          map[string]*stypes.Tunnel     `json:"tunnels"`
 	WasmFiles        map[string]*stypes.WasmFile   `json:"wasm_files"`
+	RuleSets         map[string]*stypes.RuleSet    `json:"rulesets"`
 	ConnectionsMutex *sync.RWMutex                 `json:"-"`
 	RelaysMutex      *sync.RWMutex                 `json:"-"`
 	TunnelsMutex     *sync.RWMutex                 `json:"-"`
 	WasmFilesMutex   *sync.RWMutex                 `json:"-"`
+	RuleSetMutex     *sync.RWMutex                 `json:"-"`
 
 	enableCluster bool
 	KV            kv.IKV
@@ -261,10 +263,12 @@ func newConfig(enableCluster bool, k kv.IKV) *Config {
 		Relays:           make(map[string]*stypes.Relay),
 		Tunnels:          make(map[string]*stypes.Tunnel),
 		WasmFiles:        make(map[string]*stypes.WasmFile),
+		RuleSets:         make(map[string]*stypes.RuleSet),
 		ConnectionsMutex: &sync.RWMutex{},
 		RelaysMutex:      &sync.RWMutex{},
 		TunnelsMutex:     &sync.RWMutex{},
 		WasmFilesMutex:   &sync.RWMutex{},
+		RuleSetMutex:     &sync.RWMutex{},
 
 		KV:            k,
 		enableCluster: enableCluster,
@@ -354,9 +358,13 @@ func readConfigBytes(data []byte) (*Config, error) {
 		ConnectionsMutex: &sync.RWMutex{},
 		RelaysMutex:      &sync.RWMutex{},
 		TunnelsMutex:     &sync.RWMutex{},
+		WasmFilesMutex:   &sync.RWMutex{},
+		RuleSetMutex:     &sync.RWMutex{},
 		Connections:      make(map[string]*stypes.Connection),
 		Relays:           make(map[string]*stypes.Relay),
 		Tunnels:          make(map[string]*stypes.Tunnel),
+		WasmFiles:        make(map[string]*stypes.WasmFile),
+		RuleSets:         make(map[string]*stypes.RuleSet),
 	}
 
 	if err := json.Unmarshal(data, cfg); err != nil {
@@ -543,7 +551,7 @@ func (c *Config) DeleteConnection(connID string) {
 	delete(c.Connections, connID)
 }
 
-// GetTunnel returns an in-progress read from the Tunnels map
+// GetTunnel returns an entry from the Tunnels map
 func (c *Config) GetTunnel(tunnelID string) *stypes.Tunnel {
 	c.TunnelsMutex.RLock()
 	defer c.TunnelsMutex.RUnlock()
@@ -553,7 +561,7 @@ func (c *Config) GetTunnel(tunnelID string) *stypes.Tunnel {
 	return r
 }
 
-// SetTunnel adds an in-progress read to the Tunnels map
+// SetTunnel adds an entry to the Tunnels map
 func (c *Config) SetTunnel(tunnelID string, tunnel *stypes.Tunnel) {
 	c.TunnelsMutex.Lock()
 	defer c.TunnelsMutex.Unlock()
@@ -571,7 +579,7 @@ func (c *Config) DeleteTunnel(tunnelID string) {
 	delete(c.Tunnels, tunnelID)
 }
 
-// GetWasmFile returns an in-progress read from the WasmFiles map
+// GetWasmFile returns an entry from the WasmFiles map
 func (c *Config) GetWasmFile(fileName string) *stypes.WasmFile {
 	c.WasmFilesMutex.RLock()
 	defer c.WasmFilesMutex.RUnlock()
@@ -581,7 +589,7 @@ func (c *Config) GetWasmFile(fileName string) *stypes.WasmFile {
 	return r
 }
 
-// SetWasmFile adds an in-progress read to the WasmFiles map
+// SetWasmFile adds an entry to the WasmFiles map
 func (c *Config) SetWasmFile(fileName string, tunnel *stypes.WasmFile) {
 	c.WasmFilesMutex.Lock()
 	defer c.WasmFilesMutex.Unlock()
@@ -592,9 +600,37 @@ func (c *Config) SetWasmFile(fileName string, tunnel *stypes.WasmFile) {
 	c.WasmFiles[fileName] = tunnel
 }
 
-// DeleteWasmFile removes a tunnel from in-memory map
+// DeleteWasmFile removes a wasm file from in-memory map
 func (c *Config) DeleteWasmFile(fileName string) {
-	c.TunnelsMutex.Lock()
+	c.WasmFilesMutex.Lock()
+	defer c.WasmFilesMutex.Unlock()
+	delete(c.WasmFiles, fileName)
+}
+
+// GetRuleSet returns an entry from the RuleSets map
+func (c *Config) GetRuleSet(id string) *stypes.RuleSet {
+	c.RuleSetMutex.RLock()
+	defer c.RuleSetMutex.RUnlock()
+
+	r, _ := c.RuleSets[id]
+
+	return r
+}
+
+// SetRuleSet adds an entry to the RuleSets map
+func (c *Config) SetRuleSet(id string, rs *stypes.RuleSet) {
+	c.RuleSetMutex.Lock()
+	defer c.RuleSetMutex.Unlock()
+
+	if c.RuleSets == nil {
+		c.RuleSets = make(map[string]*stypes.RuleSet)
+	}
+	c.RuleSets[id] = rs
+}
+
+// DeleteRuleSet removes a rule set from in-memory map
+func (c *Config) DeleteRuleSet(rulesetID string) {
+	c.RuleSetMutex.Lock()
 	defer c.TunnelsMutex.Unlock()
-	delete(c.Tunnels, fileName)
+	delete(c.RuleSets, rulesetID)
 }

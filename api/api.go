@@ -2,9 +2,11 @@ package api
 
 import (
 	"encoding/json"
+	"io"
 	"net/http"
 
 	"github.com/batchcorp/plumber/config"
+	"github.com/pkg/errors"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -39,11 +41,6 @@ func Start(cfg *config.Config, listenAddress, version string) (*http.Server, err
 
 	router.HandlerFunc("GET", "/health-check", a.healthCheckHandler)
 	router.HandlerFunc("GET", "/version", a.versionHandler)
-	//
-	//router.Handle("GET", "/v1/rule", a.getRulesHandler)
-	//router.Handle("POST", "/v1/rule", a.createRuleHandler)
-	//router.Handle("DELETE", "/v1/rule/:id", a.deleteRuleHandler)
-	//router.Handle("GET", "/v1/rule/:id", a.getRuleHandler)
 
 	router.Handle("GET", "/v1/ruleset", a.getRuleSetsHandler)
 	router.Handle("POST", "/v1/ruleset", a.createRuleSetHandler)
@@ -106,4 +103,22 @@ func WriteErrorJSON(statusCode int, msg string, w http.ResponseWriter) {
 
 func WriteSuccessJSON(statusCode int, msg string, w http.ResponseWriter) {
 	WriteJSON(statusCode, map[string]string{"msg": msg}, w)
+}
+
+func DecodeBody(input io.ReadCloser, into interface{}) error {
+	body, err := io.ReadAll(input)
+	if err != nil || len(body) == 0 {
+		if err == nil {
+			err = errors.New("body is empty")
+		}
+
+		return errors.Wrap(err, "failed to parse input body")
+	}
+	defer input.Close()
+
+	if err := json.Unmarshal(body, into); err != nil {
+		return errors.Wrap(err, "failed to unmarshal body")
+	}
+
+	return nil
 }

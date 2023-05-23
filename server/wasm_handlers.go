@@ -4,13 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/batchcorp/plumber/server/types"
-
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber/kv"
+	"github.com/batchcorp/plumber/server/types"
 	"github.com/batchcorp/plumber/util"
 )
 

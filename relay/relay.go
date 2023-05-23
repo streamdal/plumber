@@ -2,7 +2,6 @@ package relay
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"strings"
 	"sync"
@@ -11,8 +10,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
-	"google.golang.org/grpc/metadata"
 
 	"github.com/batchcorp/collector-schemas/build/go/protos/services"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
@@ -33,6 +30,7 @@ import (
 	rpubsubTypes "github.com/batchcorp/plumber/backends/rpubsub/types"
 	rstreamsTypes "github.com/batchcorp/plumber/backends/rstreams/types"
 	"github.com/batchcorp/plumber/prometheus"
+	"github.com/batchcorp/plumber/util"
 )
 
 const (
@@ -146,7 +144,7 @@ func validateConfig(cfg *Config) error {
 }
 
 func TestConnection(cfg *Config) error {
-	conn, ctx, err := NewConnection(cfg.GRPCAddress, cfg.Token, cfg.Timeout, cfg.DisableTLS, false)
+	conn, ctx, err := util.NewGRPCConnection(cfg.GRPCAddress, cfg.Token, cfg.Timeout, cfg.DisableTLS, false)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new connection")
 	}
@@ -159,42 +157,6 @@ func TestConnection(cfg *Config) error {
 	}
 
 	return nil
-}
-
-func NewConnection(address, token string, timeout time.Duration, disableTLS, noCtx bool) (*grpc.ClientConn, context.Context, error) {
-	opts := []grpc.DialOption{
-		grpc.WithBlock(),
-	}
-
-	if !disableTLS {
-		opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(
-			&tls.Config{
-				InsecureSkipVerify: true,
-			},
-		)))
-	} else {
-		opts = append(opts, grpc.WithInsecure())
-	}
-
-	dialContext, _ := context.WithTimeout(context.Background(), timeout)
-
-	conn, err := grpc.DialContext(dialContext, address, opts...)
-	if err != nil {
-		return nil, nil, fmt.Errorf("unable to connect to grpc address '%s': %s", address, err)
-	}
-
-	var ctx context.Context
-
-	if !noCtx {
-		ctx, _ = context.WithTimeout(context.Background(), timeout)
-	} else {
-		ctx = context.Background()
-	}
-
-	md := metadata.Pairs("streamdal-token", token)
-	outCtx := metadata.NewOutgoingContext(ctx, md)
-
-	return conn, outCtx, nil
 }
 
 // WaitForShutdown will wait for service shutdown context to be canceled. It will then start constantly polling
@@ -240,7 +202,7 @@ func (r *Relay) StartWorkers(shutdownCtx context.Context) error {
 	for i := int32(0); i != r.Config.NumWorkers; i++ {
 		r.log.WithField("workerId", i).Debug("starting worker")
 
-		conn, outboundCtx, err := NewConnection(r.Config.GRPCAddress, r.Config.Token, r.Config.Timeout, r.Config.DisableTLS, true)
+		conn, outboundCtx, err := util.NewGRPCConnection(r.Config.GRPCAddress, r.Config.Token, r.Config.Timeout, r.Config.DisableTLS, true)
 		if err != nil {
 			return fmt.Errorf("unable to create new gRPC connection for worker %d: %s", i, err)
 		}
