@@ -339,33 +339,36 @@ func (p *connPool) roundTrip(ctx context.Context, req Request) (Response, error)
 		return nil, ctx.Err()
 	}
 
-	var expectTopics []string
-	defer func() {
-		if len(expectTopics) != 0 {
-			p.refreshMetadata(ctx, expectTopics)
-		}
-	}()
-
 	state := p.grabState()
 	var response promise
 
 	switch m := req.(type) {
 	case *meta.Request:
-		// We serve metadata requests directly from the transport cache.
+		// We serve metadata requests directly from the transport cache unless
+		// we would like to auto create a topic that isn't in our cache.
 		//
 		// This reduces the number of round trips to kafka brokers while keeping
 		// the logic simple when applying partitioning strategies.
 		if state.err != nil {
 			return nil, state.err
 		}
-		return filterMetadataResponse(m, state.metadata), nil
 
-	case *createtopics.Request:
-		// Force an update of the metadata when adding topics,
-		// otherwise the cached state would get out of sync.
-		expectTopics = make([]string, len(m.Topics))
-		for i := range m.Topics {
-			expectTopics[i] = m.Topics[i].Name
+		cachedMeta := filterMetadataResponse(m, state.metadata)
+		// requestNeeded indicates if we need to send this metadata request to the server.
+		// It's true when we want to auto-create topics and we don't have the topic in our
+		// cache.
+		var requestNeeded bool
+		if m.AllowAutoTopicCreation {
+			for _, topic := range cachedMeta.Topics {
+				if topic.ErrorCode == int16(UnknownTopicOrPartition) {
+					requestNeeded = true
+					break
+				}
+			}
+		}
+
+		if !requestNeeded {
+			return cachedMeta, nil
 		}
 
 	case protocol.Splitter:
@@ -387,7 +390,48 @@ func (p *connPool) roundTrip(ctx context.Context, req Request) (Response, error)
 		response = p.sendRequest(ctx, req, state)
 	}
 
-	return response.await(ctx)
+	r, err := response.await(ctx)
+	if err != nil {
+		return r, err
+	}
+
+	switch resp := r.(type) {
+	case *createtopics.Response:
+		// Force an update of the metadata when adding topics,
+		// otherwise the cached state would get out of sync.
+		topicsToRefresh := make([]string, 0, len(resp.Topics))
+		for _, topic := range resp.Topics {
+			// fixes issue 672: don't refresh topics that failed to create, it causes the library to hang indefinitely
+			if topic.ErrorCode != 0 {
+				continue
+			}
+
+			topicsToRefresh = append(topicsToRefresh, topic.Name)
+		}
+
+		p.refreshMetadata(ctx, topicsToRefresh)
+	case *meta.Response:
+		m := req.(*meta.Request)
+		// If we get here with allow auto topic creation then
+		// we didn't have that topic in our cache so we should update
+		// the cache.
+		if m.AllowAutoTopicCreation {
+			topicsToRefresh := make([]string, 0, len(resp.Topics))
+			for _, topic := range resp.Topics {
+				// fixes issue 806: don't refresh topics that failed to create,
+				// it may means kafka doesn't enable auto topic creation.
+				// This causes the library to hang indefinitely, same as createtopics process.
+				if topic.ErrorCode != 0 {
+					continue
+				}
+
+				topicsToRefresh = append(topicsToRefresh, topic.Name)
+			}
+			p.refreshMetadata(ctx, topicsToRefresh)
+		}
+	}
+
+	return r, nil
 }
 
 // refreshMetadata forces an update of the cached cluster metadata, and waits
@@ -552,10 +596,7 @@ func (p *connPool) discover(ctx context.Context, wake <-chan event) {
 			p.update(ctx, nil, err)
 		} else {
 			res := make(async, 1)
-			req := &meta.Request{
-				IncludeClusterAuthorizedOperations: true,
-				IncludeTopicAuthorizedOperations:   true,
-			}
+			req := &meta.Request{}
 			deadline, cancel := context.WithTimeout(ctx, p.metadataTTL)
 			c.reqs <- connRequest{
 				ctx: deadline,
@@ -637,6 +678,16 @@ func (p *connPool) sendRequest(ctx context.Context, req Request, state connPoolS
 		//
 		// TODO: should we cache the coordinator info?
 		p := p.sendRequest(ctx, &findcoordinator.Request{Key: m.Group()}, state)
+		r, err := p.await(ctx)
+		if err != nil {
+			return reject(err)
+		}
+		brokerID = r.(*findcoordinator.Response).NodeID
+	case protocol.TransactionalMessage:
+		p := p.sendRequest(ctx, &findcoordinator.Request{
+			Key:     m.Transaction(),
+			KeyType: int8(CoordinatorKeyTypeTransaction),
+		}, state)
 		r, err := p.await(ctx)
 		if err != nil {
 			return reject(err)
@@ -929,16 +980,12 @@ func (g *connGroup) grabConnOrConnect(ctx context.Context) (*conn, error) {
 		broker := g.broker
 
 		if broker.ID < 0 {
-			host, port, err := net.SplitHostPort(addr.String())
+			host, port, err := splitHostPortNumber(addr.String())
 			if err != nil {
-				return nil, fmt.Errorf("%s: %w", addr, err)
-			}
-			portNumber, err := strconv.Atoi(port)
-			if err != nil {
-				return nil, fmt.Errorf("%s: %w", addr, err)
+				return nil, err
 			}
 			broker.Host = host
-			broker.Port = portNumber
+			broker.Port = port
 		}
 
 		ipAddrs, err := rslv.LookupBrokerIPAddr(ctx, broker)
@@ -1124,7 +1171,7 @@ func (g *connGroup) connect(ctx context.Context, addr net.Addr) (*conn, error) {
 
 	if tlsConfig := g.pool.tls; tlsConfig != nil {
 		if tlsConfig.ServerName == "" && !tlsConfig.InsecureSkipVerify {
-			host, _, _ := net.SplitHostPort(netAddr.String())
+			host, _ := splitHostPort(netAddr.String())
 			tlsConfig = tlsConfig.Clone()
 			tlsConfig.ServerName = host
 		}
@@ -1154,7 +1201,15 @@ func (g *connGroup) connect(ctx context.Context, addr net.Addr) (*conn, error) {
 	pc.SetDeadline(time.Time{})
 
 	if g.pool.sasl != nil {
-		if err := authenticateSASL(ctx, pc, g.pool.sasl); err != nil {
+		host, port, err := splitHostPortNumber(netAddr.String())
+		if err != nil {
+			return nil, err
+		}
+		metadata := &sasl.Metadata{
+			Host: host,
+			Port: port,
+		}
+		if err := authenticateSASL(sasl.WithMetadata(ctx, metadata), pc, g.pool.sasl); err != nil {
 			return nil, err
 		}
 	}

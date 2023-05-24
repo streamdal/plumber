@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"io"
 	"net"
 	"strconv"
@@ -143,6 +144,8 @@ func (d *Dialer) DialPartition(ctx context.Context, network string, address stri
 		ClientID:        d.ClientID,
 		Topic:           partition.Topic,
 		Partition:       partition.ID,
+		Broker:          partition.Leader.ID,
+		Rack:            partition.Leader.Rack,
 		TransactionalID: d.TransactionalID,
 	})
 }
@@ -279,7 +282,15 @@ func (d *Dialer) connect(ctx context.Context, network, address string, connCfg C
 	conn := NewConnWith(c, connCfg)
 
 	if d.SASLMechanism != nil {
-		if err := d.authenticateSASL(ctx, conn); err != nil {
+		host, port, err := splitHostPortNumber(address)
+		if err != nil {
+			return nil, err
+		}
+		metadata := &sasl.Metadata{
+			Host: host,
+			Port: port,
+		}
+		if err := d.authenticateSASL(sasl.WithMetadata(ctx, metadata), conn); err != nil {
 			_ = conn.Close()
 			return nil, err
 		}
@@ -430,12 +441,26 @@ func backoff(attempt int, min time.Duration, max time.Duration) time.Duration {
 	return d
 }
 
+func canonicalAddress(s string) string {
+	return net.JoinHostPort(splitHostPort(s))
+}
+
 func splitHostPort(s string) (host string, port string) {
 	host, port, _ = net.SplitHostPort(s)
 	if len(host) == 0 && len(port) == 0 {
 		host = s
+		port = "9092"
 	}
 	return
+}
+
+func splitHostPortNumber(s string) (host string, portNumber int, err error) {
+	host, port := splitHostPort(s)
+	portNumber, err = strconv.Atoi(port)
+	if err != nil {
+		return host, 0, fmt.Errorf("%s: %w", s, err)
+	}
+	return host, portNumber, nil
 }
 
 func lookupHost(ctx context.Context, address string, resolver Resolver) (string, error) {
@@ -461,10 +486,6 @@ func lookupHost(ctx context.Context, address string, resolver Resolver) (string,
 				port = resolvedPort
 			}
 		}
-	}
-
-	if port == "" {
-		port = "9092"
 	}
 
 	return net.JoinHostPort(host, port), nil

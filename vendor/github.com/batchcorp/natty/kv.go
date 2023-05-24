@@ -2,6 +2,7 @@ package natty
 
 import (
 	"context"
+	"regexp"
 	"sync"
 	"time"
 
@@ -11,7 +12,8 @@ import (
 
 type KeyValueMap struct {
 	rwMutex *sync.RWMutex
-	kvMap   map[string]nats.KeyValue
+	// Key = bucket name, value = KeyValue
+	kvMap map[string]nats.KeyValue
 }
 
 func (n *Natty) Get(ctx context.Context, bucket string, key string) ([]byte, error) {
@@ -38,7 +40,8 @@ func (n *Natty) Get(ctx context.Context, bucket string, key string) ([]byte, err
 }
 
 // Put puts a key/val into a bucket and will create bucket if it doesn't already
-// exit. TTL is optional; if provided, only the first value will be used.
+// exit. TTL is optional - it will only be used if the bucket does not exist &
+// only the first TTL will be used.
 func (n *Natty) Put(ctx context.Context, bucket string, key string, data []byte, keyTTL ...time.Duration) error {
 	// NOTE: Context usage for K/V operations is not available in NATS (yet)
 	var ttl time.Duration
@@ -57,6 +60,47 @@ func (n *Natty) Put(ctx context.Context, bucket string, key string, data []byte,
 	}
 
 	return nil
+}
+
+// Create will add the key/value pair iff it does not exist; it will create
+// the bucket if it does not already exist. TTL is optional - it will only be
+// used if the bucket does not exist & only the first TTL will be used.
+func (n *Natty) Create(ctx context.Context, bucket string, key string, data []byte, keyTTL ...time.Duration) error {
+	// NOTE: Context usage for K/V operations is not available in NATS (yet)
+	var ttl time.Duration
+
+	if len(keyTTL) > 0 {
+		ttl = keyTTL[0]
+	}
+
+	kv, err := n.getBucket(ctx, bucket, true, ttl)
+	if err != nil {
+		return errors.Wrap(err, "unable to fetch bucket")
+	}
+
+	if _, err := kv.Create(key, data); err != nil {
+		return errors.Wrap(err, "unable to put key")
+	}
+
+	return nil
+}
+
+func (n *Natty) Keys(ctx context.Context, bucket string) ([]string, error) {
+	kv, err := n.getBucket(ctx, bucket, false, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	keys, err := kv.Keys(nats.Context(ctx))
+	if err != nil {
+		if err == nats.ErrNoKeysFound {
+			return make([]string, 0), nil
+		}
+
+		return nil, err
+	}
+
+	return keys, nil
 }
 
 func (n *Natty) Delete(ctx context.Context, bucket string, key string) error {
@@ -86,6 +130,65 @@ func (n *Natty) DeleteBucket(_ context.Context, bucket string) error {
 	}
 
 	return nil
+}
+
+// CreateBucket creates a bucket; returns an error if it already exists.
+// Context usage not supported by NATS kv (yet).
+func (n *Natty) CreateBucket(_ context.Context, name string, ttl time.Duration, replicaCount int, description ...string) error {
+	if err := validateCreateBucket(name, ttl, replicaCount); err != nil {
+		return errors.Wrap(err, "unable to validate args")
+	}
+
+	cfg := &nats.KeyValueConfig{
+		Bucket:   name,
+		TTL:      ttl,
+		Replicas: replicaCount,
+	}
+
+	if len(description) > 0 {
+		cfg.Description = description[0]
+	}
+
+	kv, err := n.js.CreateKeyValue(cfg)
+	if err != nil {
+		return err
+	}
+
+	n.kvMap.Put(name, kv)
+
+	return nil
+}
+
+func validateCreateBucket(name string, _ time.Duration, replicaCount int) error {
+	if name == "" {
+		return errors.New("bucket name cannot be empty")
+	}
+
+	regex := regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
+	if !regex.MatchString(name) {
+		return errors.New("bucket name can only contain alphanumeric, dash or underscore characters")
+	}
+
+	if replicaCount < 1 {
+		return errors.New("replicaCount must be greater than 0")
+	}
+
+	return nil
+}
+
+// WatchBucket returns an instance of nats.KeyWatcher for the given bucket
+func (n *Natty) WatchBucket(ctx context.Context, bucket string) (nats.KeyWatcher, error) {
+	b, err := n.getBucket(ctx, bucket, false, 0)
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to watch bucket '%s'", bucket)
+	}
+
+	watcher, err := b.WatchAll()
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to watch bucket '%s'", bucket)
+	}
+
+	return watcher, nil
 }
 
 // getBucket will either fetch a known bucket or create it if it doesn't exist

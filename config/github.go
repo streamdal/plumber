@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/batchcorp/plumber/kv"
+
 	"github.com/pkg/errors"
 )
 
@@ -167,9 +169,9 @@ func (c *Config) storeWasmFiles(ctx context.Context, zipFile *zip.Reader) error 
 
 		_ = data
 
-		/*		if err := s.KV.Put(ctx, kv.WasmBucket, file.Name, data); err != nil {
-				return errors.Wrap(err, "unable to store file")
-			}*/
+		if err := c.KV.Put(ctx, kv.WasmBucket, file.Name, data); err != nil {
+			return errors.Wrap(err, "unable to store file")
+		}
 
 		c.log.Debugf("Stored WASM file '%s' in NATS", file.Name)
 	}
@@ -182,5 +184,23 @@ func (c *Config) storeWasmFiles(ctx context.Context, zipFile *zip.Reader) error 
 func (c *Config) haveDefaultWASMFiles() bool {
 	c.WasmFilesMutex.RLock()
 	defer c.WasmFilesMutex.RUnlock()
-	return len(c.WasmFiles) > 0
+
+	// We have them in memory
+	if len(c.WasmFiles) > 0 {
+		return true
+	}
+
+	// Check KV
+	keys, err := c.KV.Keys(context.Background(), kv.WasmBucket)
+	if err != nil {
+		return false
+	}
+
+	for _, v := range keys {
+		if v == "match.wasm" {
+			return true
+		}
+	}
+
+	return false
 }

@@ -113,8 +113,9 @@ func (b *Bus) publish(ctx context.Context, subject string, msg *Message) error {
 		return errors.Wrap(err, "unable to marshal message")
 	}
 
-	return b.broadcastClient.Publish(ctx, subject, data)
+	b.broadcastClient.Publish(ctx, subject, data)
 
+	return nil
 }
 
 func (b *Bus) Start(serviceCtx context.Context) error {
@@ -217,14 +218,12 @@ func (b *Bus) runConsumerErrorWatcher(serviceCtx context.Context, consumerCtx co
 func (b *Bus) setupClients() error {
 	// Setup broadcast client
 	nattyCfg := natty.Config{
-		NatsURL:        b.config.ServerOptions.NatsUrl,
-		StreamName:     StreamName,
-		StreamSubjects: []string{StreamName + ".*"},
-		MaxMsgs:        1000,
-		FetchSize:      1,
-		FetchTimeout:   time.Second * 1,
-		DeliverPolicy:  nats.DeliverNewPolicy,
-		Logger:         b.log,
+		NatsURL:       b.config.ServerOptions.NatsUrl,
+		MaxMsgs:       1000,
+		FetchSize:     1,
+		FetchTimeout:  time.Second * 1,
+		DeliverPolicy: nats.DeliverNewPolicy,
+		Logger:        b.log,
 	}
 
 	if b.config.ServerOptions.UseTls {
@@ -235,31 +234,18 @@ func (b *Bus) setupClients() error {
 		nattyCfg.TLSCACertFile = b.config.ServerOptions.TlsCaFile
 	}
 
-	broadcastCfg := nattyCfg
-
-	// This is the important part - since every consumer will have a unique
-	// consumer name, NATS will send every plumber instance a copy of the message
-	broadcastCfg.ConsumerName = b.config.ServerOptions.NodeId
-	broadcastCfg.ConsumerFilterSubject = StreamName + "." + BroadcastSubject
-
-	broadcastClient, err := natty.New(&broadcastCfg)
+	broadcastClient, err := natty.New(&nattyCfg)
 	if err != nil {
 		return errors.Wrap(err, "unable to create broadcast client")
 	}
 
-	queueCfg := nattyCfg
-
-	// By assigning a common consumer name, NATS will deliver the message to
-	// only one plumber instance.
-	queueCfg.ConsumerName = "queue-consumer"
-	queueCfg.ConsumerFilterSubject = StreamName + "." + QueueSubject
-
 	// Setup queue client
-	queueClient, err := natty.New(&queueCfg)
+	queueClient, err := natty.New(&nattyCfg)
 	if err != nil {
 		return errors.Wrap(err, "unable to create queue client")
 	}
 
+	// TODO: do we still need multiple clients? I don't think so with newer natty
 	b.queueClient = queueClient
 	b.broadcastClient = broadcastClient
 
@@ -302,8 +288,17 @@ func (b *Bus) runBroadcastConsumer(consumerCtx context.Context) error {
 		"subject":  subject,
 	})
 
+	// This is the important part - since every consumer will have a unique
+	// consumer name, NATS will send every plumber instance a copy of the message
+	cfg := &natty.ConsumerConfig{
+		Subject:      BroadcastSubject,
+		StreamName:   StreamName,
+		ConsumerName: b.config.ServerOptions.NodeId,
+		ErrorCh:      b.consumerErrChan,
+	}
+
 	for {
-		err := b.broadcastClient.Consume(consumerCtx, subject, b.consumerErrChan, b.broadcastCallback)
+		err := b.broadcastClient.Consume(consumerCtx, cfg, b.broadcastCallback)
 		if err != nil {
 			if err == context.Canceled {
 				llog.Debug("broadcast consumer context cancelled")
@@ -325,8 +320,17 @@ func (b *Bus) runQueueConsumer(consumerCtx context.Context) error {
 		"subject":  subject,
 	})
 
+	// By assigning a common consumer name, NATS will deliver the message to
+	// only one plumber instance.
+	cfg := &natty.ConsumerConfig{
+		Subject:      QueueSubject,
+		StreamName:   StreamName,
+		ConsumerName: "queue-consumer",
+		ErrorCh:      b.consumerErrChan,
+	}
+
 	for {
-		err := b.queueClient.Consume(consumerCtx, subject, b.consumerErrChan, b.queueCallback)
+		err := b.queueClient.Consume(consumerCtx, cfg, b.queueCallback)
 		if err != nil {
 			if err == context.Canceled {
 				llog.Debug("queue consumer context cancelled")

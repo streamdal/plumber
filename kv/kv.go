@@ -22,6 +22,7 @@ type IKV interface {
 	Put(ctx context.Context, bucket, key string, value []byte) error
 	Get(ctx context.Context, bucket, key string) ([]byte, error)
 	Delete(ctx context.Context, bucket, key string) error
+	Keys(ctx context.Context, bucket string) ([]string, error)
 }
 
 type KV struct {
@@ -36,7 +37,6 @@ func New(serverOptions *opts.ServerOptions) (*KV, error) {
 
 	// Setup natty
 	n, err := natty.New(&natty.Config{
-		NoConsumer:        true,
 		NatsURL:           serverOptions.NatsUrl,
 		Logger:            logrus.WithField("pkg", "kv"),
 		UseTLS:            serverOptions.UseTls,
@@ -65,6 +65,10 @@ func (k *KV) Get(ctx context.Context, bucket, key string) ([]byte, error) {
 
 func (k *KV) Delete(ctx context.Context, bucket, key string) error {
 	return k.client.Delete(ctx, bucket, key)
+}
+
+func (k *KV) Keys(ctx context.Context, bucket string) ([]string, error) {
+	return k.client.Keys(ctx, bucket)
 }
 
 func validateServerOptions(cfg *opts.ServerOptions) error {

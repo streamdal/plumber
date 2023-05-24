@@ -58,9 +58,9 @@ type Config struct {
 	WasmFilesMutex   *sync.RWMutex                 `json:"-"`
 	RuleSetMutex     *sync.RWMutex                 `json:"-"`
 
-	enableCluster bool
-	KV            kv.IKV
-	log           *logrus.Entry
+	enableCluster bool          `json:"-"`
+	KV            kv.IKV        `json:"-"`
+	log           *logrus.Entry `json:"-"`
 }
 
 // New will attempt to fetch and return an existing config from either NATS or

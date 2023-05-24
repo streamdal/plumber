@@ -53,6 +53,8 @@ type Conn struct {
 	partition     int32
 	fetchMaxBytes int32
 	fetchMinSize  int32
+	broker        int32
+	rack          string
 
 	// correlation ID generator (synchronized on wlock)
 	correlationID int32
@@ -87,6 +89,8 @@ type ConnConfig struct {
 	ClientID  string
 	Topic     string
 	Partition int
+	Broker    int
+	Rack      string
 
 	// The transactional id to use for transactional delivery. Idempotent
 	// deliver should be enabled if transactional id is configured.
@@ -174,6 +178,8 @@ func NewConnWith(conn net.Conn, config ConnConfig) *Conn {
 		clientID:        config.ClientID,
 		topic:           config.Topic,
 		partition:       int32(config.Partition),
+		broker:          int32(config.Broker),
+		rack:            config.Rack,
 		offset:          FirstOffset,
 		requiredAcks:    -1,
 		transactionalID: emptyToNullable(config.TransactionalID),
@@ -228,6 +234,19 @@ func (c *Conn) loadVersions() (apiVersionMap, error) {
 
 	c.apiVersions.Store(v)
 	return v, nil
+}
+
+// Broker returns a Broker value representing the kafka broker that this
+// connection was established to.
+func (c *Conn) Broker() Broker {
+	addr := c.conn.RemoteAddr()
+	host, port, _ := splitHostPortNumber(addr.String())
+	return Broker{
+		Host: host,
+		Port: port,
+		ID:   int(c.broker),
+		Rack: c.rack,
+	}
 }
 
 // Controller requests kafka for the current controller and returns its URL
@@ -292,34 +311,6 @@ func (c *Conn) DeleteTopics(topics ...string) error {
 		Topics: topics,
 	})
 	return err
-}
-
-// describeGroups retrieves the specified groups
-//
-// See http://kafka.apache.org/protocol.html#The_Messages_DescribeGroups
-func (c *Conn) describeGroups(request describeGroupsRequestV0) (describeGroupsResponseV0, error) {
-	var response describeGroupsResponseV0
-
-	err := c.readOperation(
-		func(deadline time.Time, id int32) error {
-			return c.writeRequest(describeGroups, v0, id, request)
-		},
-		func(deadline time.Time, size int) error {
-			return expectZeroSize(func() (remain int, err error) {
-				return (&response).readFrom(&c.rbuf, size)
-			}())
-		},
-	)
-	if err != nil {
-		return describeGroupsResponseV0{}, err
-	}
-	for _, group := range response.Groups {
-		if group.ErrorCode != 0 {
-			return describeGroupsResponseV0{}, Error(group.ErrorCode)
-		}
-	}
-
-	return response, nil
 }
 
 // findCoordinator finds the coordinator for the specified group or transaction
@@ -1001,14 +992,6 @@ func (c *Conn) ReadPartitions(topics ...string) (partitions []Partition, err err
 				}
 			}
 
-			makeBrokers := func(ids ...int32) []Broker {
-				b := make([]Broker, len(ids))
-				for i, id := range ids {
-					b[i] = brokers[id]
-				}
-				return b
-			}
-
 			for _, t := range res.Topics {
 				if t.TopicErrorCode != 0 && (c.topic == "" || t.TopicName == c.topic) {
 					// We only report errors if they happened for the topic of
@@ -1020,8 +1003,8 @@ func (c *Conn) ReadPartitions(topics ...string) (partitions []Partition, err err
 					partitions = append(partitions, Partition{
 						Topic:    t.TopicName,
 						Leader:   brokers[p.Leader],
-						Replicas: makeBrokers(p.Replicas...),
-						Isr:      makeBrokers(p.Isr...),
+						Replicas: makeBrokers(brokers, p.Replicas...),
+						Isr:      makeBrokers(brokers, p.Isr...),
 						ID:       int(p.PartitionID),
 					})
 				}
@@ -1030,6 +1013,16 @@ func (c *Conn) ReadPartitions(topics ...string) (partitions []Partition, err err
 		},
 	)
 	return
+}
+
+func makeBrokers(brokers map[int32]Broker, ids ...int32) []Broker {
+	b := make([]Broker, 0, len(ids))
+	for _, id := range ids {
+		if br, ok := brokers[id]; ok {
+			b = append(b, br)
+		}
+	}
+	return b
 }
 
 // Write writes a message to the kafka broker that this connection was
