@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/batchcorp/plumber/kv"
-
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 
@@ -16,6 +14,7 @@ import (
 	"github.com/batchcorp/plumber/actions"
 	"github.com/batchcorp/plumber/bus"
 	"github.com/batchcorp/plumber/config"
+	"github.com/batchcorp/plumber/kv"
 	"github.com/batchcorp/plumber/validate"
 )
 

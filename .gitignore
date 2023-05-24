@@ -13,3 +13,5 @@ data/*
 c.out
 cover.html
 .*DS_Store*
+api/assets/*
+!api/assets/.gitkeep

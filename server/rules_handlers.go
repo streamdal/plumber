@@ -35,7 +35,9 @@ func (s *Server) GetRules(_ context.Context, req *protos.GetDataQualityRulesRequ
 
 	s.PersistentConfig.RuleSetMutex.RLock()
 	for _, ruleSet := range s.PersistentConfig.RuleSets {
-		ruleSets = append(ruleSets, ruleSet.Set)
+		if ruleSet.Set.Bus == req.Bus {
+			ruleSets = append(ruleSets, ruleSet.Set)
+		}
 	}
 	s.PersistentConfig.RuleSetMutex.RUnlock()
 
@@ -70,7 +72,7 @@ func (s *Server) SendRuleNotification(_ context.Context, req *protos.SendRuleNot
 			return nil, CustomError(common.Code_UNKNOWN, err.Error())
 		}
 	default:
-		return nil, errors.New("invalid failure mode")
+		return nil, CustomError(common.Code_INVALID_ARGUMENT, "invalid failure mode")
 	}
 
 	return &protos.SendRuleNotificationResponse{

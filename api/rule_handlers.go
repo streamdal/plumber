@@ -22,6 +22,11 @@ func (a *API) getRuleSetsHandler(w http.ResponseWriter, _ *http.Request, _ httpr
 }
 
 func (a *API) createRuleSetHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	if err := a.PersistentConfig.BootstrapWASMFiles(); err != nil {
+		WriteErrorJSON(http.StatusInternalServerError, err.Error(), w)
+		return
+	}
+
 	rs := &common.RuleSet{}
 
 	if err := DecodeBody(r.Body, rs); err != nil {

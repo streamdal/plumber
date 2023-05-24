@@ -1,8 +1,10 @@
 package api
 
 import (
+	"embed"
 	"encoding/json"
 	"io"
+	"io/fs"
 	"net/http"
 
 	"github.com/batchcorp/plumber/config"
@@ -12,6 +14,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 )
+
+//go:embed assets
+var staticFiles embed.FS
 
 type API struct {
 	Version          string
@@ -28,6 +33,12 @@ type ResponseJSON struct {
 }
 
 func Start(cfg *config.Config, listenAddress, version string) (*http.Server, error) {
+	// Define console static file server
+	htmlContent, err := fs.Sub(fs.FS(staticFiles), "assets")
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create static file server")
+	}
+
 	a := &API{
 		Version:          version,
 		ListenAddress:    listenAddress,
@@ -38,6 +49,12 @@ func Start(cfg *config.Config, listenAddress, version string) (*http.Server, err
 	a.log.Debugf("starting API server on %s", listenAddress)
 
 	router := httprouter.New()
+
+	// Redirect / to the console
+	router.HandlerFunc("GET", "/", http.RedirectHandler("/console", http.StatusMovedPermanently).ServeHTTP)
+
+	// Console static file server
+	router.Handler("GET", "/console", http.StripPrefix("/console", http.FileServer(http.FS(htmlContent))))
 
 	router.HandlerFunc("GET", "/health-check", a.healthCheckHandler)
 	router.HandlerFunc("GET", "/version", a.versionHandler)
