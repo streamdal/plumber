@@ -39,6 +39,16 @@ func Start(cfg *config.Config, listenAddress, version string) (*http.Server, err
 		return nil, errors.Wrap(err, "unable to create static file server")
 	}
 
+	astroContent, err := fs.Sub(fs.FS(staticFiles), "assets/_astro")
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create static file server astro assets")
+	}
+
+	imagesContent, err := fs.Sub(fs.FS(staticFiles), "assets/images")
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create static file server for images")
+	}
+
 	a := &API{
 		Version:          version,
 		ListenAddress:    listenAddress,
@@ -53,6 +63,8 @@ func Start(cfg *config.Config, listenAddress, version string) (*http.Server, err
 	// Redirect / to the console
 	router.HandlerFunc("GET", "/", http.RedirectHandler("/console", http.StatusTemporaryRedirect).ServeHTTP)
 	router.ServeFiles("/console/*filepath", http.FS(htmlContent))
+	router.ServeFiles("/_astro/*filepath", http.FS(astroContent))
+	router.ServeFiles("/images/*filepath", http.FS(imagesContent))
 
 	router.HandlerFunc("GET", "/health-check", a.healthCheckHandler)
 	router.HandlerFunc("GET", "/version", a.versionHandler)
