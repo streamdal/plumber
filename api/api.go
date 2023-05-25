@@ -15,7 +15,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//go:embed assets
+//go:embed all:assets
 var staticFiles embed.FS
 
 type API struct {
@@ -51,10 +51,8 @@ func Start(cfg *config.Config, listenAddress, version string) (*http.Server, err
 	router := httprouter.New()
 
 	// Redirect / to the console
-	router.HandlerFunc("GET", "/", http.RedirectHandler("/console", http.StatusMovedPermanently).ServeHTTP)
-
-	// Console static file server
-	router.Handler("GET", "/console", http.StripPrefix("/console", http.FileServer(http.FS(htmlContent))))
+	router.HandlerFunc("GET", "/", http.RedirectHandler("/console", http.StatusTemporaryRedirect).ServeHTTP)
+	router.ServeFiles("/console/*filepath", http.FS(htmlContent))
 
 	router.HandlerFunc("GET", "/health-check", a.healthCheckHandler)
 	router.HandlerFunc("GET", "/version", a.versionHandler)
