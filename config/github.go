@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"os"
+	"path"
 	"strings"
 
 	"github.com/batchcorp/plumber/kv"
@@ -14,7 +16,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-const GithubWASMReleaseURL = "https://api.github.com/repos/streamdal/dataqual-wasm/releases/latest"
+const (
+	// GithubWASMReleaseURL points to the repo containing the compiled default function .wasm modules
+	GithubWASMReleaseURL = "https://api.github.com/repos/streamdal/dataqual-wasm/releases/latest"
+)
 
 // GithubReleaseResponse is the response from Github when calling /releases/latest endpoint
 // We only need the download url
@@ -25,14 +30,14 @@ type GithubReleaseResponse struct {
 }
 
 // BootstrapWASMFiles is called when a data quality rule is added to ensure we have WASM files available
-func (c *Config) BootstrapWASMFiles() error {
+func (c *Config) BootstrapWASMFiles(ctx context.Context) error {
 	if c.haveDefaultWASMFiles() {
 		return nil // already have default WASM files
 	}
 
 	c.log.Debug("Bootstrapping WASM files")
 
-	if err := c.pullLatestWASMRelease(context.Background(), http.DefaultClient); err != nil {
+	if err := c.pullLatestWASMRelease(ctx, http.DefaultClient); err != nil {
 		return errors.Wrap(err, "unable to pull latest WASM release")
 	}
 
@@ -61,8 +66,14 @@ func (c *Config) pullLatestWASMRelease(ctx context.Context, client *http.Client)
 		return errors.Wrap(err, "unable to download WASM zip")
 	}
 
-	if err := c.storeWasmFiles(ctx, zip); err != nil {
-		return errors.Wrap(err, "unable to store WASM files")
+	if c.enableCluster {
+		if err := c.storeWASMFilesKV(ctx, zip); err != nil {
+			return errors.Wrap(err, "unable to store WASM files")
+		}
+	} else {
+		if err := c.storeWASMFilesFS(ctx, zip); err != nil {
+			return errors.Wrap(err, "unable to store WASM files")
+		}
 	}
 
 	return nil
@@ -74,7 +85,7 @@ func (c *Config) getWASMReleaseURL(ctx context.Context, client *http.Client) (*G
 		return nil, errors.New("BUG: client is nil")
 	}
 
-	req, err := http.NewRequest("GET", GithubWASMReleaseURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", GithubWASMReleaseURL, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create new request")
 	}
@@ -113,7 +124,7 @@ func (c *Config) downloadWASMZip(ctx context.Context, client *http.Client, url s
 		return nil, errors.New("url is empty")
 	}
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create new request")
 	}
@@ -140,7 +151,7 @@ func (c *Config) downloadWASMZip(ctx context.Context, client *http.Client, url s
 }
 
 // storeWasmFiles unzips and stores the WASM files in KV
-func (c *Config) storeWasmFiles(ctx context.Context, zipFile *zip.Reader) error {
+func (c *Config) storeWASMFilesKV(ctx context.Context, zipFile *zip.Reader) error {
 	if c.KV == nil {
 		return errors.New("BUG: kv store is nil")
 	}
@@ -173,7 +184,53 @@ func (c *Config) storeWasmFiles(ctx context.Context, zipFile *zip.Reader) error 
 			return errors.Wrap(err, "unable to store file")
 		}
 
-		c.log.Debugf("Stored WASM file '%s' in NATS", file.Name)
+		c.log.Debugf("Stored WASM file '%s' in KV", file.Name)
+	}
+
+	return nil
+}
+
+func (c *Config) storeWASMFilesFS(_ context.Context, zipFile *zip.Reader) error {
+	if zipFile == nil {
+		return errors.New("BUG: zipFile is nil")
+	}
+
+	// Unzip WASM files
+	for _, file := range zipFile.File {
+		// Just in case
+		if file.FileInfo().IsDir() {
+			continue
+		}
+
+		// Only want .wasm files
+		if !strings.HasSuffix(file.Name, ".wasm") {
+			continue
+		}
+
+		f, err := file.Open()
+		if err != nil {
+			return errors.Wrap(err, "unable to open file")
+		}
+
+		data, err := io.ReadAll(f)
+		if err != nil {
+			return errors.Wrap(err, "unable to read file")
+		}
+
+		_ = data
+
+		configDir, err := getConfigDir()
+		if err != nil {
+			return errors.New("unable to get config directory")
+		}
+
+		filePath := path.Join(configDir, file.Name)
+
+		if err := os.WriteFile(filePath, data, 0644); err != nil {
+			return errors.Wrapf(err, "unable to write '%s'", filePath)
+		}
+
+		c.log.Debugf("Stored WASM file '%s' in '%s'", file.Name, configDir)
 	}
 
 	return nil
@@ -190,7 +247,18 @@ func (c *Config) haveDefaultWASMFiles() bool {
 		return true
 	}
 
-	// Check KV
+	if c.enableCluster {
+		// Cluster mode, check KV
+		return c.haveDefaultWASMFilesKV()
+	} else {
+		// Standalone mode, check file system
+		return c.haveDefaultWASMFilesFS()
+	}
+
+	return false
+}
+
+func (c *Config) haveDefaultWASMFilesKV() bool {
 	keys, err := c.KV.Keys(context.Background(), kv.WasmBucket)
 	if err != nil {
 		return false
@@ -200,6 +268,19 @@ func (c *Config) haveDefaultWASMFiles() bool {
 		if v == "match.wasm" {
 			return true
 		}
+	}
+
+	return false
+}
+
+func (c *Config) haveDefaultWASMFilesFS() bool {
+	configDir, err := getConfigDir()
+	if err != nil {
+		return false
+	}
+
+	if _, err := os.Stat(path.Join(configDir, "match.wasm")); err == nil {
+		return true
 	}
 
 	return false
