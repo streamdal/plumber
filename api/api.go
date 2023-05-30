@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"embed"
 	"encoding/json"
 	"io"
@@ -8,9 +9,10 @@ import (
 	"net/http"
 
 	"github.com/batchcorp/plumber/config"
-	"github.com/pkg/errors"
-
+	"github.com/golang/protobuf/jsonpb"
+	"github.com/golang/protobuf/proto"
 	"github.com/julienschmidt/httprouter"
+	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 )
@@ -144,6 +146,24 @@ func DecodeBody(input io.ReadCloser, into interface{}) error {
 	defer input.Close()
 
 	if err := json.Unmarshal(body, into); err != nil {
+		return errors.Wrap(err, "failed to unmarshal body")
+	}
+
+	return nil
+}
+
+func DecodeProtoBody(input io.ReadCloser, into proto.Message) error {
+	body, err := io.ReadAll(input)
+	if err != nil || len(body) == 0 {
+		if err == nil {
+			err = errors.New("body is empty")
+		}
+
+		return errors.Wrap(err, "failed to parse input body")
+	}
+	defer input.Close()
+
+	if err := jsonpb.Unmarshal(bytes.NewBuffer(body), into); err != nil {
 		return errors.Wrap(err, "failed to unmarshal body")
 	}
 

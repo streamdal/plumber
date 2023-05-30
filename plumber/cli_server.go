@@ -20,6 +20,10 @@ import (
 
 // RunServer is a wrapper for starting embedded etcd and starting the gRPC server.
 func (p *Plumber) RunServer() error {
+	if err := p.PersistentConfig.BootstrapWASMFiles(p.MainShutdownCtx); err != nil {
+		return errors.Wrap(err, "unable to bootstrap WASM files")
+	}
+
 	mode := "standalone"
 
 	if p.Config.CLIOptions.Server.EnableCluster {

@@ -18,6 +18,61 @@ func (a *API) getRuleSetsHandler(w http.ResponseWriter, _ *http.Request, _ httpr
 	a.PersistentConfig.RuleSetMutex.RLock()
 	defer a.PersistentConfig.RuleSetMutex.RUnlock()
 
+	//a.PersistentConfig.RuleSets = make(map[string]*types.RuleSet)
+	//
+	//a.PersistentConfig.RuleSets[uuid.NewV4().String()] = &types.RuleSet{
+	//	Set: &common.RuleSet{
+	//		Id:      uuid.NewV4().String(),
+	//		Name:    "test",
+	//		Mode:    common.RuleMode_RULE_MODE_PUBLISH,
+	//		Bus:     "kafka",
+	//		Version: 1,
+	//		Rules: map[string]*common.Rule{
+	//			uuid.NewV4().String(): {
+	//				Id:   uuid.NewV4().String(),
+	//				Type: common.RuleType_RULE_TYPE_MATCH,
+	//				RuleConfig: &common.Rule_MatchConfig{
+	//					MatchConfig: &common.RuleConfigMatch{
+	//						Path: "payload.name",
+	//						Type: "string_contains",
+	//						Args: []string{"hello"},
+	//					},
+	//				},
+	//				FailureMode:       common.RuleFailureMode_RULE_FAILURE_MODE_REJECT,
+	//				FailureModeConfig: &common.Rule_Reject{},
+	//			},
+	//		},
+	//	},
+	//}
+	//
+	//a.PersistentConfig.RuleSets[uuid.NewV4().String()] = &types.RuleSet{
+	//	Set: &common.RuleSet{
+	//		Id:      uuid.NewV4().String(),
+	//		Name:    "test",
+	//		Mode:    common.RuleMode_RULE_MODE_CONSUME,
+	//		Bus:     "kafka",
+	//		Version: 1,
+	//		Rules: map[string]*common.Rule{
+	//			uuid.NewV4().String(): {
+	//				Id:   uuid.NewV4().String(),
+	//				Type: common.RuleType_RULE_TYPE_MATCH,
+	//				RuleConfig: &common.Rule_MatchConfig{
+	//					MatchConfig: &common.RuleConfigMatch{
+	//						Path: "payload.address",
+	//						Type: "pii_creditcard",
+	//					},
+	//				},
+	//				FailureMode: common.RuleFailureMode_RULE_FAILURE_MODE_ALERT_SLACK,
+	//				FailureModeConfig: &common.Rule_AlertSlack{
+	//					AlertSlack: &common.FailureModeAlertSlack{
+	//						SlackChannel: "engineering",
+	//					},
+	//				},
+	//			},
+	//		},
+	//	},
+	//}
+
 	WriteJSON(http.StatusOK, a.PersistentConfig.RuleSets, w)
 }
 
@@ -29,7 +84,7 @@ func (a *API) createRuleSetHandler(w http.ResponseWriter, r *http.Request, _ htt
 
 	rs := &common.RuleSet{}
 
-	if err := DecodeBody(r.Body, rs); err != nil {
+	if err := DecodeProtoBody(r.Body, rs); err != nil {
 		WriteJSON(http.StatusBadRequest, ResponseJSON{Message: err.Error()}, w)
 		return
 	}
@@ -52,10 +107,9 @@ func (a *API) updateRuleSetHandler(w http.ResponseWriter, r *http.Request, p htt
 		return
 	}
 
-	// TODO: how is frontend passing us the rules?
 	update := &common.RuleSet{}
 
-	if err := DecodeBody(r.Body, update); err != nil {
+	if err := DecodeProtoBody(r.Body, update); err != nil {
 		WriteJSON(http.StatusBadRequest, ResponseJSON{Message: err.Error()}, w)
 		return
 	}
