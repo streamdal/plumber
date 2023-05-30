@@ -71,10 +71,18 @@ func Start(cfg *config.Config, listenAddress, version string) (*http.Server, err
 	router.HandlerFunc("GET", "/health-check", a.healthCheckHandler)
 	router.HandlerFunc("GET", "/version", a.versionHandler)
 
+	router.Handle("GET", "/v1/ruleset/:ruleset_id/rules", a.getRulesHandler)
+	router.Handle("POST", "/v1/ruleset/:ruleset_id/rules", a.createRuleHandler)
+	router.Handle("PUT", "/v1/ruleset/:ruleset_id/rules/:id", a.updateRuleHandler)
+	router.Handle("DELETE", "/v1/ruleset/:ruleset_id/rules/:id", a.deleteRuleHandler)
+
 	router.Handle("GET", "/v1/ruleset", a.getRuleSetsHandler)
 	router.Handle("POST", "/v1/ruleset", a.createRuleSetHandler)
-	router.Handle("DELETE", "/v1/ruleset/:id", a.deleteRuleSetHandler)
-	router.Handle("GET", "/v1/ruleset/:id", a.getRuleSetsHandler)
+	router.Handle("DELETE", "/v1/ruleset/:ruleset_id", a.deleteRuleSetHandler)
+	router.Handle("GET", "/v1/ruleset/:ruleset_id", a.getRuleSetsHandler)
+
+	// TODO: remove
+	router.Handle("GET", "/v1/temp-populate", a.tempPopulateHandler)
 
 	router.Handle("GET", "/v1/wasm", a.getWasmsHandler)
 
