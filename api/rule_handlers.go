@@ -194,6 +194,7 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 			Mode:    common.RuleMode_RULE_MODE_PUBLISH,
 			Bus:     "kafka",
 			Version: 1,
+			Key:     "mytopic",
 			Rules: map[string]*common.Rule{
 				uuid.NewV4().String(): {
 					Id:   uuid.NewV4().String(),
@@ -219,6 +220,7 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 			Mode:    common.RuleMode_RULE_MODE_CONSUME,
 			Bus:     "kafka",
 			Version: 1,
+			Key:     "mytopic",
 			Rules: map[string]*common.Rule{
 				uuid.NewV4().String(): {
 					Id:   uuid.NewV4().String(),
@@ -247,6 +249,7 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 			Mode:    common.RuleMode_RULE_MODE_CONSUME,
 			Bus:     "rabbitmq",
 			Version: 1,
+			Key:     "mytopic",
 			Rules: map[string]*common.Rule{
 				uuid.NewV4().String(): {
 					Id:   uuid.NewV4().String(),
