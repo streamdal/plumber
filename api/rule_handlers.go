@@ -123,8 +123,11 @@ func (a *API) createRuleHandler(w http.ResponseWriter, r *http.Request, p httpro
 	}
 
 	id := uuid.NewV4().String()
-
 	rule.Id = id
+
+	if set.Set.Rules == nil {
+		set.Set.Rules = make(map[string]*common.Rule)
+	}
 	set.Set.Rules[id] = rule
 
 	a.PersistentConfig.SetRuleSet(p.ByName("id"), set)
