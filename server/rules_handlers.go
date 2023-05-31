@@ -68,7 +68,7 @@ func (s *Server) SendRuleNotification(_ context.Context, req *protos.SendRuleNot
 			return nil, CustomError(common.Code_UNKNOWN, err.Error())
 		}
 	case common.RuleFailureMode_RULE_FAILURE_MODE_ALERT_SLACK:
-		if err := s.sendRuleToDLQ(req.Data, rule.GetDlq()); err != nil {
+		if err := s.sendRuleToDLQ(req.Data, ruleSet.Set.Name, rule.GetDlq()); err != nil {
 			return nil, CustomError(common.Code_UNKNOWN, err.Error())
 		}
 	default:
@@ -83,7 +83,7 @@ func (s *Server) SendRuleNotification(_ context.Context, req *protos.SendRuleNot
 	}, nil
 }
 
-func (s *Server) sendRuleSlackNotification(data []byte, name string, rule *common.Rule) error {
+func (s *Server) sendRuleSlackNotification(_ []byte, name string, rule *common.Rule) error {
 	if rule.GetAlertSlack() == nil {
 		return errors.New("BUG: alert slack config is nil")
 	}
@@ -93,14 +93,6 @@ func (s *Server) sendRuleSlackNotification(data []byte, name string, rule *commo
 	var blocks []*slack.TextBlockObject
 
 	switch rule.Type {
-	case common.RuleType_RULE_TYPE_TRANSFORM:
-		transform := rule.GetTransform()
-		blocks = []*slack.TextBlockObject{
-			slack.NewTextBlockObject(slack.MarkdownType, fmt.Sprintf("*Rule Set*: \n%s\n", name), false, false),
-			slack.NewTextBlockObject(slack.MarkdownType, "*Rule Type*: Transform\n", false, false),
-			slack.NewTextBlockObject(slack.MarkdownType, fmt.Sprintf("*JSON Path*: %s\n", transform.Path), false, false),
-			slack.NewTextBlockObject(slack.MarkdownType, fmt.Sprintf("*Value*: %s\n", transform.Value), false, false),
-		}
 	case common.RuleType_RULE_TYPE_MATCH:
 		match := rule.GetMatchConfig()
 		blocks = []*slack.TextBlockObject{
@@ -110,6 +102,8 @@ func (s *Server) sendRuleSlackNotification(data []byte, name string, rule *commo
 			slack.NewTextBlockObject(slack.MarkdownType, fmt.Sprintf("*Match Path*: \n%s\n", match.Path), false, false),
 			slack.NewTextBlockObject(slack.MarkdownType, fmt.Sprintf("*Match Args*: \n%s\n", match.Args), false, false),
 		}
+	case common.RuleType_RULE_TYPE_CUSTOM:
+		// TODO: implement further down the line
 	}
 
 	headerBlock := slack.NewHeaderBlock(slack.NewTextBlockObject(slack.PlainTextType, "Data Quality Alert", false, false))
@@ -131,12 +125,17 @@ func (s *Server) sendRuleSlackNotification(data []byte, name string, rule *commo
 }
 
 // TODO: need some kind of connection pooling and also a channel
-func (s *Server) sendRuleToDLQ(data []byte, cfg *common.FailureModeDLQ) error {
+func (s *Server) sendRuleToDLQ(data []byte, name string, cfg *common.FailureModeDLQ) error {
 	record := &records.GenericRecord{
-		Body:            data,
-		Source:          "plumber",
-		Timestamp:       time.Now().UTC().UnixNano(),
-		Metadata:        make(map[string]string),
+		Body:      data,
+		Source:    "plumber",
+		Timestamp: time.Now().UTC().UnixNano(),
+		Metadata: map[string]string{
+			"data_quality_rule_set": name,
+			"plumber_id":            s.PersistentConfig.PlumberID,
+			"plumber_version":       s.PersistentConfig.LastVersion,
+			"plumber_cluster_id":    s.PersistentConfig.ClusterID,
+		},
 		ForceDeadLetter: true,
 	}
 
