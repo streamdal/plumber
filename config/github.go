@@ -11,9 +11,10 @@ import (
 	"path"
 	"strings"
 
-	"github.com/batchcorp/plumber/kv"
-
 	"github.com/pkg/errors"
+
+	"github.com/batchcorp/plumber/kv"
+	"github.com/batchcorp/plumber/server/types"
 )
 
 const (
@@ -24,7 +25,8 @@ const (
 // GithubReleaseResponse is the response from Github when calling /releases/latest endpoint
 // We only need the download url
 type GithubReleaseResponse struct {
-	Assets []struct {
+	TagName string `json:"tag_name"`
+	Assets  []struct {
 		URL string `json:"browser_download_url"`
 	}
 }
@@ -67,11 +69,11 @@ func (c *Config) pullLatestWASMRelease(ctx context.Context, client *http.Client)
 	}
 
 	if c.enableCluster {
-		if err := c.storeWASMFilesKV(ctx, zip); err != nil {
+		if err := c.storeWASMFilesKV(ctx, zip, release.TagName); err != nil {
 			return errors.Wrap(err, "unable to store WASM files")
 		}
 	} else {
-		if err := c.storeWASMFilesFS(ctx, zip); err != nil {
+		if err := c.storeWASMFilesFS(ctx, zip, release.TagName); err != nil {
 			return errors.Wrap(err, "unable to store WASM files")
 		}
 	}
@@ -151,7 +153,7 @@ func (c *Config) downloadWASMZip(ctx context.Context, client *http.Client, url s
 }
 
 // storeWasmFiles unzips and stores the WASM files in KV
-func (c *Config) storeWASMFilesKV(ctx context.Context, zipFile *zip.Reader) error {
+func (c *Config) storeWASMFilesKV(ctx context.Context, zipFile *zip.Reader, version string) error {
 	if c.KV == nil {
 		return errors.New("BUG: kv store is nil")
 	}
@@ -185,14 +187,29 @@ func (c *Config) storeWASMFilesKV(ctx context.Context, zipFile *zip.Reader) erro
 		}
 
 		c.log.Debugf("Stored WASM file '%s' in KV", file.Name)
+		c.SetWasmFile(file.Name, &types.WasmFile{Name: file.Name, Version: version})
 	}
 
 	return nil
 }
 
-func (c *Config) storeWASMFilesFS(_ context.Context, zipFile *zip.Reader) error {
+func (c *Config) storeWASMFilesFS(_ context.Context, zipFile *zip.Reader, version string) error {
 	if zipFile == nil {
 		return errors.New("BUG: zipFile is nil")
+	}
+
+	configDir, err := getConfigDir()
+	if err != nil {
+		return errors.Wrap(err, "unable to get config dir")
+	}
+
+	// Create dir if needed
+	if _, err := os.Stat(configDir); os.IsNotExist(err) {
+		if err := os.Mkdir(configDir, 0700); err != nil {
+			c.log.Errorf("unable to create config directory '%s': %v", configDir, err)
+
+			return errors.Wrapf(err, "unable to create config directory %s", configDir)
+		}
 	}
 
 	// Unzip WASM files
@@ -231,6 +248,7 @@ func (c *Config) storeWASMFilesFS(_ context.Context, zipFile *zip.Reader) error 
 		}
 
 		c.log.Debugf("Stored WASM file '%s' in '%s'", file.Name, configDir)
+		c.SetWasmFile(file.Name, &types.WasmFile{Name: file.Name, Version: version})
 	}
 
 	return nil
