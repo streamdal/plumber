@@ -97,10 +97,11 @@ func (s *Server) sendRuleSlackNotification(_ []byte, name string, rule *common.R
 		match := rule.GetMatchConfig()
 		blocks = []*slack.TextBlockObject{
 			slack.NewTextBlockObject(slack.MarkdownType, fmt.Sprintf("*Rule Set*: \n%s\n", name), false, false),
+			slack.NewTextBlockObject(slack.MarkdownType, fmt.Sprintf("*Rule ID*: \n%s\n", rule.Id), false, false),
 			slack.NewTextBlockObject(slack.MarkdownType, fmt.Sprintf("*Rule Type*: \n%s\n", "Match"), false, false),
 			slack.NewTextBlockObject(slack.MarkdownType, fmt.Sprintf("*Match Type*: \n%s\n", match.Type), false, false),
 			slack.NewTextBlockObject(slack.MarkdownType, fmt.Sprintf("*Match Path*: \n%s\n", match.Path), false, false),
-			slack.NewTextBlockObject(slack.MarkdownType, fmt.Sprintf("*Match Args*: \n%s\n", match.Args), false, false),
+			slack.NewTextBlockObject(slack.MarkdownType, fmt.Sprintf("*Match Args*: \n%s\n", strings.Join(match.Args, ",")), false, false),
 		}
 	case common.RuleType_RULE_TYPE_CUSTOM:
 		// TODO: implement further down the line
@@ -127,16 +128,16 @@ func (s *Server) sendRuleSlackNotification(_ []byte, name string, rule *common.R
 // TODO: need some kind of connection pooling and also a channel
 func (s *Server) sendRuleToDLQ(data []byte, name string, cfg *common.FailureModeDLQ) error {
 	record := &records.GenericRecord{
-		Body:      data,
-		Source:    "plumber",
-		Timestamp: time.Now().UTC().UnixNano(),
+		ForceDeadLetter: true,
+		Body:            data,
+		Source:          "data_quality",
+		Timestamp:       time.Now().UTC().UnixNano(),
 		Metadata: map[string]string{
 			"data_quality_rule_set": name,
 			"plumber_id":            s.PersistentConfig.PlumberID,
 			"plumber_version":       s.PersistentConfig.LastVersion,
 			"plumber_cluster_id":    s.PersistentConfig.ClusterID,
 		},
-		ForceDeadLetter: true,
 	}
 
 	// TODO: we need gRPC connection params in server protos

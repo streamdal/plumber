@@ -99,7 +99,7 @@ func (a *API) slackConfigHandler(w http.ResponseWriter, r *http.Request, _ httpr
 }
 
 func (a *API) getRulesHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	set := a.PersistentConfig.GetRuleSet(p.ByName("id"))
+	set := a.PersistentConfig.GetRuleSet(p.ByName("ruleset_id"))
 	if set == nil {
 		WriteJSON(http.StatusNotFound, ResponseJSON{Message: "rule set not found"}, w)
 		return
@@ -109,7 +109,7 @@ func (a *API) getRulesHandler(w http.ResponseWriter, r *http.Request, p httprout
 }
 
 func (a *API) createRuleHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	set := a.PersistentConfig.GetRuleSet(p.ByName("id"))
+	set := a.PersistentConfig.GetRuleSet(p.ByName("ruleset_id"))
 	if set == nil {
 		WriteJSON(http.StatusNotFound, ResponseJSON{Message: "rule set not found"}, w)
 		return
@@ -134,7 +134,7 @@ func (a *API) createRuleHandler(w http.ResponseWriter, r *http.Request, p httpro
 }
 
 func (a *API) updateRuleHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	set := a.PersistentConfig.GetRuleSet(p.ByName("id"))
+	set := a.PersistentConfig.GetRuleSet(p.ByName("ruleset_id"))
 	if set == nil {
 		WriteJSON(http.StatusNotFound, ResponseJSON{Message: "rule set not found"}, w)
 		return
@@ -156,14 +156,14 @@ func (a *API) updateRuleHandler(w http.ResponseWriter, r *http.Request, p httpro
 	set.Set.Rules[rule.Id] = update
 	set.Set.Version++
 
-	a.PersistentConfig.SetRuleSet(p.ByName("id"), set)
+	a.PersistentConfig.SetRuleSet(set.Set.Id, set)
 	a.PersistentConfig.Save()
 
 	WriteJSON(http.StatusOK, ResponseJSON{Message: "rule updated"}, w)
 }
 
 func (a *API) deleteRuleHandler(w http.ResponseWriter, _ *http.Request, p httprouter.Params) {
-	set := a.PersistentConfig.GetRuleSet(p.ByName("id"))
+	set := a.PersistentConfig.GetRuleSet(p.ByName("ruleset_id"))
 	if set == nil {
 		WriteJSON(http.StatusNotFound, ResponseJSON{Message: "rule set not found"}, w)
 		return
@@ -172,7 +172,7 @@ func (a *API) deleteRuleHandler(w http.ResponseWriter, _ *http.Request, p httpro
 	delete(set.Set.Rules, p.ByName("id"))
 	set.Set.Version++
 
-	a.PersistentConfig.SetRuleSet(p.ByName("id"), set)
+	a.PersistentConfig.SetRuleSet(set.Set.Id, set)
 	a.PersistentConfig.Save()
 
 	WriteJSON(http.StatusOK, ResponseJSON{Message: "rule deleted"}, w)
