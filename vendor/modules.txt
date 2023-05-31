@@ -678,6 +678,9 @@ github.com/relistan/go-director
 github.com/rivo/uniseg
 # github.com/rogpeppe/go-internal v1.9.0
 ## explicit; go 1.17
+# github.com/rs/cors v1.9.0
+## explicit; go 1.13
+github.com/rs/cors
 # github.com/santhosh-tekuri/jsonschema/v5 v5.1.0
 ## explicit; go 1.15
 github.com/santhosh-tekuri/jsonschema/v5

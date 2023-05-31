@@ -7,6 +7,8 @@ import (
 	"io"
 	"io/fs"
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/batchcorp/plumber/config"
 	"github.com/golang/protobuf/jsonpb"
@@ -14,6 +16,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -88,9 +91,31 @@ func Start(cfg *config.Config, listenAddress, version string) (*http.Server, err
 
 	router.Handler("GET", "/metrics", promhttp.Handler())
 
+	corsOrigins, ok := os.LookupEnv("CORS_ORIGINS")
+	if !ok {
+		corsOrigins = "http://localhost:3000,http://localhost:9191"
+	}
+
+	corsRouter := cors.New(cors.Options{
+		AllowedOrigins: strings.Split(corsOrigins, ","),
+
+		AllowedMethods: []string{
+			http.MethodOptions,
+			http.MethodHead,
+			http.MethodGet,
+			http.MethodPost,
+			http.MethodPut,
+			http.MethodPatch,
+			http.MethodDelete,
+		},
+		AllowedHeaders:   []string{"*"},
+		ExposedHeaders:   []string{"redirect_uri", "set-cookie"},
+		AllowCredentials: true,
+	}).Handler(router)
+
 	srv := &http.Server{
 		Addr:    listenAddress,
-		Handler: router,
+		Handler: corsRouter,
 	}
 
 	go func() {
