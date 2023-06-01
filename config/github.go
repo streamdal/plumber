@@ -198,7 +198,7 @@ func (c *Config) storeWASMFilesFS(_ context.Context, zipFile *zip.Reader, versio
 		return errors.New("BUG: zipFile is nil")
 	}
 
-	configDir, err := getConfigDir()
+	configDir, err := GetConfigDir()
 	if err != nil {
 		return errors.Wrap(err, "unable to get config dir")
 	}
@@ -236,7 +236,7 @@ func (c *Config) storeWASMFilesFS(_ context.Context, zipFile *zip.Reader, versio
 
 		_ = data
 
-		configDir, err := getConfigDir()
+		configDir, err := GetConfigDir()
 		if err != nil {
 			return errors.New("unable to get config directory")
 		}
@@ -292,7 +292,7 @@ func (c *Config) haveDefaultWASMFilesKV() bool {
 }
 
 func (c *Config) haveDefaultWASMFilesFS() bool {
-	configDir, err := getConfigDir()
+	configDir, err := GetConfigDir()
 	if err != nil {
 		return false
 	}

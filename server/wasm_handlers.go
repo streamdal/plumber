@@ -3,11 +3,14 @@ package server
 import (
 	"context"
 	"fmt"
+	"os"
+	"path"
 
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/kv"
 	"github.com/batchcorp/plumber/server/types"
 	"github.com/batchcorp/plumber/util"
@@ -88,8 +91,29 @@ func (s *Server) DownloadWasmFile(ctx context.Context, req *protos.DownloadWasmF
 		return nil, CustomError(common.Code_NOT_FOUND, "wasm file not found")
 	}
 
-	// Get data from kv store, we don't keep these in memory due to their potential size
-	wasmData, err := s.KV.Get(ctx, kv.WasmBucket, wasmFunc.Name)
+	var wasmData []byte
+	var err error
+
+	if s.CLIOptions.Server.EnableCluster {
+		// Get data from kv store, we don't keep these in memory due to their potential size
+		wasmData, err = s.KV.Get(ctx, kv.WasmBucket, wasmFunc.Name)
+		if err != nil {
+			return nil, CustomError(common.Code_INTERNAL, err.Error())
+		}
+	} else {
+		var configDir string
+		configDir, err = config.GetConfigDir()
+		if err != nil {
+			return nil, CustomError(common.Code_INTERNAL, err.Error())
+		}
+
+		wasmData, err = os.ReadFile(path.Join(configDir, wasmFunc.Name))
+		if err != nil {
+			return nil, CustomError(common.Code_INTERNAL, err.Error())
+		}
+	}
+
+	compressed, err := util.Compress(wasmData)
 	if err != nil {
 		return nil, CustomError(common.Code_INTERNAL, err.Error())
 	}
@@ -98,7 +122,7 @@ func (s *Server) DownloadWasmFile(ctx context.Context, req *protos.DownloadWasmF
 		Status: &common.Status{
 			Code: common.Code_OK,
 		},
-		Data: wasmData,
+		Data: compressed,
 	}, nil
 }
 

@@ -65,7 +65,7 @@ func (a *API) updateRuleSetHandler(w http.ResponseWriter, r *http.Request, p htt
 	rs.Set.Bus = update.Bus
 	rs.Set.Version++
 
-	a.PersistentConfig.SetRuleSet(p.ByName("id"), rs)
+	a.PersistentConfig.SetRuleSet(rs.Set.Id, rs)
 	a.PersistentConfig.Save()
 
 	WriteJSON(http.StatusOK, ResponseJSON{Message: "rule set updated"}, w)
@@ -99,18 +99,18 @@ func (a *API) slackConfigHandler(w http.ResponseWriter, r *http.Request, _ httpr
 }
 
 func (a *API) getRulesHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	set := a.PersistentConfig.GetRuleSet(p.ByName("ruleset_id"))
-	if set == nil {
+	rs := a.PersistentConfig.GetRuleSet(p.ByName("ruleset_id"))
+	if rs == nil {
 		WriteJSON(http.StatusNotFound, ResponseJSON{Message: "rule set not found"}, w)
 		return
 	}
 
-	WriteJSON(http.StatusOK, set.Set.Rules, w)
+	WriteJSON(http.StatusOK, rs.Set.Rules, w)
 }
 
 func (a *API) createRuleHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	set := a.PersistentConfig.GetRuleSet(p.ByName("ruleset_id"))
-	if set == nil {
+	rs := a.PersistentConfig.GetRuleSet(p.ByName("ruleset_id"))
+	if rs == nil {
 		WriteJSON(http.StatusNotFound, ResponseJSON{Message: "rule set not found"}, w)
 		return
 	}
@@ -125,25 +125,25 @@ func (a *API) createRuleHandler(w http.ResponseWriter, r *http.Request, p httpro
 	id := uuid.NewV4().String()
 	rule.Id = id
 
-	if set.Set.Rules == nil {
-		set.Set.Rules = make(map[string]*common.Rule)
+	if rs.Set.Rules == nil {
+		rs.Set.Rules = make(map[string]*common.Rule)
 	}
-	set.Set.Rules[id] = rule
+	rs.Set.Rules[id] = rule
 
-	a.PersistentConfig.SetRuleSet(p.ByName("id"), set)
+	a.PersistentConfig.SetRuleSet(rs.Set.Id, rs)
 	a.PersistentConfig.Save()
 
 	WriteJSON(http.StatusOK, ResponseJSON{Message: "rule created", Values: map[string]string{"id": id}}, w)
 }
 
 func (a *API) updateRuleHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	set := a.PersistentConfig.GetRuleSet(p.ByName("ruleset_id"))
-	if set == nil {
+	rs := a.PersistentConfig.GetRuleSet(p.ByName("ruleset_id"))
+	if rs == nil {
 		WriteJSON(http.StatusNotFound, ResponseJSON{Message: "rule set not found"}, w)
 		return
 	}
 
-	rule := set.Set.Rules[p.ByName("id")]
+	rule := rs.Set.Rules[p.ByName("id")]
 	if rule == nil {
 		WriteJSON(http.StatusNotFound, ResponseJSON{Message: "rule not found"}, w)
 		return
@@ -156,26 +156,26 @@ func (a *API) updateRuleHandler(w http.ResponseWriter, r *http.Request, p httpro
 	}
 
 	update.Id = rule.Id
-	set.Set.Rules[rule.Id] = update
-	set.Set.Version++
+	rs.Set.Rules[rule.Id] = update
+	rs.Set.Version++
 
-	a.PersistentConfig.SetRuleSet(set.Set.Id, set)
+	a.PersistentConfig.SetRuleSet(rs.Set.Id, rs)
 	a.PersistentConfig.Save()
 
 	WriteJSON(http.StatusOK, ResponseJSON{Message: "rule updated"}, w)
 }
 
 func (a *API) deleteRuleHandler(w http.ResponseWriter, _ *http.Request, p httprouter.Params) {
-	set := a.PersistentConfig.GetRuleSet(p.ByName("ruleset_id"))
-	if set == nil {
+	rs := a.PersistentConfig.GetRuleSet(p.ByName("ruleset_id"))
+	if rs == nil {
 		WriteJSON(http.StatusNotFound, ResponseJSON{Message: "rule set not found"}, w)
 		return
 	}
 
-	delete(set.Set.Rules, p.ByName("id"))
-	set.Set.Version++
+	delete(rs.Set.Rules, p.ByName("id"))
+	rs.Set.Version++
 
-	a.PersistentConfig.SetRuleSet(set.Set.Id, set)
+	a.PersistentConfig.SetRuleSet(rs.Set.Id, rs)
 	a.PersistentConfig.Save()
 
 	WriteJSON(http.StatusOK, ResponseJSON{Message: "rule deleted"}, w)

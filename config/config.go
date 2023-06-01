@@ -10,7 +10,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path"
 	"strings"
@@ -328,7 +328,7 @@ func fetchConfigFromFile(fileName string) (*Config, error) {
 
 	defer f.Close()
 
-	data, err := ioutil.ReadAll(f)
+	data, err := io.ReadAll(f)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not read ~/.batchsh/%s", fileName)
 	}
@@ -376,7 +376,7 @@ func readConfigBytes(data []byte) (*Config, error) {
 
 // Exists determines if a config file exists yet
 func exists(fileName string) bool {
-	configDir, err := getConfigDir()
+	configDir, err := GetConfigDir()
 	if err != nil {
 		return false
 	}
@@ -390,7 +390,7 @@ func exists(fileName string) bool {
 }
 
 func remove(fileName string) error {
-	configDir, err := getConfigDir()
+	configDir, err := GetConfigDir()
 	if err != nil {
 		return err
 	}
@@ -416,7 +416,7 @@ func (c *Config) writeConfig(data []byte) error {
 	}
 
 	// Clustering not enabled - write to disk
-	configDir, err := getConfigDir()
+	configDir, err := GetConfigDir()
 	if err != nil {
 		c.log.Errorf("unable to determine config dir: %v", err)
 		return errors.Wrap(err, "unable to determine config dir")
@@ -464,7 +464,7 @@ func (c *Config) Update(cfg *Config) error {
 // getConfigJson attempts to read a user's .batchsh/config.json file; if it
 // doesn't exist, it will create an empty json config and return that.
 func getConfigJson(fileName string) (*os.File, error) {
-	configDir, err := getConfigDir()
+	configDir, err := GetConfigDir()
 	if err != nil {
 		return nil, err
 	}
@@ -489,8 +489,8 @@ func getConfigJson(fileName string) (*os.File, error) {
 	return os.Open(configPath)
 }
 
-// getConfigDir returns a directory where the batch configuration will be stored
-func getConfigDir() (string, error) {
+// GetConfigDir returns a directory where the batch configuration will be stored
+func GetConfigDir() (string, error) {
 	// Get user's home directory
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
