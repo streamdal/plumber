@@ -78,7 +78,7 @@ func (a *API) deleteRuleSetHandler(w http.ResponseWriter, _ *http.Request, p htt
 }
 
 func (a *API) getRuleSetHandler(w http.ResponseWriter, _ *http.Request, p httprouter.Params) {
-	set := a.PersistentConfig.GetRuleSet(p.ByName("id"))
+	set := a.PersistentConfig.GetRuleSet(p.ByName("ruleset_id"))
 	if set == nil {
 		WriteJSON(http.StatusNotFound, ResponseJSON{Message: "rule set not found"}, w)
 		return
