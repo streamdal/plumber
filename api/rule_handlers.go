@@ -84,7 +84,7 @@ func (a *API) getRuleSetHandler(w http.ResponseWriter, _ *http.Request, p httpro
 		return
 	}
 
-	WriteJSON(http.StatusOK, set, w)
+	WriteJSON(http.StatusOK, set.Set, w)
 }
 
 func (a *API) slackConfigHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

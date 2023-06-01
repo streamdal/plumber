@@ -82,7 +82,7 @@ func Start(cfg *config.Config, listenAddress, version string) (*http.Server, err
 	router.Handle("GET", "/v1/ruleset", a.getRuleSetsHandler)
 	router.Handle("POST", "/v1/ruleset", a.createRuleSetHandler)
 	router.Handle("DELETE", "/v1/ruleset/:ruleset_id", a.deleteRuleSetHandler)
-	router.Handle("GET", "/v1/ruleset/:ruleset_id", a.getRuleSetsHandler)
+	router.Handle("GET", "/v1/ruleset/:ruleset_id", a.getRuleSetHandler)
 
 	router.Handle("POST", "/v1/slack", a.slackConfigHandler)
 
