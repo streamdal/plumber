@@ -33,7 +33,7 @@ type GithubReleaseResponse struct {
 
 // BootstrapWASMFiles is called when a data quality rule is added to ensure we have WASM files available
 func (c *Config) BootstrapWASMFiles(ctx context.Context) error {
-	if c.haveDefaultWASMFiles() {
+	if c.haveDefaultWASMFiles() && len(c.WasmFiles) > 0 {
 		return nil // already have default WASM files
 	}
 

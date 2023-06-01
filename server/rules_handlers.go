@@ -64,13 +64,15 @@ func (s *Server) SendRuleNotification(_ context.Context, req *protos.SendRuleNot
 
 	switch rule.FailureMode {
 	case common.RuleFailureMode_RULE_FAILURE_MODE_DLQ:
+		if err := s.sendRuleToDLQ(req.Data, ruleSet.Set.Name, rule); err != nil {
+			return nil, CustomError(common.Code_UNKNOWN, err.Error())
+		}
+		s.Log.Debugf("Sent message to DLQ for rule '%s' in rule set '%s'", rule.Id, ruleSet.Set.Name)
+	case common.RuleFailureMode_RULE_FAILURE_MODE_ALERT_SLACK:
 		if err := s.sendRuleSlackNotification(req.Data, ruleSet.Set.Name, rule); err != nil {
 			return nil, CustomError(common.Code_UNKNOWN, err.Error())
 		}
-	case common.RuleFailureMode_RULE_FAILURE_MODE_ALERT_SLACK:
-		if err := s.sendRuleToDLQ(req.Data, ruleSet.Set.Name, rule.GetDlq()); err != nil {
-			return nil, CustomError(common.Code_UNKNOWN, err.Error())
-		}
+		s.Log.Debugf("Sent slack notification for rule '%s' in rule set '%s'", rule.Id, ruleSet.Set.Name)
 	default:
 		return nil, CustomError(common.Code_INVALID_ARGUMENT, "invalid failure mode")
 	}
@@ -126,7 +128,11 @@ func (s *Server) sendRuleSlackNotification(_ []byte, name string, rule *common.R
 }
 
 // TODO: need some kind of connection pooling and also a channel
-func (s *Server) sendRuleToDLQ(data []byte, name string, cfg *common.FailureModeDLQ) error {
+func (s *Server) sendRuleToDLQ(data []byte, name string, rule *common.Rule) error {
+	if rule.GetDlq() == nil {
+		return errors.New("BUG: dlq config is nil")
+	}
+
 	record := &records.GenericRecord{
 		ForceDeadLetter: true,
 		Body:            data,
@@ -137,6 +143,7 @@ func (s *Server) sendRuleToDLQ(data []byte, name string, cfg *common.FailureMode
 			"plumber_id":            s.PersistentConfig.PlumberID,
 			"plumber_version":       s.PersistentConfig.LastVersion,
 			"plumber_cluster_id":    s.PersistentConfig.ClusterID,
+			"rule_id":               rule.Id,
 		},
 	}
 
@@ -148,7 +155,7 @@ func (s *Server) sendRuleToDLQ(data []byte, name string, cfg *common.FailureMode
 		disableTLS   = true
 	)
 
-	conn, outboundCtx, err := util.NewGRPCConnection(gGRPCAddress, cfg.StreamdalToken, timeout, disableTLS, true)
+	conn, outboundCtx, err := util.NewGRPCConnection(gGRPCAddress, rule.GetDlq().StreamdalToken, timeout, disableTLS, true)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new gRPC connection")
 	}

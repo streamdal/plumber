@@ -187,22 +187,24 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 
 	a.PersistentConfig.RuleSets = make(map[string]*types.RuleSet)
 
-	a.PersistentConfig.RuleSets[uuid.NewV4().String()] = &types.RuleSet{
+	id1 := uuid.NewV4().String()
+	ruleid1 := uuid.NewV4().String()
+	a.PersistentConfig.RuleSets[id1] = &types.RuleSet{
 		Set: &common.RuleSet{
-			Id:      uuid.NewV4().String(),
+			Id:      id1,
 			Name:    "Reject Messages",
 			Mode:    common.RuleMode_RULE_MODE_PUBLISH,
 			Bus:     "kafka",
 			Version: 1,
 			Key:     "mytopic",
 			Rules: map[string]*common.Rule{
-				uuid.NewV4().String(): {
-					Id:   uuid.NewV4().String(),
+				ruleid1: {
+					Id:   ruleid1,
 					Type: common.RuleType_RULE_TYPE_MATCH,
 					RuleConfig: &common.Rule_MatchConfig{
 						MatchConfig: &common.RuleConfigMatch{
 							Path: "payload.name",
-							Type: "string_contains",
+							Type: "string_contains_any",
 							Args: []string{"hello"},
 						},
 					},
@@ -213,17 +215,19 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 		},
 	}
 
-	a.PersistentConfig.RuleSets[uuid.NewV4().String()] = &types.RuleSet{
+	id2 := uuid.NewV4().String()
+	ruleid2 := uuid.NewV4().String()
+	a.PersistentConfig.RuleSets[id2] = &types.RuleSet{
 		Set: &common.RuleSet{
-			Id:      uuid.NewV4().String(),
+			Id:      id2,
 			Name:    "Slack Alert for Messages",
 			Mode:    common.RuleMode_RULE_MODE_CONSUME,
 			Bus:     "kafka",
 			Version: 1,
 			Key:     "mytopic",
 			Rules: map[string]*common.Rule{
-				uuid.NewV4().String(): {
-					Id:   uuid.NewV4().String(),
+				ruleid2: {
+					Id:   ruleid2,
 					Type: common.RuleType_RULE_TYPE_MATCH,
 					RuleConfig: &common.Rule_MatchConfig{
 						MatchConfig: &common.RuleConfigMatch{
@@ -242,17 +246,19 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 		},
 	}
 
-	a.PersistentConfig.RuleSets[uuid.NewV4().String()] = &types.RuleSet{
+	id3 := uuid.NewV4().String()
+	ruleid3 := uuid.NewV4().String()
+	a.PersistentConfig.RuleSets[id3] = &types.RuleSet{
 		Set: &common.RuleSet{
-			Id:      uuid.NewV4().String(),
+			Id:      id3,
 			Name:    "Messages to DLQ",
 			Mode:    common.RuleMode_RULE_MODE_CONSUME,
 			Bus:     "rabbitmq",
 			Version: 1,
 			Key:     "mytopic",
 			Rules: map[string]*common.Rule{
-				uuid.NewV4().String(): {
-					Id:   uuid.NewV4().String(),
+				ruleid3: {
+					Id:   ruleid3,
 					Type: common.RuleType_RULE_TYPE_MATCH,
 					RuleConfig: &common.Rule_MatchConfig{
 						MatchConfig: &common.RuleConfigMatch{
@@ -271,16 +277,18 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 		},
 	}
 
-	a.PersistentConfig.RuleSets[uuid.NewV4().String()] = &types.RuleSet{
+	id4 := uuid.NewV4().String()
+	ruleid4 := uuid.NewV4().String()
+	a.PersistentConfig.RuleSets[id4] = &types.RuleSet{
 		Set: &common.RuleSet{
-			Id:      uuid.NewV4().String(),
+			Id:      id4,
 			Name:    "Transform message",
 			Mode:    common.RuleMode_RULE_MODE_PUBLISH,
 			Bus:     "rabbitmq",
 			Version: 2,
 			Rules: map[string]*common.Rule{
-				uuid.NewV4().String(): {
-					Id:   uuid.NewV4().String(),
+				ruleid4: {
+					Id:   ruleid4,
 					Type: common.RuleType_RULE_TYPE_MATCH,
 					RuleConfig: &common.Rule_MatchConfig{
 						MatchConfig: &common.RuleConfigMatch{
