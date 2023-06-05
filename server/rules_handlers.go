@@ -57,25 +57,12 @@ func (s *Server) SendRuleNotification(_ context.Context, req *protos.SendRuleNot
 	}
 
 	// Get rule from rule set
-	rule, ok := ruleSet.Set.Rules[req.RuleId]
+	_, ok := ruleSet.Set.Rules[req.RuleId]
 	if !ok {
 		return nil, errors.New("rule not found")
 	}
 
-	switch rule.FailureMode {
-	case common.RuleFailureMode_RULE_FAILURE_MODE_DLQ:
-		if err := s.sendRuleToDLQ(req.Data, ruleSet.Set.Name, rule); err != nil {
-			return nil, CustomError(common.Code_UNKNOWN, err.Error())
-		}
-		s.Log.Debugf("Sent message to DLQ for rule '%s' in rule set '%s'", rule.Id, ruleSet.Set.Name)
-	case common.RuleFailureMode_RULE_FAILURE_MODE_ALERT_SLACK:
-		if err := s.sendRuleSlackNotification(req.Data, ruleSet.Set.Name, rule); err != nil {
-			return nil, CustomError(common.Code_UNKNOWN, err.Error())
-		}
-		s.Log.Debugf("Sent slack notification for rule '%s' in rule set '%s'", rule.Id, ruleSet.Set.Name)
-	default:
-		return nil, CustomError(common.Code_INVALID_ARGUMENT, "invalid failure mode")
-	}
+	s.DataAlerts <- req
 
 	return &protos.SendRuleNotificationResponse{
 		Status: &common.Status{

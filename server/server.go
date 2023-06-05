@@ -26,6 +26,8 @@ type Server struct {
 	Log              *logrus.Entry
 	CLIOptions       *opts.CLIOptions
 	KV               kv.IKV
+	DataAlerts       chan *protos.SendRuleNotificationRequest
+	ShutdownCtx      context.Context
 }
 
 func (s *Server) GetServerOptions(_ context.Context, req *protos.GetServerOptionsRequest) (*protos.GetServerOptionsResponse, error) {
@@ -71,4 +73,50 @@ func (s *Server) validateAuth(auth *common.Auth) error {
 	}
 
 	return nil
+}
+
+func (s *Server) StartRuleAlerts() {
+	s.Log.Debug("starting rule alerts notifier")
+
+	for {
+		select {
+		case <-s.ShutdownCtx.Done():
+			s.Log.Debug("shutting down rule alerts notifier")
+			return
+		case req := <-s.DataAlerts:
+
+			// Get rule set
+			ruleSet := s.PersistentConfig.GetRuleSet(req.RulesetId)
+			if ruleSet == nil {
+				s.Log.Errorf("rule set '%s' not found", req.RulesetId)
+				break
+			}
+
+			// Get rule from rule set
+			rule, ok := ruleSet.Set.Rules[req.RuleId]
+			if !ok {
+				s.Log.Errorf("rule '%s' not found in rule set '%s'", req.RuleId, ruleSet.Set.Name)
+				break
+			}
+
+			s.handleRuleNotificationRequest(ruleSet.Set, rule, req)
+		}
+	}
+}
+
+func (s *Server) handleRuleNotificationRequest(ruleSet *common.RuleSet, rule *common.Rule, req *protos.SendRuleNotificationRequest) {
+	switch rule.FailureMode {
+	case common.RuleFailureMode_RULE_FAILURE_MODE_DLQ:
+		if err := s.sendRuleToDLQ(req.Data, ruleSet.Name, rule); err != nil {
+			s.Log.Error(err)
+		}
+		s.Log.Errorf("Sent message to DLQ for rule '%s' in rule set '%s'", rule.Id, ruleSet.Name)
+	case common.RuleFailureMode_RULE_FAILURE_MODE_ALERT_SLACK:
+		if err := s.sendRuleSlackNotification(req.Data, ruleSet.Name, rule); err != nil {
+			s.Log.Error(err)
+		}
+		s.Log.Errorf("Sent slack notification for rule '%s' in rule set '%s'", rule.Id, ruleSet.Name)
+	default:
+		s.Log.Errorf("unknown failure mode '%s' for rule '%s' in rule set '%s'", rule.FailureMode, rule.Id, ruleSet.Name)
+	}
 }

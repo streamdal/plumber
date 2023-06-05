@@ -162,11 +162,14 @@ func (p *Plumber) startGRPCServer() error {
 		Log:              logrus.WithField("pkg", "plumber/cli_server.go"),
 		CLIOptions:       p.CLIOptions,
 		KV:               p.PersistentConfig.KV,
+		DataAlerts:       make(chan *protos.SendRuleNotificationRequest, 100),
+		ShutdownCtx:      p.ServiceShutdownCtx,
 	}
 
 	protos.RegisterPlumberServerServer(grpcServer, plumberServer)
 
 	go p.watchServiceShutdown(grpcServer)
+	go plumberServer.StartRuleAlerts()
 
 	p.Telemetry.Enqueue(posthog.Capture{
 		Event:      "command_server",
