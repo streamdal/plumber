@@ -14,7 +14,7 @@ require (
 	github.com/batchcorp/collector-schemas v0.0.22
 	github.com/batchcorp/kong v0.2.17-batch-fix
 	github.com/batchcorp/natty v0.0.31
-	github.com/batchcorp/plumber-schemas v0.0.182-0.20230531172638-d3eba529ba60
+	github.com/batchcorp/plumber-schemas v0.0.182-0.20230605192602-179f39e2ebeb
 	github.com/batchcorp/rabbit v0.1.17
 	github.com/batchcorp/thrifty v0.0.10
 	github.com/eclipse/paho.mqtt.golang v1.2.0
