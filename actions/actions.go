@@ -14,6 +14,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber/config"
 	"github.com/batchcorp/plumber/server/types"
@@ -43,6 +44,11 @@ type IActions interface {
 	StopTunnel(ctx context.Context, tunnelID string) (*types.Tunnel, error)
 	UpdateTunnel(ctx context.Context, tunnelID string, tunnelOpts *opts.TunnelOptions) (*types.Tunnel, error)
 	DeleteTunnel(ctx context.Context, tunnelID string) error
+
+	// rule set
+	CreateRuleSet(ctx context.Context, rs *common.RuleSet) (*types.RuleSet, error)
+	UpdateRuleSet(ctx context.Context, id string, rs *common.RuleSet) (*types.RuleSet, error)
+	DeleteRuleSet(ctx context.Context, id string) (*types.RuleSet, error)
 }
 
 func New(cfg *Config) (IActions, error) {

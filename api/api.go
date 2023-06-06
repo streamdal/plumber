@@ -10,7 +10,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/batchcorp/plumber/config"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 	"github.com/julienschmidt/httprouter"
@@ -18,16 +17,24 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber/bus"
+	"github.com/batchcorp/plumber/config"
 )
 
 //go:embed all:assets
 var staticFiles embed.FS
 
+var (
+	ErrMissingConfig           = errors.New("config cannot be nil")
+	ErrMissingPersistentConfig = errors.New("PersistentConfig cannot be nil")
+	ErrMissingBus              = errors.New("Bus cannot be nil")
+	ErrEmptyListenAddress      = errors.New("ListenAddress cannot be empty")
+)
+
 type API struct {
-	Version          string
-	ListenAddress    string
-	PersistentConfig *config.Config
-	log              *logrus.Entry
+	*Config
+	log *logrus.Entry
 }
 
 type ResponseJSON struct {
@@ -37,7 +44,18 @@ type ResponseJSON struct {
 	Errors  string            `json:"errors,omitempty"`
 }
 
-func Start(cfg *config.Config, listenAddress, version string) (*http.Server, error) {
+type Config struct {
+	PersistentConfig *config.Config
+	Bus              bus.IBus
+	ListenAddress    string
+	Version          string
+}
+
+func Start(cfg *Config) (*http.Server, error) {
+	if err := validateConfig(cfg); err != nil {
+		return nil, errors.Wrap(err, "unable to validate config")
+	}
+
 	// Define console static file server
 	htmlContent, err := fs.Sub(fs.FS(staticFiles), "assets")
 	if err != nil {
@@ -55,13 +73,11 @@ func Start(cfg *config.Config, listenAddress, version string) (*http.Server, err
 	}
 
 	a := &API{
-		Version:          version,
-		ListenAddress:    listenAddress,
-		PersistentConfig: cfg,
-		log:              logrus.WithField("pkg", "api"),
+		Config: cfg,
+		log:    logrus.WithField("pkg", "api"),
 	}
 
-	a.log.Debugf("starting API server on %s", listenAddress)
+	a.log.Debugf("starting API server on %s", cfg.ListenAddress)
 
 	router := httprouter.New()
 
@@ -116,7 +132,7 @@ func Start(cfg *config.Config, listenAddress, version string) (*http.Server, err
 	}).Handler(router)
 
 	srv := &http.Server{
-		Addr:    listenAddress,
+		Addr:    cfg.ListenAddress,
 		Handler: corsRouter,
 	}
 
@@ -129,6 +145,26 @@ func Start(cfg *config.Config, listenAddress, version string) (*http.Server, err
 	}()
 
 	return srv, nil
+}
+
+func validateConfig(cfg *Config) error {
+	if cfg == nil {
+		return ErrMissingConfig
+	}
+
+	if cfg.PersistentConfig == nil {
+		return ErrMissingPersistentConfig
+	}
+
+	if cfg.Bus == nil {
+		return ErrMissingBus
+	}
+
+	if cfg.ListenAddress == "" {
+		return ErrEmptyListenAddress
+	}
+
+	return nil
 }
 
 func (a *API) healthCheckHandler(rw http.ResponseWriter, r *http.Request) {

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
@@ -22,6 +23,8 @@ func (a *API) getRuleSetsHandler(w http.ResponseWriter, _ *http.Request, _ httpr
 }
 
 func (a *API) createRuleSetHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	ctx := r.Context()
+
 	if err := a.PersistentConfig.BootstrapWASMFiles(r.Context()); err != nil {
 		WriteErrorJSON(http.StatusInternalServerError, err.Error(), w)
 		return
@@ -40,13 +43,22 @@ func (a *API) createRuleSetHandler(w http.ResponseWriter, r *http.Request, _ htt
 	rs.Version = 1
 	rs.Rules = make(map[string]*common.Rule)
 
+	if err := a.Bus.PublishCreateRuleSet(ctx, rs); err != nil {
+		err = errors.Wrap(err, "unable to publish create rule set event")
+		a.log.Error(err)
+		WriteErrorJSON(http.StatusInternalServerError, err.Error(), w)
+		return
+	}
+
 	a.PersistentConfig.SetRuleSet(id, &types.RuleSet{Set: rs})
-	a.PersistentConfig.Save()
+	_ = a.PersistentConfig.Save()
 
 	WriteJSON(http.StatusOK, ResponseJSON{Message: "rule set created", Values: map[string]string{"id": id}}, w)
 }
 
 func (a *API) updateRuleSetHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	ctx := r.Context()
+
 	rs := a.PersistentConfig.GetRuleSet(p.ByName("id"))
 	if rs == nil {
 		WriteJSON(http.StatusNotFound, ResponseJSON{Message: "rule set not found"}, w)
@@ -65,14 +77,38 @@ func (a *API) updateRuleSetHandler(w http.ResponseWriter, r *http.Request, p htt
 	rs.Set.Bus = update.Bus
 	rs.Set.Version++
 
+	if err := a.Bus.PublishUpdateRuleSet(ctx, rs.Set); err != nil {
+		err = errors.Wrap(err, "unable to publish update rule set event")
+		a.log.Error(err)
+		WriteErrorJSON(http.StatusInternalServerError, err.Error(), w)
+		return
+	}
+
 	a.PersistentConfig.SetRuleSet(rs.Set.Id, rs)
-	a.PersistentConfig.Save()
+	_ = a.PersistentConfig.Save()
+
+	a.Bus.PublishUpdateRuleSet(ctx, rs.Set)
 
 	WriteJSON(http.StatusOK, ResponseJSON{Message: "rule set updated"}, w)
 }
 
-func (a *API) deleteRuleSetHandler(w http.ResponseWriter, _ *http.Request, p httprouter.Params) {
-	a.PersistentConfig.DeleteRuleSet(p.ByName("id"))
+func (a *API) deleteRuleSetHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	ctx := r.Context()
+
+	rs := a.PersistentConfig.GetRuleSet(p.ByName("ruleset_id"))
+	if rs == nil {
+		WriteJSON(http.StatusNotFound, ResponseJSON{Message: "rule set not found"}, w)
+		return
+	}
+
+	if err := a.Bus.PublishDeleteRuleSet(ctx, &common.RuleSet{Id: rs.Set.Id}); err != nil {
+		err = errors.Wrap(err, "unable to publish delete  rule set event")
+		a.log.Error(err)
+		WriteErrorJSON(http.StatusInternalServerError, err.Error(), w)
+	}
+
+	a.PersistentConfig.DeleteRuleSet(rs.Set.Id)
+	_ = a.PersistentConfig.Save()
 
 	WriteJSON(http.StatusOK, ResponseJSON{Message: "rule set deleted"}, w)
 }
@@ -109,6 +145,8 @@ func (a *API) getRulesHandler(w http.ResponseWriter, r *http.Request, p httprout
 }
 
 func (a *API) createRuleHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	ctx := r.Context()
+
 	rs := a.PersistentConfig.GetRuleSet(p.ByName("ruleset_id"))
 	if rs == nil {
 		WriteJSON(http.StatusNotFound, ResponseJSON{Message: "rule set not found"}, w)
@@ -130,6 +168,13 @@ func (a *API) createRuleHandler(w http.ResponseWriter, r *http.Request, p httpro
 	}
 	rs.Set.Rules[id] = rule
 
+	if err := a.Bus.PublishUpdateRuleSet(ctx, rs.Set); err != nil {
+		err = errors.Wrap(err, "unable to publish update rule set event")
+		a.log.Error(err)
+		WriteErrorJSON(http.StatusInternalServerError, err.Error(), w)
+		return
+	}
+
 	a.PersistentConfig.SetRuleSet(rs.Set.Id, rs)
 	a.PersistentConfig.Save()
 
@@ -137,6 +182,8 @@ func (a *API) createRuleHandler(w http.ResponseWriter, r *http.Request, p httpro
 }
 
 func (a *API) updateRuleHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	ctx := r.Context()
+
 	rs := a.PersistentConfig.GetRuleSet(p.ByName("ruleset_id"))
 	if rs == nil {
 		WriteJSON(http.StatusNotFound, ResponseJSON{Message: "rule set not found"}, w)
@@ -159,13 +206,22 @@ func (a *API) updateRuleHandler(w http.ResponseWriter, r *http.Request, p httpro
 	rs.Set.Rules[rule.Id] = update
 	rs.Set.Version++
 
+	if err := a.Bus.PublishUpdateRuleSet(ctx, rs.Set); err != nil {
+		err = errors.Wrap(err, "unable to publish update rule set event")
+		a.log.Error(err)
+		WriteErrorJSON(http.StatusInternalServerError, err.Error(), w)
+		return
+	}
+
 	a.PersistentConfig.SetRuleSet(rs.Set.Id, rs)
 	a.PersistentConfig.Save()
 
 	WriteJSON(http.StatusOK, ResponseJSON{Message: "rule updated"}, w)
 }
 
-func (a *API) deleteRuleHandler(w http.ResponseWriter, _ *http.Request, p httprouter.Params) {
+func (a *API) deleteRuleHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	ctx := r.Context()
+
 	rs := a.PersistentConfig.GetRuleSet(p.ByName("ruleset_id"))
 	if rs == nil {
 		WriteJSON(http.StatusNotFound, ResponseJSON{Message: "rule set not found"}, w)
@@ -174,6 +230,13 @@ func (a *API) deleteRuleHandler(w http.ResponseWriter, _ *http.Request, p httpro
 
 	delete(rs.Set.Rules, p.ByName("id"))
 	rs.Set.Version++
+
+	if err := a.Bus.PublishUpdateRuleSet(ctx, rs.Set); err != nil {
+		err = errors.Wrap(err, "unable to publish update rule set event")
+		a.log.Error(err)
+		WriteErrorJSON(http.StatusInternalServerError, err.Error(), w)
+		return
+	}
 
 	a.PersistentConfig.SetRuleSet(rs.Set.Id, rs)
 	a.PersistentConfig.Save()

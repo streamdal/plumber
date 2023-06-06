@@ -16,7 +16,7 @@ package bus
 //	clientv3 "go.etcd.io/etcd/client/v3"
 //)
 //
-//var _ = Describe("Bus", func() {
+//var _ = Describe("bus", func() {
 //	var (
 //		pURL, _ = url.Parse("http://127.0.0.1:2380")
 //		cURL, _ = url.Parse("http://127.0.0.1:2379")
@@ -34,7 +34,7 @@ package bus
 //		}
 //
 //		serviceContext, _ = context.WithCancel(context.Background())
-//		srv               *Bus
+//		srv               *bus
 //	)
 //
 //	// Go run tests in parallel and because launching 20+ etcd's will probably

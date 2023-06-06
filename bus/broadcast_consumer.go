@@ -70,6 +70,14 @@ func (b *Bus) broadcastCallback(ctx context.Context, natsMsg *nats.Msg) error {
 	case ResumeTunnel:
 		err = b.doResumeTunnel(ctx, msg)
 
+	// RuleSet
+	case CreateRuleSet:
+		err = b.doCreateRuleSet(ctx, msg)
+	case UpdateRuleSet:
+		err = b.doUpdateRuleSet(ctx, msg)
+	case DeleteRuleSet:
+		err = b.doDeleteRuleSet(ctx, msg)
+
 	default:
 		llog.Debugf("unrecognized action '%s' in msg on subj '%s' - skipping", msg.Action, natsMsg.Subject)
 	}

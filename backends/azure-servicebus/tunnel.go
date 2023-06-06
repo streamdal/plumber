@@ -41,7 +41,7 @@ func (a *AzureServiceBus) Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOpt
 		defer topic.Close(ctx)
 	}
 
-	if err := tunnelSvc.Start(ctx, "Azure Service Bus", errorCh); err != nil {
+	if err := tunnelSvc.Start(ctx, "Azure Service bus", errorCh); err != nil {
 		return errors.Wrap(err, "unable to create tunnel")
 	}
 
@@ -67,7 +67,7 @@ func (a *AzureServiceBus) Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOpt
 				}
 			}
 
-			llog.Debugf("Replayed message to Azure Service Bus for replay '%s'", outbound.ReplayId)
+			llog.Debugf("Replayed message to Azure Service bus for replay '%s'", outbound.ReplayId)
 		case <-ctx.Done():
 			llog.Debug("context cancelled")
 			return nil

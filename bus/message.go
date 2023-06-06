@@ -25,6 +25,10 @@ const (
 	ResumeTunnel = "ResumeTunnel"
 
 	UpdateConfig = "UpdateConfig"
+
+	CreateRuleSet = "CreateRuleSet"
+	UpdateRuleSet = "UpdateRuleSet"
+	DeleteRuleSet = "DeleteRuleSet"
 )
 
 var (
@@ -32,7 +36,7 @@ var (
 		CreateConnection, UpdateConnection, DeleteConnection,
 		CreateRelay, UpdateRelay, DeleteRelay, StopRelay, ResumeRelay,
 		CreateTunnel, UpdateTunnel, DeleteTunnel, StopTunnel, ResumeTunnel,
-		UpdateConfig,
+		UpdateConfig, CreateRuleSet, UpdateRuleSet, DeleteRuleSet,
 	}
 )
 

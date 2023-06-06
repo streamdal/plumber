@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
 	"github.com/relistan/go-director"
@@ -50,6 +52,10 @@ type IBus interface {
 	PublishStopTunnel(ctx context.Context, tunnelOptions *opts.TunnelOptions) error
 	PublishResumeTunnel(ctx context.Context, tunnelOptions *opts.TunnelOptions) error
 	PublishDeleteTunnel(ctx context.Context, tunnelOptions *opts.TunnelOptions) error
+
+	PublishCreateRuleSet(ctx context.Context, rs *common.RuleSet) error
+	PublishUpdateRuleSet(ctx context.Context, rs *common.RuleSet) error
+	PublishDeleteRuleSet(ctx context.Context, rs *common.RuleSet) error
 }
 
 type Bus struct {

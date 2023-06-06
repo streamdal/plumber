@@ -5,6 +5,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber/actions"
 	"github.com/batchcorp/plumber/server/types"
@@ -23,6 +24,20 @@ type FakeIActions struct {
 	}
 	createRelayReturnsOnCall map[int]struct {
 		result1 *types.Relay
+		result2 error
+	}
+	CreateRuleSetStub        func(context.Context, *common.RuleSet) (*types.RuleSet, error)
+	createRuleSetMutex       sync.RWMutex
+	createRuleSetArgsForCall []struct {
+		arg1 context.Context
+		arg2 *common.RuleSet
+	}
+	createRuleSetReturns struct {
+		result1 *types.RuleSet
+		result2 error
+	}
+	createRuleSetReturnsOnCall map[int]struct {
+		result1 *types.RuleSet
 		result2 error
 	}
 	CreateTunnelStub        func(context.Context, *opts.TunnelOptions) (*types.Tunnel, error)
@@ -51,6 +66,20 @@ type FakeIActions struct {
 	}
 	deleteRelayReturnsOnCall map[int]struct {
 		result1 *types.Relay
+		result2 error
+	}
+	DeleteRuleSetStub        func(context.Context, string) (*types.RuleSet, error)
+	deleteRuleSetMutex       sync.RWMutex
+	deleteRuleSetArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+	}
+	deleteRuleSetReturns struct {
+		result1 *types.RuleSet
+		result2 error
+	}
+	deleteRuleSetReturnsOnCall map[int]struct {
+		result1 *types.RuleSet
 		result2 error
 	}
 	DeleteTunnelStub        func(context.Context, string) error
@@ -136,6 +165,21 @@ type FakeIActions struct {
 		result1 *types.Relay
 		result2 error
 	}
+	UpdateRuleSetStub        func(context.Context, string, *common.RuleSet) (*types.RuleSet, error)
+	updateRuleSetMutex       sync.RWMutex
+	updateRuleSetArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+		arg3 *common.RuleSet
+	}
+	updateRuleSetReturns struct {
+		result1 *types.RuleSet
+		result2 error
+	}
+	updateRuleSetReturnsOnCall map[int]struct {
+		result1 *types.RuleSet
+		result2 error
+	}
 	UpdateTunnelStub        func(context.Context, string, *opts.TunnelOptions) (*types.Tunnel, error)
 	updateTunnelMutex       sync.RWMutex
 	updateTunnelArgsForCall []struct {
@@ -216,6 +260,71 @@ func (fake *FakeIActions) CreateRelayReturnsOnCall(i int, result1 *types.Relay, 
 	}
 	fake.createRelayReturnsOnCall[i] = struct {
 		result1 *types.Relay
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeIActions) CreateRuleSet(arg1 context.Context, arg2 *common.RuleSet) (*types.RuleSet, error) {
+	fake.createRuleSetMutex.Lock()
+	ret, specificReturn := fake.createRuleSetReturnsOnCall[len(fake.createRuleSetArgsForCall)]
+	fake.createRuleSetArgsForCall = append(fake.createRuleSetArgsForCall, struct {
+		arg1 context.Context
+		arg2 *common.RuleSet
+	}{arg1, arg2})
+	stub := fake.CreateRuleSetStub
+	fakeReturns := fake.createRuleSetReturns
+	fake.recordInvocation("CreateRuleSet", []interface{}{arg1, arg2})
+	fake.createRuleSetMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeIActions) CreateRuleSetCallCount() int {
+	fake.createRuleSetMutex.RLock()
+	defer fake.createRuleSetMutex.RUnlock()
+	return len(fake.createRuleSetArgsForCall)
+}
+
+func (fake *FakeIActions) CreateRuleSetCalls(stub func(context.Context, *common.RuleSet) (*types.RuleSet, error)) {
+	fake.createRuleSetMutex.Lock()
+	defer fake.createRuleSetMutex.Unlock()
+	fake.CreateRuleSetStub = stub
+}
+
+func (fake *FakeIActions) CreateRuleSetArgsForCall(i int) (context.Context, *common.RuleSet) {
+	fake.createRuleSetMutex.RLock()
+	defer fake.createRuleSetMutex.RUnlock()
+	argsForCall := fake.createRuleSetArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIActions) CreateRuleSetReturns(result1 *types.RuleSet, result2 error) {
+	fake.createRuleSetMutex.Lock()
+	defer fake.createRuleSetMutex.Unlock()
+	fake.CreateRuleSetStub = nil
+	fake.createRuleSetReturns = struct {
+		result1 *types.RuleSet
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeIActions) CreateRuleSetReturnsOnCall(i int, result1 *types.RuleSet, result2 error) {
+	fake.createRuleSetMutex.Lock()
+	defer fake.createRuleSetMutex.Unlock()
+	fake.CreateRuleSetStub = nil
+	if fake.createRuleSetReturnsOnCall == nil {
+		fake.createRuleSetReturnsOnCall = make(map[int]struct {
+			result1 *types.RuleSet
+			result2 error
+		})
+	}
+	fake.createRuleSetReturnsOnCall[i] = struct {
+		result1 *types.RuleSet
 		result2 error
 	}{result1, result2}
 }
@@ -346,6 +455,71 @@ func (fake *FakeIActions) DeleteRelayReturnsOnCall(i int, result1 *types.Relay, 
 	}
 	fake.deleteRelayReturnsOnCall[i] = struct {
 		result1 *types.Relay
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeIActions) DeleteRuleSet(arg1 context.Context, arg2 string) (*types.RuleSet, error) {
+	fake.deleteRuleSetMutex.Lock()
+	ret, specificReturn := fake.deleteRuleSetReturnsOnCall[len(fake.deleteRuleSetArgsForCall)]
+	fake.deleteRuleSetArgsForCall = append(fake.deleteRuleSetArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+	}{arg1, arg2})
+	stub := fake.DeleteRuleSetStub
+	fakeReturns := fake.deleteRuleSetReturns
+	fake.recordInvocation("DeleteRuleSet", []interface{}{arg1, arg2})
+	fake.deleteRuleSetMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeIActions) DeleteRuleSetCallCount() int {
+	fake.deleteRuleSetMutex.RLock()
+	defer fake.deleteRuleSetMutex.RUnlock()
+	return len(fake.deleteRuleSetArgsForCall)
+}
+
+func (fake *FakeIActions) DeleteRuleSetCalls(stub func(context.Context, string) (*types.RuleSet, error)) {
+	fake.deleteRuleSetMutex.Lock()
+	defer fake.deleteRuleSetMutex.Unlock()
+	fake.DeleteRuleSetStub = stub
+}
+
+func (fake *FakeIActions) DeleteRuleSetArgsForCall(i int) (context.Context, string) {
+	fake.deleteRuleSetMutex.RLock()
+	defer fake.deleteRuleSetMutex.RUnlock()
+	argsForCall := fake.deleteRuleSetArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIActions) DeleteRuleSetReturns(result1 *types.RuleSet, result2 error) {
+	fake.deleteRuleSetMutex.Lock()
+	defer fake.deleteRuleSetMutex.Unlock()
+	fake.DeleteRuleSetStub = nil
+	fake.deleteRuleSetReturns = struct {
+		result1 *types.RuleSet
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeIActions) DeleteRuleSetReturnsOnCall(i int, result1 *types.RuleSet, result2 error) {
+	fake.deleteRuleSetMutex.Lock()
+	defer fake.deleteRuleSetMutex.Unlock()
+	fake.DeleteRuleSetStub = nil
+	if fake.deleteRuleSetReturnsOnCall == nil {
+		fake.deleteRuleSetReturnsOnCall = make(map[int]struct {
+			result1 *types.RuleSet
+			result2 error
+		})
+	}
+	fake.deleteRuleSetReturnsOnCall[i] = struct {
+		result1 *types.RuleSet
 		result2 error
 	}{result1, result2}
 }
@@ -738,6 +912,72 @@ func (fake *FakeIActions) UpdateRelayReturnsOnCall(i int, result1 *types.Relay, 
 	}{result1, result2}
 }
 
+func (fake *FakeIActions) UpdateRuleSet(arg1 context.Context, arg2 string, arg3 *common.RuleSet) (*types.RuleSet, error) {
+	fake.updateRuleSetMutex.Lock()
+	ret, specificReturn := fake.updateRuleSetReturnsOnCall[len(fake.updateRuleSetArgsForCall)]
+	fake.updateRuleSetArgsForCall = append(fake.updateRuleSetArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+		arg3 *common.RuleSet
+	}{arg1, arg2, arg3})
+	stub := fake.UpdateRuleSetStub
+	fakeReturns := fake.updateRuleSetReturns
+	fake.recordInvocation("UpdateRuleSet", []interface{}{arg1, arg2, arg3})
+	fake.updateRuleSetMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeIActions) UpdateRuleSetCallCount() int {
+	fake.updateRuleSetMutex.RLock()
+	defer fake.updateRuleSetMutex.RUnlock()
+	return len(fake.updateRuleSetArgsForCall)
+}
+
+func (fake *FakeIActions) UpdateRuleSetCalls(stub func(context.Context, string, *common.RuleSet) (*types.RuleSet, error)) {
+	fake.updateRuleSetMutex.Lock()
+	defer fake.updateRuleSetMutex.Unlock()
+	fake.UpdateRuleSetStub = stub
+}
+
+func (fake *FakeIActions) UpdateRuleSetArgsForCall(i int) (context.Context, string, *common.RuleSet) {
+	fake.updateRuleSetMutex.RLock()
+	defer fake.updateRuleSetMutex.RUnlock()
+	argsForCall := fake.updateRuleSetArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeIActions) UpdateRuleSetReturns(result1 *types.RuleSet, result2 error) {
+	fake.updateRuleSetMutex.Lock()
+	defer fake.updateRuleSetMutex.Unlock()
+	fake.UpdateRuleSetStub = nil
+	fake.updateRuleSetReturns = struct {
+		result1 *types.RuleSet
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeIActions) UpdateRuleSetReturnsOnCall(i int, result1 *types.RuleSet, result2 error) {
+	fake.updateRuleSetMutex.Lock()
+	defer fake.updateRuleSetMutex.Unlock()
+	fake.UpdateRuleSetStub = nil
+	if fake.updateRuleSetReturnsOnCall == nil {
+		fake.updateRuleSetReturnsOnCall = make(map[int]struct {
+			result1 *types.RuleSet
+			result2 error
+		})
+	}
+	fake.updateRuleSetReturnsOnCall[i] = struct {
+		result1 *types.RuleSet
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeIActions) UpdateTunnel(arg1 context.Context, arg2 string, arg3 *opts.TunnelOptions) (*types.Tunnel, error) {
 	fake.updateTunnelMutex.Lock()
 	ret, specificReturn := fake.updateTunnelReturnsOnCall[len(fake.updateTunnelArgsForCall)]
@@ -809,10 +1049,14 @@ func (fake *FakeIActions) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.createRelayMutex.RLock()
 	defer fake.createRelayMutex.RUnlock()
+	fake.createRuleSetMutex.RLock()
+	defer fake.createRuleSetMutex.RUnlock()
 	fake.createTunnelMutex.RLock()
 	defer fake.createTunnelMutex.RUnlock()
 	fake.deleteRelayMutex.RLock()
 	defer fake.deleteRelayMutex.RUnlock()
+	fake.deleteRuleSetMutex.RLock()
+	defer fake.deleteRuleSetMutex.RUnlock()
 	fake.deleteTunnelMutex.RLock()
 	defer fake.deleteTunnelMutex.RUnlock()
 	fake.resumeRelayMutex.RLock()
@@ -825,6 +1069,8 @@ func (fake *FakeIActions) Invocations() map[string][][]interface{} {
 	defer fake.stopTunnelMutex.RUnlock()
 	fake.updateRelayMutex.RLock()
 	defer fake.updateRelayMutex.RUnlock()
+	fake.updateRuleSetMutex.RLock()
+	defer fake.updateRuleSetMutex.RUnlock()
 	fake.updateTunnelMutex.RLock()
 	defer fake.updateTunnelMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

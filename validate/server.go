@@ -3,6 +3,7 @@ package validate
 import (
 	"github.com/pkg/errors"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
@@ -36,6 +37,13 @@ var (
 	ErrRelayNotFound          = errors.New("relay not found")
 	ErrRelayNotActive         = errors.New("relay not active")
 	ErrRelayAlreadyActive     = errors.New("relay already active")
+
+	// Rule set
+
+	ErrEmptyID     = errors.New("ruleset id in options cannot be empty")
+	ErrEmptyKey    = errors.New("ruleset key in options cannot be empty")
+	ErrEmptyBus    = errors.New("ruleset bus in options cannot be empty")
+	ErrInvalidMode = errors.New("ruleset mode in options cannot be empty")
 )
 
 func RelayOptionsForServer(relayOptions *opts.RelayOptions) error {
@@ -82,6 +90,30 @@ func ConnectionOptionsForServer(connOptions *opts.ConnectionOptions) error {
 
 func TunnelOptionsForServer(tunnelOptions *opts.TunnelOptions) error {
 	// TODO: Implement specific tunnel validations
+
+	return nil
+}
+
+func RuleSetForServer(rs *common.RuleSet) error {
+	if rs.Id == "" {
+		return ErrEmptyID
+	}
+
+	if rs.Key == "" {
+		return ErrEmptyKey
+	}
+
+	if rs.Mode == 0 {
+		return ErrInvalidMode
+	}
+
+	if rs.Bus == "" {
+		return ErrEmptyBus
+	}
+
+	if len(rs.Rules) > 0 {
+		// TODO: Implement specific rule validations
+	}
 
 	return nil
 }

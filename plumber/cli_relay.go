@@ -7,6 +7,7 @@ import (
 
 	"github.com/batchcorp/plumber/api"
 	"github.com/batchcorp/plumber/backends"
+	"github.com/batchcorp/plumber/bus"
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/relay"
 	"github.com/batchcorp/plumber/util"
@@ -79,7 +80,12 @@ func (p *Plumber) startRelayService() error {
 
 	// Launch HTTP server
 	go func() {
-		if _, err := api.Start(p.PersistentConfig, p.CLIOptions.Relay.XCliOptions.HttpListenAddress, options.VERSION); err != nil {
+		if _, err := api.Start(&api.Config{
+			PersistentConfig: p.PersistentConfig,
+			Bus:              &bus.NoOpBus{},
+			ListenAddress:    p.CLIOptions.Relay.XCliOptions.HttpListenAddress,
+			Version:          options.VERSION,
+		}); err != nil {
 			logrus.Fatalf("unable to start API server: %s", err)
 		}
 	}()

@@ -7,6 +7,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
@@ -88,6 +89,24 @@ func (b *Bus) PublishResumeTunnel(ctx context.Context, tunnelOptions *opts.Tunne
 	return b.publishTunnelMessage(ctx, ResumeTunnel, tunnelOptions)
 }
 
+// PublishCreateRuleSet publishes a CreateRuleSet message, which other plumber instances will receive
+// and add the ruleset to their local in-memory maps
+func (b *Bus) PublishCreateRuleSet(ctx context.Context, rs *common.RuleSet) error {
+	return b.publishRuleSetMessage(ctx, CreateRuleSet, rs)
+}
+
+// PublishUpdateRuleSet publishes an UpdateRuleSet message, which other plumber instances will receive
+// and update the ruleset in their local in-memory maps
+func (b *Bus) PublishUpdateRuleSet(ctx context.Context, rs *common.RuleSet) error {
+	return b.publishRuleSetMessage(ctx, UpdateRuleSet, rs)
+}
+
+// PublishDeleteRuleSet publishes a DeleteRuleSet message, which other plumber instances will receive
+// and delete the ruleset from their local in-memory maps
+func (b *Bus) PublishDeleteRuleSet(ctx context.Context, rs *common.RuleSet) error {
+	return b.publishRuleSetMessage(ctx, DeleteRuleSet, rs)
+}
+
 func (b *Bus) publishConnectionMessage(ctx context.Context, action Action, conn *opts.ConnectionOptions) error {
 	data, err := proto.Marshal(conn)
 	if err != nil {
@@ -120,6 +139,20 @@ func (b *Bus) publishTunnelMessage(ctx context.Context, action Action, tunnelOpt
 	data, err := proto.Marshal(tunnelOptions)
 	if err != nil {
 		return errors.Wrapf(err, "unable to marshal tunnel message for '%s'", tunnelOptions.XTunnelId)
+	}
+
+	return b.broadcast(ctx, &Message{
+		Action:    action,
+		Data:      data,
+		EmittedBy: b.config.PersistentConfig.PlumberID,
+		EmittedAt: time.Now().UTC(),
+	})
+}
+
+func (b *Bus) publishRuleSetMessage(ctx context.Context, action Action, rs *common.RuleSet) error {
+	data, err := proto.Marshal(rs)
+	if err != nil {
+		return errors.Wrapf(err, "unable to marshal ruleset message for '%s'", rs.Id)
 	}
 
 	return b.broadcast(ctx, &Message{

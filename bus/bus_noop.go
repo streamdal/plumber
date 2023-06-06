@@ -3,6 +3,8 @@ package bus
 import (
 	"context"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
@@ -66,5 +68,17 @@ func (n NoOpBus) PublishResumeTunnel(_ context.Context, _ *opts.TunnelOptions) e
 }
 
 func (n NoOpBus) PublishDeleteTunnel(_ context.Context, _ *opts.TunnelOptions) error {
+	return nil
+}
+
+func (n NoOpBus) PublishCreateRuleSet(_ context.Context, _ *common.RuleSet) error {
+	return nil
+}
+
+func (n NoOpBus) PublishUpdateRuleSet(_ context.Context, _ *common.RuleSet) error {
+	return nil
+}
+
+func (n NoOpBus) PublishDeleteRuleSet(_ context.Context, _ *common.RuleSet) error {
 	return nil
 }
