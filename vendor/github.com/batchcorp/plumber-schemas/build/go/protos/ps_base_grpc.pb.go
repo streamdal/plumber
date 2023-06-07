@@ -52,7 +52,14 @@ type PlumberServerClient interface {
 	UploadWasmFile(ctx context.Context, in *UploadWasmFileRequest, opts ...grpc.CallOption) (*UploadWasmFileResponse, error)
 	DownloadWasmFile(ctx context.Context, in *DownloadWasmFileRequest, opts ...grpc.CallOption) (*DownloadWasmFileResponse, error)
 	DeleteWasmFile(ctx context.Context, in *DeleteWasmFileRequest, opts ...grpc.CallOption) (*DeleteWasmFileResponse, error)
-	GetRules(ctx context.Context, in *GetDataQualityRulesRequest, opts ...grpc.CallOption) (*GetDataQualityRulesResponse, error)
+	GetRuleSets(ctx context.Context, in *GetDataQualityRuleSetsRequest, opts ...grpc.CallOption) (*GetDataQualityRuleSetsResponse, error)
+	GetRule(ctx context.Context, in *GetDataQualityRuleRequest, opts ...grpc.CallOption) (*GetDataQualityRuleResponse, error)
+	CreateRule(ctx context.Context, in *CreateDataQualityRuleRequest, opts ...grpc.CallOption) (*CreateDataQualityRuleResponse, error)
+	UpdateRule(ctx context.Context, in *UpdateDataQualityRuleRequest, opts ...grpc.CallOption) (*UpdateDataQualityRuleResponse, error)
+	DeleteRule(ctx context.Context, in *DeleteDataQualityRuleRequest, opts ...grpc.CallOption) (*DeleteDataQualityRuleResponse, error)
+	CreateRuleSet(ctx context.Context, in *CreateDataQualityRuleSetRequest, opts ...grpc.CallOption) (*CreateDataQualityRuleSetResponse, error)
+	UpdateRuleSet(ctx context.Context, in *UpdateDataQualityRuleSetRequest, opts ...grpc.CallOption) (*UpdateDataQualityRuleSetResponse, error)
+	DeleteRuleSet(ctx context.Context, in *DeleteDataQualityRuleSetRequest, opts ...grpc.CallOption) (*DeleteDataQualityRuleSetResponse, error)
 	SendRuleNotification(ctx context.Context, in *SendRuleNotificationRequest, opts ...grpc.CallOption) (*SendRuleNotificationResponse, error)
 	GetServerOptions(ctx context.Context, in *GetServerOptionsRequest, opts ...grpc.CallOption) (*GetServerOptionsResponse, error)
 }
@@ -281,9 +288,72 @@ func (c *plumberServerClient) DeleteWasmFile(ctx context.Context, in *DeleteWasm
 	return out, nil
 }
 
-func (c *plumberServerClient) GetRules(ctx context.Context, in *GetDataQualityRulesRequest, opts ...grpc.CallOption) (*GetDataQualityRulesResponse, error) {
-	out := new(GetDataQualityRulesResponse)
-	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetRules", in, out, opts...)
+func (c *plumberServerClient) GetRuleSets(ctx context.Context, in *GetDataQualityRuleSetsRequest, opts ...grpc.CallOption) (*GetDataQualityRuleSetsResponse, error) {
+	out := new(GetDataQualityRuleSetsResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetRuleSets", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *plumberServerClient) GetRule(ctx context.Context, in *GetDataQualityRuleRequest, opts ...grpc.CallOption) (*GetDataQualityRuleResponse, error) {
+	out := new(GetDataQualityRuleResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetRule", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *plumberServerClient) CreateRule(ctx context.Context, in *CreateDataQualityRuleRequest, opts ...grpc.CallOption) (*CreateDataQualityRuleResponse, error) {
+	out := new(CreateDataQualityRuleResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/CreateRule", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *plumberServerClient) UpdateRule(ctx context.Context, in *UpdateDataQualityRuleRequest, opts ...grpc.CallOption) (*UpdateDataQualityRuleResponse, error) {
+	out := new(UpdateDataQualityRuleResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/UpdateRule", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *plumberServerClient) DeleteRule(ctx context.Context, in *DeleteDataQualityRuleRequest, opts ...grpc.CallOption) (*DeleteDataQualityRuleResponse, error) {
+	out := new(DeleteDataQualityRuleResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/DeleteRule", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *plumberServerClient) CreateRuleSet(ctx context.Context, in *CreateDataQualityRuleSetRequest, opts ...grpc.CallOption) (*CreateDataQualityRuleSetResponse, error) {
+	out := new(CreateDataQualityRuleSetResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/CreateRuleSet", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *plumberServerClient) UpdateRuleSet(ctx context.Context, in *UpdateDataQualityRuleSetRequest, opts ...grpc.CallOption) (*UpdateDataQualityRuleSetResponse, error) {
+	out := new(UpdateDataQualityRuleSetResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/UpdateRuleSet", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *plumberServerClient) DeleteRuleSet(ctx context.Context, in *DeleteDataQualityRuleSetRequest, opts ...grpc.CallOption) (*DeleteDataQualityRuleSetResponse, error) {
+	out := new(DeleteDataQualityRuleSetResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/DeleteRuleSet", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -342,7 +412,14 @@ type PlumberServerServer interface {
 	UploadWasmFile(context.Context, *UploadWasmFileRequest) (*UploadWasmFileResponse, error)
 	DownloadWasmFile(context.Context, *DownloadWasmFileRequest) (*DownloadWasmFileResponse, error)
 	DeleteWasmFile(context.Context, *DeleteWasmFileRequest) (*DeleteWasmFileResponse, error)
-	GetRules(context.Context, *GetDataQualityRulesRequest) (*GetDataQualityRulesResponse, error)
+	GetRuleSets(context.Context, *GetDataQualityRuleSetsRequest) (*GetDataQualityRuleSetsResponse, error)
+	GetRule(context.Context, *GetDataQualityRuleRequest) (*GetDataQualityRuleResponse, error)
+	CreateRule(context.Context, *CreateDataQualityRuleRequest) (*CreateDataQualityRuleResponse, error)
+	UpdateRule(context.Context, *UpdateDataQualityRuleRequest) (*UpdateDataQualityRuleResponse, error)
+	DeleteRule(context.Context, *DeleteDataQualityRuleRequest) (*DeleteDataQualityRuleResponse, error)
+	CreateRuleSet(context.Context, *CreateDataQualityRuleSetRequest) (*CreateDataQualityRuleSetResponse, error)
+	UpdateRuleSet(context.Context, *UpdateDataQualityRuleSetRequest) (*UpdateDataQualityRuleSetResponse, error)
+	DeleteRuleSet(context.Context, *DeleteDataQualityRuleSetRequest) (*DeleteDataQualityRuleSetResponse, error)
 	SendRuleNotification(context.Context, *SendRuleNotificationRequest) (*SendRuleNotificationResponse, error)
 	GetServerOptions(context.Context, *GetServerOptionsRequest) (*GetServerOptionsResponse, error)
 }
@@ -423,8 +500,29 @@ func (UnimplementedPlumberServerServer) DownloadWasmFile(context.Context, *Downl
 func (UnimplementedPlumberServerServer) DeleteWasmFile(context.Context, *DeleteWasmFileRequest) (*DeleteWasmFileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteWasmFile not implemented")
 }
-func (UnimplementedPlumberServerServer) GetRules(context.Context, *GetDataQualityRulesRequest) (*GetDataQualityRulesResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetRules not implemented")
+func (UnimplementedPlumberServerServer) GetRuleSets(context.Context, *GetDataQualityRuleSetsRequest) (*GetDataQualityRuleSetsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRuleSets not implemented")
+}
+func (UnimplementedPlumberServerServer) GetRule(context.Context, *GetDataQualityRuleRequest) (*GetDataQualityRuleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetRule not implemented")
+}
+func (UnimplementedPlumberServerServer) CreateRule(context.Context, *CreateDataQualityRuleRequest) (*CreateDataQualityRuleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateRule not implemented")
+}
+func (UnimplementedPlumberServerServer) UpdateRule(context.Context, *UpdateDataQualityRuleRequest) (*UpdateDataQualityRuleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateRule not implemented")
+}
+func (UnimplementedPlumberServerServer) DeleteRule(context.Context, *DeleteDataQualityRuleRequest) (*DeleteDataQualityRuleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteRule not implemented")
+}
+func (UnimplementedPlumberServerServer) CreateRuleSet(context.Context, *CreateDataQualityRuleSetRequest) (*CreateDataQualityRuleSetResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateRuleSet not implemented")
+}
+func (UnimplementedPlumberServerServer) UpdateRuleSet(context.Context, *UpdateDataQualityRuleSetRequest) (*UpdateDataQualityRuleSetResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateRuleSet not implemented")
+}
+func (UnimplementedPlumberServerServer) DeleteRuleSet(context.Context, *DeleteDataQualityRuleSetRequest) (*DeleteDataQualityRuleSetResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteRuleSet not implemented")
 }
 func (UnimplementedPlumberServerServer) SendRuleNotification(context.Context, *SendRuleNotificationRequest) (*SendRuleNotificationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendRuleNotification not implemented")
@@ -876,20 +974,146 @@ func _PlumberServer_DeleteWasmFile_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PlumberServer_GetRules_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetDataQualityRulesRequest)
+func _PlumberServer_GetRuleSets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDataQualityRuleSetsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PlumberServerServer).GetRules(ctx, in)
+		return srv.(PlumberServerServer).GetRuleSets(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.PlumberServer/GetRules",
+		FullMethod: "/protos.PlumberServer/GetRuleSets",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PlumberServerServer).GetRules(ctx, req.(*GetDataQualityRulesRequest))
+		return srv.(PlumberServerServer).GetRuleSets(ctx, req.(*GetDataQualityRuleSetsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PlumberServer_GetRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDataQualityRuleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlumberServerServer).GetRule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.PlumberServer/GetRule",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlumberServerServer).GetRule(ctx, req.(*GetDataQualityRuleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PlumberServer_CreateRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateDataQualityRuleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlumberServerServer).CreateRule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.PlumberServer/CreateRule",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlumberServerServer).CreateRule(ctx, req.(*CreateDataQualityRuleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PlumberServer_UpdateRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateDataQualityRuleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlumberServerServer).UpdateRule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.PlumberServer/UpdateRule",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlumberServerServer).UpdateRule(ctx, req.(*UpdateDataQualityRuleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PlumberServer_DeleteRule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteDataQualityRuleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlumberServerServer).DeleteRule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.PlumberServer/DeleteRule",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlumberServerServer).DeleteRule(ctx, req.(*DeleteDataQualityRuleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PlumberServer_CreateRuleSet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateDataQualityRuleSetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlumberServerServer).CreateRuleSet(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.PlumberServer/CreateRuleSet",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlumberServerServer).CreateRuleSet(ctx, req.(*CreateDataQualityRuleSetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PlumberServer_UpdateRuleSet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateDataQualityRuleSetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlumberServerServer).UpdateRuleSet(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.PlumberServer/UpdateRuleSet",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlumberServerServer).UpdateRuleSet(ctx, req.(*UpdateDataQualityRuleSetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PlumberServer_DeleteRuleSet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteDataQualityRuleSetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlumberServerServer).DeleteRuleSet(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.PlumberServer/DeleteRuleSet",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlumberServerServer).DeleteRuleSet(ctx, req.(*DeleteDataQualityRuleSetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1034,8 +1258,36 @@ var PlumberServer_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _PlumberServer_DeleteWasmFile_Handler,
 		},
 		{
-			MethodName: "GetRules",
-			Handler:    _PlumberServer_GetRules_Handler,
+			MethodName: "GetRuleSets",
+			Handler:    _PlumberServer_GetRuleSets_Handler,
+		},
+		{
+			MethodName: "GetRule",
+			Handler:    _PlumberServer_GetRule_Handler,
+		},
+		{
+			MethodName: "CreateRule",
+			Handler:    _PlumberServer_CreateRule_Handler,
+		},
+		{
+			MethodName: "UpdateRule",
+			Handler:    _PlumberServer_UpdateRule_Handler,
+		},
+		{
+			MethodName: "DeleteRule",
+			Handler:    _PlumberServer_DeleteRule_Handler,
+		},
+		{
+			MethodName: "CreateRuleSet",
+			Handler:    _PlumberServer_CreateRuleSet_Handler,
+		},
+		{
+			MethodName: "UpdateRuleSet",
+			Handler:    _PlumberServer_UpdateRuleSet_Handler,
+		},
+		{
+			MethodName: "DeleteRuleSet",
+			Handler:    _PlumberServer_DeleteRuleSet_Handler,
 		},
 		{
 			MethodName: "SendRuleNotification",

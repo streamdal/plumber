@@ -30,7 +30,7 @@ const (
 	MaxGRPCMessageSize = 1024 * 1024 * 100 // 100MB
 )
 
-func (s *Server) GetRules(_ context.Context, req *protos.GetDataQualityRulesRequest) (*protos.GetDataQualityRulesResponse, error) {
+func (s *Server) GetRuleSets(_ context.Context, req *protos.GetDataQualityRuleSetsRequest) (*protos.GetDataQualityRuleSetsResponse, error) {
 	ruleSets := make([]*common.RuleSet, 0)
 
 	s.PersistentConfig.RuleSetMutex.RLock()
@@ -41,7 +41,7 @@ func (s *Server) GetRules(_ context.Context, req *protos.GetDataQualityRulesRequ
 	}
 	s.PersistentConfig.RuleSetMutex.RUnlock()
 
-	return &protos.GetDataQualityRulesResponse{
+	return &protos.GetDataQualityRuleSetsResponse{
 		Status: &common.Status{
 			Code: common.Code_OK,
 		},
@@ -179,4 +179,26 @@ func (s *Server) CallWithRetry(ctx context.Context, method string, publish func(
 	}
 
 	return fmt.Errorf("unable to complete %s call [reached max retries (%d)]: %s", method, MaxGRPCRetries, err)
+}
+
+func (s *Server) GetRule(ctx context.Context, req *protos.GetDataQualityRuleRequest) (*protos.GetDataQualityRuleResponse, error) {
+	return nil, CustomError(common.Code_UNIMPLEMENTED, "method GetRule not implemented")
+}
+func (s *Server) CreateRule(ctx context.Context, req *protos.CreateDataQualityRuleRequest) (*protos.CreateDataQualityRuleResponse, error) {
+	return nil, CustomError(common.Code_UNIMPLEMENTED, "method CreateRule not implemented")
+}
+func (s *Server) UpdateRule(ctx context.Context, req *protos.UpdateDataQualityRuleRequest) (*protos.UpdateDataQualityRuleResponse, error) {
+	return nil, CustomError(common.Code_UNIMPLEMENTED, "method UpdateRule not implemented")
+}
+func (s *Server) DeleteRule(ctx context.Context, req *protos.DeleteDataQualityRuleRequest) (*protos.DeleteDataQualityRuleResponse, error) {
+	return nil, CustomError(common.Code_UNIMPLEMENTED, "method DeleteRule not implemented")
+}
+func (s *Server) CreateRuleSet(ctx context.Context, req *protos.CreateDataQualityRuleSetRequest) (*protos.CreateDataQualityRuleSetResponse, error) {
+	return nil, CustomError(common.Code_UNIMPLEMENTED, "method CreateRuleSet not implemented")
+}
+func (s *Server) UpdateRuleSet(ctx context.Context, req *protos.UpdateDataQualityRuleSetRequest) (*protos.UpdateDataQualityRuleSetResponse, error) {
+	return nil, CustomError(common.Code_UNIMPLEMENTED, "method UpdateRuleSet not implemented")
+}
+func (s *Server) DeleteRuleSet(ctx context.Context, req *protos.DeleteDataQualityRuleSetRequest) (*protos.DeleteDataQualityRuleSetResponse, error) {
+	return nil, CustomError(common.Code_UNIMPLEMENTED, "method DeleteRuleSet not implemented")
 }

@@ -21,7 +21,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type GetDataQualityRulesRequest struct {
+type GetDataQualityRuleSetsRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -32,8 +32,8 @@ type GetDataQualityRulesRequest struct {
 	Bus string `protobuf:"bytes,1,opt,name=bus,proto3" json:"bus,omitempty"`
 }
 
-func (x *GetDataQualityRulesRequest) Reset() {
-	*x = GetDataQualityRulesRequest{}
+func (x *GetDataQualityRuleSetsRequest) Reset() {
+	*x = GetDataQualityRuleSetsRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_ps_dataquality_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -41,13 +41,13 @@ func (x *GetDataQualityRulesRequest) Reset() {
 	}
 }
 
-func (x *GetDataQualityRulesRequest) String() string {
+func (x *GetDataQualityRuleSetsRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetDataQualityRulesRequest) ProtoMessage() {}
+func (*GetDataQualityRuleSetsRequest) ProtoMessage() {}
 
-func (x *GetDataQualityRulesRequest) ProtoReflect() protoreflect.Message {
+func (x *GetDataQualityRuleSetsRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_ps_dataquality_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -59,26 +59,26 @@ func (x *GetDataQualityRulesRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetDataQualityRulesRequest.ProtoReflect.Descriptor instead.
-func (*GetDataQualityRulesRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetDataQualityRuleSetsRequest.ProtoReflect.Descriptor instead.
+func (*GetDataQualityRuleSetsRequest) Descriptor() ([]byte, []int) {
 	return file_ps_dataquality_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *GetDataQualityRulesRequest) GetAuth() *common.Auth {
+func (x *GetDataQualityRuleSetsRequest) GetAuth() *common.Auth {
 	if x != nil {
 		return x.Auth
 	}
 	return nil
 }
 
-func (x *GetDataQualityRulesRequest) GetBus() string {
+func (x *GetDataQualityRuleSetsRequest) GetBus() string {
 	if x != nil {
 		return x.Bus
 	}
 	return ""
 }
 
-type GetDataQualityRulesResponse struct {
+type GetDataQualityRuleSetsResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -87,8 +87,8 @@ type GetDataQualityRulesResponse struct {
 	RuleSets []*common.RuleSet `protobuf:"bytes,1,rep,name=rule_sets,json=ruleSets,proto3" json:"rule_sets,omitempty"`
 }
 
-func (x *GetDataQualityRulesResponse) Reset() {
-	*x = GetDataQualityRulesResponse{}
+func (x *GetDataQualityRuleSetsResponse) Reset() {
+	*x = GetDataQualityRuleSetsResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_ps_dataquality_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -96,13 +96,13 @@ func (x *GetDataQualityRulesResponse) Reset() {
 	}
 }
 
-func (x *GetDataQualityRulesResponse) String() string {
+func (x *GetDataQualityRuleSetsResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetDataQualityRulesResponse) ProtoMessage() {}
+func (*GetDataQualityRuleSetsResponse) ProtoMessage() {}
 
-func (x *GetDataQualityRulesResponse) ProtoReflect() protoreflect.Message {
+func (x *GetDataQualityRuleSetsResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_ps_dataquality_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -114,21 +114,927 @@ func (x *GetDataQualityRulesResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetDataQualityRulesResponse.ProtoReflect.Descriptor instead.
-func (*GetDataQualityRulesResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetDataQualityRuleSetsResponse.ProtoReflect.Descriptor instead.
+func (*GetDataQualityRuleSetsResponse) Descriptor() ([]byte, []int) {
 	return file_ps_dataquality_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *GetDataQualityRulesResponse) GetStatus() *common.Status {
+func (x *GetDataQualityRuleSetsResponse) GetStatus() *common.Status {
 	if x != nil {
 		return x.Status
 	}
 	return nil
 }
 
-func (x *GetDataQualityRulesResponse) GetRuleSets() []*common.RuleSet {
+func (x *GetDataQualityRuleSetsResponse) GetRuleSets() []*common.RuleSet {
 	if x != nil {
 		return x.RuleSets
+	}
+	return nil
+}
+
+type GetDataQualityRuleSetRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Every gRPC request must have a valid auth config
+	Auth *common.Auth `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
+	Id   string       `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (x *GetDataQualityRuleSetRequest) Reset() {
+	*x = GetDataQualityRuleSetRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_ps_dataquality_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetDataQualityRuleSetRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDataQualityRuleSetRequest) ProtoMessage() {}
+
+func (x *GetDataQualityRuleSetRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ps_dataquality_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDataQualityRuleSetRequest.ProtoReflect.Descriptor instead.
+func (*GetDataQualityRuleSetRequest) Descriptor() ([]byte, []int) {
+	return file_ps_dataquality_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GetDataQualityRuleSetRequest) GetAuth() *common.Auth {
+	if x != nil {
+		return x.Auth
+	}
+	return nil
+}
+
+func (x *GetDataQualityRuleSetRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type GetDataQualityRuleSetResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Status  *common.Status  `protobuf:"bytes,1000,opt,name=status,proto3" json:"status,omitempty"`
+	RuleSet *common.RuleSet `protobuf:"bytes,1,opt,name=rule_set,json=ruleSet,proto3" json:"rule_set,omitempty"`
+}
+
+func (x *GetDataQualityRuleSetResponse) Reset() {
+	*x = GetDataQualityRuleSetResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_ps_dataquality_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetDataQualityRuleSetResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDataQualityRuleSetResponse) ProtoMessage() {}
+
+func (x *GetDataQualityRuleSetResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ps_dataquality_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDataQualityRuleSetResponse.ProtoReflect.Descriptor instead.
+func (*GetDataQualityRuleSetResponse) Descriptor() ([]byte, []int) {
+	return file_ps_dataquality_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GetDataQualityRuleSetResponse) GetStatus() *common.Status {
+	if x != nil {
+		return x.Status
+	}
+	return nil
+}
+
+func (x *GetDataQualityRuleSetResponse) GetRuleSet() *common.RuleSet {
+	if x != nil {
+		return x.RuleSet
+	}
+	return nil
+}
+
+type CreateDataQualityRuleSetRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Every gRPC request must have a valid auth config
+	Auth    *common.Auth    `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
+	RuleSet *common.RuleSet `protobuf:"bytes,1,opt,name=rule_set,json=ruleSet,proto3" json:"rule_set,omitempty"`
+}
+
+func (x *CreateDataQualityRuleSetRequest) Reset() {
+	*x = CreateDataQualityRuleSetRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_ps_dataquality_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CreateDataQualityRuleSetRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateDataQualityRuleSetRequest) ProtoMessage() {}
+
+func (x *CreateDataQualityRuleSetRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ps_dataquality_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateDataQualityRuleSetRequest.ProtoReflect.Descriptor instead.
+func (*CreateDataQualityRuleSetRequest) Descriptor() ([]byte, []int) {
+	return file_ps_dataquality_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *CreateDataQualityRuleSetRequest) GetAuth() *common.Auth {
+	if x != nil {
+		return x.Auth
+	}
+	return nil
+}
+
+func (x *CreateDataQualityRuleSetRequest) GetRuleSet() *common.RuleSet {
+	if x != nil {
+		return x.RuleSet
+	}
+	return nil
+}
+
+type CreateDataQualityRuleSetResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Status *common.Status `protobuf:"bytes,1000,opt,name=status,proto3" json:"status,omitempty"`
+	Id     string         `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (x *CreateDataQualityRuleSetResponse) Reset() {
+	*x = CreateDataQualityRuleSetResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_ps_dataquality_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CreateDataQualityRuleSetResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateDataQualityRuleSetResponse) ProtoMessage() {}
+
+func (x *CreateDataQualityRuleSetResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ps_dataquality_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateDataQualityRuleSetResponse.ProtoReflect.Descriptor instead.
+func (*CreateDataQualityRuleSetResponse) Descriptor() ([]byte, []int) {
+	return file_ps_dataquality_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *CreateDataQualityRuleSetResponse) GetStatus() *common.Status {
+	if x != nil {
+		return x.Status
+	}
+	return nil
+}
+
+func (x *CreateDataQualityRuleSetResponse) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type UpdateDataQualityRuleSetRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Every gRPC request must have a valid auth config
+	Auth    *common.Auth    `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
+	Id      string          `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	RuleSet *common.RuleSet `protobuf:"bytes,2,opt,name=rule_set,json=ruleSet,proto3" json:"rule_set,omitempty"`
+}
+
+func (x *UpdateDataQualityRuleSetRequest) Reset() {
+	*x = UpdateDataQualityRuleSetRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_ps_dataquality_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UpdateDataQualityRuleSetRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateDataQualityRuleSetRequest) ProtoMessage() {}
+
+func (x *UpdateDataQualityRuleSetRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ps_dataquality_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateDataQualityRuleSetRequest.ProtoReflect.Descriptor instead.
+func (*UpdateDataQualityRuleSetRequest) Descriptor() ([]byte, []int) {
+	return file_ps_dataquality_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *UpdateDataQualityRuleSetRequest) GetAuth() *common.Auth {
+	if x != nil {
+		return x.Auth
+	}
+	return nil
+}
+
+func (x *UpdateDataQualityRuleSetRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *UpdateDataQualityRuleSetRequest) GetRuleSet() *common.RuleSet {
+	if x != nil {
+		return x.RuleSet
+	}
+	return nil
+}
+
+type UpdateDataQualityRuleSetResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Status *common.Status `protobuf:"bytes,1000,opt,name=status,proto3" json:"status,omitempty"`
+}
+
+func (x *UpdateDataQualityRuleSetResponse) Reset() {
+	*x = UpdateDataQualityRuleSetResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_ps_dataquality_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UpdateDataQualityRuleSetResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateDataQualityRuleSetResponse) ProtoMessage() {}
+
+func (x *UpdateDataQualityRuleSetResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ps_dataquality_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateDataQualityRuleSetResponse.ProtoReflect.Descriptor instead.
+func (*UpdateDataQualityRuleSetResponse) Descriptor() ([]byte, []int) {
+	return file_ps_dataquality_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *UpdateDataQualityRuleSetResponse) GetStatus() *common.Status {
+	if x != nil {
+		return x.Status
+	}
+	return nil
+}
+
+type DeleteDataQualityRuleSetRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Every gRPC request must have a valid auth config
+	Auth *common.Auth `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
+	Id   string       `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (x *DeleteDataQualityRuleSetRequest) Reset() {
+	*x = DeleteDataQualityRuleSetRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_ps_dataquality_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DeleteDataQualityRuleSetRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteDataQualityRuleSetRequest) ProtoMessage() {}
+
+func (x *DeleteDataQualityRuleSetRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ps_dataquality_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteDataQualityRuleSetRequest.ProtoReflect.Descriptor instead.
+func (*DeleteDataQualityRuleSetRequest) Descriptor() ([]byte, []int) {
+	return file_ps_dataquality_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *DeleteDataQualityRuleSetRequest) GetAuth() *common.Auth {
+	if x != nil {
+		return x.Auth
+	}
+	return nil
+}
+
+func (x *DeleteDataQualityRuleSetRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type DeleteDataQualityRuleSetResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Status *common.Status `protobuf:"bytes,1000,opt,name=status,proto3" json:"status,omitempty"`
+}
+
+func (x *DeleteDataQualityRuleSetResponse) Reset() {
+	*x = DeleteDataQualityRuleSetResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_ps_dataquality_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DeleteDataQualityRuleSetResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteDataQualityRuleSetResponse) ProtoMessage() {}
+
+func (x *DeleteDataQualityRuleSetResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ps_dataquality_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteDataQualityRuleSetResponse.ProtoReflect.Descriptor instead.
+func (*DeleteDataQualityRuleSetResponse) Descriptor() ([]byte, []int) {
+	return file_ps_dataquality_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *DeleteDataQualityRuleSetResponse) GetStatus() *common.Status {
+	if x != nil {
+		return x.Status
+	}
+	return nil
+}
+
+type GetDataQualityRuleRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Every gRPC request must have a valid auth config
+	Auth *common.Auth `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
+	// The rule set we're pulling rules for
+	RuleSetId string `protobuf:"bytes,2,opt,name=rule_set_id,json=ruleSetId,proto3" json:"rule_set_id,omitempty"`
+	// The rule we're pulling
+	RuleId string `protobuf:"bytes,3,opt,name=rule_id,json=ruleId,proto3" json:"rule_id,omitempty"`
+}
+
+func (x *GetDataQualityRuleRequest) Reset() {
+	*x = GetDataQualityRuleRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_ps_dataquality_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetDataQualityRuleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDataQualityRuleRequest) ProtoMessage() {}
+
+func (x *GetDataQualityRuleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ps_dataquality_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDataQualityRuleRequest.ProtoReflect.Descriptor instead.
+func (*GetDataQualityRuleRequest) Descriptor() ([]byte, []int) {
+	return file_ps_dataquality_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *GetDataQualityRuleRequest) GetAuth() *common.Auth {
+	if x != nil {
+		return x.Auth
+	}
+	return nil
+}
+
+func (x *GetDataQualityRuleRequest) GetRuleSetId() string {
+	if x != nil {
+		return x.RuleSetId
+	}
+	return ""
+}
+
+func (x *GetDataQualityRuleRequest) GetRuleId() string {
+	if x != nil {
+		return x.RuleId
+	}
+	return ""
+}
+
+type GetDataQualityRuleResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Status *common.Status `protobuf:"bytes,1000,opt,name=status,proto3" json:"status,omitempty"`
+	Rule   *common.Rule   `protobuf:"bytes,1,opt,name=rule,proto3" json:"rule,omitempty"`
+}
+
+func (x *GetDataQualityRuleResponse) Reset() {
+	*x = GetDataQualityRuleResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_ps_dataquality_proto_msgTypes[11]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetDataQualityRuleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetDataQualityRuleResponse) ProtoMessage() {}
+
+func (x *GetDataQualityRuleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ps_dataquality_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetDataQualityRuleResponse.ProtoReflect.Descriptor instead.
+func (*GetDataQualityRuleResponse) Descriptor() ([]byte, []int) {
+	return file_ps_dataquality_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *GetDataQualityRuleResponse) GetStatus() *common.Status {
+	if x != nil {
+		return x.Status
+	}
+	return nil
+}
+
+func (x *GetDataQualityRuleResponse) GetRule() *common.Rule {
+	if x != nil {
+		return x.Rule
+	}
+	return nil
+}
+
+type CreateDataQualityRuleRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Every gRPC request must have a valid auth config
+	Auth      *common.Auth `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
+	RuleSetId string       `protobuf:"bytes,1,opt,name=rule_set_id,json=ruleSetId,proto3" json:"rule_set_id,omitempty"`
+	Rule      *common.Rule `protobuf:"bytes,2,opt,name=rule,proto3" json:"rule,omitempty"`
+}
+
+func (x *CreateDataQualityRuleRequest) Reset() {
+	*x = CreateDataQualityRuleRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_ps_dataquality_proto_msgTypes[12]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CreateDataQualityRuleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateDataQualityRuleRequest) ProtoMessage() {}
+
+func (x *CreateDataQualityRuleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ps_dataquality_proto_msgTypes[12]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateDataQualityRuleRequest.ProtoReflect.Descriptor instead.
+func (*CreateDataQualityRuleRequest) Descriptor() ([]byte, []int) {
+	return file_ps_dataquality_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *CreateDataQualityRuleRequest) GetAuth() *common.Auth {
+	if x != nil {
+		return x.Auth
+	}
+	return nil
+}
+
+func (x *CreateDataQualityRuleRequest) GetRuleSetId() string {
+	if x != nil {
+		return x.RuleSetId
+	}
+	return ""
+}
+
+func (x *CreateDataQualityRuleRequest) GetRule() *common.Rule {
+	if x != nil {
+		return x.Rule
+	}
+	return nil
+}
+
+type CreateDataQualityRuleResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Status *common.Status `protobuf:"bytes,1000,opt,name=status,proto3" json:"status,omitempty"`
+	Id     string         `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (x *CreateDataQualityRuleResponse) Reset() {
+	*x = CreateDataQualityRuleResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_ps_dataquality_proto_msgTypes[13]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CreateDataQualityRuleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateDataQualityRuleResponse) ProtoMessage() {}
+
+func (x *CreateDataQualityRuleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ps_dataquality_proto_msgTypes[13]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateDataQualityRuleResponse.ProtoReflect.Descriptor instead.
+func (*CreateDataQualityRuleResponse) Descriptor() ([]byte, []int) {
+	return file_ps_dataquality_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *CreateDataQualityRuleResponse) GetStatus() *common.Status {
+	if x != nil {
+		return x.Status
+	}
+	return nil
+}
+
+func (x *CreateDataQualityRuleResponse) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type UpdateDataQualityRuleRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Every gRPC request must have a valid auth config
+	Auth      *common.Auth `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
+	RuleSetId string       `protobuf:"bytes,1,opt,name=rule_set_id,json=ruleSetId,proto3" json:"rule_set_id,omitempty"`
+	RuleId    string       `protobuf:"bytes,2,opt,name=rule_id,json=ruleId,proto3" json:"rule_id,omitempty"`
+	Rule      *common.Rule `protobuf:"bytes,3,opt,name=rule,proto3" json:"rule,omitempty"`
+}
+
+func (x *UpdateDataQualityRuleRequest) Reset() {
+	*x = UpdateDataQualityRuleRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_ps_dataquality_proto_msgTypes[14]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UpdateDataQualityRuleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateDataQualityRuleRequest) ProtoMessage() {}
+
+func (x *UpdateDataQualityRuleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ps_dataquality_proto_msgTypes[14]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateDataQualityRuleRequest.ProtoReflect.Descriptor instead.
+func (*UpdateDataQualityRuleRequest) Descriptor() ([]byte, []int) {
+	return file_ps_dataquality_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *UpdateDataQualityRuleRequest) GetAuth() *common.Auth {
+	if x != nil {
+		return x.Auth
+	}
+	return nil
+}
+
+func (x *UpdateDataQualityRuleRequest) GetRuleSetId() string {
+	if x != nil {
+		return x.RuleSetId
+	}
+	return ""
+}
+
+func (x *UpdateDataQualityRuleRequest) GetRuleId() string {
+	if x != nil {
+		return x.RuleId
+	}
+	return ""
+}
+
+func (x *UpdateDataQualityRuleRequest) GetRule() *common.Rule {
+	if x != nil {
+		return x.Rule
+	}
+	return nil
+}
+
+type UpdateDataQualityRuleResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Status *common.Status `protobuf:"bytes,1000,opt,name=status,proto3" json:"status,omitempty"`
+}
+
+func (x *UpdateDataQualityRuleResponse) Reset() {
+	*x = UpdateDataQualityRuleResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_ps_dataquality_proto_msgTypes[15]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UpdateDataQualityRuleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateDataQualityRuleResponse) ProtoMessage() {}
+
+func (x *UpdateDataQualityRuleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ps_dataquality_proto_msgTypes[15]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateDataQualityRuleResponse.ProtoReflect.Descriptor instead.
+func (*UpdateDataQualityRuleResponse) Descriptor() ([]byte, []int) {
+	return file_ps_dataquality_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *UpdateDataQualityRuleResponse) GetStatus() *common.Status {
+	if x != nil {
+		return x.Status
+	}
+	return nil
+}
+
+type DeleteDataQualityRuleRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Every gRPC request must have a valid auth config
+	Auth      *common.Auth `protobuf:"bytes,9999,opt,name=auth,proto3" json:"auth,omitempty"`
+	RuleSetId string       `protobuf:"bytes,1,opt,name=rule_set_id,json=ruleSetId,proto3" json:"rule_set_id,omitempty"`
+	RuleId    string       `protobuf:"bytes,2,opt,name=rule_id,json=ruleId,proto3" json:"rule_id,omitempty"`
+}
+
+func (x *DeleteDataQualityRuleRequest) Reset() {
+	*x = DeleteDataQualityRuleRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_ps_dataquality_proto_msgTypes[16]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DeleteDataQualityRuleRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteDataQualityRuleRequest) ProtoMessage() {}
+
+func (x *DeleteDataQualityRuleRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_ps_dataquality_proto_msgTypes[16]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteDataQualityRuleRequest.ProtoReflect.Descriptor instead.
+func (*DeleteDataQualityRuleRequest) Descriptor() ([]byte, []int) {
+	return file_ps_dataquality_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *DeleteDataQualityRuleRequest) GetAuth() *common.Auth {
+	if x != nil {
+		return x.Auth
+	}
+	return nil
+}
+
+func (x *DeleteDataQualityRuleRequest) GetRuleSetId() string {
+	if x != nil {
+		return x.RuleSetId
+	}
+	return ""
+}
+
+func (x *DeleteDataQualityRuleRequest) GetRuleId() string {
+	if x != nil {
+		return x.RuleId
+	}
+	return ""
+}
+
+type DeleteDataQualityRuleResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Status *common.Status `protobuf:"bytes,1000,opt,name=status,proto3" json:"status,omitempty"`
+}
+
+func (x *DeleteDataQualityRuleResponse) Reset() {
+	*x = DeleteDataQualityRuleResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_ps_dataquality_proto_msgTypes[17]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *DeleteDataQualityRuleResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteDataQualityRuleResponse) ProtoMessage() {}
+
+func (x *DeleteDataQualityRuleResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_ps_dataquality_proto_msgTypes[17]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteDataQualityRuleResponse.ProtoReflect.Descriptor instead.
+func (*DeleteDataQualityRuleResponse) Descriptor() ([]byte, []int) {
+	return file_ps_dataquality_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *DeleteDataQualityRuleResponse) GetStatus() *common.Status {
+	if x != nil {
+		return x.Status
 	}
 	return nil
 }
@@ -148,7 +1054,7 @@ type SendRuleNotificationRequest struct {
 func (x *SendRuleNotificationRequest) Reset() {
 	*x = SendRuleNotificationRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_ps_dataquality_proto_msgTypes[2]
+		mi := &file_ps_dataquality_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -161,7 +1067,7 @@ func (x *SendRuleNotificationRequest) String() string {
 func (*SendRuleNotificationRequest) ProtoMessage() {}
 
 func (x *SendRuleNotificationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_ps_dataquality_proto_msgTypes[2]
+	mi := &file_ps_dataquality_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -174,7 +1080,7 @@ func (x *SendRuleNotificationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendRuleNotificationRequest.ProtoReflect.Descriptor instead.
 func (*SendRuleNotificationRequest) Descriptor() ([]byte, []int) {
-	return file_ps_dataquality_proto_rawDescGZIP(), []int{2}
+	return file_ps_dataquality_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *SendRuleNotificationRequest) GetAuth() *common.Auth {
@@ -216,7 +1122,7 @@ type SendRuleNotificationResponse struct {
 func (x *SendRuleNotificationResponse) Reset() {
 	*x = SendRuleNotificationResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_ps_dataquality_proto_msgTypes[3]
+		mi := &file_ps_dataquality_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -229,7 +1135,7 @@ func (x *SendRuleNotificationResponse) String() string {
 func (*SendRuleNotificationResponse) ProtoMessage() {}
 
 func (x *SendRuleNotificationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_ps_dataquality_proto_msgTypes[3]
+	mi := &file_ps_dataquality_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -242,7 +1148,7 @@ func (x *SendRuleNotificationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendRuleNotificationResponse.ProtoReflect.Descriptor instead.
 func (*SendRuleNotificationResponse) Descriptor() ([]byte, []int) {
-	return file_ps_dataquality_proto_rawDescGZIP(), []int{3}
+	return file_ps_dataquality_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *SendRuleNotificationResponse) GetStatus() *common.Status {
@@ -262,40 +1168,154 @@ var file_ps_dataquality_proto_rawDesc = []byte{
 	0x6d, 0x6f, 0x6e, 0x2f, 0x70, 0x73, 0x5f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x5f, 0x64, 0x61,
 	0x74, 0x61, 0x71, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x1a,
 	0x1d, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2f, 0x70, 0x73, 0x5f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f,
-	0x6e, 0x5f, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x58,
-	0x0a, 0x1a, 0x47, 0x65, 0x74, 0x44, 0x61, 0x74, 0x61, 0x51, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79,
-	0x52, 0x75, 0x6c, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x28, 0x0a, 0x04,
-	0x61, 0x75, 0x74, 0x68, 0x18, 0x8f, 0x4e, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x41, 0x75, 0x74, 0x68,
-	0x52, 0x04, 0x61, 0x75, 0x74, 0x68, 0x12, 0x10, 0x0a, 0x03, 0x62, 0x75, 0x73, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x03, 0x62, 0x75, 0x73, 0x22, 0x82, 0x01, 0x0a, 0x1b, 0x47, 0x65, 0x74,
-	0x44, 0x61, 0x74, 0x61, 0x51, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x52, 0x75, 0x6c, 0x65, 0x73,
+	0x6e, 0x5f, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x5b,
+	0x0a, 0x1d, 0x47, 0x65, 0x74, 0x44, 0x61, 0x74, 0x61, 0x51, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79,
+	0x52, 0x75, 0x6c, 0x65, 0x53, 0x65, 0x74, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
+	0x28, 0x0a, 0x04, 0x61, 0x75, 0x74, 0x68, 0x18, 0x8f, 0x4e, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x41,
+	0x75, 0x74, 0x68, 0x52, 0x04, 0x61, 0x75, 0x74, 0x68, 0x12, 0x10, 0x0a, 0x03, 0x62, 0x75, 0x73,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x62, 0x75, 0x73, 0x22, 0x85, 0x01, 0x0a, 0x1e,
+	0x47, 0x65, 0x74, 0x44, 0x61, 0x74, 0x61, 0x51, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x52, 0x75,
+	0x6c, 0x65, 0x53, 0x65, 0x74, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2e,
+	0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0xe8, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x15, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e,
+	0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x33,
+	0x0a, 0x09, 0x72, 0x75, 0x6c, 0x65, 0x5f, 0x73, 0x65, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28,
+	0x0b, 0x32, 0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f,
+	0x6e, 0x2e, 0x52, 0x75, 0x6c, 0x65, 0x53, 0x65, 0x74, 0x52, 0x08, 0x72, 0x75, 0x6c, 0x65, 0x53,
+	0x65, 0x74, 0x73, 0x22, 0x58, 0x0a, 0x1c, 0x47, 0x65, 0x74, 0x44, 0x61, 0x74, 0x61, 0x51, 0x75,
+	0x61, 0x6c, 0x69, 0x74, 0x79, 0x52, 0x75, 0x6c, 0x65, 0x53, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x12, 0x28, 0x0a, 0x04, 0x61, 0x75, 0x74, 0x68, 0x18, 0x8f, 0x4e, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x13, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d,
+	0x6f, 0x6e, 0x2e, 0x41, 0x75, 0x74, 0x68, 0x52, 0x04, 0x61, 0x75, 0x74, 0x68, 0x12, 0x0e, 0x0a,
+	0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x22, 0x82, 0x01,
+	0x0a, 0x1d, 0x47, 0x65, 0x74, 0x44, 0x61, 0x74, 0x61, 0x51, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79,
+	0x52, 0x75, 0x6c, 0x65, 0x53, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
+	0x2e, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0xe8, 0x07, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x15, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e,
+	0x2e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12,
+	0x31, 0x0a, 0x08, 0x72, 0x75, 0x6c, 0x65, 0x5f, 0x73, 0x65, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f,
+	0x6e, 0x2e, 0x52, 0x75, 0x6c, 0x65, 0x53, 0x65, 0x74, 0x52, 0x07, 0x72, 0x75, 0x6c, 0x65, 0x53,
+	0x65, 0x74, 0x22, 0x7e, 0x0a, 0x1f, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x44, 0x61, 0x74, 0x61,
+	0x51, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x52, 0x75, 0x6c, 0x65, 0x53, 0x65, 0x74, 0x52, 0x65,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x28, 0x0a, 0x04, 0x61, 0x75, 0x74, 0x68, 0x18, 0x8f, 0x4e,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f,
+	0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x41, 0x75, 0x74, 0x68, 0x52, 0x04, 0x61, 0x75, 0x74, 0x68, 0x12,
+	0x31, 0x0a, 0x08, 0x72, 0x75, 0x6c, 0x65, 0x5f, 0x73, 0x65, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f,
+	0x6e, 0x2e, 0x52, 0x75, 0x6c, 0x65, 0x53, 0x65, 0x74, 0x52, 0x07, 0x72, 0x75, 0x6c, 0x65, 0x53,
+	0x65, 0x74, 0x22, 0x62, 0x0a, 0x20, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x44, 0x61, 0x74, 0x61,
+	0x51, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x52, 0x75, 0x6c, 0x65, 0x53, 0x65, 0x74, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2e, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73,
+	0x18, 0xe8, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73,
+	0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x06,
+	0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x22, 0x8e, 0x01, 0x0a, 0x1f, 0x55, 0x70, 0x64, 0x61, 0x74,
+	0x65, 0x44, 0x61, 0x74, 0x61, 0x51, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x52, 0x75, 0x6c, 0x65,
+	0x53, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x28, 0x0a, 0x04, 0x61, 0x75,
+	0x74, 0x68, 0x18, 0x8f, 0x4e, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x41, 0x75, 0x74, 0x68, 0x52, 0x04,
+	0x61, 0x75, 0x74, 0x68, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x02, 0x69, 0x64, 0x12, 0x31, 0x0a, 0x08, 0x72, 0x75, 0x6c, 0x65, 0x5f, 0x73, 0x65, 0x74,
+	0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e,
+	0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x52, 0x75, 0x6c, 0x65, 0x53, 0x65, 0x74, 0x52, 0x07,
+	0x72, 0x75, 0x6c, 0x65, 0x53, 0x65, 0x74, 0x22, 0x52, 0x0a, 0x20, 0x55, 0x70, 0x64, 0x61, 0x74,
+	0x65, 0x44, 0x61, 0x74, 0x61, 0x51, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x52, 0x75, 0x6c, 0x65,
+	0x53, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2e, 0x0a, 0x06, 0x73,
+	0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0xe8, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x53, 0x74, 0x61,
+	0x74, 0x75, 0x73, 0x52, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x22, 0x5b, 0x0a, 0x1f, 0x44,
+	0x65, 0x6c, 0x65, 0x74, 0x65, 0x44, 0x61, 0x74, 0x61, 0x51, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79,
+	0x52, 0x75, 0x6c, 0x65, 0x53, 0x65, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x28,
+	0x0a, 0x04, 0x61, 0x75, 0x74, 0x68, 0x18, 0x8f, 0x4e, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x41, 0x75,
+	0x74, 0x68, 0x52, 0x04, 0x61, 0x75, 0x74, 0x68, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x22, 0x52, 0x0a, 0x20, 0x44, 0x65, 0x6c, 0x65,
+	0x74, 0x65, 0x44, 0x61, 0x74, 0x61, 0x51, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x52, 0x75, 0x6c,
+	0x65, 0x53, 0x65, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2e, 0x0a, 0x06,
+	0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0xe8, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x53, 0x74,
+	0x61, 0x74, 0x75, 0x73, 0x52, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x22, 0x7e, 0x0a, 0x19,
+	0x47, 0x65, 0x74, 0x44, 0x61, 0x74, 0x61, 0x51, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x52, 0x75,
+	0x6c, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x28, 0x0a, 0x04, 0x61, 0x75, 0x74,
+	0x68, 0x18, 0x8f, 0x4e, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x41, 0x75, 0x74, 0x68, 0x52, 0x04, 0x61,
+	0x75, 0x74, 0x68, 0x12, 0x1e, 0x0a, 0x0b, 0x72, 0x75, 0x6c, 0x65, 0x5f, 0x73, 0x65, 0x74, 0x5f,
+	0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x72, 0x75, 0x6c, 0x65, 0x53, 0x65,
+	0x74, 0x49, 0x64, 0x12, 0x17, 0x0a, 0x07, 0x72, 0x75, 0x6c, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x72, 0x75, 0x6c, 0x65, 0x49, 0x64, 0x22, 0x75, 0x0a, 0x1a,
+	0x47, 0x65, 0x74, 0x44, 0x61, 0x74, 0x61, 0x51, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x52, 0x75,
+	0x6c, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2e, 0x0a, 0x06, 0x73, 0x74,
+	0x61, 0x74, 0x75, 0x73, 0x18, 0xe8, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x53, 0x74, 0x61, 0x74,
+	0x75, 0x73, 0x52, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x27, 0x0a, 0x04, 0x72, 0x75,
+	0x6c, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x52, 0x75, 0x6c, 0x65, 0x52, 0x04, 0x72,
+	0x75, 0x6c, 0x65, 0x22, 0x91, 0x01, 0x0a, 0x1c, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x44, 0x61,
+	0x74, 0x61, 0x51, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x52, 0x75, 0x6c, 0x65, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x12, 0x28, 0x0a, 0x04, 0x61, 0x75, 0x74, 0x68, 0x18, 0x8f, 0x4e, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d,
+	0x6d, 0x6f, 0x6e, 0x2e, 0x41, 0x75, 0x74, 0x68, 0x52, 0x04, 0x61, 0x75, 0x74, 0x68, 0x12, 0x1e,
+	0x0a, 0x0b, 0x72, 0x75, 0x6c, 0x65, 0x5f, 0x73, 0x65, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x09, 0x72, 0x75, 0x6c, 0x65, 0x53, 0x65, 0x74, 0x49, 0x64, 0x12, 0x27,
+	0x0a, 0x04, 0x72, 0x75, 0x6c, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x52, 0x75, 0x6c,
+	0x65, 0x52, 0x04, 0x72, 0x75, 0x6c, 0x65, 0x22, 0x5f, 0x0a, 0x1d, 0x43, 0x72, 0x65, 0x61, 0x74,
+	0x65, 0x44, 0x61, 0x74, 0x61, 0x51, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x52, 0x75, 0x6c, 0x65,
 	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2e, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74,
 	0x75, 0x73, 0x18, 0xe8, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x70, 0x72, 0x6f, 0x74,
 	0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73,
-	0x52, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x33, 0x0a, 0x09, 0x72, 0x75, 0x6c, 0x65,
-	0x5f, 0x73, 0x65, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x16, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x52, 0x75, 0x6c, 0x65,
-	0x53, 0x65, 0x74, 0x52, 0x08, 0x72, 0x75, 0x6c, 0x65, 0x53, 0x65, 0x74, 0x73, 0x22, 0x93, 0x01,
-	0x0a, 0x1b, 0x53, 0x65, 0x6e, 0x64, 0x52, 0x75, 0x6c, 0x65, 0x4e, 0x6f, 0x74, 0x69, 0x66, 0x69,
-	0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x28, 0x0a,
-	0x04, 0x61, 0x75, 0x74, 0x68, 0x18, 0x8f, 0x4e, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x41, 0x75, 0x74,
-	0x68, 0x52, 0x04, 0x61, 0x75, 0x74, 0x68, 0x12, 0x12, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x12, 0x1d, 0x0a, 0x0a, 0x72,
-	0x75, 0x6c, 0x65, 0x73, 0x65, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x09, 0x72, 0x75, 0x6c, 0x65, 0x73, 0x65, 0x74, 0x49, 0x64, 0x12, 0x17, 0x0a, 0x07, 0x72, 0x75,
-	0x6c, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x72, 0x75, 0x6c,
-	0x65, 0x49, 0x64, 0x22, 0x4e, 0x0a, 0x1c, 0x53, 0x65, 0x6e, 0x64, 0x52, 0x75, 0x6c, 0x65, 0x4e,
-	0x6f, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x12, 0x2e, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0xe8, 0x07,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f,
-	0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x06, 0x73, 0x74, 0x61,
-	0x74, 0x75, 0x73, 0x42, 0x36, 0x5a, 0x34, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
-	0x6d, 0x2f, 0x62, 0x61, 0x74, 0x63, 0x68, 0x63, 0x6f, 0x72, 0x70, 0x2f, 0x70, 0x6c, 0x75, 0x6d,
-	0x62, 0x65, 0x72, 0x2d, 0x73, 0x63, 0x68, 0x65, 0x6d, 0x61, 0x73, 0x2f, 0x62, 0x75, 0x69, 0x6c,
-	0x64, 0x2f, 0x67, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x33,
+	0x52, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x22, 0xaa, 0x01, 0x0a, 0x1c, 0x55, 0x70, 0x64,
+	0x61, 0x74, 0x65, 0x44, 0x61, 0x74, 0x61, 0x51, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x52, 0x75,
+	0x6c, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x28, 0x0a, 0x04, 0x61, 0x75, 0x74,
+	0x68, 0x18, 0x8f, 0x4e, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x41, 0x75, 0x74, 0x68, 0x52, 0x04, 0x61,
+	0x75, 0x74, 0x68, 0x12, 0x1e, 0x0a, 0x0b, 0x72, 0x75, 0x6c, 0x65, 0x5f, 0x73, 0x65, 0x74, 0x5f,
+	0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x72, 0x75, 0x6c, 0x65, 0x53, 0x65,
+	0x74, 0x49, 0x64, 0x12, 0x17, 0x0a, 0x07, 0x72, 0x75, 0x6c, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x72, 0x75, 0x6c, 0x65, 0x49, 0x64, 0x12, 0x27, 0x0a, 0x04,
+	0x72, 0x75, 0x6c, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x52, 0x75, 0x6c, 0x65, 0x52,
+	0x04, 0x72, 0x75, 0x6c, 0x65, 0x22, 0x4f, 0x0a, 0x1d, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x44,
+	0x61, 0x74, 0x61, 0x51, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x52, 0x75, 0x6c, 0x65, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2e, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73,
+	0x18, 0xe8, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73,
+	0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x06,
+	0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x22, 0x81, 0x01, 0x0a, 0x1c, 0x44, 0x65, 0x6c, 0x65, 0x74,
+	0x65, 0x44, 0x61, 0x74, 0x61, 0x51, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x52, 0x75, 0x6c, 0x65,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x28, 0x0a, 0x04, 0x61, 0x75, 0x74, 0x68, 0x18,
+	0x8f, 0x4e, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e,
+	0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x41, 0x75, 0x74, 0x68, 0x52, 0x04, 0x61, 0x75, 0x74,
+	0x68, 0x12, 0x1e, 0x0a, 0x0b, 0x72, 0x75, 0x6c, 0x65, 0x5f, 0x73, 0x65, 0x74, 0x5f, 0x69, 0x64,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x72, 0x75, 0x6c, 0x65, 0x53, 0x65, 0x74, 0x49,
+	0x64, 0x12, 0x17, 0x0a, 0x07, 0x72, 0x75, 0x6c, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x06, 0x72, 0x75, 0x6c, 0x65, 0x49, 0x64, 0x22, 0x4f, 0x0a, 0x1d, 0x44, 0x65,
+	0x6c, 0x65, 0x74, 0x65, 0x44, 0x61, 0x74, 0x61, 0x51, 0x75, 0x61, 0x6c, 0x69, 0x74, 0x79, 0x52,
+	0x75, 0x6c, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2e, 0x0a, 0x06, 0x73,
+	0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0xe8, 0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x53, 0x74, 0x61,
+	0x74, 0x75, 0x73, 0x52, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x22, 0x93, 0x01, 0x0a, 0x1b,
+	0x53, 0x65, 0x6e, 0x64, 0x52, 0x75, 0x6c, 0x65, 0x4e, 0x6f, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x28, 0x0a, 0x04, 0x61,
+	0x75, 0x74, 0x68, 0x18, 0x8f, 0x4e, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x41, 0x75, 0x74, 0x68, 0x52,
+	0x04, 0x61, 0x75, 0x74, 0x68, 0x12, 0x12, 0x0a, 0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x0c, 0x52, 0x04, 0x64, 0x61, 0x74, 0x61, 0x12, 0x1d, 0x0a, 0x0a, 0x72, 0x75, 0x6c,
+	0x65, 0x73, 0x65, 0x74, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x09, 0x72,
+	0x75, 0x6c, 0x65, 0x73, 0x65, 0x74, 0x49, 0x64, 0x12, 0x17, 0x0a, 0x07, 0x72, 0x75, 0x6c, 0x65,
+	0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x72, 0x75, 0x6c, 0x65, 0x49,
+	0x64, 0x22, 0x4e, 0x0a, 0x1c, 0x53, 0x65, 0x6e, 0x64, 0x52, 0x75, 0x6c, 0x65, 0x4e, 0x6f, 0x74,
+	0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x2e, 0x0a, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75, 0x73, 0x18, 0xe8, 0x07, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x15, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x63, 0x6f, 0x6d, 0x6d,
+	0x6f, 0x6e, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x75, 0x73, 0x52, 0x06, 0x73, 0x74, 0x61, 0x74, 0x75,
+	0x73, 0x42, 0x36, 0x5a, 0x34, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
+	0x62, 0x61, 0x74, 0x63, 0x68, 0x63, 0x6f, 0x72, 0x70, 0x2f, 0x70, 0x6c, 0x75, 0x6d, 0x62, 0x65,
+	0x72, 0x2d, 0x73, 0x63, 0x68, 0x65, 0x6d, 0x61, 0x73, 0x2f, 0x62, 0x75, 0x69, 0x6c, 0x64, 0x2f,
+	0x67, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 }
 
 var (
@@ -310,27 +1330,66 @@ func file_ps_dataquality_proto_rawDescGZIP() []byte {
 	return file_ps_dataquality_proto_rawDescData
 }
 
-var file_ps_dataquality_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_ps_dataquality_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
 var file_ps_dataquality_proto_goTypes = []interface{}{
-	(*GetDataQualityRulesRequest)(nil),   // 0: protos.GetDataQualityRulesRequest
-	(*GetDataQualityRulesResponse)(nil),  // 1: protos.GetDataQualityRulesResponse
-	(*SendRuleNotificationRequest)(nil),  // 2: protos.SendRuleNotificationRequest
-	(*SendRuleNotificationResponse)(nil), // 3: protos.SendRuleNotificationResponse
-	(*common.Auth)(nil),                  // 4: protos.common.Auth
-	(*common.Status)(nil),                // 5: protos.common.Status
-	(*common.RuleSet)(nil),               // 6: protos.common.RuleSet
+	(*GetDataQualityRuleSetsRequest)(nil),    // 0: protos.GetDataQualityRuleSetsRequest
+	(*GetDataQualityRuleSetsResponse)(nil),   // 1: protos.GetDataQualityRuleSetsResponse
+	(*GetDataQualityRuleSetRequest)(nil),     // 2: protos.GetDataQualityRuleSetRequest
+	(*GetDataQualityRuleSetResponse)(nil),    // 3: protos.GetDataQualityRuleSetResponse
+	(*CreateDataQualityRuleSetRequest)(nil),  // 4: protos.CreateDataQualityRuleSetRequest
+	(*CreateDataQualityRuleSetResponse)(nil), // 5: protos.CreateDataQualityRuleSetResponse
+	(*UpdateDataQualityRuleSetRequest)(nil),  // 6: protos.UpdateDataQualityRuleSetRequest
+	(*UpdateDataQualityRuleSetResponse)(nil), // 7: protos.UpdateDataQualityRuleSetResponse
+	(*DeleteDataQualityRuleSetRequest)(nil),  // 8: protos.DeleteDataQualityRuleSetRequest
+	(*DeleteDataQualityRuleSetResponse)(nil), // 9: protos.DeleteDataQualityRuleSetResponse
+	(*GetDataQualityRuleRequest)(nil),        // 10: protos.GetDataQualityRuleRequest
+	(*GetDataQualityRuleResponse)(nil),       // 11: protos.GetDataQualityRuleResponse
+	(*CreateDataQualityRuleRequest)(nil),     // 12: protos.CreateDataQualityRuleRequest
+	(*CreateDataQualityRuleResponse)(nil),    // 13: protos.CreateDataQualityRuleResponse
+	(*UpdateDataQualityRuleRequest)(nil),     // 14: protos.UpdateDataQualityRuleRequest
+	(*UpdateDataQualityRuleResponse)(nil),    // 15: protos.UpdateDataQualityRuleResponse
+	(*DeleteDataQualityRuleRequest)(nil),     // 16: protos.DeleteDataQualityRuleRequest
+	(*DeleteDataQualityRuleResponse)(nil),    // 17: protos.DeleteDataQualityRuleResponse
+	(*SendRuleNotificationRequest)(nil),      // 18: protos.SendRuleNotificationRequest
+	(*SendRuleNotificationResponse)(nil),     // 19: protos.SendRuleNotificationResponse
+	(*common.Auth)(nil),                      // 20: protos.common.Auth
+	(*common.Status)(nil),                    // 21: protos.common.Status
+	(*common.RuleSet)(nil),                   // 22: protos.common.RuleSet
+	(*common.Rule)(nil),                      // 23: protos.common.Rule
 }
 var file_ps_dataquality_proto_depIdxs = []int32{
-	4, // 0: protos.GetDataQualityRulesRequest.auth:type_name -> protos.common.Auth
-	5, // 1: protos.GetDataQualityRulesResponse.status:type_name -> protos.common.Status
-	6, // 2: protos.GetDataQualityRulesResponse.rule_sets:type_name -> protos.common.RuleSet
-	4, // 3: protos.SendRuleNotificationRequest.auth:type_name -> protos.common.Auth
-	5, // 4: protos.SendRuleNotificationResponse.status:type_name -> protos.common.Status
-	5, // [5:5] is the sub-list for method output_type
-	5, // [5:5] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	20, // 0: protos.GetDataQualityRuleSetsRequest.auth:type_name -> protos.common.Auth
+	21, // 1: protos.GetDataQualityRuleSetsResponse.status:type_name -> protos.common.Status
+	22, // 2: protos.GetDataQualityRuleSetsResponse.rule_sets:type_name -> protos.common.RuleSet
+	20, // 3: protos.GetDataQualityRuleSetRequest.auth:type_name -> protos.common.Auth
+	21, // 4: protos.GetDataQualityRuleSetResponse.status:type_name -> protos.common.Status
+	22, // 5: protos.GetDataQualityRuleSetResponse.rule_set:type_name -> protos.common.RuleSet
+	20, // 6: protos.CreateDataQualityRuleSetRequest.auth:type_name -> protos.common.Auth
+	22, // 7: protos.CreateDataQualityRuleSetRequest.rule_set:type_name -> protos.common.RuleSet
+	21, // 8: protos.CreateDataQualityRuleSetResponse.status:type_name -> protos.common.Status
+	20, // 9: protos.UpdateDataQualityRuleSetRequest.auth:type_name -> protos.common.Auth
+	22, // 10: protos.UpdateDataQualityRuleSetRequest.rule_set:type_name -> protos.common.RuleSet
+	21, // 11: protos.UpdateDataQualityRuleSetResponse.status:type_name -> protos.common.Status
+	20, // 12: protos.DeleteDataQualityRuleSetRequest.auth:type_name -> protos.common.Auth
+	21, // 13: protos.DeleteDataQualityRuleSetResponse.status:type_name -> protos.common.Status
+	20, // 14: protos.GetDataQualityRuleRequest.auth:type_name -> protos.common.Auth
+	21, // 15: protos.GetDataQualityRuleResponse.status:type_name -> protos.common.Status
+	23, // 16: protos.GetDataQualityRuleResponse.rule:type_name -> protos.common.Rule
+	20, // 17: protos.CreateDataQualityRuleRequest.auth:type_name -> protos.common.Auth
+	23, // 18: protos.CreateDataQualityRuleRequest.rule:type_name -> protos.common.Rule
+	21, // 19: protos.CreateDataQualityRuleResponse.status:type_name -> protos.common.Status
+	20, // 20: protos.UpdateDataQualityRuleRequest.auth:type_name -> protos.common.Auth
+	23, // 21: protos.UpdateDataQualityRuleRequest.rule:type_name -> protos.common.Rule
+	21, // 22: protos.UpdateDataQualityRuleResponse.status:type_name -> protos.common.Status
+	20, // 23: protos.DeleteDataQualityRuleRequest.auth:type_name -> protos.common.Auth
+	21, // 24: protos.DeleteDataQualityRuleResponse.status:type_name -> protos.common.Status
+	20, // 25: protos.SendRuleNotificationRequest.auth:type_name -> protos.common.Auth
+	21, // 26: protos.SendRuleNotificationResponse.status:type_name -> protos.common.Status
+	27, // [27:27] is the sub-list for method output_type
+	27, // [27:27] is the sub-list for method input_type
+	27, // [27:27] is the sub-list for extension type_name
+	27, // [27:27] is the sub-list for extension extendee
+	0,  // [0:27] is the sub-list for field type_name
 }
 
 func init() { file_ps_dataquality_proto_init() }
@@ -340,7 +1399,7 @@ func file_ps_dataquality_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_ps_dataquality_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetDataQualityRulesRequest); i {
+			switch v := v.(*GetDataQualityRuleSetsRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -352,7 +1411,7 @@ func file_ps_dataquality_proto_init() {
 			}
 		}
 		file_ps_dataquality_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetDataQualityRulesResponse); i {
+			switch v := v.(*GetDataQualityRuleSetsResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -364,7 +1423,7 @@ func file_ps_dataquality_proto_init() {
 			}
 		}
 		file_ps_dataquality_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SendRuleNotificationRequest); i {
+			switch v := v.(*GetDataQualityRuleSetRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -376,6 +1435,198 @@ func file_ps_dataquality_proto_init() {
 			}
 		}
 		file_ps_dataquality_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetDataQualityRuleSetResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_ps_dataquality_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CreateDataQualityRuleSetRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_ps_dataquality_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CreateDataQualityRuleSetResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_ps_dataquality_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UpdateDataQualityRuleSetRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_ps_dataquality_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UpdateDataQualityRuleSetResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_ps_dataquality_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DeleteDataQualityRuleSetRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_ps_dataquality_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DeleteDataQualityRuleSetResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_ps_dataquality_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetDataQualityRuleRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_ps_dataquality_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetDataQualityRuleResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_ps_dataquality_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CreateDataQualityRuleRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_ps_dataquality_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CreateDataQualityRuleResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_ps_dataquality_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UpdateDataQualityRuleRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_ps_dataquality_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UpdateDataQualityRuleResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_ps_dataquality_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DeleteDataQualityRuleRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_ps_dataquality_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DeleteDataQualityRuleResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_ps_dataquality_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SendRuleNotificationRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_ps_dataquality_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SendRuleNotificationResponse); i {
 			case 0:
 				return &v.state
@@ -394,7 +1645,7 @@ func file_ps_dataquality_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_ps_dataquality_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   20,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
