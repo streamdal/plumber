@@ -631,6 +631,6 @@ func (c *Config) SetRuleSet(id string, rs *stypes.RuleSet) {
 // DeleteRuleSet removes a rule set from in-memory map
 func (c *Config) DeleteRuleSet(rulesetID string) {
 	c.RuleSetMutex.Lock()
-	defer c.TunnelsMutex.Unlock()
+	defer c.RuleSetMutex.Unlock()
 	delete(c.RuleSets, rulesetID)
 }
