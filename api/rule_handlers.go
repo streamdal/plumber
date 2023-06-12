@@ -74,7 +74,7 @@ func (a *API) updateRuleSetHandler(w http.ResponseWriter, r *http.Request, p htt
 
 	rs.Set.Name = update.Name
 	rs.Set.Mode = update.Mode
-	rs.Set.Bus = update.Bus
+	rs.Set.DataSource = update.DataSource
 	rs.Set.Version++
 
 	if err := a.Bus.PublishUpdateRuleSet(ctx, rs.Set); err != nil {
@@ -254,12 +254,12 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 	ruleid1 := uuid.NewV4().String()
 	a.PersistentConfig.RuleSets[id1] = &types.RuleSet{
 		Set: &common.RuleSet{
-			Id:      id1,
-			Name:    "Reject Messages",
-			Mode:    common.RuleMode_RULE_MODE_PUBLISH,
-			Bus:     "kafka",
-			Version: 1,
-			Key:     "mytopic",
+			Id:         id1,
+			Name:       "Reject Messages",
+			Mode:       common.RuleMode_RULE_MODE_PUBLISH,
+			DataSource: "kafka",
+			Version:    1,
+			Key:        "mytopic",
 			Rules: map[string]*common.Rule{
 				ruleid1: {
 					Id:   ruleid1,
@@ -271,8 +271,14 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 							Args: []string{"hello"},
 						},
 					},
-					FailureMode:       common.RuleFailureMode_RULE_FAILURE_MODE_REJECT,
-					FailureModeConfig: &common.Rule_Reject{},
+					FailureModeConfigs: []*common.FailureMode{
+						{
+							Mode: common.RuleFailureMode_RULE_FAILURE_MODE_REJECT,
+							Config: &common.FailureMode_Reject{
+								Reject: &common.FailureModeReject{},
+							},
+						},
+					},
 				},
 			},
 		},
@@ -282,12 +288,12 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 	ruleid2 := uuid.NewV4().String()
 	a.PersistentConfig.RuleSets[id2] = &types.RuleSet{
 		Set: &common.RuleSet{
-			Id:      id2,
-			Name:    "Slack Alert for Messages",
-			Mode:    common.RuleMode_RULE_MODE_CONSUME,
-			Bus:     "kafka",
-			Version: 1,
-			Key:     "mytopic",
+			Id:         id2,
+			Name:       "Slack Alert for Messages",
+			Mode:       common.RuleMode_RULE_MODE_CONSUME,
+			DataSource: "kafka",
+			Version:    1,
+			Key:        "mytopic",
 			Rules: map[string]*common.Rule{
 				ruleid2: {
 					Id:   ruleid2,
@@ -298,10 +304,14 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 							Type: "pii_creditcard",
 						},
 					},
-					FailureMode: common.RuleFailureMode_RULE_FAILURE_MODE_ALERT_SLACK,
-					FailureModeConfig: &common.Rule_AlertSlack{
-						AlertSlack: &common.FailureModeAlertSlack{
-							SlackChannel: "engineering",
+					FailureModeConfigs: []*common.FailureMode{
+						{
+							Mode: common.RuleFailureMode_RULE_FAILURE_MODE_ALERT_SLACK,
+							Config: &common.FailureMode_AlertSlack{
+								AlertSlack: &common.FailureModeAlertSlack{
+									SlackChannel: "engineering",
+								},
+							},
 						},
 					},
 				},
@@ -313,12 +323,12 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 	ruleid3 := uuid.NewV4().String()
 	a.PersistentConfig.RuleSets[id3] = &types.RuleSet{
 		Set: &common.RuleSet{
-			Id:      id3,
-			Name:    "Messages to DLQ",
-			Mode:    common.RuleMode_RULE_MODE_CONSUME,
-			Bus:     "rabbitmq",
-			Version: 1,
-			Key:     "mytopic",
+			Id:         id3,
+			Name:       "Messages to DLQ",
+			Mode:       common.RuleMode_RULE_MODE_CONSUME,
+			DataSource: "rabbitmq",
+			Version:    1,
+			Key:        "mytopic",
 			Rules: map[string]*common.Rule{
 				ruleid3: {
 					Id:   ruleid3,
@@ -329,10 +339,14 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 							Type: "pii_creditcard",
 						},
 					},
-					FailureMode: common.RuleFailureMode_RULE_FAILURE_MODE_DLQ,
-					FailureModeConfig: &common.Rule_Dlq{
-						Dlq: &common.FailureModeDLQ{
-							StreamdalToken: uuid.NewV4().String(),
+					FailureModeConfigs: []*common.FailureMode{
+						{
+							Mode: common.RuleFailureMode_RULE_FAILURE_MODE_DLQ,
+							Config: &common.FailureMode_Dlq{
+								Dlq: &common.FailureModeDLQ{
+									StreamdalToken: uuid.NewV4().String(),
+								},
+							},
 						},
 					},
 				},
@@ -344,11 +358,11 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 	ruleid4 := uuid.NewV4().String()
 	a.PersistentConfig.RuleSets[id4] = &types.RuleSet{
 		Set: &common.RuleSet{
-			Id:      id4,
-			Name:    "Transform message",
-			Mode:    common.RuleMode_RULE_MODE_PUBLISH,
-			Bus:     "rabbitmq",
-			Version: 2,
+			Id:         id4,
+			Name:       "Transform message",
+			Mode:       common.RuleMode_RULE_MODE_PUBLISH,
+			DataSource: "rabbitmq",
+			Version:    2,
 			Rules: map[string]*common.Rule{
 				ruleid4: {
 					Id:   ruleid4,
@@ -359,11 +373,15 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 							Type: "pii_creditcard",
 						},
 					},
-					FailureMode: common.RuleFailureMode_RULE_FAILURE_MODE_TRANSFORM,
-					FailureModeConfig: &common.Rule_Transform{
-						Transform: &common.FailureModeTransform{
-							Path:  "payload.ccnum",
-							Value: "****",
+					FailureModeConfigs: []*common.FailureMode{
+						{
+							Mode: common.RuleFailureMode_RULE_FAILURE_MODE_TRANSFORM,
+							Config: &common.FailureMode_Transform{
+								Transform: &common.FailureModeTransform{
+									Path:  "payload.ccnum",
+									Value: "****",
+								},
+							},
 						},
 					},
 				},

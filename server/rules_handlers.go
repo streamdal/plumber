@@ -35,7 +35,7 @@ func (s *Server) GetRuleSets(_ context.Context, req *protos.GetDataQualityRuleSe
 
 	s.PersistentConfig.RuleSetMutex.RLock()
 	for _, ruleSet := range s.PersistentConfig.RuleSets {
-		if ruleSet.Set.Bus == req.Bus {
+		if ruleSet.Set.DataSource == req.Bus {
 			ruleSets = append(ruleSets, ruleSet.Set)
 		}
 	}
@@ -72,8 +72,12 @@ func (s *Server) SendRuleNotification(_ context.Context, req *protos.SendRuleNot
 	}, nil
 }
 
-func (s *Server) sendRuleSlackNotification(_ []byte, name string, rule *common.Rule) error {
-	if rule.GetAlertSlack() == nil {
+func (s *Server) sendRuleSlackNotification(_ []byte, name string, rule *common.Rule, cfg *common.FailureModeAlertSlack) error {
+	if rule == nil {
+		return errors.New("BUG: rule is nil")
+	}
+
+	if cfg == nil {
 		return errors.New("BUG: alert slack config is nil")
 	}
 
@@ -102,7 +106,7 @@ func (s *Server) sendRuleSlackNotification(_ []byte, name string, rule *common.R
 	divBlock := slack.NewDividerBlock()
 
 	_, _, err := api.PostMessage(
-		rule.GetAlertSlack().SlackChannel,
+		cfg.SlackChannel,
 		slack.MsgOptionBlocks(headerBlock, divBlock, sectionBlock, divBlock),
 		slack.MsgOptionAsUser(true),
 	)
@@ -115,8 +119,12 @@ func (s *Server) sendRuleSlackNotification(_ []byte, name string, rule *common.R
 }
 
 // TODO: need some kind of connection pooling and also a channel
-func (s *Server) sendRuleToDLQ(data []byte, name string, rule *common.Rule) error {
-	if rule.GetDlq() == nil {
+func (s *Server) sendRuleToDLQ(data []byte, name string, rule *common.Rule, cfg *common.FailureModeDLQ) error {
+	if rule == nil {
+		return errors.New("BUG: rule is nil")
+	}
+
+	if cfg == nil {
 		return errors.New("BUG: dlq config is nil")
 	}
 
@@ -142,7 +150,7 @@ func (s *Server) sendRuleToDLQ(data []byte, name string, rule *common.Rule) erro
 		disableTLS   = true
 	)
 
-	conn, outboundCtx, err := util.NewGRPCConnection(gGRPCAddress, rule.GetDlq().StreamdalToken, timeout, disableTLS, true)
+	conn, outboundCtx, err := util.NewGRPCConnection(gGRPCAddress, cfg.StreamdalToken, timeout, disableTLS, true)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new gRPC connection")
 	}

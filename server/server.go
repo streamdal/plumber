@@ -105,18 +105,20 @@ func (s *Server) StartRuleAlerts() {
 }
 
 func (s *Server) handleRuleNotificationRequest(ruleSet *common.RuleSet, rule *common.Rule, req *protos.SendRuleNotificationRequest) {
-	switch rule.FailureMode {
-	case common.RuleFailureMode_RULE_FAILURE_MODE_DLQ:
-		if err := s.sendRuleToDLQ(req.Data, ruleSet.Name, rule); err != nil {
-			s.Log.Error(err)
+	for _, cfg := range rule.FailureModeConfigs {
+		switch cfg.Mode {
+		case common.RuleFailureMode_RULE_FAILURE_MODE_DLQ:
+			if err := s.sendRuleToDLQ(req.Data, ruleSet.Name, rule, cfg.GetDlq()); err != nil {
+				s.Log.Error(err)
+			}
+			s.Log.Errorf("Sent message to DLQ for rule '%s' in rule set '%s'", rule.Id, ruleSet.Name)
+		case common.RuleFailureMode_RULE_FAILURE_MODE_ALERT_SLACK:
+			if err := s.sendRuleSlackNotification(req.Data, ruleSet.Name, rule, cfg.GetAlertSlack()); err != nil {
+				s.Log.Error(err)
+			}
+			s.Log.Errorf("Sent slack notification for rule '%s' in rule set '%s'", rule.Id, ruleSet.Name)
+		default:
+			s.Log.Errorf("unknown failure mode '%s' for rule '%s' in rule set '%s'", cfg.Mode.String(), rule.Id, ruleSet.Name)
 		}
-		s.Log.Errorf("Sent message to DLQ for rule '%s' in rule set '%s'", rule.Id, ruleSet.Name)
-	case common.RuleFailureMode_RULE_FAILURE_MODE_ALERT_SLACK:
-		if err := s.sendRuleSlackNotification(req.Data, ruleSet.Name, rule); err != nil {
-			s.Log.Error(err)
-		}
-		s.Log.Errorf("Sent slack notification for rule '%s' in rule set '%s'", rule.Id, ruleSet.Name)
-	default:
-		s.Log.Errorf("unknown failure mode '%s' for rule '%s' in rule set '%s'", rule.FailureMode, rule.Id, ruleSet.Name)
 	}
 }

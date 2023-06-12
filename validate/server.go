@@ -40,10 +40,10 @@ var (
 
 	// Rule set
 
-	ErrEmptyID     = errors.New("ruleset id in options cannot be empty")
-	ErrEmptyKey    = errors.New("ruleset key in options cannot be empty")
-	ErrEmptyBus    = errors.New("ruleset bus in options cannot be empty")
-	ErrInvalidMode = errors.New("ruleset mode in options cannot be empty")
+	ErrEmptyID         = errors.New("ruleset id in options cannot be empty")
+	ErrEmptyKey        = errors.New("ruleset key in options cannot be empty")
+	ErrEmptyDataSource = errors.New("ruleset data_source in options cannot be empty")
+	ErrInvalidMode     = errors.New("ruleset mode in options cannot be empty")
 )
 
 func RelayOptionsForServer(relayOptions *opts.RelayOptions) error {
@@ -107,8 +107,8 @@ func RuleSetForServer(rs *common.RuleSet) error {
 		return ErrInvalidMode
 	}
 
-	if rs.Bus == "" {
-		return ErrEmptyBus
+	if rs.DataSource == "" {
+		return ErrEmptyDataSource
 	}
 
 	if len(rs.Rules) > 0 {
