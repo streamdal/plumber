@@ -97,6 +97,7 @@ func Start(cfg *Config) (*http.Server, error) {
 
 	router.Handle("GET", "/v1/ruleset", a.getRuleSetsHandler)
 	router.Handle("POST", "/v1/ruleset", a.createRuleSetHandler)
+	router.Handle("PUT", "/v1/ruleset/:ruleset_id", a.updateRuleSetHandler)
 	router.Handle("DELETE", "/v1/ruleset/:ruleset_id", a.deleteRuleSetHandler)
 	router.Handle("GET", "/v1/ruleset/:ruleset_id", a.getRuleSetHandler)
 

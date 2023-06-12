@@ -59,7 +59,7 @@ func (a *API) createRuleSetHandler(w http.ResponseWriter, r *http.Request, _ htt
 func (a *API) updateRuleSetHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	ctx := r.Context()
 
-	rs := a.PersistentConfig.GetRuleSet(p.ByName("id"))
+	rs := a.PersistentConfig.GetRuleSet(p.ByName("ruleset_id"))
 	if rs == nil {
 		WriteJSON(http.StatusNotFound, ResponseJSON{Message: "rule set not found"}, w)
 		return
