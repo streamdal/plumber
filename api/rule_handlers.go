@@ -74,6 +74,7 @@ func (a *API) updateRuleSetHandler(w http.ResponseWriter, r *http.Request, p htt
 
 	rs.Set.Name = update.Name
 	rs.Set.Mode = update.Mode
+	rs.Set.Key = update.Key
 	rs.Set.DataSource = update.DataSource
 	rs.Set.Version++
 
