@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	dpb "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	"github.com/mcuadros/go-lookup"
@@ -33,6 +34,12 @@ var (
 	ErrMissingKongCtx          = errors.New("KongCtx cannot be nil")
 	ErrMissingActions          = errors.New("Actions cannot be nil")
 	ErrMissingTelemetry        = errors.New("Telemetry cannot be nil")
+)
+
+const (
+	// WasmUpdateInterval is how often we check for wasm file updates
+	// Checks will be ignored if no wasm files are present in the config, indicating they are not currently needed
+	WasmUpdateInterval = time.Hour * 6
 )
 
 // Config contains configurable options for instantiating a new Plumber

@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/relistan/go-director"
+
 	"github.com/pkg/errors"
 	"github.com/posthog/posthog-go"
 	"github.com/sirupsen/logrus"
@@ -174,6 +176,10 @@ func (p *Plumber) startGRPCServer() error {
 
 	protos.RegisterPlumberServerServer(grpcServer, plumberServer)
 
+	// Check for WASM updates every few hours
+	looper := director.NewTimedLooper(director.FOREVER, WasmUpdateInterval, make(chan error, 1))
+	go p.pollForWASMUpdates(looper)
+
 	go p.watchServiceShutdown(grpcServer)
 	go plumberServer.StartRuleAlerts()
 
@@ -242,4 +248,33 @@ func (p *Plumber) downloadWasmUpdates(ctx context.Context) error {
 	p.log.Debugf("WASM updates downloaded '%s'", wasmVersion)
 
 	return nil
+}
+
+func (p *Plumber) pollForWASMUpdates(looper director.Looper) {
+	p.log.Debug("Starting WASM update polling")
+
+	var quit bool
+	looper.Loop(func() error {
+		// Give looper time to quit
+		if quit {
+			time.Sleep(time.Millisecond * 100)
+			return nil
+		}
+
+		select {
+		case <-p.ServiceShutdownCtx.Done():
+			quit = true
+			looper.Quit()
+			p.log.Debug("WASM update polling stopped")
+			return nil
+		default:
+			// NOOP
+		}
+
+		if err := p.downloadWasmUpdates(p.ServiceShutdownCtx); err != nil {
+			p.log.Errorf("unable to download WASM updates: %s", err)
+		}
+
+		return nil
+	})
 }
