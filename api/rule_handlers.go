@@ -124,17 +124,6 @@ func (a *API) getRuleSetHandler(w http.ResponseWriter, _ *http.Request, p httpro
 	WriteJSON(http.StatusOK, set, w)
 }
 
-func (a *API) slackConfigHandler(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	req := &SlackConfigRequest{}
-	if err := DecodeBody(r.Body, req); err != nil {
-		WriteJSON(http.StatusBadRequest, ResponseJSON{Message: err.Error()}, w)
-		return
-	}
-
-	a.PersistentConfig.SlackToken = req.Token
-	a.PersistentConfig.Save()
-}
-
 func (a *API) getRulesHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	rs := a.PersistentConfig.GetRuleSet(p.ByName("ruleset_id"))
 	if rs == nil {

@@ -7,10 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/relistan/go-director"
-
 	"github.com/pkg/errors"
 	"github.com/posthog/posthog-go"
+	"github.com/relistan/go-director"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 

@@ -101,7 +101,8 @@ func Start(cfg *Config) (*http.Server, error) {
 	router.Handle("DELETE", "/v1/ruleset/:ruleset_id", a.deleteRuleSetHandler)
 	router.Handle("GET", "/v1/ruleset/:ruleset_id", a.getRuleSetHandler)
 
-	router.Handle("POST", "/v1/slack", a.slackConfigHandler)
+	router.Handle("GET", "/v1/slack", a.getSlackConfigHandler)
+	router.Handle("POST", "/v1/slack", a.updateSlackConfigHandler)
 
 	// TODO: remove
 	router.Handle("GET", "/v1/temp-populate", a.tempPopulateHandler)
