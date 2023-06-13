@@ -15,6 +15,7 @@ import (
 
 	"github.com/batchcorp/plumber/kv"
 	"github.com/batchcorp/plumber/server/types"
+	"github.com/batchcorp/plumber/util"
 )
 
 const (
@@ -37,9 +38,7 @@ func (c *Config) BootstrapWASMFiles(ctx context.Context) error {
 		return nil // already have default WASM files
 	}
 
-	c.log.Debug("Bootstrapping WASM files")
-
-	if err := c.pullLatestWASMRelease(ctx, http.DefaultClient); err != nil {
+	if _, err := c.PullLatestWASMRelease(ctx, http.DefaultClient); err != nil {
 		return errors.Wrap(err, "unable to pull latest WASM release")
 	}
 
@@ -47,38 +46,60 @@ func (c *Config) BootstrapWASMFiles(ctx context.Context) error {
 }
 
 // PullLatestWASMRelease pulls the latest WASM release from Github and stores it in KV
-func (c *Config) pullLatestWASMRelease(ctx context.Context, client *http.Client) error {
+func (c *Config) PullLatestWASMRelease(ctx context.Context, client *http.Client) (string, error) {
 	if client == nil {
-		return errors.New("BUG: client is nil")
+		return "", errors.New("BUG: client is nil")
 	}
 
 	release, err := c.getWASMReleaseURL(ctx, client)
 	if err != nil {
-		return errors.Wrap(err, "unable to get WASM release URL")
+		return "", errors.Wrap(err, "unable to get WASM release URL")
 	}
 
 	c.log.Debugf("Downloading WAMS release files: %s", release.Assets[0].URL)
 
 	if len(release.Assets) == 0 {
-		return errors.New("no WASM assets found")
+		return "", errors.New("no WASM assets found")
 	}
 
 	zip, err := c.downloadWASMZip(ctx, client, release.Assets[0].URL)
 	if err != nil {
-		return errors.Wrap(err, "unable to download WASM zip")
+		return "", errors.Wrap(err, "unable to download WASM zip")
 	}
 
 	if c.enableCluster {
 		if err := c.storeWASMFilesKV(ctx, zip, release.TagName); err != nil {
-			return errors.Wrap(err, "unable to store WASM files")
+			return "", errors.Wrap(err, "unable to store WASM files")
 		}
 	} else {
 		if err := c.storeWASMFilesFS(ctx, zip, release.TagName); err != nil {
-			return errors.Wrap(err, "unable to store WASM files")
+			return "", errors.Wrap(err, "unable to store WASM files")
 		}
 	}
 
-	return nil
+	return release.TagName, nil
+}
+
+// WasmUpdateExists checks if we should update our cached WASM files with a newer version
+func (c *Config) WasmUpdateExists(ctx context.Context, client *http.Client) (bool, error) {
+	c.WasmFilesMutex.RLock()
+	defer c.WasmFilesMutex.RUnlock()
+
+	if client == nil {
+		return false, errors.New("BUG: http client is nil")
+	}
+
+	// We haven't downloaded default wasm yet, no need to check for updates
+	if _, ok := c.WasmFiles["match.wasm"]; !ok {
+		return false, nil
+	}
+
+	release, err := c.getWASMReleaseURL(ctx, client)
+	if err != nil {
+		return false, errors.Wrap(err, "unable to get WASM release URL")
+	}
+
+	return util.CompareVersions(c.WasmFiles["match.wasm"].Version, release.TagName), nil
 }
 
 // getWASMReleaseURL gets the download URL for the latest WASM release from github
@@ -250,6 +271,9 @@ func (c *Config) storeWASMFilesFS(_ context.Context, zipFile *zip.Reader, versio
 		c.log.Debugf("Stored WASM file '%s' in '%s'", file.Name, configDir)
 		c.SetWasmFile(file.Name, &types.WasmFile{Name: file.Name, Version: version})
 	}
+
+	// Persist updated config with new wasm version
+	c.Save()
 
 	return nil
 }

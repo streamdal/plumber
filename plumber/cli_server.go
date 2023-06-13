@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
 	"time"
 
 	"github.com/pkg/errors"
@@ -20,8 +21,8 @@ import (
 
 // RunServer is a wrapper for starting embedded etcd and starting the gRPC server.
 func (p *Plumber) RunServer() error {
-	if err := p.PersistentConfig.BootstrapWASMFiles(p.MainShutdownCtx); err != nil {
-		return errors.Wrap(err, "unable to bootstrap WASM files")
+	if err := p.downloadWasmUpdates(p.ServiceShutdownCtx); err != nil {
+		return errors.Wrap(err, "unable to download wasm updates")
 	}
 
 	mode := "standalone"
@@ -218,4 +219,27 @@ func (p *Plumber) watchServiceShutdown(grpcServer *grpc.Server) {
 	time.Sleep(5 * time.Second)
 
 	grpcServer.Stop()
+}
+
+func (p *Plumber) downloadWasmUpdates(ctx context.Context) error {
+	p.log.Debugf("Checking for wasm updates")
+
+	updateWasm, err := p.PersistentConfig.WasmUpdateExists(ctx, http.DefaultClient)
+	if err != nil {
+		return errors.Wrap(err, "unable to check for wasm updates")
+	}
+
+	if !updateWasm {
+		p.log.Debugf("No WASM updates found")
+		return nil
+	}
+
+	wasmVersion, err := p.PersistentConfig.PullLatestWASMRelease(ctx, http.DefaultClient)
+	if err != nil {
+		return errors.Wrap(err, "unable to pull latest WASM release")
+	}
+
+	p.log.Debugf("WASM updates downloaded '%s'", wasmVersion)
+
+	return nil
 }

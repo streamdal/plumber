@@ -323,3 +323,39 @@ func IsBase64(v string) bool {
 
 	return true
 }
+
+// CompareVersions accepts two version strings and returns true if the second version is greater than the first
+// using semantic versioning
+func CompareVersions(curVer, newVer string) bool {
+	if curVer == newVer {
+		return false
+	}
+
+	curVer = strings.TrimPrefix(curVer, "v")
+	newVer = strings.TrimPrefix(newVer, "v")
+
+	curParts := strings.Split(curVer, ".")
+	newParts := strings.Split(newVer, ".")
+
+	// Compare each part of the version strings starting with major -> minor -> patch
+	for i := 0; i < len(curParts) && i < len(newParts); i++ {
+		curPart, err := strconv.Atoi(curParts[i])
+		if err != nil {
+			return false
+		}
+		newPart, err := strconv.Atoi(newParts[i])
+		if err != nil {
+			return false
+		}
+
+		if newPart > curPart {
+			// The second version has a higher semantic version
+			return true
+		} else if newPart < curPart {
+			// The second version has a lower semantic version, no need to continue further
+			return false
+		}
+	}
+
+	return false
+}

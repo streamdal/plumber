@@ -92,4 +92,27 @@ var _ = Describe("Utility Package", func() {
 			}
 		})
 	})
+
+	Context("compareVersions", func() {
+		It("returns true for patch version increase", func() {
+			Expect(CompareVersions("v1.0.0", "v1.0.1")).To(BeTrue())
+		})
+		It("returns false for patch version decrease and major version increase", func() {
+			Expect(CompareVersions("v2.0.0", "v1.0.1")).To(BeFalse())
+		})
+
+		It("returns true for minor version increase", func() {
+			Expect(CompareVersions("v1.0.0", "v1.1.0")).To(BeTrue())
+		})
+		It("returns false for minor version decrease", func() {
+			Expect(CompareVersions("v1.0.1", "v1.0.0")).To(BeFalse())
+		})
+
+		It("returns true for major version increase", func() {
+			Expect(CompareVersions("v1.9.9", "v2.0.0")).To(BeTrue())
+		})
+		It("returns false for major version decrease", func() {
+			Expect(CompareVersions("v2.0.0", "v1.9.9")).To(BeFalse())
+		})
+	})
 })
