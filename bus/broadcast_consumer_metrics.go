@@ -15,8 +15,6 @@ func (b *Bus) doCounter(ctx context.Context, msg *Message) error {
 		return errors.Wrap(err, "unable to unmarshal message into types.Counter")
 	}
 
-	b.log.Infof("Received counter message: %+v", counter)
-
 	b.config.Actions.Counter(ctx, counter)
 
 	return nil

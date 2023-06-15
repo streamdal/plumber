@@ -21,10 +21,6 @@ import (
 	"github.com/batchcorp/plumber/server"
 )
 
-const (
-	NATSLeaderBucket = "plumber-leader"
-)
-
 // RunServer is a wrapper for starting embedded etcd and starting the gRPC server.
 func (p *Plumber) RunServer() error {
 	if err := p.downloadWasmUpdates(p.ServiceShutdownCtx); err != nil {

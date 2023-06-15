@@ -12,6 +12,18 @@ import (
 )
 
 type FakeIActions struct {
+	CounterStub        func(context.Context, *types.Counter) error
+	counterMutex       sync.RWMutex
+	counterArgsForCall []struct {
+		arg1 context.Context
+		arg2 *types.Counter
+	}
+	counterReturns struct {
+		result1 error
+	}
+	counterReturnsOnCall map[int]struct {
+		result1 error
+	}
 	CreateRelayStub        func(context.Context, *opts.RelayOptions) (*types.Relay, error)
 	createRelayMutex       sync.RWMutex
 	createRelayArgsForCall []struct {
@@ -197,6 +209,68 @@ type FakeIActions struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeIActions) Counter(arg1 context.Context, arg2 *types.Counter) error {
+	fake.counterMutex.Lock()
+	ret, specificReturn := fake.counterReturnsOnCall[len(fake.counterArgsForCall)]
+	fake.counterArgsForCall = append(fake.counterArgsForCall, struct {
+		arg1 context.Context
+		arg2 *types.Counter
+	}{arg1, arg2})
+	stub := fake.CounterStub
+	fakeReturns := fake.counterReturns
+	fake.recordInvocation("Counter", []interface{}{arg1, arg2})
+	fake.counterMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIActions) CounterCallCount() int {
+	fake.counterMutex.RLock()
+	defer fake.counterMutex.RUnlock()
+	return len(fake.counterArgsForCall)
+}
+
+func (fake *FakeIActions) CounterCalls(stub func(context.Context, *types.Counter) error) {
+	fake.counterMutex.Lock()
+	defer fake.counterMutex.Unlock()
+	fake.CounterStub = stub
+}
+
+func (fake *FakeIActions) CounterArgsForCall(i int) (context.Context, *types.Counter) {
+	fake.counterMutex.RLock()
+	defer fake.counterMutex.RUnlock()
+	argsForCall := fake.counterArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIActions) CounterReturns(result1 error) {
+	fake.counterMutex.Lock()
+	defer fake.counterMutex.Unlock()
+	fake.CounterStub = nil
+	fake.counterReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIActions) CounterReturnsOnCall(i int, result1 error) {
+	fake.counterMutex.Lock()
+	defer fake.counterMutex.Unlock()
+	fake.CounterStub = nil
+	if fake.counterReturnsOnCall == nil {
+		fake.counterReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.counterReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeIActions) CreateRelay(arg1 context.Context, arg2 *opts.RelayOptions) (*types.Relay, error) {
@@ -1047,6 +1121,8 @@ func (fake *FakeIActions) UpdateTunnelReturnsOnCall(i int, result1 *types.Tunnel
 func (fake *FakeIActions) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.counterMutex.RLock()
+	defer fake.counterMutex.RUnlock()
 	fake.createRelayMutex.RLock()
 	defer fake.createRelayMutex.RUnlock()
 	fake.createRuleSetMutex.RLock()

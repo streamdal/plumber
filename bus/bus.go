@@ -252,7 +252,6 @@ func (b *Bus) setupClients() error {
 		return errors.Wrap(err, "unable to create queue client")
 	}
 
-	// TODO: do we still need multiple clients? I don't think so with newer natty
 	b.queueClient = queueClient
 	b.broadcastClient = broadcastClient
 

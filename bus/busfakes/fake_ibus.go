@@ -8,9 +8,22 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber/bus"
+	"github.com/batchcorp/plumber/server/types"
 )
 
 type FakeIBus struct {
+	PublishCounterStub        func(context.Context, *types.Counter) error
+	publishCounterMutex       sync.RWMutex
+	publishCounterArgsForCall []struct {
+		arg1 context.Context
+		arg2 *types.Counter
+	}
+	publishCounterReturns struct {
+		result1 error
+	}
+	publishCounterReturnsOnCall map[int]struct {
+		result1 error
+	}
 	PublishCreateConnectionStub        func(context.Context, *opts.ConnectionOptions) error
 	publishCreateConnectionMutex       sync.RWMutex
 	publishCreateConnectionArgsForCall []struct {
@@ -226,6 +239,68 @@ type FakeIBus struct {
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeIBus) PublishCounter(arg1 context.Context, arg2 *types.Counter) error {
+	fake.publishCounterMutex.Lock()
+	ret, specificReturn := fake.publishCounterReturnsOnCall[len(fake.publishCounterArgsForCall)]
+	fake.publishCounterArgsForCall = append(fake.publishCounterArgsForCall, struct {
+		arg1 context.Context
+		arg2 *types.Counter
+	}{arg1, arg2})
+	stub := fake.PublishCounterStub
+	fakeReturns := fake.publishCounterReturns
+	fake.recordInvocation("PublishCounter", []interface{}{arg1, arg2})
+	fake.publishCounterMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeIBus) PublishCounterCallCount() int {
+	fake.publishCounterMutex.RLock()
+	defer fake.publishCounterMutex.RUnlock()
+	return len(fake.publishCounterArgsForCall)
+}
+
+func (fake *FakeIBus) PublishCounterCalls(stub func(context.Context, *types.Counter) error) {
+	fake.publishCounterMutex.Lock()
+	defer fake.publishCounterMutex.Unlock()
+	fake.PublishCounterStub = stub
+}
+
+func (fake *FakeIBus) PublishCounterArgsForCall(i int) (context.Context, *types.Counter) {
+	fake.publishCounterMutex.RLock()
+	defer fake.publishCounterMutex.RUnlock()
+	argsForCall := fake.publishCounterArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeIBus) PublishCounterReturns(result1 error) {
+	fake.publishCounterMutex.Lock()
+	defer fake.publishCounterMutex.Unlock()
+	fake.PublishCounterStub = nil
+	fake.publishCounterReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeIBus) PublishCounterReturnsOnCall(i int, result1 error) {
+	fake.publishCounterMutex.Lock()
+	defer fake.publishCounterMutex.Unlock()
+	fake.PublishCounterStub = nil
+	if fake.publishCounterReturnsOnCall == nil {
+		fake.publishCounterReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.publishCounterReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeIBus) PublishCreateConnection(arg1 context.Context, arg2 *opts.ConnectionOptions) error {
@@ -1337,6 +1412,8 @@ func (fake *FakeIBus) StopReturnsOnCall(i int, result1 error) {
 func (fake *FakeIBus) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.publishCounterMutex.RLock()
+	defer fake.publishCounterMutex.RUnlock()
 	fake.publishCreateConnectionMutex.RLock()
 	defer fake.publishCreateConnectionMutex.RUnlock()
 	fake.publishCreateRelayMutex.RLock()

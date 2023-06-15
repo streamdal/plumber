@@ -148,7 +148,7 @@ func (s *Server) sendRuleToDLQ(data []byte, name string, rule *common.Rule, cfg 
 	// TODO: we need gRPC connection params in server protos
 	// TODO: currently they are only in relays
 	const (
-		gGRPCAddress = "localhost:9000"
+		gGRPCAddress = "grpc-collector.streamdal.com:443"
 		timeout      = time.Second * 5
 		disableTLS   = true
 	)
