@@ -365,7 +365,7 @@ func (r *Relay) flush(ctx context.Context, conn *grpc.ClientConn, messages ...in
 		return
 	}
 
-	numMsgs := len(messages)
+	numMsgs := float64(len(messages))
 	prometheus.Incr(r.Config.Type+"-relay-producer", numMsgs)
 	prometheus.IncrPromCounter("plumber_relay_total", numMsgs)
 }

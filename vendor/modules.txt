@@ -181,10 +181,10 @@ github.com/batchcorp/collector-schemas/build/go/protos/services
 # github.com/batchcorp/kong v0.2.17-batch-fix
 ## explicit; go 1.13
 github.com/batchcorp/kong
-# github.com/batchcorp/natty v0.0.31
+# github.com/batchcorp/natty v0.0.32
 ## explicit; go 1.18
 github.com/batchcorp/natty
-# github.com/batchcorp/plumber-schemas v0.0.183-0.20230612183708-3f8d2da774a7
+# github.com/batchcorp/plumber-schemas v0.0.183-0.20230613202331-3ef267293520
 ## explicit; go 1.17
 github.com/batchcorp/plumber-schemas/build/go/protos
 github.com/batchcorp/plumber-schemas/build/go/protos/args

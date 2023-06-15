@@ -29,6 +29,8 @@ const (
 	CreateRuleSet = "CreateRuleSet"
 	UpdateRuleSet = "UpdateRuleSet"
 	DeleteRuleSet = "DeleteRuleSet"
+
+	Counter = "Counter"
 )
 
 var (
@@ -37,6 +39,7 @@ var (
 		CreateRelay, UpdateRelay, DeleteRelay, StopRelay, ResumeRelay,
 		CreateTunnel, UpdateTunnel, DeleteTunnel, StopTunnel, ResumeTunnel,
 		UpdateConfig, CreateRuleSet, UpdateRuleSet, DeleteRuleSet,
+		Counter,
 	}
 )
 

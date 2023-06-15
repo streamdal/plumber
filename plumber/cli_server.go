@@ -14,10 +14,15 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
+
 	"github.com/batchcorp/plumber/api"
 	"github.com/batchcorp/plumber/bus"
 	"github.com/batchcorp/plumber/options"
 	"github.com/batchcorp/plumber/server"
+)
+
+const (
+	NATSLeaderBucket = "plumber-leader"
 )
 
 // RunServer is a wrapper for starting embedded etcd and starting the gRPC server.
@@ -180,6 +185,7 @@ func (p *Plumber) startGRPCServer() error {
 	go p.pollForWASMUpdates(looper)
 
 	go p.watchServiceShutdown(grpcServer)
+	//go p.startMetricsDumper()
 	go plumberServer.StartRuleAlerts()
 
 	p.Telemetry.Enqueue(posthog.Capture{
@@ -214,6 +220,62 @@ func (p *Plumber) startGRPCServer() error {
 		return err
 	}
 }
+
+func (p *Plumber) loadMetrics() error {
+	return nil
+}
+
+//func (p *Plumber) startMetricsDumper() {
+//	counters := []string{prometheus.DataQualBytes, prometheus.DataQualMessages}
+//
+//	cfg := natty.AsLeaderConfig{
+//		Bucket:       NATSLeaderBucket,
+//		Description:  "Plumber leader election",
+//		Looper:       director.NewTimedLooper(director.FOREVER, time.Second*15, make(chan error, 1)),
+//		ReplicaCount: 1,
+//		Key:          "leader-election",
+//		NodeName:     p.CLIOptions.Server.NodeId,
+//	}
+//	p.Nats.AsLeader(p.ServiceShutdownCtx, cfg, func() error {
+//		results := make(map[string]float64)
+//
+//		// Loop over all standard counters
+//		for _, name := range counters {
+//			value, ok := prometheus.GetLocalCounter(name)
+//			if !ok {
+//				// Counter doesn't exist yet
+//				continue
+//			}
+//
+//			// Set in map so we can dump json to NATS
+//			results[name] = value
+//
+//			// Reset local counter to zero
+//			prometheus.ResetLocalCounter(name)
+//
+//			// Set prometheus counter
+//			prometheus.IncrPromCounter(name, value)
+//
+//		}
+//
+//		data, err := json.Marshal(results)
+//		if err != nil {
+//			err = errors.Wrap(err, "unable to marshal stats")
+//			p.log.Error(err)
+//			return nil
+//		}
+//
+//		if err := p.Nats.Put(context.Background(), "plumber", "metrics", data); err != nil {
+//			err = errors.Wrap(err, "unable to put metrics in natty")
+//			p.log.Error(err)
+//			return nil
+//		}
+//
+//		p.log.Debug("Dumped stats to NATS")
+//
+//		return nil
+//	})
+//}
 
 func (p *Plumber) watchServiceShutdown(grpcServer *grpc.Server) {
 	<-p.ServiceShutdownCtx.Done()

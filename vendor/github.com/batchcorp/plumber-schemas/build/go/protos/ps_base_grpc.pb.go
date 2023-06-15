@@ -61,6 +61,7 @@ type PlumberServerClient interface {
 	UpdateRuleSet(ctx context.Context, in *UpdateDataQualityRuleSetRequest, opts ...grpc.CallOption) (*UpdateDataQualityRuleSetResponse, error)
 	DeleteRuleSet(ctx context.Context, in *DeleteDataQualityRuleSetRequest, opts ...grpc.CallOption) (*DeleteDataQualityRuleSetResponse, error)
 	SendRuleNotification(ctx context.Context, in *SendRuleNotificationRequest, opts ...grpc.CallOption) (*SendRuleNotificationResponse, error)
+	PublishMetrics(ctx context.Context, in *PublishMetricsRequest, opts ...grpc.CallOption) (*PublishMetricsResponse, error)
 	GetServerOptions(ctx context.Context, in *GetServerOptionsRequest, opts ...grpc.CallOption) (*GetServerOptionsResponse, error)
 }
 
@@ -369,6 +370,15 @@ func (c *plumberServerClient) SendRuleNotification(ctx context.Context, in *Send
 	return out, nil
 }
 
+func (c *plumberServerClient) PublishMetrics(ctx context.Context, in *PublishMetricsRequest, opts ...grpc.CallOption) (*PublishMetricsResponse, error) {
+	out := new(PublishMetricsResponse)
+	err := c.cc.Invoke(ctx, "/protos.PlumberServer/PublishMetrics", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *plumberServerClient) GetServerOptions(ctx context.Context, in *GetServerOptionsRequest, opts ...grpc.CallOption) (*GetServerOptionsResponse, error) {
 	out := new(GetServerOptionsResponse)
 	err := c.cc.Invoke(ctx, "/protos.PlumberServer/GetServerOptions", in, out, opts...)
@@ -421,6 +431,7 @@ type PlumberServerServer interface {
 	UpdateRuleSet(context.Context, *UpdateDataQualityRuleSetRequest) (*UpdateDataQualityRuleSetResponse, error)
 	DeleteRuleSet(context.Context, *DeleteDataQualityRuleSetRequest) (*DeleteDataQualityRuleSetResponse, error)
 	SendRuleNotification(context.Context, *SendRuleNotificationRequest) (*SendRuleNotificationResponse, error)
+	PublishMetrics(context.Context, *PublishMetricsRequest) (*PublishMetricsResponse, error)
 	GetServerOptions(context.Context, *GetServerOptionsRequest) (*GetServerOptionsResponse, error)
 }
 
@@ -526,6 +537,9 @@ func (UnimplementedPlumberServerServer) DeleteRuleSet(context.Context, *DeleteDa
 }
 func (UnimplementedPlumberServerServer) SendRuleNotification(context.Context, *SendRuleNotificationRequest) (*SendRuleNotificationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendRuleNotification not implemented")
+}
+func (UnimplementedPlumberServerServer) PublishMetrics(context.Context, *PublishMetricsRequest) (*PublishMetricsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PublishMetrics not implemented")
 }
 func (UnimplementedPlumberServerServer) GetServerOptions(context.Context, *GetServerOptionsRequest) (*GetServerOptionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetServerOptions not implemented")
@@ -1136,6 +1150,24 @@ func _PlumberServer_SendRuleNotification_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PlumberServer_PublishMetrics_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PublishMetricsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PlumberServerServer).PublishMetrics(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protos.PlumberServer/PublishMetrics",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PlumberServerServer).PublishMetrics(ctx, req.(*PublishMetricsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _PlumberServer_GetServerOptions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetServerOptionsRequest)
 	if err := dec(in); err != nil {
@@ -1292,6 +1324,10 @@ var PlumberServer_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SendRuleNotification",
 			Handler:    _PlumberServer_SendRuleNotification_Handler,
+		},
+		{
+			MethodName: "PublishMetrics",
+			Handler:    _PlumberServer_PublishMetrics_Handler,
 		},
 		{
 			MethodName: "GetServerOptions",

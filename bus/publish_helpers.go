@@ -2,6 +2,7 @@ package bus
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/golang/protobuf/proto"
@@ -9,6 +10,8 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+
+	"github.com/batchcorp/plumber/server/types"
 )
 
 // PublishCreateConnection publishes a CreateConnection message, which other plumber instances will receive
@@ -107,6 +110,21 @@ func (b *Bus) PublishDeleteRuleSet(ctx context.Context, rs *common.RuleSet) erro
 	return b.publishRuleSetMessage(ctx, DeleteRuleSet, rs)
 }
 
+func (b *Bus) PublishCounter(ctx context.Context, counter *types.Counter) error {
+
+	data, err := json.Marshal(counter)
+	if err != nil {
+		return errors.Wrapf(err, "unable to marshal counter message for '%s'", counter.Type)
+	}
+
+	return b.broadcast(ctx, &Message{
+		Action:    Counter,
+		Data:      data,
+		EmittedBy: b.config.ServerOptions.NodeId,
+		EmittedAt: time.Now().UTC(),
+	})
+}
+
 func (b *Bus) publishConnectionMessage(ctx context.Context, action Action, conn *opts.ConnectionOptions) error {
 	data, err := proto.Marshal(conn)
 	if err != nil {
@@ -116,7 +134,7 @@ func (b *Bus) publishConnectionMessage(ctx context.Context, action Action, conn 
 	return b.broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: b.config.PersistentConfig.PlumberID,
+		EmittedBy: b.config.ServerOptions.NodeId,
 		EmittedAt: time.Now().UTC(),
 	})
 }
@@ -130,7 +148,7 @@ func (b *Bus) publishRelayMessage(ctx context.Context, action Action, relay *opt
 	return b.broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: b.config.PersistentConfig.PlumberID,
+		EmittedBy: b.config.ServerOptions.NodeId,
 		EmittedAt: time.Now().UTC(),
 	})
 }
@@ -144,7 +162,7 @@ func (b *Bus) publishTunnelMessage(ctx context.Context, action Action, tunnelOpt
 	return b.broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: b.config.PersistentConfig.PlumberID,
+		EmittedBy: b.config.ServerOptions.NodeId,
 		EmittedAt: time.Now().UTC(),
 	})
 }
@@ -158,7 +176,7 @@ func (b *Bus) publishRuleSetMessage(ctx context.Context, action Action, rs *comm
 	return b.broadcast(ctx, &Message{
 		Action:    action,
 		Data:      data,
-		EmittedBy: b.config.PersistentConfig.PlumberID,
+		EmittedBy: b.config.ServerOptions.NodeId,
 		EmittedAt: time.Now().UTC(),
 	})
 }

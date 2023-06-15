@@ -114,7 +114,7 @@ func main() {
 
 	// TODO: This probably should be updated for server
 	// Launch a dedicated goroutine if stats display is enabled
-	if cliOpts.Relay != nil && cliOpts.Relay.StatsEnable {
+	if (cliOpts.Relay != nil && cliOpts.Relay.StatsEnable) || cliOpts.Global.XAction == "server" {
 		prometheus.Start(cliOpts.Relay.StatsReportIntervalSec)
 	}
 

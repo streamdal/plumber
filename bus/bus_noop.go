@@ -4,8 +4,9 @@ import (
 	"context"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
-
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+
+	"github.com/batchcorp/plumber/server/types"
 )
 
 // NoOpBus is a bus that does nothing
@@ -80,5 +81,9 @@ func (n NoOpBus) PublishUpdateRuleSet(_ context.Context, _ *common.RuleSet) erro
 }
 
 func (n NoOpBus) PublishDeleteRuleSet(_ context.Context, _ *common.RuleSet) error {
+	return nil
+}
+
+func (n NoOpBus) PublishCounter(ctx context.Context, counter *types.Counter) error {
 	return nil
 }

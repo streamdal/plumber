@@ -15,7 +15,9 @@ import (
 	"github.com/batchcorp/collector-schemas/build/go/protos/services"
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+
 	"github.com/batchcorp/plumber/prometheus"
+	"github.com/batchcorp/plumber/server/types"
 	"github.com/batchcorp/plumber/util"
 )
 
@@ -35,7 +37,7 @@ func (s *Server) GetRuleSets(_ context.Context, req *protos.GetDataQualityRuleSe
 
 	s.PersistentConfig.RuleSetMutex.RLock()
 	for _, ruleSet := range s.PersistentConfig.RuleSets {
-		if ruleSet.Set.DataSource == req.Bus {
+		if ruleSet.Set.DataSource == req.DataSource {
 			ruleSets = append(ruleSets, ruleSet.Set)
 		}
 	}
@@ -43,7 +45,8 @@ func (s *Server) GetRuleSets(_ context.Context, req *protos.GetDataQualityRuleSe
 
 	return &protos.GetDataQualityRuleSetsResponse{
 		Status: &common.Status{
-			Code: common.Code_OK,
+			Code:      common.Code_OK,
+			RequestId: uuid.NewV4().String(),
 		},
 		RuleSets: ruleSets,
 	}, nil
@@ -172,7 +175,7 @@ func (s *Server) CallWithRetry(ctx context.Context, method string, publish func(
 	for i := 1; i <= MaxGRPCRetries; i++ {
 		err = publish(ctx)
 		if err != nil {
-			prometheus.IncrPromCounter("plumber_grpc_errors", 1)
+			prometheus.IncrPromCounter(prometheus.PlumberGRPCErrors, 1)
 
 			// Paused collection, retries will fail, exit early
 			if strings.Contains(err.Error(), "collection is paused") {
@@ -187,6 +190,29 @@ func (s *Server) CallWithRetry(ctx context.Context, method string, publish func(
 	}
 
 	return fmt.Errorf("unable to complete %s call [reached max retries (%d)]: %s", method, MaxGRPCRetries, err)
+}
+
+func (s *Server) PublishMetrics(ctx context.Context, req *protos.PublishMetricsRequest) (*protos.PublishMetricsResponse, error) {
+	c := &types.Counter{
+		Type:  req.Counter,
+		Value: req.Value,
+	}
+
+	if err := s.Actions.Counter(ctx, c); err != nil {
+		return nil, CustomError(common.Code_INTERNAL, err.Error())
+	}
+
+	if err := s.Bus.PublishCounter(ctx, c); err != nil {
+		return nil, CustomError(common.Code_INTERNAL, err.Error())
+	}
+
+	return &protos.PublishMetricsResponse{
+		Status: &common.Status{
+			Code:      common.Code_OK,
+			Message:   "Metrics collected",
+			RequestId: uuid.NewV4().String(),
+		},
+	}, nil
 }
 
 func (s *Server) GetRule(ctx context.Context, req *protos.GetDataQualityRuleRequest) (*protos.GetDataQualityRuleResponse, error) {

@@ -49,6 +49,8 @@ type IActions interface {
 	CreateRuleSet(ctx context.Context, rs *common.RuleSet) (*types.RuleSet, error)
 	UpdateRuleSet(ctx context.Context, id string, rs *common.RuleSet) (*types.RuleSet, error)
 	DeleteRuleSet(ctx context.Context, id string) (*types.RuleSet, error)
+
+	Counter(ctx context.Context, counter *types.Counter) error
 }
 
 func New(cfg *Config) (IActions, error) {

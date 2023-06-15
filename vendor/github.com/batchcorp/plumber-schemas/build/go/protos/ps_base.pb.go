@@ -30,7 +30,7 @@ var file_ps_base_proto_rawDesc = []byte{
 	0x0f, 0x70, 0x73, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x1a, 0x0f, 0x70, 0x73, 0x5f, 0x74, 0x75, 0x6e, 0x6e, 0x65, 0x6c, 0x2e, 0x70, 0x72, 0x6f, 0x74,
 	0x6f, 0x1a, 0x0c, 0x70, 0x73, 0x5f, 0x77, 0x73, 0x6d, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x32,
-	0xe8, 0x15, 0x0a, 0x0d, 0x50, 0x6c, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x53, 0x65, 0x72, 0x76, 0x65,
+	0xb9, 0x16, 0x0a, 0x0d, 0x50, 0x6c, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x53, 0x65, 0x72, 0x76, 0x65,
 	0x72, 0x12, 0x58, 0x0a, 0x11, 0x47, 0x65, 0x74, 0x41, 0x6c, 0x6c, 0x43, 0x6f, 0x6e, 0x6e, 0x65,
 	0x63, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x20, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e,
 	0x47, 0x65, 0x74, 0x41, 0x6c, 0x6c, 0x43, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x69, 0x6f, 0x6e,
@@ -199,16 +199,21 @@ var file_ps_base_proto_rawDesc = []byte{
 	0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x24, 0x2e,
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x53, 0x65, 0x6e, 0x64, 0x52, 0x75, 0x6c, 0x65, 0x4e,
 	0x6f, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x12, 0x55, 0x0a, 0x10, 0x47, 0x65, 0x74, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72,
-	0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x1f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73,
-	0x2e, 0x47, 0x65, 0x74, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e,
-	0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x20, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x6e, 0x73, 0x65, 0x12, 0x4f, 0x0a, 0x0e, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x4d, 0x65,
+	0x74, 0x72, 0x69, 0x63, 0x73, 0x12, 0x1d, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x50,
+	0x75, 0x62, 0x6c, 0x69, 0x73, 0x68, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2e, 0x50, 0x75,
+	0x62, 0x6c, 0x69, 0x73, 0x68, 0x4d, 0x65, 0x74, 0x72, 0x69, 0x63, 0x73, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x55, 0x0a, 0x10, 0x47, 0x65, 0x74, 0x53, 0x65, 0x72, 0x76, 0x65,
+	0x72, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x1f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x73, 0x2e, 0x47, 0x65, 0x74, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x4f, 0x70, 0x74, 0x69, 0x6f,
-	0x6e, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x36, 0x5a, 0x34, 0x67, 0x69,
-	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x62, 0x61, 0x74, 0x63, 0x68, 0x63, 0x6f,
-	0x72, 0x70, 0x2f, 0x70, 0x6c, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x2d, 0x73, 0x63, 0x68, 0x65, 0x6d,
-	0x61, 0x73, 0x2f, 0x62, 0x75, 0x69, 0x6c, 0x64, 0x2f, 0x67, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6e, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x20, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x73, 0x2e, 0x47, 0x65, 0x74, 0x53, 0x65, 0x72, 0x76, 0x65, 0x72, 0x4f, 0x70, 0x74, 0x69,
+	0x6f, 0x6e, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x36, 0x5a, 0x34, 0x67,
+	0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x62, 0x61, 0x74, 0x63, 0x68, 0x63,
+	0x6f, 0x72, 0x70, 0x2f, 0x70, 0x6c, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x2d, 0x73, 0x63, 0x68, 0x65,
+	0x6d, 0x61, 0x73, 0x2f, 0x62, 0x75, 0x69, 0x6c, 0x64, 0x2f, 0x67, 0x6f, 0x2f, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var file_ps_base_proto_goTypes = []interface{}{
@@ -245,41 +250,43 @@ var file_ps_base_proto_goTypes = []interface{}{
 	(*UpdateDataQualityRuleSetRequest)(nil),  // 30: protos.UpdateDataQualityRuleSetRequest
 	(*DeleteDataQualityRuleSetRequest)(nil),  // 31: protos.DeleteDataQualityRuleSetRequest
 	(*SendRuleNotificationRequest)(nil),      // 32: protos.SendRuleNotificationRequest
-	(*GetServerOptionsRequest)(nil),          // 33: protos.GetServerOptionsRequest
-	(*GetAllConnectionsResponse)(nil),        // 34: protos.GetAllConnectionsResponse
-	(*GetConnectionResponse)(nil),            // 35: protos.GetConnectionResponse
-	(*CreateConnectionResponse)(nil),         // 36: protos.CreateConnectionResponse
-	(*TestConnectionResponse)(nil),           // 37: protos.TestConnectionResponse
-	(*UpdateConnectionResponse)(nil),         // 38: protos.UpdateConnectionResponse
-	(*DeleteConnectionResponse)(nil),         // 39: protos.DeleteConnectionResponse
-	(*GetAllRelaysResponse)(nil),             // 40: protos.GetAllRelaysResponse
-	(*GetRelayResponse)(nil),                 // 41: protos.GetRelayResponse
-	(*CreateRelayResponse)(nil),              // 42: protos.CreateRelayResponse
-	(*UpdateRelayResponse)(nil),              // 43: protos.UpdateRelayResponse
-	(*ResumeRelayResponse)(nil),              // 44: protos.ResumeRelayResponse
-	(*StopRelayResponse)(nil),                // 45: protos.StopRelayResponse
-	(*DeleteRelayResponse)(nil),              // 46: protos.DeleteRelayResponse
-	(*GetTunnelResponse)(nil),                // 47: protos.GetTunnelResponse
-	(*GetAllTunnelsResponse)(nil),            // 48: protos.GetAllTunnelsResponse
-	(*CreateTunnelResponse)(nil),             // 49: protos.CreateTunnelResponse
-	(*StopTunnelResponse)(nil),               // 50: protos.StopTunnelResponse
-	(*ResumeTunnelResponse)(nil),             // 51: protos.ResumeTunnelResponse
-	(*UpdateTunnelResponse)(nil),             // 52: protos.UpdateTunnelResponse
-	(*DeleteTunnelResponse)(nil),             // 53: protos.DeleteTunnelResponse
-	(*ListWasmFilesResponse)(nil),            // 54: protos.ListWasmFilesResponse
-	(*UploadWasmFileResponse)(nil),           // 55: protos.UploadWasmFileResponse
-	(*DownloadWasmFileResponse)(nil),         // 56: protos.DownloadWasmFileResponse
-	(*DeleteWasmFileResponse)(nil),           // 57: protos.DeleteWasmFileResponse
-	(*GetDataQualityRuleSetsResponse)(nil),   // 58: protos.GetDataQualityRuleSetsResponse
-	(*GetDataQualityRuleResponse)(nil),       // 59: protos.GetDataQualityRuleResponse
-	(*CreateDataQualityRuleResponse)(nil),    // 60: protos.CreateDataQualityRuleResponse
-	(*UpdateDataQualityRuleResponse)(nil),    // 61: protos.UpdateDataQualityRuleResponse
-	(*DeleteDataQualityRuleResponse)(nil),    // 62: protos.DeleteDataQualityRuleResponse
-	(*CreateDataQualityRuleSetResponse)(nil), // 63: protos.CreateDataQualityRuleSetResponse
-	(*UpdateDataQualityRuleSetResponse)(nil), // 64: protos.UpdateDataQualityRuleSetResponse
-	(*DeleteDataQualityRuleSetResponse)(nil), // 65: protos.DeleteDataQualityRuleSetResponse
-	(*SendRuleNotificationResponse)(nil),     // 66: protos.SendRuleNotificationResponse
-	(*GetServerOptionsResponse)(nil),         // 67: protos.GetServerOptionsResponse
+	(*PublishMetricsRequest)(nil),            // 33: protos.PublishMetricsRequest
+	(*GetServerOptionsRequest)(nil),          // 34: protos.GetServerOptionsRequest
+	(*GetAllConnectionsResponse)(nil),        // 35: protos.GetAllConnectionsResponse
+	(*GetConnectionResponse)(nil),            // 36: protos.GetConnectionResponse
+	(*CreateConnectionResponse)(nil),         // 37: protos.CreateConnectionResponse
+	(*TestConnectionResponse)(nil),           // 38: protos.TestConnectionResponse
+	(*UpdateConnectionResponse)(nil),         // 39: protos.UpdateConnectionResponse
+	(*DeleteConnectionResponse)(nil),         // 40: protos.DeleteConnectionResponse
+	(*GetAllRelaysResponse)(nil),             // 41: protos.GetAllRelaysResponse
+	(*GetRelayResponse)(nil),                 // 42: protos.GetRelayResponse
+	(*CreateRelayResponse)(nil),              // 43: protos.CreateRelayResponse
+	(*UpdateRelayResponse)(nil),              // 44: protos.UpdateRelayResponse
+	(*ResumeRelayResponse)(nil),              // 45: protos.ResumeRelayResponse
+	(*StopRelayResponse)(nil),                // 46: protos.StopRelayResponse
+	(*DeleteRelayResponse)(nil),              // 47: protos.DeleteRelayResponse
+	(*GetTunnelResponse)(nil),                // 48: protos.GetTunnelResponse
+	(*GetAllTunnelsResponse)(nil),            // 49: protos.GetAllTunnelsResponse
+	(*CreateTunnelResponse)(nil),             // 50: protos.CreateTunnelResponse
+	(*StopTunnelResponse)(nil),               // 51: protos.StopTunnelResponse
+	(*ResumeTunnelResponse)(nil),             // 52: protos.ResumeTunnelResponse
+	(*UpdateTunnelResponse)(nil),             // 53: protos.UpdateTunnelResponse
+	(*DeleteTunnelResponse)(nil),             // 54: protos.DeleteTunnelResponse
+	(*ListWasmFilesResponse)(nil),            // 55: protos.ListWasmFilesResponse
+	(*UploadWasmFileResponse)(nil),           // 56: protos.UploadWasmFileResponse
+	(*DownloadWasmFileResponse)(nil),         // 57: protos.DownloadWasmFileResponse
+	(*DeleteWasmFileResponse)(nil),           // 58: protos.DeleteWasmFileResponse
+	(*GetDataQualityRuleSetsResponse)(nil),   // 59: protos.GetDataQualityRuleSetsResponse
+	(*GetDataQualityRuleResponse)(nil),       // 60: protos.GetDataQualityRuleResponse
+	(*CreateDataQualityRuleResponse)(nil),    // 61: protos.CreateDataQualityRuleResponse
+	(*UpdateDataQualityRuleResponse)(nil),    // 62: protos.UpdateDataQualityRuleResponse
+	(*DeleteDataQualityRuleResponse)(nil),    // 63: protos.DeleteDataQualityRuleResponse
+	(*CreateDataQualityRuleSetResponse)(nil), // 64: protos.CreateDataQualityRuleSetResponse
+	(*UpdateDataQualityRuleSetResponse)(nil), // 65: protos.UpdateDataQualityRuleSetResponse
+	(*DeleteDataQualityRuleSetResponse)(nil), // 66: protos.DeleteDataQualityRuleSetResponse
+	(*SendRuleNotificationResponse)(nil),     // 67: protos.SendRuleNotificationResponse
+	(*PublishMetricsResponse)(nil),           // 68: protos.PublishMetricsResponse
+	(*GetServerOptionsResponse)(nil),         // 69: protos.GetServerOptionsResponse
 }
 var file_ps_base_proto_depIdxs = []int32{
 	0,  // 0: protos.PlumberServer.GetAllConnections:input_type -> protos.GetAllConnectionsRequest
@@ -315,43 +322,45 @@ var file_ps_base_proto_depIdxs = []int32{
 	30, // 30: protos.PlumberServer.UpdateRuleSet:input_type -> protos.UpdateDataQualityRuleSetRequest
 	31, // 31: protos.PlumberServer.DeleteRuleSet:input_type -> protos.DeleteDataQualityRuleSetRequest
 	32, // 32: protos.PlumberServer.SendRuleNotification:input_type -> protos.SendRuleNotificationRequest
-	33, // 33: protos.PlumberServer.GetServerOptions:input_type -> protos.GetServerOptionsRequest
-	34, // 34: protos.PlumberServer.GetAllConnections:output_type -> protos.GetAllConnectionsResponse
-	35, // 35: protos.PlumberServer.GetConnection:output_type -> protos.GetConnectionResponse
-	36, // 36: protos.PlumberServer.CreateConnection:output_type -> protos.CreateConnectionResponse
-	37, // 37: protos.PlumberServer.TestConnection:output_type -> protos.TestConnectionResponse
-	38, // 38: protos.PlumberServer.UpdateConnection:output_type -> protos.UpdateConnectionResponse
-	39, // 39: protos.PlumberServer.DeleteConnection:output_type -> protos.DeleteConnectionResponse
-	40, // 40: protos.PlumberServer.GetAllRelays:output_type -> protos.GetAllRelaysResponse
-	41, // 41: protos.PlumberServer.GetRelay:output_type -> protos.GetRelayResponse
-	42, // 42: protos.PlumberServer.CreateRelay:output_type -> protos.CreateRelayResponse
-	43, // 43: protos.PlumberServer.UpdateRelay:output_type -> protos.UpdateRelayResponse
-	44, // 44: protos.PlumberServer.ResumeRelay:output_type -> protos.ResumeRelayResponse
-	45, // 45: protos.PlumberServer.StopRelay:output_type -> protos.StopRelayResponse
-	46, // 46: protos.PlumberServer.DeleteRelay:output_type -> protos.DeleteRelayResponse
-	47, // 47: protos.PlumberServer.GetTunnel:output_type -> protos.GetTunnelResponse
-	48, // 48: protos.PlumberServer.GetAllTunnels:output_type -> protos.GetAllTunnelsResponse
-	49, // 49: protos.PlumberServer.CreateTunnel:output_type -> protos.CreateTunnelResponse
-	50, // 50: protos.PlumberServer.StopTunnel:output_type -> protos.StopTunnelResponse
-	51, // 51: protos.PlumberServer.ResumeTunnel:output_type -> protos.ResumeTunnelResponse
-	52, // 52: protos.PlumberServer.UpdateTunnel:output_type -> protos.UpdateTunnelResponse
-	53, // 53: protos.PlumberServer.DeleteTunnel:output_type -> protos.DeleteTunnelResponse
-	54, // 54: protos.PlumberServer.ListWasmFiles:output_type -> protos.ListWasmFilesResponse
-	55, // 55: protos.PlumberServer.UploadWasmFile:output_type -> protos.UploadWasmFileResponse
-	56, // 56: protos.PlumberServer.DownloadWasmFile:output_type -> protos.DownloadWasmFileResponse
-	57, // 57: protos.PlumberServer.DeleteWasmFile:output_type -> protos.DeleteWasmFileResponse
-	58, // 58: protos.PlumberServer.GetRuleSets:output_type -> protos.GetDataQualityRuleSetsResponse
-	59, // 59: protos.PlumberServer.GetRule:output_type -> protos.GetDataQualityRuleResponse
-	60, // 60: protos.PlumberServer.CreateRule:output_type -> protos.CreateDataQualityRuleResponse
-	61, // 61: protos.PlumberServer.UpdateRule:output_type -> protos.UpdateDataQualityRuleResponse
-	62, // 62: protos.PlumberServer.DeleteRule:output_type -> protos.DeleteDataQualityRuleResponse
-	63, // 63: protos.PlumberServer.CreateRuleSet:output_type -> protos.CreateDataQualityRuleSetResponse
-	64, // 64: protos.PlumberServer.UpdateRuleSet:output_type -> protos.UpdateDataQualityRuleSetResponse
-	65, // 65: protos.PlumberServer.DeleteRuleSet:output_type -> protos.DeleteDataQualityRuleSetResponse
-	66, // 66: protos.PlumberServer.SendRuleNotification:output_type -> protos.SendRuleNotificationResponse
-	67, // 67: protos.PlumberServer.GetServerOptions:output_type -> protos.GetServerOptionsResponse
-	34, // [34:68] is the sub-list for method output_type
-	0,  // [0:34] is the sub-list for method input_type
+	33, // 33: protos.PlumberServer.PublishMetrics:input_type -> protos.PublishMetricsRequest
+	34, // 34: protos.PlumberServer.GetServerOptions:input_type -> protos.GetServerOptionsRequest
+	35, // 35: protos.PlumberServer.GetAllConnections:output_type -> protos.GetAllConnectionsResponse
+	36, // 36: protos.PlumberServer.GetConnection:output_type -> protos.GetConnectionResponse
+	37, // 37: protos.PlumberServer.CreateConnection:output_type -> protos.CreateConnectionResponse
+	38, // 38: protos.PlumberServer.TestConnection:output_type -> protos.TestConnectionResponse
+	39, // 39: protos.PlumberServer.UpdateConnection:output_type -> protos.UpdateConnectionResponse
+	40, // 40: protos.PlumberServer.DeleteConnection:output_type -> protos.DeleteConnectionResponse
+	41, // 41: protos.PlumberServer.GetAllRelays:output_type -> protos.GetAllRelaysResponse
+	42, // 42: protos.PlumberServer.GetRelay:output_type -> protos.GetRelayResponse
+	43, // 43: protos.PlumberServer.CreateRelay:output_type -> protos.CreateRelayResponse
+	44, // 44: protos.PlumberServer.UpdateRelay:output_type -> protos.UpdateRelayResponse
+	45, // 45: protos.PlumberServer.ResumeRelay:output_type -> protos.ResumeRelayResponse
+	46, // 46: protos.PlumberServer.StopRelay:output_type -> protos.StopRelayResponse
+	47, // 47: protos.PlumberServer.DeleteRelay:output_type -> protos.DeleteRelayResponse
+	48, // 48: protos.PlumberServer.GetTunnel:output_type -> protos.GetTunnelResponse
+	49, // 49: protos.PlumberServer.GetAllTunnels:output_type -> protos.GetAllTunnelsResponse
+	50, // 50: protos.PlumberServer.CreateTunnel:output_type -> protos.CreateTunnelResponse
+	51, // 51: protos.PlumberServer.StopTunnel:output_type -> protos.StopTunnelResponse
+	52, // 52: protos.PlumberServer.ResumeTunnel:output_type -> protos.ResumeTunnelResponse
+	53, // 53: protos.PlumberServer.UpdateTunnel:output_type -> protos.UpdateTunnelResponse
+	54, // 54: protos.PlumberServer.DeleteTunnel:output_type -> protos.DeleteTunnelResponse
+	55, // 55: protos.PlumberServer.ListWasmFiles:output_type -> protos.ListWasmFilesResponse
+	56, // 56: protos.PlumberServer.UploadWasmFile:output_type -> protos.UploadWasmFileResponse
+	57, // 57: protos.PlumberServer.DownloadWasmFile:output_type -> protos.DownloadWasmFileResponse
+	58, // 58: protos.PlumberServer.DeleteWasmFile:output_type -> protos.DeleteWasmFileResponse
+	59, // 59: protos.PlumberServer.GetRuleSets:output_type -> protos.GetDataQualityRuleSetsResponse
+	60, // 60: protos.PlumberServer.GetRule:output_type -> protos.GetDataQualityRuleResponse
+	61, // 61: protos.PlumberServer.CreateRule:output_type -> protos.CreateDataQualityRuleResponse
+	62, // 62: protos.PlumberServer.UpdateRule:output_type -> protos.UpdateDataQualityRuleResponse
+	63, // 63: protos.PlumberServer.DeleteRule:output_type -> protos.DeleteDataQualityRuleResponse
+	64, // 64: protos.PlumberServer.CreateRuleSet:output_type -> protos.CreateDataQualityRuleSetResponse
+	65, // 65: protos.PlumberServer.UpdateRuleSet:output_type -> protos.UpdateDataQualityRuleSetResponse
+	66, // 66: protos.PlumberServer.DeleteRuleSet:output_type -> protos.DeleteDataQualityRuleSetResponse
+	67, // 67: protos.PlumberServer.SendRuleNotification:output_type -> protos.SendRuleNotificationResponse
+	68, // 68: protos.PlumberServer.PublishMetrics:output_type -> protos.PublishMetricsResponse
+	69, // 69: protos.PlumberServer.GetServerOptions:output_type -> protos.GetServerOptionsResponse
+	35, // [35:70] is the sub-list for method output_type
+	0,  // [0:35] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name

@@ -20,13 +20,15 @@ const (
 	PlumberGRPCErrors       = "plumber_grpc_errors"
 	PlumberRelayWorkers     = "plumber_relay_workers"
 	PlumberTunnels          = "plumber_tunnels"
+	DataQualBytes           = "dataqual_bytes"
+	DataQualMessages        = "dataqual_messages"
 )
 
 var (
 	ReportInterval = 10 * time.Second
 
-	mutex    = &sync.Mutex{}
-	counters = make(map[string]int, 0)
+	mutex    = &sync.RWMutex{}
+	counters = make(map[string]float64, 0)
 
 	prometheusMutex    = &sync.Mutex{}
 	prometheusCounters = make(map[string]prometheus.Counter)
@@ -34,6 +36,21 @@ var (
 
 	looper director.Looper
 )
+
+func GetLocalCounter(name string) (float64, bool) {
+	mutex.RLock()
+	defer mutex.RUnlock()
+
+	c, ok := counters[name]
+	return c, ok
+}
+
+func ResetLocalCounter(name string) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	counters[name] = 0
+}
 
 // Start initiates CLI stats reporting
 func Start(reportIntervalSeconds int32) {
@@ -49,9 +66,9 @@ func Start(reportIntervalSeconds int32) {
 			defer mutex.Unlock()
 
 			for counterName, counterValue := range counters {
-				perSecond := counterValue / int(interval.Seconds())
+				perSecond := counterValue / interval.Seconds()
 
-				logrus.Infof("STATS [%s]: %d / %s (%d/s)\n", counterName, counterValue,
+				logrus.Infof("STATS [%s]: %.2f / %s (%.2f/s)\n", counterName, counterValue,
 					interval, perSecond)
 
 				if strings.HasSuffix(counterName, "relay-producer") {
@@ -102,15 +119,25 @@ func InitPrometheusMetrics() {
 		Name: PlumberGRPCErrors,
 		Help: "Number of errors when making GRPC calls",
 	})
+
+	prometheusCounters[DataQualBytes] = promauto.NewCounter(prometheus.CounterOpts{
+		Name: DataQualBytes,
+		Help: "Number of bytes that have passed through data quality checks",
+	})
+
+	prometheusCounters[DataQualMessages] = promauto.NewCounter(prometheus.CounterOpts{
+		Name: DataQualMessages,
+		Help: "Number of messages that have passed through data quality checks",
+	})
 }
 
 // IncrPromCounter increments a prometheus counter by the given amount
-func IncrPromCounter(key string, amount int) {
+func IncrPromCounter(key string, amount float64) {
 	prometheusMutex.Lock()
 	defer prometheusMutex.Unlock()
 	_, ok := prometheusCounters[key]
 	if ok {
-		prometheusCounters[key].Add(float64(amount))
+		prometheusCounters[key].Add(amount)
 	}
 }
 
@@ -135,26 +162,30 @@ func DecrPromGauge(key string) {
 }
 
 // SetPromGauge sets a prometheus gauge value
-func SetPromGauge(key string, amount int) {
+func SetPromGauge(key string, amount float64) {
 	prometheusMutex.Lock()
 	defer prometheusMutex.Unlock()
 
 	_, ok := prometheusGauges[key]
 	if ok {
-		prometheusGauges[key].Set(float64(amount))
+		prometheusGauges[key].Set(amount)
 	}
 }
 
 // Incr increments a counter by the given amount
-func Incr(name string, value int) {
+func Incr(name string, value float64) {
 	mutex.Lock()
 	defer mutex.Unlock()
+
+	if _, ok := counters[name]; !ok {
+		counters[name] = 0
+	}
 
 	counters[name] += value
 }
 
 // Decr decrements a counter by the given amount
-func Decr(name string, value int) {
+func Decr(name string, value float64) {
 	mutex.Lock()
 	defer mutex.Unlock()
 

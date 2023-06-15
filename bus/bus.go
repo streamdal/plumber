@@ -5,19 +5,18 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
-
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
 	"github.com/relistan/go-director"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/natty"
-
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
+	"github.com/batchcorp/natty"
 	"github.com/batchcorp/plumber/actions"
 	"github.com/batchcorp/plumber/config"
+	"github.com/batchcorp/plumber/server/types"
 )
 
 const (
@@ -56,6 +55,8 @@ type IBus interface {
 	PublishCreateRuleSet(ctx context.Context, rs *common.RuleSet) error
 	PublishUpdateRuleSet(ctx context.Context, rs *common.RuleSet) error
 	PublishDeleteRuleSet(ctx context.Context, rs *common.RuleSet) error
+
+	PublishCounter(ctx context.Context, counter *types.Counter) error
 }
 
 type Bus struct {
@@ -297,7 +298,7 @@ func (b *Bus) runBroadcastConsumer(consumerCtx context.Context) error {
 	// This is the important part - since every consumer will have a unique
 	// consumer name, NATS will send every plumber instance a copy of the message
 	cfg := &natty.ConsumerConfig{
-		Subject:      BroadcastSubject,
+		Subject:      subject,
 		StreamName:   StreamName,
 		ConsumerName: b.config.ServerOptions.NodeId,
 		ErrorCh:      b.consumerErrChan,

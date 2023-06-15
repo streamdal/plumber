@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
-	"github.com/batchcorp/plumber/validate"
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+	"github.com/batchcorp/plumber/validate"
 )
 
 func (b *Bus) doCreateRuleSet(ctx context.Context, msg *Message) error {

@@ -7,6 +7,7 @@ package kv
 import (
 	"context"
 
+	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
@@ -15,7 +16,8 @@ import (
 )
 
 const (
-	WasmBucket = "wasm"
+	WasmBucket    = "plumber-wasm"
+	MetricsBucket = "plumber-metrics"
 )
 
 type IKV interface {
@@ -23,6 +25,7 @@ type IKV interface {
 	Get(ctx context.Context, bucket, key string) ([]byte, error)
 	Delete(ctx context.Context, bucket, key string) error
 	Keys(ctx context.Context, bucket string) ([]string, error)
+	WatchBucket(ctx context.Context, bucket string) (nats.KeyWatcher, error)
 }
 
 type KV struct {
@@ -53,6 +56,10 @@ func New(serverOptions *opts.ServerOptions) (*KV, error) {
 		client:  n,
 		options: serverOptions,
 	}, nil
+}
+
+func (k *KV) WatchBucket(ctx context.Context, bucket string) (nats.KeyWatcher, error) {
+	return k.client.WatchBucket(ctx, bucket)
 }
 
 func (k *KV) Put(ctx context.Context, bucket, key string, value []byte) error {

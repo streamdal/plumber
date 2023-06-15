@@ -77,6 +77,8 @@ func (b *Bus) broadcastCallback(ctx context.Context, natsMsg *nats.Msg) error {
 		err = b.doUpdateRuleSet(ctx, msg)
 	case DeleteRuleSet:
 		err = b.doDeleteRuleSet(ctx, msg)
+	case Counter:
+		err = b.doCounter(ctx, msg)
 
 	default:
 		llog.Debugf("unrecognized action '%s' in msg on subj '%s' - skipping", msg.Action, natsMsg.Subject)
