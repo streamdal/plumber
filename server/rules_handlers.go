@@ -121,7 +121,6 @@ func (s *Server) sendRuleSlackNotification(_ []byte, name string, rule *common.R
 	return nil
 }
 
-// TODO: need some kind of connection pooling and also a channel
 func (s *Server) sendRuleToDLQ(data []byte, name string, rule *common.Rule, cfg *common.FailureModeDLQ) error {
 	if rule == nil {
 		return errors.New("BUG: rule is nil")
@@ -145,15 +144,12 @@ func (s *Server) sendRuleToDLQ(data []byte, name string, rule *common.Rule, cfg 
 		},
 	}
 
-	// TODO: we need gRPC connection params in server protos
-	// TODO: currently they are only in relays
-	const (
-		gGRPCAddress = "grpc-collector.streamdal.com:443"
-		timeout      = time.Second * 5
-		disableTLS   = true
-	)
-
-	conn, outboundCtx, err := util.NewGRPCConnection(gGRPCAddress, cfg.StreamdalToken, timeout, disableTLS, true)
+	conn, outboundCtx, err := util.NewGRPCConnection(
+		s.CLIOptions.Server.XGrpcAddress,
+		cfg.StreamdalToken,
+		time.Duration(s.CLIOptions.Server.XGrpcTimeoutSeconds)*time.Second,
+		s.CLIOptions.Server.XGrpcInsecure,
+		true)
 	if err != nil {
 		return errors.Wrap(err, "unable to create new gRPC connection")
 	}
