@@ -1,8 +1,11 @@
 package api
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
 
+	"github.com/golang/protobuf/jsonpb"
 	"github.com/julienschmidt/httprouter"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -72,6 +75,7 @@ func (a *API) updateRuleSetHandler(w http.ResponseWriter, r *http.Request, p htt
 		return
 	}
 
+	rs.Set.Rules = update.Rules
 	rs.Set.Name = update.Name
 	rs.Set.Mode = update.Mode
 	rs.Set.Key = update.Key
@@ -131,7 +135,12 @@ func (a *API) getRulesHandler(w http.ResponseWriter, r *http.Request, p httprout
 		return
 	}
 
-	WriteJSON(http.StatusOK, rs.Set.Rules, w)
+	data, err := marshalRules(rs.Set.Rules)
+	if err != nil {
+		WriteErrorJSON(http.StatusInternalServerError, err.Error(), w)
+	}
+
+	WriteJSON(http.StatusOK, data, w)
 }
 
 func (a *API) createRuleHandler(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -380,4 +389,25 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 	}
 
 	WriteJSON(http.StatusOK, ResponseJSON{Message: "populated"}, w)
+}
+
+// marshalRules is needed because we're mixing go and protobuf types and can't use a single marshaller
+func marshalRules(in map[string]*common.Rule) (map[string]json.RawMessage, error) {
+	out := map[string]json.RawMessage{}
+
+	buf := bytes.NewBuffer([]byte(``))
+
+	m := jsonpb.Marshaler{
+		EnumsAsInts: false,
+		OrigName:    true,
+	}
+
+	for k, v := range in {
+		if err := m.Marshal(buf, v); err != nil {
+			return nil, errors.Wrap(err, "could not marshal RuleSet")
+		}
+		out[k] = buf.Bytes()
+	}
+
+	return out, nil
 }

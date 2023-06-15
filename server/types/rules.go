@@ -3,9 +3,10 @@ package types
 import (
 	"bytes"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/pkg/errors"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 )
 
 type RuleSet struct {
@@ -21,7 +22,7 @@ func (r *RuleSet) MarshalJSON() ([]byte, error) {
 		OrigName:    true,
 	}
 	if err := m.Marshal(buf, r.Set); err != nil {
-		return nil, errors.Wrap(err, "could not marshal opts.TunnelOptions")
+		return nil, errors.Wrap(err, "could not marshal RuleSet")
 	}
 
 	return buf.Bytes(), nil
