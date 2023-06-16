@@ -44,7 +44,6 @@ func (a *API) createRuleSetHandler(w http.ResponseWriter, r *http.Request, _ htt
 
 	rs.Id = id
 	rs.Version = 1
-	rs.Rules = make(map[string]*common.Rule)
 
 	if err := a.Bus.PublishCreateRuleSet(ctx, rs); err != nil {
 		err = errors.Wrap(err, "unable to publish create rule set event")
