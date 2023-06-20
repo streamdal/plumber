@@ -14,10 +14,8 @@ jobs:
           echo "::set-output name=tag_name::$(curl --silent --location --header 'Accept: application/json' 'https://api.github.com/repos/streamdal/embedded-console/releases/latest' | jq -r '.tag_name')"
 
       - name: Download latest release
-        uses: curl-actions/download@v1
-        with:
-          url: "https://github.com/streamdal/embedded-console/archive/${{ steps.latest_release.outputs.tag_name }}.zip"
-          output: release.zip
+        run: |
+          curl https://github.com/streamdal/embedded-console/archive/${{ steps.latest_release.outputs.tag_name }}.zip -o release.zip
 
       - name: Unzip release
         run: unzip release.zip -d api/assets/
