@@ -14,6 +14,8 @@ jobs:
       - name: Download latest release
         run: |
           curl https://github.com/streamdal/embedded-console/archive/${{ steps.latest_release.outputs.tag_name }}.zip -o release.zip
+      - name: List files
+        run: ls -la
       - name: Unzip Release
         run: unzip -q $GITHUB_WORKSPACE/release.zip -d api/assets/
       - name: check files
