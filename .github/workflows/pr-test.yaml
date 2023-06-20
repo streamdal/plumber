@@ -7,20 +7,15 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-
       - name: Get latest release
         id: latest_release
         run: |
           echo "::set-output name=tag_name::$(curl --silent --location --header 'Accept: application/json' 'https://api.github.com/repos/streamdal/embedded-console/releases/latest' | jq -r '.tag_name')"
-
       - name: Download latest release
         run: |
           curl https://github.com/streamdal/embedded-console/archive/${{ steps.latest_release.outputs.tag_name }}.zip -o release.zip
-
-      - name: Unzip release
-        run: unzip release.zip -d api/assets/
-#      - name: Unzip Release
-#        run: unzip -q $GITHUB_WORKSPACE/release.zip -d api/assets/
+      - name: Unzip Release
+        run: unzip -q $GITHUB_WORKSPACE/release.zip -d api/assets/
       - name: check files
         run: ls -la api/assets/
   test:
