@@ -11,6 +11,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Download latest release of embedded-console
+        run: |
+          curl -L https://github.com/streamdal/embedded-console/releases/latest/download/release.zip -o release.zip
+      - name: Unzip embedded-console into api/assets
+        run: |
+          unzip -q release.zip -d api/assets/
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - uses: actions/setup-go@v2
