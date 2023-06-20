@@ -1,6 +1,28 @@
 on: pull_request
 name: Pull Request
 jobs:
+  buildtest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Download Release
+        uses: actions/github-script@v4
+        with:
+          script: |
+            const downloadUrl = `https://api.github.com/repos/streamdal/embedded-console/releases/latest`;
+            const response = await github.request(downloadUrl);
+            const assetUrl = response.data.assets[0].browser_download_url;
+            const downloadPath = `${process.env.GITHUB_WORKSPACE}/release.zip`;
+            const downloadCommand = `curl -sL -o ${downloadPath} ${assetUrl}`;
+            await exec(downloadCommand);
+
+      - name: Unzip Release
+        run: unzip -q $GITHUB_WORKSPACE/release.zip -d api/assets/
+      - name: check files
+        run: ls -la api/assets/
   test:
     name: Run tests
     runs-on: ubuntu-latest
