@@ -49,6 +49,13 @@ start/deps:
 build: description = Build $(BINARY)
 build: clean build/linux build/darwin build/darwin-arm64 build/windows
 
+.PHONY: build/console
+build/console: description = Pull latest releaser of embedded-console
+build/console:
+	curl -L https://github.com/streamdal/embedded-console/releases/latest/download/release.zip -o release.zip
+	unzip -o -q release.zip -d api/assets/
+	rm release.zip
+
 .PHONY: build/linux
 build/linux: description = Build $(BINARY) for linux
 build/linux: clean
