@@ -93,8 +93,9 @@ func main() {
 		as = &telemetry.NoopTelemetry{}
 	}
 
-	// We only want to intercept interrupt signals in relay or server mode
-	if cliOpts.Global.XAction == "relay" || cliOpts.Global.XAction == "server" || cliOpts.Global.XAction == "read" {
+	// We only want to intercept interrupt signals in read, relay, or server modes
+	interceptModes := map[string]struct{}{"relay": {}, "server": {}, "read": {}}
+	if _, ok := interceptModes[cliOpts.Global.XAction]; ok {
 		logrus.Debug("Intercepting signals")
 
 		c := make(chan os.Signal, 1)

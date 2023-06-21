@@ -3,14 +3,17 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"math/rand"
 	"net/http"
 
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/julienschmidt/httprouter"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus"
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+	counters "github.com/batchcorp/plumber/prometheus"
 	"github.com/batchcorp/plumber/server/types"
 )
 
@@ -250,6 +253,25 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 
 	id1 := uuid.NewV4().String()
 	ruleid1 := uuid.NewV4().String()
+	//prometheus.IncrPromCounter("dataqual_rule_failure_count_"+ruleid1, float64(rand.Int63n(10000)))
+	//prometheus.IncrPromCounter("dataqual_rule_failure_bytes_"+ruleid1, float64(rand.Int63n(100000)))
+	//prometheus.IncrPromCounter("dataqual_rule_count_"+id1+"_"+ruleid1, float64(rand.Int63n(10000)))
+	//prometheus.IncrPromCounter("dataqual_rule_bytes_"+id1+"_"+ruleid1, float64(rand.Int63n(100000)))
+
+	counters.GetVecCounter("dataqual", "rule").
+		With(prometheus.Labels{"rule_id": ruleid1, "ruleset_id": id1, "type": "count"}).
+		Add(float64(rand.Int63n(10000)))
+	counters.GetVecCounter("dataqual", "rule").
+		With(prometheus.Labels{"rule_id": ruleid1, "ruleset_id": id1, "type": "bytes"}).
+		Add(float64(rand.Int63n(100000)))
+
+	counters.GetVecCounter("dataqual", "failure_trigger").
+		With(prometheus.Labels{"rule_id": ruleid1, "ruleset_id": id1, "type": "count", "failure_mode": "discard"}).
+		Add(float64(rand.Int63n(10000)))
+	counters.GetVecCounter("dataqual", "failure_trigger").
+		With(prometheus.Labels{"rule_id": ruleid1, "ruleset_id": id1, "type": "bytes", "failure_mode": "discard"}).
+		Add(float64(rand.Int63n(100000)))
+
 	a.PersistentConfig.RuleSets[id1] = &types.RuleSet{
 		Set: &common.RuleSet{
 			Id:         id1,
@@ -282,8 +304,24 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 		},
 	}
 
+	//prometheus.IncrPromCounter("dataqual_publish_kafka_count", float64(rand.Int63n(10000)))
+	//prometheus.IncrPromCounter("dataqual_consume_kafka_count", float64(rand.Int63n(10000)))
+	//prometheus.IncrPromCounter("dataqual_publish_kafka_bytes", float64(rand.Int63n(100000)))
+	//prometheus.IncrPromCounter("dataqual_consume_kafka_bytes", float64(rand.Int63n(100000)))
+	//
+	//prometheus.IncrPromCounter("dataqual_publish_rabbitmq_count", float64(rand.Int63n(10000)))
+	//prometheus.IncrPromCounter("dataqual_consume_rabbitmq_count", float64(rand.Int63n(10000)))
+	//prometheus.IncrPromCounter("dataqual_publish_rabbitmq_bytes", float64(rand.Int63n(100000)))
+	//prometheus.IncrPromCounter("dataqual_consume_rabbitmq_bytes", float64(rand.Int63n(100000)))
+	//
+	//prometheus.IncrPromCounter("dataqual_publish_rabbitmq_size_exceeded", 1)
+	//prometheus.IncrPromCounter("dataqual_publish_kafka_size_exceeded", 2)
+	//prometheus.IncrPromCounter("dataqual_consume_rabbitmq_size_exceeded", 1)
+	//prometheus.IncrPromCounter("dataqual_consume_kafka_size_exceeded", 2)
+
 	id2 := uuid.NewV4().String()
 	ruleid2 := uuid.NewV4().String()
+	fakeCounters(id2, ruleid2)
 	a.PersistentConfig.RuleSets[id2] = &types.RuleSet{
 		Set: &common.RuleSet{
 			Id:         id2,
@@ -319,6 +357,7 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 
 	id3 := uuid.NewV4().String()
 	ruleid3 := uuid.NewV4().String()
+	fakeCounters(id3, ruleid3)
 	a.PersistentConfig.RuleSets[id3] = &types.RuleSet{
 		Set: &common.RuleSet{
 			Id:         id3,
@@ -354,6 +393,7 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 
 	id4 := uuid.NewV4().String()
 	ruleid4 := uuid.NewV4().String()
+	fakeCounters(id4, ruleid4)
 	a.PersistentConfig.RuleSets[id4] = &types.RuleSet{
 		Set: &common.RuleSet{
 			Id:         id4,
@@ -388,6 +428,22 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 	}
 
 	WriteJSON(http.StatusOK, ResponseJSON{Message: "populated"}, w)
+}
+
+func fakeCounters(id1, ruleid1 string) {
+	counters.GetVecCounter("dataqual", "rule").
+		With(prometheus.Labels{"rule_id": ruleid1, "ruleset_id": id1, "type": "count"}).
+		Add(float64(rand.Int63n(10000)))
+	counters.GetVecCounter("dataqual", "rule").
+		With(prometheus.Labels{"rule_id": ruleid1, "ruleset_id": id1, "type": "bytes"}).
+		Add(float64(rand.Int63n(100000)))
+
+	counters.GetVecCounter("dataqual", "failure_trigger").
+		With(prometheus.Labels{"rule_id": ruleid1, "ruleset_id": id1, "type": "count", "failure_mode": "discard"}).
+		Add(float64(rand.Int63n(10000)))
+	counters.GetVecCounter("dataqual", "failure_trigger").
+		With(prometheus.Labels{"rule_id": ruleid1, "ruleset_id": id1, "type": "bytes", "failure_mode": "discard"}).
+		Add(float64(rand.Int63n(100000)))
 }
 
 // marshalRules is needed because we're mixing go and protobuf types and can't use a single marshaller

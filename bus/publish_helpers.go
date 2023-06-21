@@ -114,7 +114,7 @@ func (b *Bus) PublishCounter(ctx context.Context, counter *types.Counter) error 
 
 	data, err := json.Marshal(counter)
 	if err != nil {
-		return errors.Wrapf(err, "unable to marshal counter message for '%s'", counter.Type)
+		return errors.Wrapf(err, "unable to marshal counter message for '%s'", counter.Name)
 	}
 
 	return b.broadcast(ctx, &Message{

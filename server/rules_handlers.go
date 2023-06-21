@@ -190,8 +190,11 @@ func (s *Server) CallWithRetry(ctx context.Context, method string, publish func(
 
 func (s *Server) PublishMetrics(ctx context.Context, req *protos.PublishMetricsRequest) (*protos.PublishMetricsResponse, error) {
 	c := &types.Counter{
-		Type:  req.Counter,
-		Value: req.Value,
+		Namespace: "plumber",
+		Subsystem: "dataqual",
+		Name:      req.Counter,
+		Labels:    req.Labels,
+		Value:     req.Value,
 	}
 
 	if err := s.Actions.Counter(ctx, c); err != nil {

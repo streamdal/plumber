@@ -20,8 +20,6 @@ const (
 	PlumberGRPCErrors       = "plumber_grpc_errors"
 	PlumberRelayWorkers     = "plumber_relay_workers"
 	PlumberTunnels          = "plumber_tunnels"
-	DataQualBytes           = "dataqual_bytes"
-	DataQualMessages        = "dataqual_messages"
 )
 
 var (
@@ -30,27 +28,13 @@ var (
 	mutex    = &sync.RWMutex{}
 	counters = make(map[string]float64, 0)
 
-	prometheusMutex    = &sync.Mutex{}
-	prometheusCounters = make(map[string]prometheus.Counter)
-	prometheusGauges   = make(map[string]prometheus.Gauge)
+	prometheusMutex       = &sync.RWMutex{}
+	prometheusCounters    = make(map[string]prometheus.Counter)
+	prometheusVecCounters = make(map[string]*prometheus.CounterVec)
+	prometheusGauges      = make(map[string]prometheus.Gauge)
 
 	looper director.Looper
 )
-
-func GetLocalCounter(name string) (float64, bool) {
-	mutex.RLock()
-	defer mutex.RUnlock()
-
-	c, ok := counters[name]
-	return c, ok
-}
-
-func ResetLocalCounter(name string) {
-	mutex.Lock()
-	defer mutex.Unlock()
-
-	counters[name] = 0
-}
 
 // Start initiates CLI stats reporting
 func Start(reportIntervalSeconds int32) {
@@ -120,55 +104,106 @@ func InitPrometheusMetrics() {
 		Help: "Number of errors when making GRPC calls",
 	})
 
-	prometheusCounters[DataQualBytes] = promauto.NewCounter(prometheus.CounterOpts{
-		Name: DataQualBytes,
-		Help: "Number of bytes that have passed through data quality checks",
-	})
+	prometheusVecCounters[VecCounterName("dataqual", "publish")] = promauto.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "plumber",
+		Subsystem: "dataqual",
+		Name:      "publish",
+		Help:      "Number of messages published",
+	}, []string{"data_source", "type"})
 
-	prometheusCounters[DataQualMessages] = promauto.NewCounter(prometheus.CounterOpts{
-		Name: DataQualMessages,
-		Help: "Number of messages that have passed through data quality checks",
-	})
+	prometheusVecCounters[VecCounterName("dataqual", "consume")] = promauto.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "plumber",
+		Subsystem: "dataqual",
+		Name:      "consume",
+		Help:      "Number of messages published",
+	}, []string{"data_source", "type"})
+
+	prometheusVecCounters[VecCounterName("dataqual", "size_exceeded")] = promauto.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "plumber",
+		Subsystem: "dataqual",
+		Name:      "size_exceeded",
+		Help:      "Number of messages that were ignored by rules because the payload is too large",
+	}, []string{"data_source"})
+
+	prometheusVecCounters[VecCounterName("dataqual", "rule")] = promauto.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "plumber",
+		Subsystem: "dataqual",
+		Name:      "rule",
+		Help:      "Message count and bytes by rule set and rule",
+	}, []string{"rule_id", "ruleset_id", "type"})
+
+	prometheusVecCounters[VecCounterName("dataqual", "failure_trigger")] = promauto.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "plumber",
+		Subsystem: "dataqual",
+		Name:      "failure_trigger",
+		Help:      "Number of events/bytes that triggered a failure rule, for each failure rule type",
+	}, []string{"rule_id", "ruleset_id", "type", "failure_mode"})
 }
 
 // IncrPromCounter increments a prometheus counter by the given amount
 func IncrPromCounter(key string, amount float64) {
+	key = strings.Replace(key, "-", "_", -1)
+	prometheusMutex.RLock()
+	defer prometheusMutex.RUnlock()
+	c, ok := prometheusCounters[key]
+	if !ok {
+		prometheusCounters[key] = promauto.NewCounter(prometheus.CounterOpts{
+			Name: key,
+			Help: "Auto-created counter",
+		})
+	}
+
+	c.Add(amount)
+}
+
+func VecCounterName(subsystem, name string) string {
+	return subsystem + "_" + name
+}
+
+func GetVecCounter(subsystem, name string) *prometheus.CounterVec {
 	prometheusMutex.Lock()
 	defer prometheusMutex.Unlock()
-	_, ok := prometheusCounters[key]
+	c, ok := prometheusVecCounters[VecCounterName(subsystem, name)]
 	if ok {
-		prometheusCounters[key].Add(amount)
+		return c
 	}
+
+	return nil
 }
 
 // IncrPromGauge decrements a prometheus gauge by 1
 func IncrPromGauge(key string) {
 	prometheusMutex.Lock()
 	defer prometheusMutex.Unlock()
-	_, ok := prometheusGauges[key]
-	if ok {
-		prometheusGauges[key].Inc()
+
+	if _, ok := prometheusGauges[key]; !ok {
+		prometheusGauges[key] = promauto.NewGauge(prometheus.GaugeOpts{
+			Name: key,
+			Help: "Auto-created gauge",
+		})
 	}
+
+	prometheusGauges[key].Inc()
 }
 
 // DecrPromGauge decrements a prometheus gauge by 1
 func DecrPromGauge(key string) {
-	prometheusMutex.Lock()
-	defer prometheusMutex.Unlock()
-	_, ok := prometheusGauges[key]
+	prometheusMutex.RLock()
+	defer prometheusMutex.RUnlock()
+	c, ok := prometheusGauges[key]
 	if ok {
-		prometheusGauges[key].Dec()
+		c.Dec()
 	}
 }
 
 // SetPromGauge sets a prometheus gauge value
 func SetPromGauge(key string, amount float64) {
-	prometheusMutex.Lock()
-	defer prometheusMutex.Unlock()
+	prometheusMutex.RLock()
+	defer prometheusMutex.RUnlock()
 
-	_, ok := prometheusGauges[key]
+	c, ok := prometheusGauges[key]
 	if ok {
-		prometheusGauges[key].Set(amount)
+		c.Set(amount)
 	}
 }
 
