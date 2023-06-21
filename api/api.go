@@ -56,30 +56,12 @@ func Start(cfg *Config) (*http.Server, error) {
 		return nil, errors.Wrap(err, "unable to validate config")
 	}
 
-	// Define console static file server
-	htmlContent, err := fs.Sub(fs.FS(staticFiles), "assets")
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to create static file server")
-	}
-
-	astroContent, err := fs.Sub(fs.FS(staticFiles), "assets/_astro")
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to create static file server astro assets")
-	}
-
-	imagesContent, err := fs.Sub(fs.FS(staticFiles), "assets/images")
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to create static file server for images")
-	}
-
-	rulesetContent, err := fs.Sub(fs.FS(staticFiles), "assets/ruleset")
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to create static file server for ruleset")
-	}
-
-	slackContent, err := fs.Sub(fs.FS(staticFiles), "assets/ruleset")
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to create static file server for ruleset")
+	consoleMap := map[string]string{
+		"/console/*filepath": "assets",
+		"/_astro/*filepath":  "assets/_astro",
+		"/images/*filepath":  "assets/images",
+		"/ruleset/*filepath": "assets/ruleset",
+		"/slack/*filepath":   "assets/slack",
 	}
 
 	a := &API{
@@ -93,11 +75,15 @@ func Start(cfg *Config) (*http.Server, error) {
 
 	// Redirect / to the console
 	router.HandlerFunc("GET", "/", http.RedirectHandler("/console", http.StatusTemporaryRedirect).ServeHTTP)
-	router.ServeFiles("/console/*filepath", http.FS(htmlContent))
-	router.ServeFiles("/_astro/*filepath", http.FS(astroContent))
-	router.ServeFiles("/images/*filepath", http.FS(imagesContent))
-	router.ServeFiles("/ruleset/*filepath", http.FS(rulesetContent))
-	router.ServeFiles("/slack/*filepath", http.FS(slackContent))
+
+	// Setup embedded console paths
+	for pathURL, pathFile := range consoleMap {
+		content, err := fs.Sub(fs.FS(staticFiles), pathFile)
+		if err != nil {
+			return nil, errors.Wrapf(err, "unable to mount '%s' at '%s'", pathFile, pathURL)
+		}
+		router.ServeFiles(pathURL, http.FS(content))
+	}
 
 	router.HandlerFunc("GET", "/health-check", a.healthCheckHandler)
 	router.HandlerFunc("GET", "/version", a.versionHandler)
