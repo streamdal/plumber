@@ -253,25 +253,32 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 
 	id1 := uuid.NewV4().String()
 	ruleid1 := uuid.NewV4().String()
-	//prometheus.IncrPromCounter("dataqual_rule_failure_count_"+ruleid1, float64(rand.Int63n(10000)))
-	//prometheus.IncrPromCounter("dataqual_rule_failure_bytes_"+ruleid1, float64(rand.Int63n(100000)))
-	//prometheus.IncrPromCounter("dataqual_rule_count_"+id1+"_"+ruleid1, float64(rand.Int63n(10000)))
-	//prometheus.IncrPromCounter("dataqual_rule_bytes_"+id1+"_"+ruleid1, float64(rand.Int63n(100000)))
 
-	counters.GetVecCounter("dataqual", "rule").
-		With(prometheus.Labels{"rule_id": ruleid1, "ruleset_id": id1, "type": "count"}).
+	// Fake publish stats
+	counters.GetVecCounter("dataqual", "publish").
+		With(prometheus.Labels{"type": "count", "data_source": "kafka"}).
 		Add(float64(rand.Int63n(10000)))
-	counters.GetVecCounter("dataqual", "rule").
-		With(prometheus.Labels{"rule_id": ruleid1, "ruleset_id": id1, "type": "bytes"}).
+	counters.GetVecCounter("dataqual", "publish").
+		With(prometheus.Labels{"type": "bytes", "data_source": "kafka"}).
 		Add(float64(rand.Int63n(100000)))
 
-	counters.GetVecCounter("dataqual", "failure_trigger").
-		With(prometheus.Labels{"rule_id": ruleid1, "ruleset_id": id1, "type": "count", "failure_mode": "discard"}).
+	// Fake consume stats
+	counters.GetVecCounter("dataqual", "consume").
+		With(prometheus.Labels{"type": "count", "data_source": "kafka"}).
 		Add(float64(rand.Int63n(10000)))
-	counters.GetVecCounter("dataqual", "failure_trigger").
-		With(prometheus.Labels{"rule_id": ruleid1, "ruleset_id": id1, "type": "bytes", "failure_mode": "discard"}).
+	counters.GetVecCounter("dataqual", "consume").
+		With(prometheus.Labels{"type": "bytes", "data_source": "kafka"}).
 		Add(float64(rand.Int63n(100000)))
 
+	// Fake size exceeded stats
+	counters.GetVecCounter("dataqual", "size_exceeded").
+		With(prometheus.Labels{"type": "count", "data_source": "rabbitmq"}).
+		Add(float64(rand.Int63n(20)))
+	counters.GetVecCounter("dataqual", "size_exceeded").
+		With(prometheus.Labels{"type": "bytes", "data_source": "rabbitmq"}).
+		Add(float64(rand.Int63n(10000)))
+
+	fakeCounters(id1, ruleid1)
 	a.PersistentConfig.RuleSets[id1] = &types.RuleSet{
 		Set: &common.RuleSet{
 			Id:         id1,
@@ -303,21 +310,6 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 			},
 		},
 	}
-
-	//prometheus.IncrPromCounter("dataqual_publish_kafka_count", float64(rand.Int63n(10000)))
-	//prometheus.IncrPromCounter("dataqual_consume_kafka_count", float64(rand.Int63n(10000)))
-	//prometheus.IncrPromCounter("dataqual_publish_kafka_bytes", float64(rand.Int63n(100000)))
-	//prometheus.IncrPromCounter("dataqual_consume_kafka_bytes", float64(rand.Int63n(100000)))
-	//
-	//prometheus.IncrPromCounter("dataqual_publish_rabbitmq_count", float64(rand.Int63n(10000)))
-	//prometheus.IncrPromCounter("dataqual_consume_rabbitmq_count", float64(rand.Int63n(10000)))
-	//prometheus.IncrPromCounter("dataqual_publish_rabbitmq_bytes", float64(rand.Int63n(100000)))
-	//prometheus.IncrPromCounter("dataqual_consume_rabbitmq_bytes", float64(rand.Int63n(100000)))
-	//
-	//prometheus.IncrPromCounter("dataqual_publish_rabbitmq_size_exceeded", 1)
-	//prometheus.IncrPromCounter("dataqual_publish_kafka_size_exceeded", 2)
-	//prometheus.IncrPromCounter("dataqual_consume_rabbitmq_size_exceeded", 1)
-	//prometheus.IncrPromCounter("dataqual_consume_kafka_size_exceeded", 2)
 
 	id2 := uuid.NewV4().String()
 	ruleid2 := uuid.NewV4().String()
