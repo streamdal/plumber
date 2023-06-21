@@ -123,7 +123,7 @@ func InitPrometheusMetrics() {
 		Subsystem: "dataqual",
 		Name:      "size_exceeded",
 		Help:      "Number of messages that were ignored by rules because the payload is too large",
-	}, []string{"data_source"})
+	}, []string{"data_source", "type"})
 
 	prometheusVecCounters[VecCounterName("dataqual", "rule")] = promauto.NewCounterVec(prometheus.CounterOpts{
 		Namespace: "plumber",
