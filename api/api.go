@@ -72,6 +72,16 @@ func Start(cfg *Config) (*http.Server, error) {
 		return nil, errors.Wrap(err, "unable to create static file server for images")
 	}
 
+	rulesetContent, err := fs.Sub(fs.FS(staticFiles), "assets/ruleset")
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create static file server for ruleset")
+	}
+
+	slackContent, err := fs.Sub(fs.FS(staticFiles), "assets/ruleset")
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create static file server for ruleset")
+	}
+
 	a := &API{
 		Config: cfg,
 		log:    logrus.WithField("pkg", "api"),
@@ -86,6 +96,8 @@ func Start(cfg *Config) (*http.Server, error) {
 	router.ServeFiles("/console/*filepath", http.FS(htmlContent))
 	router.ServeFiles("/_astro/*filepath", http.FS(astroContent))
 	router.ServeFiles("/images/*filepath", http.FS(imagesContent))
+	router.ServeFiles("/ruleset/*filepath", http.FS(rulesetContent))
+	router.ServeFiles("/slack/*filepath", http.FS(slackContent))
 
 	router.HandlerFunc("GET", "/health-check", a.healthCheckHandler)
 	router.HandlerFunc("GET", "/version", a.versionHandler)
