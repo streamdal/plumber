@@ -8,6 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
 	"github.com/slack-go/slack"
 	"google.golang.org/grpc"
 
@@ -197,11 +198,15 @@ func (s *Server) PublishMetrics(ctx context.Context, req *protos.PublishMetricsR
 		Value:     req.Value,
 	}
 
+	llog := s.Log.WithFields(logrus.Fields{"labels": req.Labels, "counter": req.Counter})
+
 	if err := s.Actions.Counter(ctx, c); err != nil {
+		llog.Error(err)
 		return nil, CustomError(common.Code_INTERNAL, err.Error())
 	}
 
 	if err := s.Bus.PublishCounter(ctx, c); err != nil {
+		llog.Error(err)
 		return nil, CustomError(common.Code_INTERNAL, err.Error())
 	}
 
