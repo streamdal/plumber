@@ -17,7 +17,7 @@ func (a *Actions) Counter(_ context.Context, counter *types.Counter) error {
 	}
 	vc, err := c.GetMetricWith(counter.Labels)
 	if err != nil {
-		return errors.Wrap(err, "counter not found")
+		return errors.Wrapf(err, "counter not found: %#v", counter)
 	}
 
 	vc.Add(counter.Value)
