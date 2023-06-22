@@ -61,12 +61,12 @@ type ServerOptions struct {
 	RemoteControlApiToken string `protobuf:"bytes,19,opt,name=remote_control_api_token,json=remoteControlApiToken,proto3" json:"remote_control_api_token,omitempty" kong:"help='Streamdal API token, needed to access remote control service',env='PLUMBER_REMOTE_CONTROL_API_TOKEN'"`
 	// @gotags: kong:"help='Connect to remote control server without TLS',default=false"
 	RemoteControlDisableTls bool `protobuf:"varint,20,opt,name=remote_control_disable_tls,json=remoteControlDisableTls,proto3" json:"remote_control_disable_tls,omitempty" kong:"help='Connect to remote control server without TLS',default=false"`
-	// @gotags: kong:"help='GRPC Collector address',default='grpc-collector.streamdal.com:443'"
-	XGrpcAddress string `protobuf:"bytes,21,opt,name=_grpc_address,json=GrpcAddress,proto3" json:"_grpc_address,omitempty" kong:"help='GRPC Collector address',default='grpc-collector.streamdal.com:443'"`
-	// @gotags: kong:"help='GRPC Collector initial connection timeout',default=5"
-	XGrpcTimeoutSeconds uint32 `protobuf:"varint,22,opt,name=_grpc_timeout_seconds,json=GrpcTimeoutSeconds,proto3" json:"_grpc_timeout_seconds,omitempty" kong:"help='GRPC Collector initial connection timeout',default=5"`
-	// @gotags: kong:"help='Use gRPC insecure mode when talking to Streamdal'"
-	XGrpcInsecure bool `protobuf:"varint,23,opt,name=_grpc_insecure,json=GrpcInsecure,proto3" json:"_grpc_insecure,omitempty" kong:"help='Use gRPC insecure mode when talking to Streamdal'"`
+	// @gotags: kong:"help='GRPC Collector address',env='PLUMBER_GRPC_COLLECTOR_ADDRESS',default='grpc-collector.streamdal.com:443'"
+	XGrpcAddress string `protobuf:"bytes,21,opt,name=_grpc_address,json=GrpcAddress,proto3" json:"_grpc_address,omitempty" kong:"help='GRPC Collector address',env='PLUMBER_GRPC_COLLECTOR_ADDRESS',default='grpc-collector.streamdal.com:443'"`
+	// @gotags: kong:"help='GRPC Collector initial connection timeout',env='PLUMBER_GRPC_TIMEOUT_SECONDS',default=5"
+	XGrpcTimeoutSeconds uint32 `protobuf:"varint,22,opt,name=_grpc_timeout_seconds,json=GrpcTimeoutSeconds,proto3" json:"_grpc_timeout_seconds,omitempty" kong:"help='GRPC Collector initial connection timeout',env='PLUMBER_GRPC_TIMEOUT_SECONDS',default=5"`
+	// @gotags: kong:"help='Use gRPC insecure mode when talking to Streamdal',env='PLUMBER_GRPC_COLLECTOR_INSECURE',default=false"
+	XGrpcInsecure bool `protobuf:"varint,23,opt,name=_grpc_insecure,json=GrpcInsecure,proto3" json:"_grpc_insecure,omitempty" kong:"help='Use gRPC insecure mode when talking to Streamdal',env='PLUMBER_GRPC_COLLECTOR_INSECURE',default=false"`
 }
 
 func (x *ServerOptions) Reset() {

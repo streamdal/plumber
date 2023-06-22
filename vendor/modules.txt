@@ -184,7 +184,7 @@ github.com/batchcorp/kong
 # github.com/batchcorp/natty v0.0.32
 ## explicit; go 1.18
 github.com/batchcorp/natty
-# github.com/batchcorp/plumber-schemas v0.0.183-0.20230621001048-7d3e921ac946
+# github.com/batchcorp/plumber-schemas v0.0.183-0.20230622160410-882fff2519e4
 ## explicit; go 1.17
 github.com/batchcorp/plumber-schemas/build/go/protos
 github.com/batchcorp/plumber-schemas/build/go/protos/args
