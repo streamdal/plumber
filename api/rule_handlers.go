@@ -48,6 +48,11 @@ func (a *API) createRuleSetHandler(w http.ResponseWriter, r *http.Request, _ htt
 	rs.Id = id
 	rs.Version = 1
 
+	// Force rule ID setting
+	for k, v := range rs.Rules {
+		v.Id = k
+	}
+
 	if err := a.Bus.PublishCreateRuleSet(ctx, rs); err != nil {
 		err = errors.Wrap(err, "unable to publish create rule set event")
 		a.log.Error(err)
