@@ -173,6 +173,8 @@ github.com/batchcorp/natty v0.0.31 h1:jlK/VWeRgVMEDFtB/Hu08VaidBmdKzkLOcT40i97Yp
 github.com/batchcorp/natty v0.0.31/go.mod h1:c/OOBkrv+Vu6Xk4NZK3GlVwlowu0cuqnY24I4YSEVlo=
 github.com/batchcorp/natty v0.0.32 h1:Sn3bvswaRlSmrogA16vWSLqbTHgwkhTs2Uk83Bdfwpg=
 github.com/batchcorp/natty v0.0.32/go.mod h1:c/OOBkrv+Vu6Xk4NZK3GlVwlowu0cuqnY24I4YSEVlo=
+github.com/batchcorp/natty v0.0.33 h1:10Gu+u6ydwOueGTowdTK/wD/NVz+Bb7ZnRgs7JfKLq4=
+github.com/batchcorp/natty v0.0.33/go.mod h1:c/OOBkrv+Vu6Xk4NZK3GlVwlowu0cuqnY24I4YSEVlo=
 github.com/batchcorp/plumber-schemas v0.0.182-0.20230531172638-d3eba529ba60 h1:AqozSvxbhsVgwoANY/A8fQSO8M7nZbcvk985/VNBDB0=
 github.com/batchcorp/plumber-schemas v0.0.182-0.20230531172638-d3eba529ba60/go.mod h1:8HkOEly65MKPTi49/lvhS5yn/jZaGuffgO5djTByJsY=
 github.com/batchcorp/plumber-schemas v0.0.182-0.20230605192602-179f39e2ebeb h1:eKwIQIlWaXJZrTwIFUSxk+zSKL6PShywfeIl/AVne8w=

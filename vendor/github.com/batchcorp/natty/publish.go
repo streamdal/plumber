@@ -203,6 +203,7 @@ func (p *Publisher) runBatchPublisher(ctx context.Context) {
 			p.log.Debugf("publisher id '%s' received notice to quit", p.Subject)
 			quit = true
 
+			p.looper.Quit()
 		case <-p.ServiceShutdownContext.Done():
 			p.log.Debugf("publisher id '%s' received app shutdown signal, waiting for batch to be empty", p.Subject)
 			quit = true
@@ -216,6 +217,7 @@ func (p *Publisher) runBatchPublisher(ctx context.Context) {
 			p.log.Debugf("idle timeout reached (%s); exiting", p.IdleTimeout)
 
 			p.Natty.DeletePublisher(ctx, p.Subject)
+			p.looper.Quit()
 			return nil
 		}
 
