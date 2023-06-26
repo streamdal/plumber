@@ -125,6 +125,10 @@ func (b *Bus) publish(ctx context.Context, subject string, msg *Message) error {
 	return nil
 }
 
+// Start starts up the broadcast and queue consumers
+// There are two different consumers because we have two scenarios we want to cover:
+// 1. The broadcast consumer ensures messages are received by all running plumber instances
+// 2. The queue consumer ensures a message is received by only one plumber instance
 func (b *Bus) Start(serviceCtx context.Context) error {
 	if b.running {
 		return ConsumersAlreadyRunning
@@ -246,10 +250,35 @@ func (b *Bus) setupClients() error {
 		return errors.Wrap(err, "unable to create broadcast client")
 	}
 
+	// Create Stream, this will be used by both broadcast and queue consumers
+	if err := broadcastClient.CreateStream(context.TODO(), StreamName, []string{StreamName + ".*"}); err != nil {
+		return errors.Wrap(err, "unable to create stream")
+	}
+
+	// Create queue consumer
+	if err := broadcastClient.CreateConsumer(
+		context.TODO(),
+		StreamName,
+		b.config.ServerOptions.NodeId,
+		StreamName+"."+BroadcastSubject,
+	); err != nil {
+		return errors.Wrap(err, "unable to create broadcast consumer")
+	}
+
 	// Setup queue client
 	queueClient, err := natty.New(&nattyCfg)
 	if err != nil {
 		return errors.Wrap(err, "unable to create queue client")
+	}
+
+	// Create queue consumer
+	if err := queueClient.CreateConsumer(
+		context.TODO(),
+		StreamName,
+		"queue-consumer",
+		StreamName+"."+QueueSubject,
+	); err != nil {
+		return errors.Wrap(err, "unable to create queue consumer")
 	}
 
 	b.queueClient = queueClient
@@ -329,7 +358,7 @@ func (b *Bus) runQueueConsumer(consumerCtx context.Context) error {
 	// By assigning a common consumer name, NATS will deliver the message to
 	// only one plumber instance.
 	cfg := &natty.ConsumerConfig{
-		Subject:      QueueSubject,
+		Subject:      subject,
 		StreamName:   StreamName,
 		ConsumerName: "queue-consumer",
 		ErrorCh:      b.consumerErrChan,
