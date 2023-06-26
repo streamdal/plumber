@@ -12,6 +12,8 @@ import (
 )
 
 func (b *Bus) doCreateRuleSet(ctx context.Context, msg *Message) error {
+	b.log.Debug("Received CreateRuleSet broadcast message")
+
 	rs := &common.RuleSet{}
 	if err := proto.Unmarshal(msg.Data, rs); err != nil {
 		return errors.Wrap(err, "unable to unmarshal message into common.RuleSet")
@@ -31,6 +33,8 @@ func (b *Bus) doCreateRuleSet(ctx context.Context, msg *Message) error {
 }
 
 func (b *Bus) doUpdateRuleSet(ctx context.Context, msg *Message) error {
+	b.log.Debug("Received UpdateRuleSet broadcast message")
+
 	rs := &common.RuleSet{}
 	if err := proto.Unmarshal(msg.Data, rs); err != nil {
 		return errors.Wrap(err, "unable to unmarshal message into common.RuleSet")
@@ -50,6 +54,8 @@ func (b *Bus) doUpdateRuleSet(ctx context.Context, msg *Message) error {
 }
 
 func (b *Bus) doDeleteRuleSet(ctx context.Context, msg *Message) error {
+	b.log.Debug("Received DeleteRuleSet broadcast message")
+	
 	rs := &common.RuleSet{}
 	if err := proto.Unmarshal(msg.Data, rs); err != nil {
 		return errors.Wrap(err, "unable to unmarshal message into common.RuleSet")

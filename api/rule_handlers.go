@@ -60,6 +60,8 @@ func (a *API) createRuleSetHandler(w http.ResponseWriter, r *http.Request, _ htt
 		return
 	}
 
+	a.log.Debug("Published create rule set event")
+
 	a.PersistentConfig.SetRuleSet(id, &types.RuleSet{Set: rs})
 	_ = a.PersistentConfig.Save()
 
@@ -95,6 +97,8 @@ func (a *API) updateRuleSetHandler(w http.ResponseWriter, r *http.Request, p htt
 		WriteErrorJSON(http.StatusInternalServerError, err.Error(), w)
 		return
 	}
+
+	a.log.Debug("Published create rule set event")
 
 	a.PersistentConfig.SetRuleSet(rs.Set.Id, rs)
 	_ = a.PersistentConfig.Save()

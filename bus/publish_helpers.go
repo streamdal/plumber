@@ -168,6 +168,7 @@ func (b *Bus) publishTunnelMessage(ctx context.Context, action Action, tunnelOpt
 }
 
 func (b *Bus) publishRuleSetMessage(ctx context.Context, action Action, rs *common.RuleSet) error {
+	b.log.Debugf("publishing ruleset message for '%s'", rs.Id)
 	data, err := proto.Marshal(rs)
 	if err != nil {
 		return errors.Wrapf(err, "unable to marshal ruleset message for '%s'", rs.Id)
