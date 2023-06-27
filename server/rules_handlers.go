@@ -191,11 +191,28 @@ func (s *Server) CallWithRetry(ctx context.Context, method string, publish func(
 
 func (s *Server) PublishMetrics(ctx context.Context, req *protos.PublishMetricsRequest) (*protos.PublishMetricsResponse, error) {
 	c := &types.Counter{
-		Namespace: "plumber",
-		Subsystem: "dataqual",
+		Namespace: prometheus.SnitchNamespace,
+		Subsystem: prometheus.SnitchSubsystem,
 		Name:      req.Counter,
 		Labels:    req.Labels,
 		Value:     req.Value,
+	}
+
+	// If we're including a ruleset ID, we can look up the name of the ruleset and the name of the rule
+	if rsID, ok := req.Labels["ruleset_id"]; ok {
+		c.Labels["ruleset_name"] = "unknown"
+		c.Labels["ruleset_id"] = "unknown"
+
+		rs := s.PersistentConfig.GetRuleSet(rsID)
+		if rs != nil {
+			c.Labels["ruleset_name"] = rs.Set.Name
+
+			if ruleID, ok := req.Labels["rule_id"]; ok {
+				if rule, ok := rs.Set.Rules[ruleID]; ok {
+					c.Labels["rule_name"] = rule.Name
+				}
+			}
+		}
 	}
 
 	llog := s.Log.WithFields(logrus.Fields{"labels": req.Labels, "counter": req.Counter})

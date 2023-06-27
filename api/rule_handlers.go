@@ -264,30 +264,30 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 	ruleid1 := uuid.NewV4().String()
 
 	// Fake publish stats
-	counters.GetVecCounter("dataqual", "publish").
+	counters.GetVecCounter(counters.SnitchSubsystem, "publish").
 		With(prometheus.Labels{"type": "count", "data_source": "kafka"}).
 		Add(float64(rand.Int63n(10000)))
-	counters.GetVecCounter("dataqual", "publish").
+	counters.GetVecCounter(counters.SnitchSubsystem, "publish").
 		With(prometheus.Labels{"type": "bytes", "data_source": "kafka"}).
 		Add(float64(rand.Int63n(100000)))
 
 	// Fake consume stats
-	counters.GetVecCounter("dataqual", "consume").
+	counters.GetVecCounter(counters.SnitchSubsystem, "consume").
 		With(prometheus.Labels{"type": "count", "data_source": "kafka"}).
 		Add(float64(rand.Int63n(10000)))
-	counters.GetVecCounter("dataqual", "consume").
+	counters.GetVecCounter(counters.SnitchSubsystem, "consume").
 		With(prometheus.Labels{"type": "bytes", "data_source": "kafka"}).
 		Add(float64(rand.Int63n(100000)))
 
 	// Fake size exceeded stats
-	counters.GetVecCounter("dataqual", "size_exceeded").
+	counters.GetVecCounter(counters.SnitchSubsystem, "size_exceeded").
 		With(prometheus.Labels{"type": "count", "data_source": "rabbitmq"}).
 		Add(float64(rand.Int63n(20)))
-	counters.GetVecCounter("dataqual", "size_exceeded").
+	counters.GetVecCounter(counters.SnitchSubsystem, "size_exceeded").
 		With(prometheus.Labels{"type": "bytes", "data_source": "rabbitmq"}).
 		Add(float64(rand.Int63n(10000)))
 
-	fakeCounters(id1, ruleid1)
+	fakeCounters(id1, ruleid1, "Name contains hello")
 	a.PersistentConfig.RuleSets[id1] = &types.RuleSet{
 		Set: &common.RuleSet{
 			Id:         id1,
@@ -299,6 +299,7 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 			Rules: map[string]*common.Rule{
 				ruleid1: {
 					Id:   ruleid1,
+					Name: "Name contains hello",
 					Type: common.RuleType_RULE_TYPE_MATCH,
 					RuleConfig: &common.Rule_MatchConfig{
 						MatchConfig: &common.RuleConfigMatch{
@@ -322,7 +323,7 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 
 	id2 := uuid.NewV4().String()
 	ruleid2 := uuid.NewV4().String()
-	fakeCounters(id2, ruleid2)
+	fakeCounters(id2, ruleid2, "Address contains credit card")
 	a.PersistentConfig.RuleSets[id2] = &types.RuleSet{
 		Set: &common.RuleSet{
 			Id:         id2,
@@ -334,6 +335,7 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 			Rules: map[string]*common.Rule{
 				ruleid2: {
 					Id:   ruleid2,
+					Name: "Address contains credit card",
 					Type: common.RuleType_RULE_TYPE_MATCH,
 					RuleConfig: &common.Rule_MatchConfig{
 						MatchConfig: &common.RuleConfigMatch{
@@ -358,7 +360,7 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 
 	id3 := uuid.NewV4().String()
 	ruleid3 := uuid.NewV4().String()
-	fakeCounters(id3, ruleid3)
+	fakeCounters(id3, ruleid3, "PII Credit Card")
 	a.PersistentConfig.RuleSets[id3] = &types.RuleSet{
 		Set: &common.RuleSet{
 			Id:         id3,
@@ -370,6 +372,7 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 			Rules: map[string]*common.Rule{
 				ruleid3: {
 					Id:   ruleid3,
+					Name: "PII Credit Card",
 					Type: common.RuleType_RULE_TYPE_MATCH,
 					RuleConfig: &common.Rule_MatchConfig{
 						MatchConfig: &common.RuleConfigMatch{
@@ -394,7 +397,7 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 
 	id4 := uuid.NewV4().String()
 	ruleid4 := uuid.NewV4().String()
-	fakeCounters(id4, ruleid4)
+	fakeCounters(id4, ruleid4, "PII Credit Card 2")
 	a.PersistentConfig.RuleSets[id4] = &types.RuleSet{
 		Set: &common.RuleSet{
 			Id:         id4,
@@ -405,6 +408,7 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 			Rules: map[string]*common.Rule{
 				ruleid4: {
 					Id:   ruleid4,
+					Name: "PII Credit Card 2",
 					Type: common.RuleType_RULE_TYPE_MATCH,
 					RuleConfig: &common.Rule_MatchConfig{
 						MatchConfig: &common.RuleConfigMatch{
@@ -431,19 +435,19 @@ func (a *API) tempPopulateHandler(w http.ResponseWriter, _ *http.Request, p http
 	WriteJSON(http.StatusOK, ResponseJSON{Message: "populated"}, w)
 }
 
-func fakeCounters(id1, ruleid1 string) {
-	counters.GetVecCounter("dataqual", "rule").
-		With(prometheus.Labels{"rule_id": ruleid1, "ruleset_id": id1, "type": "count"}).
+func fakeCounters(id1, ruleid1, name string) {
+	counters.GetVecCounter(counters.SnitchSubsystem, "rule").
+		With(prometheus.Labels{"rule_id": ruleid1, "ruleset_id": id1, "type": "count", "ruleset_name": "My ruleset", "rule_name": name}).
 		Add(float64(rand.Int63n(10000)))
-	counters.GetVecCounter("dataqual", "rule").
-		With(prometheus.Labels{"rule_id": ruleid1, "ruleset_id": id1, "type": "bytes"}).
+	counters.GetVecCounter(counters.SnitchSubsystem, "rule").
+		With(prometheus.Labels{"rule_id": ruleid1, "ruleset_id": id1, "type": "bytes", "ruleset_name": "My ruleset", "rule_name": name}).
 		Add(float64(rand.Int63n(100000)))
 
-	counters.GetVecCounter("dataqual", "failure_trigger").
-		With(prometheus.Labels{"rule_id": ruleid1, "ruleset_id": id1, "type": "count", "failure_mode": "discard"}).
+	counters.GetVecCounter(counters.SnitchSubsystem, "failure_trigger").
+		With(prometheus.Labels{"rule_id": ruleid1, "ruleset_id": id1, "type": "count", "failure_mode": "discard", "ruleset_name": "My ruleset", "rule_name": name}).
 		Add(float64(rand.Int63n(10000)))
-	counters.GetVecCounter("dataqual", "failure_trigger").
-		With(prometheus.Labels{"rule_id": ruleid1, "ruleset_id": id1, "type": "bytes", "failure_mode": "discard"}).
+	counters.GetVecCounter(counters.SnitchSubsystem, "failure_trigger").
+		With(prometheus.Labels{"rule_id": ruleid1, "ruleset_id": id1, "type": "bytes", "failure_mode": "discard", "ruleset_name": "My ruleset", "rule_name": name}).
 		Add(float64(rand.Int63n(100000)))
 }
 

@@ -197,6 +197,8 @@ github.com/batchcorp/plumber-schemas v0.0.183-0.20230621001048-7d3e921ac946 h1:d
 github.com/batchcorp/plumber-schemas v0.0.183-0.20230621001048-7d3e921ac946/go.mod h1:8HkOEly65MKPTi49/lvhS5yn/jZaGuffgO5djTByJsY=
 github.com/batchcorp/plumber-schemas v0.0.183-0.20230622160410-882fff2519e4 h1:iEd8fOeqS6CKH6wHTTxcWKaVWiy399Qb4WpovvizPr0=
 github.com/batchcorp/plumber-schemas v0.0.183-0.20230622160410-882fff2519e4/go.mod h1:8HkOEly65MKPTi49/lvhS5yn/jZaGuffgO5djTByJsY=
+github.com/batchcorp/plumber-schemas v0.0.183-0.20230627174200-8c4e4632e281 h1:BrVqNP3q7mQbUnYK9xv8wzPXiL33acav6iJecv4sdJo=
+github.com/batchcorp/plumber-schemas v0.0.183-0.20230627174200-8c4e4632e281/go.mod h1:eZZmP7+THPgMaPJ9Z06xMk+vG6wXAPXcjEL42EJc3yY=
 github.com/batchcorp/plz v0.9.2 h1:bPqb+sn7OUrpHjeTEI9YO4BJS9IQ7AstDDz2gn+tcn8=
 github.com/batchcorp/plz v0.9.2/go.mod h1:3gacX+hQo+xvl0vtLqCMufzxuNCwt4geAVOMt2LQYfE=
 github.com/batchcorp/rabbit v0.1.17 h1:dui1W7FLTrNxyVlDN+G+6d8LXz8HBhVAcUethXql9vQ=
@@ -1670,6 +1672,8 @@ google.golang.org/protobuf v1.27.1/go.mod h1:9q0QmTI4eRPtz6boOQmLYwt+qCgq0jsYwAQ
 google.golang.org/protobuf v1.28.0/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
 google.golang.org/protobuf v1.30.0 h1:kPPoIgf3TsEvrm0PFe15JQ+570QVxYzEvvHqChK+cng=
 google.golang.org/protobuf v1.30.0/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
+google.golang.org/protobuf v1.31.0 h1:g0LDEJHgrBl9N9r17Ru3sqWhkIx2NB67okBHPwC7hs8=
+google.golang.org/protobuf v1.31.0/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
 gopkg.in/DataDog/dd-trace-go.v1 v1.37.1 h1:rgO9oC3Mr7es0zKIsaooL50UY0qboUDdueP7MzH1fUI=
 gopkg.in/DataDog/dd-trace-go.v1 v1.37.1/go.mod h1:HMpV5TQ38YAfRJ8OlM7UfLyGg6D01MPNHRFwsnrGMB0=
 gopkg.in/airbrake/gobrake.v2 v2.0.9/go.mod h1:/h5ZAUhDkGaJfjzjKLSjv6zCL6O0LLBxU4K+aSYdM/U=

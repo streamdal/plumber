@@ -14,7 +14,7 @@ require (
 	github.com/batchcorp/collector-schemas v0.0.22
 	github.com/batchcorp/kong v0.2.17-batch-fix
 	github.com/batchcorp/natty v0.0.33
-	github.com/batchcorp/plumber-schemas v0.0.183-0.20230622160410-882fff2519e4
+	github.com/batchcorp/plumber-schemas v0.0.183-0.20230627174200-8c4e4632e281
 	github.com/batchcorp/rabbit v0.1.17
 	github.com/batchcorp/thrifty v0.0.10
 	github.com/eclipse/paho.mqtt.golang v1.2.0
@@ -58,7 +58,7 @@ require (
 	golang.org/x/crypto v0.8.0
 	google.golang.org/api v0.30.0
 	google.golang.org/grpc v1.40.0
-	google.golang.org/protobuf v1.30.0
+	google.golang.org/protobuf v1.31.0
 )
 
 require (

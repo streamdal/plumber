@@ -20,6 +20,9 @@ const (
 	PlumberGRPCErrors       = "plumber_grpc_errors"
 	PlumberRelayWorkers     = "plumber_relay_workers"
 	PlumberTunnels          = "plumber_tunnels"
+
+	SnitchNamespace = "streamdal"
+	SnitchSubsystem = "snitch"
 )
 
 var (
@@ -104,40 +107,40 @@ func InitPrometheusMetrics() {
 		Help: "Number of errors when making GRPC calls",
 	})
 
-	prometheusVecCounters[VecCounterName("dataqual", "publish")] = promauto.NewCounterVec(prometheus.CounterOpts{
-		Namespace: "plumber",
-		Subsystem: "dataqual",
+	prometheusVecCounters[VecCounterName(SnitchSubsystem, "publish")] = promauto.NewCounterVec(prometheus.CounterOpts{
+		Namespace: SnitchNamespace,
+		Subsystem: SnitchSubsystem,
 		Name:      "publish",
 		Help:      "Number of messages published",
 	}, []string{"data_source", "type"})
 
-	prometheusVecCounters[VecCounterName("dataqual", "consume")] = promauto.NewCounterVec(prometheus.CounterOpts{
-		Namespace: "plumber",
-		Subsystem: "dataqual",
+	prometheusVecCounters[VecCounterName(SnitchSubsystem, "consume")] = promauto.NewCounterVec(prometheus.CounterOpts{
+		Namespace: SnitchNamespace,
+		Subsystem: SnitchSubsystem,
 		Name:      "consume",
 		Help:      "Number of messages published",
 	}, []string{"data_source", "type"})
 
-	prometheusVecCounters[VecCounterName("dataqual", "size_exceeded")] = promauto.NewCounterVec(prometheus.CounterOpts{
-		Namespace: "plumber",
-		Subsystem: "dataqual",
+	prometheusVecCounters[VecCounterName(SnitchSubsystem, "size_exceeded")] = promauto.NewCounterVec(prometheus.CounterOpts{
+		Namespace: SnitchNamespace,
+		Subsystem: SnitchSubsystem,
 		Name:      "size_exceeded",
 		Help:      "Number of messages that were ignored by rules because the payload is too large",
 	}, []string{"data_source", "type"})
 
-	prometheusVecCounters[VecCounterName("dataqual", "rule")] = promauto.NewCounterVec(prometheus.CounterOpts{
-		Namespace: "plumber",
-		Subsystem: "dataqual",
+	prometheusVecCounters[VecCounterName(SnitchSubsystem, "rule")] = promauto.NewCounterVec(prometheus.CounterOpts{
+		Namespace: SnitchNamespace,
+		Subsystem: SnitchSubsystem,
 		Name:      "rule",
 		Help:      "Message count and bytes by rule set and rule",
-	}, []string{"rule_id", "ruleset_id", "type"})
+	}, []string{"rule_id", "ruleset_id", "type", "rule_name", "ruleset_name"})
 
-	prometheusVecCounters[VecCounterName("dataqual", "failure_trigger")] = promauto.NewCounterVec(prometheus.CounterOpts{
-		Namespace: "plumber",
-		Subsystem: "dataqual",
+	prometheusVecCounters[VecCounterName(SnitchSubsystem, "failure_trigger")] = promauto.NewCounterVec(prometheus.CounterOpts{
+		Namespace: SnitchNamespace,
+		Subsystem: SnitchSubsystem,
 		Name:      "failure_trigger",
 		Help:      "Number of events/bytes that triggered a failure rule, for each failure rule type",
-	}, []string{"rule_id", "ruleset_id", "type", "failure_mode"})
+	}, []string{"rule_id", "ruleset_id", "type", "failure_mode", "rule_name", "ruleset_name"})
 }
 
 // IncrPromCounter increments a prometheus counter by the given amount
