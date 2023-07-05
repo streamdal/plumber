@@ -201,7 +201,7 @@ func (s *Server) PublishMetrics(ctx context.Context, req *protos.PublishMetricsR
 	// If we're including a ruleset ID, we can look up the name of the ruleset and the name of the rule
 	if rsID, ok := req.Labels["ruleset_id"]; ok {
 		c.Labels["ruleset_name"] = "unknown"
-		c.Labels["ruleset_id"] = "unknown"
+		c.Labels["rule_name"] = "unknown"
 
 		rs := s.PersistentConfig.GetRuleSet(rsID)
 		if rs != nil {
