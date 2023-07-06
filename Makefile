@@ -50,9 +50,9 @@ build: description = Build $(BINARY)
 build: clean build/linux build/darwin build/darwin-arm64 build/windows
 
 .PHONY: build/console
-build/console: description = Pull latest releaser of embedded-console
+build/console: description = Pull latest releaser of snitch-console
 build/console:
-	curl -L https://github.com/streamdal/embedded-console/releases/latest/download/release.zip -o release.zip
+	curl -L https://github.com/streamdal/snitch-console/releases/latest/download/release.zip -o release.zip
 	unzip -o -q release.zip -d api/assets/
 	rm release.zip
 
@@ -114,10 +114,7 @@ generate/docs:
 docker/build: description = Build docker image
 docker/build:
 	docker buildx build --push --platform=linux/amd64,linux/arm64 \
-	-t streamdal/$(BINARY):$(SHORT_SHA) \
-	-t streamdal/$(BINARY):$(GIT_TAG) \
-	-t streamdal/$(BINARY):latest \
-	-t streamdal/$(BINARY):local \
+	-t streamdal/$(BINARY):wasmbeta \
 	-f ./Dockerfile .
 
 .PHONY: docker/build/local
