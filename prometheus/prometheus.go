@@ -150,10 +150,11 @@ func IncrPromCounter(key string, amount float64) {
 	defer prometheusMutex.RUnlock()
 	c, ok := prometheusCounters[key]
 	if !ok {
-		prometheusCounters[key] = promauto.NewCounter(prometheus.CounterOpts{
+		c = promauto.NewCounter(prometheus.CounterOpts{
 			Name: key,
 			Help: "Auto-created counter",
 		})
+		prometheusCounters[key] = c
 	}
 
 	c.Add(amount)
