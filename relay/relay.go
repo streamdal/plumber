@@ -126,7 +126,7 @@ func validateConfig(cfg *Config) error {
 	}
 
 	if cfg.Timeout == 0 {
-		cfg.Timeout = validate.GRPCDefaultTimeoutSeconds
+		cfg.Timeout = time.Second * validate.GRPCDefaultTimeoutSeconds
 	}
 
 	if cfg.RelayCh == nil {
