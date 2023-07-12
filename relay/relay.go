@@ -33,6 +33,7 @@ import (
 	rpubsubTypes "github.com/batchcorp/plumber/backends/rpubsub/types"
 	rstreamsTypes "github.com/batchcorp/plumber/backends/rstreams/types"
 	"github.com/batchcorp/plumber/prometheus"
+	"github.com/batchcorp/plumber/validate"
 )
 
 const (
@@ -122,7 +123,11 @@ func validateConfig(cfg *Config) error {
 	}
 
 	if cfg.GRPCAddress == "" {
-		return ErrMissingGRPCAddress
+		cfg.GRPCAddress = validate.GRPCCollectorAddress
+	}
+
+	if cfg.Timeout == 0 {
+		cfg.Timeout = validate.GRPCDefaultTimeoutSeconds
 	}
 
 	if cfg.RelayCh == nil {
