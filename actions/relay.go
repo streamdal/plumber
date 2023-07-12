@@ -157,6 +157,8 @@ func (a *Actions) UpdateRelay(ctx context.Context, relayID string, relayOpts *op
 	}
 
 	if relay.Active {
+		a.log.Debugf("relay '%s' is active, stopping relay", relayID)
+
 		// Close existing relay
 		relay.CancelFunc()
 		relay.Active = false
