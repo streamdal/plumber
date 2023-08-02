@@ -30,24 +30,19 @@ func (b *Bus) doCreateConnection(_ context.Context, msg *Message) error {
 	return nil
 }
 
-func (b *Bus) doUpdateConnection(_ context.Context, msg *Message) error {
-	b.log.Debugf("running doCreateConnection handler for msg emitted by %s", msg.EmittedBy)
+func (b *Bus) doUpdateConnection(ctx context.Context, msg *Message) error {
+	b.log.Debugf("running doUpdateonnection handler for msg emitted by %s", msg.EmittedBy)
 
 	connOpts := &opts.ConnectionOptions{}
 	if err := proto.Unmarshal(msg.Data, connOpts); err != nil {
 		return errors.Wrap(err, "unable to unmarshal message into opts.ConnectionOptions")
 	}
 
-	// Update connection in in-memory map
-	b.config.PersistentConfig.SetConnection(connOpts.XId, &types.Connection{
-		Connection: connOpts,
-	})
+	if _, err := b.config.Actions.UpdateConnection(ctx, connOpts.XId, connOpts); err != nil {
+		return errors.Wrap(err, "unable to update connection")
+	}
 
 	b.log.Debugf("updated connection '%s'", connOpts.Name)
-
-	// TODO: some way to signal reads/relays to restart? How will GRPC streams handle this?
-
-	// TODO: Some more work here
 
 	return nil
 }
@@ -74,7 +69,7 @@ func (b *Bus) doDeleteConnection(ctx context.Context, msg *Message) error {
 		}
 	}
 
-	b.log.Debugf("running doCreateConnection handler for msg emitted by %s", msg.EmittedBy)
+	b.log.Debugf("running doDeleteConnection handler for msg emitted by %s", msg.EmittedBy)
 
 	connOpts := &opts.ConnectionOptions{}
 	if err := proto.Unmarshal(msg.Data, connOpts); err != nil {

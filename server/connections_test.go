@@ -15,6 +15,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
+	"github.com/batchcorp/plumber/actions"
 	"github.com/batchcorp/plumber/bus/busfakes"
 	"github.com/batchcorp/plumber/config"
 	stypes "github.com/batchcorp/plumber/server/types"
@@ -169,6 +170,10 @@ var _ = Describe("Connection", func() {
 			fakeBus := &busfakes.FakeIBus{}
 			p.Bus = fakeBus
 
+			a, err := actions.New(&actions.Config{PersistentConfig: p.PersistentConfig})
+			Expect(err).ToNot(HaveOccurred())
+			p.Actions = a
+
 			conn := &opts.ConnectionOptions{
 				XId:   connID,
 				Name:  "testing",
@@ -189,11 +194,12 @@ var _ = Describe("Connection", func() {
 				}},
 			}
 
-			_, err := p.UpdateConnection(context.Background(), &protos.UpdateConnectionRequest{
+			_, err = p.UpdateConnection(context.Background(), &protos.UpdateConnectionRequest{
 				Auth:         &common.Auth{Token: "streamdal"},
 				ConnectionId: connID,
 				Options:      newConn,
 			})
+			Expect(err).ToNot(HaveOccurred())
 
 			updateConn := p.PersistentConfig.GetConnection(connID)
 

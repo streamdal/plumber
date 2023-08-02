@@ -121,6 +121,21 @@ type FakeIActions struct {
 		result1 *types.Tunnel
 		result2 error
 	}
+	UpdateConnectionStub        func(context.Context, string, *opts.ConnectionOptions) (*types.Connection, error)
+	updateConnectionMutex       sync.RWMutex
+	updateConnectionArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+		arg3 *opts.ConnectionOptions
+	}
+	updateConnectionReturns struct {
+		result1 *types.Connection
+		result2 error
+	}
+	updateConnectionReturnsOnCall map[int]struct {
+		result1 *types.Connection
+		result2 error
+	}
 	UpdateRelayStub        func(context.Context, string, *opts.RelayOptions) (*types.Relay, error)
 	updateRelayMutex       sync.RWMutex
 	updateRelayArgsForCall []struct {
@@ -672,6 +687,72 @@ func (fake *FakeIActions) StopTunnelReturnsOnCall(i int, result1 *types.Tunnel, 
 	}{result1, result2}
 }
 
+func (fake *FakeIActions) UpdateConnection(arg1 context.Context, arg2 string, arg3 *opts.ConnectionOptions) (*types.Connection, error) {
+	fake.updateConnectionMutex.Lock()
+	ret, specificReturn := fake.updateConnectionReturnsOnCall[len(fake.updateConnectionArgsForCall)]
+	fake.updateConnectionArgsForCall = append(fake.updateConnectionArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+		arg3 *opts.ConnectionOptions
+	}{arg1, arg2, arg3})
+	stub := fake.UpdateConnectionStub
+	fakeReturns := fake.updateConnectionReturns
+	fake.recordInvocation("UpdateConnection", []interface{}{arg1, arg2, arg3})
+	fake.updateConnectionMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeIActions) UpdateConnectionCallCount() int {
+	fake.updateConnectionMutex.RLock()
+	defer fake.updateConnectionMutex.RUnlock()
+	return len(fake.updateConnectionArgsForCall)
+}
+
+func (fake *FakeIActions) UpdateConnectionCalls(stub func(context.Context, string, *opts.ConnectionOptions) (*types.Connection, error)) {
+	fake.updateConnectionMutex.Lock()
+	defer fake.updateConnectionMutex.Unlock()
+	fake.UpdateConnectionStub = stub
+}
+
+func (fake *FakeIActions) UpdateConnectionArgsForCall(i int) (context.Context, string, *opts.ConnectionOptions) {
+	fake.updateConnectionMutex.RLock()
+	defer fake.updateConnectionMutex.RUnlock()
+	argsForCall := fake.updateConnectionArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeIActions) UpdateConnectionReturns(result1 *types.Connection, result2 error) {
+	fake.updateConnectionMutex.Lock()
+	defer fake.updateConnectionMutex.Unlock()
+	fake.UpdateConnectionStub = nil
+	fake.updateConnectionReturns = struct {
+		result1 *types.Connection
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeIActions) UpdateConnectionReturnsOnCall(i int, result1 *types.Connection, result2 error) {
+	fake.updateConnectionMutex.Lock()
+	defer fake.updateConnectionMutex.Unlock()
+	fake.UpdateConnectionStub = nil
+	if fake.updateConnectionReturnsOnCall == nil {
+		fake.updateConnectionReturnsOnCall = make(map[int]struct {
+			result1 *types.Connection
+			result2 error
+		})
+	}
+	fake.updateConnectionReturnsOnCall[i] = struct {
+		result1 *types.Connection
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeIActions) UpdateRelay(arg1 context.Context, arg2 string, arg3 *opts.RelayOptions) (*types.Relay, error) {
 	fake.updateRelayMutex.Lock()
 	ret, specificReturn := fake.updateRelayReturnsOnCall[len(fake.updateRelayArgsForCall)]
@@ -823,6 +904,8 @@ func (fake *FakeIActions) Invocations() map[string][][]interface{} {
 	defer fake.stopRelayMutex.RUnlock()
 	fake.stopTunnelMutex.RLock()
 	defer fake.stopTunnelMutex.RUnlock()
+	fake.updateConnectionMutex.RLock()
+	defer fake.updateConnectionMutex.RUnlock()
 	fake.updateRelayMutex.RLock()
 	defer fake.updateRelayMutex.RUnlock()
 	fake.updateTunnelMutex.RLock()

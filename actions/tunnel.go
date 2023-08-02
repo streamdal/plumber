@@ -111,7 +111,7 @@ func (a *Actions) ResumeTunnel(ctx context.Context, tunnelID string) (*types.Tun
 	return d, nil
 }
 
-func (a Actions) StopTunnel(ctx context.Context, tunnelID string) (*types.Tunnel, error) {
+func (a *Actions) StopTunnel(ctx context.Context, tunnelID string) (*types.Tunnel, error) {
 	d := a.cfg.PersistentConfig.GetTunnel(tunnelID)
 	if d == nil {
 		return nil, errors.New("Tunnel replay does not exist")

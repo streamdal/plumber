@@ -43,6 +43,8 @@ type IActions interface {
 	StopTunnel(ctx context.Context, tunnelID string) (*types.Tunnel, error)
 	UpdateTunnel(ctx context.Context, tunnelID string, tunnelOpts *opts.TunnelOptions) (*types.Tunnel, error)
 	DeleteTunnel(ctx context.Context, tunnelID string) error
+
+	UpdateConnection(ctx context.Context, connectionID string, connOpts *opts.ConnectionOptions) (*types.Connection, error)
 }
 
 func New(cfg *Config) (IActions, error) {
