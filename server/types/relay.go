@@ -23,7 +23,6 @@ type Relay struct {
 	Id         string             `json:"-"`
 	CancelCtx  context.Context    `json:"-"`
 	CancelFunc context.CancelFunc `json:"-"`
-	RelayCh    chan interface{}   `json:"-"`
 	Backend    backends.Backend   `json:"-"`
 	Options    *opts.RelayOptions `json:"config"`
 

@@ -33,12 +33,14 @@ func (k *Kafka) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 
 	defer reader.Close()
 
+	llog := k.log.WithField("relay-id", relayOpts.XRelayId)
+
 	for {
 		msg, err := reader.ReadMessage(ctx)
 		if err != nil {
 			// Shutdown cancelled, exit so we don't spam logs with context cancelled errors
 			if err == context.Canceled {
-				k.log.Debug("Received shutdown signal, exiting relayer")
+				llog.Debug("Received shutdown signal, exiting relayer")
 				break
 			}
 
@@ -48,7 +50,7 @@ func (k *Kafka) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 			prometheus.IncrPromCounter("plumber_read_errors", 1)
 
 			wrappedErr := fmt.Errorf("unable to read kafka message: %s; retrying in %s", err, RetryReadInterval)
-			util.WriteError(k.log, errorCh, wrappedErr)
+			util.WriteError(llog, errorCh, wrappedErr)
 
 			time.Sleep(RetryReadInterval)
 

@@ -299,6 +299,10 @@ func newDialer(connArgs *args.KafkaConn) (*skafka.Dialer, error) {
 		Timeout: time.Duration(connArgs.TimeoutSeconds) * time.Second,
 	}
 
+	if connArgs.UseTls {
+		dialer.TLS = &tls.Config{}
+	}
+
 	if connArgs.TlsSkipVerify {
 		dialer.TLS = &tls.Config{
 			InsecureSkipVerify: true,

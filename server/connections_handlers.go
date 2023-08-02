@@ -154,15 +154,13 @@ func (s *Server) UpdateConnection(ctx context.Context, req *protos.UpdateConnect
 		return nil, CustomError(common.Code_INVALID_ARGUMENT, err.Error())
 	}
 
-	// Re-assign connection options so we can update in-mem + etcd
-	conn.Connection = req.Options
-
-	// Update conf
-	s.PersistentConfig.SetConnection(conn.Connection.XId, conn)
-	s.PersistentConfig.Save()
+	if _, err := s.Actions.UpdateConnection(ctx, req.ConnectionId, req.Options); err != nil {
+		return nil, CustomError(common.Code_INTERNAL, fmt.Sprintf("unable to update connection: %s", err))
+	}
 
 	//Publish UpdateConnection event
-	if err := s.Bus.PublishUpdateConnection(ctx, conn.Connection); err != nil {
+	req.Options.XId = req.ConnectionId
+	if err := s.Bus.PublishUpdateConnection(context.Background(), req.Options); err != nil {
 		s.Log.Error(err)
 	}
 

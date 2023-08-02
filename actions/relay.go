@@ -79,6 +79,8 @@ func (a *Actions) StopRelay(ctx context.Context, relayID string) (*types.Relay, 
 
 	relay.Active = false
 	relay.Options.XActive = false
+	relay.CancelCtx = nil
+	relay.CancelFunc = nil
 
 	// Update persistent storage
 	a.cfg.PersistentConfig.SetRelay(relay.Id, relay)
@@ -103,6 +105,23 @@ func (a *Actions) ResumeRelay(ctx context.Context, relayID string) (*types.Relay
 	if relay.Active {
 		return nil, validate.ErrRelayAlreadyActive
 	}
+
+	conn := a.cfg.PersistentConfig.GetConnection(relay.Options.ConnectionId)
+	if conn == nil {
+		return nil, validate.ErrConnectionNotFound
+	}
+
+	// Try to create a backend from given connection options
+	be, err := backends.New(conn.Connection)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create backend")
+	}
+
+	relay.Backend = be
+
+	shutdownCtx, shutdownFunc := context.WithCancel(context.Background())
+	relay.CancelFunc = shutdownFunc
+	relay.CancelCtx = shutdownCtx
 
 	if err := relay.StartRelay(time.Millisecond * 100); err != nil {
 		return nil, errors.Wrap(err, "unable to start relay")

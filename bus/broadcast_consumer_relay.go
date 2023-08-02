@@ -68,7 +68,7 @@ func (b *Bus) doResumeRelay(ctx context.Context, msg *Message) error {
 		return fmt.Errorf("unable to resume relay '%s': %s", relayOptions.XRelayId, err)
 	}
 
-	b.log.Infof("stopped relay '%s' (from broadcast msg)", relayOptions.XRelayId)
+	b.log.Infof("resumed relay '%s' (from broadcast msg)", relayOptions.XRelayId)
 
 	return nil
 }
