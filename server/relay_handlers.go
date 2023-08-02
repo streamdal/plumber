@@ -118,14 +118,6 @@ func (s *Server) UpdateRelay(ctx context.Context, req *protos.UpdateRelayRequest
 		return nil, CustomError(common.Code_UNAUTHENTICATED, fmt.Sprintf("invalid auth: %s", err))
 	}
 
-	currentRelay := s.PersistentConfig.GetRelay(req.RelayId)
-	if currentRelay.Active {
-		// Publish StopRelay event
-		if err := s.Bus.PublishStopRelay(ctx, currentRelay.Options); err != nil {
-			return nil, fmt.Errorf("unable to publish stop relay event: %s", err)
-		}
-	}
-
 	if _, err := s.Actions.UpdateRelay(ctx, req.RelayId, req.Opts); err != nil {
 		// No need to roll back here since we haven't updated anything yet
 		return nil, CustomError(common.Code_ABORTED, err.Error())

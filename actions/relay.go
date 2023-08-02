@@ -122,7 +122,6 @@ func (a *Actions) ResumeRelay(ctx context.Context, relayID string) (*types.Relay
 	shutdownCtx, shutdownFunc := context.WithCancel(context.Background())
 	relay.CancelFunc = shutdownFunc
 	relay.CancelCtx = shutdownCtx
-
 	if err := relay.StartRelay(time.Millisecond * 100); err != nil {
 		return nil, errors.Wrap(err, "unable to start relay")
 	}
@@ -187,21 +186,13 @@ func (a *Actions) UpdateRelay(ctx context.Context, relayID string, relayOpts *op
 		time.Sleep(time.Second)
 
 		prometheus.DecrPromGauge(prometheus.PlumberRelayWorkers)
+
+		relay.CancelCtx = nil
+		relay.CancelFunc = nil
+		_ = relay.Backend.Close(context.Background())
+
 	}
 
-	// Get stored connection information
-	conn := a.cfg.PersistentConfig.GetConnection(relayOpts.ConnectionId)
-	if conn == nil {
-		return nil, validate.ErrConnectionNotFound
-	}
-
-	// Try to create a backend from given connection options
-	be, err := backends.New(conn.Connection)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to create backend")
-	}
-
-	relay.Backend = be
 	relay.Options = relayOpts
 
 	// New contexts
@@ -210,6 +201,20 @@ func (a *Actions) UpdateRelay(ctx context.Context, relayID string, relayOpts *op
 	relay.CancelFunc = cancelFunc
 
 	if relayOpts.XActive {
+		// Get stored connection information
+		conn := a.cfg.PersistentConfig.GetConnection(relayOpts.ConnectionId)
+		if conn == nil {
+			return nil, validate.ErrConnectionNotFound
+		}
+
+		// Try to create a backend from given connection options
+		be, err := backends.New(conn.Connection)
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to create backend")
+		}
+
+		relay.Backend = be
+
 		if err := relay.StartRelay(5 * time.Second); err != nil {
 			relay.Options.XActive = false
 			return nil, errors.Wrap(err, "unable to start relay")
