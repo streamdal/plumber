@@ -17,8 +17,8 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
-	"github.com/batchcorp/plumber/pb"
-	"github.com/batchcorp/plumber/serializers"
+	"github.com/streamdal/plumber/pb"
+	"github.com/streamdal/plumber/serializers"
 )
 
 // GenerateWriteValue generates a slice of WriteRecords that can be passed to

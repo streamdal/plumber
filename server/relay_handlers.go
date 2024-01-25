@@ -10,7 +10,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/validate"
 )
 
 func (s *Server) GetAllRelays(_ context.Context, req *protos.GetAllRelaysRequest) (*protos.GetAllRelaysResponse, error) {

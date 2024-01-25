@@ -13,7 +13,7 @@ import (
 	"github.com/batchcorp/collector-schemas/build/go/protos/records"
 	"github.com/batchcorp/collector-schemas/build/go/protos/services"
 
-	"github.com/batchcorp/plumber/backends/kafka/types"
+	"github.com/streamdal/plumber/backends/kafka/types"
 )
 
 // handleKafka sends a Kafka relay message to the GRPC server

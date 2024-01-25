@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/mcuadros/go-lookup"
 	"github.com/pkg/errors"
 	"github.com/posthog/posthog-go"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
 func (p *Plumber) HandleGetConnectionCmd(ctx context.Context, client protos.PlumberServerClient) error {

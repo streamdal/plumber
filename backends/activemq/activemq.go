@@ -7,8 +7,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/types"
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/types"
+	"github.com/streamdal/plumber/validate"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"

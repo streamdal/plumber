@@ -13,7 +13,7 @@ package azure_eventhub
 //	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 //	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 //	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-//	"github.com/batchcorp/plumber/tools/toolsfakes"
+//	"github.com/streamdal/plumber/tools/toolsfakes"
 //)
 //
 //var _ = Describe("Azure Event Hub", func() {

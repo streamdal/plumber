@@ -10,7 +10,7 @@ import (
 	"github.com/batchcorp/collector-schemas/build/go/protos/records"
 	"github.com/batchcorp/collector-schemas/build/go/protos/services"
 
-	"github.com/batchcorp/plumber/backends/kubemq-queue/types"
+	"github.com/streamdal/plumber/backends/kubemq-queue/types"
 )
 
 // handleKubeMQ sends a KubeMQ relay message to the GRPC server

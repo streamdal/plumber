@@ -3,14 +3,16 @@ package plumber
 import (
 	"os"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/backends"
-	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/reader"
-	"github.com/batchcorp/plumber/validate"
 	"github.com/pkg/errors"
 	"github.com/posthog/posthog-go"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
+	"github.com/streamdal/plumber/backends"
+	"github.com/streamdal/plumber/printer"
+	"github.com/streamdal/plumber/reader"
+	"github.com/streamdal/plumber/validate"
 )
 
 // HandleReadCmd handles CLI read mode

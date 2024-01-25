@@ -8,15 +8,17 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sns"
-	"github.com/batchcorp/plumber/validate"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
 
+	"github.com/streamdal/plumber/validate"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/backends/awssns/snsfakes"
+
+	"github.com/streamdal/plumber/backends/awssns/snsfakes"
 )
 
 var _ = Describe("AWS SNS Backend", func() {

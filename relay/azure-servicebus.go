@@ -6,9 +6,9 @@ import (
 
 	"google.golang.org/grpc"
 
-	"github.com/batchcorp/plumber/backends/azure-servicebus/types"
-	"github.com/batchcorp/plumber/util"
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/backends/azure-servicebus/types"
+	"github.com/streamdal/plumber/util"
+	"github.com/streamdal/plumber/validate"
 
 	"github.com/batchcorp/collector-schemas/build/go/protos/records"
 	"github.com/batchcorp/collector-schemas/build/go/protos/services"

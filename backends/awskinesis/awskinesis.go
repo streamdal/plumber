@@ -11,8 +11,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/types"
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/types"
+	"github.com/streamdal/plumber/validate"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
@@ -50,7 +50,7 @@ func New(connOpts *opts.ConnectionOptions) (*Kinesis, error) {
 		})
 	} else {
 		// Use creds stored in ~/.aws/credentials
-		// https://github.com/batchcorp/plumber/issues/218
+		// https://github.com/streamdal/plumber/issues/218
 		sess = session.Must(session.NewSessionWithOptions(session.Options{
 			SharedConfigState: session.SharedConfigEnable,
 		}))

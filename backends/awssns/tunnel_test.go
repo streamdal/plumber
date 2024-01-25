@@ -7,15 +7,17 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/batchcorp/collector-schemas/build/go/protos/events"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/backends/awssns/snsfakes"
-	"github.com/batchcorp/plumber/tunnel/tunnelfakes"
-	"github.com/batchcorp/plumber/validate"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
+	"github.com/streamdal/plumber/backends/awssns/snsfakes"
+	"github.com/streamdal/plumber/tunnel/tunnelfakes"
+	"github.com/streamdal/plumber/validate"
 )
 
 var _ = Describe("", func() {

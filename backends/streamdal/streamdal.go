@@ -15,7 +15,8 @@ import (
 	"strings"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber/config"
+
+	"github.com/streamdal/plumber/config"
 
 	"github.com/kataras/tablewriter"
 	"github.com/lensesio/tableprinter"

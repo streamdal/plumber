@@ -10,7 +10,7 @@ import (
 	"github.com/batchcorp/collector-schemas/build/go/protos/records"
 	"github.com/batchcorp/collector-schemas/build/go/protos/services"
 
-	"github.com/batchcorp/plumber/backends/nats/types"
+	"github.com/streamdal/plumber/backends/nats/types"
 )
 
 func (r *Relay) handleNATS(ctx context.Context, conn *grpc.ClientConn, messages []interface{}) error {

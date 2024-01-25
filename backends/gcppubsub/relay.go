@@ -10,10 +10,11 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/backends/gcppubsub/types"
 
-	"github.com/batchcorp/plumber/prometheus"
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/backends/gcppubsub/types"
+
+	"github.com/streamdal/plumber/prometheus"
+	"github.com/streamdal/plumber/validate"
 )
 
 const RetryReadInterval = 5 * time.Second

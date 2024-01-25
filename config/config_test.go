@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 	uuid "github.com/satori/go.uuid"
 
-	"github.com/batchcorp/plumber/server/types"
+	"github.com/streamdal/plumber/server/types"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )

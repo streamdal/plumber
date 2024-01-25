@@ -6,8 +6,10 @@ import (
 	"sync"
 
 	"github.com/batchcorp/collector-schemas/build/go/protos/events"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/tunnel"
+
+	"github.com/streamdal/plumber/tunnel"
 )
 
 type FakeITunnel struct {

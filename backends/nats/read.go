@@ -12,7 +12,7 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/validate"
 )
 
 func (n *Nats) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan chan *records.ReadRecord, errorChan chan *records.ErrorRecord) error {

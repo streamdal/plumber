@@ -4,7 +4,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/batchcorp/plumber/types"
+	"github.com/streamdal/plumber/types"
 )
 
 var _ = Describe("AWS Kinesis Backend", func() {

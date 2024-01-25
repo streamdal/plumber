@@ -8,10 +8,11 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/backends/azure-servicebus/types"
 
-	"github.com/batchcorp/plumber/prometheus"
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/backends/azure-servicebus/types"
+
+	"github.com/streamdal/plumber/prometheus"
+	"github.com/streamdal/plumber/validate"
 )
 
 func (a *AzureServiceBus) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan<- *records.ErrorRecord) error {

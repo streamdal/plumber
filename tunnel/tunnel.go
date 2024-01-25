@@ -17,6 +17,7 @@ import (
 
 	"github.com/batchcorp/collector-schemas/build/go/protos/events"
 	"github.com/batchcorp/collector-schemas/build/go/protos/services"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )

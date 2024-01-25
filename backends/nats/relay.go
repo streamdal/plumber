@@ -6,9 +6,9 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
 
-	"github.com/batchcorp/plumber/backends/nats/types"
-	"github.com/batchcorp/plumber/prometheus"
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/backends/nats/types"
+	"github.com/streamdal/plumber/prometheus"
+	"github.com/streamdal/plumber/validate"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"

@@ -6,9 +6,9 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
-	"github.com/batchcorp/plumber/backends"
-	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/tunnel"
+	"github.com/streamdal/plumber/backends"
+	"github.com/streamdal/plumber/options"
+	"github.com/streamdal/plumber/tunnel"
 )
 
 // HandleTunnelCmd handles tunnel destination mode commands

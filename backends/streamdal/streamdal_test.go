@@ -12,9 +12,9 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
-	"github.com/batchcorp/plumber/config"
-	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/server/types"
+	"github.com/streamdal/plumber/config"
+	"github.com/streamdal/plumber/options"
+	"github.com/streamdal/plumber/server/types"
 )
 
 var logger = &logrus.Logger{Out: ioutil.Discard}

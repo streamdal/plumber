@@ -10,7 +10,7 @@ import (
 	"github.com/batchcorp/collector-schemas/build/go/protos/records"
 	"github.com/batchcorp/collector-schemas/build/go/protos/services"
 
-	"github.com/batchcorp/plumber/backends/rpubsub/types"
+	"github.com/streamdal/plumber/backends/rpubsub/types"
 )
 
 // handleRedisPubSub sends a RedisPubSub relay message to the GRPC server

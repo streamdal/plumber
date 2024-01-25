@@ -16,8 +16,8 @@ import (
 
 	"github.com/batchcorp/rabbit"
 
-	"github.com/batchcorp/plumber/backends/rabbitmq/rabbitfakes"
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/backends/rabbitmq/rabbitfakes"
+	"github.com/streamdal/plumber/validate"
 )
 
 var _ = Describe("RabbitMQ Backend", func() {

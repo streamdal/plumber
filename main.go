@@ -16,14 +16,14 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
-	"github.com/batchcorp/plumber/actions"
-	"github.com/batchcorp/plumber/config"
-	"github.com/batchcorp/plumber/kv"
-	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/plumber"
-	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/prometheus"
-	"github.com/batchcorp/plumber/telemetry"
+	"github.com/streamdal/plumber/actions"
+	"github.com/streamdal/plumber/config"
+	"github.com/streamdal/plumber/kv"
+	"github.com/streamdal/plumber/options"
+	"github.com/streamdal/plumber/plumber"
+	"github.com/streamdal/plumber/printer"
+	"github.com/streamdal/plumber/prometheus"
+	"github.com/streamdal/plumber/telemetry"
 )
 
 var (

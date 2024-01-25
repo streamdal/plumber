@@ -7,7 +7,8 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/printer"
+
+	"github.com/streamdal/plumber/printer"
 )
 
 // DisplayMessage will parse a Read record and print (pretty) output to STDOUT

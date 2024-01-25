@@ -3,7 +3,7 @@ package main
 import (
 	"io/ioutil"
 
-	"github.com/batchcorp/plumber/test-assets/shallow-envelope/shallow"
+	"github.com/streamdal/plumber/test-assets/shallow-envelope/shallow"
 
 	"github.com/golang/protobuf/proto"
 )

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/batchcorp/plumber/config"
+	"github.com/streamdal/plumber/config"
 
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/ssh/terminal"

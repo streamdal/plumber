@@ -3,11 +3,13 @@ package cdcpostgres
 import (
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/pkg/errors"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/printer"
+
+	"github.com/streamdal/plumber/printer"
 )
 
 func (c *CDCPostgres) DisplayMessage(cliOpts *opts.CLIOptions, msg *records.ReadRecord) error {

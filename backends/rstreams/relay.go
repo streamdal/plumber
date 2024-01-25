@@ -5,16 +5,17 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/validate"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/backends/rstreams/types"
 
-	"github.com/batchcorp/plumber/prometheus"
+	"github.com/streamdal/plumber/backends/rstreams/types"
+
+	"github.com/streamdal/plumber/prometheus"
 )
 
 // RetryReadInterval determines how long to wait before retrying a read, after an error has occurred

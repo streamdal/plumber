@@ -5,8 +5,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/batchcorp/plumber/util"
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/util"
+	"github.com/streamdal/plumber/validate"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"

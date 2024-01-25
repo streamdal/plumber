@@ -35,8 +35,9 @@ import (
 	skafka "github.com/segmentio/kafka-go"
 
 	"github.com/batchcorp/collector-schemas/build/go/protos/events"
-	"github.com/batchcorp/plumber/test-assets/protobuf-any/sample"
-	"github.com/batchcorp/plumber/test-assets/shallow-envelope/shallow"
+
+	"github.com/streamdal/plumber/test-assets/protobuf-any/sample"
+	"github.com/streamdal/plumber/test-assets/shallow-envelope/shallow"
 )
 
 func init() {
