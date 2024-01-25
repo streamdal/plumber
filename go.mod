@@ -57,7 +57,7 @@ require (
 	go.mongodb.org/mongo-driver v1.7.3
 	golang.org/x/crypto v0.18.0
 	google.golang.org/api v0.128.0
-	google.golang.org/grpc v1.60.1
+	google.golang.org/grpc v1.57.0
 	google.golang.org/protobuf v1.31.0
 )
 
