@@ -8,7 +8,8 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber/server/types"
+
+	"github.com/streamdal/plumber/server/types"
 )
 
 func (b *Bus) doCreateConnection(_ context.Context, msg *Message) error {

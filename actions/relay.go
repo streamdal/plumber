@@ -7,10 +7,11 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber/backends"
-	"github.com/batchcorp/plumber/prometheus"
-	"github.com/batchcorp/plumber/server/types"
-	"github.com/batchcorp/plumber/validate"
+
+	"github.com/streamdal/plumber/backends"
+	"github.com/streamdal/plumber/prometheus"
+	"github.com/streamdal/plumber/server/types"
+	"github.com/streamdal/plumber/validate"
 )
 
 func (a *Actions) CreateRelay(ctx context.Context, relayOpts *opts.RelayOptions) (*types.Relay, error) {

@@ -34,7 +34,7 @@ func New(args []string) (*kong.Context, *opts.CLIOptions, error) {
 		cliOpts,
 		kong.IgnoreFields(".*XXX_"),
 		kong.Name("plumber"),
-		kong.Description("`curl` for messaging systems. See: https://github.com/batchcorp/plumber"),
+		kong.Description("`curl` for messaging systems. See: https://github.com/streamdal/plumber"),
 		kong.ShortUsageOnError(),
 		kong.ConfigureHelp(kong.HelpOptions{
 			Compact:             true,

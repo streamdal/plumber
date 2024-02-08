@@ -11,10 +11,10 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
-	"github.com/batchcorp/plumber/actions"
-	"github.com/batchcorp/plumber/bus"
-	"github.com/batchcorp/plumber/config"
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/actions"
+	"github.com/streamdal/plumber/bus"
+	"github.com/streamdal/plumber/config"
+	"github.com/streamdal/plumber/validate"
 )
 
 type Server struct {

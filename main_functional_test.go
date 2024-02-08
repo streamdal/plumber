@@ -35,8 +35,9 @@ import (
 	skafka "github.com/segmentio/kafka-go"
 
 	"github.com/batchcorp/collector-schemas/build/go/protos/events"
-	"github.com/batchcorp/plumber/test-assets/protobuf-any/sample"
-	"github.com/batchcorp/plumber/test-assets/shallow-envelope/shallow"
+
+	"github.com/streamdal/plumber/test-assets/protobuf-any/sample"
+	"github.com/streamdal/plumber/test-assets/shallow-envelope/shallow"
 )
 
 func init() {
@@ -2252,7 +2253,7 @@ var _ = Describe("Functional", func() {
 						"relay",
 						"kafka",
 						"--manage-token", "streamdal",
-						"--streamdal-grpc-address", "grpc-collector.dev.streamdal.com:443",
+						"--streamdal-grpc-address", "grpc-collector.streamdal.com:9000",
 						"--connection-id", connId,
 						"--collection-token", testCollectionToken,
 						"--topics", "foo",
@@ -2382,7 +2383,7 @@ var _ = Describe("Functional", func() {
 						"tunnel",
 						"kafka",
 						"--manage-token", "streamdal",
-						"--x-tunnel-address", "dproxy.dev.streamdal.com:443",
+						"--x-tunnel-address", "dproxy.streamdal.com:443",
 						"--connection-id", connId,
 						"--tunnel-token", batchAPIToken,
 						"--topics", "foo",
@@ -2525,7 +2526,7 @@ var _ = Describe("Functional", func() {
 						"relay",
 						"rabbit",
 						"--manage-token", "streamdal",
-						"--streamdal-grpc-address", "grpc-collector.dev.streamdal.com:443",
+						"--streamdal-grpc-address", "grpc-collector.streamdal.com:9000",
 						"--connection-id", connId,
 						"--collection-token", testCollectionToken,
 						"--exchange-name", exchangeName,
@@ -2667,7 +2668,7 @@ var _ = Describe("Functional", func() {
 						"tunnel",
 						"rabbit",
 						"--manage-token", "streamdal",
-						"--x-tunnel-address", "dproxy.dev.streamdal.com:443",
+						"--x-tunnel-address", "dproxy.streamdal.com:443",
 						"--connection-id", connId,
 						"--tunnel-token", batchAPIToken,
 						"--exchange-name", exchangeName,

@@ -13,7 +13,7 @@ import (
 	"github.com/batchcorp/collector-schemas/build/go/protos/records"
 	"github.com/batchcorp/collector-schemas/build/go/protos/services"
 
-	"github.com/batchcorp/plumber/backends/awssqs/types"
+	"github.com/streamdal/plumber/backends/awssqs/types"
 )
 
 func (r *Relay) handleSQS(ctx context.Context, conn *grpc.ClientConn, messages []interface{}) error {

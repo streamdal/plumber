@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/batchcorp/plumber/util"
+	"github.com/streamdal/plumber/util"
 
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/validate"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/sqs"
@@ -14,9 +14,10 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/backends/awssqs/types"
 
-	"github.com/batchcorp/plumber/prometheus"
+	"github.com/streamdal/plumber/backends/awssqs/types"
+
+	"github.com/streamdal/plumber/prometheus"
 )
 
 func (a *AWSSQS) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan<- *records.ErrorRecord) error {

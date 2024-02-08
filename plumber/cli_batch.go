@@ -6,7 +6,7 @@ import (
 
 	"github.com/posthog/posthog-go"
 
-	"github.com/batchcorp/plumber/backends/streamdal"
+	"github.com/streamdal/plumber/backends/streamdal"
 )
 
 // HandleStreamdalCmd handles all commands related to Streamdal API

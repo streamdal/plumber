@@ -14,8 +14,8 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
-	"github.com/batchcorp/plumber/backends/awssqs/sqsfakes"
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/backends/awssqs/sqsfakes"
+	"github.com/streamdal/plumber/validate"
 )
 
 var _ = Describe("AWSSQS Backend", func() {

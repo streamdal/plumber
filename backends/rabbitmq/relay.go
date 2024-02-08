@@ -8,13 +8,14 @@ import (
 	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/batchcorp/rabbit"
 
-	rtypes "github.com/batchcorp/plumber/backends/rabbitmq/types"
-	"github.com/batchcorp/plumber/prometheus"
-	"github.com/batchcorp/plumber/validate"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
+
+	rtypes "github.com/streamdal/plumber/backends/rabbitmq/types"
+	"github.com/streamdal/plumber/prometheus"
+	"github.com/streamdal/plumber/validate"
 )
 
 func (r *RabbitMQ) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh chan interface{}, errorCh chan<- *records.ErrorRecord) error {

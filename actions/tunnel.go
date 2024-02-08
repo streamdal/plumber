@@ -8,12 +8,12 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
-	"github.com/batchcorp/plumber/backends"
-	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/prometheus"
-	"github.com/batchcorp/plumber/server/types"
-	"github.com/batchcorp/plumber/tunnel"
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/backends"
+	"github.com/streamdal/plumber/options"
+	"github.com/streamdal/plumber/prometheus"
+	"github.com/streamdal/plumber/server/types"
+	"github.com/streamdal/plumber/tunnel"
+	"github.com/streamdal/plumber/validate"
 )
 
 func (a *Actions) CreateTunnel(reqCtx context.Context, tunnelOpts *opts.TunnelOptions) (*types.Tunnel, error) {

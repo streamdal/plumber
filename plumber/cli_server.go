@@ -12,10 +12,11 @@ import (
 	"google.golang.org/grpc"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
-	"github.com/batchcorp/plumber/api"
-	"github.com/batchcorp/plumber/bus"
-	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/server"
+
+	"github.com/streamdal/plumber/api"
+	"github.com/streamdal/plumber/bus"
+	"github.com/streamdal/plumber/options"
+	"github.com/streamdal/plumber/server"
 )
 
 // RunServer is a wrapper for starting embedded etcd and starting the gRPC server.

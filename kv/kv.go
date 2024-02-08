@@ -8,9 +8,10 @@ import (
 	"context"
 
 	"github.com/batchcorp/natty"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 )
 
 type IKV interface {

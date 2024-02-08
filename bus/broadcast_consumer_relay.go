@@ -9,7 +9,7 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/validate"
 )
 
 func (b *Bus) doCreateRelay(ctx context.Context, msg *Message) error {

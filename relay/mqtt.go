@@ -10,7 +10,7 @@ import (
 	"github.com/batchcorp/collector-schemas/build/go/protos/records"
 	"github.com/batchcorp/collector-schemas/build/go/protos/services"
 
-	"github.com/batchcorp/plumber/backends/mqtt/types"
+	"github.com/streamdal/plumber/backends/mqtt/types"
 )
 
 // handleMQTT sends a MQTT relay message to the GRPC server

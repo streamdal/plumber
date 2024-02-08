@@ -11,7 +11,7 @@ import (
 	"github.com/batchcorp/collector-schemas/build/go/protos/records"
 	"github.com/batchcorp/collector-schemas/build/go/protos/services"
 
-	"github.com/batchcorp/plumber/backends/rstreams/types"
+	"github.com/streamdal/plumber/backends/rstreams/types"
 )
 
 var (

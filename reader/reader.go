@@ -8,9 +8,10 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber/pb"
-	"github.com/batchcorp/plumber/serializers"
-	"github.com/batchcorp/plumber/util"
+
+	"github.com/streamdal/plumber/pb"
+	"github.com/streamdal/plumber/serializers"
+	"github.com/streamdal/plumber/util"
 )
 
 // Decode will attempt to decode the payload IF decode options are present

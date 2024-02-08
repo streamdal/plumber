@@ -5,7 +5,7 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
-	"github.com/batchcorp/plumber/server/types"
+	"github.com/streamdal/plumber/server/types"
 )
 
 func (a *Actions) UpdateConnection(_ context.Context, connectionID string, connOpts *opts.ConnectionOptions) (*types.Connection, error) {

@@ -9,7 +9,8 @@ import (
 
 	"github.com/batchcorp/collector-schemas/build/go/protos/records"
 	"github.com/batchcorp/collector-schemas/build/go/protos/services"
-	"github.com/batchcorp/plumber/backends/nats-streaming/types"
+
+	"github.com/streamdal/plumber/backends/nats-streaming/types"
 )
 
 func (r *Relay) handleNATSStreaming(ctx context.Context, conn *grpc.ClientConn, messages []interface{}) error {

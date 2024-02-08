@@ -5,12 +5,12 @@ import (
 	"github.com/posthog/posthog-go"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/api"
-	"github.com/batchcorp/plumber/backends"
-	"github.com/batchcorp/plumber/options"
-	"github.com/batchcorp/plumber/relay"
-	"github.com/batchcorp/plumber/util"
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/api"
+	"github.com/streamdal/plumber/backends"
+	"github.com/streamdal/plumber/options"
+	"github.com/streamdal/plumber/relay"
+	"github.com/streamdal/plumber/util"
+	"github.com/streamdal/plumber/validate"
 )
 
 // HandleRelayCmd handles CLI relay mode. Container/envar mode is handled by processEnvRelayFlags

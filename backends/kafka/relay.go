@@ -10,10 +10,10 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
-	"github.com/batchcorp/plumber/backends/kafka/types"
-	"github.com/batchcorp/plumber/prometheus"
-	"github.com/batchcorp/plumber/util"
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/backends/kafka/types"
+	"github.com/streamdal/plumber/prometheus"
+	"github.com/streamdal/plumber/util"
+	"github.com/streamdal/plumber/validate"
 )
 
 const (

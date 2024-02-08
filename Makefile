@@ -1,4 +1,4 @@
-VERSION ?= $(shell git rev-parse --short HEAD)
+VERSION ?= $(shell cat version.txt)
 SHORT_SHA ?= $(shell git rev-parse --short HEAD)
 GIT_TAG ?= $(shell git describe --tags --abbrev=0)
 BINARY   = plumber

@@ -9,7 +9,7 @@ import (
 	"github.com/linkedin/goavro/v2"
 	"github.com/pkg/errors"
 
-	"github.com/batchcorp/plumber/printer"
+	"github.com/streamdal/plumber/printer"
 )
 
 func AvroEncode(schema, data []byte) ([]byte, error) {

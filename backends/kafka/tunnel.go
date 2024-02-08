@@ -10,12 +10,13 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/collector-schemas/build/go/protos/events"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
-	"github.com/batchcorp/plumber/tunnel"
-	"github.com/batchcorp/plumber/util"
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/tunnel"
+	"github.com/streamdal/plumber/util"
+	"github.com/streamdal/plumber/validate"
 )
 
 // Tunnels starts up a new GRPC client connected to the dProxy service and receives a stream of outbound replay messages

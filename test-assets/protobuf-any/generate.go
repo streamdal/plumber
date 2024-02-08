@@ -6,7 +6,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"
 
-	"github.com/batchcorp/plumber/test-assets/protobuf-any/sample"
+	"github.com/streamdal/plumber/test-assets/protobuf-any/sample"
 )
 
 func main() {

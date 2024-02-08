@@ -24,9 +24,9 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh/terminal"
 
-	"github.com/batchcorp/plumber/kv"
-	"github.com/batchcorp/plumber/options"
-	stypes "github.com/batchcorp/plumber/server/types"
+	"github.com/streamdal/plumber/kv"
+	"github.com/streamdal/plumber/options"
+	stypes "github.com/streamdal/plumber/server/types"
 )
 
 const (

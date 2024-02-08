@@ -1,4 +1,4 @@
-// Copyright 2020 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,23 +20,75 @@
 // Provides reliable, many-to-many, asynchronous messaging between
 // applications.
 //
-// Use of Context
+// # General documentation
 //
-// The ctx passed to NewClient is used for authentication requests and
+// For information about setting deadlines, reusing contexts, and more
+// please visit https://pkg.go.dev/cloud.google.com/go.
+//
+// # Example usage
+//
+// To get started with this package, create a client.
+//
+//	ctx := context.Background()
+//	// This snippet has been automatically generated and should be regarded as a code template only.
+//	// It will require modifications to work:
+//	// - It may require correct/in-range values for request initialization.
+//	// - It may require specifying regional endpoints when creating the service client as shown in:
+//	//   https://pkg.go.dev/cloud.google.com/go#hdr-Client_Options
+//	c, err := pubsub.NewSchemaClient(ctx)
+//	if err != nil {
+//		// TODO: Handle error.
+//	}
+//	defer c.Close()
+//
+// The client will use your default application credentials. Clients should be reused instead of created as needed.
+// The methods of Client are safe for concurrent use by multiple goroutines.
+// The returned client must be Closed when it is done being used.
+//
+// # Using the Client
+//
+// The following is an example of making an API call with the newly created client.
+//
+//	ctx := context.Background()
+//	// This snippet has been automatically generated and should be regarded as a code template only.
+//	// It will require modifications to work:
+//	// - It may require correct/in-range values for request initialization.
+//	// - It may require specifying regional endpoints when creating the service client as shown in:
+//	//   https://pkg.go.dev/cloud.google.com/go#hdr-Client_Options
+//	c, err := pubsub.NewSchemaClient(ctx)
+//	if err != nil {
+//		// TODO: Handle error.
+//	}
+//	defer c.Close()
+//
+//	req := &pubsubpb.CreateSchemaRequest{
+//		// TODO: Fill request struct fields.
+//		// See https://pkg.go.dev/cloud.google.com/go/pubsub/apiv1/pubsubpb#CreateSchemaRequest.
+//	}
+//	resp, err := c.CreateSchema(ctx, req)
+//	if err != nil {
+//		// TODO: Handle error.
+//	}
+//	// TODO: Use resp.
+//	_ = resp
+//
+// # Inspecting errors
+//
+// To see examples of how to inspect errors returned by this package please reference
+// [Inspecting errors](https://pkg.go.dev/cloud.google.com/go#hdr-Inspecting_errors).
+//
+// # Use of Context
+//
+// The ctx passed to NewSchemaClient is used for authentication requests and
 // for creating the underlying connection, but is not used for subsequent calls.
 // Individual methods on the client use the ctx given to them.
 //
 // To close the open connection, use the Close() method.
-//
-// For information about setting deadlines, reusing contexts, and more
-// please visit godoc.org/cloud.google.com/go.
 package pubsub // import "cloud.google.com/go/pubsub/apiv1"
 
 import (
 	"context"
-	"runtime"
-	"strings"
-	"unicode"
+	"net/http"
 
 	"google.golang.org/api/option"
 	"google.golang.org/grpc/metadata"
@@ -47,7 +99,14 @@ import (
 type clientHookParams struct{}
 type clientHook func(context.Context, clientHookParams) ([]option.ClientOption, error)
 
-const versionClient = "20200727"
+var versionClient string
+
+func getVersionClient() string {
+	if versionClient == "" {
+		return "UNKNOWN"
+	}
+	return versionClient
+}
 
 func insertMetadata(ctx context.Context, mds ...metadata.MD) context.Context {
 	out, _ := metadata.FromOutgoingContext(ctx)
@@ -68,39 +127,12 @@ func DefaultAuthScopes() []string {
 	}
 }
 
-// versionGo returns the Go runtime version. The returned string
-// has no whitespace, suitable for reporting in header.
-func versionGo() string {
-	const develPrefix = "devel +"
-
-	s := runtime.Version()
-	if strings.HasPrefix(s, develPrefix) {
-		s = s[len(develPrefix):]
-		if p := strings.IndexFunc(s, unicode.IsSpace); p >= 0 {
-			s = s[:p]
-		}
-		return s
+// buildHeaders extracts metadata from the outgoing context, joins it with any other
+// given metadata, and converts them into a http.Header.
+func buildHeaders(ctx context.Context, mds ...metadata.MD) http.Header {
+	if cmd, ok := metadata.FromOutgoingContext(ctx); ok {
+		mds = append(mds, cmd)
 	}
-
-	notSemverRune := func(r rune) bool {
-		return !strings.ContainsRune("0123456789.", r)
-	}
-
-	if strings.HasPrefix(s, "go1") {
-		s = s[2:]
-		var prerelease string
-		if p := strings.IndexFunc(s, notSemverRune); p >= 0 {
-			s, prerelease = s[:p], s[p:]
-		}
-		if strings.HasSuffix(s, ".") {
-			s += "0"
-		} else if strings.Count(s, ".") < 2 {
-			s += ".0"
-		}
-		if prerelease != "" {
-			s += "-" + prerelease
-		}
-		return s
-	}
-	return "UNKNOWN"
+	md := metadata.Join(mds...)
+	return http.Header(md)
 }

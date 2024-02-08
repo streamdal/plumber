@@ -20,6 +20,19 @@ jobs:
         run: echo "GITHUB_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - name: Set short sha
         run: echo "GITHUB_SHORT_SHA=`git rev-parse --short HEAD`" >> $GITHUB_ENV
+      - name: Delete tag
+        uses: prompt/actions-delete-tag@v1
+      - name: Delete tag local
+        run: git tag -d ${{ env.GITHUB_TAG }}
+      - name: Inject version into version.txt
+        run: |
+          echo "${{ env.GITHUB_TAG }}-${{ env.GITHUB_SHORT_SHA }}" > version.txt
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Bumped version in version.txt to ${{ env.GITHUB_TAG }}
+          branch: master
+          tagging_message: ${{ env.GITHUB_TAG }}
+          push_options: '--force'
       - name: Build
         run: |
           VERSION="$GITHUB_TAG-$GITHUB_SHORT_SHA" TELEMETRY_API_KEY="${{secrets.TELEMETRY_API_KEY}}" make build

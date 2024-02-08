@@ -7,11 +7,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/kinesis"
 	"github.com/pkg/errors"
 
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/validate"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/tunnel"
+
+	"github.com/streamdal/plumber/tunnel"
 )
 
 func (k *Kinesis) Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOptions, tunnelSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error {

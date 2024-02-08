@@ -11,13 +11,14 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/collector-schemas/build/go/protos/events"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
-	"github.com/batchcorp/plumber/backends/rabbitmq/rabbitfakes"
-	"github.com/batchcorp/plumber/tunnel/tunnelfakes"
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/backends/rabbitmq/rabbitfakes"
+	"github.com/streamdal/plumber/tunnel/tunnelfakes"
+	"github.com/streamdal/plumber/validate"
 )
 
 var _ = Describe("RabbitMQ Backend", func() {

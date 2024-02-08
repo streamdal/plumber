@@ -7,7 +7,7 @@ package bus
 //	"net/url"
 //	"time"
 //
-//	"github.com/batchcorp/plumber/config"
+//	"github.com/streamdal/plumber/config"
 //
 //	. "github.com/onsi/ginkgo"
 //	. "github.com/onsi/gomega"

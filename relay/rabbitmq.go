@@ -11,7 +11,7 @@ import (
 	"github.com/batchcorp/collector-schemas/build/go/protos/records"
 	"github.com/batchcorp/collector-schemas/build/go/protos/services"
 
-	"github.com/batchcorp/plumber/backends/rabbitmq/types"
+	"github.com/streamdal/plumber/backends/rabbitmq/types"
 )
 
 func (r *Relay) handleRabbit(ctx context.Context, conn *grpc.ClientConn, messages []interface{}) error {

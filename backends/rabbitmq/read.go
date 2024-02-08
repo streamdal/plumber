@@ -7,15 +7,16 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/validate"
 
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"github.com/streadway/amqp"
 
+	"github.com/batchcorp/rabbit"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/rabbit"
 )
 
 func (r *RabbitMQ) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan chan *records.ReadRecord, errorChan chan *records.ErrorRecord) error {

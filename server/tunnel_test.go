@@ -13,11 +13,12 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber/actions/actionsfakes"
-	"github.com/batchcorp/plumber/bus/busfakes"
-	"github.com/batchcorp/plumber/config"
-	stypes "github.com/batchcorp/plumber/server/types"
-	"github.com/batchcorp/plumber/validate"
+
+	"github.com/streamdal/plumber/actions/actionsfakes"
+	"github.com/streamdal/plumber/bus/busfakes"
+	"github.com/streamdal/plumber/config"
+	stypes "github.com/streamdal/plumber/server/types"
+	"github.com/streamdal/plumber/validate"
 )
 
 var _ = Describe("Tunnel", func() {

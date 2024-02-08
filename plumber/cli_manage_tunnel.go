@@ -4,11 +4,12 @@ import (
 	"context"
 	"strings"
 
+	"github.com/pkg/errors"
+	"github.com/posthog/posthog-go"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/pkg/errors"
-	"github.com/posthog/posthog-go"
 )
 
 func (p *Plumber) HandleGetTunnelCmd(ctx context.Context, client protos.PlumberServerClient) error {

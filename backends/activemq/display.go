@@ -3,10 +3,11 @@ package activemq
 import (
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/pkg/errors"
 
-	"github.com/batchcorp/plumber/printer"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+
+	"github.com/streamdal/plumber/printer"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )

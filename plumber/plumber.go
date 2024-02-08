@@ -10,18 +10,19 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/batchcorp/plumber/telemetry"
+	"github.com/streamdal/plumber/telemetry"
 
 	"github.com/batchcorp/kong"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 
-	"github.com/batchcorp/plumber/actions"
-	"github.com/batchcorp/plumber/bus"
-	"github.com/batchcorp/plumber/config"
-	"github.com/batchcorp/plumber/pb"
-	"github.com/batchcorp/plumber/printer"
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/actions"
+	"github.com/streamdal/plumber/bus"
+	"github.com/streamdal/plumber/config"
+	"github.com/streamdal/plumber/pb"
+	"github.com/streamdal/plumber/printer"
+	"github.com/streamdal/plumber/validate"
 )
 
 var (

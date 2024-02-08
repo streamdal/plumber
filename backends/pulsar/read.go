@@ -12,8 +12,9 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/util"
-	"github.com/batchcorp/plumber/validate"
+
+	"github.com/streamdal/plumber/util"
+	"github.com/streamdal/plumber/validate"
 )
 
 func (p *Pulsar) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsChan chan *records.ReadRecord, errorChan chan *records.ErrorRecord) error {

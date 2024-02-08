@@ -16,6 +16,7 @@ import (
 	"google.golang.org/grpc/credentials"
 
 	"github.com/batchcorp/natty"
+
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 )
 

@@ -8,9 +8,9 @@ import (
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 
-	"github.com/batchcorp/plumber/backends"
-	"github.com/batchcorp/plumber/server/types"
-	"github.com/batchcorp/plumber/validate"
+	"github.com/streamdal/plumber/backends"
+	"github.com/streamdal/plumber/server/types"
+	"github.com/streamdal/plumber/validate"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/args"

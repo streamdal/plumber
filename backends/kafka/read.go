@@ -12,7 +12,8 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/util"
+
+	"github.com/streamdal/plumber/util"
 )
 
 const (

@@ -8,8 +8,9 @@ import (
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-	"github.com/batchcorp/plumber/util"
-	"github.com/batchcorp/plumber/validate"
+
+	"github.com/streamdal/plumber/util"
+	"github.com/streamdal/plumber/validate"
 )
 
 func (a *AzureEventHub) Write(ctx context.Context, writeOpts *opts.WriteOptions, errorCh chan<- *records.ErrorRecord, messages ...*records.WriteRecord) error {
