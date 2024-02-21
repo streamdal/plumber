@@ -154,13 +154,13 @@ func main() {
 
 // readFromStdin reads data piped into stdin
 func readFromStdin(opts *opts.CLIOptions) {
+	if opts.Global.XAction != "write" {
+		return
+	}
+
 	info, err := os.Stdin.Stat()
 	if err != nil {
 		logrus.Fatal(err)
-	}
-
-	if opts.Global.XAction != "write" {
-		return
 	}
 
 	if info.Mode()&os.ModeCharDevice != 0 {
