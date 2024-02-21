@@ -159,6 +159,10 @@ func readFromStdin(opts *opts.CLIOptions) {
 		logrus.Fatal(err)
 	}
 
+	if opts.Global.XAction != "write" {
+		return
+	}
+
 	if info.Mode()&os.ModeCharDevice != 0 {
 		return
 	}
