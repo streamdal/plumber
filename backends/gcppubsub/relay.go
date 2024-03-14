@@ -38,8 +38,7 @@ func (g *GCPPubSub) Relay(ctx context.Context, relayOpts *opts.RelayOptions, rel
 	if err != nil {
 		return errors.Wrap(err, "kafka.Relay(): unable to create new streamdal client")
 	}
-	// TODO: go-sdk needs to support sc.Close() so we can defer
-	//
+	defer sc.Close()
 	// streamdal sdk END
 
 	var m sync.Mutex
