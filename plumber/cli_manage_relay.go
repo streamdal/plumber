@@ -2,7 +2,6 @@ package plumber
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -180,8 +179,6 @@ func (p *Plumber) HandleCreateRelayCmd(ctx context.Context, client protos.Plumbe
 	if err != nil {
 		return errors.Wrap(err, "failed to generate relay options")
 	}
-
-	fmt.Printf("Would pass this to grpc api: %+v\n", relayOpts)
 
 	resp, err := client.CreateRelay(ctx, &protos.CreateRelayRequest{
 		Auth: &common.Auth{
