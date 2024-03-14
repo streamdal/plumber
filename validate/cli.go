@@ -4,6 +4,7 @@ package validate
 import (
 	"fmt"
 	"os"
+	"regexp"
 
 	"github.com/pkg/errors"
 
@@ -55,6 +56,38 @@ func ReadOptionsForCLI(readOpts *opts.ReadOptions) error {
 
 	if readOpts.XCliOptions == nil {
 		return ErrMissingCLIOptions
+	}
+
+	return nil
+}
+
+func ManageCreateRelayCmd(relayOpts *opts.CreateRelayOptions) error {
+	if relayOpts == nil {
+		return errors.New("create relay options cannot be nil")
+	}
+
+	// Perform additional validations if streamdal integration is enabled
+	if relayOpts.StreamdalIntegrationOptions != nil && relayOpts.StreamdalIntegrationOptions.StreamdalIntegrationEnable {
+		// Server and auth token must be set
+		if relayOpts.StreamdalIntegrationOptions.StreamdalIntegrationServerAddress == "" {
+			return errors.New("--streamdal-server must be set if Streamdal integration is enabled")
+		}
+
+		if relayOpts.StreamdalIntegrationOptions.StreamdalIntegrationAuthToken == "" {
+			return errors.New("--streamdal-auth-token must be set if Streamdal integration is enabled")
+		}
+
+		// Only allow service name to be alphanumeric
+		if relayOpts.StreamdalIntegrationOptions.StreamdalIntegrationServiceName != "" {
+			re, err := regexp.Compile(`^[a-zA-Z0-9]*$`)
+			if err != nil {
+				return errors.Wrap(err, "unable to compile service name regex")
+			}
+
+			if !re.MatchString(relayOpts.StreamdalIntegrationOptions.StreamdalIntegrationServiceName) {
+				return errors.New("--streamdal-service-name must be alphanumeric")
+			}
+		}
 	}
 
 	return nil

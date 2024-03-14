@@ -2,16 +2,20 @@ package gcppubsub
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
 	"cloud.google.com/go/pubsub"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	sdk "github.com/streamdal/streamdal/sdks/go"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 
 	"github.com/streamdal/plumber/backends/gcppubsub/types"
+	"github.com/streamdal/plumber/util"
 
 	"github.com/streamdal/plumber/prometheus"
 	"github.com/streamdal/plumber/validate"
@@ -23,6 +27,19 @@ func (g *GCPPubSub) Relay(ctx context.Context, relayOpts *opts.RelayOptions, rel
 	if err := validateRelayOptions(relayOpts); err != nil {
 		return errors.Wrap(err, "unable to validate relay options")
 	}
+
+	llog := g.log.WithFields(logrus.Fields{
+		"relay-id": relayOpts.XRelayId,
+		"backend":  "gcp-pubsub",
+	})
+
+	// streamdal sdk BEGIN
+	sc, err := util.SetupStreamdalSDK(relayOpts, llog)
+	if err != nil {
+		return errors.Wrap(err, "kafka.Relay(): unable to create new streamdal client")
+	}
+	// defer sc.Close()
+	// streamdal sdk END
 
 	var m sync.Mutex
 
@@ -36,6 +53,32 @@ func (g *GCPPubSub) Relay(ctx context.Context, relayOpts *opts.RelayOptions, rel
 
 		prometheus.Incr("gcp-pubsub-relay-consumer", 1)
 
+		// streamdal sdk BEGIN
+		// If streamdal integration is enabled, process message via sdk
+		if sc != nil {
+			g.log.Debug("Processing message via streamdal SDK")
+
+			resp := sc.Process(ctx, &sdk.ProcessRequest{
+				ComponentName: "gcp-pubsub",
+				OperationType: sdk.OperationTypeConsumer,
+				OperationName: "relay",
+				Data:          msg.Data,
+			})
+
+			if resp.Status == sdk.ExecStatusError {
+				wrappedErr := fmt.Errorf("unable to process message via streamdal: %v", resp.StatusMessage)
+
+				prometheus.IncrPromCounter("plumber_sdk_errors", 1)
+				util.WriteError(llog, errorCh, wrappedErr)
+
+				return
+			}
+
+			// Update msg value with processed data
+			msg.Data = resp.Data
+		}
+		// streamdal sdk END
+
 		g.log.Debug("Writing message to relay channel")
 
 		relayCh <- &types.RelayMessage{
@@ -48,10 +91,12 @@ func (g *GCPPubSub) Relay(ctx context.Context, relayOpts *opts.RelayOptions, rel
 
 	g.log.Infof("Relaying GCP pubsub messages from '%s' queue -> '%s'", sub.ID(), relayOpts.XStreamdalGrpcAddress)
 
+MAIN:
 	for {
 		select {
 		case <-ctx.Done():
-			return nil
+			llog.Debug("detected context cancellation")
+			break MAIN
 		default:
 			// NOOP
 		}
@@ -71,6 +116,8 @@ func (g *GCPPubSub) Relay(ctx context.Context, relayOpts *opts.RelayOptions, rel
 			time.Sleep(RetryReadInterval)
 		}
 	}
+
+	llog.Debug("relay exiting")
 
 	return nil
 }

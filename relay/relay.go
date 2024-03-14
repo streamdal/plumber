@@ -10,6 +10,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	sdk "github.com/streamdal/streamdal/sdks/go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/metadata"
@@ -61,7 +62,6 @@ var (
 	ErrMissingConfig             = errors.New("Relay config cannot be nil")
 	ErrMissingToken              = errors.New("Token cannot be empty")
 	ErrMissingServiceShutdownCtx = errors.New("ServiceShutdownCtx cannot be nil")
-	ErrMissingGRPCAddress        = errors.New("GRPCAddress cannot be empty")
 	ErrMissingRelayCh            = errors.New("RelayCh cannot be nil")
 	ErrMissingMessage            = errors.New("msg cannot be nil")
 	ErrMissingMessageValue       = errors.New("msg.Value cannot be nil")
@@ -74,9 +74,10 @@ type IRelayBackend interface {
 
 type Relay struct {
 	*Config
-	Workers      map[int32]struct{}
-	WorkersMutex *sync.RWMutex
-	log          *logrus.Entry
+	Workers         map[int32]struct{}
+	WorkersMutex    *sync.RWMutex
+	StreamdalClient *sdk.Streamdal
+	log             *logrus.Entry
 }
 
 type Config struct {
@@ -268,7 +269,7 @@ func (r *Relay) Run(id int32, conn *grpc.ClientConn, outboundCtx, shutdownCtx co
 
 	queue := make([]interface{}, 0)
 
-	// This functions as an escape-vale -- if we are pumping messages *REALLY*
+	// This functions as an escape-valve -- if we are pumping messages *REALLY*
 	// fast - we will hit max queue size; if we are pumping messages slowly,
 	// the ticker will be hit and the queue will be flushed, regardless of size.
 	flushTicker := time.NewTicker(QueueFlushInterval)

@@ -10,6 +10,8 @@ import (
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+
+	"github.com/streamdal/plumber/validate"
 )
 
 func (p *Plumber) HandleGetRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
@@ -152,6 +154,15 @@ func (p *Plumber) HandleDeleteRelayCmd(ctx context.Context, client protos.Plumbe
 }
 
 func (p *Plumber) HandleCreateRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
+	// Just in case
+	if p.CLIOptions == nil || p.CLIOptions.Manage == nil || p.CLIOptions.Manage.Create == nil || p.CLIOptions.Manage.Create.Relay == nil {
+		return errors.New("unable to create relay: missing CLI options")
+	}
+
+	if err := validate.ManageCreateRelayCmd(p.CLIOptions.Manage.Create.Relay); err != nil {
+		return errors.Wrap(err, "unable to validate manage create relay options")
+	}
+
 	p.EnqueueManage(posthog.Capture{
 		Event:      "command_manage",
 		DistinctId: p.PersistentConfig.PlumberID,
@@ -193,6 +204,7 @@ func generateRelayOptionsForManageCreate(cliOpts *opts.CLIOptions) (*opts.RelayO
 		BatchMaxRetry:                cliOpts.Manage.Create.Relay.BatchMaxRetry,
 		ConnectionId:                 cliOpts.Manage.Create.Relay.ConnectionId,
 		NumWorkers:                   cliOpts.Manage.Create.Relay.NumWorkers,
+		StreamdalIntegrationOptions:  cliOpts.Manage.Create.Relay.StreamdalIntegrationOptions,
 		XStreamdalGrpcAddress:        cliOpts.Manage.Create.Relay.StreamdalGrpcAddress,
 		XStreamdalGrpcDisableTls:     cliOpts.Manage.Create.Relay.StreamdalGrpcDisableTls,
 		XStreamdalGrpcTimeoutSeconds: cliOpts.Manage.Create.Relay.StreamdalGrpcTimeoutSeconds,

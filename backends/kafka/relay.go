@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
@@ -14,6 +15,8 @@ import (
 	"github.com/streamdal/plumber/prometheus"
 	"github.com/streamdal/plumber/util"
 	"github.com/streamdal/plumber/validate"
+
+	sdk "github.com/streamdal/streamdal/sdks/go"
 )
 
 const (
@@ -33,7 +36,19 @@ func (k *Kafka) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 
 	defer reader.Close()
 
-	llog := k.log.WithField("relay-id", relayOpts.XRelayId)
+	// streamdal sdk BEGIN
+	sc, err := util.SetupStreamdalSDK(relayOpts, k.log)
+	if err != nil {
+		return errors.Wrap(err, "kafka.Relay(): unable to create new streamdal client")
+	}
+	// defer sc.Close()
+	// streamdal sdk END
+
+	llog := k.log.WithFields(logrus.Fields{
+		"relay-id": relayOpts.XRelayId,
+		"backend":  "kafka",
+		"function": "Relay",
+	})
 
 	for {
 		msg, err := reader.ReadMessage(ctx)
@@ -59,6 +74,32 @@ func (k *Kafka) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 
 		prometheus.Incr("kafka-relay-consumer", 1)
 
+		// streamdal sdk BEGIN
+		// If streamdal integration is enabled, process message via sdk
+		if sc != nil {
+			k.log.Debug("Processing message via streamdal SDK")
+
+			resp := sc.Process(ctx, &sdk.ProcessRequest{
+				ComponentName: "kafka",
+				OperationType: sdk.OperationTypeConsumer,
+				OperationName: "relay",
+				Data:          msg.Value,
+			})
+
+			if resp.Status == sdk.ExecStatusError {
+				wrappedErr := fmt.Errorf("unable to process message via streamdal: %v", resp.StatusMessage)
+
+				prometheus.IncrPromCounter("plumber_sdk_errors", 1)
+				util.WriteError(llog, errorCh, wrappedErr)
+
+				continue
+			}
+
+			// Update msg value with processed data
+			msg.Value = resp.Data
+		}
+		// streamdal sdk END
+
 		k.log.Debugf("Writing Kafka message to relay channel: %s", msg.Value)
 
 		relayCh <- &types.RelayMessage{
@@ -67,7 +108,7 @@ func (k *Kafka) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 		}
 	}
 
-	k.log.Debugf("relayer for '%s' exiting", relayOpts.XRelayId)
+	llog.Debug("relay exiting")
 
 	return nil
 }
