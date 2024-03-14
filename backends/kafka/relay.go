@@ -41,7 +41,7 @@ func (k *Kafka) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 	if err != nil {
 		return errors.Wrap(err, "kafka.Relay(): unable to create new streamdal client")
 	}
-	defer sc.Close()
+	// defer sc.Close()
 	// streamdal sdk END
 
 	llog := k.log.WithFields(logrus.Fields{
