@@ -1,5 +1,5 @@
 # This Dockerfile utilizes a multi-stage builds
-ARG ALPINE_VERSION=3.14
+ARG ALPINE_VERSION=3.19
 
 FROM golang:1.20-alpine$ALPINE_VERSION AS builder
 
