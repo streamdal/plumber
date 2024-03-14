@@ -66,7 +66,7 @@ require (
 	github.com/cloudevents/sdk-go/protocol/kafka_sarama/v2 v2.13.0
 	github.com/cloudevents/sdk-go/protocol/nats/v2 v2.13.0
 	github.com/cloudevents/sdk-go/v2 v2.13.0
-	github.com/streamdal/streamdal/sdks/go v0.1.12
+	github.com/streamdal/streamdal/sdks/go v0.1.13
 )
 
 require (

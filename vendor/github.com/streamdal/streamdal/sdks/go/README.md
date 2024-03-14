@@ -1,7 +1,7 @@
 Streamdal Go SDK
 ================
 [![Release](https://github.com/streamdal/streamdal/actions/workflows/sdks-go-release.yml/badge.svg)](https://github.com/streamdal/streamdal/actions/workflows/sdks-go-release.yml)
-[![Pull Request](https://github.com/streamdal/streamdal/actions/workflows/sdks-go-detective-pr.yml/badge.svg)](https://github.com/streamdal/streamdal/blob/main/.github/workflows/sdks-go-detective-pr.yml)
+[![Pull Request](https://github.com/streamdal/streamdal/actions/workflows/sdks-go-pr.yml/badge.svg)](https://github.com/streamdal/streamdal/blob/main/.github/workflows/sdks-go-pr.yml)
 [![Discord](https://img.shields.io/badge/Community-Discord-4c57e8.svg)](https://discord.gg/streamdal)
 
 <!-- TODO: UPDATE CODECLIMATE, GOREPORTCARD LINKS -->
@@ -93,7 +93,7 @@ order to support 12-Factor and usage of this SDK inside shims where `streamdal.C
 | DryRun           | STREAMDAL_DRY_RUN          | If true, no data will be modified                                                | *false*       |
 | Logger           |                            | An optional custom logger                                                        |               |
 | ClientType       |                            | 1 = ClientTypeSDK, 2 = ClientTypeShim                                            | ClientTypeSDK |
-| ShutdownCtx      | -                          | Your application's main context which will receive shutdown signals              |               |
+| ShutdownCtx      | -                          | Optional context used by lib to detect shutdowns              |      *empty*         |
 
 ### Metrics
 

@@ -19,7 +19,7 @@ func (s *Streamdal) genClientInfo() *protos.ClientInfo {
 	return &protos.ClientInfo{
 		ClientType:     protos.ClientType(s.config.ClientType),
 		LibraryName:    "go-sdk",
-		LibraryVersion: "0.1.12",
+		LibraryVersion: "0.1.13",
 		Language:       "go",
 		Arch:           runtime.GOARCH,
 		Os:             runtime.GOOS,
@@ -160,6 +160,8 @@ func (s *Streamdal) register(looper director.Looper) error {
 			"failed to complete initial registration with streamdal server (and IgnoreStartupError is set to 'false')",
 		)
 	}
+
+	s.config.Logger.Debug("register() exit")
 
 	return nil
 }

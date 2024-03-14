@@ -94,11 +94,19 @@ var (
 
 	// ErrPipelineTimeout is returned when a pipeline exceeds the configured timeout
 	ErrPipelineTimeout = errors.New("pipeline timeout exceeded")
+
+	// ErrClosedClient is returned when .Process() is called after .Close()
+	ErrClosedClient = errors.New("client is closed")
 )
 
 type IStreamdal interface {
 	// Process is used to run data pipelines against data
 	Process(ctx context.Context, req *ProcessRequest) *ProcessResponse
+
+	// Close should be called when streamdal client is no longer being used;
+	// will stop all active goroutines and clean up resources; client should NOT
+	// be re-used after Close() is called.
+	Close()
 }
 
 // Streamdal is the main struct for this library
@@ -121,6 +129,11 @@ type Streamdal struct {
 	pausedTails    map[string]map[string]*Tail // k1: audienceStr k2: tailID
 	schemas        map[string]*protos.Schema   // k: audienceStr
 	schemasMtx     *sync.RWMutex
+	cancelFunc     context.CancelFunc
+
+	// Set to true when .Close() is called; used to prevent calling .Process()
+	// when library instance is stopped.
+	closed bool
 }
 
 type Config struct {
@@ -158,7 +171,8 @@ type Config struct {
 	DryRun bool
 
 	// ShutdownCtx is a context that the library will listen to for cancellation
-	// notices. Required
+	// notices. Upon cancelling this context, SDK will stop all active goroutines
+	// and free up all used resources. Optional; default: nil
 	ShutdownCtx context.Context
 
 	// Logger is a logger you can inject (such as logrus) to allow this library
@@ -206,8 +220,14 @@ func New(cfg *Config) (*Streamdal, error) {
 		return nil, nil
 	}
 
+	// Derive a new cancellable context from the provided shutdown context. We
+	// do this so that .Close() can cancel all running goroutines.
+	ctx, cancelFunc := context.WithCancel(cfg.ShutdownCtx)
+	cfg.ShutdownCtx = ctx
+
 	serverClient, err := server.New(cfg.ServerURL, cfg.ServerToken)
 	if err != nil {
+		cancelFunc()
 		return nil, errors.Wrapf(err, "failed to connect to streamdal server© '%s'", cfg.ServerURL)
 	}
 
@@ -217,6 +237,7 @@ func New(cfg *Config) (*Streamdal, error) {
 		Log:          cfg.Logger,
 	})
 	if err != nil {
+		cancelFunc()
 		return nil, errors.Wrap(err, "failed to start metrics service")
 	}
 
@@ -224,11 +245,13 @@ func New(cfg *Config) (*Streamdal, error) {
 		Logger: cfg.Logger,
 	})
 	if err != nil {
+		cancelFunc()
 		return nil, errors.Wrap(err, "failed to start kv service")
 	}
 
 	hf, err := hostfunc.New(kvInstance, cfg.Logger)
 	if err != nil {
+		cancelFunc()
 		return nil, errors.Wrap(err, "failed to create hostfunc instance")
 	}
 
@@ -251,6 +274,7 @@ func New(cfg *Config) (*Streamdal, error) {
 		pausedTails:    make(map[string]map[string]*Tail),
 		schemasMtx:     &sync.RWMutex{},
 		schemas:        make(map[string]*protos.Schema),
+		cancelFunc:     cancelFunc,
 	}
 
 	if cfg.DryRun {
@@ -273,6 +297,7 @@ func New(cfg *Config) (*Streamdal, error) {
 	// Start heartbeat
 	go s.heartbeat(director.NewTimedLooper(director.FOREVER, time.Second, make(chan error, 1)))
 
+	// Watch for shutdown so we can properly stop tails
 	go s.watchForShutdown()
 
 	// Make sure we were able to start without issues
@@ -282,6 +307,11 @@ func New(cfg *Config) (*Streamdal, error) {
 	case <-time.After(time.Second * 5):
 		return s, nil
 	}
+}
+
+func (s *Streamdal) Close() {
+	s.cancelFunc()
+	s.closed = true
 }
 
 func validateConfig(cfg *Config) error {
@@ -390,6 +420,11 @@ func (s *Streamdal) watchForShutdown() {
 			tail.CancelFunc()
 		}
 	}
+
+	// Stop this instance from being used again
+	s.closed = true
+
+	s.config.Logger.Debug("watchForShutdown() exit")
 }
 
 func (s *Streamdal) pullInitialPipelines(ctx context.Context) error {
@@ -458,6 +493,8 @@ func (s *Streamdal) heartbeat(loop *director.TimedLooper) {
 
 		return nil
 	})
+
+	s.config.Logger.Debug("heartbeat() exit")
 }
 
 func (s *Streamdal) runStep(ctx context.Context, aud *protos.Audience, step *protos.PipelineStep, data []byte, isr *protos.InterStepResult) (*protos.WASMResponse, error) {
@@ -552,6 +589,14 @@ func newAudience(req *ProcessRequest, cfg *Config) *protos.Audience {
 }
 
 func (s *Streamdal) Process(ctx context.Context, req *ProcessRequest) *ProcessResponse {
+	if s.closed {
+		return &ProcessResponse{
+			Data:          req.Data,
+			Status:        ExecStatusError,
+			StatusMessage: proto.String(ErrClosedClient.Error()),
+		}
+	}
+
 	resp := &ProcessResponse{
 		PipelineStatus: make([]*protos.PipelineStatus, 0),
 		Metadata:       make(map[string]string),
