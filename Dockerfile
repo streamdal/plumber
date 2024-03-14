@@ -1,7 +1,7 @@
 # This Dockerfile utilizes a multi-stage builds
 ARG ALPINE_VERSION=3.14
 
-FROM golang:1.18-alpine$ALPINE_VERSION AS builder
+FROM golang:1.20-alpine$ALPINE_VERSION AS builder
 
 ARG TARGETARCH
 ARG TARGETOS
