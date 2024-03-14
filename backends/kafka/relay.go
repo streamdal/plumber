@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
@@ -44,7 +45,11 @@ func (k *Kafka) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 	//
 	// streamdal sdk END
 
-	llog := k.log.WithField("relay-id", relayOpts.XRelayId)
+	llog := k.log.WithFields(logrus.Fields{
+		"relay-id": relayOpts.XRelayId,
+		"backend":  "kafka",
+		"function": "Relay",
+	})
 
 	for {
 		msg, err := reader.ReadMessage(ctx)
@@ -104,7 +109,7 @@ func (k *Kafka) Relay(ctx context.Context, relayOpts *opts.RelayOptions, relayCh
 		}
 	}
 
-	k.log.Debugf("relayer for '%s' exiting", relayOpts.XRelayId)
+	llog.Debug("relay exiting")
 
 	return nil
 }
