@@ -58,10 +58,20 @@ func (g *GCPPubSub) Relay(ctx context.Context, relayOpts *opts.RelayOptions, rel
 		if sc != nil {
 			g.log.Debug("Processing message via streamdal SDK")
 
+			operationName := "relay"
+
+			if relayOpts != nil && relayOpts.GcpPubsub != nil && relayOpts.GcpPubsub.GetArgs() != nil {
+				if relayOpts.GcpPubsub.GetArgs().SubscriptionId == "" {
+					operationName = "relay-unknown-subid"
+				} else {
+					operationName = "relay-" + relayOpts.GcpPubsub.GetArgs().SubscriptionId
+				}
+			}
+
 			resp := sc.Process(ctx, &sdk.ProcessRequest{
 				ComponentName: "gcp-pubsub",
 				OperationType: sdk.OperationTypeConsumer,
-				OperationName: "relay",
+				OperationName: operationName,
 				Data:          msg.Data,
 			})
 
