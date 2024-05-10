@@ -468,6 +468,7 @@ func getConfigJson(fileName string) (*os.File, error) {
 		if err != nil {
 			return nil, err
 		}
+		defer f.Close()
 
 		f.WriteString("{}")
 	}
