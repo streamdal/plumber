@@ -11,7 +11,7 @@ import (
 
 func buildHostModuleOpaque(m *wasm.Module, listeners []experimental.FunctionListener) moduleContextOpaque {
 	size := len(m.CodeSection)*16 + 32
-	ret := make(moduleContextOpaque, size)
+	ret := newAlignedOpaque(size)
 
 	binary.LittleEndian.PutUint64(ret[0:], uint64(uintptr(unsafe.Pointer(m))))
 
@@ -53,8 +53,7 @@ func hostModuleListenersSliceFromOpaque(opaqueBegin uintptr) []experimental.Func
 	var ret []experimental.FunctionListener
 	sh = (*reflect.SliceHeader)(unsafe.Pointer(&ret))
 	sh.Data = uintptr(b)
-	sh.Len = int(l)
-	sh.Cap = int(c)
+	setSliceLimits(sh, uintptr(l), uintptr(c))
 	return ret
 }
 

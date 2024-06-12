@@ -2,7 +2,6 @@ package backend
 
 import (
 	"context"
-	"encoding/hex"
 	"fmt"
 
 	"github.com/tetratelabs/wazero/internal/engine/wazevo/backend/regalloc"
@@ -16,10 +15,12 @@ func NewCompiler(ctx context.Context, mach Machine, builder ssa.Builder) Compile
 }
 
 func newCompiler(_ context.Context, mach Machine, builder ssa.Builder) *compiler {
+	argResultInts, argResultFloats := mach.ArgsResultsRegs()
 	c := &compiler{
 		mach: mach, ssaBuilder: builder,
-		nextVRegID: regalloc.VRegIDNonReservedBegin,
-		regAlloc:   regalloc.NewAllocator(mach.RegisterInfo()),
+		nextVRegID:      regalloc.VRegIDNonReservedBegin,
+		argResultInts:   argResultInts,
+		argResultFloats: argResultFloats,
 	}
 	mach.SetCompiler(c)
 	return c
@@ -49,14 +50,14 @@ type Compiler interface {
 	// RegAlloc performs the register allocation after Lower is called.
 	RegAlloc()
 
-	// Finalize performs the finalization of the compilation. This must be called after RegAlloc.
-	Finalize(ctx context.Context)
-
-	// Encode encodes the machine code to the buffer.
-	Encode()
+	// Finalize performs the finalization of the compilation, including machine code emission.
+	// This must be called after RegAlloc.
+	Finalize(ctx context.Context) error
 
 	// Buf returns the buffer of the encoded machine code. This is only used for testing purpose.
 	Buf() []byte
+
+	BufPtr() *[]byte
 
 	// Format returns the debug string of the current state of the compiler.
 	Format() string
@@ -95,8 +96,17 @@ type Compiler interface {
 	// SourceOffsetInfo returns the source offset information for the current buffer offset.
 	SourceOffsetInfo() []SourceOffsetInfo
 
+	// EmitByte appends a byte to the buffer. Used during the code emission.
+	EmitByte(b byte)
+
 	// Emit4Bytes appends 4 bytes to the buffer. Used during the code emission.
 	Emit4Bytes(b uint32)
+
+	// Emit8Bytes appends 8 bytes to the buffer. Used during the code emission.
+	Emit8Bytes(b uint64)
+
+	// GetFunctionABI returns the ABI information for the given signature.
+	GetFunctionABI(sig *ssa.Signature) *FunctionABI
 }
 
 // RelocationInfo represents the relocation information for a call instruction.
@@ -122,7 +132,6 @@ type compiler struct {
 	ssaValueRefCounts []int
 	// returnVRegs is the list of virtual registers that store the return values.
 	returnVRegs  []regalloc.VReg
-	regAlloc     regalloc.Allocator
 	varEdges     [][2]regalloc.VReg
 	varEdgeTypes []ssa.Type
 	constEdges   []struct {
@@ -137,6 +146,9 @@ type compiler struct {
 	buf             []byte
 	relocations     []RelocationInfo
 	sourceOffsets   []SourceOffsetInfo
+	// abis maps ssa.SignatureID to the ABI implementation.
+	abis                           []FunctionABI
+	argResultInts, argResultFloats []regalloc.RealReg
 }
 
 // SourceOffsetInfo is a data to associate the source offset with the executable offset.
@@ -163,36 +175,27 @@ func (c *compiler) Compile(ctx context.Context) ([]byte, []RelocationInfo, error
 	if wazevoapi.DeterministicCompilationVerifierEnabled {
 		wazevoapi.VerifyOrSetDeterministicCompilationContextValue(ctx, "After Register Allocation", c.Format())
 	}
-	c.Finalize(ctx)
+	if err := c.Finalize(ctx); err != nil {
+		return nil, nil, err
+	}
 	if wazevoapi.PrintFinalizedMachineCode && wazevoapi.PrintEnabledIndex(ctx) {
 		fmt.Printf("[[[after finalize for %s]]]%s\n", wazevoapi.GetCurrentFunctionName(ctx), c.Format())
 	}
 	if wazevoapi.DeterministicCompilationVerifierEnabled {
 		wazevoapi.VerifyOrSetDeterministicCompilationContextValue(ctx, "After Finalization", c.Format())
 	}
-	c.Encode()
-	if wazevoapi.DeterministicCompilationVerifierEnabled {
-		wazevoapi.VerifyOrSetDeterministicCompilationContextValue(ctx, "Encoded Machine code", hex.EncodeToString(c.buf))
-	}
 	return c.buf, c.relocations, nil
 }
 
 // RegAlloc implements Compiler.RegAlloc.
 func (c *compiler) RegAlloc() {
-	regAllocFn := c.mach.Function()
-	c.regAlloc.DoAllocation(regAllocFn)
+	c.mach.RegAlloc()
 }
 
 // Finalize implements Compiler.Finalize.
-func (c *compiler) Finalize(ctx context.Context) {
-	c.mach.SetupPrologue()
-	c.mach.SetupEpilogue()
-	c.mach.ResolveRelativeAddresses(ctx)
-}
-
-// Encode implements Compiler.Encode.
-func (c *compiler) Encode() {
-	c.mach.Encode()
+func (c *compiler) Finalize(ctx context.Context) error {
+	c.mach.PostRegAlloc()
+	return c.mach.Encode(ctx)
 }
 
 // setCurrentGroupID sets the current instruction group ID.
@@ -290,7 +293,6 @@ func (c *compiler) Init() {
 	c.mach.Reset()
 	c.varEdges = c.varEdges[:0]
 	c.constEdges = c.constEdges[:0]
-	c.regAlloc.Reset()
 	c.buf = c.buf[:0]
 	c.sourceOffsets = c.sourceOffsets[:0]
 	c.relocations = c.relocations[:0]
@@ -375,12 +377,41 @@ func (c *compiler) AddRelocationInfo(funcRef ssa.FuncRef) {
 	})
 }
 
-// Emit4Bytes implements Compiler.Add4Bytes.
+// Emit8Bytes implements Compiler.Emit8Bytes.
+func (c *compiler) Emit8Bytes(b uint64) {
+	c.buf = append(c.buf, byte(b), byte(b>>8), byte(b>>16), byte(b>>24), byte(b>>32), byte(b>>40), byte(b>>48), byte(b>>56))
+}
+
+// Emit4Bytes implements Compiler.Emit4Bytes.
 func (c *compiler) Emit4Bytes(b uint32) {
 	c.buf = append(c.buf, byte(b), byte(b>>8), byte(b>>16), byte(b>>24))
+}
+
+// EmitByte implements Compiler.EmitByte.
+func (c *compiler) EmitByte(b byte) {
+	c.buf = append(c.buf, b)
 }
 
 // Buf implements Compiler.Buf.
 func (c *compiler) Buf() []byte {
 	return c.buf
+}
+
+// BufPtr implements Compiler.BufPtr.
+func (c *compiler) BufPtr() *[]byte {
+	return &c.buf
+}
+
+func (c *compiler) GetFunctionABI(sig *ssa.Signature) *FunctionABI {
+	if int(sig.ID) >= len(c.abis) {
+		c.abis = append(c.abis, make([]FunctionABI, int(sig.ID)+1)...)
+	}
+
+	abi := &c.abis[sig.ID]
+	if abi.Initialized {
+		return abi
+	}
+
+	abi.Init(sig, c.argResultInts, c.argResultFloats)
+	return abi
 }

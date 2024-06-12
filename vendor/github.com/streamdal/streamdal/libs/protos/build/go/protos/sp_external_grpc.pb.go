@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	External_GetAll_FullMethodName                = "/protos.External/GetAll"
+	External_GetConfig_FullMethodName             = "/protos.External/GetConfig"
 	External_GetAllStream_FullMethodName          = "/protos.External/GetAllStream"
 	External_GetPipelines_FullMethodName          = "/protos.External/GetPipelines"
 	External_GetPipeline_FullMethodName           = "/protos.External/GetPipeline"
@@ -36,6 +37,7 @@ const (
 	External_GetNotification_FullMethodName       = "/protos.External/GetNotification"
 	External_AttachNotification_FullMethodName    = "/protos.External/AttachNotification"
 	External_DetachNotification_FullMethodName    = "/protos.External/DetachNotification"
+	External_CreateAudience_FullMethodName        = "/protos.External/CreateAudience"
 	External_DeleteAudience_FullMethodName        = "/protos.External/DeleteAudience"
 	External_DeleteService_FullMethodName         = "/protos.External/DeleteService"
 	External_GetMetrics_FullMethodName            = "/protos.External/GetMetrics"
@@ -48,6 +50,11 @@ const (
 	External_AppRegister_FullMethodName           = "/protos.External/AppRegister"
 	External_AppVerifyRegistration_FullMethodName = "/protos.External/AppVerifyRegistration"
 	External_AppRegisterReject_FullMethodName     = "/protos.External/AppRegisterReject"
+	External_GetWasm_FullMethodName               = "/protos.External/GetWasm"
+	External_GetAllWasm_FullMethodName            = "/protos.External/GetAllWasm"
+	External_CreateWasm_FullMethodName            = "/protos.External/CreateWasm"
+	External_UpdateWasm_FullMethodName            = "/protos.External/UpdateWasm"
+	External_DeleteWasm_FullMethodName            = "/protos.External/DeleteWasm"
 	External_Test_FullMethodName                  = "/protos.External/Test"
 )
 
@@ -57,6 +64,8 @@ const (
 type ExternalClient interface {
 	// Returns all data needed for UI; called on initial console load
 	GetAll(ctx context.Context, in *GetAllRequest, opts ...grpc.CallOption) (*GetAllResponse, error)
+	// Returns the current _full_ configuration of the server
+	GetConfig(ctx context.Context, in *GetConfigRequest, opts ...grpc.CallOption) (*GetConfigResponse, error)
 	// Used by console to stream updates to UI; called after initial GetAll()
 	GetAllStream(ctx context.Context, in *GetAllRequest, opts ...grpc.CallOption) (External_GetAllStreamClient, error)
 	// Returns pipelines (_wasm_bytes field is stripped)
@@ -75,7 +84,7 @@ type ExternalClient interface {
 	// Resume a pipeline; noop if pipeline is not paused
 	ResumePipeline(ctx context.Context, in *ResumePipelineRequest, opts ...grpc.CallOption) (*StandardResponse, error)
 	// Create a new notification config
-	CreateNotification(ctx context.Context, in *CreateNotificationRequest, opts ...grpc.CallOption) (*StandardResponse, error)
+	CreateNotification(ctx context.Context, in *CreateNotificationRequest, opts ...grpc.CallOption) (*CreateNotificationResponse, error)
 	// Update an existing notification config
 	UpdateNotification(ctx context.Context, in *UpdateNotificationRequest, opts ...grpc.CallOption) (*StandardResponse, error)
 	// Delete a notification config
@@ -90,6 +99,8 @@ type ExternalClient interface {
 	// Deprecated: Do not use.
 	// Detach a notification config from a pipeline
 	DetachNotification(ctx context.Context, in *DetachNotificationRequest, opts ...grpc.CallOption) (*StandardResponse, error)
+	// Create an audience. Used for automation tooling (terraform, k8s cr's)
+	CreateAudience(ctx context.Context, in *CreateAudienceRequest, opts ...grpc.CallOption) (*StandardResponse, error)
 	// Delete an audience
 	DeleteAudience(ctx context.Context, in *DeleteAudienceRequest, opts ...grpc.CallOption) (*StandardResponse, error)
 	// Delete a service and all associated audiences
@@ -105,6 +116,12 @@ type ExternalClient interface {
 	AppRegister(ctx context.Context, in *AppRegistrationRequest, opts ...grpc.CallOption) (*StandardResponse, error)
 	AppVerifyRegistration(ctx context.Context, in *AppVerifyRegistrationRequest, opts ...grpc.CallOption) (*StandardResponse, error)
 	AppRegisterReject(ctx context.Context, in *AppRegisterRejectRequest, opts ...grpc.CallOption) (*StandardResponse, error)
+	// BEGIN Wasm methods
+	GetWasm(ctx context.Context, in *GetWasmRequest, opts ...grpc.CallOption) (*GetWasmResponse, error)
+	GetAllWasm(ctx context.Context, in *GetAllWasmRequest, opts ...grpc.CallOption) (*GetAllWasmResponse, error)
+	CreateWasm(ctx context.Context, in *CreateWasmRequest, opts ...grpc.CallOption) (*CreateWasmResponse, error)
+	UpdateWasm(ctx context.Context, in *UpdateWasmRequest, opts ...grpc.CallOption) (*StandardResponse, error)
+	DeleteWasm(ctx context.Context, in *DeleteWasmRequest, opts ...grpc.CallOption) (*StandardResponse, error)
 	// Test method
 	Test(ctx context.Context, in *TestRequest, opts ...grpc.CallOption) (*TestResponse, error)
 }
@@ -120,6 +137,15 @@ func NewExternalClient(cc grpc.ClientConnInterface) ExternalClient {
 func (c *externalClient) GetAll(ctx context.Context, in *GetAllRequest, opts ...grpc.CallOption) (*GetAllResponse, error) {
 	out := new(GetAllResponse)
 	err := c.cc.Invoke(ctx, External_GetAll_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *externalClient) GetConfig(ctx context.Context, in *GetConfigRequest, opts ...grpc.CallOption) (*GetConfigResponse, error) {
+	out := new(GetConfigResponse)
+	err := c.cc.Invoke(ctx, External_GetConfig_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -230,8 +256,8 @@ func (c *externalClient) ResumePipeline(ctx context.Context, in *ResumePipelineR
 	return out, nil
 }
 
-func (c *externalClient) CreateNotification(ctx context.Context, in *CreateNotificationRequest, opts ...grpc.CallOption) (*StandardResponse, error) {
-	out := new(StandardResponse)
+func (c *externalClient) CreateNotification(ctx context.Context, in *CreateNotificationRequest, opts ...grpc.CallOption) (*CreateNotificationResponse, error) {
+	out := new(CreateNotificationResponse)
 	err := c.cc.Invoke(ctx, External_CreateNotification_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -289,6 +315,15 @@ func (c *externalClient) AttachNotification(ctx context.Context, in *AttachNotif
 func (c *externalClient) DetachNotification(ctx context.Context, in *DetachNotificationRequest, opts ...grpc.CallOption) (*StandardResponse, error) {
 	out := new(StandardResponse)
 	err := c.cc.Invoke(ctx, External_DetachNotification_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *externalClient) CreateAudience(ctx context.Context, in *CreateAudienceRequest, opts ...grpc.CallOption) (*StandardResponse, error) {
+	out := new(StandardResponse)
+	err := c.cc.Invoke(ctx, External_CreateAudience_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -472,6 +507,51 @@ func (c *externalClient) AppRegisterReject(ctx context.Context, in *AppRegisterR
 	return out, nil
 }
 
+func (c *externalClient) GetWasm(ctx context.Context, in *GetWasmRequest, opts ...grpc.CallOption) (*GetWasmResponse, error) {
+	out := new(GetWasmResponse)
+	err := c.cc.Invoke(ctx, External_GetWasm_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *externalClient) GetAllWasm(ctx context.Context, in *GetAllWasmRequest, opts ...grpc.CallOption) (*GetAllWasmResponse, error) {
+	out := new(GetAllWasmResponse)
+	err := c.cc.Invoke(ctx, External_GetAllWasm_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *externalClient) CreateWasm(ctx context.Context, in *CreateWasmRequest, opts ...grpc.CallOption) (*CreateWasmResponse, error) {
+	out := new(CreateWasmResponse)
+	err := c.cc.Invoke(ctx, External_CreateWasm_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *externalClient) UpdateWasm(ctx context.Context, in *UpdateWasmRequest, opts ...grpc.CallOption) (*StandardResponse, error) {
+	out := new(StandardResponse)
+	err := c.cc.Invoke(ctx, External_UpdateWasm_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *externalClient) DeleteWasm(ctx context.Context, in *DeleteWasmRequest, opts ...grpc.CallOption) (*StandardResponse, error) {
+	out := new(StandardResponse)
+	err := c.cc.Invoke(ctx, External_DeleteWasm_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *externalClient) Test(ctx context.Context, in *TestRequest, opts ...grpc.CallOption) (*TestResponse, error) {
 	out := new(TestResponse)
 	err := c.cc.Invoke(ctx, External_Test_FullMethodName, in, out, opts...)
@@ -487,6 +567,8 @@ func (c *externalClient) Test(ctx context.Context, in *TestRequest, opts ...grpc
 type ExternalServer interface {
 	// Returns all data needed for UI; called on initial console load
 	GetAll(context.Context, *GetAllRequest) (*GetAllResponse, error)
+	// Returns the current _full_ configuration of the server
+	GetConfig(context.Context, *GetConfigRequest) (*GetConfigResponse, error)
 	// Used by console to stream updates to UI; called after initial GetAll()
 	GetAllStream(*GetAllRequest, External_GetAllStreamServer) error
 	// Returns pipelines (_wasm_bytes field is stripped)
@@ -505,7 +587,7 @@ type ExternalServer interface {
 	// Resume a pipeline; noop if pipeline is not paused
 	ResumePipeline(context.Context, *ResumePipelineRequest) (*StandardResponse, error)
 	// Create a new notification config
-	CreateNotification(context.Context, *CreateNotificationRequest) (*StandardResponse, error)
+	CreateNotification(context.Context, *CreateNotificationRequest) (*CreateNotificationResponse, error)
 	// Update an existing notification config
 	UpdateNotification(context.Context, *UpdateNotificationRequest) (*StandardResponse, error)
 	// Delete a notification config
@@ -520,6 +602,8 @@ type ExternalServer interface {
 	// Deprecated: Do not use.
 	// Detach a notification config from a pipeline
 	DetachNotification(context.Context, *DetachNotificationRequest) (*StandardResponse, error)
+	// Create an audience. Used for automation tooling (terraform, k8s cr's)
+	CreateAudience(context.Context, *CreateAudienceRequest) (*StandardResponse, error)
 	// Delete an audience
 	DeleteAudience(context.Context, *DeleteAudienceRequest) (*StandardResponse, error)
 	// Delete a service and all associated audiences
@@ -535,6 +619,12 @@ type ExternalServer interface {
 	AppRegister(context.Context, *AppRegistrationRequest) (*StandardResponse, error)
 	AppVerifyRegistration(context.Context, *AppVerifyRegistrationRequest) (*StandardResponse, error)
 	AppRegisterReject(context.Context, *AppRegisterRejectRequest) (*StandardResponse, error)
+	// BEGIN Wasm methods
+	GetWasm(context.Context, *GetWasmRequest) (*GetWasmResponse, error)
+	GetAllWasm(context.Context, *GetAllWasmRequest) (*GetAllWasmResponse, error)
+	CreateWasm(context.Context, *CreateWasmRequest) (*CreateWasmResponse, error)
+	UpdateWasm(context.Context, *UpdateWasmRequest) (*StandardResponse, error)
+	DeleteWasm(context.Context, *DeleteWasmRequest) (*StandardResponse, error)
 	// Test method
 	Test(context.Context, *TestRequest) (*TestResponse, error)
 	mustEmbedUnimplementedExternalServer()
@@ -546,6 +636,9 @@ type UnimplementedExternalServer struct {
 
 func (UnimplementedExternalServer) GetAll(context.Context, *GetAllRequest) (*GetAllResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAll not implemented")
+}
+func (UnimplementedExternalServer) GetConfig(context.Context, *GetConfigRequest) (*GetConfigResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetConfig not implemented")
 }
 func (UnimplementedExternalServer) GetAllStream(*GetAllRequest, External_GetAllStreamServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetAllStream not implemented")
@@ -574,7 +667,7 @@ func (UnimplementedExternalServer) PausePipeline(context.Context, *PausePipeline
 func (UnimplementedExternalServer) ResumePipeline(context.Context, *ResumePipelineRequest) (*StandardResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ResumePipeline not implemented")
 }
-func (UnimplementedExternalServer) CreateNotification(context.Context, *CreateNotificationRequest) (*StandardResponse, error) {
+func (UnimplementedExternalServer) CreateNotification(context.Context, *CreateNotificationRequest) (*CreateNotificationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateNotification not implemented")
 }
 func (UnimplementedExternalServer) UpdateNotification(context.Context, *UpdateNotificationRequest) (*StandardResponse, error) {
@@ -594,6 +687,9 @@ func (UnimplementedExternalServer) AttachNotification(context.Context, *AttachNo
 }
 func (UnimplementedExternalServer) DetachNotification(context.Context, *DetachNotificationRequest) (*StandardResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DetachNotification not implemented")
+}
+func (UnimplementedExternalServer) CreateAudience(context.Context, *CreateAudienceRequest) (*StandardResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateAudience not implemented")
 }
 func (UnimplementedExternalServer) DeleteAudience(context.Context, *DeleteAudienceRequest) (*StandardResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteAudience not implemented")
@@ -631,6 +727,21 @@ func (UnimplementedExternalServer) AppVerifyRegistration(context.Context, *AppVe
 func (UnimplementedExternalServer) AppRegisterReject(context.Context, *AppRegisterRejectRequest) (*StandardResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AppRegisterReject not implemented")
 }
+func (UnimplementedExternalServer) GetWasm(context.Context, *GetWasmRequest) (*GetWasmResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetWasm not implemented")
+}
+func (UnimplementedExternalServer) GetAllWasm(context.Context, *GetAllWasmRequest) (*GetAllWasmResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllWasm not implemented")
+}
+func (UnimplementedExternalServer) CreateWasm(context.Context, *CreateWasmRequest) (*CreateWasmResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateWasm not implemented")
+}
+func (UnimplementedExternalServer) UpdateWasm(context.Context, *UpdateWasmRequest) (*StandardResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateWasm not implemented")
+}
+func (UnimplementedExternalServer) DeleteWasm(context.Context, *DeleteWasmRequest) (*StandardResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteWasm not implemented")
+}
 func (UnimplementedExternalServer) Test(context.Context, *TestRequest) (*TestResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Test not implemented")
 }
@@ -661,6 +772,24 @@ func _External_GetAll_Handler(srv interface{}, ctx context.Context, dec func(int
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ExternalServer).GetAll(ctx, req.(*GetAllRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _External_GetConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetConfigRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExternalServer).GetConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: External_GetConfig_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExternalServer).GetConfig(ctx, req.(*GetConfigRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -956,6 +1085,24 @@ func _External_DetachNotification_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _External_CreateAudience_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateAudienceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExternalServer).CreateAudience(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: External_CreateAudience_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExternalServer).CreateAudience(ctx, req.(*CreateAudienceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _External_DeleteAudience_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteAudienceRequest)
 	if err := dec(in); err != nil {
@@ -1181,6 +1328,96 @@ func _External_AppRegisterReject_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _External_GetWasm_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetWasmRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExternalServer).GetWasm(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: External_GetWasm_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExternalServer).GetWasm(ctx, req.(*GetWasmRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _External_GetAllWasm_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllWasmRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExternalServer).GetAllWasm(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: External_GetAllWasm_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExternalServer).GetAllWasm(ctx, req.(*GetAllWasmRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _External_CreateWasm_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateWasmRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExternalServer).CreateWasm(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: External_CreateWasm_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExternalServer).CreateWasm(ctx, req.(*CreateWasmRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _External_UpdateWasm_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateWasmRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExternalServer).UpdateWasm(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: External_UpdateWasm_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExternalServer).UpdateWasm(ctx, req.(*UpdateWasmRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _External_DeleteWasm_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteWasmRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ExternalServer).DeleteWasm(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: External_DeleteWasm_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ExternalServer).DeleteWasm(ctx, req.(*DeleteWasmRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _External_Test_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(TestRequest)
 	if err := dec(in); err != nil {
@@ -1209,6 +1446,10 @@ var External_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAll",
 			Handler:    _External_GetAll_Handler,
+		},
+		{
+			MethodName: "GetConfig",
+			Handler:    _External_GetConfig_Handler,
 		},
 		{
 			MethodName: "GetPipelines",
@@ -1271,6 +1512,10 @@ var External_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _External_DetachNotification_Handler,
 		},
 		{
+			MethodName: "CreateAudience",
+			Handler:    _External_CreateAudience_Handler,
+		},
+		{
 			MethodName: "DeleteAudience",
 			Handler:    _External_DeleteAudience_Handler,
 		},
@@ -1305,6 +1550,26 @@ var External_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AppRegisterReject",
 			Handler:    _External_AppRegisterReject_Handler,
+		},
+		{
+			MethodName: "GetWasm",
+			Handler:    _External_GetWasm_Handler,
+		},
+		{
+			MethodName: "GetAllWasm",
+			Handler:    _External_GetAllWasm_Handler,
+		},
+		{
+			MethodName: "CreateWasm",
+			Handler:    _External_CreateWasm_Handler,
+		},
+		{
+			MethodName: "UpdateWasm",
+			Handler:    _External_UpdateWasm_Handler,
+		},
+		{
+			MethodName: "DeleteWasm",
+			Handler:    _External_DeleteWasm_Handler,
 		},
 		{
 			MethodName: "Test",

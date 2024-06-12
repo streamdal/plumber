@@ -3,6 +3,7 @@ package frontend
 
 import (
 	"bytes"
+	"math"
 
 	"github.com/tetratelabs/wazero/internal/engine/wazevo/ssa"
 	"github.com/tetratelabs/wazero/internal/engine/wazevo/wazevoapi"
@@ -21,18 +22,20 @@ type Compiler struct {
 	signatures             map[*wasm.FunctionType]*ssa.Signature
 	listenerSignatures     map[*wasm.FunctionType][2]*ssa.Signature
 	memoryGrowSig          ssa.Signature
+	memoryWait32Sig        ssa.Signature
+	memoryWait64Sig        ssa.Signature
+	memoryNotifySig        ssa.Signature
 	checkModuleExitCodeSig ssa.Signature
 	tableGrowSig           ssa.Signature
 	refFuncSig             ssa.Signature
 	memmoveSig             ssa.Signature
-	checkModuleExitCodeArg [1]ssa.Value
 	ensureTermination      bool
 
 	// Followings are reset by per function.
 
 	// wasmLocalToVariable maps the index (considered as wasm.Index of locals)
 	// to the corresponding ssa.Variable.
-	wasmLocalToVariable                   map[wasm.Index]ssa.Variable
+	wasmLocalToVariable                   [] /* local index to */ ssa.Variable
 	wasmLocalFunctionIndex                wasm.Index
 	wasmFunctionTypeIndex                 wasm.Index
 	wasmFunctionTyp                       *wasm.FunctionType
@@ -41,6 +44,7 @@ type Compiler struct {
 	wasmFunctionBodyOffsetInCodeSection   uint64
 	memoryBaseVariable, memoryLenVariable ssa.Variable
 	needMemory                            bool
+	memoryShared                          bool
 	globalVariables                       []ssa.Variable
 	globalVariablesTypes                  []ssa.Type
 	mutableGlobalVariablesIndexes         []wasm.Index // index to ^.
@@ -50,27 +54,48 @@ type Compiler struct {
 	br            *bytes.Reader
 	loweringState loweringState
 
-	knownSafeBounds    []knownSafeBound
+	knownSafeBounds    [] /* ssa.ValueID to */ knownSafeBound
 	knownSafeBoundsSet []ssa.ValueID
 
+	knownSafeBoundsAtTheEndOfBlocks   [] /* ssa.BlockID to */ knownSafeBoundsAtTheEndOfBlock
+	varLengthKnownSafeBoundWithIDPool wazevoapi.VarLengthPool[knownSafeBoundWithID]
+
 	execCtxPtrValue, moduleCtxPtrValue ssa.Value
+
+	// Following are reused for the known safe bounds analysis.
+
+	pointers []int
+	bounds   [][]knownSafeBoundWithID
 }
 
-type knownSafeBound struct {
-	bound        uint64
-	absoluteAddr ssa.Value
-}
+type (
+	// knownSafeBound represents a known safe bound for a value.
+	knownSafeBound struct {
+		// bound is a constant upper bound for the value.
+		bound uint64
+		// absoluteAddr is the absolute address of the value.
+		absoluteAddr ssa.Value
+	}
+	// knownSafeBoundWithID is a knownSafeBound with the ID of the value.
+	knownSafeBoundWithID struct {
+		knownSafeBound
+		id ssa.ValueID
+	}
+	knownSafeBoundsAtTheEndOfBlock = wazevoapi.VarLength[knownSafeBoundWithID]
+)
+
+var knownSafeBoundsAtTheEndOfBlockNil = wazevoapi.NewNilVarLength[knownSafeBoundWithID]()
 
 // NewFrontendCompiler returns a frontend Compiler.
 func NewFrontendCompiler(m *wasm.Module, ssaBuilder ssa.Builder, offset *wazevoapi.ModuleContextOffsetData, ensureTermination bool, listenerOn bool, sourceInfo bool) *Compiler {
 	c := &Compiler{
-		m:                    m,
-		ssaBuilder:           ssaBuilder,
-		br:                   bytes.NewReader(nil),
-		wasmLocalToVariable:  make(map[wasm.Index]ssa.Variable),
-		offset:               offset,
-		ensureTermination:    ensureTermination,
-		needSourceOffsetInfo: sourceInfo,
+		m:                                 m,
+		ssaBuilder:                        ssaBuilder,
+		br:                                bytes.NewReader(nil),
+		offset:                            offset,
+		ensureTermination:                 ensureTermination,
+		needSourceOffsetInfo:              sourceInfo,
+		varLengthKnownSafeBoundWithIDPool: wazevoapi.NewVarLengthPool[knownSafeBoundWithID](),
 	}
 	c.declareSignatures(listenerOn)
 	return c
@@ -138,9 +163,37 @@ func (c *Compiler) declareSignatures(listenerOn bool) {
 	c.memmoveSig = ssa.Signature{
 		ID: c.refFuncSig.ID + 1,
 		// dst, src, and the byte count.
-		Params: []ssa.Type{ssa.TypeI64, ssa.TypeI64, ssa.TypeI32},
+		Params: []ssa.Type{ssa.TypeI64, ssa.TypeI64, ssa.TypeI64},
 	}
+
 	c.ssaBuilder.DeclareSignature(&c.memmoveSig)
+
+	c.memoryWait32Sig = ssa.Signature{
+		ID: c.memmoveSig.ID + 1,
+		// exec context, timeout, expected, addr
+		Params: []ssa.Type{ssa.TypeI64, ssa.TypeI64, ssa.TypeI32, ssa.TypeI64},
+		// Returns the status.
+		Results: []ssa.Type{ssa.TypeI32},
+	}
+	c.ssaBuilder.DeclareSignature(&c.memoryWait32Sig)
+
+	c.memoryWait64Sig = ssa.Signature{
+		ID: c.memoryWait32Sig.ID + 1,
+		// exec context, timeout, expected, addr
+		Params: []ssa.Type{ssa.TypeI64, ssa.TypeI64, ssa.TypeI64, ssa.TypeI64},
+		// Returns the status.
+		Results: []ssa.Type{ssa.TypeI32},
+	}
+	c.ssaBuilder.DeclareSignature(&c.memoryWait64Sig)
+
+	c.memoryNotifySig = ssa.Signature{
+		ID: c.memoryWait64Sig.ID + 1,
+		// exec context, count, addr
+		Params: []ssa.Type{ssa.TypeI64, ssa.TypeI32, ssa.TypeI64},
+		// Returns the number notified.
+		Results: []ssa.Type{ssa.TypeI32},
+	}
+	c.ssaBuilder.DeclareSignature(&c.memoryNotifySig)
 }
 
 // SignatureForWasmFunctionType returns the ssa.Signature for the given wasm.FunctionType.
@@ -173,6 +226,9 @@ func (c *Compiler) Init(idx, typIndex wasm.Index, typ *wasm.FunctionType, localT
 	c.wasmFunctionBody = body
 	c.wasmFunctionBodyOffsetInCodeSection = bodyOffsetInCodeSection
 	c.needListener = needListener
+	c.clearSafeBounds()
+	c.varLengthKnownSafeBoundWithIDPool.Reset()
+	c.knownSafeBoundsAtTheEndOfBlocks = c.knownSafeBoundsAtTheEndOfBlocks[:0]
 }
 
 // Note: this assumes 64-bit platform (I believe we won't have 32-bit backend ;)).
@@ -217,7 +273,7 @@ func (c *Compiler) LowerToSSA() {
 		variable := builder.DeclareVariable(st)
 		value := entryBlock.AddParam(builder, st)
 		builder.DefineVariable(variable, value, entryBlock)
-		c.wasmLocalToVariable[wasm.Index(i)] = variable
+		c.setWasmLocalVariable(wasm.Index(i), variable)
 	}
 	c.declareWasmLocals(entryBlock)
 	c.declareNecessaryVariables()
@@ -230,38 +286,37 @@ func (c *Compiler) localVariable(index wasm.Index) ssa.Variable {
 	return c.wasmLocalToVariable[index]
 }
 
+func (c *Compiler) setWasmLocalVariable(index wasm.Index, variable ssa.Variable) {
+	idx := int(index)
+	if idx >= len(c.wasmLocalToVariable) {
+		c.wasmLocalToVariable = append(c.wasmLocalToVariable, make([]ssa.Variable, idx+1-len(c.wasmLocalToVariable))...)
+	}
+	c.wasmLocalToVariable[idx] = variable
+}
+
 // declareWasmLocals declares the SSA variables for the Wasm locals.
 func (c *Compiler) declareWasmLocals(entry ssa.BasicBlock) {
 	localCount := wasm.Index(len(c.wasmFunctionTyp.Params))
 	for i, typ := range c.wasmFunctionLocalTypes {
 		st := WasmTypeToSSAType(typ)
 		variable := c.ssaBuilder.DeclareVariable(st)
-		c.wasmLocalToVariable[wasm.Index(i)+localCount] = variable
-
-		zeroInst := c.ssaBuilder.AllocateInstruction()
-		switch st {
-		case ssa.TypeI32:
-			zeroInst.AsIconst32(0)
-		case ssa.TypeI64:
-			zeroInst.AsIconst64(0)
-		case ssa.TypeF32:
-			zeroInst.AsF32const(0)
-		case ssa.TypeF64:
-			zeroInst.AsF64const(0)
-		case ssa.TypeV128:
-			zeroInst.AsVconst(0, 0)
-		default:
-			panic("TODO: " + wasm.ValueTypeName(typ))
-		}
-
-		c.ssaBuilder.InsertInstruction(zeroInst)
-		value := zeroInst.Return()
-		c.ssaBuilder.DefineVariable(variable, value, entry)
+		c.setWasmLocalVariable(wasm.Index(i)+localCount, variable)
+		c.ssaBuilder.InsertZeroValue(st)
 	}
 }
 
 func (c *Compiler) declareNecessaryVariables() {
-	c.needMemory = c.m.ImportMemoryCount > 0 || c.m.MemorySection != nil
+	if c.needMemory = c.m.MemorySection != nil; c.needMemory {
+		c.memoryShared = c.m.MemorySection.IsShared
+	} else if c.needMemory = c.m.ImportMemoryCount > 0; c.needMemory {
+		for _, imp := range c.m.ImportSection {
+			if imp.Type == wasm.ExternTypeMemory {
+				c.memoryShared = imp.DescMem.IsShared
+				break
+			}
+		}
+	}
+
 	if c.needMemory {
 		c.memoryBaseVariable = c.ssaBuilder.DeclareVariable(ssa.TypeI64)
 		c.memoryLenVariable = c.ssaBuilder.DeclareVariable(ssa.TypeI64)
@@ -388,16 +443,133 @@ func (c *Compiler) recordKnownSafeBound(v ssa.ValueID, safeBound uint64, absolut
 	}
 }
 
-// clearSafeBounds clears the known safe bounds. This must be called
-// after the compilation of each block.
+// clearSafeBounds clears the known safe bounds.
 func (c *Compiler) clearSafeBounds() {
 	for _, v := range c.knownSafeBoundsSet {
 		ptr := &c.knownSafeBounds[v]
 		ptr.bound = 0
+		ptr.absoluteAddr = ssa.ValueInvalid
 	}
 	c.knownSafeBoundsSet = c.knownSafeBoundsSet[:0]
 }
 
+// resetAbsoluteAddressInSafeBounds resets the absolute addresses recorded in the known safe bounds.
+func (c *Compiler) resetAbsoluteAddressInSafeBounds() {
+	for _, v := range c.knownSafeBoundsSet {
+		ptr := &c.knownSafeBounds[v]
+		ptr.absoluteAddr = ssa.ValueInvalid
+	}
+}
+
 func (k *knownSafeBound) valid() bool {
 	return k != nil && k.bound > 0
+}
+
+func (c *Compiler) allocateVarLengthValues(_cap int, vs ...ssa.Value) ssa.Values {
+	builder := c.ssaBuilder
+	pool := builder.VarLengthPool()
+	args := pool.Allocate(_cap)
+	args = args.Append(builder.VarLengthPool(), vs...)
+	return args
+}
+
+func (c *Compiler) finalizeKnownSafeBoundsAtTheEndOfBlock(bID ssa.BasicBlockID) {
+	_bID := int(bID)
+	if l := len(c.knownSafeBoundsAtTheEndOfBlocks); _bID >= l {
+		c.knownSafeBoundsAtTheEndOfBlocks = append(c.knownSafeBoundsAtTheEndOfBlocks,
+			make([]knownSafeBoundsAtTheEndOfBlock, _bID+1-len(c.knownSafeBoundsAtTheEndOfBlocks))...)
+		for i := l; i < len(c.knownSafeBoundsAtTheEndOfBlocks); i++ {
+			c.knownSafeBoundsAtTheEndOfBlocks[i] = knownSafeBoundsAtTheEndOfBlockNil
+		}
+	}
+	p := &c.varLengthKnownSafeBoundWithIDPool
+	size := len(c.knownSafeBoundsSet)
+	allocated := c.varLengthKnownSafeBoundWithIDPool.Allocate(size)
+	// Sort the known safe bounds by the value ID so that we can use the intersection algorithm in initializeCurrentBlockKnownBounds.
+	sortSSAValueIDs(c.knownSafeBoundsSet)
+	for _, vID := range c.knownSafeBoundsSet {
+		kb := c.knownSafeBounds[vID]
+		allocated = allocated.Append(p, knownSafeBoundWithID{
+			knownSafeBound: kb,
+			id:             vID,
+		})
+	}
+	c.knownSafeBoundsAtTheEndOfBlocks[bID] = allocated
+	c.clearSafeBounds()
+}
+
+func (c *Compiler) initializeCurrentBlockKnownBounds() {
+	currentBlk := c.ssaBuilder.CurrentBlock()
+	switch preds := currentBlk.Preds(); preds {
+	case 0:
+	case 1:
+		pred := currentBlk.Pred(0).ID()
+		for _, kb := range c.getKnownSafeBoundsAtTheEndOfBlocks(pred).View() {
+			// Unless the block is sealed, we cannot assume the absolute address is valid:
+			// later we might add another predecessor that has no visibility of that value.
+			addr := ssa.ValueInvalid
+			if currentBlk.Sealed() {
+				addr = kb.absoluteAddr
+			}
+			c.recordKnownSafeBound(kb.id, kb.bound, addr)
+		}
+	default:
+		c.pointers = c.pointers[:0]
+		c.bounds = c.bounds[:0]
+		for i := 0; i < preds; i++ {
+			c.bounds = append(c.bounds, c.getKnownSafeBoundsAtTheEndOfBlocks(currentBlk.Pred(i).ID()).View())
+			c.pointers = append(c.pointers, 0)
+		}
+
+		// If there are multiple predecessors, we need to find the intersection of the known safe bounds.
+
+	outer:
+		for {
+			smallestID := ssa.ValueID(math.MaxUint32)
+			for i, ptr := range c.pointers {
+				if ptr >= len(c.bounds[i]) {
+					break outer
+				}
+				cb := &c.bounds[i][ptr]
+				if id := cb.id; id < smallestID {
+					smallestID = cb.id
+				}
+			}
+
+			// Check if current elements are the same across all lists.
+			same := true
+			minBound := uint64(math.MaxUint64)
+			for i := 0; i < preds; i++ {
+				cb := &c.bounds[i][c.pointers[i]]
+				if cb.id != smallestID {
+					same = false
+					break
+				} else {
+					if cb.bound < minBound {
+						minBound = cb.bound
+					}
+				}
+			}
+
+			if same { // All elements are the same.
+				// Absolute address cannot be used in the intersection since the value might be only defined in one of the predecessors.
+				c.recordKnownSafeBound(smallestID, minBound, ssa.ValueInvalid)
+			}
+
+			// Move pointer(s) for the smallest ID forward (if same, move all).
+			for i := 0; i < preds; i++ {
+				cb := &c.bounds[i][c.pointers[i]]
+				if cb.id == smallestID {
+					c.pointers[i]++
+				}
+			}
+		}
+	}
+}
+
+func (c *Compiler) getKnownSafeBoundsAtTheEndOfBlocks(id ssa.BasicBlockID) knownSafeBoundsAtTheEndOfBlock {
+	if int(id) >= len(c.knownSafeBoundsAtTheEndOfBlocks) {
+		return knownSafeBoundsAtTheEndOfBlockNil
+	}
+	return c.knownSafeBoundsAtTheEndOfBlocks[id]
 }

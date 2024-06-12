@@ -23,14 +23,14 @@ type Instruction struct {
 	v          Value
 	v2         Value
 	v3         Value
-	vs         []Value
+	vs         Values
 	typ        Type
 	blk        BasicBlock
 	targets    []BasicBlock
 	prev, next *Instruction
 
 	rValue         Value
-	rValues        []Value
+	rValues        Values
 	gid            InstructionGroupID
 	sourceOffset   SourceOffset
 	live           bool
@@ -84,7 +84,7 @@ func resetInstruction(i *Instruction) {
 	i.v3 = ValueInvalid
 	i.rValue = ValueInvalid
 	i.typ = typeInvalid
-	i.vs = nil
+	i.vs = ValuesNil
 	i.sourceOffset = sourceOffsetUnknown
 }
 
@@ -105,7 +105,7 @@ type InstructionGroupID uint32
 // Returns Value(s) produced by this instruction if any.
 // The `first` is the first return value, and `rest` is the rest of the values.
 func (i *Instruction) Returns() (first Value, rest []Value) {
-	return i.rValue, i.rValues
+	return i.rValue, i.rValues.View()
 }
 
 // Return returns a Value(s) produced by this instruction if any.
@@ -116,7 +116,7 @@ func (i *Instruction) Return() (first Value) {
 
 // Args returns the arguments to this instruction.
 func (i *Instruction) Args() (v1, v2, v3 Value, vs []Value) {
-	return i.v, i.v2, i.v3, i.vs
+	return i.v, i.v2, i.v3, i.vs.View()
 }
 
 // Arg returns the first argument to this instruction.
@@ -218,12 +218,10 @@ const (
 	// OpcodeSwizzle performs a vector swizzle operation: `v = Swizzle.lane x, y`.
 	OpcodeSwizzle
 
-	// OpcodeInsertlane ...
-	// `v = insertlane x, y, Idx`. (TernaryImm8)
+	// OpcodeInsertlane inserts a lane value into a vector: `v = InsertLane x, y, Idx`.
 	OpcodeInsertlane
 
-	// OpcodeExtractlane ...
-	// `v = extractlane x, Idx`. (BinaryImm8)
+	// OpcodeExtractlane extracts a lane value from a vector: `v = ExtractLane x, Idx`.
 	OpcodeExtractlane
 
 	// OpcodeLoad loads a Type value from the [base + offset] address: `v = Load base, offset`.
@@ -438,9 +436,11 @@ const (
 	OpcodeVFcvtToSintSat
 
 	// OpcodeVFcvtFromUint converts a floating point value from an unsigned integer: `v = FcvtFromUint.lane x` on vector.
+	// x is always a 32-bit integer lane, and the result is either a 32-bit or 64-bit floating point-sized vector.
 	OpcodeVFcvtFromUint
 
 	// OpcodeVFcvtFromSint converts a floating point value from a signed integer: `v = VFcvtFromSint.lane x` on vector.
+	// x is always a 32-bit integer lane, and the result is either a 32-bit or 64-bit floating point-sized vector.
 	OpcodeVFcvtFromSint
 
 	// OpcodeImul performs an integer multiplication: `v = Imul x, y`.
@@ -547,12 +547,7 @@ const (
 	// OpcodeBitcast is a bitcast operation: `v = bitcast x`.
 	OpcodeBitcast
 
-	// OpcodeBmask ...
-	// `v = bmask x`.
-	OpcodeBmask
-
-	// OpcodeIreduce ...
-	// `v = ireduce x`.
+	// OpcodeIreduce narrow the given integer: `v = Ireduce x`.
 	OpcodeIreduce
 
 	// OpcodeSnarrow converts two input vectors x, y into a smaller lane vector by narrowing each lane, signed `v = Snarrow.lane x, y`.
@@ -573,11 +568,11 @@ const (
 	// OpcodeUwidenHigh converts high half of the smaller lane vector to a larger lane vector, zero (unsigned) extended: `v = UwidenHigh.lane x`.
 	OpcodeUwidenHigh
 
-	// OpcodeIaddPairwise is a lane-wise integer extended pairwise addition producing extended results (twice wider results than the inputs): `v = iadd_pairwise x, y` on vector.
-	OpcodeIaddPairwise
+	// OpcodeExtIaddPairwise is a lane-wise integer extended pairwise addition producing extended results (twice wider results than the inputs): `v = extiadd_pairwise x, y` on vector.
+	OpcodeExtIaddPairwise
 
-	// OpcodeWideningPairwiseDotProductS ...
-	// `v = widening_pairwise_dot_product_s x, y`.
+	// OpcodeWideningPairwiseDotProductS is a lane-wise widening pairwise dot product with signed saturation: `v = WideningPairwiseDotProductS x, y` on vector.
+	// Currently, the only lane is i16, and the result is i32.
 	OpcodeWideningPairwiseDotProductS
 
 	// OpcodeUExtend zero-extends the given integer: `v = UExtend x, from->to`.
@@ -600,18 +595,16 @@ const (
 	// to two lower single-precision lanes of the result `v = Fvdemote.lane x`.
 	OpcodeFvdemote
 
-	// OpcodeFcvtToUint ...
-	// `v = fcvt_to_uint x`.
+	// OpcodeFcvtToUint converts a floating point value to an unsigned integer: `v = FcvtToUint x`.
 	OpcodeFcvtToUint
 
 	// OpcodeFcvtToSint converts a floating point value to a signed integer: `v = FcvtToSint x`.
 	OpcodeFcvtToSint
 
-	// OpcodeFcvtToUintSat converts a floating point value to an unsigned integer: `v = FcvtToUintSat x`.
+	// OpcodeFcvtToUintSat converts a floating point value to an unsigned integer: `v = FcvtToUintSat x` which saturates on overflow.
 	OpcodeFcvtToUintSat
 
-	// OpcodeFcvtToSintSat ...
-	// `v = fcvt_to_sint_sat x`.
+	// OpcodeFcvtToSintSat converts a floating point value to a signed integer: `v = FcvtToSintSat x` which saturates on overflow.
 	OpcodeFcvtToSintSat
 
 	// OpcodeFcvtFromUint converts an unsigned integer to a floating point value: `v = FcvtFromUint x`.
@@ -620,37 +613,61 @@ const (
 	// OpcodeFcvtFromSint converts a signed integer to a floating point value: `v = FcvtFromSint x`.
 	OpcodeFcvtFromSint
 
-	// OpcodeIsplit ...
-	// `lo, hi = isplit x`.
-	OpcodeIsplit
-
-	// OpcodeIconcat ...
-	// `v = iconcat lo, hi`.
-	OpcodeIconcat
-
-	// OpcodeAtomicRmw ...
-	// `v = atomic_rmw MemFlags, AtomicRmwOp, p, x`.
+	// OpcodeAtomicRmw is atomic read-modify-write operation: `v = atomic_rmw op, p, offset, value`.
 	OpcodeAtomicRmw
 
-	// OpcodeAtomicCas ...
-	// `v = atomic_cas MemFlags, p, e, x`.
+	// OpcodeAtomicCas is atomic compare-and-swap operation.
 	OpcodeAtomicCas
 
-	// OpcodeAtomicLoad ...
-	// `v = atomic_load MemFlags, p`.
+	// OpcodeAtomicLoad is atomic load operation.
 	OpcodeAtomicLoad
 
-	// OpcodeAtomicStore ...
-	// `atomic_store MemFlags, x, p`.
+	// OpcodeAtomicStore is atomic store operation.
 	OpcodeAtomicStore
 
-	// OpcodeFence ...
-	// `fence`.
+	// OpcodeFence is a memory fence operation.
 	OpcodeFence
 
 	// opcodeEnd marks the end of the opcode list.
 	opcodeEnd
 )
+
+// AtomicRmwOp represents the atomic read-modify-write operation.
+type AtomicRmwOp byte
+
+const (
+	// AtomicRmwOpAdd is an atomic add operation.
+	AtomicRmwOpAdd AtomicRmwOp = iota
+	// AtomicRmwOpSub is an atomic sub operation.
+	AtomicRmwOpSub
+	// AtomicRmwOpAnd is an atomic and operation.
+	AtomicRmwOpAnd
+	// AtomicRmwOpOr is an atomic or operation.
+	AtomicRmwOpOr
+	// AtomicRmwOpXor is an atomic xor operation.
+	AtomicRmwOpXor
+	// AtomicRmwOpXchg is an atomic swap operation.
+	AtomicRmwOpXchg
+)
+
+// String implements the fmt.Stringer.
+func (op AtomicRmwOp) String() string {
+	switch op {
+	case AtomicRmwOpAdd:
+		return "add"
+	case AtomicRmwOpSub:
+		return "sub"
+	case AtomicRmwOpAnd:
+		return "and"
+	case AtomicRmwOpOr:
+		return "or"
+	case AtomicRmwOpXor:
+		return "xor"
+	case AtomicRmwOpXchg:
+		return "xchg"
+	}
+	panic(fmt.Sprintf("unknown AtomicRmwOp: %d", op))
+}
 
 // returnTypesFn provides the info to determine the type of instruction.
 // t1 is the type of the first result, ts are the types of the remaining results.
@@ -682,143 +699,149 @@ const (
 // instructionSideEffects provides the info to determine if an instruction has side effects.
 // Instructions with side effects must not be eliminated regardless whether the result is used or not.
 var instructionSideEffects = [opcodeEnd]sideEffect{
-	OpcodeUndefined:          sideEffectStrict,
-	OpcodeJump:               sideEffectStrict,
-	OpcodeIconst:             sideEffectNone,
-	OpcodeCall:               sideEffectStrict,
-	OpcodeCallIndirect:       sideEffectStrict,
-	OpcodeIadd:               sideEffectNone,
-	OpcodeImul:               sideEffectNone,
-	OpcodeIsub:               sideEffectNone,
-	OpcodeIcmp:               sideEffectNone,
-	OpcodeExtractlane:        sideEffectNone,
-	OpcodeInsertlane:         sideEffectNone,
-	OpcodeBand:               sideEffectNone,
-	OpcodeBor:                sideEffectNone,
-	OpcodeBxor:               sideEffectNone,
-	OpcodeRotl:               sideEffectNone,
-	OpcodeRotr:               sideEffectNone,
-	OpcodeFcmp:               sideEffectNone,
-	OpcodeFadd:               sideEffectNone,
-	OpcodeClz:                sideEffectNone,
-	OpcodeCtz:                sideEffectNone,
-	OpcodePopcnt:             sideEffectNone,
-	OpcodeLoad:               sideEffectNone,
-	OpcodeLoadSplat:          sideEffectNone,
-	OpcodeUload8:             sideEffectNone,
-	OpcodeUload16:            sideEffectNone,
-	OpcodeUload32:            sideEffectNone,
-	OpcodeSload8:             sideEffectNone,
-	OpcodeSload16:            sideEffectNone,
-	OpcodeSload32:            sideEffectNone,
-	OpcodeSExtend:            sideEffectNone,
-	OpcodeUExtend:            sideEffectNone,
-	OpcodeSwidenLow:          sideEffectNone,
-	OpcodeUwidenLow:          sideEffectNone,
-	OpcodeSwidenHigh:         sideEffectNone,
-	OpcodeUwidenHigh:         sideEffectNone,
-	OpcodeSnarrow:            sideEffectNone,
-	OpcodeUnarrow:            sideEffectNone,
-	OpcodeSwizzle:            sideEffectNone,
-	OpcodeShuffle:            sideEffectNone,
-	OpcodeSplat:              sideEffectNone,
-	OpcodeFsub:               sideEffectNone,
-	OpcodeF32const:           sideEffectNone,
-	OpcodeF64const:           sideEffectNone,
-	OpcodeIshl:               sideEffectNone,
-	OpcodeSshr:               sideEffectNone,
-	OpcodeUshr:               sideEffectNone,
-	OpcodeStore:              sideEffectStrict,
-	OpcodeIstore8:            sideEffectStrict,
-	OpcodeIstore16:           sideEffectStrict,
-	OpcodeIstore32:           sideEffectStrict,
-	OpcodeExitWithCode:       sideEffectStrict,
-	OpcodeExitIfTrueWithCode: sideEffectStrict,
-	OpcodeReturn:             sideEffectStrict,
-	OpcodeBrz:                sideEffectStrict,
-	OpcodeBrnz:               sideEffectStrict,
-	OpcodeBrTable:            sideEffectStrict,
-	OpcodeFdiv:               sideEffectNone,
-	OpcodeFmul:               sideEffectNone,
-	OpcodeFmax:               sideEffectNone,
-	OpcodeSqmulRoundSat:      sideEffectNone,
-	OpcodeSelect:             sideEffectNone,
-	OpcodeFmin:               sideEffectNone,
-	OpcodeFneg:               sideEffectNone,
-	OpcodeFcvtToSint:         sideEffectTraps,
-	OpcodeFcvtToUint:         sideEffectTraps,
-	OpcodeFcvtFromSint:       sideEffectNone,
-	OpcodeFcvtFromUint:       sideEffectNone,
-	OpcodeFcvtToSintSat:      sideEffectNone,
-	OpcodeFcvtToUintSat:      sideEffectNone,
-	OpcodeVFcvtFromUint:      sideEffectNone,
-	OpcodeVFcvtFromSint:      sideEffectNone,
-	OpcodeFdemote:            sideEffectNone,
-	OpcodeFvpromoteLow:       sideEffectNone,
-	OpcodeFvdemote:           sideEffectNone,
-	OpcodeFpromote:           sideEffectNone,
-	OpcodeBitcast:            sideEffectNone,
-	OpcodeIreduce:            sideEffectNone,
-	OpcodeSqrt:               sideEffectNone,
-	OpcodeCeil:               sideEffectNone,
-	OpcodeFloor:              sideEffectNone,
-	OpcodeTrunc:              sideEffectNone,
-	OpcodeNearest:            sideEffectNone,
-	OpcodeSdiv:               sideEffectTraps,
-	OpcodeSrem:               sideEffectTraps,
-	OpcodeUdiv:               sideEffectTraps,
-	OpcodeUrem:               sideEffectTraps,
-	OpcodeFabs:               sideEffectNone,
-	OpcodeFcopysign:          sideEffectNone,
-	OpcodeIaddPairwise:       sideEffectNone,
-	OpcodeVconst:             sideEffectNone,
-	OpcodeVbor:               sideEffectNone,
-	OpcodeVbxor:              sideEffectNone,
-	OpcodeVband:              sideEffectNone,
-	OpcodeVbandnot:           sideEffectNone,
-	OpcodeVbnot:              sideEffectNone,
-	OpcodeVbitselect:         sideEffectNone,
-	OpcodeVanyTrue:           sideEffectNone,
-	OpcodeVallTrue:           sideEffectNone,
-	OpcodeVhighBits:          sideEffectNone,
-	OpcodeVIadd:              sideEffectNone,
-	OpcodeVSaddSat:           sideEffectNone,
-	OpcodeVUaddSat:           sideEffectNone,
-	OpcodeVIsub:              sideEffectNone,
-	OpcodeVSsubSat:           sideEffectNone,
-	OpcodeVUsubSat:           sideEffectNone,
-	OpcodeVIcmp:              sideEffectNone,
-	OpcodeVImin:              sideEffectNone,
-	OpcodeVUmin:              sideEffectNone,
-	OpcodeVImax:              sideEffectNone,
-	OpcodeVUmax:              sideEffectNone,
-	OpcodeVAvgRound:          sideEffectNone,
-	OpcodeVImul:              sideEffectNone,
-	OpcodeVIabs:              sideEffectNone,
-	OpcodeVIneg:              sideEffectNone,
-	OpcodeVIpopcnt:           sideEffectNone,
-	OpcodeVIshl:              sideEffectNone,
-	OpcodeVSshr:              sideEffectNone,
-	OpcodeVUshr:              sideEffectNone,
-	OpcodeVSqrt:              sideEffectNone,
-	OpcodeVFabs:              sideEffectNone,
-	OpcodeVFmin:              sideEffectNone,
-	OpcodeVFmax:              sideEffectNone,
-	OpcodeVFneg:              sideEffectNone,
-	OpcodeVFadd:              sideEffectNone,
-	OpcodeVFsub:              sideEffectNone,
-	OpcodeVFmul:              sideEffectNone,
-	OpcodeVFdiv:              sideEffectNone,
-	OpcodeVFcmp:              sideEffectNone,
-	OpcodeVCeil:              sideEffectNone,
-	OpcodeVFloor:             sideEffectNone,
-	OpcodeVTrunc:             sideEffectNone,
-	OpcodeVNearest:           sideEffectNone,
-	OpcodeVMaxPseudo:         sideEffectNone,
-	OpcodeVMinPseudo:         sideEffectNone,
-	OpcodeVFcvtToUintSat:     sideEffectNone,
-	OpcodeVFcvtToSintSat:     sideEffectNone,
-	OpcodeVZeroExtLoad:       sideEffectNone,
+	OpcodeUndefined:                   sideEffectStrict,
+	OpcodeJump:                        sideEffectStrict,
+	OpcodeIconst:                      sideEffectNone,
+	OpcodeCall:                        sideEffectStrict,
+	OpcodeCallIndirect:                sideEffectStrict,
+	OpcodeIadd:                        sideEffectNone,
+	OpcodeImul:                        sideEffectNone,
+	OpcodeIsub:                        sideEffectNone,
+	OpcodeIcmp:                        sideEffectNone,
+	OpcodeExtractlane:                 sideEffectNone,
+	OpcodeInsertlane:                  sideEffectNone,
+	OpcodeBand:                        sideEffectNone,
+	OpcodeBor:                         sideEffectNone,
+	OpcodeBxor:                        sideEffectNone,
+	OpcodeRotl:                        sideEffectNone,
+	OpcodeRotr:                        sideEffectNone,
+	OpcodeFcmp:                        sideEffectNone,
+	OpcodeFadd:                        sideEffectNone,
+	OpcodeClz:                         sideEffectNone,
+	OpcodeCtz:                         sideEffectNone,
+	OpcodePopcnt:                      sideEffectNone,
+	OpcodeLoad:                        sideEffectNone,
+	OpcodeLoadSplat:                   sideEffectNone,
+	OpcodeUload8:                      sideEffectNone,
+	OpcodeUload16:                     sideEffectNone,
+	OpcodeUload32:                     sideEffectNone,
+	OpcodeSload8:                      sideEffectNone,
+	OpcodeSload16:                     sideEffectNone,
+	OpcodeSload32:                     sideEffectNone,
+	OpcodeSExtend:                     sideEffectNone,
+	OpcodeUExtend:                     sideEffectNone,
+	OpcodeSwidenLow:                   sideEffectNone,
+	OpcodeUwidenLow:                   sideEffectNone,
+	OpcodeSwidenHigh:                  sideEffectNone,
+	OpcodeUwidenHigh:                  sideEffectNone,
+	OpcodeSnarrow:                     sideEffectNone,
+	OpcodeUnarrow:                     sideEffectNone,
+	OpcodeSwizzle:                     sideEffectNone,
+	OpcodeShuffle:                     sideEffectNone,
+	OpcodeSplat:                       sideEffectNone,
+	OpcodeFsub:                        sideEffectNone,
+	OpcodeF32const:                    sideEffectNone,
+	OpcodeF64const:                    sideEffectNone,
+	OpcodeIshl:                        sideEffectNone,
+	OpcodeSshr:                        sideEffectNone,
+	OpcodeUshr:                        sideEffectNone,
+	OpcodeStore:                       sideEffectStrict,
+	OpcodeIstore8:                     sideEffectStrict,
+	OpcodeIstore16:                    sideEffectStrict,
+	OpcodeIstore32:                    sideEffectStrict,
+	OpcodeExitWithCode:                sideEffectStrict,
+	OpcodeExitIfTrueWithCode:          sideEffectStrict,
+	OpcodeReturn:                      sideEffectStrict,
+	OpcodeBrz:                         sideEffectStrict,
+	OpcodeBrnz:                        sideEffectStrict,
+	OpcodeBrTable:                     sideEffectStrict,
+	OpcodeFdiv:                        sideEffectNone,
+	OpcodeFmul:                        sideEffectNone,
+	OpcodeFmax:                        sideEffectNone,
+	OpcodeSqmulRoundSat:               sideEffectNone,
+	OpcodeSelect:                      sideEffectNone,
+	OpcodeFmin:                        sideEffectNone,
+	OpcodeFneg:                        sideEffectNone,
+	OpcodeFcvtToSint:                  sideEffectTraps,
+	OpcodeFcvtToUint:                  sideEffectTraps,
+	OpcodeFcvtFromSint:                sideEffectNone,
+	OpcodeFcvtFromUint:                sideEffectNone,
+	OpcodeFcvtToSintSat:               sideEffectNone,
+	OpcodeFcvtToUintSat:               sideEffectNone,
+	OpcodeVFcvtFromUint:               sideEffectNone,
+	OpcodeVFcvtFromSint:               sideEffectNone,
+	OpcodeFdemote:                     sideEffectNone,
+	OpcodeFvpromoteLow:                sideEffectNone,
+	OpcodeFvdemote:                    sideEffectNone,
+	OpcodeFpromote:                    sideEffectNone,
+	OpcodeBitcast:                     sideEffectNone,
+	OpcodeIreduce:                     sideEffectNone,
+	OpcodeSqrt:                        sideEffectNone,
+	OpcodeCeil:                        sideEffectNone,
+	OpcodeFloor:                       sideEffectNone,
+	OpcodeTrunc:                       sideEffectNone,
+	OpcodeNearest:                     sideEffectNone,
+	OpcodeSdiv:                        sideEffectTraps,
+	OpcodeSrem:                        sideEffectTraps,
+	OpcodeUdiv:                        sideEffectTraps,
+	OpcodeUrem:                        sideEffectTraps,
+	OpcodeFabs:                        sideEffectNone,
+	OpcodeFcopysign:                   sideEffectNone,
+	OpcodeExtIaddPairwise:             sideEffectNone,
+	OpcodeVconst:                      sideEffectNone,
+	OpcodeVbor:                        sideEffectNone,
+	OpcodeVbxor:                       sideEffectNone,
+	OpcodeVband:                       sideEffectNone,
+	OpcodeVbandnot:                    sideEffectNone,
+	OpcodeVbnot:                       sideEffectNone,
+	OpcodeVbitselect:                  sideEffectNone,
+	OpcodeVanyTrue:                    sideEffectNone,
+	OpcodeVallTrue:                    sideEffectNone,
+	OpcodeVhighBits:                   sideEffectNone,
+	OpcodeVIadd:                       sideEffectNone,
+	OpcodeVSaddSat:                    sideEffectNone,
+	OpcodeVUaddSat:                    sideEffectNone,
+	OpcodeVIsub:                       sideEffectNone,
+	OpcodeVSsubSat:                    sideEffectNone,
+	OpcodeVUsubSat:                    sideEffectNone,
+	OpcodeVIcmp:                       sideEffectNone,
+	OpcodeVImin:                       sideEffectNone,
+	OpcodeVUmin:                       sideEffectNone,
+	OpcodeVImax:                       sideEffectNone,
+	OpcodeVUmax:                       sideEffectNone,
+	OpcodeVAvgRound:                   sideEffectNone,
+	OpcodeVImul:                       sideEffectNone,
+	OpcodeVIabs:                       sideEffectNone,
+	OpcodeVIneg:                       sideEffectNone,
+	OpcodeVIpopcnt:                    sideEffectNone,
+	OpcodeVIshl:                       sideEffectNone,
+	OpcodeVSshr:                       sideEffectNone,
+	OpcodeVUshr:                       sideEffectNone,
+	OpcodeVSqrt:                       sideEffectNone,
+	OpcodeVFabs:                       sideEffectNone,
+	OpcodeVFmin:                       sideEffectNone,
+	OpcodeVFmax:                       sideEffectNone,
+	OpcodeVFneg:                       sideEffectNone,
+	OpcodeVFadd:                       sideEffectNone,
+	OpcodeVFsub:                       sideEffectNone,
+	OpcodeVFmul:                       sideEffectNone,
+	OpcodeVFdiv:                       sideEffectNone,
+	OpcodeVFcmp:                       sideEffectNone,
+	OpcodeVCeil:                       sideEffectNone,
+	OpcodeVFloor:                      sideEffectNone,
+	OpcodeVTrunc:                      sideEffectNone,
+	OpcodeVNearest:                    sideEffectNone,
+	OpcodeVMaxPseudo:                  sideEffectNone,
+	OpcodeVMinPseudo:                  sideEffectNone,
+	OpcodeVFcvtToUintSat:              sideEffectNone,
+	OpcodeVFcvtToSintSat:              sideEffectNone,
+	OpcodeVZeroExtLoad:                sideEffectNone,
+	OpcodeAtomicRmw:                   sideEffectStrict,
+	OpcodeAtomicLoad:                  sideEffectStrict,
+	OpcodeAtomicStore:                 sideEffectStrict,
+	OpcodeAtomicCas:                   sideEffectStrict,
+	OpcodeFence:                       sideEffectStrict,
+	OpcodeWideningPairwiseDotProductS: sideEffectNone,
 }
 
 // sideEffect returns true if this instruction has side effects.
@@ -832,73 +855,73 @@ func (i *Instruction) sideEffect() sideEffect {
 
 // instructionReturnTypes provides the function to determine the return types of an instruction.
 var instructionReturnTypes = [opcodeEnd]returnTypesFn{
-	OpcodeIaddPairwise: returnTypesFnV128,
-	OpcodeVbor:         returnTypesFnV128,
-	OpcodeVbxor:        returnTypesFnV128,
-	OpcodeVband:        returnTypesFnV128,
-	OpcodeVbnot:        returnTypesFnV128,
-	OpcodeVbandnot:     returnTypesFnV128,
-	OpcodeVbitselect:   returnTypesFnV128,
-	OpcodeVanyTrue:     returnTypesFnI32,
-	OpcodeVallTrue:     returnTypesFnI32,
-	OpcodeVhighBits:    returnTypesFnI32,
-	OpcodeVIadd:        returnTypesFnV128,
-	OpcodeVSaddSat:     returnTypesFnV128,
-	OpcodeVUaddSat:     returnTypesFnV128,
-	OpcodeVIsub:        returnTypesFnV128,
-	OpcodeVSsubSat:     returnTypesFnV128,
-	OpcodeVUsubSat:     returnTypesFnV128,
-	OpcodeVIcmp:        returnTypesFnV128,
-	OpcodeVImin:        returnTypesFnV128,
-	OpcodeVUmin:        returnTypesFnV128,
-	OpcodeVImax:        returnTypesFnV128,
-	OpcodeVUmax:        returnTypesFnV128,
-	OpcodeVImul:        returnTypesFnV128,
-	OpcodeVAvgRound:    returnTypesFnV128,
-	OpcodeVIabs:        returnTypesFnV128,
-	OpcodeVIneg:        returnTypesFnV128,
-	OpcodeVIpopcnt:     returnTypesFnV128,
-	OpcodeVIshl:        returnTypesFnV128,
-	OpcodeVSshr:        returnTypesFnV128,
-	OpcodeVUshr:        returnTypesFnV128,
-	OpcodeExtractlane:  returnTypesFnSingle,
-	OpcodeInsertlane:   returnTypesFnV128,
-	OpcodeBand:         returnTypesFnSingle,
-	OpcodeFcopysign:    returnTypesFnSingle,
-	OpcodeBitcast:      returnTypesFnSingle,
-	OpcodeBor:          returnTypesFnSingle,
-	OpcodeBxor:         returnTypesFnSingle,
-	OpcodeRotl:         returnTypesFnSingle,
-	OpcodeRotr:         returnTypesFnSingle,
-	OpcodeIshl:         returnTypesFnSingle,
-	OpcodeSshr:         returnTypesFnSingle,
-	OpcodeSdiv:         returnTypesFnSingle,
-	OpcodeSrem:         returnTypesFnSingle,
-	OpcodeUdiv:         returnTypesFnSingle,
-	OpcodeUrem:         returnTypesFnSingle,
-	OpcodeUshr:         returnTypesFnSingle,
-	OpcodeJump:         returnTypesFnNoReturns,
-	OpcodeUndefined:    returnTypesFnNoReturns,
-	OpcodeIconst:       returnTypesFnSingle,
-	OpcodeSelect:       returnTypesFnSingle,
-	OpcodeSExtend:      returnTypesFnSingle,
-	OpcodeUExtend:      returnTypesFnSingle,
-	OpcodeSwidenLow:    returnTypesFnV128,
-	OpcodeUwidenLow:    returnTypesFnV128,
-	OpcodeSwidenHigh:   returnTypesFnV128,
-	OpcodeUwidenHigh:   returnTypesFnV128,
-	OpcodeSnarrow:      returnTypesFnV128,
-	OpcodeUnarrow:      returnTypesFnV128,
-	OpcodeSwizzle:      returnTypesFnSingle,
-	OpcodeShuffle:      returnTypesFnV128,
-	OpcodeSplat:        returnTypesFnV128,
-	OpcodeIreduce:      returnTypesFnSingle,
-	OpcodeFabs:         returnTypesFnSingle,
-	OpcodeSqrt:         returnTypesFnSingle,
-	OpcodeCeil:         returnTypesFnSingle,
-	OpcodeFloor:        returnTypesFnSingle,
-	OpcodeTrunc:        returnTypesFnSingle,
-	OpcodeNearest:      returnTypesFnSingle,
+	OpcodeExtIaddPairwise: returnTypesFnV128,
+	OpcodeVbor:            returnTypesFnV128,
+	OpcodeVbxor:           returnTypesFnV128,
+	OpcodeVband:           returnTypesFnV128,
+	OpcodeVbnot:           returnTypesFnV128,
+	OpcodeVbandnot:        returnTypesFnV128,
+	OpcodeVbitselect:      returnTypesFnV128,
+	OpcodeVanyTrue:        returnTypesFnI32,
+	OpcodeVallTrue:        returnTypesFnI32,
+	OpcodeVhighBits:       returnTypesFnI32,
+	OpcodeVIadd:           returnTypesFnV128,
+	OpcodeVSaddSat:        returnTypesFnV128,
+	OpcodeVUaddSat:        returnTypesFnV128,
+	OpcodeVIsub:           returnTypesFnV128,
+	OpcodeVSsubSat:        returnTypesFnV128,
+	OpcodeVUsubSat:        returnTypesFnV128,
+	OpcodeVIcmp:           returnTypesFnV128,
+	OpcodeVImin:           returnTypesFnV128,
+	OpcodeVUmin:           returnTypesFnV128,
+	OpcodeVImax:           returnTypesFnV128,
+	OpcodeVUmax:           returnTypesFnV128,
+	OpcodeVImul:           returnTypesFnV128,
+	OpcodeVAvgRound:       returnTypesFnV128,
+	OpcodeVIabs:           returnTypesFnV128,
+	OpcodeVIneg:           returnTypesFnV128,
+	OpcodeVIpopcnt:        returnTypesFnV128,
+	OpcodeVIshl:           returnTypesFnV128,
+	OpcodeVSshr:           returnTypesFnV128,
+	OpcodeVUshr:           returnTypesFnV128,
+	OpcodeExtractlane:     returnTypesFnSingle,
+	OpcodeInsertlane:      returnTypesFnV128,
+	OpcodeBand:            returnTypesFnSingle,
+	OpcodeFcopysign:       returnTypesFnSingle,
+	OpcodeBitcast:         returnTypesFnSingle,
+	OpcodeBor:             returnTypesFnSingle,
+	OpcodeBxor:            returnTypesFnSingle,
+	OpcodeRotl:            returnTypesFnSingle,
+	OpcodeRotr:            returnTypesFnSingle,
+	OpcodeIshl:            returnTypesFnSingle,
+	OpcodeSshr:            returnTypesFnSingle,
+	OpcodeSdiv:            returnTypesFnSingle,
+	OpcodeSrem:            returnTypesFnSingle,
+	OpcodeUdiv:            returnTypesFnSingle,
+	OpcodeUrem:            returnTypesFnSingle,
+	OpcodeUshr:            returnTypesFnSingle,
+	OpcodeJump:            returnTypesFnNoReturns,
+	OpcodeUndefined:       returnTypesFnNoReturns,
+	OpcodeIconst:          returnTypesFnSingle,
+	OpcodeSelect:          returnTypesFnSingle,
+	OpcodeSExtend:         returnTypesFnSingle,
+	OpcodeUExtend:         returnTypesFnSingle,
+	OpcodeSwidenLow:       returnTypesFnV128,
+	OpcodeUwidenLow:       returnTypesFnV128,
+	OpcodeSwidenHigh:      returnTypesFnV128,
+	OpcodeUwidenHigh:      returnTypesFnV128,
+	OpcodeSnarrow:         returnTypesFnV128,
+	OpcodeUnarrow:         returnTypesFnV128,
+	OpcodeSwizzle:         returnTypesFnSingle,
+	OpcodeShuffle:         returnTypesFnV128,
+	OpcodeSplat:           returnTypesFnV128,
+	OpcodeIreduce:         returnTypesFnSingle,
+	OpcodeFabs:            returnTypesFnSingle,
+	OpcodeSqrt:            returnTypesFnSingle,
+	OpcodeCeil:            returnTypesFnSingle,
+	OpcodeFloor:           returnTypesFnSingle,
+	OpcodeTrunc:           returnTypesFnSingle,
+	OpcodeNearest:         returnTypesFnSingle,
 	OpcodeCallIndirect: func(b *builder, instr *Instruction) (t1 Type, ts []Type) {
 		sigID := SignatureID(instr.u1)
 		sig, ok := b.signatures[sigID]
@@ -931,74 +954,80 @@ var instructionReturnTypes = [opcodeEnd]returnTypesFn{
 		}
 		return
 	},
-	OpcodeLoad:               returnTypesFnSingle,
-	OpcodeVZeroExtLoad:       returnTypesFnV128,
-	OpcodeLoadSplat:          returnTypesFnV128,
-	OpcodeIadd:               returnTypesFnSingle,
-	OpcodeIsub:               returnTypesFnSingle,
-	OpcodeImul:               returnTypesFnSingle,
-	OpcodeIcmp:               returnTypesFnI32,
-	OpcodeFcmp:               returnTypesFnI32,
-	OpcodeFadd:               returnTypesFnSingle,
-	OpcodeFsub:               returnTypesFnSingle,
-	OpcodeFdiv:               returnTypesFnSingle,
-	OpcodeFmul:               returnTypesFnSingle,
-	OpcodeFmax:               returnTypesFnSingle,
-	OpcodeFmin:               returnTypesFnSingle,
-	OpcodeSqmulRoundSat:      returnTypesFnV128,
-	OpcodeF32const:           returnTypesFnF32,
-	OpcodeF64const:           returnTypesFnF64,
-	OpcodeClz:                returnTypesFnSingle,
-	OpcodeCtz:                returnTypesFnSingle,
-	OpcodePopcnt:             returnTypesFnSingle,
-	OpcodeStore:              returnTypesFnNoReturns,
-	OpcodeIstore8:            returnTypesFnNoReturns,
-	OpcodeIstore16:           returnTypesFnNoReturns,
-	OpcodeIstore32:           returnTypesFnNoReturns,
-	OpcodeExitWithCode:       returnTypesFnNoReturns,
-	OpcodeExitIfTrueWithCode: returnTypesFnNoReturns,
-	OpcodeReturn:             returnTypesFnNoReturns,
-	OpcodeBrz:                returnTypesFnNoReturns,
-	OpcodeBrnz:               returnTypesFnNoReturns,
-	OpcodeBrTable:            returnTypesFnNoReturns,
-	OpcodeUload8:             returnTypesFnSingle,
-	OpcodeUload16:            returnTypesFnSingle,
-	OpcodeUload32:            returnTypesFnSingle,
-	OpcodeSload8:             returnTypesFnSingle,
-	OpcodeSload16:            returnTypesFnSingle,
-	OpcodeSload32:            returnTypesFnSingle,
-	OpcodeFcvtToSint:         returnTypesFnSingle,
-	OpcodeFcvtToUint:         returnTypesFnSingle,
-	OpcodeFcvtFromSint:       returnTypesFnSingle,
-	OpcodeFcvtFromUint:       returnTypesFnSingle,
-	OpcodeFcvtToSintSat:      returnTypesFnSingle,
-	OpcodeFcvtToUintSat:      returnTypesFnSingle,
-	OpcodeVFcvtFromUint:      returnTypesFnV128,
-	OpcodeVFcvtFromSint:      returnTypesFnV128,
-	OpcodeFneg:               returnTypesFnSingle,
-	OpcodeFdemote:            returnTypesFnF32,
-	OpcodeFvdemote:           returnTypesFnV128,
-	OpcodeFvpromoteLow:       returnTypesFnV128,
-	OpcodeFpromote:           returnTypesFnF64,
-	OpcodeVconst:             returnTypesFnV128,
-	OpcodeVFabs:              returnTypesFnV128,
-	OpcodeVSqrt:              returnTypesFnV128,
-	OpcodeVFmax:              returnTypesFnV128,
-	OpcodeVFmin:              returnTypesFnV128,
-	OpcodeVFneg:              returnTypesFnV128,
-	OpcodeVFadd:              returnTypesFnV128,
-	OpcodeVFsub:              returnTypesFnV128,
-	OpcodeVFmul:              returnTypesFnV128,
-	OpcodeVFdiv:              returnTypesFnV128,
-	OpcodeVFcmp:              returnTypesFnV128,
-	OpcodeVCeil:              returnTypesFnV128,
-	OpcodeVFloor:             returnTypesFnV128,
-	OpcodeVTrunc:             returnTypesFnV128,
-	OpcodeVNearest:           returnTypesFnV128,
-	OpcodeVMaxPseudo:         returnTypesFnV128,
-	OpcodeVMinPseudo:         returnTypesFnV128,
-	OpcodeVFcvtToUintSat:     returnTypesFnV128,
-	OpcodeVFcvtToSintSat:     returnTypesFnV128,
+	OpcodeLoad:                        returnTypesFnSingle,
+	OpcodeVZeroExtLoad:                returnTypesFnV128,
+	OpcodeLoadSplat:                   returnTypesFnV128,
+	OpcodeIadd:                        returnTypesFnSingle,
+	OpcodeIsub:                        returnTypesFnSingle,
+	OpcodeImul:                        returnTypesFnSingle,
+	OpcodeIcmp:                        returnTypesFnI32,
+	OpcodeFcmp:                        returnTypesFnI32,
+	OpcodeFadd:                        returnTypesFnSingle,
+	OpcodeFsub:                        returnTypesFnSingle,
+	OpcodeFdiv:                        returnTypesFnSingle,
+	OpcodeFmul:                        returnTypesFnSingle,
+	OpcodeFmax:                        returnTypesFnSingle,
+	OpcodeFmin:                        returnTypesFnSingle,
+	OpcodeSqmulRoundSat:               returnTypesFnV128,
+	OpcodeF32const:                    returnTypesFnF32,
+	OpcodeF64const:                    returnTypesFnF64,
+	OpcodeClz:                         returnTypesFnSingle,
+	OpcodeCtz:                         returnTypesFnSingle,
+	OpcodePopcnt:                      returnTypesFnSingle,
+	OpcodeStore:                       returnTypesFnNoReturns,
+	OpcodeIstore8:                     returnTypesFnNoReturns,
+	OpcodeIstore16:                    returnTypesFnNoReturns,
+	OpcodeIstore32:                    returnTypesFnNoReturns,
+	OpcodeExitWithCode:                returnTypesFnNoReturns,
+	OpcodeExitIfTrueWithCode:          returnTypesFnNoReturns,
+	OpcodeReturn:                      returnTypesFnNoReturns,
+	OpcodeBrz:                         returnTypesFnNoReturns,
+	OpcodeBrnz:                        returnTypesFnNoReturns,
+	OpcodeBrTable:                     returnTypesFnNoReturns,
+	OpcodeUload8:                      returnTypesFnSingle,
+	OpcodeUload16:                     returnTypesFnSingle,
+	OpcodeUload32:                     returnTypesFnSingle,
+	OpcodeSload8:                      returnTypesFnSingle,
+	OpcodeSload16:                     returnTypesFnSingle,
+	OpcodeSload32:                     returnTypesFnSingle,
+	OpcodeFcvtToSint:                  returnTypesFnSingle,
+	OpcodeFcvtToUint:                  returnTypesFnSingle,
+	OpcodeFcvtFromSint:                returnTypesFnSingle,
+	OpcodeFcvtFromUint:                returnTypesFnSingle,
+	OpcodeFcvtToSintSat:               returnTypesFnSingle,
+	OpcodeFcvtToUintSat:               returnTypesFnSingle,
+	OpcodeVFcvtFromUint:               returnTypesFnV128,
+	OpcodeVFcvtFromSint:               returnTypesFnV128,
+	OpcodeFneg:                        returnTypesFnSingle,
+	OpcodeFdemote:                     returnTypesFnF32,
+	OpcodeFvdemote:                    returnTypesFnV128,
+	OpcodeFvpromoteLow:                returnTypesFnV128,
+	OpcodeFpromote:                    returnTypesFnF64,
+	OpcodeVconst:                      returnTypesFnV128,
+	OpcodeVFabs:                       returnTypesFnV128,
+	OpcodeVSqrt:                       returnTypesFnV128,
+	OpcodeVFmax:                       returnTypesFnV128,
+	OpcodeVFmin:                       returnTypesFnV128,
+	OpcodeVFneg:                       returnTypesFnV128,
+	OpcodeVFadd:                       returnTypesFnV128,
+	OpcodeVFsub:                       returnTypesFnV128,
+	OpcodeVFmul:                       returnTypesFnV128,
+	OpcodeVFdiv:                       returnTypesFnV128,
+	OpcodeVFcmp:                       returnTypesFnV128,
+	OpcodeVCeil:                       returnTypesFnV128,
+	OpcodeVFloor:                      returnTypesFnV128,
+	OpcodeVTrunc:                      returnTypesFnV128,
+	OpcodeVNearest:                    returnTypesFnV128,
+	OpcodeVMaxPseudo:                  returnTypesFnV128,
+	OpcodeVMinPseudo:                  returnTypesFnV128,
+	OpcodeVFcvtToUintSat:              returnTypesFnV128,
+	OpcodeVFcvtToSintSat:              returnTypesFnV128,
+	OpcodeAtomicRmw:                   returnTypesFnSingle,
+	OpcodeAtomicLoad:                  returnTypesFnSingle,
+	OpcodeAtomicStore:                 returnTypesFnNoReturns,
+	OpcodeAtomicCas:                   returnTypesFnSingle,
+	OpcodeFence:                       returnTypesFnNoReturns,
+	OpcodeWideningPairwiseDotProductS: returnTypesFnV128,
 }
 
 // AsLoad initializes this instruction as a store instruction with OpcodeLoad.
@@ -1121,15 +1150,32 @@ func (i *Instruction) AsVIadd(x, y Value, lane VecLane) *Instruction {
 	return i
 }
 
-// AsIaddPairwise initializes this instruction as a lane-wise integer extended pairwise addition instruction
+// AsWideningPairwiseDotProductS initializes this instruction as a lane-wise integer extended pairwise addition instruction
 // with OpcodeIaddPairwise on a vector.
-func (i *Instruction) AsIaddPairwise(x, y Value, lane VecLane) *Instruction {
-	i.opcode = OpcodeIaddPairwise
+func (i *Instruction) AsWideningPairwiseDotProductS(x, y Value) *Instruction {
+	i.opcode = OpcodeWideningPairwiseDotProductS
 	i.v = x
 	i.v2 = y
-	i.u1 = uint64(lane)
 	i.typ = TypeV128
 	return i
+}
+
+// AsExtIaddPairwise initializes this instruction as a lane-wise integer extended pairwise addition instruction
+// with OpcodeIaddPairwise on a vector.
+func (i *Instruction) AsExtIaddPairwise(x Value, srcLane VecLane, signed bool) *Instruction {
+	i.opcode = OpcodeExtIaddPairwise
+	i.v = x
+	i.u1 = uint64(srcLane)
+	if signed {
+		i.u2 = 1
+	}
+	i.typ = TypeV128
+	return i
+}
+
+// ExtIaddPairwiseData returns the operands for a lane-wise integer extended pairwise addition instruction.
+func (i *Instruction) ExtIaddPairwiseData() (x Value, srcLane VecLane, signed bool) {
+	return i.v, VecLane(i.u1), i.u2 != 0
 }
 
 // AsVSaddSat initializes this instruction as a vector addition with saturation instruction with OpcodeVSaddSat on a vector.
@@ -1531,11 +1577,12 @@ func (i *Instruction) AsURem(x, y, ctx Value) *Instruction {
 }
 
 // AsBand initializes this instruction as an integer bitwise and instruction with OpcodeBand.
-func (i *Instruction) AsBand(x, amount Value) {
+func (i *Instruction) AsBand(x, amount Value) *Instruction {
 	i.opcode = OpcodeBand
 	i.v = x
 	i.v2 = amount
 	i.typ = x.Type()
+	return i
 }
 
 // AsBor initializes this instruction as an integer bitwise or instruction with OpcodeBor.
@@ -1890,7 +1937,7 @@ func (i *Instruction) VconstData() (lo, hi uint64) {
 }
 
 // AsReturn initializes this instruction as a return instruction with OpcodeReturn.
-func (i *Instruction) AsReturn(vs []Value) *Instruction {
+func (i *Instruction) AsReturn(vs wazevoapi.VarLength[Value]) *Instruction {
 	i.opcode = OpcodeReturn
 	i.vs = vs
 	return i
@@ -1922,9 +1969,73 @@ func (i *Instruction) AsWiden(v Value, lane VecLane, signed, low bool) *Instruct
 	return i
 }
 
+// AsAtomicLoad initializes this instruction as an atomic load.
+// The size is in bytes and must be 1, 2, 4, or 8.
+func (i *Instruction) AsAtomicLoad(addr Value, size uint64, typ Type) *Instruction {
+	i.opcode = OpcodeAtomicLoad
+	i.u1 = size
+	i.v = addr
+	i.typ = typ
+	return i
+}
+
+// AsAtomicLoad initializes this instruction as an atomic store.
+// The size is in bytes and must be 1, 2, 4, or 8.
+func (i *Instruction) AsAtomicStore(addr, val Value, size uint64) *Instruction {
+	i.opcode = OpcodeAtomicStore
+	i.u1 = size
+	i.v = addr
+	i.v2 = val
+	i.typ = val.Type()
+	return i
+}
+
+// AsAtomicRmw initializes this instruction as an atomic read-modify-write.
+// The size is in bytes and must be 1, 2, 4, or 8.
+func (i *Instruction) AsAtomicRmw(op AtomicRmwOp, addr, val Value, size uint64) *Instruction {
+	i.opcode = OpcodeAtomicRmw
+	i.u1 = uint64(op)
+	i.u2 = size
+	i.v = addr
+	i.v2 = val
+	i.typ = val.Type()
+	return i
+}
+
+// AsAtomicCas initializes this instruction as an atomic compare-and-swap.
+// The size is in bytes and must be 1, 2, 4, or 8.
+func (i *Instruction) AsAtomicCas(addr, exp, repl Value, size uint64) *Instruction {
+	i.opcode = OpcodeAtomicCas
+	i.u1 = size
+	i.v = addr
+	i.v2 = exp
+	i.v3 = repl
+	i.typ = repl.Type()
+	return i
+}
+
+// AsFence initializes this instruction as a memory fence.
+// A single byte immediate may be used to indicate fence ordering in the future
+// but is currently always 0 and ignored.
+func (i *Instruction) AsFence(order byte) *Instruction {
+	i.opcode = OpcodeFence
+	i.u1 = uint64(order)
+	return i
+}
+
+// AtomicRmwData returns the data for this atomic read-modify-write instruction.
+func (i *Instruction) AtomicRmwData() (op AtomicRmwOp, size uint64) {
+	return AtomicRmwOp(i.u1), i.u2
+}
+
+// AtomicTargetSize returns the target memory size of the atomic instruction.
+func (i *Instruction) AtomicTargetSize() (size uint64) {
+	return i.u1
+}
+
 // ReturnVals returns the return values of OpcodeReturn.
 func (i *Instruction) ReturnVals() []Value {
-	return i.vs
+	return i.vs.View()
 }
 
 // AsExitWithCode initializes this instruction as a trap instruction with OpcodeExitWithCode.
@@ -1975,7 +2086,7 @@ func (i *Instruction) BranchData() (condVal Value, blockArgs []Value, target Bas
 	default:
 		panic("BUG")
 	}
-	blockArgs = i.vs
+	blockArgs = i.vs.View()
 	target = i.blk
 	return
 }
@@ -1991,10 +2102,11 @@ func (i *Instruction) BrTableData() (index Value, targets []BasicBlock) {
 }
 
 // AsJump initializes this instruction as a jump instruction with OpcodeJump.
-func (i *Instruction) AsJump(vs []Value, target BasicBlock) {
+func (i *Instruction) AsJump(vs Values, target BasicBlock) *Instruction {
 	i.opcode = OpcodeJump
 	i.vs = vs
 	i.blk = target
+	return i
 }
 
 // IsFallthroughJump returns true if this instruction is a fallthrough jump.
@@ -2014,7 +2126,7 @@ func (i *Instruction) AsFallthroughJump() {
 }
 
 // AsBrz initializes this instruction as a branch-if-zero instruction with OpcodeBrz.
-func (i *Instruction) AsBrz(v Value, args []Value, target BasicBlock) {
+func (i *Instruction) AsBrz(v Value, args Values, target BasicBlock) {
 	i.opcode = OpcodeBrz
 	i.v = v
 	i.vs = args
@@ -2022,7 +2134,7 @@ func (i *Instruction) AsBrz(v Value, args []Value, target BasicBlock) {
 }
 
 // AsBrnz initializes this instruction as a branch-if-not-zero instruction with OpcodeBrnz.
-func (i *Instruction) AsBrnz(v Value, args []Value, target BasicBlock) *Instruction {
+func (i *Instruction) AsBrnz(v Value, args Values, target BasicBlock) *Instruction {
 	i.opcode = OpcodeBrnz
 	i.v = v
 	i.vs = args
@@ -2038,7 +2150,7 @@ func (i *Instruction) AsBrTable(index Value, targets []BasicBlock) {
 }
 
 // AsCall initializes this instruction as a call instruction with OpcodeCall.
-func (i *Instruction) AsCall(ref FuncRef, sig *Signature, args []Value) {
+func (i *Instruction) AsCall(ref FuncRef, sig *Signature, args Values) {
 	i.opcode = OpcodeCall
 	i.u1 = uint64(ref)
 	i.vs = args
@@ -2053,12 +2165,12 @@ func (i *Instruction) CallData() (ref FuncRef, sigID SignatureID, args []Value) 
 	}
 	ref = FuncRef(i.u1)
 	sigID = SignatureID(i.u2)
-	args = i.vs
+	args = i.vs.View()
 	return
 }
 
 // AsCallIndirect initializes this instruction as a call-indirect instruction with OpcodeCallIndirect.
-func (i *Instruction) AsCallIndirect(funcPtr Value, sig *Signature, args []Value) *Instruction {
+func (i *Instruction) AsCallIndirect(funcPtr Value, sig *Signature, args Values) *Instruction {
 	i.opcode = OpcodeCallIndirect
 	i.typ = TypeF64
 	i.vs = args
@@ -2068,14 +2180,22 @@ func (i *Instruction) AsCallIndirect(funcPtr Value, sig *Signature, args []Value
 	return i
 }
 
+// AsCallGoRuntimeMemmove is the same as AsCallIndirect, but with a special flag set to indicate that it is a call to the Go runtime memmove function.
+func (i *Instruction) AsCallGoRuntimeMemmove(funcPtr Value, sig *Signature, args Values) *Instruction {
+	i.AsCallIndirect(funcPtr, sig, args)
+	i.u2 = 1
+	return i
+}
+
 // CallIndirectData returns the call indirect data for this instruction necessary for backends.
-func (i *Instruction) CallIndirectData() (funcPtr Value, sigID SignatureID, args []Value) {
+func (i *Instruction) CallIndirectData() (funcPtr Value, sigID SignatureID, args []Value, isGoMemmove bool) {
 	if i.opcode != OpcodeCallIndirect {
 		panic("BUG: CallIndirectData only available for OpcodeCallIndirect")
 	}
 	funcPtr = i.v
 	sigID = SignatureID(i.u1)
-	args = i.vs
+	args = i.vs.View()
+	isGoMemmove = i.u2 == 1
 	return
 }
 
@@ -2362,9 +2482,10 @@ func (i *Instruction) Format(b Builder) string {
 	case OpcodeSExtend, OpcodeUExtend:
 		instSuffix = fmt.Sprintf(" %s, %d->%d", i.v.Format(b), i.u1>>8, i.u1&0xff)
 	case OpcodeCall, OpcodeCallIndirect:
-		vs := make([]string, len(i.vs))
+		view := i.vs.View()
+		vs := make([]string, len(view))
 		for idx := range vs {
-			vs[idx] = i.vs[idx].Format(b)
+			vs[idx] = view[idx].Format(b)
 		}
 		if i.opcode == OpcodeCallIndirect {
 			instSuffix = fmt.Sprintf(" %s:%s, %s", i.v.Format(b), SignatureID(i.u1), strings.Join(vs, ", "))
@@ -2372,7 +2493,7 @@ func (i *Instruction) Format(b Builder) string {
 			instSuffix = fmt.Sprintf(" %s:%s, %s", FuncRef(i.u1), SignatureID(i.u2), strings.Join(vs, ", "))
 		}
 	case OpcodeStore, OpcodeIstore8, OpcodeIstore16, OpcodeIstore32:
-		instSuffix = fmt.Sprintf(" %s, %s, %#x", i.v.Format(b), i.v2.Format(b), int32(i.u1))
+		instSuffix = fmt.Sprintf(" %s, %s, %#x", i.v.Format(b), i.v2.Format(b), uint32(i.u1))
 	case OpcodeLoad, OpcodeVZeroExtLoad:
 		instSuffix = fmt.Sprintf(" %s, %#x", i.v.Format(b), int32(i.u1))
 	case OpcodeLoadSplat:
@@ -2395,32 +2516,35 @@ func (i *Instruction) Format(b Builder) string {
 	case OpcodeF64const:
 		instSuffix = fmt.Sprintf(" %f", math.Float64frombits(i.u1))
 	case OpcodeReturn:
-		if len(i.vs) == 0 {
+		view := i.vs.View()
+		if len(view) == 0 {
 			break
 		}
-		vs := make([]string, len(i.vs))
+		vs := make([]string, len(view))
 		for idx := range vs {
-			vs[idx] = i.vs[idx].Format(b)
+			vs[idx] = view[idx].Format(b)
 		}
 		instSuffix = fmt.Sprintf(" %s", strings.Join(vs, ", "))
 	case OpcodeJump:
-		vs := make([]string, len(i.vs)+1)
+		view := i.vs.View()
+		vs := make([]string, len(view)+1)
 		if i.IsFallthroughJump() {
 			vs[0] = " fallthrough"
 		} else {
 			vs[0] = " " + i.blk.(*basicBlock).Name()
 		}
-		for idx := range i.vs {
-			vs[idx+1] = i.vs[idx].Format(b)
+		for idx := range view {
+			vs[idx+1] = view[idx].Format(b)
 		}
 
 		instSuffix = strings.Join(vs, ", ")
 	case OpcodeBrz, OpcodeBrnz:
-		vs := make([]string, len(i.vs)+2)
+		view := i.vs.View()
+		vs := make([]string, len(view)+2)
 		vs[0] = " " + i.v.Format(b)
 		vs[1] = i.blk.(*basicBlock).Name()
-		for idx := range i.vs {
-			vs[idx+2] = i.vs[idx].Format(b)
+		for idx := range view {
+			vs[idx+2] = view[idx].Format(b)
 		}
 		instSuffix = strings.Join(vs, ", ")
 	case OpcodeBrTable:
@@ -2445,7 +2569,7 @@ func (i *Instruction) Format(b Builder) string {
 		OpcodeFcvtFromUint, OpcodeFcvtToSintSat, OpcodeFcvtToUintSat, OpcodeFdemote, OpcodeFpromote, OpcodeIreduce, OpcodeBitcast, OpcodeSqrt, OpcodeFabs,
 		OpcodeCeil, OpcodeFloor, OpcodeTrunc, OpcodeNearest:
 		instSuffix = " " + i.v.Format(b)
-	case OpcodeVIadd, OpcodeIaddPairwise, OpcodeVSaddSat, OpcodeVUaddSat, OpcodeVIsub, OpcodeVSsubSat, OpcodeVUsubSat,
+	case OpcodeVIadd, OpcodeExtIaddPairwise, OpcodeVSaddSat, OpcodeVUaddSat, OpcodeVIsub, OpcodeVSsubSat, OpcodeVUsubSat,
 		OpcodeVImin, OpcodeVUmin, OpcodeVImax, OpcodeVUmax, OpcodeVImul, OpcodeVAvgRound,
 		OpcodeVFadd, OpcodeVFsub, OpcodeVFmul, OpcodeVFdiv,
 		OpcodeVIshl, OpcodeVSshr, OpcodeVUshr,
@@ -2478,7 +2602,18 @@ func (i *Instruction) Format(b Builder) string {
 		}
 		// Prints Shuffle.[0 1 2 3 4 5 6 7 ...] v2, v3
 		instSuffix = fmt.Sprintf(".%v %s, %s", lanes, i.v.Format(b), i.v2.Format(b))
-
+	case OpcodeAtomicRmw:
+		instSuffix = fmt.Sprintf(" %s_%d, %s, %s", AtomicRmwOp(i.u1), 8*i.u2, i.v.Format(b), i.v2.Format(b))
+	case OpcodeAtomicLoad:
+		instSuffix = fmt.Sprintf("_%d, %s", 8*i.u1, i.v.Format(b))
+	case OpcodeAtomicStore:
+		instSuffix = fmt.Sprintf("_%d, %s, %s", 8*i.u1, i.v.Format(b), i.v2.Format(b))
+	case OpcodeAtomicCas:
+		instSuffix = fmt.Sprintf("_%d, %s, %s, %s", 8*i.u1, i.v.Format(b), i.v2.Format(b), i.v3.Format(b))
+	case OpcodeFence:
+		instSuffix = fmt.Sprintf(" %d", i.u1)
+	case OpcodeWideningPairwiseDotProductS:
+		instSuffix = fmt.Sprintf(" %s, %s", i.v.Format(b), i.v2.Format(b))
 	default:
 		panic(fmt.Sprintf("TODO: format for %s", i.opcode))
 	}
@@ -2490,7 +2625,7 @@ func (i *Instruction) Format(b Builder) string {
 		rvs = append(rvs, rv.formatWithType(b))
 	}
 
-	for _, v := range i.rValues {
+	for _, v := range i.rValues.View() {
 		rvs = append(rvs, v.formatWithType(b))
 	}
 
@@ -2502,10 +2637,10 @@ func (i *Instruction) Format(b Builder) string {
 }
 
 // addArgumentBranchInst adds an argument to this instruction.
-func (i *Instruction) addArgumentBranchInst(v Value) {
+func (i *Instruction) addArgumentBranchInst(b *builder, v Value) {
 	switch i.opcode {
 	case OpcodeJump, OpcodeBrz, OpcodeBrnz:
-		i.vs = append(i.vs, v)
+		i.vs = i.vs.Append(&b.varLengthPool, v)
 	default:
 		panic("BUG: " + i.opcode.String())
 	}
@@ -2685,8 +2820,6 @@ func (o Opcode) String() (ret string) {
 		return "Nearest"
 	case OpcodeBitcast:
 		return "Bitcast"
-	case OpcodeBmask:
-		return "Bmask"
 	case OpcodeIreduce:
 		return "Ireduce"
 	case OpcodeSnarrow:
@@ -2701,7 +2834,7 @@ func (o Opcode) String() (ret string) {
 		return "UwidenLow"
 	case OpcodeUwidenHigh:
 		return "UwidenHigh"
-	case OpcodeIaddPairwise:
+	case OpcodeExtIaddPairwise:
 		return "IaddPairwise"
 	case OpcodeWideningPairwiseDotProductS:
 		return "WideningPairwiseDotProductS"
@@ -2727,10 +2860,6 @@ func (o Opcode) String() (ret string) {
 		return "FcvtFromUint"
 	case OpcodeFcvtFromSint:
 		return "FcvtFromSint"
-	case OpcodeIsplit:
-		return "Isplit"
-	case OpcodeIconcat:
-		return "Iconcat"
 	case OpcodeAtomicRmw:
 		return "AtomicRmw"
 	case OpcodeAtomicCas:

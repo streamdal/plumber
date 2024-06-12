@@ -9,6 +9,14 @@ import (
 	"github.com/streamdal/streamdal/libs/protos/build/go/protos"
 )
 
+// Audience is used to announce an audience to the Streamdal server on library initialization
+// We use this to avoid end users having to import our protos
+type Audience struct {
+	ComponentName string
+	OperationType OperationType
+	OperationName string
+}
+
 func (s *Streamdal) addAudience(ctx context.Context, aud *protos.Audience) {
 	// Don't need to add twice
 	if s.seenAudience(ctx, aud) {
@@ -110,5 +118,14 @@ func strToAud(str string) *protos.Audience {
 		ComponentName: parts[1],
 		OperationType: protos.OperationType(opType),
 		OperationName: parts[3],
+	}
+}
+
+func (a *Audience) toProto(serviceName string) *protos.Audience {
+	return &protos.Audience{
+		ServiceName:   strings.ToLower(serviceName),
+		ComponentName: strings.ToLower(a.ComponentName),
+		OperationType: protos.OperationType(a.OperationType),
+		OperationName: strings.ToLower(a.OperationName),
 	}
 }

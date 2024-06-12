@@ -31,10 +31,6 @@ type (
 		// sortedCompiledModules is a list of compiled modules sorted by the initial address of the executable.
 		sortedCompiledModules []*compiledModule
 		mux                   sync.RWMutex
-		// rels is a list of relocations to be resolved. This is reused for each compilation to avoid allocation.
-		rels []backend.RelocationInfo
-		// refToBinaryOffset is reused for each compilation to avoid allocation.
-		refToBinaryOffset map[ssa.FuncRef]int
 		// sharedFunctions is compiled functions shared by all modules.
 		sharedFunctions *sharedFunctions
 		// setFinalizer defaults to runtime.SetFinalizer, but overridable for tests.
@@ -56,7 +52,13 @@ type (
 		// tableGrowExecutable is a compiled trampoline executable for table.grow builtin function.
 		tableGrowExecutable []byte
 		// refFuncExecutable is a compiled trampoline executable for ref.func builtin function.
-		refFuncExecutable         []byte
+		refFuncExecutable []byte
+		// memoryWait32Executable is a compiled trampoline executable for memory.wait32 builtin function
+		memoryWait32Executable []byte
+		// memoryWait64Executable is a compiled trampoline executable for memory.wait64 builtin function
+		memoryWait64Executable []byte
+		// memoryNotifyExecutable is a compiled trampoline executable for memory.notify builtin function
+		memoryNotifyExecutable    []byte
 		listenerBeforeTrampolines map[*wasm.FunctionType][]byte
 		listenerAfterTrampolines  map[*wasm.FunctionType][]byte
 	}
@@ -103,12 +105,12 @@ func NewEngine(ctx context.Context, _ api.CoreFeatures, fc filecache.Cache) wasm
 	machine := newMachine()
 	be := backend.NewCompiler(ctx, machine, ssa.NewBuilder())
 	e := &engine{
-		compiledModules: make(map[wasm.ModuleID]*compiledModule), refToBinaryOffset: make(map[ssa.FuncRef]int),
-		setFinalizer:  runtime.SetFinalizer,
-		machine:       machine,
-		be:            be,
-		fileCache:     fc,
-		wazeroVersion: version.GetWazeroVersion(),
+		compiledModules: make(map[wasm.ModuleID]*compiledModule),
+		setFinalizer:    runtime.SetFinalizer,
+		machine:         machine,
+		be:              be,
+		fileCache:       fc,
+		wazeroVersion:   version.GetWazeroVersion(),
 	}
 	e.compileSharedFunctions()
 	return e
@@ -180,7 +182,6 @@ func (exec *executables) compileEntryPreambles(m *wasm.Module, machine backend.M
 
 func (e *engine) compileModule(ctx context.Context, module *wasm.Module, listeners []experimental.FunctionListener, ensureTermination bool) (*compiledModule, error) {
 	withListener := len(listeners) > 0
-	e.rels = e.rels[:0]
 	cm := &compiledModule{
 		offsets: wazevoapi.NewModuleContextOffsetData(module, withListener), parent: e, module: module,
 		ensureTermination: ensureTermination,
@@ -195,6 +196,9 @@ func (e *engine) compileModule(ctx context.Context, module *wasm.Module, listene
 	if localFns == 0 {
 		return cm, nil
 	}
+
+	rels := make([]backend.RelocationInfo, 0)
+	refToBinaryOffset := make([]int, importedFns+localFns)
 
 	if wazevoapi.DeterministicCompilationVerifierEnabled {
 		// The compilation must be deterministic regardless of the order of functions being compiled.
@@ -214,6 +218,15 @@ func (e *engine) compileModule(ctx context.Context, module *wasm.Module, listene
 	totalSize := 0 // Total binary size of the executable.
 	cm.functionOffsets = make([]int, localFns)
 	bodies := make([][]byte, localFns)
+
+	// Trampoline relocation related variables.
+	trampolineInterval, callTrampolineIslandSize, err := machine.CallTrampolineIslandInfo(localFns)
+	if err != nil {
+		return nil, err
+	}
+	needCallTrampoline := callTrampolineIslandSize > 0
+	var callTrampolineIslandOffsets []int // Holds the offsets of trampoline islands.
+
 	for i := range module.CodeSection {
 		if wazevoapi.DeterministicCompilationVerifierEnabled {
 			i = wazevoapi.DeterministicCompilationVerifierGetRandomizedLocalFunctionIndex(ctx, i)
@@ -231,7 +244,7 @@ func (e *engine) compileModule(ctx context.Context, module *wasm.Module, listene
 		}
 
 		needListener := len(listeners) > 0 && listeners[i] != nil
-		body, rels, err := e.compileLocalWasmFunction(ctx, module, wasm.Index(i), fe, ssaBuilder, be, needListener)
+		body, relsPerFunc, err := e.compileLocalWasmFunction(ctx, module, wasm.Index(i), fe, ssaBuilder, be, needListener)
 		if err != nil {
 			return nil, fmt.Errorf("compile function %d/%d: %v", i, len(module.CodeSection)-1, err)
 		}
@@ -253,19 +266,27 @@ func (e *engine) compileModule(ctx context.Context, module *wasm.Module, listene
 		}
 
 		fref := frontend.FunctionIndexToFuncRef(fidx)
-		e.refToBinaryOffset[fref] = totalSize
+		refToBinaryOffset[fref] = totalSize
 
 		// At this point, relocation offsets are relative to the start of the function body,
 		// so we adjust it to the start of the executable.
-		for _, r := range rels {
+		for _, r := range relsPerFunc {
 			r.Offset += int64(totalSize)
-			e.rels = append(e.rels, r)
+			rels = append(rels, r)
 		}
 
 		bodies[i] = body
 		totalSize += len(body)
 		if wazevoapi.PrintMachineCodeHexPerFunction {
 			fmt.Printf("[[[machine code for %s]]]\n%s\n\n", wazevoapi.GetCurrentFunctionName(ctx), hex.EncodeToString(body))
+		}
+
+		if needCallTrampoline {
+			// If the total size exceeds the trampoline interval, we need to add a trampoline island.
+			if totalSize/trampolineInterval > len(callTrampolineIslandOffsets) {
+				callTrampolineIslandOffsets = append(callTrampolineIslandOffsets, totalSize)
+				totalSize += callTrampolineIslandSize
+			}
 		}
 	}
 
@@ -292,7 +313,9 @@ func (e *engine) compileModule(ctx context.Context, module *wasm.Module, listene
 	}
 
 	// Resolve relocations for local function calls.
-	machine.ResolveRelocations(e.refToBinaryOffset, executable, e.rels)
+	if len(rels) > 0 {
+		machine.ResolveRelocations(refToBinaryOffset, executable, rels, callTrampolineIslandOffsets)
+	}
 
 	if runtime.GOARCH == "arm64" {
 		// On arm64, we cannot give all of rwx at the same time, so we change it to exec.
@@ -341,17 +364,6 @@ func (e *engine) compileLocalWasmFunction(
 
 	if wazevoapi.DeterministicCompilationVerifierEnabled {
 		wazevoapi.VerifyOrSetDeterministicCompilationContextValue(ctx, "Optimized SSA", ssaBuilder.Format())
-	}
-
-	// Finalize the layout of SSA blocks which might use the optimization results.
-	ssaBuilder.LayoutBlocks()
-
-	if wazevoapi.PrintBlockLaidOutSSA && wazevoapi.PrintEnabledIndex(ctx) {
-		fmt.Printf("[[[Laidout SSA for %s]]]%s\n", wazevoapi.GetCurrentFunctionName(ctx), ssaBuilder.Format())
-	}
-
-	if wazevoapi.DeterministicCompilationVerifierEnabled {
-		wazevoapi.VerifyOrSetDeterministicCompilationContextValue(ctx, "Block laid out SSA", ssaBuilder.Format())
 	}
 
 	// Now our ssaBuilder contains the necessary information to further lower them to
@@ -422,7 +434,9 @@ func (e *engine) compileHostModule(ctx context.Context, module *wasm.Module, lis
 
 		be.Init()
 		machine.CompileGoFunctionTrampoline(exitCode, &sig, true)
-		be.Encode()
+		if err := be.Finalize(ctx); err != nil {
+			return nil, err
+		}
 		body := be.Buf()
 
 		if wazevoapi.PerfMapEnabled {
@@ -438,6 +452,11 @@ func (e *engine) compileHostModule(ctx context.Context, module *wasm.Module, lis
 		copy(copied, body)
 		bodies[i] = copied
 		totalSize += len(body)
+	}
+
+	if totalSize == 0 {
+		// Empty module.
+		return cm, nil
 	}
 
 	// Allocate executable memory and then copy the generated machine code.
@@ -470,13 +489,6 @@ func (e *engine) compileHostModule(ctx context.Context, module *wasm.Module, lis
 func (e *engine) Close() (err error) {
 	e.mux.Lock()
 	defer e.mux.Unlock()
-
-	for _, cm := range e.compiledModules {
-		cm.functionOffsets = nil
-		cm.module = nil
-		cm.parent = nil
-		cm.executables = nil
-	}
 	e.sortedCompiledModules = nil
 	e.compiledModules = nil
 	e.sharedFunctions = nil
@@ -538,7 +550,16 @@ func (e *engine) compiledModuleOfAddr(addr uintptr) *compiledModule {
 	if index < 0 {
 		return nil
 	}
-	return e.sortedCompiledModules[index]
+	candidate := e.sortedCompiledModules[index]
+	if checkAddrInBytes(addr, candidate.executable) {
+		// If a module is already deleted, the found module may have been wrong.
+		return candidate
+	}
+	return nil
+}
+
+func checkAddrInBytes(addr uintptr, b []byte) bool {
+	return uintptr(unsafe.Pointer(&b[0])) <= addr && addr <= uintptr(unsafe.Pointer(&b[len(b)-1]))
 }
 
 // NewModuleEngine implements wasm.Engine.
@@ -548,7 +569,7 @@ func (e *engine) NewModuleEngine(m *wasm.Module, mi *wasm.ModuleInstance) (wasm.
 	// Note: imported functions are resolved in moduleEngine.ResolveImportedFunction.
 	me.importedFunctions = make([]importedFunction, m.ImportFunctionCount)
 
-	compiled, ok := e.compiledModules[m.ID]
+	compiled, ok := e.getCompiledModuleFromMemory(m)
 	if !ok {
 		return nil, errors.New("source module must be compiled before instantiation")
 	}
@@ -561,7 +582,7 @@ func (e *engine) NewModuleEngine(m *wasm.Module, mi *wasm.ModuleInstance) (wasm.
 		me.opaquePtr = &me.opaque[0]
 	} else {
 		if size := compiled.offsets.TotalSize; size != 0 {
-			opaque := make([]byte, size)
+			opaque := newAlignedOpaque(size)
 			me.opaque = opaque
 			me.opaquePtr = &opaque[0]
 		}
@@ -637,6 +658,51 @@ func (e *engine) compileSharedFunctions() {
 		}
 	}
 
+	e.be.Init()
+	{
+		src := e.machine.CompileGoFunctionTrampoline(wazevoapi.ExitCodeMemoryWait32, &ssa.Signature{
+			// exec context, timeout, expected, addr
+			Params: []ssa.Type{ssa.TypeI64, ssa.TypeI64, ssa.TypeI32, ssa.TypeI64},
+			// Returns the status.
+			Results: []ssa.Type{ssa.TypeI32},
+		}, false)
+		e.sharedFunctions.memoryWait32Executable = mmapExecutable(src)
+		if wazevoapi.PerfMapEnabled {
+			exe := e.sharedFunctions.memoryWait32Executable
+			wazevoapi.PerfMap.AddEntry(uintptr(unsafe.Pointer(&exe[0])), uint64(len(exe)), "memory_wait32_trampoline")
+		}
+	}
+
+	e.be.Init()
+	{
+		src := e.machine.CompileGoFunctionTrampoline(wazevoapi.ExitCodeMemoryWait64, &ssa.Signature{
+			// exec context, timeout, expected, addr
+			Params: []ssa.Type{ssa.TypeI64, ssa.TypeI64, ssa.TypeI64, ssa.TypeI64},
+			// Returns the status.
+			Results: []ssa.Type{ssa.TypeI32},
+		}, false)
+		e.sharedFunctions.memoryWait64Executable = mmapExecutable(src)
+		if wazevoapi.PerfMapEnabled {
+			exe := e.sharedFunctions.memoryWait64Executable
+			wazevoapi.PerfMap.AddEntry(uintptr(unsafe.Pointer(&exe[0])), uint64(len(exe)), "memory_wait64_trampoline")
+		}
+	}
+
+	e.be.Init()
+	{
+		src := e.machine.CompileGoFunctionTrampoline(wazevoapi.ExitCodeMemoryNotify, &ssa.Signature{
+			// exec context, count, addr
+			Params: []ssa.Type{ssa.TypeI64, ssa.TypeI32, ssa.TypeI64},
+			// Returns the number notified.
+			Results: []ssa.Type{ssa.TypeI32},
+		}, false)
+		e.sharedFunctions.memoryNotifyExecutable = mmapExecutable(src)
+		if wazevoapi.PerfMapEnabled {
+			exe := e.sharedFunctions.memoryNotifyExecutable
+			wazevoapi.PerfMap.AddEntry(uintptr(unsafe.Pointer(&exe[0])), uint64(len(exe)), "memory_notify_trampoline")
+		}
+	}
+
 	e.setFinalizer(e.sharedFunctions, sharedFunctionsFinalizer)
 }
 
@@ -656,6 +722,15 @@ func sharedFunctionsFinalizer(sf *sharedFunctions) {
 	if err := platform.MunmapCodeSegment(sf.refFuncExecutable); err != nil {
 		panic(err)
 	}
+	if err := platform.MunmapCodeSegment(sf.memoryWait32Executable); err != nil {
+		panic(err)
+	}
+	if err := platform.MunmapCodeSegment(sf.memoryWait64Executable); err != nil {
+		panic(err)
+	}
+	if err := platform.MunmapCodeSegment(sf.memoryNotifyExecutable); err != nil {
+		panic(err)
+	}
 	for _, f := range sf.listenerBeforeTrampolines {
 		if err := platform.MunmapCodeSegment(f); err != nil {
 			panic(err)
@@ -672,6 +747,9 @@ func sharedFunctionsFinalizer(sf *sharedFunctions) {
 	sf.stackGrowExecutable = nil
 	sf.tableGrowExecutable = nil
 	sf.refFuncExecutable = nil
+	sf.memoryWait32Executable = nil
+	sf.memoryWait64Executable = nil
+	sf.memoryNotifyExecutable = nil
 	sf.listenerBeforeTrampolines = nil
 	sf.listenerAfterTrampolines = nil
 }

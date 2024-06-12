@@ -1,4 +1,4 @@
-//go:build !arm64
+//go:build (!arm64 && !amd64) || tinygo
 
 package wazevo
 
@@ -10,6 +10,6 @@ func entrypoint(preambleExecutable, functionExecutable *byte, executionContextPt
 	panic(runtime.GOARCH)
 }
 
-func afterGoFunctionCallEntrypoint(executable *byte, executionContextPtr uintptr, stackPointer uintptr) {
+func afterGoFunctionCallEntrypoint(executable *byte, executionContextPtr uintptr, stackPointer, framePointer uintptr) {
 	panic(runtime.GOARCH)
 }

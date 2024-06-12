@@ -25,6 +25,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/relistan/go-director"
+	"github.com/tetratelabs/wazero"
+	"golang.org/x/time/rate"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/streamdal/streamdal/libs/protos/build/go/protos"
@@ -43,17 +45,49 @@ type OperationType int
 // ClientType is used to indicate if this library is being used by a shim or directly (as an SDK)
 type ClientType int
 
+// SDKMode is how Process() will handle messages
+// ModeSync = Process() will block until the pipeline is complete
+// ModeAsync = Process() will return immediately and the pipeline will run in the background
+type SDKMode int
+
 // ProcessResponse is the response struct from a Process() call
 type ProcessResponse protos.SDKResponse
 
+// WazeroExecutionMode is used to indicate how the SDK will execute wasm modules
+type WazeroExecutionMode int
+
 const (
-	// DefaultPipelineTimeoutDurationStr is the default timeout for a pipeline execution
+	// DefaultPipelineTimeoutDurationStr is the default timeout for a pipeline execution.
 	DefaultPipelineTimeoutDurationStr = "100ms"
 
 	// DefaultStepTimeoutDurationStr is the default timeout for a single step.
 	DefaultStepTimeoutDurationStr = "10ms"
 
-	// ReconnectSleep determines the length of time to wait between reconnect attempts to streamdal server©
+	// DefaultSamplingRate is the default number at which messages will be sampled
+	// per SamplingIntervalSeconds if SamplingEnabled is set to true and SampleRate
+	// is not specified in the config.
+	DefaultSamplingRate = 1
+
+	// DefaultSamplingIntervalSeconds is the default interval at which sampling will be done
+	// if SamplingEnabled is set to true and SamplingIntervalSeconds is not specified in the config.
+	DefaultSamplingIntervalSeconds = 1
+
+	// DefaultModeAsyncWorkers is the default number of workers that will be spawned
+	// by the SDK when config.Mode is set to ModeAsync.
+	//
+	// Higher amount == improved .Process() speeds but heavier resource usage.
+	DefaultModeAsyncWorkers = 2
+
+	// DefaultMetricsNumWorkers is the default number of workers that the SDK will
+	// spawn for collecting and sending metrics to the configured Streamdal server.
+	//
+	// NOTE: Metrics are NOT optional. The server uses metrics sent by the SDK
+	// clients to determine if clients are alive, display usage stats and many
+	// other features.
+	DefaultMetricsNumWorkers = 1
+
+	// ReconnectSleep determines the length of time the SDK will wait between
+	// reconnect attempts to streamdal server after the streamdal server goes away.
 	ReconnectSleep = time.Second * 5
 
 	// MaxWASMPayloadSize is the maximum size of data that can be sent to the WASM module
@@ -69,15 +103,25 @@ const (
 	OperationTypeConsumer OperationType = 1
 	OperationTypeProducer OperationType = 2
 
+	ModeSync  SDKMode = SDKMode(protos.SDKMode_SDK_MODE_SYNC)
+	ModeAsync SDKMode = SDKMode(protos.SDKMode_SDK_MODE_ASYNC)
+
 	AbortAllStr     = "aborted all pipelines"
 	AbortCurrentStr = "aborted current pipeline"
 	AbortNoneStr    = "no abort condition"
 
 	// ExecStatusTrue ExecStatusFalse ExecStatusError are used to indicate
 	// the execution status of the _last_ step in the _last_ pipeline.
-	ExecStatusTrue  = protos.ExecStatus_EXEC_STATUS_TRUE
-	ExecStatusFalse = protos.ExecStatus_EXEC_STATUS_FALSE
-	ExecStatusError = protos.ExecStatus_EXEC_STATUS_ERROR
+	ExecStatusTrue     = protos.ExecStatus_EXEC_STATUS_TRUE
+	ExecStatusFalse    = protos.ExecStatus_EXEC_STATUS_FALSE
+	ExecStatusError    = protos.ExecStatus_EXEC_STATUS_ERROR
+	ExecStatusAsync    = protos.ExecStatus_EXEC_STATUS_ASYNC
+	ExecStatusSampling = protos.ExecStatus_EXEC_STATUS_SAMPLING
+
+	WazeroExecutionModeCompiler    WazeroExecutionMode = 1
+	WazeroExecutionModeInterpreter WazeroExecutionMode = 2
+
+	DefaultWazeroExecutionMode = WazeroExecutionModeCompiler
 )
 
 var (
@@ -112,7 +156,7 @@ type IStreamdal interface {
 // Streamdal is the main struct for this library
 type Streamdal struct {
 	config         *Config
-	functions      map[string]*function
+	functions      map[int]map[string]*function
 	functionsMtx   *sync.RWMutex
 	pipelines      map[string][]*protos.Pipeline // k: audienceStr
 	pipelinesMtx   *sync.RWMutex
@@ -130,6 +174,16 @@ type Streamdal struct {
 	schemas        map[string]*protos.Schema   // k: audienceStr
 	schemasMtx     *sync.RWMutex
 	cancelFunc     context.CancelFunc
+	wasmCache      map[string][]byte
+	wasmCacheMtx   *sync.RWMutex
+	funcCreateMtx  *sync.Mutex
+	funcCreate     map[string]*sync.Mutex
+	wazeroCache    wazero.CompilationCache
+
+	// Sampling rate limiter, uses token bucket algo
+	limiter *rate.Limiter
+
+	asyncCh chan *ProcessRequest
 
 	// Set to true when .Close() is called; used to prevent calling .Process()
 	// when library instance is stopped.
@@ -137,24 +191,32 @@ type Streamdal struct {
 }
 
 type Config struct {
-	// ServerURL the hostname and port for the gRPC API of Streamdal Server
-	// If this value is left empty, the library will not attempt to connect to the server
-	// and New() will return nil
+	// ServerURL the hostname and port for the gRPC API of Streamdal Server.
+	// If this value is left empty, the library will not attempt to connect to
+	// the server and New() will return nil.
+	//
+	// REQUIRED
 	ServerURL string
 
 	// ServerToken is the authentication token for the gRPC API of the Streamdal server
 	// If this value is left empty, the library will not attempt to connect to the server
-	// and New() will return nil
+	// and New() will return nil.
+	//
+	// REQUIRED
 	ServerToken string
 
-	// ServiceName is the name that this library will identify as in the UI. Required
+	// ServiceName is the name that this library will identify as in the UI.
+	//
+	// REQUIRED
 	ServiceName string
 
-	// PipelineTimeout defines how long this library will allow a pipeline to
-	// run. Optional; default: 100ms
+	// PipelineTimeout defines how long this library will allow a pipeline to run.
+	//
+	// Optional; default: 100ms
 	PipelineTimeout time.Duration
 
 	// StepTimeout defines how long this library will allow a single step to run.
+	//
 	// Optional; default: 10ms
 	StepTimeout time.Duration
 
@@ -163,41 +225,96 @@ type Config struct {
 	// will cause New() to return an error. If true, the library will block and
 	// continue trying to initialize. You may want to adjust this if you want
 	// your application to behave a certain way on startup when the server
-	// is unavailable. Optional; default: false
+	// is unavailable.
+	//
+	// Optional; default: false
 	IgnoreStartupError bool
 
 	// If specified, library will connect to the server but won't apply any
-	// pipelines. Optional; default: false
+	// pipelines.
+	//
+	// Optional; default: false
 	DryRun bool
 
 	// ShutdownCtx is a context that the library will listen to for cancellation
 	// notices. Upon cancelling this context, SDK will stop all active goroutines
-	// and free up all used resources. Optional; default: nil
+	// and free up all used resources.
+	//
+	// Optional; default: nil
 	ShutdownCtx context.Context
 
 	// Logger is a logger you can inject (such as logrus) to allow this library
-	// to log output. Optional; default: nil
+	// to log output.
+	//
+	// Optional; default: nil
 	Logger logger.Logger
 
 	// Audiences is a list of audiences you can specify at registration time.
 	// This is useful if you know your audiences in advance and want to populate
 	// service groups in the Streamdal UI _before_ your code executes any .Process()
-	// calls. Optional; default: nil
+	// calls.
+	//
+	// NOTE: If you do not specify audiences here, they will only show up in
+	// the UI _after_ the first call to .Process() completes!
+	//
+	// Optional; default: nil
 	Audiences []*Audience
 
 	// ClientType specifies whether this of the SDK is used in a shim library or
 	// as a standalone SDK. This information is used for both debug info and to
 	// help the library determine whether ServerURL and ServerToken should be
-	// optional or required. Optional; default: ClientTypeSDK
+	// optional or required.
+	//
+	// Optional; default: ClientTypeSDK
 	ClientType ClientType
-}
 
-// Audience is used to announce an audience to the Streamdal server on library initialization
-// We use this to avoid end users having to import our protos
-type Audience struct {
-	ComponentName string
-	OperationType OperationType
-	OperationName string
+	// EnableStdout enables ability for wasm modules to write to stdout
+	EnableStdout bool
+
+	// EnableStderr enables ability for wasm modules to write to stderr
+	EnableStderr bool
+
+	// SamplingEnabled enables sampling of data. This will cause Process() to
+	// ignore some messages if the rate exceeds the SamplingRate per SamplingIntervalSeconds.
+	// This is useful for high-throughput systems where you cannot .Process()
+	// every message.
+	SamplingEnabled bool
+
+	// SamplingRate is the rate at which messages will be sampled per SamplingIntervalSeconds
+	//
+	// Default: 1
+	SamplingRate int
+
+	// SamplingIntervalSeconds is the interval at which sampling will be done.
+	//
+	// Default: 1
+	SamplingIntervalSeconds int
+
+	// SDKMode is how Process() will handle messages.
+	// ModeSync = Process() will block until the pipeline is complete
+	// ModeAsync = Process() will return immediately and the pipeline will run in the background via workers
+	//
+	// Default: ModeSync
+	Mode SDKMode
+
+	// ModeAsyncNumWorkers is the number of workers SDK will spawn when Mode is
+	// set to ModeAsync.
+	//
+	// Default: 4
+	ModeAsyncNumWorkers int
+
+	// Number of workers that the SDK will run for collecting and sending metrics
+	//
+	// Default: 1
+	MetricsNumWorkers int
+
+	// WazeroExecutionMode defines how the SDK will execute wasm modules.
+	//
+	// WazeroExecutionModeCompiler = slow instantiation, faster execution
+	// WazeroExecutionModeInterpreter = fast instantiation, slower execution
+	//
+	// Default: WazeroExecutionModeCompiler
+	WazeroExecutionMode WazeroExecutionMode
 }
 
 // ProcessRequest is used to maintain a consistent API for the Process() call
@@ -232,9 +349,10 @@ func New(cfg *Config) (*Streamdal, error) {
 	}
 
 	m, err := metrics.New(&metrics.Config{
-		ServerClient: serverClient,
-		ShutdownCtx:  cfg.ShutdownCtx,
-		Log:          cfg.Logger,
+		ServerClient:   serverClient,
+		WorkerPoolSize: cfg.MetricsNumWorkers,
+		ShutdownCtx:    cfg.ShutdownCtx,
+		Log:            cfg.Logger,
 	})
 	if err != nil {
 		cancelFunc()
@@ -256,7 +374,7 @@ func New(cfg *Config) (*Streamdal, error) {
 	}
 
 	s := &Streamdal{
-		functions:      make(map[string]*function),
+		functions:      make(map[int]map[string]*function),
 		functionsMtx:   &sync.RWMutex{},
 		serverClient:   serverClient,
 		pipelines:      make(map[string][]*protos.Pipeline),
@@ -275,10 +393,22 @@ func New(cfg *Config) (*Streamdal, error) {
 		schemasMtx:     &sync.RWMutex{},
 		schemas:        make(map[string]*protos.Schema),
 		cancelFunc:     cancelFunc,
+		wasmCache:      make(map[string][]byte),
+		wasmCacheMtx:   &sync.RWMutex{},
+
+		// Used for blocking getFunctionFromCache() calls when a function is being created
+		funcCreate:    make(map[string]*sync.Mutex),
+		funcCreateMtx: &sync.Mutex{},
+		wazeroCache:   wazero.NewCompilationCache(),
 	}
 
 	if cfg.DryRun {
 		cfg.Logger.Warn("data pipelines running in dry run mode")
+	}
+
+	if cfg.SamplingEnabled {
+		interval := time.Duration(cfg.SamplingIntervalSeconds/cfg.SamplingRate) * time.Second
+		s.limiter = rate.NewLimiter(rate.Every(interval), cfg.SamplingRate)
 	}
 
 	if err := s.pullInitialPipelines(cfg.ShutdownCtx); err != nil {
@@ -305,6 +435,12 @@ func New(cfg *Config) (*Streamdal, error) {
 	case err := <-errCh:
 		return nil, errors.Wrap(err, "received error on startup")
 	case <-time.After(time.Second * 5):
+		// Start async workers if necessary
+		if cfg.Mode == ModeAsync {
+			s.asyncCh = make(chan *ProcessRequest, cfg.ModeAsyncNumWorkers*10)
+			s.startAsyncWorkers()
+		}
+
 		return s, nil
 	}
 }
@@ -385,6 +521,33 @@ func validateConfig(cfg *Config) error {
 		cfg.ClientType = ClientTypeSDK
 	}
 
+	if cfg.SamplingEnabled {
+		if cfg.SamplingRate == 0 {
+			cfg.SamplingRate = DefaultSamplingRate
+		}
+
+		if cfg.SamplingIntervalSeconds == 0 {
+			cfg.SamplingIntervalSeconds = DefaultSamplingIntervalSeconds
+		}
+	}
+
+	// Default to sync mode if none is specified
+	if cfg.Mode == 0 {
+		cfg.Mode = ModeSync
+	}
+
+	if cfg.ModeAsyncNumWorkers == 0 {
+		cfg.ModeAsyncNumWorkers = DefaultModeAsyncWorkers
+	}
+
+	if cfg.MetricsNumWorkers == 0 {
+		cfg.MetricsNumWorkers = DefaultMetricsNumWorkers
+	}
+
+	if cfg.WazeroExecutionMode == 0 {
+		cfg.WazeroExecutionMode = DefaultWazeroExecutionMode
+	}
+
 	return nil
 }
 
@@ -416,7 +579,8 @@ func (s *Streamdal) watchForShutdown() {
 	defer s.tailsMtx.RUnlock()
 	for _, tails := range s.tails {
 		for reqID, tail := range tails {
-			s.config.Logger.Debugf("Shutting down tail '%s' for pipeline %s", reqID, tail.Request.GetTail().Request.PipelineId)
+			aud := audToStr(tail.Request.GetTail().Request.Audience)
+			s.config.Logger.Debugf("Shutting down tail '%s' for audience '%s'", reqID, aud)
 			tail.CancelFunc()
 		}
 	}
@@ -433,24 +597,16 @@ func (s *Streamdal) pullInitialPipelines(ctx context.Context) error {
 		return errors.Wrap(err, "unable to pull initial pipelines")
 	}
 
-	// Commands won't include paused pipelines but we can check just in case
 	for _, cmd := range cmds.SetPipelineCommands {
-		for _, p := range cmd.GetSetPipelines().Pipelines {
-			s.config.Logger.Debugf("saving pipeline '%s' for audience '%s' to internal map", p.Name, audToStr(cmd.Audience))
+		// Both GetSetPipelinesCommandsByServiceResponse and GetSetPipelinesCommand have the field WasmModules
+		// But in this case, the individual GetSetPipelinesCommand will not have WasmModules populated because
+		// this response will have multiple GetSetPipelinesCommand messages inside of it, and we don't want
+		// to duplicate the data. When Register() receives GetSetPipelinesCommand, it will be streaming, so
+		// each GetSetPipelinesCommand will have its own WasmModules field populated
+		cmd.GetSetPipelines().WasmModules = cmds.WasmModules
 
-			// Fill in WASM data from the deduplication map
-			for _, step := range p.Steps {
-				wasmData, ok := cmds.WasmModules[step.GetXWasmId()]
-				if !ok {
-					return errors.Errorf("BUG: unable to find WASM data for step '%s'", step.Name)
-				}
-
-				step.XWasmBytes = wasmData.Bytes
-			}
-
-			if err := s.setPipelines(ctx, cmd); err != nil {
-				s.config.Logger.Errorf("failed to attach pipeline: %s", err)
-			}
+		if err := s.setPipelines(ctx, cmd); err != nil {
+			s.config.Logger.Errorf("failed to attach pipeline: %s", err)
 		}
 	}
 
@@ -497,11 +653,12 @@ func (s *Streamdal) heartbeat(loop *director.TimedLooper) {
 	s.config.Logger.Debug("heartbeat() exit")
 }
 
-func (s *Streamdal) runStep(ctx context.Context, aud *protos.Audience, step *protos.PipelineStep, data []byte, isr *protos.InterStepResult) (*protos.WASMResponse, error) {
+// TODO: refactor this signature
+func (s *Streamdal) runStep(ctx context.Context, df protos.PipelineDataFormat, aud *protos.Audience, step *protos.PipelineStep, data []byte, isr *protos.InterStepResult, workerID int) (*protos.WASMResponse, error) {
 	s.config.Logger.Debugf("Running step '%s'", step.Name)
 
 	// Get WASM module
-	f, err := s.getFunction(ctx, step)
+	f, err := s.getFunction(ctx, step, workerID)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get wasm data")
 	}
@@ -516,6 +673,7 @@ func (s *Streamdal) runStep(ctx context.Context, aud *protos.Audience, step *pro
 		InputPayload:    data,
 		Step:            step,
 		InterStepResult: isr,
+		DataFormat:      df,
 	}
 
 	reqBytes, err := proto.Marshal(req)
@@ -587,19 +745,73 @@ func newAudience(req *ProcessRequest, cfg *Config) *protos.Audience {
 		OperationName: req.OperationName,
 	}
 }
-
 func (s *Streamdal) Process(ctx context.Context, req *ProcessRequest) *ProcessResponse {
-	if s.closed {
+	switch s.config.Mode {
+	case ModeSync:
+		// workerID is "1" here since we only have one worker in sync mode
+		return s.processSync(ctx, req, 1)
+	case ModeAsync:
+		s.asyncCh <- req
 		return &ProcessResponse{
-			Data:          req.Data,
-			Status:        ExecStatusError,
-			StatusMessage: proto.String(ErrClosedClient.Error()),
+			Status:         ExecStatusAsync,
+			StatusMessage:  proto.String("queued message for async processing"),
+			Data:           req.Data,
+			PipelineStatus: make([]*protos.PipelineStatus, 0),
+			Metadata:       make(map[string]string),
+			SdkMode:        protos.SDKMode(s.config.Mode),
+		}
+	default:
+		return &ProcessResponse{
+			Status:         ExecStatusError,
+			StatusMessage:  proto.String(fmt.Sprintf("unknown SDK mode '%d'", s.config.Mode)),
+			Data:           req.Data,
+			PipelineStatus: make([]*protos.PipelineStatus, 0),
+			Metadata:       make(map[string]string),
+			SdkMode:        protos.SDKMode(s.config.Mode),
 		}
 	}
+}
 
+func (s *Streamdal) startAsyncWorkers() {
+	for i := 1; i <= s.config.ModeAsyncNumWorkers; i++ {
+		go s.runAsyncWorker(i)
+	}
+}
+
+func (s *Streamdal) runAsyncWorker(workerID int) {
+	s.config.Logger.Debugf("starting async worker '%d'", workerID)
+
+	for {
+		select {
+		case <-s.config.ShutdownCtx.Done():
+			s.config.Logger.Debugf("async worker '%d' shutting down", workerID)
+			return
+		case req := <-s.asyncCh:
+			s.config.Logger.Debugf("async worker '%d' processing request", workerID)
+			s.processSync(s.config.ShutdownCtx, req, workerID)
+		}
+	}
+}
+
+func (s *Streamdal) processSync(ctx context.Context, req *ProcessRequest, workerID int) *ProcessResponse {
 	resp := &ProcessResponse{
 		PipelineStatus: make([]*protos.PipelineStatus, 0),
 		Metadata:       make(map[string]string),
+		SdkMode:        protos.SDKMode(s.config.Mode),
+	}
+
+	if s.closed {
+		resp.Status = ExecStatusError
+		resp.StatusMessage = proto.String(ErrClosedClient.Error())
+		return resp
+	}
+
+	if !s.shouldProcess() {
+		resp.Data = req.Data
+		resp.Status = ExecStatusSampling
+		resp.StatusMessage = proto.String("skipped processing due to sampling rate")
+
+		return resp
 	}
 
 	if err := validateProcessRequest(req); err != nil {
@@ -740,7 +952,7 @@ PIPELINE:
 
 			// Pipeline timeout either has not occurred OR it occurred and execution was not aborted
 
-			wasmResp, err := s.runStep(stepTimeoutCtx, aud, step, resp.Data, isr)
+			wasmResp, err := s.runStep(stepTimeoutCtx, pipeline.DataFormat, aud, step, resp.Data, isr, workerID)
 			if err != nil {
 				stepTimeoutCxl()
 
@@ -787,7 +999,7 @@ PIPELINE:
 				// NOT aborting, update LOCAL step & pipeline status
 				s.updateStatus(nil, pipelineStatus, stepStatus)
 
-				s.config.Logger.Warnf("Step '%s:%s' failed (no abort condition defined - continuing step execution)", pipeline.Name, step.Name)
+				s.config.Logger.Warnf("Step '%s:%s' failed (no abort condition defined - continuing step execution): %s", pipeline.Name, step.Name, err.Error())
 
 				continue // Move on to the next step in the pipeline
 			}
@@ -798,6 +1010,11 @@ PIPELINE:
 			}
 
 			isr = wasmResp.InterStepResult // Pass inter-step result to next step
+			if isr != nil {
+				// Ensure audience is set on ISR for HttpRequests
+				// ISR might be nil since not all WASM modules return it, so only set if ISR is not nil
+				isr.Audience = aud
+			}
 
 			var (
 				stepCondStr    string
@@ -826,7 +1043,7 @@ PIPELINE:
 				condType = protos.NotifyRequest_CONDITION_TYPE_ON_FALSE
 			case protos.WASMExitCode_WASM_EXIT_CODE_ERROR:
 				// Ran into an error - return original data
-				resp.Data = req.Data
+				resp.Data = wasmResp.OutputPayload
 
 				stepCondStr = "error"
 				stepConds = step.OnError
@@ -1055,11 +1272,12 @@ func (s *Streamdal) updateStatus(resp *ProcessResponse, pipelineStatus *protos.P
 	}
 }
 
-func (a *Audience) toProto(serviceName string) *protos.Audience {
-	return &protos.Audience{
-		ServiceName:   strings.ToLower(serviceName),
-		ComponentName: strings.ToLower(a.ComponentName),
-		OperationType: protos.OperationType(a.OperationType),
-		OperationName: strings.ToLower(a.OperationName),
+// shouldProcess determines if a message should be processed based on
+// whether sampling is enabled and the rate limiter allows the message
+func (s *Streamdal) shouldProcess() bool {
+	if s.limiter == nil {
+		return true
 	}
+
+	return s.limiter.Allow()
 }

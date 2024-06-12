@@ -1,31 +1,11 @@
+//go:build amd64 && !tinygo
+
 package platform
 
-const (
-	// CpuFeatureSSE3 is the flag to query CpuFeatureFlags.Has for SSEv3 capabilities
-	CpuFeatureSSE3 = uint64(1)
-	// CpuFeatureSSE4_1 is the flag to query CpuFeatureFlags.Has for SSEv4.1 capabilities
-	CpuFeatureSSE4_1 = uint64(1) << 19
-	// CpuFeatureSSE4_2 is the flag to query CpuFeatureFlags.Has for SSEv4.2 capabilities
-	CpuFeatureSSE4_2 = uint64(1) << 20
-)
+// CpuFeatures exposes the capabilities for this CPU, queried via the Has, HasExtra methods.
+var CpuFeatures = loadCpuFeatureFlags()
 
-const (
-	// CpuExtraFeatureABM is the flag to query CpuFeatureFlags.HasExtra for Advanced Bit Manipulation capabilities (e.g. LZCNT)
-	CpuExtraFeatureABM = uint64(1) << 5
-)
-
-// CpuFeatures exposes the capabilities for this CPU, queried via the Has, HasExtra methods
-var CpuFeatures CpuFeatureFlags = loadCpuFeatureFlags()
-
-// CpuFeatureFlags exposes methods for querying CPU capabilities
-type CpuFeatureFlags interface {
-	// Has returns true when the specified flag (represented as uint64) is supported
-	Has(cpuFeature uint64) bool
-	// HasExtra returns true when the specified extraFlag (represented as uint64) is supported
-	HasExtra(cpuFeature uint64) bool
-}
-
-// cpuFeatureFlags implements CpuFeatureFlags interface
+// cpuFeatureFlags implements CpuFeatureFlags interface.
 type cpuFeatureFlags struct {
 	flags      uint64
 	extraFlags uint64
@@ -35,13 +15,13 @@ type cpuFeatureFlags struct {
 // implemented in impl_amd64.s
 func cpuid(arg1, arg2 uint32) (eax, ebx, ecx, edx uint32)
 
-// cpuidAsBitmap combines the result of invoking cpuid to uint64 bitmap
+// cpuidAsBitmap combines the result of invoking cpuid to uint64 bitmap.
 func cpuidAsBitmap(arg1, arg2 uint32) uint64 {
 	_ /* eax */, _ /* ebx */, ecx, edx := cpuid(arg1, arg2)
 	return (uint64(edx) << 32) | uint64(ecx)
 }
 
-// loadStandardRange load flags from the standard range, panics otherwise
+// loadStandardRange load flags from the standard range, panics otherwise.
 func loadStandardRange(id uint32) uint64 {
 	// ensure that the id is in the valid range, returned by cpuid(0,0)
 	maxRange, _, _, _ := cpuid(0, 0)
@@ -51,7 +31,7 @@ func loadStandardRange(id uint32) uint64 {
 	return cpuidAsBitmap(id, 0)
 }
 
-// loadStandardRange load flags from the extended range, panics otherwise
+// loadStandardRange load flags from the extended range, panics otherwise.
 func loadExtendedRange(id uint32) uint64 {
 	// ensure that the id is in the valid range, returned by cpuid(0x80000000,0)
 	maxRange, _, _, _ := cpuid(0x80000000, 0)
@@ -68,12 +48,32 @@ func loadCpuFeatureFlags() CpuFeatureFlags {
 	}
 }
 
-// Has implements the same method on the CpuFeatureFlags interface
-func (f *cpuFeatureFlags) Has(cpuFeature uint64) bool {
-	return (f.flags & cpuFeature) != 0
+// Has implements the same method on the CpuFeatureFlags interface.
+func (f *cpuFeatureFlags) Has(cpuFeature CpuFeature) bool {
+	return (f.flags & uint64(cpuFeature)) != 0
 }
 
-// HasExtra implements the same method on the CpuFeatureFlags interface
-func (f *cpuFeatureFlags) HasExtra(cpuFeature uint64) bool {
-	return (f.extraFlags & cpuFeature) != 0
+// HasExtra implements the same method on the CpuFeatureFlags interface.
+func (f *cpuFeatureFlags) HasExtra(cpuFeature CpuFeature) bool {
+	return (f.extraFlags & uint64(cpuFeature)) != 0
+}
+
+// Raw implements the same method on the CpuFeatureFlags interface.
+func (f *cpuFeatureFlags) Raw() uint64 {
+	// Below, we only set the first 4 bits for the features we care about,
+	// instead of setting all the unnecessary bits obtained from the CPUID instruction.
+	var ret uint64
+	if f.Has(CpuFeatureAmd64SSE3) {
+		ret = 1 << 0
+	}
+	if f.Has(CpuFeatureAmd64SSE4_1) {
+		ret |= 1 << 1
+	}
+	if f.Has(CpuFeatureAmd64SSE4_2) {
+		ret |= 1 << 2
+	}
+	if f.HasExtra(CpuExtraFeatureAmd64ABM) {
+		ret |= 1 << 3
+	}
+	return ret
 }

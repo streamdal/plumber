@@ -214,7 +214,7 @@ func (s *Streamdal) startTailHandler(_ context.Context, cmd *protos.Command) err
 	// Convert sample interval from seconds to time.Duration
 	if sampleOpts := cmd.GetTail().Request.GetSampleOptions(); sampleOpts != nil {
 		// Convert seconds to nanoseconds
-		interval := time.Duration(sampleOpts.SampleIntervalSeconds) * time.Second
+		interval := time.Duration(sampleOpts.SampleIntervalSeconds/sampleOpts.SampleRate) * time.Second
 		t.limiter = rate.NewLimiter(rate.Every(interval), int(sampleOpts.SampleRate))
 	}
 

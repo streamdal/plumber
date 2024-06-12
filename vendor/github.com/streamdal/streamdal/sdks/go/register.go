@@ -19,7 +19,7 @@ func (s *Streamdal) genClientInfo() *protos.ClientInfo {
 	return &protos.ClientInfo{
 		ClientType:     protos.ClientType(s.config.ClientType),
 		LibraryName:    "go-sdk",
-		LibraryVersion: "0.1.13",
+		LibraryVersion: "0.1.32",
 		Language:       "go",
 		Arch:           runtime.GOARCH,
 		Os:             runtime.GOOS,
@@ -275,6 +275,18 @@ func (s *Streamdal) setPipelines(_ context.Context, cmd *protos.Command) error {
 
 	if err := validate.SetPipelinesCommand(cmd); err != nil {
 		return errors.Wrap(err, "failed to validate set pipelines command")
+	}
+
+	for _, p := range cmd.GetSetPipelines().Pipelines {
+		// Fill in WASM data from the deduplication map
+		for _, step := range p.Steps {
+			wasmData, ok := cmd.GetSetPipelines().WasmModules[step.GetXWasmId()]
+			if !ok {
+				return errors.Errorf("BUG: unable to find WASM data for step '%s'", step.Name)
+			}
+
+			step.XWasmBytes = wasmData.Bytes
+		}
 	}
 
 	s.pipelinesMtx.Lock()

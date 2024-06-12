@@ -83,6 +83,8 @@ func main() {
 All configuration can be passed via `streamdal.Config{}`. Some values can be set via environment variables in 
 order to support 12-Factor and usage of this SDK inside shims where `streamdal.Config{}` cannot be set.
 
+NOTE: For the most up to date config options, refer to [go_sdk.go:Config](./go_sdk.go).
+
 | Config Parameter | Environment Variable       | Description                                                                      | Default       |
 |------------------|----------------------------|----------------------------------------------------------------------------------|---------------|
 | ServerURL        | STREAMDAL_URL              | URL pointing to your instance of streamdal server's gRPC API. Ex: localhost:8082 | *empty*       |
@@ -109,10 +111,18 @@ Metrics are published to Streamdal server and are available in Prometheus format
 | `streamdal_counter_produce_processed` | Number of payloads processed by the client | `service`, `component_name`, `operation_name`, `pipeline_id`, `pipeline_name` |
 | `streamdal_counter_notify`            | Number of notifications sent to the server | `service`, `component_name`, `operation_name`, `pipeline_id`, `pipeline_name` |
 
+NOTE: Metrics are **required** - they are used by the server and Console for a
+number of different features such as determining whether clients are alive and
+can accept "commands" and Tail requests from the Console or for displaying
+throughput rates for clients in the UI.
+
+You can tune the number of `metrics workers` that the SDK spawns by setting
+`go_sdk.go:Config.MetricsWorkers`.
+
 ## Release
 
-Any push or merge to the `main` branch with any changes in `/sdks/go/*`
-will automatically tag and release a new console version with `sdks/go/vX.Y.Z`.
+Any push or merge to the `main` branch with any changes in `/sdks/go/*` will 
+automatically tag and release a new SDK version with `sdks/go/vX.Y.Z`.
 
 <sub>(1) If you'd like to skip running the release action on push/merge to `main`,
 include `norelease` anywhere in the commit message.</sub>

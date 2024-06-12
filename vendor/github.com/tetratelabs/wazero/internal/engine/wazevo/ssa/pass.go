@@ -2,7 +2,6 @@ package ssa
 
 import (
 	"fmt"
-	"sort"
 
 	"github.com/tetratelabs/wazero/internal/engine/wazevo/wazevoapi"
 )
@@ -14,11 +13,18 @@ import (
 // Note that passes suffixed with "Opt" are the optimization passes, meaning that they edit the instructions and blocks
 // while the other passes are not, like passEstimateBranchProbabilities does not edit them, but only calculates the additional information.
 func (b *builder) RunPasses() {
+	b.runPreBlockLayoutPasses()
+	b.runBlockLayoutPass()
+	b.runPostBlockLayoutPasses()
+	b.runFinalizingPasses()
+}
+
+func (b *builder) runPreBlockLayoutPasses() {
 	passSortSuccessors(b)
 	passDeadBlockEliminationOpt(b)
-	passRedundantPhiEliminationOpt(b)
 	// The result of passCalculateImmediateDominators will be used by various passes below.
 	passCalculateImmediateDominators(b)
+	passRedundantPhiEliminationOpt(b)
 	passNopInstElimination(b)
 
 	// TODO: implement either conversion of irreducible CFG into reducible one, or irreducible CFG detection where we panic.
@@ -35,18 +41,48 @@ func (b *builder) RunPasses() {
 
 	// passDeadCodeEliminationOpt could be more accurate if we do this after other optimizations.
 	passDeadCodeEliminationOpt(b)
-	b.donePasses = true
+	b.donePreBlockLayoutPasses = true
+}
+
+func (b *builder) runBlockLayoutPass() {
+	if !b.donePreBlockLayoutPasses {
+		panic("runBlockLayoutPass must be called after all pre passes are done")
+	}
+	passLayoutBlocks(b)
+	b.doneBlockLayout = true
+}
+
+// runPostBlockLayoutPasses runs the post block layout passes. After this point, CFG is somewhat stable,
+// but still can be modified before finalizing passes. At this point, critical edges are split by passLayoutBlocks.
+func (b *builder) runPostBlockLayoutPasses() {
+	if !b.doneBlockLayout {
+		panic("runPostBlockLayoutPasses must be called after block layout pass is done")
+	}
+	// TODO: Do more. e.g. tail duplication, loop unrolling, etc.
+
+	b.donePostBlockLayoutPasses = true
+}
+
+// runFinalizingPasses runs the finalizing passes. After this point, CFG should not be modified.
+func (b *builder) runFinalizingPasses() {
+	if !b.donePostBlockLayoutPasses {
+		panic("runFinalizingPasses must be called after post block layout passes are done")
+	}
+	// Critical edges are split, so we fix the loop nesting forest.
+	passBuildLoopNestingForest(b)
+	passBuildDominatorTree(b)
+	// Now that we know the final placement of the blocks, we can explicitly mark the fallthrough jumps.
+	b.markFallthroughJumps()
 }
 
 // passDeadBlockEliminationOpt searches the unreachable blocks, and sets the basicBlock.invalid flag true if so.
 func passDeadBlockEliminationOpt(b *builder) {
 	entryBlk := b.entryBlk()
-	b.clearBlkVisited()
 	b.blkStack = append(b.blkStack, entryBlk)
 	for len(b.blkStack) > 0 {
 		reachableBlk := b.blkStack[len(b.blkStack)-1]
 		b.blkStack = b.blkStack[:len(b.blkStack)-1]
-		b.blkVisited[reachableBlk] = 0 // the value won't be used in this pass.
+		reachableBlk.visited = 1
 
 		if !reachableBlk.sealed && !reachableBlk.ReturnBlock() {
 			panic(fmt.Sprintf("%s is not sealed", reachableBlk))
@@ -57,7 +93,7 @@ func passDeadBlockEliminationOpt(b *builder) {
 		}
 
 		for _, succ := range reachableBlk.success {
-			if _, ok := b.blkVisited[succ]; ok {
+			if succ.visited == 1 {
 				continue
 			}
 			b.blkStack = append(b.blkStack, succ)
@@ -65,97 +101,121 @@ func passDeadBlockEliminationOpt(b *builder) {
 	}
 
 	for blk := b.blockIteratorBegin(); blk != nil; blk = b.blockIteratorNext() {
-		if _, ok := b.blkVisited[blk]; !ok {
+		if blk.visited != 1 {
 			blk.invalid = true
 		}
+		blk.visited = 0
 	}
 }
 
 // passRedundantPhiEliminationOpt eliminates the redundant PHIs (in our terminology, parameters of a block).
+// This requires the reverse post-order traversal to be calculated before calling this function,
+// hence passCalculateImmediateDominators must be called before this.
 func passRedundantPhiEliminationOpt(b *builder) {
 	redundantParameterIndexes := b.ints[:0] // reuse the slice from previous iterations.
 
-	_ = b.blockIteratorBegin() // skip entry block!
-	// Below, we intentionally use the named iteration variable name, as this comes with inevitable nested for loops!
-	for blk := b.blockIteratorNext(); blk != nil; blk = b.blockIteratorNext() {
-		paramNum := len(blk.params)
+	// TODO: this might be costly for large programs, but at least, as far as I did the experiment, it's almost the
+	//  same as the single iteration version in terms of the overall compilation time. That *might be* mostly thanks to the fact
+	//  that removing many PHIs results in the reduction of the total instructions, not because of this indefinite iteration is
+	//  relatively small. For example, sqlite speedtest binary results in the large number of redundant PHIs,
+	//  the maximum number of iteration was 22, which seems to be acceptable but not that small either since the
+	//  complexity here is O(BlockNum * Iterations) at the worst case where BlockNum might be the order of thousands.
+	//  -- Note --
+	// 	Currently, each iteration can run in any order of blocks, but it empirically converges quickly in practice when
+	// 	running on the reverse post-order. It might be possible to optimize this further by using the dominator tree.
+	for {
+		changed := false
+		_ = b.blockIteratorReversePostOrderBegin() // skip entry block!
+		// Below, we intentionally use the named iteration variable name, as this comes with inevitable nested for loops!
+		for blk := b.blockIteratorReversePostOrderNext(); blk != nil; blk = b.blockIteratorReversePostOrderNext() {
+			paramNum := len(blk.params)
 
-		for paramIndex := 0; paramIndex < paramNum; paramIndex++ {
-			phiValue := blk.params[paramIndex].value
-			redundant := true
+			for paramIndex := 0; paramIndex < paramNum; paramIndex++ {
+				phiValue := blk.params[paramIndex]
+				redundant := true
 
-			nonSelfReferencingValue := ValueInvalid
-			for predIndex := range blk.preds {
-				pred := blk.preds[predIndex].branch.vs[paramIndex]
-				if pred == phiValue {
-					// This is self-referencing: PHI from the same PHI.
-					continue
+				nonSelfReferencingValue := ValueInvalid
+				for predIndex := range blk.preds {
+					br := blk.preds[predIndex].branch
+					// Resolve the alias in the arguments so that we could use the previous iteration's result.
+					b.resolveArgumentAlias(br)
+					pred := br.vs.View()[paramIndex]
+					if pred == phiValue {
+						// This is self-referencing: PHI from the same PHI.
+						continue
+					}
+
+					if !nonSelfReferencingValue.Valid() {
+						nonSelfReferencingValue = pred
+						continue
+					}
+
+					if nonSelfReferencingValue != pred {
+						redundant = false
+						break
+					}
 				}
 
 				if !nonSelfReferencingValue.Valid() {
-					nonSelfReferencingValue = pred
-					continue
+					// This shouldn't happen, and must be a bug in builder.go.
+					panic("BUG: params added but only self-referencing")
 				}
 
-				if nonSelfReferencingValue != pred {
-					redundant = false
-					break
+				if redundant {
+					b.redundantParameterIndexToValue[paramIndex] = nonSelfReferencingValue
+					redundantParameterIndexes = append(redundantParameterIndexes, paramIndex)
 				}
 			}
 
-			if !nonSelfReferencingValue.Valid() {
-				// This shouldn't happen, and must be a bug in builder.go.
-				panic("BUG: params added but only self-referencing")
+			if len(b.redundantParameterIndexToValue) == 0 {
+				continue
+			}
+			changed = true
+
+			// Remove the redundant PHIs from the argument list of branching instructions.
+			for predIndex := range blk.preds {
+				var cur int
+				predBlk := blk.preds[predIndex]
+				branchInst := predBlk.branch
+				view := branchInst.vs.View()
+				for argIndex, value := range view {
+					if _, ok := b.redundantParameterIndexToValue[argIndex]; !ok {
+						view[cur] = value
+						cur++
+					}
+				}
+				branchInst.vs.Cut(cur)
 			}
 
-			if redundant {
-				b.redundantParameterIndexToValue[paramIndex] = nonSelfReferencingValue
-				redundantParameterIndexes = append(redundantParameterIndexes, paramIndex)
+			// Still need to have the definition of the value of the PHI (previously as the parameter).
+			for _, redundantParamIndex := range redundantParameterIndexes {
+				phiValue := blk.params[redundantParamIndex]
+				onlyValue := b.redundantParameterIndexToValue[redundantParamIndex]
+				// Create an alias in this block from the only phi argument to the phi value.
+				b.alias(phiValue, onlyValue)
 			}
-		}
 
-		if len(b.redundantParameterIndexToValue) == 0 {
-			continue
-		}
-
-		// Remove the redundant PHIs from the argument list of branching instructions.
-		for predIndex := range blk.preds {
+			// Finally, Remove the param from the blk.
 			var cur int
-			predBlk := blk.preds[predIndex]
-			branchInst := predBlk.branch
-			for argIndex, value := range branchInst.vs {
-				if _, ok := b.redundantParameterIndexToValue[argIndex]; !ok {
-					branchInst.vs[cur] = value
+			for paramIndex := 0; paramIndex < paramNum; paramIndex++ {
+				param := blk.params[paramIndex]
+				if _, ok := b.redundantParameterIndexToValue[paramIndex]; !ok {
+					blk.params[cur] = param
 					cur++
 				}
 			}
-			branchInst.vs = branchInst.vs[:cur]
-		}
+			blk.params = blk.params[:cur]
 
-		// Still need to have the definition of the value of the PHI (previously as the parameter).
-		for _, redundantParamIndex := range redundantParameterIndexes {
-			phiValue := blk.params[redundantParamIndex].value
-			onlyValue := b.redundantParameterIndexToValue[redundantParamIndex]
-			// Create an alias in this block from the only phi argument to the phi value.
-			b.alias(phiValue, onlyValue)
-		}
-
-		// Finally, Remove the param from the blk.
-		var cur int
-		for paramIndex := 0; paramIndex < paramNum; paramIndex++ {
-			param := blk.params[paramIndex]
-			if _, ok := b.redundantParameterIndexToValue[paramIndex]; !ok {
-				blk.params[cur] = param
-				cur++
+			// Clears the map for the next iteration.
+			for _, paramIndex := range redundantParameterIndexes {
+				delete(b.redundantParameterIndexToValue, paramIndex)
 			}
+			redundantParameterIndexes = redundantParameterIndexes[:0]
 		}
-		blk.params = blk.params[:cur]
 
-		// Clears the map for the next iteration.
-		for _, paramIndex := range redundantParameterIndexes {
-			delete(b.redundantParameterIndexToValue, paramIndex)
+		if !changed {
+			break
 		}
-		redundantParameterIndexes = redundantParameterIndexes[:0]
 	}
 
 	// Reuse the slice for the future passes.
@@ -172,10 +232,10 @@ func passRedundantPhiEliminationOpt(b *builder) {
 func passDeadCodeEliminationOpt(b *builder) {
 	nvid := int(b.nextValueID)
 	if nvid >= len(b.valueRefCounts) {
-		b.valueRefCounts = append(b.valueRefCounts, make([]int, b.nextValueID)...)
+		b.valueRefCounts = append(b.valueRefCounts, make([]int, nvid-len(b.valueRefCounts)+1)...)
 	}
 	if nvid >= len(b.valueIDToInstruction) {
-		b.valueIDToInstruction = append(b.valueIDToInstruction, make([]*Instruction, b.nextValueID)...)
+		b.valueIDToInstruction = append(b.valueIDToInstruction, make([]*Instruction, nvid-len(b.valueIDToInstruction)+1)...)
 	}
 
 	// First, we gather all the instructions with side effects.
@@ -295,22 +355,10 @@ func (b *builder) incRefCount(id ValueID, from *Instruction) {
 	b.valueRefCounts[id]++
 }
 
-// clearBlkVisited clears the b.blkVisited map so that we can reuse it for multiple places.
-func (b *builder) clearBlkVisited() {
-	b.blkStack2 = b.blkStack2[:0]
-	for key := range b.blkVisited {
-		b.blkStack2 = append(b.blkStack2, key)
-	}
-	for _, blk := range b.blkStack2 {
-		delete(b.blkVisited, blk)
-	}
-	b.blkStack2 = b.blkStack2[:0]
-}
-
 // passNopInstElimination eliminates the instructions which is essentially a no-op.
 func passNopInstElimination(b *builder) {
 	if int(b.nextValueID) >= len(b.valueIDToInstruction) {
-		b.valueIDToInstruction = append(b.valueIDToInstruction, make([]*Instruction, b.nextValueID)...)
+		b.valueIDToInstruction = append(b.valueIDToInstruction, make([]*Instruction, int(b.nextValueID)-len(b.valueIDToInstruction)+1)...)
 	}
 
 	for blk := b.blockIteratorBegin(); blk != nil; blk = b.blockIteratorNext() {
@@ -357,19 +405,6 @@ func passNopInstElimination(b *builder) {
 func passSortSuccessors(b *builder) {
 	for i := 0; i < b.basicBlocksPool.Allocated(); i++ {
 		blk := b.basicBlocksPool.View(i)
-		sort.SliceStable(blk.success, func(i, j int) bool {
-			iBlk, jBlk := blk.success[i], blk.success[j]
-			if jBlk.ReturnBlock() {
-				return true
-			}
-			if iBlk.ReturnBlock() {
-				return false
-			}
-			iRoot, jRoot := iBlk.rootInstr, jBlk.rootInstr
-			if iRoot == nil || jRoot == nil { // For testing.
-				return true
-			}
-			return iBlk.rootInstr.id < jBlk.rootInstr.id
-		})
+		sortBlocks(blk.success)
 	}
 }
