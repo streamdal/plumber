@@ -53,7 +53,7 @@ type IServerClient interface {
 }
 
 const (
-	maxGRPCMessageRecvSize = 10 * 1024 * 1024 // 10MB
+	maxGRPCMessageRecvSize = 100 * 1024 * 1024 // 100MB
 	dialTimeout            = time.Second * 5
 )
 

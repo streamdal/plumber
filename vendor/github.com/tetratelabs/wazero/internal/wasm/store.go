@@ -8,7 +8,8 @@ import (
 	"sync/atomic"
 
 	"github.com/tetratelabs/wazero/api"
-	"github.com/tetratelabs/wazero/internal/close"
+	"github.com/tetratelabs/wazero/experimental"
+	"github.com/tetratelabs/wazero/internal/expctxkeys"
 	"github.com/tetratelabs/wazero/internal/internalapi"
 	"github.com/tetratelabs/wazero/internal/leb128"
 	internalsys "github.com/tetratelabs/wazero/internal/sys"
@@ -95,8 +96,7 @@ type (
 		// or external objects (unimplemented).
 		ElementInstances []ElementInstance
 
-		// Sys is exposed for use in special imports such as WASI, assemblyscript
-		// and gojs.
+		// Sys is exposed for use in special imports such as WASI, assemblyscript.
 		//
 		// # Notes
 		//
@@ -125,7 +125,7 @@ type (
 		Source *Module
 
 		// CloseNotifier is an experimental hook called once on close.
-		CloseNotifier close.Notifier
+		CloseNotifier experimental.CloseNotifier
 	}
 
 	// DataInstance holds bytes corresponding to the data segment in a module.
@@ -180,8 +180,13 @@ func (m *ModuleInstance) buildElementInstances(elements []ElementSegment) {
 			inst := make([]Reference, len(inits))
 			m.ElementInstances[i] = inst
 			for j, idx := range inits {
-				if idx != ElementInitNullReference {
-					inst[j] = m.Engine.FunctionInstanceReference(idx)
+				if index, ok := unwrapElementInitGlobalReference(idx); ok {
+					global := m.Globals[index]
+					inst[j] = Reference(global.Val)
+				} else {
+					if idx != ElementInitNullReference {
+						inst[j] = m.Engine.FunctionInstanceReference(idx)
+					}
 				}
 			}
 		}
@@ -358,9 +363,17 @@ func (s *Store) instantiate(
 		return nil, err
 	}
 
+	allocator, _ := ctx.Value(expctxkeys.MemoryAllocatorKey{}).(experimental.MemoryAllocator)
+
 	m.buildGlobals(module, m.Engine.FunctionInstanceReference)
-	m.buildMemory(module)
+	m.buildMemory(module, allocator)
 	m.Exports = module.Exports
+	for _, exp := range m.Exports {
+		if exp.Type == ExternTypeTable {
+			t := m.Tables[exp.Index]
+			t.involvingModuleInstances = append(t.involvingModuleInstances, m)
+		}
+	}
 
 	// As of reference types proposal, data segment validation must happen after instantiation,
 	// and the side effect must persist even if there's out of bounds error after instantiation.
@@ -448,6 +461,12 @@ func (m *ModuleInstance) resolveImports(module *Module) (err error) {
 					}
 				}
 				m.Tables[i.IndexPerType] = importedTable
+				importedTable.involvingModuleInstancesMutex.Lock()
+				if len(importedTable.involvingModuleInstances) == 0 {
+					panic("BUG: involvingModuleInstances must not be nil when it's imported")
+				}
+				importedTable.involvingModuleInstances = append(importedTable.involvingModuleInstances, m)
+				importedTable.involvingModuleInstancesMutex.Unlock()
 			case ExternTypeMemory:
 				expected := i.DescMem
 				importedMemory := importedModule.MemoryInstance
@@ -584,6 +603,14 @@ func (g *GlobalInstance) Value() (uint64, uint64) {
 		return g.Me.GetGlobalValue(g.Index)
 	}
 	return g.Val, g.ValHi
+}
+
+func (g *GlobalInstance) SetValue(lo, hi uint64) {
+	if g.Me != nil {
+		g.Me.SetGlobalValue(g.Index, lo, hi)
+	} else {
+		g.Val, g.ValHi = lo, hi
+	}
 }
 
 func (s *Store) GetFunctionTypeIDs(ts []FunctionType) ([]FunctionTypeID, error) {

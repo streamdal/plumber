@@ -30,8 +30,6 @@ import (
 // current directory prior to requesting files.
 //
 // More notes on `guestPath`
-//   - Go compiled with runtime.GOOS=js do not pay attention to this value.
-//     It only works with root mounts ("").
 //   - Working directories are typically tracked in wasm, though possible some
 //     relative paths are requested. For example, TinyGo may attempt to resolve
 //     a path "../.." in unit tests.
@@ -84,7 +82,7 @@ type FSConfig interface {
 	//
 	// # os.DirFS
 	//
-	// This configuration optimizes for WASI compatability which is sometimes
+	// This configuration optimizes for WASI compatibility which is sometimes
 	// at odds with the behavior of os.DirFS. Hence, this will not behave
 	// exactly the same as os.DirFS. See /RATIONALE.md for more.
 	WithDirMount(dir, guestPath string) FSConfig

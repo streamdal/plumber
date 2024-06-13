@@ -12,7 +12,6 @@ import (
 
 	"github.com/tetratelabs/wazero/api"
 	experimentalsys "github.com/tetratelabs/wazero/experimental/sys"
-	"github.com/tetratelabs/wazero/internal/engine/compiler"
 	"github.com/tetratelabs/wazero/internal/engine/interpreter"
 	"github.com/tetratelabs/wazero/internal/engine/wazevo"
 	"github.com/tetratelabs/wazero/internal/filecache"
@@ -149,7 +148,7 @@ type RuntimeConfig interface {
 	//	customSections := c.CustomSections()
 	WithCustomSections(bool) RuntimeConfig
 
-	// WithCloseOnContextDone ensures the executions of functions to be closed under one of the following circumstances:
+	// WithCloseOnContextDone ensures the executions of functions to be terminated under one of the following circumstances:
 	//
 	// 	- context.Context passed to the Call method of api.Function is canceled during execution. (i.e. ctx by context.WithCancel)
 	// 	- context.Context passed to the Call method of api.Function reaches timeout during execution. (i.e. ctx by context.WithTimeout or context.WithDeadline)
@@ -158,7 +157,9 @@ type RuntimeConfig interface {
 	// This is especially useful when one wants to run untrusted Wasm binaries since otherwise, any invocation of
 	// api.Function can potentially block the corresponding Goroutine forever. Moreover, it might block the
 	// entire underlying OS thread which runs the api.Function call. See "Why it's safe to execute runtime-generated
-	// machine codes against async Goroutine preemption" section in internal/engine/compiler/RATIONALE.md for detail.
+	// machine codes against async Goroutine preemption" section in RATIONALE.md for detail.
+	//
+	// Upon the termination of the function executions, api.Module is closed.
 	//
 	// Note that this comes with a bit of extra cost when enabled. The reason is that internally this forces
 	// interpreter and compiler runtimes to insert the periodical checks on the conditions above. For that reason,
@@ -191,11 +192,6 @@ type runtimeConfig struct {
 	ensureTermination     bool
 }
 
-// EnableOptimizingCompiler implements experimental/opt/enabler.EnableOptimizingCompiler.
-func (c *runtimeConfig) EnableOptimizingCompiler() {
-	c.newEngine = wazevo.NewEngine
-}
-
 // engineLessConfig helps avoid copy/pasting the wrong defaults.
 var engineLessConfig = &runtimeConfig{
 	enabledFeatures:       api.CoreFeaturesV2,
@@ -223,13 +219,22 @@ const (
 // part. wazero automatically performs ahead-of-time compilation as needed when
 // Runtime.CompileModule is invoked.
 //
-// Warning: This panics at runtime if the runtime.GOOS or runtime.GOARCH does not
-// support Compiler. Use NewRuntimeConfig to safely detect and fallback to
-// NewRuntimeConfigInterpreter if needed.
+// # Warning
+//
+//   - This panics at runtime if the runtime.GOOS or runtime.GOARCH does not
+//     support compiler. Use NewRuntimeConfig to safely detect and fallback to
+//     NewRuntimeConfigInterpreter if needed.
+//
+//   - If you are using wazero in buildmode=c-archive or c-shared, make sure that you set up the alternate signal stack
+//     by using, e.g. `sigaltstack` combined with `SA_ONSTACK` flag on `sigaction` on Linux,
+//     before calling any api.Function. This is because the Go runtime does not set up the alternate signal stack
+//     for c-archive or c-shared modes, and wazero uses the different stack than the calling Goroutine.
+//     Hence, the signal handler might get invoked on the wazero's stack, which may cause a stack overflow.
+//     https://github.com/tetratelabs/wazero/blob/2092c0a879f30d49d7b37f333f4547574b8afe0d/internal/integration_test/fuzz/fuzz/tests/sigstack.rs#L19-L36
 func NewRuntimeConfigCompiler() RuntimeConfig {
 	ret := engineLessConfig.clone()
 	ret.engineKind = engineKindCompiler
-	ret.newEngine = compiler.NewEngine
+	ret.newEngine = wazevo.NewEngine
 	return ret
 }
 

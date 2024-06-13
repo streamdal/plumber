@@ -28,7 +28,6 @@ const (
 const (
 	PrintSSA                                 = false
 	PrintOptimizedSSA                        = false
-	PrintBlockLaidOutSSA                     = false
 	PrintSSAToBackendIRLowering              = false
 	PrintRegisterAllocated                   = false
 	PrintFinalizedMachineCode                = false
@@ -170,7 +169,6 @@ This is mostly due to (but might not be limited to):
 // nolint
 const NeedFunctionNameInContext = PrintSSA ||
 	PrintOptimizedSSA ||
-	PrintBlockLaidOutSSA ||
 	PrintSSAToBackendIRLowering ||
 	PrintRegisterAllocated ||
 	PrintFinalizedMachineCode ||
@@ -195,19 +193,4 @@ func GetCurrentFunctionName(ctx context.Context) string {
 func GetCurrentFunctionIndex(ctx context.Context) int {
 	ret, _ := ctx.Value(currentFunctionIndexKey{}).(int)
 	return ret
-}
-
-// ----- High Register Pressure -----
-
-type highRegisterPressureContextKey struct{}
-
-// EnableHighRegisterPressure enables the high register pressure mode.
-func EnableHighRegisterPressure(ctx context.Context) context.Context {
-	ctx = context.WithValue(ctx, highRegisterPressureContextKey{}, true)
-	return ctx
-}
-
-// IsHighRegisterPressure returns true if the current compilation is under high register pressure.
-func IsHighRegisterPressure(ctx context.Context) bool {
-	return ctx.Value(highRegisterPressureContextKey{}) != nil
 }

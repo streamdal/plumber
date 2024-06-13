@@ -1,6 +1,6 @@
 module github.com/streamdal/plumber
 
-go 1.18
+go 1.21
 
 replace github.com/v2pro/plz => github.com/batchcorp/plz v0.9.2
 
@@ -66,7 +66,7 @@ require (
 	github.com/cloudevents/sdk-go/protocol/kafka_sarama/v2 v2.13.0
 	github.com/cloudevents/sdk-go/protocol/nats/v2 v2.13.0
 	github.com/cloudevents/sdk-go/v2 v2.13.0
-	github.com/streamdal/streamdal/sdks/go v0.1.13
+	github.com/streamdal/streamdal/sdks/go v0.1.32
 )
 
 require (
@@ -153,8 +153,8 @@ require (
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/santhosh-tekuri/jsonschema/v5 v5.1.0 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
-	github.com/streamdal/streamdal/libs/protos v0.1.29 // indirect
-	github.com/tetratelabs/wazero v1.6.0 // indirect
+	github.com/streamdal/streamdal/libs/protos v0.1.57 // indirect
+	github.com/tetratelabs/wazero v1.7.3 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/v2pro/plz v0.0.0-20200805122259-422184e41b6e // indirect

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/tetratelabs/wazero/api"
+	"github.com/tetratelabs/wazero/internal/expctxkeys"
 )
 
 // StackIterator allows iterating on each function of the call stack, starting
@@ -23,10 +24,11 @@ type StackIterator interface {
 	ProgramCounter() ProgramCounter
 }
 
-// FunctionListenerFactoryKey is a context.Context Value key. Its associated value should be a FunctionListenerFactory.
-//
-// See https://github.com/tetratelabs/wazero/issues/451
-type FunctionListenerFactoryKey struct{}
+// WithFunctionListenerFactory registers a FunctionListenerFactory
+// with the context.
+func WithFunctionListenerFactory(ctx context.Context, factory FunctionListenerFactory) context.Context {
+	return context.WithValue(ctx, expctxkeys.FunctionListenerFactoryKey{}, factory)
+}
 
 // FunctionListenerFactory returns FunctionListeners to be notified when a
 // function is called.

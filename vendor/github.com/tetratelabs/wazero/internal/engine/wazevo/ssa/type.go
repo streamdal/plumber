@@ -21,6 +21,9 @@ const (
 
 	// TypeV128 represents 128-bit SIMD vectors.
 	TypeV128
+
+	// -- Do not add new types after this line. ----
+	typeEnd
 )
 
 // String implements fmt.Stringer.
@@ -46,6 +49,11 @@ func (t Type) String() (ret string) {
 // IsInt returns true if the type is an integer type.
 func (t Type) IsInt() bool {
 	return t == TypeI32 || t == TypeI64
+}
+
+// IsFloat returns true if the type is a floating point type.
+func (t Type) IsFloat() bool {
+	return t == TypeF32 || t == TypeF64
 }
 
 // Bits returns the number of bits required to represent the type.

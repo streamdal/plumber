@@ -559,8 +559,14 @@ type Memory interface {
 	// Definition is metadata about this memory from its defining module.
 	Definition() MemoryDefinition
 
-	// Size returns the size in bytes available. e.g. If the underlying memory
-	// has 1 page: 65536
+	// Size returns the memory size in bytes available.
+	// e.g. If the underlying memory has 1 page: 65536
+	//
+	// # Notes
+	//
+	//   - This overflows (returns zero) if the memory has the maximum 65536 pages.
+	// 	   As a workaround until wazero v2 to fix the return type, use Grow(0) to obtain the current pages and
+	//     multiply by 65536.
 	//
 	// See https://www.w3.org/TR/2019/REC-wasm-core-1-20191205/#-hrefsyntax-instr-memorymathsfmemorysize%E2%91%A0
 	Size() uint32
@@ -572,7 +578,7 @@ type Memory interface {
 	// # Notes
 	//
 	//   - This is the same as the "memory.grow" instruction defined in the
-	//	  WebAssembly Core Specification, except returns false instead of -1.
+	//	   WebAssembly Core Specification, except returns false instead of -1.
 	//   - When this returns true, any shared views via Read must be refreshed.
 	//
 	// See MemorySizer Read and https://www.w3.org/TR/2019/REC-wasm-core-1-20191205/#grow-mem

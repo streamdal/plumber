@@ -4,11 +4,12 @@ import (
 	"encoding/binary"
 	"reflect"
 	"unsafe"
+
+	"github.com/tetratelabs/wazero/internal/wasmdebug"
 )
 
-// UnwindStack is a function to unwind the stack, and appends return addresses to `returnAddresses` slice.
-// The implementation must be aligned with the ABI/Calling convention as in machine_pro_epi_logue.go/abi.go.
-func UnwindStack(sp, top uintptr, returnAddresses []uintptr) []uintptr {
+// UnwindStack implements wazevo.unwindStack.
+func UnwindStack(sp, _, top uintptr, returnAddresses []uintptr) []uintptr {
 	l := int(top - sp)
 
 	var stackBuf []byte
@@ -56,12 +57,14 @@ func UnwindStack(sp, top uintptr, returnAddresses []uintptr) []uintptr {
 		sizeOfArgRet := binary.LittleEndian.Uint64(stackBuf[i:])
 		i += 8 + sizeOfArgRet
 		returnAddresses = append(returnAddresses, uintptr(retAddr))
+		if len(returnAddresses) == wasmdebug.MaxFrames {
+			break
+		}
 	}
 	return returnAddresses
 }
 
-// GoCallStackView is a function to get a view of the stack before a Go call, which
-// is the view of the stack allocated in CompileGoFunctionTrampoline.
+// GoCallStackView implements wazevo.goCallStackView.
 func GoCallStackView(stackPointerBeforeGoCall *uint64) []uint64 {
 	//                  (high address)
 	//              +-----------------+ <----+
@@ -74,11 +77,12 @@ func GoCallStackView(stackPointerBeforeGoCall *uint64) []uint64 {
 	//              |   frame_size    |
 	//              +-----------------+ <---- stackPointerBeforeGoCall
 	//                 (low address)
-	size := *(*uint64)(unsafe.Pointer(uintptr(unsafe.Pointer(stackPointerBeforeGoCall)) + 8))
+	ptr := unsafe.Pointer(stackPointerBeforeGoCall)
+	size := *(*uint64)(unsafe.Add(ptr, 8))
 	var view []uint64
 	{
 		sh := (*reflect.SliceHeader)(unsafe.Pointer(&view))
-		sh.Data = uintptr(unsafe.Pointer(stackPointerBeforeGoCall)) + 16 // skips the (frame_size, sliceSize).
+		sh.Data = uintptr(unsafe.Add(ptr, 16)) // skips the (frame_size, sliceSize).
 		sh.Len = int(size)
 		sh.Cap = int(size)
 	}

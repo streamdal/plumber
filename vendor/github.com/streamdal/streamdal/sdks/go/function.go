@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -77,19 +78,31 @@ func (f *function) Exec(ctx context.Context, req []byte) ([]byte, error) {
 	return resBytes, nil
 }
 
-func (s *Streamdal) setFunctionCache(wasmID string, f *function) {
+func (s *Streamdal) setFunctionCache(wasmID string, f *function, workerID int) {
 	s.functionsMtx.Lock()
 	defer s.functionsMtx.Unlock()
 
-	s.functions[wasmID] = f
+	if _, ok := s.functions[workerID]; !ok {
+		s.functions[workerID] = make(map[string]*function)
+	}
+
+	s.functions[workerID][wasmID] = f
 }
 
-func (s *Streamdal) getFunction(_ context.Context, step *protos.PipelineStep) (*function, error) {
+func (s *Streamdal) getFunction(_ context.Context, step *protos.PipelineStep, workerID int) (*function, error) {
 	// check cache
-	fc, ok := s.getFunctionFromCache(step.GetXWasmId())
+	fc, ok := s.getFunctionFromCache(step.GetXWasmId(), workerID)
 	if ok {
 		return fc, nil
 	}
+
+	// Function is not in cache - let's create it but make sure that the creation
+	// is locked for this specific wasm ID - that way another .Process() call
+	// will wait for the create to finish.
+	wasmIDMtx := s.getLockForWasmID(step.GetXWasmId())
+
+	wasmIDMtx.Lock()
+	defer wasmIDMtx.Unlock()
 
 	fi, err := s.createFunction(step)
 	if err != nil {
@@ -97,21 +110,51 @@ func (s *Streamdal) getFunction(_ context.Context, step *protos.PipelineStep) (*
 	}
 
 	// Cache function
-	s.setFunctionCache(step.GetXWasmId(), fi)
+	s.setFunctionCache(step.GetXWasmId(), fi, workerID)
 
 	return fi, nil
 }
 
-func (s *Streamdal) getFunctionFromCache(wasmID string) (*function, bool) {
+func (s *Streamdal) getLockForWasmID(wasmID string) *sync.Mutex {
+	s.funcCreateMtx.Lock()
+	defer s.funcCreateMtx.Unlock()
+
+	if mtx, ok := s.funcCreate[wasmID]; ok {
+		return mtx
+	}
+
+	// No existing lock found for wasm ID - create it
+	s.funcCreate[wasmID] = &sync.Mutex{}
+
+	return s.funcCreate[wasmID]
+}
+
+func (s *Streamdal) getFunctionFromCache(wasmID string, workerID int) (*function, bool) {
+	// We need to do this here because there is a possibility that .Process()
+	// was called for the first time in parallel and the function has not been
+	// created yet. We need a mechanism to wait for the function creation to
+	// complete before we perform a cache lookup.
+	wasmIDMtx := s.getLockForWasmID(wasmID)
+
+	// If this blocks, it is because createFunction() is in the process of
+	// creating a function. Once it complete, the lock will be released and
+	// our cache lookup will succeed.
+	wasmIDMtx.Lock()
+	wasmIDMtx.Unlock()
+
 	s.functionsMtx.RLock()
 	defer s.functionsMtx.RUnlock()
 
-	f, ok := s.functions[wasmID]
+	if _, ok := s.functions[workerID]; !ok {
+		return nil, false
+	}
+
+	f, ok := s.functions[workerID][wasmID]
 	return f, ok
 }
 
 func (s *Streamdal) createFunction(step *protos.PipelineStep) (*function, error) {
-	inst, err := s.createWASMInstance(step.GetXWasmBytes())
+	inst, err := s.createWASMInstance(step)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create WASM instance")
 	}
@@ -144,9 +187,37 @@ func (s *Streamdal) createFunction(step *protos.PipelineStep) (*function, error)
 	}, nil
 }
 
-func (s *Streamdal) createWASMInstance(wasmBytes []byte) (api.Module, error) {
-	if len(wasmBytes) == 0 {
-		return nil, errors.New("wasm data is empty")
+func (s *Streamdal) getWasmBytesCache(funcID string) ([]byte, bool) {
+	s.wasmCacheMtx.RLock()
+	defer s.wasmCacheMtx.RUnlock()
+
+	wb, ok := s.wasmCache[funcID]
+	return wb, ok
+}
+
+func (s *Streamdal) setWasmBytesCache(funcID string, wb []byte) {
+	s.wasmCacheMtx.Lock()
+	defer s.wasmCacheMtx.Unlock()
+
+	s.wasmCache[funcID] = wb
+}
+
+func (s *Streamdal) createWASMInstance(step *protos.PipelineStep) (api.Module, error) {
+	// We need to cache wasm bytes so that we can instantiate the module
+	// When running in async mode, createWASMInstance will be hit multiple times, but we need to wipe the wasmBytes
+	// from the pipeline step after the first run, so that we don't hold multiple MB of duplicate data in memory
+	wasmBytes, ok := s.getWasmBytesCache(step.GetXWasmId())
+	if !ok {
+		// Not cached yet, check if it's in the step
+		stepWasmBytes := step.GetXWasmBytes()
+		if len(stepWasmBytes) == 0 {
+			// WASM bytes are not in cache or step, error out
+			return nil, errors.New("wasm data is empty")
+		}
+
+		// Cache the bytes so we can wipe from the step
+		s.setWasmBytesCache(step.GetXWasmId(), stepWasmBytes)
+		wasmBytes = stepWasmBytes
 	}
 
 	hostFuncs := map[string]func(_ context.Context, module api.Module, ptr, length int32) uint64{
@@ -154,17 +225,39 @@ func (s *Streamdal) createWASMInstance(wasmBytes []byte) (api.Module, error) {
 		"httpRequest": s.hf.HTTPRequest,
 	}
 
-	rCfg := wazero.NewRuntimeConfig().
-		WithMemoryLimitPages(1000) // 64MB (default is 1MB)
+	var rCfg wazero.RuntimeConfig
+
+	switch s.config.WazeroExecutionMode {
+	case WazeroExecutionModeCompiler:
+		rCfg = wazero.NewRuntimeConfig().
+			WithMemoryLimitPages(1000). // (1 page = 64KB, 1000 pages = ~62MB)
+			WithCompilationCache(s.wazeroCache)
+	case WazeroExecutionModeInterpreter:
+		rCfg = wazero.NewRuntimeConfigInterpreter().
+			WithMemoryLimitPages(1000)
+	default:
+		return nil, errors.New("invalid wazero execution mode")
+	}
 
 	ctx := context.Background()
 	r := wazero.NewRuntimeWithConfig(ctx, rCfg)
 
 	wasi_snapshot_preview1.MustInstantiate(ctx, r)
 
+	stdoutOutput := io.Discard
+	stderrOutput := io.Discard
+
+	if s.config != nil && s.config.EnableStdout {
+		stdoutOutput = os.Stdout
+	}
+
+	if s.config != nil && s.config.EnableStderr {
+		stderrOutput = os.Stderr
+	}
+
 	cfg := wazero.NewModuleConfig().
-		WithStderr(io.Discard).
-		WithStdout(io.Discard).
+		WithStderr(stderrOutput).
+		WithStdout(stdoutOutput).
 		WithSysNanotime().
 		WithSysNanosleep().
 		WithSysWalltime().

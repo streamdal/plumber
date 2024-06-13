@@ -37,7 +37,7 @@ const (
 
 	// defaultWorkerPoolSize is how many counter workers will be spun up.
 	// These workers are responsible for processing the counterIncrCh and counterPublishCh channels
-	defaultWorkerPoolSize = 10
+	defaultWorkerPoolSize = 1
 
 	// serverFlushTimeout is the maximum amount of time to wait before flushing metrics to the server
 	serverFlushTimeout = time.Second * 2
@@ -143,6 +143,7 @@ func applyDefaults(cfg *Config) {
 		cfg.ReaperTTL = defaultReaperTTL
 	}
 
+	// Cannot have a worker pool size of 0
 	if cfg.WorkerPoolSize == 0 {
 		cfg.WorkerPoolSize = defaultWorkerPoolSize
 	}
