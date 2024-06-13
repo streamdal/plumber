@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@master
       - uses: actions/setup-go@v2
         with:
-          go-version: '~1.18' # The Go version to download (if necessary) and use.
+          go-version: '~1.21' # The Go version to download (if necessary) and use.
       - name: Start up dependencies
         run: docker-compose up -d rabbitmq kafka mosquitto-ssl mosquitto activemq redis pulsar
       - name: Wait for dependencies to start up
@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
         with:
-          go-version: '~1.18' # The Go version to download (if necessary) and use.
+          go-version: '~1.21' # The Go version to download (if necessary) and use.
       - name: Start up dependencies
         run: docker-compose up -d
       - name: Wait for dependencies to start up
