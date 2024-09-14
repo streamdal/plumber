@@ -3012,17 +3012,22 @@ func createRabbitConnection(binary string) string {
 
 func createRabbit(exchangeName, queueName, routingKey string) error {
 	var err error
+
+	// Create exchange
 	cmd := exec.Command("docker", "exec", "rabbitmq", "rabbitmqadmin", "declare", "exchange", "name="+exchangeName, "type=topic")
 	_, err = cmd.CombinedOutput()
 	if err != nil {
 		return err
 	}
 
-	cmd = exec.Command("docker", "exec", "rabbitmq", "rabbitmqadmin", "declare", "queue", "name="+queueName, "durable=false")
+	// Create queue
+	cmd = exec.Command("docker", "exec", "rabbitmq", "rabbitmqadmin", "declare", "queue", "name="+queueName, "durable=false", "auto_delete=true")
 	_, err = cmd.CombinedOutput()
 	if err != nil {
 		return err
 	}
+
+	// Add binding
 	cmd = exec.Command("docker", "exec", "rabbitmq", "rabbitmqadmin", "declare", "binding", "source="+exchangeName, "destination="+queueName, "routing_key="+routingKey)
 	_, err = cmd.CombinedOutput()
 	if err != nil {
@@ -3032,16 +3037,11 @@ func createRabbit(exchangeName, queueName, routingKey string) error {
 }
 
 func deleteRabbit(exchangeName, queueName string) error {
-	var err error
 	cmd := exec.Command("docker", "exec", "rabbitmq", "rabbitmqadmin", "delete", "exchange", "name="+exchangeName)
-	_, err = cmd.CombinedOutput()
-	if err != nil {
-		return err
+
+	if _, err := cmd.CombinedOutput(); err != nil {
+		return errors.Wrap(err, "unable to delete exchange")
 	}
-	cmd = exec.Command("docker", "exec", "rabbitmq", "rabbitmqadmin", "delete", "queue", "name="+queueName)
-	_, err = cmd.CombinedOutput()
-	if err != nil {
-		return err
-	}
+
 	return nil
 }
