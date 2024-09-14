@@ -1,6 +1,6 @@
 # Mongo test setup
 
-1. Bring up mongo container `docker-compose up -d`
+1. Bring up mongo container `docker compose up -d`
 2. Exec into container `docker exec -it mongodb /bin/bash`
 3. Enter mongo shell `mongo`
    1. Run the following

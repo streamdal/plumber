@@ -126,7 +126,7 @@ $ git clone git@github.com:batchcorp/plumber.git
 $ cd plumber
 
 # Launch a NATS container
-$ docker-compose up -d natsjs
+$ docker compose up -d natsjs
 
 # Launch plumber in cluster mode 
 $ plumber server --enable-cluster
@@ -145,7 +145,7 @@ $ git clone git@github.com:batchcorp/plumber.git
 $ cd plumber
 
 # Launch a NATS container
-$ docker-compose up -d natsjs
+$ docker compose up -d natsjs
 
 # Launch a plumber container that points to your NATS instance
 $ docker run --name plumber-server -p 9090:9090 \

@@ -41,7 +41,7 @@ run:
 .PHONY: start/deps
 start/deps: description = Start dependencies
 start/deps:
-	docker-compose up -d rabbitmq kafka
+	docker compose up -d rabbitmq kafka
 
 ### Build
 
@@ -59,7 +59,7 @@ build/linux-amd64: description = Build $(BINARY) for linux
 build/linux-amd64: clean
 	GOOS=linux GOARCH=amd64 $(GO) build $(GO_BUILD_FLAGS) -o ./build/$(BINARY)-linux-amd64
 
-	
+
 .PHONY: build/linux-x86_64
 build/linux-x86_64: description = Build $(BINARY) for linux
 build/linux-x86_64: clean

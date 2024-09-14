@@ -38,7 +38,7 @@ jobs:
         with:
           go-version: '~1.21' # The Go version to download (if necessary) and use.
       - name: Start up dependencies
-        run: docker-compose up -d
+        run: docker compose up -d
       - name: Wait for dependencies to start up
         uses: jakejarvis/wait-action@master
         with:
