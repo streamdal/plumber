@@ -11,7 +11,6 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/hokaccha/go-prettyjson"
 	"github.com/pkg/errors"
-	"github.com/posthog/posthog-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
@@ -136,38 +135,6 @@ func (p *Plumber) displayJSON(input map[string]string) {
 	}
 
 	fmt.Println(string(data))
-}
-
-func (p *Plumber) EnqueueManage(event posthog.Capture) {
-	if event.Properties == nil {
-		event.Properties = make(map[string]interface{})
-	}
-
-	if _, ok := event.Properties["use_tls"]; !ok {
-		event.Properties["use_tls"] = p.CLIOptions.Manage.GlobalOptions.ManageUseTls
-	}
-
-	if _, ok := event.Properties["insecure_tls"]; !ok {
-		event.Properties["insecure_tls"] = p.CLIOptions.Manage.GlobalOptions.ManageInsecureTls
-	}
-
-	if _, ok := event.Properties["disable_pretty"]; !ok {
-		event.Properties["disable_pretty"] = p.CLIOptions.Manage.GlobalOptions.DisablePretty
-	}
-
-	event.Properties["default_manage_token"] = false
-
-	if p.CLIOptions.Manage.GlobalOptions.ManageToken == "streamdal" {
-		event.Properties["default_manage_token"] = true
-	}
-
-	event.Properties["default_manage_address"] = false
-
-	if p.CLIOptions.Manage.GlobalOptions.ManageAddress == "localhost:9090" {
-		event.Properties["default_manage_address"] = true
-	}
-
-	p.Telemetry.Enqueue(event)
 }
 
 func (p *Plumber) displayProtobuf(msg proto.Message) error {

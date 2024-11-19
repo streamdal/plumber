@@ -10,8 +10,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"github.com/streamdal/plumber/telemetry"
-
 	"github.com/batchcorp/kong"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/encoding"
@@ -33,12 +31,10 @@ var (
 	ErrMissingPersistentConfig = errors.New("PersistentConfig cannot be nil")
 	ErrMissingKongCtx          = errors.New("KongCtx cannot be nil")
 	ErrMissingActions          = errors.New("Actions cannot be nil")
-	ErrMissingTelemetry        = errors.New("Telemetry cannot be nil")
 )
 
 // Config contains configurable options for instantiating a new Plumber
 type Config struct {
-	Telemetry          telemetry.ITelemetry
 	PersistentConfig   *config.Config
 	Actions            actions.IActions
 	ServiceShutdownCtx context.Context
@@ -234,12 +230,6 @@ func validateConfig(cfg *Config) error {
 
 	if cfg.Actions == nil {
 		return ErrMissingActions
-	}
-
-	if cfg.PersistentConfig.EnableTelemetry {
-		if cfg.Telemetry == nil {
-			return ErrMissingTelemetry
-		}
 	}
 
 	return nil

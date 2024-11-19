@@ -1,7 +1,6 @@
 .idea
 src/*.wasm
 src/version.txt
-c.out
 test-assets/wasm/*.wasm
 test-assets/wasm/version.txt
 vendor

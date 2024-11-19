@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/posthog/posthog-go"
-
 	"github.com/streamdal/plumber/backends/streamdal"
 )
 
@@ -15,14 +13,6 @@ func (p *Plumber) HandleStreamdalCmd() error {
 
 	// Less typing
 	cmd := p.CLIOptions.Global.XFullCommand
-
-	p.Telemetry.Enqueue(posthog.Capture{
-		Event:      "cli_batch",
-		DistinctId: p.PersistentConfig.PlumberID,
-		Properties: map[string]interface{}{
-			"command": cmd,
-		},
-	})
 
 	switch {
 	case strings.HasPrefix(cmd, "streamdal login"):

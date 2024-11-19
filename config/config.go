@@ -9,7 +9,6 @@ package config
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -38,13 +37,12 @@ const (
 
 // Config stores Account IDs and the auth_token cookie
 type Config struct {
-	ClusterID       string `json:"-"` // This comes from an environment variable
-	PlumberID       string `json:"plumber_id"`
-	Token           string `json:"token"`
-	TeamID          string `json:"team_id"`
-	UserID          string `json:"user_id"`
-	EnableTelemetry bool   `json:"enable_telemetry"`
-	LastVersion     string `json:"last_version"`
+	ClusterID   string `json:"-"` // This comes from an environment variable
+	PlumberID   string `json:"plumber_id"`
+	Token       string `json:"token"`
+	TeamID      string `json:"team_id"`
+	UserID      string `json:"user_id"`
+	LastVersion string `json:"last_version"`
 
 	Connections      map[string]*stypes.Connection `json:"connections"`
 	Relays           map[string]*stypes.Relay      `json:"relays"`
@@ -168,87 +166,7 @@ func requireReconfig(initialRun bool, cfg *Config) bool {
 }
 
 func (c *Config) Configure() {
-	// No need to ask about telemetry if it's already enabled
-	if !c.EnableTelemetry {
-		c.askTelemetry()
-	}
-}
-
-func (c *Config) askTelemetry() {
-	telemetryDescription := `If telemetry is enabled, plumber will collect the following anonymous telemetry data:
-
-> General
-	- PlumberID (a unique, randomly generated ID for this plumber instance)
-	- Plumber version
-	- OS and architecture
-	- Plumber mode (server or CLI)
-
-> For CLI
-	- Plumber action (read, write, relay, etc.)
-	- Backend used (kafka, rabbitmq, nats, etc.)
-	- Data format used for read or write (json, protobuf, etc.)
-	- If reading, whether continuous mode is used
-	- If using protobuf, whether file descriptors are used
-
-> For server
-	- Number of connections, relays, tunnels
-	- Server uptime
-	- ClusterID
-	- gRPC methods used (create relay, stop tunnel, etc.)
-
-NOTE: We do NOT collect ANY personally identifiable or confidential information.
-
-You can read this statement here: https://docs.streamdal.com/plumber/telemetry
-`
-	fmt.Printf(telemetryDescription + "\n")
-
-	enableTelemetry, err := askYesNo("Do you want to enable telemetry?", "N")
-	if err != nil {
-		c.log.Fatalf("unable to configure plumber: %s", err)
-	}
-
-	if enableTelemetry {
-		fmt.Printf("\nNICE! Thank you for opting in! This will help us improve plumber :)\n\n")
-	}
-
-	c.EnableTelemetry = enableTelemetry
-}
-
-func askYesNo(question, defaultAnswer string) (bool, error) {
-	if defaultAnswer != "" {
-		fmt.Printf(question+" [y/n (default: %s)]: ", defaultAnswer)
-	} else {
-		fmt.Print(question + " [y/n]: ")
-	}
-
-	var answer string
-
-	i, err := fmt.Scanln(&answer)
-
-	// Scan() doesn't return on only newline and empty string
-	// Scanln() will error on only new line and empty string
-	if err != nil && !strings.Contains(err.Error(), "unexpected newline") {
-		return false, fmt.Errorf("unable to read input: %s", err)
-	}
-
-	if i == 0 {
-		if defaultAnswer != "" {
-			answer = defaultAnswer
-		}
-	}
-
-	answer = strings.ToLower(answer)
-
-	if answer == "y" || answer == "yes" {
-		return true, nil
-	}
-
-	if answer == "n" || answer == "no" {
-		return false, nil
-	}
-
-	fmt.Println("invalid input")
-	return askYesNo(question, defaultAnswer)
+	// purposefully empty since we removed telemetry
 }
 
 func newConfig(enableCluster bool, k kv.IKV) *Config {

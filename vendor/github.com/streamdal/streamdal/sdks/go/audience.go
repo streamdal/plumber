@@ -40,6 +40,13 @@ func (s *Streamdal) addAudience(ctx context.Context, aud *protos.Audience) {
 	}()
 }
 
+func (s *Streamdal) deleteAudience(_ context.Context, aud *protos.Audience) {
+	s.audiencesMtx.Lock()
+	defer s.audiencesMtx.Unlock()
+
+	delete(s.audiences, audToStr(aud))
+}
+
 // addAudiences is used for RE-adding audiences that may have timed out after
 // a server reconnect. The method will re-add all known audiences to the server
 // via internal gRPC NewAudience() endpoint. This is a non-blocking method.
