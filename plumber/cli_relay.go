@@ -2,7 +2,6 @@ package plumber
 
 import (
 	"github.com/pkg/errors"
-	"github.com/posthog/posthog-go"
 	"github.com/sirupsen/logrus"
 
 	"github.com/streamdal/plumber/api"
@@ -27,14 +26,6 @@ func (p *Plumber) HandleRelayCmd() error {
 	if err := p.startRelayService(); err != nil {
 		return errors.Wrap(err, "unable to start relay service")
 	}
-
-	p.Telemetry.Enqueue(posthog.Capture{
-		Event:      "command_relay",
-		DistinctId: p.PersistentConfig.PlumberID,
-		Properties: map[string]interface{}{
-			"backend": backend.Name(),
-		},
-	})
 
 	// Log message prints ID on exit
 	p.CLIOptions.Relay.XRelayId = "CLI"

@@ -35,7 +35,7 @@ jobs:
           push_options: '--force'
       - name: Build
         run: |
-          VERSION="$GITHUB_TAG-$GITHUB_SHORT_SHA" TELEMETRY_API_KEY="${{secrets.TELEMETRY_API_KEY}}" make build
+          VERSION="$GITHUB_TAG-$GITHUB_SHORT_SHA" make build
       - name: Update nfpm version value
         run: |
           sed -i '/version/ s/"[^"][^"]*"/"${{ env.GITHUB_TAG }}"/' nfpm.yaml

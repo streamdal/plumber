@@ -9,6 +9,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/relistan/go-director"
+
 	"github.com/streamdal/streamdal/libs/protos/build/go/protos"
 	"github.com/streamdal/streamdal/libs/protos/build/go/protos/shared"
 
@@ -19,7 +20,7 @@ func (s *Streamdal) genClientInfo() *protos.ClientInfo {
 	return &protos.ClientInfo{
 		ClientType:     protos.ClientType(s.config.ClientType),
 		LibraryName:    "go-sdk",
-		LibraryVersion: "0.1.32",
+		LibraryVersion: "0.1.36",
 		Language:       "go",
 		Arch:           runtime.GOARCH,
 		Os:             runtime.GOOS,
@@ -194,11 +195,37 @@ func (s *Streamdal) handleCommand(ctx context.Context, cmd *protos.Command) erro
 	case *protos.Command_Tail:
 		s.config.Logger.Debug("Received tail command")
 		err = s.handleTailCommand(ctx, cmd)
+	case *protos.Command_DeleteAudiences:
+		s.config.Logger.Debug("Received delete command")
+		err = s.handleDeleteAudiencesCommand(ctx, cmd)
 	default:
 		err = fmt.Errorf("unknown command type: %+v", cmd.Command)
 	}
 
 	return err
+}
+
+func (s *Streamdal) handleDeleteAudiencesCommand(ctx context.Context, cmd *protos.Command) error {
+	if cmd == nil {
+		return errors.New("cmd cannot be nil")
+	}
+
+	if cmd.GetDeleteAudiences() == nil {
+		return errors.New("cmd.delete_audiences cannot be nil")
+	}
+
+	audiences := cmd.GetDeleteAudiences().GetAudiences()
+	if len(audiences) == 0 {
+		s.config.Logger.Debugf("Received delete command with empty audiences")
+		return nil
+	}
+
+	for _, aud := range audiences {
+		s.deleteAudience(ctx, aud)
+		s.config.Logger.Debugf("Deleted audience '%s' from cache", audToStr(aud))
+	}
+
+	return nil
 }
 
 func (s *Streamdal) handleTailCommand(_ context.Context, cmd *protos.Command) error {

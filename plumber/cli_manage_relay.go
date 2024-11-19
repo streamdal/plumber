@@ -4,26 +4,15 @@ import (
 	"context"
 	"strings"
 
-	"github.com/pkg/errors"
-	"github.com/posthog/posthog-go"
-
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/common"
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/pkg/errors"
 
 	"github.com/streamdal/plumber/validate"
 )
 
 func (p *Plumber) HandleGetRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.EnqueueManage(posthog.Capture{
-		Event:      "command_manage",
-		DistinctId: p.PersistentConfig.PlumberID,
-		Properties: map[string]interface{}{
-			"relay_id": p.CLIOptions.Manage.Get.Relay.Id,
-			"method":   "get_relay",
-		},
-	})
-
 	resp, err := client.GetRelay(ctx, &protos.GetRelayRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -44,14 +33,6 @@ func (p *Plumber) HandleGetRelayCmd(ctx context.Context, client protos.PlumberSe
 }
 
 func (p *Plumber) HandleGetAllRelaysCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.EnqueueManage(posthog.Capture{
-		Event:      "command_manage",
-		DistinctId: p.PersistentConfig.PlumberID,
-		Properties: map[string]interface{}{
-			"method": "get_all_relays",
-		},
-	})
-
 	resp, err := client.GetAllRelays(ctx, &protos.GetAllRelaysRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -70,15 +51,6 @@ func (p *Plumber) HandleGetAllRelaysCmd(ctx context.Context, client protos.Plumb
 }
 
 func (p *Plumber) HandleResumeRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.EnqueueManage(posthog.Capture{
-		Event:      "command_manage",
-		DistinctId: p.PersistentConfig.PlumberID,
-		Properties: map[string]interface{}{
-			"relay_id": p.CLIOptions.Manage.Resume.Relay.Id,
-			"method":   "resume_relay",
-		},
-	})
-
 	resp, err := client.ResumeRelay(ctx, &protos.ResumeRelayRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -98,15 +70,6 @@ func (p *Plumber) HandleResumeRelayCmd(ctx context.Context, client protos.Plumbe
 }
 
 func (p *Plumber) HandleStopRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.EnqueueManage(posthog.Capture{
-		Event:      "command_manage",
-		DistinctId: p.PersistentConfig.PlumberID,
-		Properties: map[string]interface{}{
-			"relay_id": p.CLIOptions.Manage.Stop.Relay.Id,
-			"method":   "stop_relay",
-		},
-	})
-
 	resp, err := client.StopRelay(ctx, &protos.StopRelayRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -126,15 +89,6 @@ func (p *Plumber) HandleStopRelayCmd(ctx context.Context, client protos.PlumberS
 }
 
 func (p *Plumber) HandleDeleteRelayCmd(ctx context.Context, client protos.PlumberServerClient) error {
-	p.EnqueueManage(posthog.Capture{
-		Event:      "command_manage",
-		DistinctId: p.PersistentConfig.PlumberID,
-		Properties: map[string]interface{}{
-			"relay_id": p.CLIOptions.Manage.Delete.Relay.Id,
-			"method":   "delete_relay",
-		},
-	})
-
 	resp, err := client.DeleteRelay(ctx, &protos.DeleteRelayRequest{
 		Auth: &common.Auth{
 			Token: p.CLIOptions.Manage.GlobalOptions.ManageToken,
@@ -162,17 +116,6 @@ func (p *Plumber) HandleCreateRelayCmd(ctx context.Context, client protos.Plumbe
 	if err := validate.ManageCreateRelayCmd(p.CLIOptions.Manage.Create.Relay); err != nil {
 		return errors.Wrap(err, "unable to validate manage create relay options")
 	}
-
-	p.EnqueueManage(posthog.Capture{
-		Event:      "command_manage",
-		DistinctId: p.PersistentConfig.PlumberID,
-		Properties: map[string]interface{}{
-			"method":        "create_relay",
-			"connection_id": p.CLIOptions.Manage.Create.Relay.ConnectionId,
-			"batch_size":    p.CLIOptions.Manage.Create.Relay.BatchSize,
-			"num_workers":   p.CLIOptions.Manage.Create.Relay.NumWorkers,
-		},
-	})
 
 	// Create relay options from CLI opts
 	relayOpts, err := generateRelayOptionsForManageCreate(p.CLIOptions)

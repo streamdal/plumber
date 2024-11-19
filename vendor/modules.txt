@@ -629,9 +629,6 @@ github.com/pierrec/lz4/v4/internal/xxh32
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
-# github.com/posthog/posthog-go v0.0.0-20220817142604-0b0bbf0f9c0f
-## explicit; go 1.15
-github.com/posthog/posthog-go
 # github.com/prometheus/client_golang v1.11.1
 ## explicit; go 1.13
 github.com/prometheus/client_golang/prometheus
@@ -718,12 +715,12 @@ github.com/streadway/amqp
 # github.com/streamdal/pgoutput v0.3.3
 ## explicit; go 1.15
 github.com/streamdal/pgoutput
-# github.com/streamdal/streamdal/libs/protos v0.1.57
+# github.com/streamdal/streamdal/libs/protos v0.1.58
 ## explicit; go 1.20
 github.com/streamdal/streamdal/libs/protos/build/go/protos
 github.com/streamdal/streamdal/libs/protos/build/go/protos/shared
 github.com/streamdal/streamdal/libs/protos/build/go/protos/steps
-# github.com/streamdal/streamdal/sdks/go v0.1.32
+# github.com/streamdal/streamdal/sdks/go v0.1.36
 ## explicit; go 1.19
 github.com/streamdal/streamdal/sdks/go
 github.com/streamdal/streamdal/sdks/go/helper
@@ -817,9 +814,6 @@ github.com/xdg/scram
 # github.com/xdg/stringprep v1.0.0
 ## explicit
 github.com/xdg/stringprep
-# github.com/xtgo/uuid v0.0.0-20140804021211-a0b114877d4c
-## explicit
-github.com/xtgo/uuid
 # github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d
 ## explicit
 github.com/youmark/pkcs8

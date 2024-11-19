@@ -6,7 +6,7 @@ ARCH ?= $(shell uname -m)
 
 GO = CGO_ENABLED=$(CGO_ENABLED) GONOPROXY=github.com/streamdal GOFLAGS=-mod=vendor go
 CGO_ENABLED ?= 0
-GO_BUILD_FLAGS = -ldflags "-X 'github.com/streamdal/plumber/options.VERSION=${VERSION}' -X 'main.TELEMETRY_API_KEY=${TELEMETRY_API_KEY}'"
+GO_BUILD_FLAGS = -ldflags "-X 'github.com/streamdal/plumber/options.VERSION=${VERSION}'"
 
 # Pattern #1 example: "example : description = Description for example target"
 # Pattern #2 example: "### Example separator text

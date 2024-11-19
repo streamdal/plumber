@@ -44,7 +44,6 @@ require (
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.30.0
 	github.com/pkg/errors v0.9.1
-	github.com/posthog/posthog-go v0.0.0-20220817142604-0b0bbf0f9c0f
 	github.com/prometheus/client_golang v1.11.1
 	github.com/rabbitmq/rabbitmq-stream-go-client v1.0.1-rc.2
 	github.com/relistan/go-director v0.0.0-20200406104025-dbbf5d95248d
@@ -66,7 +65,7 @@ require (
 	github.com/cloudevents/sdk-go/protocol/kafka_sarama/v2 v2.13.0
 	github.com/cloudevents/sdk-go/protocol/nats/v2 v2.13.0
 	github.com/cloudevents/sdk-go/v2 v2.13.0
-	github.com/streamdal/streamdal/sdks/go v0.1.32
+	github.com/streamdal/streamdal/sdks/go v0.1.36
 )
 
 require (
@@ -153,7 +152,7 @@ require (
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/santhosh-tekuri/jsonschema/v5 v5.1.0 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
-	github.com/streamdal/streamdal/libs/protos v0.1.57 // indirect
+	github.com/streamdal/streamdal/libs/protos v0.1.58 // indirect
 	github.com/tetratelabs/wazero v1.7.3 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
@@ -165,7 +164,6 @@ require (
 	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c // indirect
 	github.com/xdg/stringprep v1.0.0 // indirect
-	github.com/xtgo/uuid v0.0.0-20140804021211-a0b114877d4c // indirect
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
