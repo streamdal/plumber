@@ -15,14 +15,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nkeys"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	sdk "github.com/streamdal/streamdal/sdks/go"
-
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
 func init() {
@@ -112,30 +109,6 @@ func WriteError(l *logrus.Entry, errorCh chan<- *records.ErrorRecord, err error)
 			Error:               err.Error(),
 		}
 	}
-}
-
-// SetupStreamdalSDK creates a new Streamdal client if the integration is enabled.
-// If integration opts are nil or if integration is not enabled, return nil.
-func SetupStreamdalSDK(relayOpts *opts.RelayOptions, l *logrus.Entry) (*sdk.Streamdal, error) {
-	// Either no StreamIntegrationOptions or integration is disabled
-	if relayOpts == nil || relayOpts.StreamdalIntegrationOptions == nil || !relayOpts.StreamdalIntegrationOptions.StreamdalIntegrationEnable {
-		return nil, nil
-	}
-
-	// Integration is enabled; create client
-	sc, err := sdk.New(&sdk.Config{
-		ServerURL:   relayOpts.StreamdalIntegrationOptions.StreamdalIntegrationServerAddress,
-		ServerToken: relayOpts.StreamdalIntegrationOptions.StreamdalIntegrationAuthToken,
-		ServiceName: relayOpts.StreamdalIntegrationOptions.StreamdalIntegrationServiceName,
-		Logger:      l,
-		ClientType:  sdk.ClientTypeSDK,
-	})
-
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to create new streamdal client")
-	}
-
-	return sc, nil
 }
 
 func MapInterfaceToString(input map[string]interface{}) map[string]string {

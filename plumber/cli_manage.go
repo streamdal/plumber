@@ -15,7 +15,6 @@ import (
 	"google.golang.org/grpc/credentials"
 
 	"github.com/batchcorp/natty"
-
 	"github.com/batchcorp/plumber-schemas/build/go/protos"
 )
 
@@ -82,8 +81,6 @@ func (p *Plumber) HandleManageCmd() error {
 	// Create
 	case "create connection":
 		err = p.HandleCreateConnectionCmd(ctx, client)
-	case "create relay":
-		err = p.HandleCreateRelayCmd(ctx, client)
 	case "create tunnel":
 		err = p.HandleCreateTunnelCmd(ctx, client)
 

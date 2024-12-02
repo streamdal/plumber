@@ -120,8 +120,8 @@ type GlobalManageOptions struct {
 
 	// @gotags: kong:"help='Plumber server gRPC API address',default='localhost:9090'"
 	ManageAddress string `protobuf:"bytes,1,opt,name=manage_address,json=manageAddress,proto3" json:"manage_address,omitempty" kong:"help='Plumber server gRPC API address',default='localhost:9090'"`
-	// @gotags: kong:"help='Plumber server auth token',default='streamdal'"
-	ManageToken string `protobuf:"bytes,2,opt,name=manage_token,json=manageToken,proto3" json:"manage_token,omitempty" kong:"help='Plumber server auth token',default='streamdal'"`
+	// @gotags: kong:"help='Plumber server auth token',default='plumber-token'"
+	ManageToken string `protobuf:"bytes,2,opt,name=manage_token,json=manageToken,proto3" json:"manage_token,omitempty" kong:"help='Plumber server auth token',default='plumber-token'"`
 	// @gotags: kong:"help='gRPC call timeout seconds',default=10"
 	ManageTimeoutSeconds int64 `protobuf:"varint,3,opt,name=manage_timeout_seconds,json=manageTimeoutSeconds,proto3" json:"manage_timeout_seconds,omitempty" kong:"help='gRPC call timeout seconds',default=10"`
 	// @gotags: kong:"help='Use TLS when talking to plumber server',default='false'"
