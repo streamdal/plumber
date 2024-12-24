@@ -191,13 +191,12 @@ func NewCLIOptions() *opts.CLIOptions {
 		Global: &opts.GlobalCLIOptions{
 			XCommands: make([]string, 0),
 		},
-		Server:    &opts.ServerOptions{},
-		Read:      newReadOptions(),
-		Write:     newWriteOptions(),
-		Relay:     newRelayOptions(),
-		Tunnel:    newTunnelOptions(),
-		Streamdal: newStreamdalOptions(),
-		Manage:    newManageOptions(),
+		Server: &opts.ServerOptions{},
+		Read:   newReadOptions(),
+		Write:  newWriteOptions(),
+		Relay:  newRelayOptions(),
+		Tunnel: newTunnelOptions(),
+		Manage: newManageOptions(),
 	}
 }
 
@@ -539,48 +538,6 @@ func newTunnelOptions() *opts.TunnelOptions {
 		AwsKinesis: &opts.TunnelGroupAWSKinesisOptions{
 			XConn: &args.AWSKinesisConn{},
 			Args:  &args.AWSKinesisWriteArgs{},
-		},
-	}
-}
-
-func newStreamdalOptions() *opts.StreamdalOptions {
-	return &opts.StreamdalOptions{
-		Login:  &opts.StreamdalLoginOptions{},
-		Logout: &opts.StreamdalLogoutOptions{},
-		List:   &opts.StreamdalListOptions{},
-		Create: &opts.StreamdalCreateOptions{
-			Collection: &opts.StreamdalCreateCollectionOptions{},
-			Replay:     &opts.StreamdalCreateReplayOptions{},
-			Destination: &opts.StreamdalCreateDestinationOptions{
-				Kafka: &opts.WriteGroupKafkaOptions{
-					XConn: &args.KafkaConn{},
-					Args: &args.KafkaWriteArgs{
-						Headers: make(map[string]string, 0),
-						Topics:  make([]string, 0),
-					},
-				},
-				Rabbit: &opts.WriteGroupRabbitOptions{
-					XConn: &args.RabbitConn{},
-					Args:  &args.RabbitWriteArgs{},
-				},
-				KubemqQueue: &opts.WriteGroupKubeMQQueueOptions{
-					XConn: &args.KubeMQQueueConn{},
-					Args:  &args.KubeMQQueueWriteArgs{},
-				},
-				AwsSqs: &opts.WriteGroupAWSSQSOptions{
-					XConn: &args.AWSSQSConn{},
-					Args: &args.AWSSQSWriteArgs{
-						Attributes: make(map[string]string, 0),
-					},
-				},
-				Http: &opts.HTTPDestination{
-					Headers: make(map[string]string, 0),
-				},
-			},
-		},
-		Search: &opts.StreamdalSearchOptions{},
-		Archive: &opts.StreamdalArchiveOptions{
-			Replay: &opts.StreamdalArchiveReplayOptions{},
 		},
 	}
 }

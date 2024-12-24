@@ -142,8 +142,6 @@ func (p *Plumber) Run() {
 	switch p.CLIOptions.Global.XAction {
 	case "server":
 		err = p.RunServer()
-	case "streamdal":
-		err = p.HandleStreamdalCmd()
 	case "read":
 		err = p.HandleReadCmd()
 	case "write":
