@@ -88,7 +88,7 @@ func (r *Relay) StartRelay(delay time.Duration) error {
 	return nil
 }
 
-// MarshalJSON marshals a tunnel to JSON
+// MarshalJSON marshals a RelayOptions to JSON
 func (r *Relay) MarshalJSON() ([]byte, error) {
 	buf := bytes.NewBuffer([]byte(``))
 
@@ -100,7 +100,7 @@ func (r *Relay) MarshalJSON() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// UnmarshalJSON unmarshals JSON into a tunnel struct
+// UnmarshalJSON unmarshals JSON into a RelayOptions struct
 func (r *Relay) UnmarshalJSON(v []byte) error {
 	relay := &opts.RelayOptions{}
 	if err := jsonpb.Unmarshal(bytes.NewBuffer(v), relay); err != nil {

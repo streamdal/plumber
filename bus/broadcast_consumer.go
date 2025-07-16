@@ -58,18 +58,6 @@ func (b *Bus) broadcastCallback(ctx context.Context, natsMsg *nats.Msg) error {
 	case ResumeRelay:
 		err = b.doResumeRelay(ctx, msg)
 
-	// Tunnel
-	case CreateTunnel:
-		err = b.doCreateTunnel(ctx, msg)
-	case UpdateTunnel:
-		err = b.doUpdateTunnel(ctx, msg)
-	case DeleteTunnel:
-		err = b.doDeleteTunnel(ctx, msg)
-	case StopTunnel:
-		err = b.doStopTunnel(ctx, msg)
-	case ResumeTunnel:
-		err = b.doResumeTunnel(ctx, msg)
-
 	default:
 		llog.Debugf("unrecognized action '%s' in msg on subj '%s' - skipping", msg.Action, natsMsg.Subject)
 	}

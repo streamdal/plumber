@@ -79,9 +79,3 @@ func ConnectionOptionsForServer(connOptions *opts.ConnectionOptions) error {
 
 	return nil
 }
-
-func TunnelOptionsForServer(tunnelOptions *opts.TunnelOptions) error {
-	// TODO: Implement specific tunnel validations
-
-	return nil
-}

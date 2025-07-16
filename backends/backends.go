@@ -5,6 +5,8 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
+	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 	"github.com/streamdal/plumber/backends/activemq"
 	"github.com/streamdal/plumber/backends/awskinesis"
 	"github.com/streamdal/plumber/backends/awssns"
@@ -27,10 +29,6 @@ import (
 	"github.com/streamdal/plumber/backends/rabbitmq"
 	"github.com/streamdal/plumber/backends/rpubsub"
 	"github.com/streamdal/plumber/backends/rstreams"
-	"github.com/streamdal/plumber/tunnel"
-
-	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
 )
 
 // Backend is the interface that all backends implement; the interface is used
@@ -60,10 +58,6 @@ type Backend interface {
 	// to connect to a broker, while with another backend, plumber might try to
 	// put/get sample data).
 	Test(ctx context.Context) error
-
-	// Tunnel creates a tunnel to Batch and exposes the connected backend as a
-	// destination. This is a blocking call.
-	Tunnel(ctx context.Context, tunnelOpts *opts.TunnelOptions, tunnelSvc tunnel.ITunnel, errorCh chan<- *records.ErrorRecord) error
 
 	// Relay will hook into a message bus as a consumer and relay all messages
 	// to the relayCh; if an error channel is provided, any errors will be piped

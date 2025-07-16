@@ -30,7 +30,6 @@ var _ = Describe("Relay", func() {
 		pConfig := &config.Config{
 			Connections:      map[string]*stypes.Connection{},
 			Relays:           map[string]*stypes.Relay{},
-			TunnelsMutex:     &sync.RWMutex{},
 			RelaysMutex:      &sync.RWMutex{},
 			ConnectionsMutex: &sync.RWMutex{},
 		}

@@ -215,18 +215,6 @@ In order to flip a boolean flag to `false`, prepend `--no` to the flag.
 
 ie. `--queue-declare` is `true` by default. To make it false, use `--no-queue-declare`.
 
-## Tunnels
-
-`plumber` can now act as a replay destination (tunnel). Tunnel mode allows you to
-run an instance of plumber, on your local network, which will then be available
-in the Streamdal platform as a _replay destination_.
-
-This mitigates the need make firewall changes to replay messages from a Streamdal
-collection back to your message bus.
-
-See https://docs.streamdal.com/what-are/what-are-destinations/plumber-as-a-destination
-for full documentation.
-
 ## High Performance & High Availability
 `plumber` comes with a "server" mode which will cause plumber to operate as a
 highly available cluster.

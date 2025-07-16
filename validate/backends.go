@@ -29,10 +29,6 @@ var (
 
 	ErrEmptyWriteOpts = errors.New("write options cannot be nil")
 
-	// Tunnel
-
-	ErrEmptyTunnelOpts = errors.New("tunnel options cannot be nil")
-
 	// Relay
 
 	ErrEmptyRelayOpts = errors.New("relay options cannot be nil")

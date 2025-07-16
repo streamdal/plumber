@@ -187,17 +187,6 @@ func (s *Server) DeleteConnection(ctx context.Context, req *protos.DeleteConnect
 		return nil, CustomError(common.Code_NOT_FOUND, "no such connection id")
 	}
 
-	// Ensure this connection isn't being used by any tunnels
-	s.PersistentConfig.TunnelsMutex.RLock()
-	for id, tunnel := range s.PersistentConfig.Tunnels {
-		if tunnel.Options.ConnectionId == id {
-			s.PersistentConfig.TunnelsMutex.RUnlock()
-			return nil, fmt.Errorf("cannot delete connection '%s' because it is in use by tunnel '%s'",
-				id, tunnel.Options.XTunnelId)
-		}
-	}
-	s.PersistentConfig.TunnelsMutex.RUnlock()
-
 	// Ensure this connection isn't being used by any relays
 	s.PersistentConfig.RelaysMutex.RLock()
 	for id, relay := range s.PersistentConfig.Relays {

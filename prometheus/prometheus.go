@@ -19,7 +19,6 @@ const (
 	PlumberReadErrors       = "plumber_read_errors"
 	PlumberGRPCErrors       = "plumber_grpc_errors"
 	PlumberRelayWorkers     = "plumber_relay_workers"
-	PlumberTunnels          = "plumber_tunnels"
 )
 
 var (

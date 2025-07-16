@@ -37,7 +37,6 @@ var _ = Describe("Connection", func() {
 			PersistentConfig: &config.Config{
 				ConnectionsMutex: &sync.RWMutex{},
 				Connections:      map[string]*stypes.Connection{},
-				TunnelsMutex:     &sync.RWMutex{},
 				RelaysMutex:      &sync.RWMutex{},
 			},
 			Log: logrus.NewEntry(logger),

@@ -28,9 +28,7 @@ require (
 	github.com/jhump/protoreflect v1.10.1
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/julienschmidt/httprouter v1.3.0
-	github.com/kataras/tablewriter v0.0.0-20180708051242-e063d29b7c23
 	github.com/kubemq-io/kubemq-go v1.7.2
-	github.com/lensesio/tableprinter v0.0.0-20201125135848-89e81fc956e7
 	github.com/linkedin/goavro/v2 v2.9.8
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.3.0
@@ -97,7 +95,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/devigned/tab v0.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
-	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/dvsekhvalnov/jose2go v1.5.0 // indirect
 	github.com/eapache/go-resiliency v1.3.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20230111030713-bf00bc1b83b6 // indirect

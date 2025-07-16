@@ -48,23 +48,3 @@ func (n NoOpBus) PublishStopRelay(_ context.Context, _ *opts.RelayOptions) error
 func (n NoOpBus) PublishResumeRelay(_ context.Context, _ *opts.RelayOptions) error {
 	return nil
 }
-
-func (n NoOpBus) PublishCreateTunnel(_ context.Context, _ *opts.TunnelOptions) error {
-	return nil
-}
-
-func (n NoOpBus) PublishUpdateTunnel(_ context.Context, _ *opts.TunnelOptions) error {
-	return nil
-}
-
-func (n NoOpBus) PublishStopTunnel(_ context.Context, _ *opts.TunnelOptions) error {
-	return nil
-}
-
-func (n NoOpBus) PublishResumeTunnel(_ context.Context, _ *opts.TunnelOptions) error {
-	return nil
-}
-
-func (n NoOpBus) PublishDeleteTunnel(_ context.Context, _ *opts.TunnelOptions) error {
-	return nil
-}
