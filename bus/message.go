@@ -18,12 +18,6 @@ const (
 	StopRelay   = "StopRelay"
 	ResumeRelay = "ResumeRelay"
 
-	CreateTunnel = "CreateTunnel"
-	UpdateTunnel = "UpdateTunnel"
-	DeleteTunnel = "DeleteTunnel"
-	StopTunnel   = "StopTunnel"
-	ResumeTunnel = "ResumeTunnel"
-
 	UpdateConfig = "UpdateConfig"
 )
 
@@ -31,7 +25,6 @@ var (
 	ValidActions = []Action{
 		CreateConnection, UpdateConnection, DeleteConnection,
 		CreateRelay, UpdateRelay, DeleteRelay, StopRelay, ResumeRelay,
-		CreateTunnel, UpdateTunnel, DeleteTunnel, StopTunnel, ResumeTunnel,
 		UpdateConfig,
 	}
 )

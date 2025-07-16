@@ -49,18 +49,8 @@ func (b *Bus) doUpdateConnection(ctx context.Context, msg *Message) error {
 }
 
 func (b *Bus) doDeleteConnection(ctx context.Context, msg *Message) error {
-	b.config.PersistentConfig.TunnelsMutex.RLock()
-	defer b.config.PersistentConfig.TunnelsMutex.RUnlock()
 	b.config.PersistentConfig.RelaysMutex.RLock()
 	defer b.config.PersistentConfig.RelaysMutex.RUnlock()
-
-	// Ensure this connection isn't being used by any tunnels
-	for id, tunnel := range b.config.PersistentConfig.Tunnels {
-		if tunnel.Options.ConnectionId == id {
-			return fmt.Errorf("cannot delete connection '%s' because it is in use by tunnel '%s'",
-				id, tunnel.Options.XTunnelId)
-		}
-	}
 
 	// Ensure this connection isn't being used by any relays
 	for id, relay := range b.config.PersistentConfig.Relays {

@@ -243,9 +243,6 @@ github.com/devigned/tab
 # github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f
 ## explicit
 github.com/dgryski/go-rendezvous
-# github.com/dustin/go-humanize v1.0.0
-## explicit
-github.com/dustin/go-humanize
 # github.com/dvsekhvalnov/jose2go v1.5.0
 ## explicit; go 1.15
 github.com/dvsekhvalnov/jose2go
@@ -484,9 +481,6 @@ github.com/json-iterator/go
 # github.com/julienschmidt/httprouter v1.3.0
 ## explicit; go 1.7
 github.com/julienschmidt/httprouter
-# github.com/kataras/tablewriter v0.0.0-20180708051242-e063d29b7c23
-## explicit
-github.com/kataras/tablewriter
 # github.com/klauspost/compress v1.15.14
 ## explicit; go 1.17
 github.com/klauspost/compress
@@ -504,9 +498,6 @@ github.com/kubemq-io/kubemq-go/queues_stream
 # github.com/kubemq-io/protobuf v1.3.1
 ## explicit; go 1.16
 github.com/kubemq-io/protobuf/go
-# github.com/lensesio/tableprinter v0.0.0-20201125135848-89e81fc956e7
-## explicit
-github.com/lensesio/tableprinter
 # github.com/lib/pq v1.10.4
 ## explicit; go 1.13
 # github.com/linkedin/goavro/v2 v2.9.8

@@ -44,12 +44,6 @@ type IBus interface {
 	PublishDeleteRelay(ctx context.Context, relay *opts.RelayOptions) error
 	PublishStopRelay(ctx context.Context, relay *opts.RelayOptions) error
 	PublishResumeRelay(ctx context.Context, relay *opts.RelayOptions) error
-
-	PublishCreateTunnel(ctx context.Context, tunnelOptions *opts.TunnelOptions) error
-	PublishUpdateTunnel(ctx context.Context, tunnelOptions *opts.TunnelOptions) error
-	PublishStopTunnel(ctx context.Context, tunnelOptions *opts.TunnelOptions) error
-	PublishResumeTunnel(ctx context.Context, tunnelOptions *opts.TunnelOptions) error
-	PublishDeleteTunnel(ctx context.Context, tunnelOptions *opts.TunnelOptions) error
 }
 
 type Bus struct {

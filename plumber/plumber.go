@@ -149,8 +149,6 @@ func (p *Plumber) Run() {
 	case "relay":
 		printer.PrintRelayOptions(p.CLIOptions)
 		err = p.HandleRelayCmd()
-	case "tunnel":
-		err = p.HandleTunnelCmd()
 	case "manage":
 		err = p.HandleManageCmd()
 	default:

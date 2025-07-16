@@ -46,10 +46,8 @@ type Config struct {
 
 	Connections      map[string]*stypes.Connection `json:"connections"`
 	Relays           map[string]*stypes.Relay      `json:"relays"`
-	Tunnels          map[string]*stypes.Tunnel     `json:"tunnels"`
 	ConnectionsMutex *sync.RWMutex                 `json:"-"`
 	RelaysMutex      *sync.RWMutex                 `json:"-"`
-	TunnelsMutex     *sync.RWMutex                 `json:"-"`
 
 	enableCluster bool
 	kv            kv.IKV
@@ -174,10 +172,8 @@ func newConfig(enableCluster bool, k kv.IKV) *Config {
 		PlumberID:        getPlumberID(),
 		Connections:      make(map[string]*stypes.Connection),
 		Relays:           make(map[string]*stypes.Relay),
-		Tunnels:          make(map[string]*stypes.Tunnel),
 		ConnectionsMutex: &sync.RWMutex{},
 		RelaysMutex:      &sync.RWMutex{},
-		TunnelsMutex:     &sync.RWMutex{},
 
 		kv:            k,
 		enableCluster: enableCluster,
@@ -266,10 +262,8 @@ func readConfigBytes(data []byte) (*Config, error) {
 	cfg := &Config{
 		ConnectionsMutex: &sync.RWMutex{},
 		RelaysMutex:      &sync.RWMutex{},
-		TunnelsMutex:     &sync.RWMutex{},
 		Connections:      make(map[string]*stypes.Connection),
 		Relays:           make(map[string]*stypes.Relay),
-		Tunnels:          make(map[string]*stypes.Tunnel),
 	}
 
 	if err := json.Unmarshal(data, cfg); err != nil {
@@ -455,32 +449,4 @@ func (c *Config) DeleteConnection(connID string) {
 	c.ConnectionsMutex.Lock()
 	defer c.ConnectionsMutex.Unlock()
 	delete(c.Connections, connID)
-}
-
-// GetTunnel returns an in-progress read from the Tunnels map
-func (c *Config) GetTunnel(tunnelID string) *stypes.Tunnel {
-	c.TunnelsMutex.RLock()
-	defer c.TunnelsMutex.RUnlock()
-
-	r, _ := c.Tunnels[tunnelID]
-
-	return r
-}
-
-// SetTunnel adds an in-progress read to the Tunnels map
-func (c *Config) SetTunnel(tunnelID string, tunnel *stypes.Tunnel) {
-	c.TunnelsMutex.Lock()
-	defer c.TunnelsMutex.Unlock()
-
-	if c.Tunnels == nil {
-		c.Tunnels = make(map[string]*stypes.Tunnel)
-	}
-	c.Tunnels[tunnelID] = tunnel
-}
-
-// DeleteTunnel removes a tunnel from in-memory map
-func (c *Config) DeleteTunnel(tunnelID string) {
-	c.TunnelsMutex.Lock()
-	defer c.TunnelsMutex.Unlock()
-	delete(c.Tunnels, tunnelID)
 }

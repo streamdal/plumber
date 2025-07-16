@@ -71,38 +71,24 @@ func (p *Plumber) HandleManageCmd() error {
 		} else {
 			err = p.HandleGetRelayCmd(ctx, client)
 		}
-	case "get tunnel":
-		if p.CLIOptions.Manage.Get.Tunnel.Id == "" {
-			err = p.HandleGetAllTunnelsCmd(ctx, client)
-		} else {
-			err = p.HandleGetTunnelCmd(ctx, client)
-		}
 
 	// Create
 	case "create connection":
 		err = p.HandleCreateConnectionCmd(ctx, client)
-	case "create tunnel":
-		err = p.HandleCreateTunnelCmd(ctx, client)
 
 	// Delete
 	case "delete connection":
 		err = p.HandleDeleteConnectionCmd(ctx, client)
 	case "delete relay":
 		err = p.HandleDeleteRelayCmd(ctx, client)
-	case "delete tunnel":
-		err = p.HandleDeleteTunnelCmd(ctx, client)
 
 	// Stop
 	case "stop relay":
 		err = p.HandleStopRelayCmd(ctx, client)
-	case "stop tunnel":
-		err = p.HandleStopTunnelCmd(ctx, client)
 
 	// Resume
 	case "resume relay":
 		err = p.HandleResumeRelayCmd(ctx, client)
-	case "resume tunnel":
-		err = p.HandleResumeTunnelCmd(ctx, client)
 	default:
 		return fmt.Errorf("unrecognized command: '%s'", cmd)
 	}

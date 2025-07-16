@@ -70,10 +70,6 @@ func (p *Plumber) RunServer() error {
 		if err := p.relaunchRelays(); err != nil {
 			p.log.Error(errors.Wrap(err, "failed to relaunch relays"))
 		}
-
-		if err := p.relaunchTunnels(); err != nil {
-			p.log.Error(errors.Wrap(err, "failed to relaunch tunnels"))
-		}
 	}()
 
 	// Wait for shutdown
@@ -112,29 +108,6 @@ func (p *Plumber) relaunchRelays() error {
 	}
 
 	return nil
-}
-
-func (p *Plumber) relaunchTunnels() error {
-	for tunnelID, tunnel := range p.PersistentConfig.Tunnels {
-		// We want to "create" both active and inactive relays through CreateTunnel
-		// as we need to create backends, create shutdown context, channels, etc.
-		d, err := p.Actions.CreateTunnel(p.ServiceShutdownCtx, tunnel.Options)
-		if err != nil {
-			return errors.Wrapf(err, "unable to create tunnel '%s'", tunnelID)
-		}
-
-		if tunnel.Active {
-			p.log.Infof("Tunnel '%s' re-started", tunnelID)
-		} else {
-			p.log.Debugf("Tunnel '%s' is inactive - not relaunching", tunnelID)
-		}
-
-		p.PersistentConfig.SetTunnel(tunnelID, d)
-		p.PersistentConfig.Save()
-	}
-
-	return nil
-
 }
 
 func (p *Plumber) startGRPCServer() error {
