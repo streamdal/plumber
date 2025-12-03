@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/arn"
 	"github.com/aws/aws-sdk-go/service/kinesis"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -22,10 +23,15 @@ import (
 
 // getShardIterator creates a shard interator based on read arguments
 // lastSequenceNumber argument is used when creating anther iterator after a recoverable read failure
-func (k *Kinesis) getShardIterator(args *args.AWSKinesisReadArgs, shardID string, lastSequenceNumber *string) (*string, error) {
+func (k *Kinesis) getShardIterator(ctx context.Context, args *args.AWSKinesisReadArgs, shardID string, lastSequenceNumber *string) (*string, error) {
 	getOpts := &kinesis.GetShardIteratorInput{
-		ShardId:    aws.String(shardID),
-		StreamName: aws.String(args.Stream),
+		ShardId: aws.String(shardID),
+	}
+
+	if arn.IsARN(args.Stream) {
+		getOpts.StreamARN = aws.String(args.Stream)
+	} else {
+		getOpts.StreamName = aws.String(args.Stream)
 	}
 
 	if args.ReadTrimHorizon {
@@ -48,7 +54,7 @@ func (k *Kinesis) getShardIterator(args *args.AWSKinesisReadArgs, shardID string
 	}
 
 	//Get shard iterator
-	shardResp, err := k.client.GetShardIterator(getOpts)
+	shardResp, err := k.client.GetShardIteratorWithContext(ctx, getOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -59,10 +65,15 @@ func (k *Kinesis) getShardIterator(args *args.AWSKinesisReadArgs, shardID string
 // getShards returns a slice of all shards that exist for a stream
 // This method is used when no --stream argument is provided. In this case, we will
 // start a read for each available shard
-func (k *Kinesis) getShards(args *args.AWSKinesisReadArgs) ([]string, error) {
-	shardResp, err := k.client.DescribeStream(&kinesis.DescribeStreamInput{
-		StreamName: aws.String(args.Stream),
-	})
+func (k *Kinesis) getShards(ctx context.Context, args *args.AWSKinesisReadArgs) ([]string, error) {
+	describeOpts := &kinesis.DescribeStreamInput{}
+	if arn.IsARN(args.Stream) {
+		describeOpts.StreamARN = aws.String(args.Stream)
+	} else {
+		describeOpts.StreamName = aws.String(args.Stream)
+	}
+
+	shardResp, err := k.client.DescribeStreamWithContext(ctx, describeOpts)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to get shards")
 	}
@@ -88,7 +99,7 @@ func (k *Kinesis) Read(ctx context.Context, readOpts *opts.ReadOptions, resultsC
 	}
 
 	// No shard specified. Get all shards and launch a goroutine to read each shard
-	shards, err := k.getShards(readOpts.AwsKinesis.Args)
+	shards, err := k.getShards(ctx, readOpts.AwsKinesis.Args)
 	if err != nil {
 		return errors.Wrap(err, "unable to get shards")
 	}
@@ -120,7 +131,7 @@ func (k *Kinesis) readShard(ctx context.Context, shardID string, readOpts *opts.
 	// is reading by specific sequence number. Otherwise this value will be ignored
 	var lastSequenceNumber *string
 
-	shardIterator, err := k.getShardIterator(readOpts.AwsKinesis.Args, shardID, lastSequenceNumber)
+	shardIterator, err := k.getShardIterator(ctx, readOpts.AwsKinesis.Args, shardID, lastSequenceNumber)
 	if err != nil {
 		return errors.Wrap(err, "unable to create shard iterator")
 	}
@@ -128,10 +139,18 @@ func (k *Kinesis) readShard(ctx context.Context, shardID string, readOpts *opts.
 	k.log.Infof("Waiting for messages for shard '%s'...", shardID)
 
 	for {
-		resp, err := k.client.GetRecordsWithContext(ctx, &kinesis.GetRecordsInput{
+		getOpts := &kinesis.GetRecordsInput{
 			ShardIterator: shardIterator,
 			Limit:         aws.Int64(readOpts.AwsKinesis.Args.MaxRecords),
-		})
+		}
+
+		if arn.IsARN(readOpts.AwsKinesis.Args.Stream) {
+			getOpts.StreamARN = aws.String(readOpts.AwsKinesis.Args.Stream)
+		} else {
+			// stream name isn't required in this case
+		}
+
+		resp, err := k.client.GetRecordsWithContext(ctx, getOpts)
 		if err != nil {
 			// Some errors are recoverable
 			if !canRetry(err) {
@@ -145,7 +164,7 @@ func (k *Kinesis) readShard(ctx context.Context, shardID string, readOpts *opts.
 
 			// Get new iterator. lastSequenceNumber is specified in the event that the user
 			// started reading from a specific sequence number. We want to start where we left off
-			shardIterator, err = k.getShardIterator(readOpts.AwsKinesis.Args, shardID, lastSequenceNumber)
+			shardIterator, err = k.getShardIterator(ctx, readOpts.AwsKinesis.Args, shardID, lastSequenceNumber)
 			if err != nil {
 				return errors.Wrap(err, "unable to create shard iterator")
 			}

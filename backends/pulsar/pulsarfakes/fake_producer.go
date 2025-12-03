@@ -416,20 +416,6 @@ func (fake *FakeProducer) TopicReturnsOnCall(i int, result1 string) {
 func (fake *FakeProducer) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.closeMutex.RLock()
-	defer fake.closeMutex.RUnlock()
-	fake.flushMutex.RLock()
-	defer fake.flushMutex.RUnlock()
-	fake.lastSequenceIDMutex.RLock()
-	defer fake.lastSequenceIDMutex.RUnlock()
-	fake.nameMutex.RLock()
-	defer fake.nameMutex.RUnlock()
-	fake.sendMutex.RLock()
-	defer fake.sendMutex.RUnlock()
-	fake.sendAsyncMutex.RLock()
-	defer fake.sendAsyncMutex.RUnlock()
-	fake.topicMutex.RLock()
-	defer fake.topicMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

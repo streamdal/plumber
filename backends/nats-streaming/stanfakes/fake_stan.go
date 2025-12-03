@@ -471,18 +471,6 @@ func (fake *FakeConn) SubscribeReturnsOnCall(i int, result1 stan.Subscription, r
 func (fake *FakeConn) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.closeMutex.RLock()
-	defer fake.closeMutex.RUnlock()
-	fake.natsConnMutex.RLock()
-	defer fake.natsConnMutex.RUnlock()
-	fake.publishMutex.RLock()
-	defer fake.publishMutex.RUnlock()
-	fake.publishAsyncMutex.RLock()
-	defer fake.publishAsyncMutex.RUnlock()
-	fake.queueSubscribeMutex.RLock()
-	defer fake.queueSubscribeMutex.RUnlock()
-	fake.subscribeMutex.RLock()
-	defer fake.subscribeMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

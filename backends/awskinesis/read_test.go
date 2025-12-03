@@ -80,7 +80,9 @@ var _ = Describe("AWS Kinesis Backend", func() {
 			resultsCh := make(chan *records.ReadRecord, 1)
 
 			fakeKinesis := &kinesisfakes.FakeKinesisAPI{}
-			fakeKinesis.GetRecordsWithContextStub = func(context.Context, *kinesis.GetRecordsInput, ...request.Option) (*kinesis.GetRecordsOutput, error) {
+			fakeKinesis.GetRecordsWithContextStub = func(_ context.Context, input *kinesis.GetRecordsInput, _ ...request.Option) (*kinesis.GetRecordsOutput, error) {
+				Expect(input.StreamARN).To(BeNil())
+
 				return &kinesis.GetRecordsOutput{
 					Records: []*kinesis.Record{
 						{
@@ -89,7 +91,10 @@ var _ = Describe("AWS Kinesis Backend", func() {
 					},
 				}, nil
 			}
-			fakeKinesis.GetShardIteratorStub = func(*kinesis.GetShardIteratorInput) (*kinesis.GetShardIteratorOutput, error) {
+			fakeKinesis.GetShardIteratorWithContextStub = func(_ context.Context, input *kinesis.GetShardIteratorInput, _ ...request.Option) (*kinesis.GetShardIteratorOutput, error) {
+				Expect(input.StreamName).ToNot(BeNil())
+				Expect(input.StreamARN).To(BeNil())
+
 				return &kinesis.GetShardIteratorOutput{
 					ShardIterator: aws.String("test"),
 				}, nil
@@ -104,7 +109,46 @@ var _ = Describe("AWS Kinesis Backend", func() {
 
 			Expect(err).ToNot(HaveOccurred())
 			Expect(fakeKinesis.GetRecordsWithContextCallCount()).To(Equal(1))
-			Expect(fakeKinesis.GetShardIteratorCallCount()).To(Equal(1))
+			Expect(fakeKinesis.GetShardIteratorWithContextCallCount()).To(Equal(1))
+			Expect(resultsCh).Should(Receive())
+		})
+		It("reads from Kinesis using an ARN", func() {
+			errorsCh := make(chan *records.ErrorRecord, 1)
+			resultsCh := make(chan *records.ReadRecord, 1)
+
+			fakeKinesis := &kinesisfakes.FakeKinesisAPI{}
+			fakeKinesis.GetRecordsWithContextStub = func(_ context.Context, input *kinesis.GetRecordsInput, _ ...request.Option) (*kinesis.GetRecordsOutput, error) {
+				Expect(input.StreamARN).ToNot(BeNil())
+
+				return &kinesis.GetRecordsOutput{
+					Records: []*kinesis.Record{
+						{
+							Data: []byte("test"),
+						},
+					},
+				}, nil
+			}
+			fakeKinesis.GetShardIteratorWithContextStub = func(_ context.Context, input *kinesis.GetShardIteratorInput, _ ...request.Option) (*kinesis.GetShardIteratorOutput, error) {
+				Expect(input.StreamARN).ToNot(BeNil())
+				Expect(input.StreamName).To(BeNil())
+
+				return &kinesis.GetShardIteratorOutput{
+					ShardIterator: aws.String("test"),
+				}, nil
+			}
+
+			a := &Kinesis{
+				client: fakeKinesis,
+				log:    logrus.NewEntry(&logrus.Logger{Out: ioutil.Discard}),
+			}
+
+			readOpts.AwsKinesis.Args.Stream = "arn:aws:kinesis:us-east-1:123456789012:stream/test"
+
+			err := a.Read(context.Background(), readOpts, resultsCh, errorsCh)
+
+			Expect(err).ToNot(HaveOccurred())
+			Expect(fakeKinesis.GetRecordsWithContextCallCount()).To(Equal(1))
+			Expect(fakeKinesis.GetShardIteratorWithContextCallCount()).To(Equal(1))
 			Expect(resultsCh).Should(Receive())
 		})
 	})

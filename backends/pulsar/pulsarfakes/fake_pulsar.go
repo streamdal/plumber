@@ -428,18 +428,6 @@ func (fake *FakeClient) TopicPartitionsReturnsOnCall(i int, result1 []string, re
 func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.closeMutex.RLock()
-	defer fake.closeMutex.RUnlock()
-	fake.createProducerMutex.RLock()
-	defer fake.createProducerMutex.RUnlock()
-	fake.createReaderMutex.RLock()
-	defer fake.createReaderMutex.RUnlock()
-	fake.createTableViewMutex.RLock()
-	defer fake.createTableViewMutex.RUnlock()
-	fake.subscribeMutex.RLock()
-	defer fake.subscribeMutex.RUnlock()
-	fake.topicPartitionsMutex.RLock()
-	defer fake.topicPartitionsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

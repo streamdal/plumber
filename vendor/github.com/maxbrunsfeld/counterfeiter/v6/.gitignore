@@ -30,3 +30,4 @@ integration/testdata/output
 *.profile
 *.bench
 /.vscode
+.DS_Store

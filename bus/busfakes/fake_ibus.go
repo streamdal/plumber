@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-
 	"github.com/streamdal/plumber/bus"
 )
 
@@ -1115,36 +1114,6 @@ func (fake *FakeIBus) StopReturnsOnCall(i int, result1 error) {
 func (fake *FakeIBus) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.publishCreateConnectionMutex.RLock()
-	defer fake.publishCreateConnectionMutex.RUnlock()
-	fake.publishCreateRelayMutex.RLock()
-	defer fake.publishCreateRelayMutex.RUnlock()
-	fake.publishCreateTunnelMutex.RLock()
-	defer fake.publishCreateTunnelMutex.RUnlock()
-	fake.publishDeleteConnectionMutex.RLock()
-	defer fake.publishDeleteConnectionMutex.RUnlock()
-	fake.publishDeleteRelayMutex.RLock()
-	defer fake.publishDeleteRelayMutex.RUnlock()
-	fake.publishDeleteTunnelMutex.RLock()
-	defer fake.publishDeleteTunnelMutex.RUnlock()
-	fake.publishResumeRelayMutex.RLock()
-	defer fake.publishResumeRelayMutex.RUnlock()
-	fake.publishResumeTunnelMutex.RLock()
-	defer fake.publishResumeTunnelMutex.RUnlock()
-	fake.publishStopRelayMutex.RLock()
-	defer fake.publishStopRelayMutex.RUnlock()
-	fake.publishStopTunnelMutex.RLock()
-	defer fake.publishStopTunnelMutex.RUnlock()
-	fake.publishUpdateConnectionMutex.RLock()
-	defer fake.publishUpdateConnectionMutex.RUnlock()
-	fake.publishUpdateRelayMutex.RLock()
-	defer fake.publishUpdateRelayMutex.RUnlock()
-	fake.publishUpdateTunnelMutex.RLock()
-	defer fake.publishUpdateTunnelMutex.RUnlock()
-	fake.startMutex.RLock()
-	defer fake.startMutex.RUnlock()
-	fake.stopMutex.RLock()
-	defer fake.stopMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
