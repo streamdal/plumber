@@ -63,6 +63,9 @@ OPTIONS
 		# writes "FakeMyInterface" to ./mySpecialFakesDir/specialFake.go
 		counterfeiter -o ./mySpecialFakesDir/specialFake.go ./mypackage MyInterface
 
+		# writes "FakeMyInterface" to ./mySpecialFakesDir/fake_my_interface.go
+		counterfeiter -o ./mySpecialFakesDir ./mypackage MyInterface
+
 	-p
 		Package mode:  When invoked in package mode, counterfeiter
 		will generate an interface and shim implementation from a

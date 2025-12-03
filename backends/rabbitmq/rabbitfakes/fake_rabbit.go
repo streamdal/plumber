@@ -339,16 +339,6 @@ func (fake *FakeIRabbit) StopReturnsOnCall(i int, result1 error) {
 func (fake *FakeIRabbit) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.closeMutex.RLock()
-	defer fake.closeMutex.RUnlock()
-	fake.consumeMutex.RLock()
-	defer fake.consumeMutex.RUnlock()
-	fake.consumeOnceMutex.RLock()
-	defer fake.consumeOnceMutex.RUnlock()
-	fake.publishMutex.RLock()
-	defer fake.publishMutex.RUnlock()
-	fake.stopMutex.RLock()
-	defer fake.stopMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/batchcorp/plumber-schemas/build/go/protos/opts"
-
 	"github.com/streamdal/plumber/actions"
 	"github.com/streamdal/plumber/server/types"
 )
@@ -889,28 +888,6 @@ func (fake *FakeIActions) UpdateTunnelReturnsOnCall(i int, result1 *types.Tunnel
 func (fake *FakeIActions) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.createRelayMutex.RLock()
-	defer fake.createRelayMutex.RUnlock()
-	fake.createTunnelMutex.RLock()
-	defer fake.createTunnelMutex.RUnlock()
-	fake.deleteRelayMutex.RLock()
-	defer fake.deleteRelayMutex.RUnlock()
-	fake.deleteTunnelMutex.RLock()
-	defer fake.deleteTunnelMutex.RUnlock()
-	fake.resumeRelayMutex.RLock()
-	defer fake.resumeRelayMutex.RUnlock()
-	fake.resumeTunnelMutex.RLock()
-	defer fake.resumeTunnelMutex.RUnlock()
-	fake.stopRelayMutex.RLock()
-	defer fake.stopRelayMutex.RUnlock()
-	fake.stopTunnelMutex.RLock()
-	defer fake.stopTunnelMutex.RUnlock()
-	fake.updateConnectionMutex.RLock()
-	defer fake.updateConnectionMutex.RUnlock()
-	fake.updateRelayMutex.RLock()
-	defer fake.updateRelayMutex.RUnlock()
-	fake.updateTunnelMutex.RLock()
-	defer fake.updateTunnelMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

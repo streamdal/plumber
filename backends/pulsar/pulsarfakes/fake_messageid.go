@@ -456,20 +456,6 @@ func (fake *FakeMessageID) StringReturnsOnCall(i int, result1 string) {
 func (fake *FakeMessageID) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.batchIdxMutex.RLock()
-	defer fake.batchIdxMutex.RUnlock()
-	fake.batchSizeMutex.RLock()
-	defer fake.batchSizeMutex.RUnlock()
-	fake.entryIDMutex.RLock()
-	defer fake.entryIDMutex.RUnlock()
-	fake.ledgerIDMutex.RLock()
-	defer fake.ledgerIDMutex.RUnlock()
-	fake.partitionIdxMutex.RLock()
-	defer fake.partitionIdxMutex.RUnlock()
-	fake.serializeMutex.RLock()
-	defer fake.serializeMutex.RUnlock()
-	fake.stringMutex.RLock()
-	defer fake.stringMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

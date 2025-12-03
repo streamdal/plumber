@@ -57,9 +57,34 @@ func (f *Fake) loadPackages(c Cacher, workingDir string) error {
 	return nil
 }
 
+func (f *Fake) getGenericTypeData(typeName *types.TypeName) (paramNames []string, constraintNames []string, paramAndConstraintNames []string, found bool) {
+	if named, ok := typeName.Type().(*types.Named); ok {
+		if _, ok := named.Underlying().(*types.Interface); ok {
+			typeParams := named.TypeParams()
+			if typeParams.Len() > 0 {
+				for i := 0; i < typeParams.Len(); i++ {
+					param := typeParams.At(i)
+					paramName := param.Obj().Name()
+					constraint := param.Constraint()
+					constraintSections := strings.Split(constraint.String(), "/")
+					constraintName := constraintSections[len(constraintSections)-1]
+					paramNames = append(paramNames, paramName)
+					constraintNames = append(constraintNames, constraintName)
+					paramAndConstraintNames = append(paramAndConstraintNames, fmt.Sprintf("%s %s", paramName, constraintName))
+					found = true
+				}
+			}
+		}
+	}
+	return
+}
+
 func (f *Fake) findPackage() error {
 	var target *types.TypeName
 	var pkg *packages.Package
+	genericTypeParametersAndConstraints := []string{}
+	genericTypeConstraints := []string{}
+	genericTypeParameters := []string{}
 	for i := range f.Packages {
 		if f.Packages[i].Types == nil || f.Packages[i].Types.Scope() == nil {
 			continue
@@ -72,6 +97,15 @@ func (f *Fake) findPackage() error {
 		raw := pkg.Types.Scope().Lookup(f.TargetName)
 		if raw != nil {
 			if typeName, ok := raw.(*types.TypeName); ok {
+				if paramNames, constraintNames, paramAndConstraintNames, found := f.getGenericTypeData(typeName); found {
+					genericTypeParameters = append(genericTypeParameters, paramNames...)
+					genericTypeConstraints = append(genericTypeConstraints, constraintNames...)
+					genericTypeParametersAndConstraints = append(
+						genericTypeParametersAndConstraints,
+						paramAndConstraintNames...,
+					)
+				}
+
 				target = typeName
 				break
 			}
@@ -89,6 +123,11 @@ func (f *Fake) findPackage() error {
 	f.Target = target
 	f.Package = pkg
 	f.TargetPackage = imports.VendorlessPath(pkg.PkgPath)
+	if len(genericTypeParameters) > 0 {
+		f.GenericTypeParametersAndConstraints = fmt.Sprintf("[%s]", strings.Join(genericTypeParametersAndConstraints, ", "))
+		f.GenericTypeParameters = fmt.Sprintf("[%s]", strings.Join(genericTypeParameters, ", "))
+		f.GenericTypeConstraints = fmt.Sprintf("[%s]", strings.Join(genericTypeConstraints, ", "))
+	}
 	t := f.Imports.Add(pkg.Name, f.TargetPackage)
 	f.TargetAlias = t.Alias
 	if f.Mode != Package {
@@ -97,7 +136,11 @@ func (f *Fake) findPackage() error {
 
 	if f.Mode == InterfaceOrFunction {
 		if !f.IsInterface() && !f.IsFunction() {
-			return fmt.Errorf("cannot generate an fake for %s because it is not an interface or function", f.TargetName)
+			return fmt.Errorf("cannot generate a fake for %s because it is not an interface or function", f.TargetName)
+		}
+
+		if f.IsConstraintInterface() {
+			return fmt.Errorf("cannot generate a fake for %s because it is a constraint interface (contains type constraints like ~string) which cannot be implemented by concrete types", f.TargetName)
 		}
 	}
 
@@ -130,10 +173,10 @@ func (f *Fake) addImportsFor(typ types.Type) {
 		f.addImportsFor(t.Elem())
 	case *types.Chan:
 		f.addImportsFor(t.Elem())
+	case *types.Alias:
+		f.addImportsForNamedType(t)
 	case *types.Named:
-		if t.Obj() != nil && t.Obj().Pkg() != nil {
-			f.Imports.Add(t.Obj().Pkg().Name(), t.Obj().Pkg().Path())
-		}
+		f.addImportsForNamedType(t)
 	case *types.Slice:
 		f.addImportsFor(t.Elem())
 	case *types.Array:
@@ -148,5 +191,18 @@ func (f *Fake) addImportsFor(typ types.Type) {
 		}
 	default:
 		log.Printf("!!! WARNING: Missing case for type %s\n", reflect.TypeOf(typ).String())
+	}
+}
+
+func (f *Fake) addImportsForNamedType(t interface {
+	Obj() *types.TypeName
+	TypeArgs() *types.TypeList
+}) {
+	if t.Obj() != nil && t.Obj().Pkg() != nil {
+		typeArgs := t.TypeArgs()
+		for i := 0; i < typeArgs.Len(); i++ {
+			f.addImportsFor(typeArgs.At(i))
+		}
+		f.Imports.Add(t.Obj().Pkg().Name(), t.Obj().Pkg().Path())
 	}
 }

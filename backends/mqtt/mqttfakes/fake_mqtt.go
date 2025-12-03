@@ -643,26 +643,6 @@ func (fake *FakeClient) UnsubscribeReturnsOnCall(i int, result1 mqtt.Token) {
 func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.addRouteMutex.RLock()
-	defer fake.addRouteMutex.RUnlock()
-	fake.connectMutex.RLock()
-	defer fake.connectMutex.RUnlock()
-	fake.disconnectMutex.RLock()
-	defer fake.disconnectMutex.RUnlock()
-	fake.isConnectedMutex.RLock()
-	defer fake.isConnectedMutex.RUnlock()
-	fake.isConnectionOpenMutex.RLock()
-	defer fake.isConnectionOpenMutex.RUnlock()
-	fake.optionsReaderMutex.RLock()
-	defer fake.optionsReaderMutex.RUnlock()
-	fake.publishMutex.RLock()
-	defer fake.publishMutex.RUnlock()
-	fake.subscribeMutex.RLock()
-	defer fake.subscribeMutex.RUnlock()
-	fake.subscribeMultipleMutex.RLock()
-	defer fake.subscribeMultipleMutex.RUnlock()
-	fake.unsubscribeMutex.RLock()
-	defer fake.unsubscribeMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

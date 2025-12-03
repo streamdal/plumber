@@ -1,4 +1,4 @@
-// +build !go1.14
+//go:build !go1.14
 
 package generator
 

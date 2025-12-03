@@ -2,9 +2,9 @@
 package snsfakes
 
 import (
-	"context"
 	"sync"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/aws/aws-sdk-go/service/sns/snsiface"
@@ -37,10 +37,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.AddPermissionOutput
 	}
-	AddPermissionWithContextStub        func(context.Context, *sns.AddPermissionInput, ...request.Option) (*sns.AddPermissionOutput, error)
+	AddPermissionWithContextStub        func(aws.Context, *sns.AddPermissionInput, ...request.Option) (*sns.AddPermissionOutput, error)
 	addPermissionWithContextMutex       sync.RWMutex
 	addPermissionWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.AddPermissionInput
 		arg3 []request.Option
 	}
@@ -78,10 +78,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.CheckIfPhoneNumberIsOptedOutOutput
 	}
-	CheckIfPhoneNumberIsOptedOutWithContextStub        func(context.Context, *sns.CheckIfPhoneNumberIsOptedOutInput, ...request.Option) (*sns.CheckIfPhoneNumberIsOptedOutOutput, error)
+	CheckIfPhoneNumberIsOptedOutWithContextStub        func(aws.Context, *sns.CheckIfPhoneNumberIsOptedOutInput, ...request.Option) (*sns.CheckIfPhoneNumberIsOptedOutOutput, error)
 	checkIfPhoneNumberIsOptedOutWithContextMutex       sync.RWMutex
 	checkIfPhoneNumberIsOptedOutWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.CheckIfPhoneNumberIsOptedOutInput
 		arg3 []request.Option
 	}
@@ -119,10 +119,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.ConfirmSubscriptionOutput
 	}
-	ConfirmSubscriptionWithContextStub        func(context.Context, *sns.ConfirmSubscriptionInput, ...request.Option) (*sns.ConfirmSubscriptionOutput, error)
+	ConfirmSubscriptionWithContextStub        func(aws.Context, *sns.ConfirmSubscriptionInput, ...request.Option) (*sns.ConfirmSubscriptionOutput, error)
 	confirmSubscriptionWithContextMutex       sync.RWMutex
 	confirmSubscriptionWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ConfirmSubscriptionInput
 		arg3 []request.Option
 	}
@@ -160,10 +160,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.CreatePlatformApplicationOutput
 	}
-	CreatePlatformApplicationWithContextStub        func(context.Context, *sns.CreatePlatformApplicationInput, ...request.Option) (*sns.CreatePlatformApplicationOutput, error)
+	CreatePlatformApplicationWithContextStub        func(aws.Context, *sns.CreatePlatformApplicationInput, ...request.Option) (*sns.CreatePlatformApplicationOutput, error)
 	createPlatformApplicationWithContextMutex       sync.RWMutex
 	createPlatformApplicationWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.CreatePlatformApplicationInput
 		arg3 []request.Option
 	}
@@ -201,10 +201,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.CreatePlatformEndpointOutput
 	}
-	CreatePlatformEndpointWithContextStub        func(context.Context, *sns.CreatePlatformEndpointInput, ...request.Option) (*sns.CreatePlatformEndpointOutput, error)
+	CreatePlatformEndpointWithContextStub        func(aws.Context, *sns.CreatePlatformEndpointInput, ...request.Option) (*sns.CreatePlatformEndpointOutput, error)
 	createPlatformEndpointWithContextMutex       sync.RWMutex
 	createPlatformEndpointWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.CreatePlatformEndpointInput
 		arg3 []request.Option
 	}
@@ -214,6 +214,47 @@ type FakeSNSAPI struct {
 	}
 	createPlatformEndpointWithContextReturnsOnCall map[int]struct {
 		result1 *sns.CreatePlatformEndpointOutput
+		result2 error
+	}
+	CreateSMSSandboxPhoneNumberStub        func(*sns.CreateSMSSandboxPhoneNumberInput) (*sns.CreateSMSSandboxPhoneNumberOutput, error)
+	createSMSSandboxPhoneNumberMutex       sync.RWMutex
+	createSMSSandboxPhoneNumberArgsForCall []struct {
+		arg1 *sns.CreateSMSSandboxPhoneNumberInput
+	}
+	createSMSSandboxPhoneNumberReturns struct {
+		result1 *sns.CreateSMSSandboxPhoneNumberOutput
+		result2 error
+	}
+	createSMSSandboxPhoneNumberReturnsOnCall map[int]struct {
+		result1 *sns.CreateSMSSandboxPhoneNumberOutput
+		result2 error
+	}
+	CreateSMSSandboxPhoneNumberRequestStub        func(*sns.CreateSMSSandboxPhoneNumberInput) (*request.Request, *sns.CreateSMSSandboxPhoneNumberOutput)
+	createSMSSandboxPhoneNumberRequestMutex       sync.RWMutex
+	createSMSSandboxPhoneNumberRequestArgsForCall []struct {
+		arg1 *sns.CreateSMSSandboxPhoneNumberInput
+	}
+	createSMSSandboxPhoneNumberRequestReturns struct {
+		result1 *request.Request
+		result2 *sns.CreateSMSSandboxPhoneNumberOutput
+	}
+	createSMSSandboxPhoneNumberRequestReturnsOnCall map[int]struct {
+		result1 *request.Request
+		result2 *sns.CreateSMSSandboxPhoneNumberOutput
+	}
+	CreateSMSSandboxPhoneNumberWithContextStub        func(aws.Context, *sns.CreateSMSSandboxPhoneNumberInput, ...request.Option) (*sns.CreateSMSSandboxPhoneNumberOutput, error)
+	createSMSSandboxPhoneNumberWithContextMutex       sync.RWMutex
+	createSMSSandboxPhoneNumberWithContextArgsForCall []struct {
+		arg1 aws.Context
+		arg2 *sns.CreateSMSSandboxPhoneNumberInput
+		arg3 []request.Option
+	}
+	createSMSSandboxPhoneNumberWithContextReturns struct {
+		result1 *sns.CreateSMSSandboxPhoneNumberOutput
+		result2 error
+	}
+	createSMSSandboxPhoneNumberWithContextReturnsOnCall map[int]struct {
+		result1 *sns.CreateSMSSandboxPhoneNumberOutput
 		result2 error
 	}
 	CreateTopicStub        func(*sns.CreateTopicInput) (*sns.CreateTopicOutput, error)
@@ -242,10 +283,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.CreateTopicOutput
 	}
-	CreateTopicWithContextStub        func(context.Context, *sns.CreateTopicInput, ...request.Option) (*sns.CreateTopicOutput, error)
+	CreateTopicWithContextStub        func(aws.Context, *sns.CreateTopicInput, ...request.Option) (*sns.CreateTopicOutput, error)
 	createTopicWithContextMutex       sync.RWMutex
 	createTopicWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.CreateTopicInput
 		arg3 []request.Option
 	}
@@ -283,10 +324,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.DeleteEndpointOutput
 	}
-	DeleteEndpointWithContextStub        func(context.Context, *sns.DeleteEndpointInput, ...request.Option) (*sns.DeleteEndpointOutput, error)
+	DeleteEndpointWithContextStub        func(aws.Context, *sns.DeleteEndpointInput, ...request.Option) (*sns.DeleteEndpointOutput, error)
 	deleteEndpointWithContextMutex       sync.RWMutex
 	deleteEndpointWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.DeleteEndpointInput
 		arg3 []request.Option
 	}
@@ -324,10 +365,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.DeletePlatformApplicationOutput
 	}
-	DeletePlatformApplicationWithContextStub        func(context.Context, *sns.DeletePlatformApplicationInput, ...request.Option) (*sns.DeletePlatformApplicationOutput, error)
+	DeletePlatformApplicationWithContextStub        func(aws.Context, *sns.DeletePlatformApplicationInput, ...request.Option) (*sns.DeletePlatformApplicationOutput, error)
 	deletePlatformApplicationWithContextMutex       sync.RWMutex
 	deletePlatformApplicationWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.DeletePlatformApplicationInput
 		arg3 []request.Option
 	}
@@ -337,6 +378,47 @@ type FakeSNSAPI struct {
 	}
 	deletePlatformApplicationWithContextReturnsOnCall map[int]struct {
 		result1 *sns.DeletePlatformApplicationOutput
+		result2 error
+	}
+	DeleteSMSSandboxPhoneNumberStub        func(*sns.DeleteSMSSandboxPhoneNumberInput) (*sns.DeleteSMSSandboxPhoneNumberOutput, error)
+	deleteSMSSandboxPhoneNumberMutex       sync.RWMutex
+	deleteSMSSandboxPhoneNumberArgsForCall []struct {
+		arg1 *sns.DeleteSMSSandboxPhoneNumberInput
+	}
+	deleteSMSSandboxPhoneNumberReturns struct {
+		result1 *sns.DeleteSMSSandboxPhoneNumberOutput
+		result2 error
+	}
+	deleteSMSSandboxPhoneNumberReturnsOnCall map[int]struct {
+		result1 *sns.DeleteSMSSandboxPhoneNumberOutput
+		result2 error
+	}
+	DeleteSMSSandboxPhoneNumberRequestStub        func(*sns.DeleteSMSSandboxPhoneNumberInput) (*request.Request, *sns.DeleteSMSSandboxPhoneNumberOutput)
+	deleteSMSSandboxPhoneNumberRequestMutex       sync.RWMutex
+	deleteSMSSandboxPhoneNumberRequestArgsForCall []struct {
+		arg1 *sns.DeleteSMSSandboxPhoneNumberInput
+	}
+	deleteSMSSandboxPhoneNumberRequestReturns struct {
+		result1 *request.Request
+		result2 *sns.DeleteSMSSandboxPhoneNumberOutput
+	}
+	deleteSMSSandboxPhoneNumberRequestReturnsOnCall map[int]struct {
+		result1 *request.Request
+		result2 *sns.DeleteSMSSandboxPhoneNumberOutput
+	}
+	DeleteSMSSandboxPhoneNumberWithContextStub        func(aws.Context, *sns.DeleteSMSSandboxPhoneNumberInput, ...request.Option) (*sns.DeleteSMSSandboxPhoneNumberOutput, error)
+	deleteSMSSandboxPhoneNumberWithContextMutex       sync.RWMutex
+	deleteSMSSandboxPhoneNumberWithContextArgsForCall []struct {
+		arg1 aws.Context
+		arg2 *sns.DeleteSMSSandboxPhoneNumberInput
+		arg3 []request.Option
+	}
+	deleteSMSSandboxPhoneNumberWithContextReturns struct {
+		result1 *sns.DeleteSMSSandboxPhoneNumberOutput
+		result2 error
+	}
+	deleteSMSSandboxPhoneNumberWithContextReturnsOnCall map[int]struct {
+		result1 *sns.DeleteSMSSandboxPhoneNumberOutput
 		result2 error
 	}
 	DeleteTopicStub        func(*sns.DeleteTopicInput) (*sns.DeleteTopicOutput, error)
@@ -365,10 +447,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.DeleteTopicOutput
 	}
-	DeleteTopicWithContextStub        func(context.Context, *sns.DeleteTopicInput, ...request.Option) (*sns.DeleteTopicOutput, error)
+	DeleteTopicWithContextStub        func(aws.Context, *sns.DeleteTopicInput, ...request.Option) (*sns.DeleteTopicOutput, error)
 	deleteTopicWithContextMutex       sync.RWMutex
 	deleteTopicWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.DeleteTopicInput
 		arg3 []request.Option
 	}
@@ -378,6 +460,47 @@ type FakeSNSAPI struct {
 	}
 	deleteTopicWithContextReturnsOnCall map[int]struct {
 		result1 *sns.DeleteTopicOutput
+		result2 error
+	}
+	GetDataProtectionPolicyStub        func(*sns.GetDataProtectionPolicyInput) (*sns.GetDataProtectionPolicyOutput, error)
+	getDataProtectionPolicyMutex       sync.RWMutex
+	getDataProtectionPolicyArgsForCall []struct {
+		arg1 *sns.GetDataProtectionPolicyInput
+	}
+	getDataProtectionPolicyReturns struct {
+		result1 *sns.GetDataProtectionPolicyOutput
+		result2 error
+	}
+	getDataProtectionPolicyReturnsOnCall map[int]struct {
+		result1 *sns.GetDataProtectionPolicyOutput
+		result2 error
+	}
+	GetDataProtectionPolicyRequestStub        func(*sns.GetDataProtectionPolicyInput) (*request.Request, *sns.GetDataProtectionPolicyOutput)
+	getDataProtectionPolicyRequestMutex       sync.RWMutex
+	getDataProtectionPolicyRequestArgsForCall []struct {
+		arg1 *sns.GetDataProtectionPolicyInput
+	}
+	getDataProtectionPolicyRequestReturns struct {
+		result1 *request.Request
+		result2 *sns.GetDataProtectionPolicyOutput
+	}
+	getDataProtectionPolicyRequestReturnsOnCall map[int]struct {
+		result1 *request.Request
+		result2 *sns.GetDataProtectionPolicyOutput
+	}
+	GetDataProtectionPolicyWithContextStub        func(aws.Context, *sns.GetDataProtectionPolicyInput, ...request.Option) (*sns.GetDataProtectionPolicyOutput, error)
+	getDataProtectionPolicyWithContextMutex       sync.RWMutex
+	getDataProtectionPolicyWithContextArgsForCall []struct {
+		arg1 aws.Context
+		arg2 *sns.GetDataProtectionPolicyInput
+		arg3 []request.Option
+	}
+	getDataProtectionPolicyWithContextReturns struct {
+		result1 *sns.GetDataProtectionPolicyOutput
+		result2 error
+	}
+	getDataProtectionPolicyWithContextReturnsOnCall map[int]struct {
+		result1 *sns.GetDataProtectionPolicyOutput
 		result2 error
 	}
 	GetEndpointAttributesStub        func(*sns.GetEndpointAttributesInput) (*sns.GetEndpointAttributesOutput, error)
@@ -406,10 +529,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.GetEndpointAttributesOutput
 	}
-	GetEndpointAttributesWithContextStub        func(context.Context, *sns.GetEndpointAttributesInput, ...request.Option) (*sns.GetEndpointAttributesOutput, error)
+	GetEndpointAttributesWithContextStub        func(aws.Context, *sns.GetEndpointAttributesInput, ...request.Option) (*sns.GetEndpointAttributesOutput, error)
 	getEndpointAttributesWithContextMutex       sync.RWMutex
 	getEndpointAttributesWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.GetEndpointAttributesInput
 		arg3 []request.Option
 	}
@@ -447,10 +570,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.GetPlatformApplicationAttributesOutput
 	}
-	GetPlatformApplicationAttributesWithContextStub        func(context.Context, *sns.GetPlatformApplicationAttributesInput, ...request.Option) (*sns.GetPlatformApplicationAttributesOutput, error)
+	GetPlatformApplicationAttributesWithContextStub        func(aws.Context, *sns.GetPlatformApplicationAttributesInput, ...request.Option) (*sns.GetPlatformApplicationAttributesOutput, error)
 	getPlatformApplicationAttributesWithContextMutex       sync.RWMutex
 	getPlatformApplicationAttributesWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.GetPlatformApplicationAttributesInput
 		arg3 []request.Option
 	}
@@ -488,10 +611,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.GetSMSAttributesOutput
 	}
-	GetSMSAttributesWithContextStub        func(context.Context, *sns.GetSMSAttributesInput, ...request.Option) (*sns.GetSMSAttributesOutput, error)
+	GetSMSAttributesWithContextStub        func(aws.Context, *sns.GetSMSAttributesInput, ...request.Option) (*sns.GetSMSAttributesOutput, error)
 	getSMSAttributesWithContextMutex       sync.RWMutex
 	getSMSAttributesWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.GetSMSAttributesInput
 		arg3 []request.Option
 	}
@@ -501,6 +624,47 @@ type FakeSNSAPI struct {
 	}
 	getSMSAttributesWithContextReturnsOnCall map[int]struct {
 		result1 *sns.GetSMSAttributesOutput
+		result2 error
+	}
+	GetSMSSandboxAccountStatusStub        func(*sns.GetSMSSandboxAccountStatusInput) (*sns.GetSMSSandboxAccountStatusOutput, error)
+	getSMSSandboxAccountStatusMutex       sync.RWMutex
+	getSMSSandboxAccountStatusArgsForCall []struct {
+		arg1 *sns.GetSMSSandboxAccountStatusInput
+	}
+	getSMSSandboxAccountStatusReturns struct {
+		result1 *sns.GetSMSSandboxAccountStatusOutput
+		result2 error
+	}
+	getSMSSandboxAccountStatusReturnsOnCall map[int]struct {
+		result1 *sns.GetSMSSandboxAccountStatusOutput
+		result2 error
+	}
+	GetSMSSandboxAccountStatusRequestStub        func(*sns.GetSMSSandboxAccountStatusInput) (*request.Request, *sns.GetSMSSandboxAccountStatusOutput)
+	getSMSSandboxAccountStatusRequestMutex       sync.RWMutex
+	getSMSSandboxAccountStatusRequestArgsForCall []struct {
+		arg1 *sns.GetSMSSandboxAccountStatusInput
+	}
+	getSMSSandboxAccountStatusRequestReturns struct {
+		result1 *request.Request
+		result2 *sns.GetSMSSandboxAccountStatusOutput
+	}
+	getSMSSandboxAccountStatusRequestReturnsOnCall map[int]struct {
+		result1 *request.Request
+		result2 *sns.GetSMSSandboxAccountStatusOutput
+	}
+	GetSMSSandboxAccountStatusWithContextStub        func(aws.Context, *sns.GetSMSSandboxAccountStatusInput, ...request.Option) (*sns.GetSMSSandboxAccountStatusOutput, error)
+	getSMSSandboxAccountStatusWithContextMutex       sync.RWMutex
+	getSMSSandboxAccountStatusWithContextArgsForCall []struct {
+		arg1 aws.Context
+		arg2 *sns.GetSMSSandboxAccountStatusInput
+		arg3 []request.Option
+	}
+	getSMSSandboxAccountStatusWithContextReturns struct {
+		result1 *sns.GetSMSSandboxAccountStatusOutput
+		result2 error
+	}
+	getSMSSandboxAccountStatusWithContextReturnsOnCall map[int]struct {
+		result1 *sns.GetSMSSandboxAccountStatusOutput
 		result2 error
 	}
 	GetSubscriptionAttributesStub        func(*sns.GetSubscriptionAttributesInput) (*sns.GetSubscriptionAttributesOutput, error)
@@ -529,10 +693,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.GetSubscriptionAttributesOutput
 	}
-	GetSubscriptionAttributesWithContextStub        func(context.Context, *sns.GetSubscriptionAttributesInput, ...request.Option) (*sns.GetSubscriptionAttributesOutput, error)
+	GetSubscriptionAttributesWithContextStub        func(aws.Context, *sns.GetSubscriptionAttributesInput, ...request.Option) (*sns.GetSubscriptionAttributesOutput, error)
 	getSubscriptionAttributesWithContextMutex       sync.RWMutex
 	getSubscriptionAttributesWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.GetSubscriptionAttributesInput
 		arg3 []request.Option
 	}
@@ -570,10 +734,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.GetTopicAttributesOutput
 	}
-	GetTopicAttributesWithContextStub        func(context.Context, *sns.GetTopicAttributesInput, ...request.Option) (*sns.GetTopicAttributesOutput, error)
+	GetTopicAttributesWithContextStub        func(aws.Context, *sns.GetTopicAttributesInput, ...request.Option) (*sns.GetTopicAttributesOutput, error)
 	getTopicAttributesWithContextMutex       sync.RWMutex
 	getTopicAttributesWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.GetTopicAttributesInput
 		arg3 []request.Option
 	}
@@ -610,10 +774,10 @@ type FakeSNSAPI struct {
 	listEndpointsByPlatformApplicationPagesReturnsOnCall map[int]struct {
 		result1 error
 	}
-	ListEndpointsByPlatformApplicationPagesWithContextStub        func(context.Context, *sns.ListEndpointsByPlatformApplicationInput, func(*sns.ListEndpointsByPlatformApplicationOutput, bool) bool, ...request.Option) error
+	ListEndpointsByPlatformApplicationPagesWithContextStub        func(aws.Context, *sns.ListEndpointsByPlatformApplicationInput, func(*sns.ListEndpointsByPlatformApplicationOutput, bool) bool, ...request.Option) error
 	listEndpointsByPlatformApplicationPagesWithContextMutex       sync.RWMutex
 	listEndpointsByPlatformApplicationPagesWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListEndpointsByPlatformApplicationInput
 		arg3 func(*sns.ListEndpointsByPlatformApplicationOutput, bool) bool
 		arg4 []request.Option
@@ -637,10 +801,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.ListEndpointsByPlatformApplicationOutput
 	}
-	ListEndpointsByPlatformApplicationWithContextStub        func(context.Context, *sns.ListEndpointsByPlatformApplicationInput, ...request.Option) (*sns.ListEndpointsByPlatformApplicationOutput, error)
+	ListEndpointsByPlatformApplicationWithContextStub        func(aws.Context, *sns.ListEndpointsByPlatformApplicationInput, ...request.Option) (*sns.ListEndpointsByPlatformApplicationOutput, error)
 	listEndpointsByPlatformApplicationWithContextMutex       sync.RWMutex
 	listEndpointsByPlatformApplicationWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListEndpointsByPlatformApplicationInput
 		arg3 []request.Option
 	}
@@ -650,6 +814,73 @@ type FakeSNSAPI struct {
 	}
 	listEndpointsByPlatformApplicationWithContextReturnsOnCall map[int]struct {
 		result1 *sns.ListEndpointsByPlatformApplicationOutput
+		result2 error
+	}
+	ListOriginationNumbersStub        func(*sns.ListOriginationNumbersInput) (*sns.ListOriginationNumbersOutput, error)
+	listOriginationNumbersMutex       sync.RWMutex
+	listOriginationNumbersArgsForCall []struct {
+		arg1 *sns.ListOriginationNumbersInput
+	}
+	listOriginationNumbersReturns struct {
+		result1 *sns.ListOriginationNumbersOutput
+		result2 error
+	}
+	listOriginationNumbersReturnsOnCall map[int]struct {
+		result1 *sns.ListOriginationNumbersOutput
+		result2 error
+	}
+	ListOriginationNumbersPagesStub        func(*sns.ListOriginationNumbersInput, func(*sns.ListOriginationNumbersOutput, bool) bool) error
+	listOriginationNumbersPagesMutex       sync.RWMutex
+	listOriginationNumbersPagesArgsForCall []struct {
+		arg1 *sns.ListOriginationNumbersInput
+		arg2 func(*sns.ListOriginationNumbersOutput, bool) bool
+	}
+	listOriginationNumbersPagesReturns struct {
+		result1 error
+	}
+	listOriginationNumbersPagesReturnsOnCall map[int]struct {
+		result1 error
+	}
+	ListOriginationNumbersPagesWithContextStub        func(aws.Context, *sns.ListOriginationNumbersInput, func(*sns.ListOriginationNumbersOutput, bool) bool, ...request.Option) error
+	listOriginationNumbersPagesWithContextMutex       sync.RWMutex
+	listOriginationNumbersPagesWithContextArgsForCall []struct {
+		arg1 aws.Context
+		arg2 *sns.ListOriginationNumbersInput
+		arg3 func(*sns.ListOriginationNumbersOutput, bool) bool
+		arg4 []request.Option
+	}
+	listOriginationNumbersPagesWithContextReturns struct {
+		result1 error
+	}
+	listOriginationNumbersPagesWithContextReturnsOnCall map[int]struct {
+		result1 error
+	}
+	ListOriginationNumbersRequestStub        func(*sns.ListOriginationNumbersInput) (*request.Request, *sns.ListOriginationNumbersOutput)
+	listOriginationNumbersRequestMutex       sync.RWMutex
+	listOriginationNumbersRequestArgsForCall []struct {
+		arg1 *sns.ListOriginationNumbersInput
+	}
+	listOriginationNumbersRequestReturns struct {
+		result1 *request.Request
+		result2 *sns.ListOriginationNumbersOutput
+	}
+	listOriginationNumbersRequestReturnsOnCall map[int]struct {
+		result1 *request.Request
+		result2 *sns.ListOriginationNumbersOutput
+	}
+	ListOriginationNumbersWithContextStub        func(aws.Context, *sns.ListOriginationNumbersInput, ...request.Option) (*sns.ListOriginationNumbersOutput, error)
+	listOriginationNumbersWithContextMutex       sync.RWMutex
+	listOriginationNumbersWithContextArgsForCall []struct {
+		arg1 aws.Context
+		arg2 *sns.ListOriginationNumbersInput
+		arg3 []request.Option
+	}
+	listOriginationNumbersWithContextReturns struct {
+		result1 *sns.ListOriginationNumbersOutput
+		result2 error
+	}
+	listOriginationNumbersWithContextReturnsOnCall map[int]struct {
+		result1 *sns.ListOriginationNumbersOutput
 		result2 error
 	}
 	ListPhoneNumbersOptedOutStub        func(*sns.ListPhoneNumbersOptedOutInput) (*sns.ListPhoneNumbersOptedOutOutput, error)
@@ -665,6 +896,32 @@ type FakeSNSAPI struct {
 		result1 *sns.ListPhoneNumbersOptedOutOutput
 		result2 error
 	}
+	ListPhoneNumbersOptedOutPagesStub        func(*sns.ListPhoneNumbersOptedOutInput, func(*sns.ListPhoneNumbersOptedOutOutput, bool) bool) error
+	listPhoneNumbersOptedOutPagesMutex       sync.RWMutex
+	listPhoneNumbersOptedOutPagesArgsForCall []struct {
+		arg1 *sns.ListPhoneNumbersOptedOutInput
+		arg2 func(*sns.ListPhoneNumbersOptedOutOutput, bool) bool
+	}
+	listPhoneNumbersOptedOutPagesReturns struct {
+		result1 error
+	}
+	listPhoneNumbersOptedOutPagesReturnsOnCall map[int]struct {
+		result1 error
+	}
+	ListPhoneNumbersOptedOutPagesWithContextStub        func(aws.Context, *sns.ListPhoneNumbersOptedOutInput, func(*sns.ListPhoneNumbersOptedOutOutput, bool) bool, ...request.Option) error
+	listPhoneNumbersOptedOutPagesWithContextMutex       sync.RWMutex
+	listPhoneNumbersOptedOutPagesWithContextArgsForCall []struct {
+		arg1 aws.Context
+		arg2 *sns.ListPhoneNumbersOptedOutInput
+		arg3 func(*sns.ListPhoneNumbersOptedOutOutput, bool) bool
+		arg4 []request.Option
+	}
+	listPhoneNumbersOptedOutPagesWithContextReturns struct {
+		result1 error
+	}
+	listPhoneNumbersOptedOutPagesWithContextReturnsOnCall map[int]struct {
+		result1 error
+	}
 	ListPhoneNumbersOptedOutRequestStub        func(*sns.ListPhoneNumbersOptedOutInput) (*request.Request, *sns.ListPhoneNumbersOptedOutOutput)
 	listPhoneNumbersOptedOutRequestMutex       sync.RWMutex
 	listPhoneNumbersOptedOutRequestArgsForCall []struct {
@@ -678,10 +935,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.ListPhoneNumbersOptedOutOutput
 	}
-	ListPhoneNumbersOptedOutWithContextStub        func(context.Context, *sns.ListPhoneNumbersOptedOutInput, ...request.Option) (*sns.ListPhoneNumbersOptedOutOutput, error)
+	ListPhoneNumbersOptedOutWithContextStub        func(aws.Context, *sns.ListPhoneNumbersOptedOutInput, ...request.Option) (*sns.ListPhoneNumbersOptedOutOutput, error)
 	listPhoneNumbersOptedOutWithContextMutex       sync.RWMutex
 	listPhoneNumbersOptedOutWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListPhoneNumbersOptedOutInput
 		arg3 []request.Option
 	}
@@ -718,10 +975,10 @@ type FakeSNSAPI struct {
 	listPlatformApplicationsPagesReturnsOnCall map[int]struct {
 		result1 error
 	}
-	ListPlatformApplicationsPagesWithContextStub        func(context.Context, *sns.ListPlatformApplicationsInput, func(*sns.ListPlatformApplicationsOutput, bool) bool, ...request.Option) error
+	ListPlatformApplicationsPagesWithContextStub        func(aws.Context, *sns.ListPlatformApplicationsInput, func(*sns.ListPlatformApplicationsOutput, bool) bool, ...request.Option) error
 	listPlatformApplicationsPagesWithContextMutex       sync.RWMutex
 	listPlatformApplicationsPagesWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListPlatformApplicationsInput
 		arg3 func(*sns.ListPlatformApplicationsOutput, bool) bool
 		arg4 []request.Option
@@ -745,10 +1002,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.ListPlatformApplicationsOutput
 	}
-	ListPlatformApplicationsWithContextStub        func(context.Context, *sns.ListPlatformApplicationsInput, ...request.Option) (*sns.ListPlatformApplicationsOutput, error)
+	ListPlatformApplicationsWithContextStub        func(aws.Context, *sns.ListPlatformApplicationsInput, ...request.Option) (*sns.ListPlatformApplicationsOutput, error)
 	listPlatformApplicationsWithContextMutex       sync.RWMutex
 	listPlatformApplicationsWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListPlatformApplicationsInput
 		arg3 []request.Option
 	}
@@ -758,6 +1015,73 @@ type FakeSNSAPI struct {
 	}
 	listPlatformApplicationsWithContextReturnsOnCall map[int]struct {
 		result1 *sns.ListPlatformApplicationsOutput
+		result2 error
+	}
+	ListSMSSandboxPhoneNumbersStub        func(*sns.ListSMSSandboxPhoneNumbersInput) (*sns.ListSMSSandboxPhoneNumbersOutput, error)
+	listSMSSandboxPhoneNumbersMutex       sync.RWMutex
+	listSMSSandboxPhoneNumbersArgsForCall []struct {
+		arg1 *sns.ListSMSSandboxPhoneNumbersInput
+	}
+	listSMSSandboxPhoneNumbersReturns struct {
+		result1 *sns.ListSMSSandboxPhoneNumbersOutput
+		result2 error
+	}
+	listSMSSandboxPhoneNumbersReturnsOnCall map[int]struct {
+		result1 *sns.ListSMSSandboxPhoneNumbersOutput
+		result2 error
+	}
+	ListSMSSandboxPhoneNumbersPagesStub        func(*sns.ListSMSSandboxPhoneNumbersInput, func(*sns.ListSMSSandboxPhoneNumbersOutput, bool) bool) error
+	listSMSSandboxPhoneNumbersPagesMutex       sync.RWMutex
+	listSMSSandboxPhoneNumbersPagesArgsForCall []struct {
+		arg1 *sns.ListSMSSandboxPhoneNumbersInput
+		arg2 func(*sns.ListSMSSandboxPhoneNumbersOutput, bool) bool
+	}
+	listSMSSandboxPhoneNumbersPagesReturns struct {
+		result1 error
+	}
+	listSMSSandboxPhoneNumbersPagesReturnsOnCall map[int]struct {
+		result1 error
+	}
+	ListSMSSandboxPhoneNumbersPagesWithContextStub        func(aws.Context, *sns.ListSMSSandboxPhoneNumbersInput, func(*sns.ListSMSSandboxPhoneNumbersOutput, bool) bool, ...request.Option) error
+	listSMSSandboxPhoneNumbersPagesWithContextMutex       sync.RWMutex
+	listSMSSandboxPhoneNumbersPagesWithContextArgsForCall []struct {
+		arg1 aws.Context
+		arg2 *sns.ListSMSSandboxPhoneNumbersInput
+		arg3 func(*sns.ListSMSSandboxPhoneNumbersOutput, bool) bool
+		arg4 []request.Option
+	}
+	listSMSSandboxPhoneNumbersPagesWithContextReturns struct {
+		result1 error
+	}
+	listSMSSandboxPhoneNumbersPagesWithContextReturnsOnCall map[int]struct {
+		result1 error
+	}
+	ListSMSSandboxPhoneNumbersRequestStub        func(*sns.ListSMSSandboxPhoneNumbersInput) (*request.Request, *sns.ListSMSSandboxPhoneNumbersOutput)
+	listSMSSandboxPhoneNumbersRequestMutex       sync.RWMutex
+	listSMSSandboxPhoneNumbersRequestArgsForCall []struct {
+		arg1 *sns.ListSMSSandboxPhoneNumbersInput
+	}
+	listSMSSandboxPhoneNumbersRequestReturns struct {
+		result1 *request.Request
+		result2 *sns.ListSMSSandboxPhoneNumbersOutput
+	}
+	listSMSSandboxPhoneNumbersRequestReturnsOnCall map[int]struct {
+		result1 *request.Request
+		result2 *sns.ListSMSSandboxPhoneNumbersOutput
+	}
+	ListSMSSandboxPhoneNumbersWithContextStub        func(aws.Context, *sns.ListSMSSandboxPhoneNumbersInput, ...request.Option) (*sns.ListSMSSandboxPhoneNumbersOutput, error)
+	listSMSSandboxPhoneNumbersWithContextMutex       sync.RWMutex
+	listSMSSandboxPhoneNumbersWithContextArgsForCall []struct {
+		arg1 aws.Context
+		arg2 *sns.ListSMSSandboxPhoneNumbersInput
+		arg3 []request.Option
+	}
+	listSMSSandboxPhoneNumbersWithContextReturns struct {
+		result1 *sns.ListSMSSandboxPhoneNumbersOutput
+		result2 error
+	}
+	listSMSSandboxPhoneNumbersWithContextReturnsOnCall map[int]struct {
+		result1 *sns.ListSMSSandboxPhoneNumbersOutput
 		result2 error
 	}
 	ListSubscriptionsStub        func(*sns.ListSubscriptionsInput) (*sns.ListSubscriptionsOutput, error)
@@ -798,10 +1122,10 @@ type FakeSNSAPI struct {
 	listSubscriptionsByTopicPagesReturnsOnCall map[int]struct {
 		result1 error
 	}
-	ListSubscriptionsByTopicPagesWithContextStub        func(context.Context, *sns.ListSubscriptionsByTopicInput, func(*sns.ListSubscriptionsByTopicOutput, bool) bool, ...request.Option) error
+	ListSubscriptionsByTopicPagesWithContextStub        func(aws.Context, *sns.ListSubscriptionsByTopicInput, func(*sns.ListSubscriptionsByTopicOutput, bool) bool, ...request.Option) error
 	listSubscriptionsByTopicPagesWithContextMutex       sync.RWMutex
 	listSubscriptionsByTopicPagesWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListSubscriptionsByTopicInput
 		arg3 func(*sns.ListSubscriptionsByTopicOutput, bool) bool
 		arg4 []request.Option
@@ -825,10 +1149,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.ListSubscriptionsByTopicOutput
 	}
-	ListSubscriptionsByTopicWithContextStub        func(context.Context, *sns.ListSubscriptionsByTopicInput, ...request.Option) (*sns.ListSubscriptionsByTopicOutput, error)
+	ListSubscriptionsByTopicWithContextStub        func(aws.Context, *sns.ListSubscriptionsByTopicInput, ...request.Option) (*sns.ListSubscriptionsByTopicOutput, error)
 	listSubscriptionsByTopicWithContextMutex       sync.RWMutex
 	listSubscriptionsByTopicWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListSubscriptionsByTopicInput
 		arg3 []request.Option
 	}
@@ -852,10 +1176,10 @@ type FakeSNSAPI struct {
 	listSubscriptionsPagesReturnsOnCall map[int]struct {
 		result1 error
 	}
-	ListSubscriptionsPagesWithContextStub        func(context.Context, *sns.ListSubscriptionsInput, func(*sns.ListSubscriptionsOutput, bool) bool, ...request.Option) error
+	ListSubscriptionsPagesWithContextStub        func(aws.Context, *sns.ListSubscriptionsInput, func(*sns.ListSubscriptionsOutput, bool) bool, ...request.Option) error
 	listSubscriptionsPagesWithContextMutex       sync.RWMutex
 	listSubscriptionsPagesWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListSubscriptionsInput
 		arg3 func(*sns.ListSubscriptionsOutput, bool) bool
 		arg4 []request.Option
@@ -879,10 +1203,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.ListSubscriptionsOutput
 	}
-	ListSubscriptionsWithContextStub        func(context.Context, *sns.ListSubscriptionsInput, ...request.Option) (*sns.ListSubscriptionsOutput, error)
+	ListSubscriptionsWithContextStub        func(aws.Context, *sns.ListSubscriptionsInput, ...request.Option) (*sns.ListSubscriptionsOutput, error)
 	listSubscriptionsWithContextMutex       sync.RWMutex
 	listSubscriptionsWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListSubscriptionsInput
 		arg3 []request.Option
 	}
@@ -920,10 +1244,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.ListTagsForResourceOutput
 	}
-	ListTagsForResourceWithContextStub        func(context.Context, *sns.ListTagsForResourceInput, ...request.Option) (*sns.ListTagsForResourceOutput, error)
+	ListTagsForResourceWithContextStub        func(aws.Context, *sns.ListTagsForResourceInput, ...request.Option) (*sns.ListTagsForResourceOutput, error)
 	listTagsForResourceWithContextMutex       sync.RWMutex
 	listTagsForResourceWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListTagsForResourceInput
 		arg3 []request.Option
 	}
@@ -960,10 +1284,10 @@ type FakeSNSAPI struct {
 	listTopicsPagesReturnsOnCall map[int]struct {
 		result1 error
 	}
-	ListTopicsPagesWithContextStub        func(context.Context, *sns.ListTopicsInput, func(*sns.ListTopicsOutput, bool) bool, ...request.Option) error
+	ListTopicsPagesWithContextStub        func(aws.Context, *sns.ListTopicsInput, func(*sns.ListTopicsOutput, bool) bool, ...request.Option) error
 	listTopicsPagesWithContextMutex       sync.RWMutex
 	listTopicsPagesWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListTopicsInput
 		arg3 func(*sns.ListTopicsOutput, bool) bool
 		arg4 []request.Option
@@ -987,10 +1311,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.ListTopicsOutput
 	}
-	ListTopicsWithContextStub        func(context.Context, *sns.ListTopicsInput, ...request.Option) (*sns.ListTopicsOutput, error)
+	ListTopicsWithContextStub        func(aws.Context, *sns.ListTopicsInput, ...request.Option) (*sns.ListTopicsOutput, error)
 	listTopicsWithContextMutex       sync.RWMutex
 	listTopicsWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListTopicsInput
 		arg3 []request.Option
 	}
@@ -1028,10 +1352,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.OptInPhoneNumberOutput
 	}
-	OptInPhoneNumberWithContextStub        func(context.Context, *sns.OptInPhoneNumberInput, ...request.Option) (*sns.OptInPhoneNumberOutput, error)
+	OptInPhoneNumberWithContextStub        func(aws.Context, *sns.OptInPhoneNumberInput, ...request.Option) (*sns.OptInPhoneNumberOutput, error)
 	optInPhoneNumberWithContextMutex       sync.RWMutex
 	optInPhoneNumberWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.OptInPhoneNumberInput
 		arg3 []request.Option
 	}
@@ -1056,6 +1380,47 @@ type FakeSNSAPI struct {
 		result1 *sns.PublishOutput
 		result2 error
 	}
+	PublishBatchStub        func(*sns.PublishBatchInput) (*sns.PublishBatchOutput, error)
+	publishBatchMutex       sync.RWMutex
+	publishBatchArgsForCall []struct {
+		arg1 *sns.PublishBatchInput
+	}
+	publishBatchReturns struct {
+		result1 *sns.PublishBatchOutput
+		result2 error
+	}
+	publishBatchReturnsOnCall map[int]struct {
+		result1 *sns.PublishBatchOutput
+		result2 error
+	}
+	PublishBatchRequestStub        func(*sns.PublishBatchInput) (*request.Request, *sns.PublishBatchOutput)
+	publishBatchRequestMutex       sync.RWMutex
+	publishBatchRequestArgsForCall []struct {
+		arg1 *sns.PublishBatchInput
+	}
+	publishBatchRequestReturns struct {
+		result1 *request.Request
+		result2 *sns.PublishBatchOutput
+	}
+	publishBatchRequestReturnsOnCall map[int]struct {
+		result1 *request.Request
+		result2 *sns.PublishBatchOutput
+	}
+	PublishBatchWithContextStub        func(aws.Context, *sns.PublishBatchInput, ...request.Option) (*sns.PublishBatchOutput, error)
+	publishBatchWithContextMutex       sync.RWMutex
+	publishBatchWithContextArgsForCall []struct {
+		arg1 aws.Context
+		arg2 *sns.PublishBatchInput
+		arg3 []request.Option
+	}
+	publishBatchWithContextReturns struct {
+		result1 *sns.PublishBatchOutput
+		result2 error
+	}
+	publishBatchWithContextReturnsOnCall map[int]struct {
+		result1 *sns.PublishBatchOutput
+		result2 error
+	}
 	PublishRequestStub        func(*sns.PublishInput) (*request.Request, *sns.PublishOutput)
 	publishRequestMutex       sync.RWMutex
 	publishRequestArgsForCall []struct {
@@ -1069,10 +1434,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.PublishOutput
 	}
-	PublishWithContextStub        func(context.Context, *sns.PublishInput, ...request.Option) (*sns.PublishOutput, error)
+	PublishWithContextStub        func(aws.Context, *sns.PublishInput, ...request.Option) (*sns.PublishOutput, error)
 	publishWithContextMutex       sync.RWMutex
 	publishWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.PublishInput
 		arg3 []request.Option
 	}
@@ -1082,6 +1447,47 @@ type FakeSNSAPI struct {
 	}
 	publishWithContextReturnsOnCall map[int]struct {
 		result1 *sns.PublishOutput
+		result2 error
+	}
+	PutDataProtectionPolicyStub        func(*sns.PutDataProtectionPolicyInput) (*sns.PutDataProtectionPolicyOutput, error)
+	putDataProtectionPolicyMutex       sync.RWMutex
+	putDataProtectionPolicyArgsForCall []struct {
+		arg1 *sns.PutDataProtectionPolicyInput
+	}
+	putDataProtectionPolicyReturns struct {
+		result1 *sns.PutDataProtectionPolicyOutput
+		result2 error
+	}
+	putDataProtectionPolicyReturnsOnCall map[int]struct {
+		result1 *sns.PutDataProtectionPolicyOutput
+		result2 error
+	}
+	PutDataProtectionPolicyRequestStub        func(*sns.PutDataProtectionPolicyInput) (*request.Request, *sns.PutDataProtectionPolicyOutput)
+	putDataProtectionPolicyRequestMutex       sync.RWMutex
+	putDataProtectionPolicyRequestArgsForCall []struct {
+		arg1 *sns.PutDataProtectionPolicyInput
+	}
+	putDataProtectionPolicyRequestReturns struct {
+		result1 *request.Request
+		result2 *sns.PutDataProtectionPolicyOutput
+	}
+	putDataProtectionPolicyRequestReturnsOnCall map[int]struct {
+		result1 *request.Request
+		result2 *sns.PutDataProtectionPolicyOutput
+	}
+	PutDataProtectionPolicyWithContextStub        func(aws.Context, *sns.PutDataProtectionPolicyInput, ...request.Option) (*sns.PutDataProtectionPolicyOutput, error)
+	putDataProtectionPolicyWithContextMutex       sync.RWMutex
+	putDataProtectionPolicyWithContextArgsForCall []struct {
+		arg1 aws.Context
+		arg2 *sns.PutDataProtectionPolicyInput
+		arg3 []request.Option
+	}
+	putDataProtectionPolicyWithContextReturns struct {
+		result1 *sns.PutDataProtectionPolicyOutput
+		result2 error
+	}
+	putDataProtectionPolicyWithContextReturnsOnCall map[int]struct {
+		result1 *sns.PutDataProtectionPolicyOutput
 		result2 error
 	}
 	RemovePermissionStub        func(*sns.RemovePermissionInput) (*sns.RemovePermissionOutput, error)
@@ -1110,10 +1516,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.RemovePermissionOutput
 	}
-	RemovePermissionWithContextStub        func(context.Context, *sns.RemovePermissionInput, ...request.Option) (*sns.RemovePermissionOutput, error)
+	RemovePermissionWithContextStub        func(aws.Context, *sns.RemovePermissionInput, ...request.Option) (*sns.RemovePermissionOutput, error)
 	removePermissionWithContextMutex       sync.RWMutex
 	removePermissionWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.RemovePermissionInput
 		arg3 []request.Option
 	}
@@ -1151,10 +1557,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.SetEndpointAttributesOutput
 	}
-	SetEndpointAttributesWithContextStub        func(context.Context, *sns.SetEndpointAttributesInput, ...request.Option) (*sns.SetEndpointAttributesOutput, error)
+	SetEndpointAttributesWithContextStub        func(aws.Context, *sns.SetEndpointAttributesInput, ...request.Option) (*sns.SetEndpointAttributesOutput, error)
 	setEndpointAttributesWithContextMutex       sync.RWMutex
 	setEndpointAttributesWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.SetEndpointAttributesInput
 		arg3 []request.Option
 	}
@@ -1192,10 +1598,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.SetPlatformApplicationAttributesOutput
 	}
-	SetPlatformApplicationAttributesWithContextStub        func(context.Context, *sns.SetPlatformApplicationAttributesInput, ...request.Option) (*sns.SetPlatformApplicationAttributesOutput, error)
+	SetPlatformApplicationAttributesWithContextStub        func(aws.Context, *sns.SetPlatformApplicationAttributesInput, ...request.Option) (*sns.SetPlatformApplicationAttributesOutput, error)
 	setPlatformApplicationAttributesWithContextMutex       sync.RWMutex
 	setPlatformApplicationAttributesWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.SetPlatformApplicationAttributesInput
 		arg3 []request.Option
 	}
@@ -1233,10 +1639,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.SetSMSAttributesOutput
 	}
-	SetSMSAttributesWithContextStub        func(context.Context, *sns.SetSMSAttributesInput, ...request.Option) (*sns.SetSMSAttributesOutput, error)
+	SetSMSAttributesWithContextStub        func(aws.Context, *sns.SetSMSAttributesInput, ...request.Option) (*sns.SetSMSAttributesOutput, error)
 	setSMSAttributesWithContextMutex       sync.RWMutex
 	setSMSAttributesWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.SetSMSAttributesInput
 		arg3 []request.Option
 	}
@@ -1274,10 +1680,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.SetSubscriptionAttributesOutput
 	}
-	SetSubscriptionAttributesWithContextStub        func(context.Context, *sns.SetSubscriptionAttributesInput, ...request.Option) (*sns.SetSubscriptionAttributesOutput, error)
+	SetSubscriptionAttributesWithContextStub        func(aws.Context, *sns.SetSubscriptionAttributesInput, ...request.Option) (*sns.SetSubscriptionAttributesOutput, error)
 	setSubscriptionAttributesWithContextMutex       sync.RWMutex
 	setSubscriptionAttributesWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.SetSubscriptionAttributesInput
 		arg3 []request.Option
 	}
@@ -1315,10 +1721,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.SetTopicAttributesOutput
 	}
-	SetTopicAttributesWithContextStub        func(context.Context, *sns.SetTopicAttributesInput, ...request.Option) (*sns.SetTopicAttributesOutput, error)
+	SetTopicAttributesWithContextStub        func(aws.Context, *sns.SetTopicAttributesInput, ...request.Option) (*sns.SetTopicAttributesOutput, error)
 	setTopicAttributesWithContextMutex       sync.RWMutex
 	setTopicAttributesWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.SetTopicAttributesInput
 		arg3 []request.Option
 	}
@@ -1356,10 +1762,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.SubscribeOutput
 	}
-	SubscribeWithContextStub        func(context.Context, *sns.SubscribeInput, ...request.Option) (*sns.SubscribeOutput, error)
+	SubscribeWithContextStub        func(aws.Context, *sns.SubscribeInput, ...request.Option) (*sns.SubscribeOutput, error)
 	subscribeWithContextMutex       sync.RWMutex
 	subscribeWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.SubscribeInput
 		arg3 []request.Option
 	}
@@ -1397,10 +1803,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.TagResourceOutput
 	}
-	TagResourceWithContextStub        func(context.Context, *sns.TagResourceInput, ...request.Option) (*sns.TagResourceOutput, error)
+	TagResourceWithContextStub        func(aws.Context, *sns.TagResourceInput, ...request.Option) (*sns.TagResourceOutput, error)
 	tagResourceWithContextMutex       sync.RWMutex
 	tagResourceWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.TagResourceInput
 		arg3 []request.Option
 	}
@@ -1438,10 +1844,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.UnsubscribeOutput
 	}
-	UnsubscribeWithContextStub        func(context.Context, *sns.UnsubscribeInput, ...request.Option) (*sns.UnsubscribeOutput, error)
+	UnsubscribeWithContextStub        func(aws.Context, *sns.UnsubscribeInput, ...request.Option) (*sns.UnsubscribeOutput, error)
 	unsubscribeWithContextMutex       sync.RWMutex
 	unsubscribeWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.UnsubscribeInput
 		arg3 []request.Option
 	}
@@ -1479,10 +1885,10 @@ type FakeSNSAPI struct {
 		result1 *request.Request
 		result2 *sns.UntagResourceOutput
 	}
-	UntagResourceWithContextStub        func(context.Context, *sns.UntagResourceInput, ...request.Option) (*sns.UntagResourceOutput, error)
+	UntagResourceWithContextStub        func(aws.Context, *sns.UntagResourceInput, ...request.Option) (*sns.UntagResourceOutput, error)
 	untagResourceWithContextMutex       sync.RWMutex
 	untagResourceWithContextArgsForCall []struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.UntagResourceInput
 		arg3 []request.Option
 	}
@@ -1492,6 +1898,47 @@ type FakeSNSAPI struct {
 	}
 	untagResourceWithContextReturnsOnCall map[int]struct {
 		result1 *sns.UntagResourceOutput
+		result2 error
+	}
+	VerifySMSSandboxPhoneNumberStub        func(*sns.VerifySMSSandboxPhoneNumberInput) (*sns.VerifySMSSandboxPhoneNumberOutput, error)
+	verifySMSSandboxPhoneNumberMutex       sync.RWMutex
+	verifySMSSandboxPhoneNumberArgsForCall []struct {
+		arg1 *sns.VerifySMSSandboxPhoneNumberInput
+	}
+	verifySMSSandboxPhoneNumberReturns struct {
+		result1 *sns.VerifySMSSandboxPhoneNumberOutput
+		result2 error
+	}
+	verifySMSSandboxPhoneNumberReturnsOnCall map[int]struct {
+		result1 *sns.VerifySMSSandboxPhoneNumberOutput
+		result2 error
+	}
+	VerifySMSSandboxPhoneNumberRequestStub        func(*sns.VerifySMSSandboxPhoneNumberInput) (*request.Request, *sns.VerifySMSSandboxPhoneNumberOutput)
+	verifySMSSandboxPhoneNumberRequestMutex       sync.RWMutex
+	verifySMSSandboxPhoneNumberRequestArgsForCall []struct {
+		arg1 *sns.VerifySMSSandboxPhoneNumberInput
+	}
+	verifySMSSandboxPhoneNumberRequestReturns struct {
+		result1 *request.Request
+		result2 *sns.VerifySMSSandboxPhoneNumberOutput
+	}
+	verifySMSSandboxPhoneNumberRequestReturnsOnCall map[int]struct {
+		result1 *request.Request
+		result2 *sns.VerifySMSSandboxPhoneNumberOutput
+	}
+	VerifySMSSandboxPhoneNumberWithContextStub        func(aws.Context, *sns.VerifySMSSandboxPhoneNumberInput, ...request.Option) (*sns.VerifySMSSandboxPhoneNumberOutput, error)
+	verifySMSSandboxPhoneNumberWithContextMutex       sync.RWMutex
+	verifySMSSandboxPhoneNumberWithContextArgsForCall []struct {
+		arg1 aws.Context
+		arg2 *sns.VerifySMSSandboxPhoneNumberInput
+		arg3 []request.Option
+	}
+	verifySMSSandboxPhoneNumberWithContextReturns struct {
+		result1 *sns.VerifySMSSandboxPhoneNumberOutput
+		result2 error
+	}
+	verifySMSSandboxPhoneNumberWithContextReturnsOnCall map[int]struct {
+		result1 *sns.VerifySMSSandboxPhoneNumberOutput
 		result2 error
 	}
 	invocations      map[string][][]interface{}
@@ -1626,11 +2073,11 @@ func (fake *FakeSNSAPI) AddPermissionRequestReturnsOnCall(i int, result1 *reques
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) AddPermissionWithContext(arg1 context.Context, arg2 *sns.AddPermissionInput, arg3 ...request.Option) (*sns.AddPermissionOutput, error) {
+func (fake *FakeSNSAPI) AddPermissionWithContext(arg1 aws.Context, arg2 *sns.AddPermissionInput, arg3 ...request.Option) (*sns.AddPermissionOutput, error) {
 	fake.addPermissionWithContextMutex.Lock()
 	ret, specificReturn := fake.addPermissionWithContextReturnsOnCall[len(fake.addPermissionWithContextArgsForCall)]
 	fake.addPermissionWithContextArgsForCall = append(fake.addPermissionWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.AddPermissionInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -1653,13 +2100,13 @@ func (fake *FakeSNSAPI) AddPermissionWithContextCallCount() int {
 	return len(fake.addPermissionWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) AddPermissionWithContextCalls(stub func(context.Context, *sns.AddPermissionInput, ...request.Option) (*sns.AddPermissionOutput, error)) {
+func (fake *FakeSNSAPI) AddPermissionWithContextCalls(stub func(aws.Context, *sns.AddPermissionInput, ...request.Option) (*sns.AddPermissionOutput, error)) {
 	fake.addPermissionWithContextMutex.Lock()
 	defer fake.addPermissionWithContextMutex.Unlock()
 	fake.AddPermissionWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) AddPermissionWithContextArgsForCall(i int) (context.Context, *sns.AddPermissionInput, []request.Option) {
+func (fake *FakeSNSAPI) AddPermissionWithContextArgsForCall(i int) (aws.Context, *sns.AddPermissionInput, []request.Option) {
 	fake.addPermissionWithContextMutex.RLock()
 	defer fake.addPermissionWithContextMutex.RUnlock()
 	argsForCall := fake.addPermissionWithContextArgsForCall[i]
@@ -1820,11 +2267,11 @@ func (fake *FakeSNSAPI) CheckIfPhoneNumberIsOptedOutRequestReturnsOnCall(i int, 
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) CheckIfPhoneNumberIsOptedOutWithContext(arg1 context.Context, arg2 *sns.CheckIfPhoneNumberIsOptedOutInput, arg3 ...request.Option) (*sns.CheckIfPhoneNumberIsOptedOutOutput, error) {
+func (fake *FakeSNSAPI) CheckIfPhoneNumberIsOptedOutWithContext(arg1 aws.Context, arg2 *sns.CheckIfPhoneNumberIsOptedOutInput, arg3 ...request.Option) (*sns.CheckIfPhoneNumberIsOptedOutOutput, error) {
 	fake.checkIfPhoneNumberIsOptedOutWithContextMutex.Lock()
 	ret, specificReturn := fake.checkIfPhoneNumberIsOptedOutWithContextReturnsOnCall[len(fake.checkIfPhoneNumberIsOptedOutWithContextArgsForCall)]
 	fake.checkIfPhoneNumberIsOptedOutWithContextArgsForCall = append(fake.checkIfPhoneNumberIsOptedOutWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.CheckIfPhoneNumberIsOptedOutInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -1847,13 +2294,13 @@ func (fake *FakeSNSAPI) CheckIfPhoneNumberIsOptedOutWithContextCallCount() int {
 	return len(fake.checkIfPhoneNumberIsOptedOutWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) CheckIfPhoneNumberIsOptedOutWithContextCalls(stub func(context.Context, *sns.CheckIfPhoneNumberIsOptedOutInput, ...request.Option) (*sns.CheckIfPhoneNumberIsOptedOutOutput, error)) {
+func (fake *FakeSNSAPI) CheckIfPhoneNumberIsOptedOutWithContextCalls(stub func(aws.Context, *sns.CheckIfPhoneNumberIsOptedOutInput, ...request.Option) (*sns.CheckIfPhoneNumberIsOptedOutOutput, error)) {
 	fake.checkIfPhoneNumberIsOptedOutWithContextMutex.Lock()
 	defer fake.checkIfPhoneNumberIsOptedOutWithContextMutex.Unlock()
 	fake.CheckIfPhoneNumberIsOptedOutWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) CheckIfPhoneNumberIsOptedOutWithContextArgsForCall(i int) (context.Context, *sns.CheckIfPhoneNumberIsOptedOutInput, []request.Option) {
+func (fake *FakeSNSAPI) CheckIfPhoneNumberIsOptedOutWithContextArgsForCall(i int) (aws.Context, *sns.CheckIfPhoneNumberIsOptedOutInput, []request.Option) {
 	fake.checkIfPhoneNumberIsOptedOutWithContextMutex.RLock()
 	defer fake.checkIfPhoneNumberIsOptedOutWithContextMutex.RUnlock()
 	argsForCall := fake.checkIfPhoneNumberIsOptedOutWithContextArgsForCall[i]
@@ -2014,11 +2461,11 @@ func (fake *FakeSNSAPI) ConfirmSubscriptionRequestReturnsOnCall(i int, result1 *
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) ConfirmSubscriptionWithContext(arg1 context.Context, arg2 *sns.ConfirmSubscriptionInput, arg3 ...request.Option) (*sns.ConfirmSubscriptionOutput, error) {
+func (fake *FakeSNSAPI) ConfirmSubscriptionWithContext(arg1 aws.Context, arg2 *sns.ConfirmSubscriptionInput, arg3 ...request.Option) (*sns.ConfirmSubscriptionOutput, error) {
 	fake.confirmSubscriptionWithContextMutex.Lock()
 	ret, specificReturn := fake.confirmSubscriptionWithContextReturnsOnCall[len(fake.confirmSubscriptionWithContextArgsForCall)]
 	fake.confirmSubscriptionWithContextArgsForCall = append(fake.confirmSubscriptionWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ConfirmSubscriptionInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -2041,13 +2488,13 @@ func (fake *FakeSNSAPI) ConfirmSubscriptionWithContextCallCount() int {
 	return len(fake.confirmSubscriptionWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) ConfirmSubscriptionWithContextCalls(stub func(context.Context, *sns.ConfirmSubscriptionInput, ...request.Option) (*sns.ConfirmSubscriptionOutput, error)) {
+func (fake *FakeSNSAPI) ConfirmSubscriptionWithContextCalls(stub func(aws.Context, *sns.ConfirmSubscriptionInput, ...request.Option) (*sns.ConfirmSubscriptionOutput, error)) {
 	fake.confirmSubscriptionWithContextMutex.Lock()
 	defer fake.confirmSubscriptionWithContextMutex.Unlock()
 	fake.ConfirmSubscriptionWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) ConfirmSubscriptionWithContextArgsForCall(i int) (context.Context, *sns.ConfirmSubscriptionInput, []request.Option) {
+func (fake *FakeSNSAPI) ConfirmSubscriptionWithContextArgsForCall(i int) (aws.Context, *sns.ConfirmSubscriptionInput, []request.Option) {
 	fake.confirmSubscriptionWithContextMutex.RLock()
 	defer fake.confirmSubscriptionWithContextMutex.RUnlock()
 	argsForCall := fake.confirmSubscriptionWithContextArgsForCall[i]
@@ -2208,11 +2655,11 @@ func (fake *FakeSNSAPI) CreatePlatformApplicationRequestReturnsOnCall(i int, res
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) CreatePlatformApplicationWithContext(arg1 context.Context, arg2 *sns.CreatePlatformApplicationInput, arg3 ...request.Option) (*sns.CreatePlatformApplicationOutput, error) {
+func (fake *FakeSNSAPI) CreatePlatformApplicationWithContext(arg1 aws.Context, arg2 *sns.CreatePlatformApplicationInput, arg3 ...request.Option) (*sns.CreatePlatformApplicationOutput, error) {
 	fake.createPlatformApplicationWithContextMutex.Lock()
 	ret, specificReturn := fake.createPlatformApplicationWithContextReturnsOnCall[len(fake.createPlatformApplicationWithContextArgsForCall)]
 	fake.createPlatformApplicationWithContextArgsForCall = append(fake.createPlatformApplicationWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.CreatePlatformApplicationInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -2235,13 +2682,13 @@ func (fake *FakeSNSAPI) CreatePlatformApplicationWithContextCallCount() int {
 	return len(fake.createPlatformApplicationWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) CreatePlatformApplicationWithContextCalls(stub func(context.Context, *sns.CreatePlatformApplicationInput, ...request.Option) (*sns.CreatePlatformApplicationOutput, error)) {
+func (fake *FakeSNSAPI) CreatePlatformApplicationWithContextCalls(stub func(aws.Context, *sns.CreatePlatformApplicationInput, ...request.Option) (*sns.CreatePlatformApplicationOutput, error)) {
 	fake.createPlatformApplicationWithContextMutex.Lock()
 	defer fake.createPlatformApplicationWithContextMutex.Unlock()
 	fake.CreatePlatformApplicationWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) CreatePlatformApplicationWithContextArgsForCall(i int) (context.Context, *sns.CreatePlatformApplicationInput, []request.Option) {
+func (fake *FakeSNSAPI) CreatePlatformApplicationWithContextArgsForCall(i int) (aws.Context, *sns.CreatePlatformApplicationInput, []request.Option) {
 	fake.createPlatformApplicationWithContextMutex.RLock()
 	defer fake.createPlatformApplicationWithContextMutex.RUnlock()
 	argsForCall := fake.createPlatformApplicationWithContextArgsForCall[i]
@@ -2402,11 +2849,11 @@ func (fake *FakeSNSAPI) CreatePlatformEndpointRequestReturnsOnCall(i int, result
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) CreatePlatformEndpointWithContext(arg1 context.Context, arg2 *sns.CreatePlatformEndpointInput, arg3 ...request.Option) (*sns.CreatePlatformEndpointOutput, error) {
+func (fake *FakeSNSAPI) CreatePlatformEndpointWithContext(arg1 aws.Context, arg2 *sns.CreatePlatformEndpointInput, arg3 ...request.Option) (*sns.CreatePlatformEndpointOutput, error) {
 	fake.createPlatformEndpointWithContextMutex.Lock()
 	ret, specificReturn := fake.createPlatformEndpointWithContextReturnsOnCall[len(fake.createPlatformEndpointWithContextArgsForCall)]
 	fake.createPlatformEndpointWithContextArgsForCall = append(fake.createPlatformEndpointWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.CreatePlatformEndpointInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -2429,13 +2876,13 @@ func (fake *FakeSNSAPI) CreatePlatformEndpointWithContextCallCount() int {
 	return len(fake.createPlatformEndpointWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) CreatePlatformEndpointWithContextCalls(stub func(context.Context, *sns.CreatePlatformEndpointInput, ...request.Option) (*sns.CreatePlatformEndpointOutput, error)) {
+func (fake *FakeSNSAPI) CreatePlatformEndpointWithContextCalls(stub func(aws.Context, *sns.CreatePlatformEndpointInput, ...request.Option) (*sns.CreatePlatformEndpointOutput, error)) {
 	fake.createPlatformEndpointWithContextMutex.Lock()
 	defer fake.createPlatformEndpointWithContextMutex.Unlock()
 	fake.CreatePlatformEndpointWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) CreatePlatformEndpointWithContextArgsForCall(i int) (context.Context, *sns.CreatePlatformEndpointInput, []request.Option) {
+func (fake *FakeSNSAPI) CreatePlatformEndpointWithContextArgsForCall(i int) (aws.Context, *sns.CreatePlatformEndpointInput, []request.Option) {
 	fake.createPlatformEndpointWithContextMutex.RLock()
 	defer fake.createPlatformEndpointWithContextMutex.RUnlock()
 	argsForCall := fake.createPlatformEndpointWithContextArgsForCall[i]
@@ -2464,6 +2911,200 @@ func (fake *FakeSNSAPI) CreatePlatformEndpointWithContextReturnsOnCall(i int, re
 	}
 	fake.createPlatformEndpointWithContextReturnsOnCall[i] = struct {
 		result1 *sns.CreatePlatformEndpointOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) CreateSMSSandboxPhoneNumber(arg1 *sns.CreateSMSSandboxPhoneNumberInput) (*sns.CreateSMSSandboxPhoneNumberOutput, error) {
+	fake.createSMSSandboxPhoneNumberMutex.Lock()
+	ret, specificReturn := fake.createSMSSandboxPhoneNumberReturnsOnCall[len(fake.createSMSSandboxPhoneNumberArgsForCall)]
+	fake.createSMSSandboxPhoneNumberArgsForCall = append(fake.createSMSSandboxPhoneNumberArgsForCall, struct {
+		arg1 *sns.CreateSMSSandboxPhoneNumberInput
+	}{arg1})
+	stub := fake.CreateSMSSandboxPhoneNumberStub
+	fakeReturns := fake.createSMSSandboxPhoneNumberReturns
+	fake.recordInvocation("CreateSMSSandboxPhoneNumber", []interface{}{arg1})
+	fake.createSMSSandboxPhoneNumberMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) CreateSMSSandboxPhoneNumberCallCount() int {
+	fake.createSMSSandboxPhoneNumberMutex.RLock()
+	defer fake.createSMSSandboxPhoneNumberMutex.RUnlock()
+	return len(fake.createSMSSandboxPhoneNumberArgsForCall)
+}
+
+func (fake *FakeSNSAPI) CreateSMSSandboxPhoneNumberCalls(stub func(*sns.CreateSMSSandboxPhoneNumberInput) (*sns.CreateSMSSandboxPhoneNumberOutput, error)) {
+	fake.createSMSSandboxPhoneNumberMutex.Lock()
+	defer fake.createSMSSandboxPhoneNumberMutex.Unlock()
+	fake.CreateSMSSandboxPhoneNumberStub = stub
+}
+
+func (fake *FakeSNSAPI) CreateSMSSandboxPhoneNumberArgsForCall(i int) *sns.CreateSMSSandboxPhoneNumberInput {
+	fake.createSMSSandboxPhoneNumberMutex.RLock()
+	defer fake.createSMSSandboxPhoneNumberMutex.RUnlock()
+	argsForCall := fake.createSMSSandboxPhoneNumberArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeSNSAPI) CreateSMSSandboxPhoneNumberReturns(result1 *sns.CreateSMSSandboxPhoneNumberOutput, result2 error) {
+	fake.createSMSSandboxPhoneNumberMutex.Lock()
+	defer fake.createSMSSandboxPhoneNumberMutex.Unlock()
+	fake.CreateSMSSandboxPhoneNumberStub = nil
+	fake.createSMSSandboxPhoneNumberReturns = struct {
+		result1 *sns.CreateSMSSandboxPhoneNumberOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) CreateSMSSandboxPhoneNumberReturnsOnCall(i int, result1 *sns.CreateSMSSandboxPhoneNumberOutput, result2 error) {
+	fake.createSMSSandboxPhoneNumberMutex.Lock()
+	defer fake.createSMSSandboxPhoneNumberMutex.Unlock()
+	fake.CreateSMSSandboxPhoneNumberStub = nil
+	if fake.createSMSSandboxPhoneNumberReturnsOnCall == nil {
+		fake.createSMSSandboxPhoneNumberReturnsOnCall = make(map[int]struct {
+			result1 *sns.CreateSMSSandboxPhoneNumberOutput
+			result2 error
+		})
+	}
+	fake.createSMSSandboxPhoneNumberReturnsOnCall[i] = struct {
+		result1 *sns.CreateSMSSandboxPhoneNumberOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) CreateSMSSandboxPhoneNumberRequest(arg1 *sns.CreateSMSSandboxPhoneNumberInput) (*request.Request, *sns.CreateSMSSandboxPhoneNumberOutput) {
+	fake.createSMSSandboxPhoneNumberRequestMutex.Lock()
+	ret, specificReturn := fake.createSMSSandboxPhoneNumberRequestReturnsOnCall[len(fake.createSMSSandboxPhoneNumberRequestArgsForCall)]
+	fake.createSMSSandboxPhoneNumberRequestArgsForCall = append(fake.createSMSSandboxPhoneNumberRequestArgsForCall, struct {
+		arg1 *sns.CreateSMSSandboxPhoneNumberInput
+	}{arg1})
+	stub := fake.CreateSMSSandboxPhoneNumberRequestStub
+	fakeReturns := fake.createSMSSandboxPhoneNumberRequestReturns
+	fake.recordInvocation("CreateSMSSandboxPhoneNumberRequest", []interface{}{arg1})
+	fake.createSMSSandboxPhoneNumberRequestMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) CreateSMSSandboxPhoneNumberRequestCallCount() int {
+	fake.createSMSSandboxPhoneNumberRequestMutex.RLock()
+	defer fake.createSMSSandboxPhoneNumberRequestMutex.RUnlock()
+	return len(fake.createSMSSandboxPhoneNumberRequestArgsForCall)
+}
+
+func (fake *FakeSNSAPI) CreateSMSSandboxPhoneNumberRequestCalls(stub func(*sns.CreateSMSSandboxPhoneNumberInput) (*request.Request, *sns.CreateSMSSandboxPhoneNumberOutput)) {
+	fake.createSMSSandboxPhoneNumberRequestMutex.Lock()
+	defer fake.createSMSSandboxPhoneNumberRequestMutex.Unlock()
+	fake.CreateSMSSandboxPhoneNumberRequestStub = stub
+}
+
+func (fake *FakeSNSAPI) CreateSMSSandboxPhoneNumberRequestArgsForCall(i int) *sns.CreateSMSSandboxPhoneNumberInput {
+	fake.createSMSSandboxPhoneNumberRequestMutex.RLock()
+	defer fake.createSMSSandboxPhoneNumberRequestMutex.RUnlock()
+	argsForCall := fake.createSMSSandboxPhoneNumberRequestArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeSNSAPI) CreateSMSSandboxPhoneNumberRequestReturns(result1 *request.Request, result2 *sns.CreateSMSSandboxPhoneNumberOutput) {
+	fake.createSMSSandboxPhoneNumberRequestMutex.Lock()
+	defer fake.createSMSSandboxPhoneNumberRequestMutex.Unlock()
+	fake.CreateSMSSandboxPhoneNumberRequestStub = nil
+	fake.createSMSSandboxPhoneNumberRequestReturns = struct {
+		result1 *request.Request
+		result2 *sns.CreateSMSSandboxPhoneNumberOutput
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) CreateSMSSandboxPhoneNumberRequestReturnsOnCall(i int, result1 *request.Request, result2 *sns.CreateSMSSandboxPhoneNumberOutput) {
+	fake.createSMSSandboxPhoneNumberRequestMutex.Lock()
+	defer fake.createSMSSandboxPhoneNumberRequestMutex.Unlock()
+	fake.CreateSMSSandboxPhoneNumberRequestStub = nil
+	if fake.createSMSSandboxPhoneNumberRequestReturnsOnCall == nil {
+		fake.createSMSSandboxPhoneNumberRequestReturnsOnCall = make(map[int]struct {
+			result1 *request.Request
+			result2 *sns.CreateSMSSandboxPhoneNumberOutput
+		})
+	}
+	fake.createSMSSandboxPhoneNumberRequestReturnsOnCall[i] = struct {
+		result1 *request.Request
+		result2 *sns.CreateSMSSandboxPhoneNumberOutput
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) CreateSMSSandboxPhoneNumberWithContext(arg1 aws.Context, arg2 *sns.CreateSMSSandboxPhoneNumberInput, arg3 ...request.Option) (*sns.CreateSMSSandboxPhoneNumberOutput, error) {
+	fake.createSMSSandboxPhoneNumberWithContextMutex.Lock()
+	ret, specificReturn := fake.createSMSSandboxPhoneNumberWithContextReturnsOnCall[len(fake.createSMSSandboxPhoneNumberWithContextArgsForCall)]
+	fake.createSMSSandboxPhoneNumberWithContextArgsForCall = append(fake.createSMSSandboxPhoneNumberWithContextArgsForCall, struct {
+		arg1 aws.Context
+		arg2 *sns.CreateSMSSandboxPhoneNumberInput
+		arg3 []request.Option
+	}{arg1, arg2, arg3})
+	stub := fake.CreateSMSSandboxPhoneNumberWithContextStub
+	fakeReturns := fake.createSMSSandboxPhoneNumberWithContextReturns
+	fake.recordInvocation("CreateSMSSandboxPhoneNumberWithContext", []interface{}{arg1, arg2, arg3})
+	fake.createSMSSandboxPhoneNumberWithContextMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3...)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) CreateSMSSandboxPhoneNumberWithContextCallCount() int {
+	fake.createSMSSandboxPhoneNumberWithContextMutex.RLock()
+	defer fake.createSMSSandboxPhoneNumberWithContextMutex.RUnlock()
+	return len(fake.createSMSSandboxPhoneNumberWithContextArgsForCall)
+}
+
+func (fake *FakeSNSAPI) CreateSMSSandboxPhoneNumberWithContextCalls(stub func(aws.Context, *sns.CreateSMSSandboxPhoneNumberInput, ...request.Option) (*sns.CreateSMSSandboxPhoneNumberOutput, error)) {
+	fake.createSMSSandboxPhoneNumberWithContextMutex.Lock()
+	defer fake.createSMSSandboxPhoneNumberWithContextMutex.Unlock()
+	fake.CreateSMSSandboxPhoneNumberWithContextStub = stub
+}
+
+func (fake *FakeSNSAPI) CreateSMSSandboxPhoneNumberWithContextArgsForCall(i int) (aws.Context, *sns.CreateSMSSandboxPhoneNumberInput, []request.Option) {
+	fake.createSMSSandboxPhoneNumberWithContextMutex.RLock()
+	defer fake.createSMSSandboxPhoneNumberWithContextMutex.RUnlock()
+	argsForCall := fake.createSMSSandboxPhoneNumberWithContextArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeSNSAPI) CreateSMSSandboxPhoneNumberWithContextReturns(result1 *sns.CreateSMSSandboxPhoneNumberOutput, result2 error) {
+	fake.createSMSSandboxPhoneNumberWithContextMutex.Lock()
+	defer fake.createSMSSandboxPhoneNumberWithContextMutex.Unlock()
+	fake.CreateSMSSandboxPhoneNumberWithContextStub = nil
+	fake.createSMSSandboxPhoneNumberWithContextReturns = struct {
+		result1 *sns.CreateSMSSandboxPhoneNumberOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) CreateSMSSandboxPhoneNumberWithContextReturnsOnCall(i int, result1 *sns.CreateSMSSandboxPhoneNumberOutput, result2 error) {
+	fake.createSMSSandboxPhoneNumberWithContextMutex.Lock()
+	defer fake.createSMSSandboxPhoneNumberWithContextMutex.Unlock()
+	fake.CreateSMSSandboxPhoneNumberWithContextStub = nil
+	if fake.createSMSSandboxPhoneNumberWithContextReturnsOnCall == nil {
+		fake.createSMSSandboxPhoneNumberWithContextReturnsOnCall = make(map[int]struct {
+			result1 *sns.CreateSMSSandboxPhoneNumberOutput
+			result2 error
+		})
+	}
+	fake.createSMSSandboxPhoneNumberWithContextReturnsOnCall[i] = struct {
+		result1 *sns.CreateSMSSandboxPhoneNumberOutput
 		result2 error
 	}{result1, result2}
 }
@@ -2596,11 +3237,11 @@ func (fake *FakeSNSAPI) CreateTopicRequestReturnsOnCall(i int, result1 *request.
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) CreateTopicWithContext(arg1 context.Context, arg2 *sns.CreateTopicInput, arg3 ...request.Option) (*sns.CreateTopicOutput, error) {
+func (fake *FakeSNSAPI) CreateTopicWithContext(arg1 aws.Context, arg2 *sns.CreateTopicInput, arg3 ...request.Option) (*sns.CreateTopicOutput, error) {
 	fake.createTopicWithContextMutex.Lock()
 	ret, specificReturn := fake.createTopicWithContextReturnsOnCall[len(fake.createTopicWithContextArgsForCall)]
 	fake.createTopicWithContextArgsForCall = append(fake.createTopicWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.CreateTopicInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -2623,13 +3264,13 @@ func (fake *FakeSNSAPI) CreateTopicWithContextCallCount() int {
 	return len(fake.createTopicWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) CreateTopicWithContextCalls(stub func(context.Context, *sns.CreateTopicInput, ...request.Option) (*sns.CreateTopicOutput, error)) {
+func (fake *FakeSNSAPI) CreateTopicWithContextCalls(stub func(aws.Context, *sns.CreateTopicInput, ...request.Option) (*sns.CreateTopicOutput, error)) {
 	fake.createTopicWithContextMutex.Lock()
 	defer fake.createTopicWithContextMutex.Unlock()
 	fake.CreateTopicWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) CreateTopicWithContextArgsForCall(i int) (context.Context, *sns.CreateTopicInput, []request.Option) {
+func (fake *FakeSNSAPI) CreateTopicWithContextArgsForCall(i int) (aws.Context, *sns.CreateTopicInput, []request.Option) {
 	fake.createTopicWithContextMutex.RLock()
 	defer fake.createTopicWithContextMutex.RUnlock()
 	argsForCall := fake.createTopicWithContextArgsForCall[i]
@@ -2790,11 +3431,11 @@ func (fake *FakeSNSAPI) DeleteEndpointRequestReturnsOnCall(i int, result1 *reque
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) DeleteEndpointWithContext(arg1 context.Context, arg2 *sns.DeleteEndpointInput, arg3 ...request.Option) (*sns.DeleteEndpointOutput, error) {
+func (fake *FakeSNSAPI) DeleteEndpointWithContext(arg1 aws.Context, arg2 *sns.DeleteEndpointInput, arg3 ...request.Option) (*sns.DeleteEndpointOutput, error) {
 	fake.deleteEndpointWithContextMutex.Lock()
 	ret, specificReturn := fake.deleteEndpointWithContextReturnsOnCall[len(fake.deleteEndpointWithContextArgsForCall)]
 	fake.deleteEndpointWithContextArgsForCall = append(fake.deleteEndpointWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.DeleteEndpointInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -2817,13 +3458,13 @@ func (fake *FakeSNSAPI) DeleteEndpointWithContextCallCount() int {
 	return len(fake.deleteEndpointWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) DeleteEndpointWithContextCalls(stub func(context.Context, *sns.DeleteEndpointInput, ...request.Option) (*sns.DeleteEndpointOutput, error)) {
+func (fake *FakeSNSAPI) DeleteEndpointWithContextCalls(stub func(aws.Context, *sns.DeleteEndpointInput, ...request.Option) (*sns.DeleteEndpointOutput, error)) {
 	fake.deleteEndpointWithContextMutex.Lock()
 	defer fake.deleteEndpointWithContextMutex.Unlock()
 	fake.DeleteEndpointWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) DeleteEndpointWithContextArgsForCall(i int) (context.Context, *sns.DeleteEndpointInput, []request.Option) {
+func (fake *FakeSNSAPI) DeleteEndpointWithContextArgsForCall(i int) (aws.Context, *sns.DeleteEndpointInput, []request.Option) {
 	fake.deleteEndpointWithContextMutex.RLock()
 	defer fake.deleteEndpointWithContextMutex.RUnlock()
 	argsForCall := fake.deleteEndpointWithContextArgsForCall[i]
@@ -2984,11 +3625,11 @@ func (fake *FakeSNSAPI) DeletePlatformApplicationRequestReturnsOnCall(i int, res
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) DeletePlatformApplicationWithContext(arg1 context.Context, arg2 *sns.DeletePlatformApplicationInput, arg3 ...request.Option) (*sns.DeletePlatformApplicationOutput, error) {
+func (fake *FakeSNSAPI) DeletePlatformApplicationWithContext(arg1 aws.Context, arg2 *sns.DeletePlatformApplicationInput, arg3 ...request.Option) (*sns.DeletePlatformApplicationOutput, error) {
 	fake.deletePlatformApplicationWithContextMutex.Lock()
 	ret, specificReturn := fake.deletePlatformApplicationWithContextReturnsOnCall[len(fake.deletePlatformApplicationWithContextArgsForCall)]
 	fake.deletePlatformApplicationWithContextArgsForCall = append(fake.deletePlatformApplicationWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.DeletePlatformApplicationInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -3011,13 +3652,13 @@ func (fake *FakeSNSAPI) DeletePlatformApplicationWithContextCallCount() int {
 	return len(fake.deletePlatformApplicationWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) DeletePlatformApplicationWithContextCalls(stub func(context.Context, *sns.DeletePlatformApplicationInput, ...request.Option) (*sns.DeletePlatformApplicationOutput, error)) {
+func (fake *FakeSNSAPI) DeletePlatformApplicationWithContextCalls(stub func(aws.Context, *sns.DeletePlatformApplicationInput, ...request.Option) (*sns.DeletePlatformApplicationOutput, error)) {
 	fake.deletePlatformApplicationWithContextMutex.Lock()
 	defer fake.deletePlatformApplicationWithContextMutex.Unlock()
 	fake.DeletePlatformApplicationWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) DeletePlatformApplicationWithContextArgsForCall(i int) (context.Context, *sns.DeletePlatformApplicationInput, []request.Option) {
+func (fake *FakeSNSAPI) DeletePlatformApplicationWithContextArgsForCall(i int) (aws.Context, *sns.DeletePlatformApplicationInput, []request.Option) {
 	fake.deletePlatformApplicationWithContextMutex.RLock()
 	defer fake.deletePlatformApplicationWithContextMutex.RUnlock()
 	argsForCall := fake.deletePlatformApplicationWithContextArgsForCall[i]
@@ -3046,6 +3687,200 @@ func (fake *FakeSNSAPI) DeletePlatformApplicationWithContextReturnsOnCall(i int,
 	}
 	fake.deletePlatformApplicationWithContextReturnsOnCall[i] = struct {
 		result1 *sns.DeletePlatformApplicationOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) DeleteSMSSandboxPhoneNumber(arg1 *sns.DeleteSMSSandboxPhoneNumberInput) (*sns.DeleteSMSSandboxPhoneNumberOutput, error) {
+	fake.deleteSMSSandboxPhoneNumberMutex.Lock()
+	ret, specificReturn := fake.deleteSMSSandboxPhoneNumberReturnsOnCall[len(fake.deleteSMSSandboxPhoneNumberArgsForCall)]
+	fake.deleteSMSSandboxPhoneNumberArgsForCall = append(fake.deleteSMSSandboxPhoneNumberArgsForCall, struct {
+		arg1 *sns.DeleteSMSSandboxPhoneNumberInput
+	}{arg1})
+	stub := fake.DeleteSMSSandboxPhoneNumberStub
+	fakeReturns := fake.deleteSMSSandboxPhoneNumberReturns
+	fake.recordInvocation("DeleteSMSSandboxPhoneNumber", []interface{}{arg1})
+	fake.deleteSMSSandboxPhoneNumberMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) DeleteSMSSandboxPhoneNumberCallCount() int {
+	fake.deleteSMSSandboxPhoneNumberMutex.RLock()
+	defer fake.deleteSMSSandboxPhoneNumberMutex.RUnlock()
+	return len(fake.deleteSMSSandboxPhoneNumberArgsForCall)
+}
+
+func (fake *FakeSNSAPI) DeleteSMSSandboxPhoneNumberCalls(stub func(*sns.DeleteSMSSandboxPhoneNumberInput) (*sns.DeleteSMSSandboxPhoneNumberOutput, error)) {
+	fake.deleteSMSSandboxPhoneNumberMutex.Lock()
+	defer fake.deleteSMSSandboxPhoneNumberMutex.Unlock()
+	fake.DeleteSMSSandboxPhoneNumberStub = stub
+}
+
+func (fake *FakeSNSAPI) DeleteSMSSandboxPhoneNumberArgsForCall(i int) *sns.DeleteSMSSandboxPhoneNumberInput {
+	fake.deleteSMSSandboxPhoneNumberMutex.RLock()
+	defer fake.deleteSMSSandboxPhoneNumberMutex.RUnlock()
+	argsForCall := fake.deleteSMSSandboxPhoneNumberArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeSNSAPI) DeleteSMSSandboxPhoneNumberReturns(result1 *sns.DeleteSMSSandboxPhoneNumberOutput, result2 error) {
+	fake.deleteSMSSandboxPhoneNumberMutex.Lock()
+	defer fake.deleteSMSSandboxPhoneNumberMutex.Unlock()
+	fake.DeleteSMSSandboxPhoneNumberStub = nil
+	fake.deleteSMSSandboxPhoneNumberReturns = struct {
+		result1 *sns.DeleteSMSSandboxPhoneNumberOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) DeleteSMSSandboxPhoneNumberReturnsOnCall(i int, result1 *sns.DeleteSMSSandboxPhoneNumberOutput, result2 error) {
+	fake.deleteSMSSandboxPhoneNumberMutex.Lock()
+	defer fake.deleteSMSSandboxPhoneNumberMutex.Unlock()
+	fake.DeleteSMSSandboxPhoneNumberStub = nil
+	if fake.deleteSMSSandboxPhoneNumberReturnsOnCall == nil {
+		fake.deleteSMSSandboxPhoneNumberReturnsOnCall = make(map[int]struct {
+			result1 *sns.DeleteSMSSandboxPhoneNumberOutput
+			result2 error
+		})
+	}
+	fake.deleteSMSSandboxPhoneNumberReturnsOnCall[i] = struct {
+		result1 *sns.DeleteSMSSandboxPhoneNumberOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) DeleteSMSSandboxPhoneNumberRequest(arg1 *sns.DeleteSMSSandboxPhoneNumberInput) (*request.Request, *sns.DeleteSMSSandboxPhoneNumberOutput) {
+	fake.deleteSMSSandboxPhoneNumberRequestMutex.Lock()
+	ret, specificReturn := fake.deleteSMSSandboxPhoneNumberRequestReturnsOnCall[len(fake.deleteSMSSandboxPhoneNumberRequestArgsForCall)]
+	fake.deleteSMSSandboxPhoneNumberRequestArgsForCall = append(fake.deleteSMSSandboxPhoneNumberRequestArgsForCall, struct {
+		arg1 *sns.DeleteSMSSandboxPhoneNumberInput
+	}{arg1})
+	stub := fake.DeleteSMSSandboxPhoneNumberRequestStub
+	fakeReturns := fake.deleteSMSSandboxPhoneNumberRequestReturns
+	fake.recordInvocation("DeleteSMSSandboxPhoneNumberRequest", []interface{}{arg1})
+	fake.deleteSMSSandboxPhoneNumberRequestMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) DeleteSMSSandboxPhoneNumberRequestCallCount() int {
+	fake.deleteSMSSandboxPhoneNumberRequestMutex.RLock()
+	defer fake.deleteSMSSandboxPhoneNumberRequestMutex.RUnlock()
+	return len(fake.deleteSMSSandboxPhoneNumberRequestArgsForCall)
+}
+
+func (fake *FakeSNSAPI) DeleteSMSSandboxPhoneNumberRequestCalls(stub func(*sns.DeleteSMSSandboxPhoneNumberInput) (*request.Request, *sns.DeleteSMSSandboxPhoneNumberOutput)) {
+	fake.deleteSMSSandboxPhoneNumberRequestMutex.Lock()
+	defer fake.deleteSMSSandboxPhoneNumberRequestMutex.Unlock()
+	fake.DeleteSMSSandboxPhoneNumberRequestStub = stub
+}
+
+func (fake *FakeSNSAPI) DeleteSMSSandboxPhoneNumberRequestArgsForCall(i int) *sns.DeleteSMSSandboxPhoneNumberInput {
+	fake.deleteSMSSandboxPhoneNumberRequestMutex.RLock()
+	defer fake.deleteSMSSandboxPhoneNumberRequestMutex.RUnlock()
+	argsForCall := fake.deleteSMSSandboxPhoneNumberRequestArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeSNSAPI) DeleteSMSSandboxPhoneNumberRequestReturns(result1 *request.Request, result2 *sns.DeleteSMSSandboxPhoneNumberOutput) {
+	fake.deleteSMSSandboxPhoneNumberRequestMutex.Lock()
+	defer fake.deleteSMSSandboxPhoneNumberRequestMutex.Unlock()
+	fake.DeleteSMSSandboxPhoneNumberRequestStub = nil
+	fake.deleteSMSSandboxPhoneNumberRequestReturns = struct {
+		result1 *request.Request
+		result2 *sns.DeleteSMSSandboxPhoneNumberOutput
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) DeleteSMSSandboxPhoneNumberRequestReturnsOnCall(i int, result1 *request.Request, result2 *sns.DeleteSMSSandboxPhoneNumberOutput) {
+	fake.deleteSMSSandboxPhoneNumberRequestMutex.Lock()
+	defer fake.deleteSMSSandboxPhoneNumberRequestMutex.Unlock()
+	fake.DeleteSMSSandboxPhoneNumberRequestStub = nil
+	if fake.deleteSMSSandboxPhoneNumberRequestReturnsOnCall == nil {
+		fake.deleteSMSSandboxPhoneNumberRequestReturnsOnCall = make(map[int]struct {
+			result1 *request.Request
+			result2 *sns.DeleteSMSSandboxPhoneNumberOutput
+		})
+	}
+	fake.deleteSMSSandboxPhoneNumberRequestReturnsOnCall[i] = struct {
+		result1 *request.Request
+		result2 *sns.DeleteSMSSandboxPhoneNumberOutput
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) DeleteSMSSandboxPhoneNumberWithContext(arg1 aws.Context, arg2 *sns.DeleteSMSSandboxPhoneNumberInput, arg3 ...request.Option) (*sns.DeleteSMSSandboxPhoneNumberOutput, error) {
+	fake.deleteSMSSandboxPhoneNumberWithContextMutex.Lock()
+	ret, specificReturn := fake.deleteSMSSandboxPhoneNumberWithContextReturnsOnCall[len(fake.deleteSMSSandboxPhoneNumberWithContextArgsForCall)]
+	fake.deleteSMSSandboxPhoneNumberWithContextArgsForCall = append(fake.deleteSMSSandboxPhoneNumberWithContextArgsForCall, struct {
+		arg1 aws.Context
+		arg2 *sns.DeleteSMSSandboxPhoneNumberInput
+		arg3 []request.Option
+	}{arg1, arg2, arg3})
+	stub := fake.DeleteSMSSandboxPhoneNumberWithContextStub
+	fakeReturns := fake.deleteSMSSandboxPhoneNumberWithContextReturns
+	fake.recordInvocation("DeleteSMSSandboxPhoneNumberWithContext", []interface{}{arg1, arg2, arg3})
+	fake.deleteSMSSandboxPhoneNumberWithContextMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3...)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) DeleteSMSSandboxPhoneNumberWithContextCallCount() int {
+	fake.deleteSMSSandboxPhoneNumberWithContextMutex.RLock()
+	defer fake.deleteSMSSandboxPhoneNumberWithContextMutex.RUnlock()
+	return len(fake.deleteSMSSandboxPhoneNumberWithContextArgsForCall)
+}
+
+func (fake *FakeSNSAPI) DeleteSMSSandboxPhoneNumberWithContextCalls(stub func(aws.Context, *sns.DeleteSMSSandboxPhoneNumberInput, ...request.Option) (*sns.DeleteSMSSandboxPhoneNumberOutput, error)) {
+	fake.deleteSMSSandboxPhoneNumberWithContextMutex.Lock()
+	defer fake.deleteSMSSandboxPhoneNumberWithContextMutex.Unlock()
+	fake.DeleteSMSSandboxPhoneNumberWithContextStub = stub
+}
+
+func (fake *FakeSNSAPI) DeleteSMSSandboxPhoneNumberWithContextArgsForCall(i int) (aws.Context, *sns.DeleteSMSSandboxPhoneNumberInput, []request.Option) {
+	fake.deleteSMSSandboxPhoneNumberWithContextMutex.RLock()
+	defer fake.deleteSMSSandboxPhoneNumberWithContextMutex.RUnlock()
+	argsForCall := fake.deleteSMSSandboxPhoneNumberWithContextArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeSNSAPI) DeleteSMSSandboxPhoneNumberWithContextReturns(result1 *sns.DeleteSMSSandboxPhoneNumberOutput, result2 error) {
+	fake.deleteSMSSandboxPhoneNumberWithContextMutex.Lock()
+	defer fake.deleteSMSSandboxPhoneNumberWithContextMutex.Unlock()
+	fake.DeleteSMSSandboxPhoneNumberWithContextStub = nil
+	fake.deleteSMSSandboxPhoneNumberWithContextReturns = struct {
+		result1 *sns.DeleteSMSSandboxPhoneNumberOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) DeleteSMSSandboxPhoneNumberWithContextReturnsOnCall(i int, result1 *sns.DeleteSMSSandboxPhoneNumberOutput, result2 error) {
+	fake.deleteSMSSandboxPhoneNumberWithContextMutex.Lock()
+	defer fake.deleteSMSSandboxPhoneNumberWithContextMutex.Unlock()
+	fake.DeleteSMSSandboxPhoneNumberWithContextStub = nil
+	if fake.deleteSMSSandboxPhoneNumberWithContextReturnsOnCall == nil {
+		fake.deleteSMSSandboxPhoneNumberWithContextReturnsOnCall = make(map[int]struct {
+			result1 *sns.DeleteSMSSandboxPhoneNumberOutput
+			result2 error
+		})
+	}
+	fake.deleteSMSSandboxPhoneNumberWithContextReturnsOnCall[i] = struct {
+		result1 *sns.DeleteSMSSandboxPhoneNumberOutput
 		result2 error
 	}{result1, result2}
 }
@@ -3178,11 +4013,11 @@ func (fake *FakeSNSAPI) DeleteTopicRequestReturnsOnCall(i int, result1 *request.
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) DeleteTopicWithContext(arg1 context.Context, arg2 *sns.DeleteTopicInput, arg3 ...request.Option) (*sns.DeleteTopicOutput, error) {
+func (fake *FakeSNSAPI) DeleteTopicWithContext(arg1 aws.Context, arg2 *sns.DeleteTopicInput, arg3 ...request.Option) (*sns.DeleteTopicOutput, error) {
 	fake.deleteTopicWithContextMutex.Lock()
 	ret, specificReturn := fake.deleteTopicWithContextReturnsOnCall[len(fake.deleteTopicWithContextArgsForCall)]
 	fake.deleteTopicWithContextArgsForCall = append(fake.deleteTopicWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.DeleteTopicInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -3205,13 +4040,13 @@ func (fake *FakeSNSAPI) DeleteTopicWithContextCallCount() int {
 	return len(fake.deleteTopicWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) DeleteTopicWithContextCalls(stub func(context.Context, *sns.DeleteTopicInput, ...request.Option) (*sns.DeleteTopicOutput, error)) {
+func (fake *FakeSNSAPI) DeleteTopicWithContextCalls(stub func(aws.Context, *sns.DeleteTopicInput, ...request.Option) (*sns.DeleteTopicOutput, error)) {
 	fake.deleteTopicWithContextMutex.Lock()
 	defer fake.deleteTopicWithContextMutex.Unlock()
 	fake.DeleteTopicWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) DeleteTopicWithContextArgsForCall(i int) (context.Context, *sns.DeleteTopicInput, []request.Option) {
+func (fake *FakeSNSAPI) DeleteTopicWithContextArgsForCall(i int) (aws.Context, *sns.DeleteTopicInput, []request.Option) {
 	fake.deleteTopicWithContextMutex.RLock()
 	defer fake.deleteTopicWithContextMutex.RUnlock()
 	argsForCall := fake.deleteTopicWithContextArgsForCall[i]
@@ -3240,6 +4075,200 @@ func (fake *FakeSNSAPI) DeleteTopicWithContextReturnsOnCall(i int, result1 *sns.
 	}
 	fake.deleteTopicWithContextReturnsOnCall[i] = struct {
 		result1 *sns.DeleteTopicOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) GetDataProtectionPolicy(arg1 *sns.GetDataProtectionPolicyInput) (*sns.GetDataProtectionPolicyOutput, error) {
+	fake.getDataProtectionPolicyMutex.Lock()
+	ret, specificReturn := fake.getDataProtectionPolicyReturnsOnCall[len(fake.getDataProtectionPolicyArgsForCall)]
+	fake.getDataProtectionPolicyArgsForCall = append(fake.getDataProtectionPolicyArgsForCall, struct {
+		arg1 *sns.GetDataProtectionPolicyInput
+	}{arg1})
+	stub := fake.GetDataProtectionPolicyStub
+	fakeReturns := fake.getDataProtectionPolicyReturns
+	fake.recordInvocation("GetDataProtectionPolicy", []interface{}{arg1})
+	fake.getDataProtectionPolicyMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) GetDataProtectionPolicyCallCount() int {
+	fake.getDataProtectionPolicyMutex.RLock()
+	defer fake.getDataProtectionPolicyMutex.RUnlock()
+	return len(fake.getDataProtectionPolicyArgsForCall)
+}
+
+func (fake *FakeSNSAPI) GetDataProtectionPolicyCalls(stub func(*sns.GetDataProtectionPolicyInput) (*sns.GetDataProtectionPolicyOutput, error)) {
+	fake.getDataProtectionPolicyMutex.Lock()
+	defer fake.getDataProtectionPolicyMutex.Unlock()
+	fake.GetDataProtectionPolicyStub = stub
+}
+
+func (fake *FakeSNSAPI) GetDataProtectionPolicyArgsForCall(i int) *sns.GetDataProtectionPolicyInput {
+	fake.getDataProtectionPolicyMutex.RLock()
+	defer fake.getDataProtectionPolicyMutex.RUnlock()
+	argsForCall := fake.getDataProtectionPolicyArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeSNSAPI) GetDataProtectionPolicyReturns(result1 *sns.GetDataProtectionPolicyOutput, result2 error) {
+	fake.getDataProtectionPolicyMutex.Lock()
+	defer fake.getDataProtectionPolicyMutex.Unlock()
+	fake.GetDataProtectionPolicyStub = nil
+	fake.getDataProtectionPolicyReturns = struct {
+		result1 *sns.GetDataProtectionPolicyOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) GetDataProtectionPolicyReturnsOnCall(i int, result1 *sns.GetDataProtectionPolicyOutput, result2 error) {
+	fake.getDataProtectionPolicyMutex.Lock()
+	defer fake.getDataProtectionPolicyMutex.Unlock()
+	fake.GetDataProtectionPolicyStub = nil
+	if fake.getDataProtectionPolicyReturnsOnCall == nil {
+		fake.getDataProtectionPolicyReturnsOnCall = make(map[int]struct {
+			result1 *sns.GetDataProtectionPolicyOutput
+			result2 error
+		})
+	}
+	fake.getDataProtectionPolicyReturnsOnCall[i] = struct {
+		result1 *sns.GetDataProtectionPolicyOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) GetDataProtectionPolicyRequest(arg1 *sns.GetDataProtectionPolicyInput) (*request.Request, *sns.GetDataProtectionPolicyOutput) {
+	fake.getDataProtectionPolicyRequestMutex.Lock()
+	ret, specificReturn := fake.getDataProtectionPolicyRequestReturnsOnCall[len(fake.getDataProtectionPolicyRequestArgsForCall)]
+	fake.getDataProtectionPolicyRequestArgsForCall = append(fake.getDataProtectionPolicyRequestArgsForCall, struct {
+		arg1 *sns.GetDataProtectionPolicyInput
+	}{arg1})
+	stub := fake.GetDataProtectionPolicyRequestStub
+	fakeReturns := fake.getDataProtectionPolicyRequestReturns
+	fake.recordInvocation("GetDataProtectionPolicyRequest", []interface{}{arg1})
+	fake.getDataProtectionPolicyRequestMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) GetDataProtectionPolicyRequestCallCount() int {
+	fake.getDataProtectionPolicyRequestMutex.RLock()
+	defer fake.getDataProtectionPolicyRequestMutex.RUnlock()
+	return len(fake.getDataProtectionPolicyRequestArgsForCall)
+}
+
+func (fake *FakeSNSAPI) GetDataProtectionPolicyRequestCalls(stub func(*sns.GetDataProtectionPolicyInput) (*request.Request, *sns.GetDataProtectionPolicyOutput)) {
+	fake.getDataProtectionPolicyRequestMutex.Lock()
+	defer fake.getDataProtectionPolicyRequestMutex.Unlock()
+	fake.GetDataProtectionPolicyRequestStub = stub
+}
+
+func (fake *FakeSNSAPI) GetDataProtectionPolicyRequestArgsForCall(i int) *sns.GetDataProtectionPolicyInput {
+	fake.getDataProtectionPolicyRequestMutex.RLock()
+	defer fake.getDataProtectionPolicyRequestMutex.RUnlock()
+	argsForCall := fake.getDataProtectionPolicyRequestArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeSNSAPI) GetDataProtectionPolicyRequestReturns(result1 *request.Request, result2 *sns.GetDataProtectionPolicyOutput) {
+	fake.getDataProtectionPolicyRequestMutex.Lock()
+	defer fake.getDataProtectionPolicyRequestMutex.Unlock()
+	fake.GetDataProtectionPolicyRequestStub = nil
+	fake.getDataProtectionPolicyRequestReturns = struct {
+		result1 *request.Request
+		result2 *sns.GetDataProtectionPolicyOutput
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) GetDataProtectionPolicyRequestReturnsOnCall(i int, result1 *request.Request, result2 *sns.GetDataProtectionPolicyOutput) {
+	fake.getDataProtectionPolicyRequestMutex.Lock()
+	defer fake.getDataProtectionPolicyRequestMutex.Unlock()
+	fake.GetDataProtectionPolicyRequestStub = nil
+	if fake.getDataProtectionPolicyRequestReturnsOnCall == nil {
+		fake.getDataProtectionPolicyRequestReturnsOnCall = make(map[int]struct {
+			result1 *request.Request
+			result2 *sns.GetDataProtectionPolicyOutput
+		})
+	}
+	fake.getDataProtectionPolicyRequestReturnsOnCall[i] = struct {
+		result1 *request.Request
+		result2 *sns.GetDataProtectionPolicyOutput
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) GetDataProtectionPolicyWithContext(arg1 aws.Context, arg2 *sns.GetDataProtectionPolicyInput, arg3 ...request.Option) (*sns.GetDataProtectionPolicyOutput, error) {
+	fake.getDataProtectionPolicyWithContextMutex.Lock()
+	ret, specificReturn := fake.getDataProtectionPolicyWithContextReturnsOnCall[len(fake.getDataProtectionPolicyWithContextArgsForCall)]
+	fake.getDataProtectionPolicyWithContextArgsForCall = append(fake.getDataProtectionPolicyWithContextArgsForCall, struct {
+		arg1 aws.Context
+		arg2 *sns.GetDataProtectionPolicyInput
+		arg3 []request.Option
+	}{arg1, arg2, arg3})
+	stub := fake.GetDataProtectionPolicyWithContextStub
+	fakeReturns := fake.getDataProtectionPolicyWithContextReturns
+	fake.recordInvocation("GetDataProtectionPolicyWithContext", []interface{}{arg1, arg2, arg3})
+	fake.getDataProtectionPolicyWithContextMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3...)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) GetDataProtectionPolicyWithContextCallCount() int {
+	fake.getDataProtectionPolicyWithContextMutex.RLock()
+	defer fake.getDataProtectionPolicyWithContextMutex.RUnlock()
+	return len(fake.getDataProtectionPolicyWithContextArgsForCall)
+}
+
+func (fake *FakeSNSAPI) GetDataProtectionPolicyWithContextCalls(stub func(aws.Context, *sns.GetDataProtectionPolicyInput, ...request.Option) (*sns.GetDataProtectionPolicyOutput, error)) {
+	fake.getDataProtectionPolicyWithContextMutex.Lock()
+	defer fake.getDataProtectionPolicyWithContextMutex.Unlock()
+	fake.GetDataProtectionPolicyWithContextStub = stub
+}
+
+func (fake *FakeSNSAPI) GetDataProtectionPolicyWithContextArgsForCall(i int) (aws.Context, *sns.GetDataProtectionPolicyInput, []request.Option) {
+	fake.getDataProtectionPolicyWithContextMutex.RLock()
+	defer fake.getDataProtectionPolicyWithContextMutex.RUnlock()
+	argsForCall := fake.getDataProtectionPolicyWithContextArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeSNSAPI) GetDataProtectionPolicyWithContextReturns(result1 *sns.GetDataProtectionPolicyOutput, result2 error) {
+	fake.getDataProtectionPolicyWithContextMutex.Lock()
+	defer fake.getDataProtectionPolicyWithContextMutex.Unlock()
+	fake.GetDataProtectionPolicyWithContextStub = nil
+	fake.getDataProtectionPolicyWithContextReturns = struct {
+		result1 *sns.GetDataProtectionPolicyOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) GetDataProtectionPolicyWithContextReturnsOnCall(i int, result1 *sns.GetDataProtectionPolicyOutput, result2 error) {
+	fake.getDataProtectionPolicyWithContextMutex.Lock()
+	defer fake.getDataProtectionPolicyWithContextMutex.Unlock()
+	fake.GetDataProtectionPolicyWithContextStub = nil
+	if fake.getDataProtectionPolicyWithContextReturnsOnCall == nil {
+		fake.getDataProtectionPolicyWithContextReturnsOnCall = make(map[int]struct {
+			result1 *sns.GetDataProtectionPolicyOutput
+			result2 error
+		})
+	}
+	fake.getDataProtectionPolicyWithContextReturnsOnCall[i] = struct {
+		result1 *sns.GetDataProtectionPolicyOutput
 		result2 error
 	}{result1, result2}
 }
@@ -3372,11 +4401,11 @@ func (fake *FakeSNSAPI) GetEndpointAttributesRequestReturnsOnCall(i int, result1
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) GetEndpointAttributesWithContext(arg1 context.Context, arg2 *sns.GetEndpointAttributesInput, arg3 ...request.Option) (*sns.GetEndpointAttributesOutput, error) {
+func (fake *FakeSNSAPI) GetEndpointAttributesWithContext(arg1 aws.Context, arg2 *sns.GetEndpointAttributesInput, arg3 ...request.Option) (*sns.GetEndpointAttributesOutput, error) {
 	fake.getEndpointAttributesWithContextMutex.Lock()
 	ret, specificReturn := fake.getEndpointAttributesWithContextReturnsOnCall[len(fake.getEndpointAttributesWithContextArgsForCall)]
 	fake.getEndpointAttributesWithContextArgsForCall = append(fake.getEndpointAttributesWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.GetEndpointAttributesInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -3399,13 +4428,13 @@ func (fake *FakeSNSAPI) GetEndpointAttributesWithContextCallCount() int {
 	return len(fake.getEndpointAttributesWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) GetEndpointAttributesWithContextCalls(stub func(context.Context, *sns.GetEndpointAttributesInput, ...request.Option) (*sns.GetEndpointAttributesOutput, error)) {
+func (fake *FakeSNSAPI) GetEndpointAttributesWithContextCalls(stub func(aws.Context, *sns.GetEndpointAttributesInput, ...request.Option) (*sns.GetEndpointAttributesOutput, error)) {
 	fake.getEndpointAttributesWithContextMutex.Lock()
 	defer fake.getEndpointAttributesWithContextMutex.Unlock()
 	fake.GetEndpointAttributesWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) GetEndpointAttributesWithContextArgsForCall(i int) (context.Context, *sns.GetEndpointAttributesInput, []request.Option) {
+func (fake *FakeSNSAPI) GetEndpointAttributesWithContextArgsForCall(i int) (aws.Context, *sns.GetEndpointAttributesInput, []request.Option) {
 	fake.getEndpointAttributesWithContextMutex.RLock()
 	defer fake.getEndpointAttributesWithContextMutex.RUnlock()
 	argsForCall := fake.getEndpointAttributesWithContextArgsForCall[i]
@@ -3566,11 +4595,11 @@ func (fake *FakeSNSAPI) GetPlatformApplicationAttributesRequestReturnsOnCall(i i
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) GetPlatformApplicationAttributesWithContext(arg1 context.Context, arg2 *sns.GetPlatformApplicationAttributesInput, arg3 ...request.Option) (*sns.GetPlatformApplicationAttributesOutput, error) {
+func (fake *FakeSNSAPI) GetPlatformApplicationAttributesWithContext(arg1 aws.Context, arg2 *sns.GetPlatformApplicationAttributesInput, arg3 ...request.Option) (*sns.GetPlatformApplicationAttributesOutput, error) {
 	fake.getPlatformApplicationAttributesWithContextMutex.Lock()
 	ret, specificReturn := fake.getPlatformApplicationAttributesWithContextReturnsOnCall[len(fake.getPlatformApplicationAttributesWithContextArgsForCall)]
 	fake.getPlatformApplicationAttributesWithContextArgsForCall = append(fake.getPlatformApplicationAttributesWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.GetPlatformApplicationAttributesInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -3593,13 +4622,13 @@ func (fake *FakeSNSAPI) GetPlatformApplicationAttributesWithContextCallCount() i
 	return len(fake.getPlatformApplicationAttributesWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) GetPlatformApplicationAttributesWithContextCalls(stub func(context.Context, *sns.GetPlatformApplicationAttributesInput, ...request.Option) (*sns.GetPlatformApplicationAttributesOutput, error)) {
+func (fake *FakeSNSAPI) GetPlatformApplicationAttributesWithContextCalls(stub func(aws.Context, *sns.GetPlatformApplicationAttributesInput, ...request.Option) (*sns.GetPlatformApplicationAttributesOutput, error)) {
 	fake.getPlatformApplicationAttributesWithContextMutex.Lock()
 	defer fake.getPlatformApplicationAttributesWithContextMutex.Unlock()
 	fake.GetPlatformApplicationAttributesWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) GetPlatformApplicationAttributesWithContextArgsForCall(i int) (context.Context, *sns.GetPlatformApplicationAttributesInput, []request.Option) {
+func (fake *FakeSNSAPI) GetPlatformApplicationAttributesWithContextArgsForCall(i int) (aws.Context, *sns.GetPlatformApplicationAttributesInput, []request.Option) {
 	fake.getPlatformApplicationAttributesWithContextMutex.RLock()
 	defer fake.getPlatformApplicationAttributesWithContextMutex.RUnlock()
 	argsForCall := fake.getPlatformApplicationAttributesWithContextArgsForCall[i]
@@ -3760,11 +4789,11 @@ func (fake *FakeSNSAPI) GetSMSAttributesRequestReturnsOnCall(i int, result1 *req
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) GetSMSAttributesWithContext(arg1 context.Context, arg2 *sns.GetSMSAttributesInput, arg3 ...request.Option) (*sns.GetSMSAttributesOutput, error) {
+func (fake *FakeSNSAPI) GetSMSAttributesWithContext(arg1 aws.Context, arg2 *sns.GetSMSAttributesInput, arg3 ...request.Option) (*sns.GetSMSAttributesOutput, error) {
 	fake.getSMSAttributesWithContextMutex.Lock()
 	ret, specificReturn := fake.getSMSAttributesWithContextReturnsOnCall[len(fake.getSMSAttributesWithContextArgsForCall)]
 	fake.getSMSAttributesWithContextArgsForCall = append(fake.getSMSAttributesWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.GetSMSAttributesInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -3787,13 +4816,13 @@ func (fake *FakeSNSAPI) GetSMSAttributesWithContextCallCount() int {
 	return len(fake.getSMSAttributesWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) GetSMSAttributesWithContextCalls(stub func(context.Context, *sns.GetSMSAttributesInput, ...request.Option) (*sns.GetSMSAttributesOutput, error)) {
+func (fake *FakeSNSAPI) GetSMSAttributesWithContextCalls(stub func(aws.Context, *sns.GetSMSAttributesInput, ...request.Option) (*sns.GetSMSAttributesOutput, error)) {
 	fake.getSMSAttributesWithContextMutex.Lock()
 	defer fake.getSMSAttributesWithContextMutex.Unlock()
 	fake.GetSMSAttributesWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) GetSMSAttributesWithContextArgsForCall(i int) (context.Context, *sns.GetSMSAttributesInput, []request.Option) {
+func (fake *FakeSNSAPI) GetSMSAttributesWithContextArgsForCall(i int) (aws.Context, *sns.GetSMSAttributesInput, []request.Option) {
 	fake.getSMSAttributesWithContextMutex.RLock()
 	defer fake.getSMSAttributesWithContextMutex.RUnlock()
 	argsForCall := fake.getSMSAttributesWithContextArgsForCall[i]
@@ -3822,6 +4851,200 @@ func (fake *FakeSNSAPI) GetSMSAttributesWithContextReturnsOnCall(i int, result1 
 	}
 	fake.getSMSAttributesWithContextReturnsOnCall[i] = struct {
 		result1 *sns.GetSMSAttributesOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) GetSMSSandboxAccountStatus(arg1 *sns.GetSMSSandboxAccountStatusInput) (*sns.GetSMSSandboxAccountStatusOutput, error) {
+	fake.getSMSSandboxAccountStatusMutex.Lock()
+	ret, specificReturn := fake.getSMSSandboxAccountStatusReturnsOnCall[len(fake.getSMSSandboxAccountStatusArgsForCall)]
+	fake.getSMSSandboxAccountStatusArgsForCall = append(fake.getSMSSandboxAccountStatusArgsForCall, struct {
+		arg1 *sns.GetSMSSandboxAccountStatusInput
+	}{arg1})
+	stub := fake.GetSMSSandboxAccountStatusStub
+	fakeReturns := fake.getSMSSandboxAccountStatusReturns
+	fake.recordInvocation("GetSMSSandboxAccountStatus", []interface{}{arg1})
+	fake.getSMSSandboxAccountStatusMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) GetSMSSandboxAccountStatusCallCount() int {
+	fake.getSMSSandboxAccountStatusMutex.RLock()
+	defer fake.getSMSSandboxAccountStatusMutex.RUnlock()
+	return len(fake.getSMSSandboxAccountStatusArgsForCall)
+}
+
+func (fake *FakeSNSAPI) GetSMSSandboxAccountStatusCalls(stub func(*sns.GetSMSSandboxAccountStatusInput) (*sns.GetSMSSandboxAccountStatusOutput, error)) {
+	fake.getSMSSandboxAccountStatusMutex.Lock()
+	defer fake.getSMSSandboxAccountStatusMutex.Unlock()
+	fake.GetSMSSandboxAccountStatusStub = stub
+}
+
+func (fake *FakeSNSAPI) GetSMSSandboxAccountStatusArgsForCall(i int) *sns.GetSMSSandboxAccountStatusInput {
+	fake.getSMSSandboxAccountStatusMutex.RLock()
+	defer fake.getSMSSandboxAccountStatusMutex.RUnlock()
+	argsForCall := fake.getSMSSandboxAccountStatusArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeSNSAPI) GetSMSSandboxAccountStatusReturns(result1 *sns.GetSMSSandboxAccountStatusOutput, result2 error) {
+	fake.getSMSSandboxAccountStatusMutex.Lock()
+	defer fake.getSMSSandboxAccountStatusMutex.Unlock()
+	fake.GetSMSSandboxAccountStatusStub = nil
+	fake.getSMSSandboxAccountStatusReturns = struct {
+		result1 *sns.GetSMSSandboxAccountStatusOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) GetSMSSandboxAccountStatusReturnsOnCall(i int, result1 *sns.GetSMSSandboxAccountStatusOutput, result2 error) {
+	fake.getSMSSandboxAccountStatusMutex.Lock()
+	defer fake.getSMSSandboxAccountStatusMutex.Unlock()
+	fake.GetSMSSandboxAccountStatusStub = nil
+	if fake.getSMSSandboxAccountStatusReturnsOnCall == nil {
+		fake.getSMSSandboxAccountStatusReturnsOnCall = make(map[int]struct {
+			result1 *sns.GetSMSSandboxAccountStatusOutput
+			result2 error
+		})
+	}
+	fake.getSMSSandboxAccountStatusReturnsOnCall[i] = struct {
+		result1 *sns.GetSMSSandboxAccountStatusOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) GetSMSSandboxAccountStatusRequest(arg1 *sns.GetSMSSandboxAccountStatusInput) (*request.Request, *sns.GetSMSSandboxAccountStatusOutput) {
+	fake.getSMSSandboxAccountStatusRequestMutex.Lock()
+	ret, specificReturn := fake.getSMSSandboxAccountStatusRequestReturnsOnCall[len(fake.getSMSSandboxAccountStatusRequestArgsForCall)]
+	fake.getSMSSandboxAccountStatusRequestArgsForCall = append(fake.getSMSSandboxAccountStatusRequestArgsForCall, struct {
+		arg1 *sns.GetSMSSandboxAccountStatusInput
+	}{arg1})
+	stub := fake.GetSMSSandboxAccountStatusRequestStub
+	fakeReturns := fake.getSMSSandboxAccountStatusRequestReturns
+	fake.recordInvocation("GetSMSSandboxAccountStatusRequest", []interface{}{arg1})
+	fake.getSMSSandboxAccountStatusRequestMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) GetSMSSandboxAccountStatusRequestCallCount() int {
+	fake.getSMSSandboxAccountStatusRequestMutex.RLock()
+	defer fake.getSMSSandboxAccountStatusRequestMutex.RUnlock()
+	return len(fake.getSMSSandboxAccountStatusRequestArgsForCall)
+}
+
+func (fake *FakeSNSAPI) GetSMSSandboxAccountStatusRequestCalls(stub func(*sns.GetSMSSandboxAccountStatusInput) (*request.Request, *sns.GetSMSSandboxAccountStatusOutput)) {
+	fake.getSMSSandboxAccountStatusRequestMutex.Lock()
+	defer fake.getSMSSandboxAccountStatusRequestMutex.Unlock()
+	fake.GetSMSSandboxAccountStatusRequestStub = stub
+}
+
+func (fake *FakeSNSAPI) GetSMSSandboxAccountStatusRequestArgsForCall(i int) *sns.GetSMSSandboxAccountStatusInput {
+	fake.getSMSSandboxAccountStatusRequestMutex.RLock()
+	defer fake.getSMSSandboxAccountStatusRequestMutex.RUnlock()
+	argsForCall := fake.getSMSSandboxAccountStatusRequestArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeSNSAPI) GetSMSSandboxAccountStatusRequestReturns(result1 *request.Request, result2 *sns.GetSMSSandboxAccountStatusOutput) {
+	fake.getSMSSandboxAccountStatusRequestMutex.Lock()
+	defer fake.getSMSSandboxAccountStatusRequestMutex.Unlock()
+	fake.GetSMSSandboxAccountStatusRequestStub = nil
+	fake.getSMSSandboxAccountStatusRequestReturns = struct {
+		result1 *request.Request
+		result2 *sns.GetSMSSandboxAccountStatusOutput
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) GetSMSSandboxAccountStatusRequestReturnsOnCall(i int, result1 *request.Request, result2 *sns.GetSMSSandboxAccountStatusOutput) {
+	fake.getSMSSandboxAccountStatusRequestMutex.Lock()
+	defer fake.getSMSSandboxAccountStatusRequestMutex.Unlock()
+	fake.GetSMSSandboxAccountStatusRequestStub = nil
+	if fake.getSMSSandboxAccountStatusRequestReturnsOnCall == nil {
+		fake.getSMSSandboxAccountStatusRequestReturnsOnCall = make(map[int]struct {
+			result1 *request.Request
+			result2 *sns.GetSMSSandboxAccountStatusOutput
+		})
+	}
+	fake.getSMSSandboxAccountStatusRequestReturnsOnCall[i] = struct {
+		result1 *request.Request
+		result2 *sns.GetSMSSandboxAccountStatusOutput
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) GetSMSSandboxAccountStatusWithContext(arg1 aws.Context, arg2 *sns.GetSMSSandboxAccountStatusInput, arg3 ...request.Option) (*sns.GetSMSSandboxAccountStatusOutput, error) {
+	fake.getSMSSandboxAccountStatusWithContextMutex.Lock()
+	ret, specificReturn := fake.getSMSSandboxAccountStatusWithContextReturnsOnCall[len(fake.getSMSSandboxAccountStatusWithContextArgsForCall)]
+	fake.getSMSSandboxAccountStatusWithContextArgsForCall = append(fake.getSMSSandboxAccountStatusWithContextArgsForCall, struct {
+		arg1 aws.Context
+		arg2 *sns.GetSMSSandboxAccountStatusInput
+		arg3 []request.Option
+	}{arg1, arg2, arg3})
+	stub := fake.GetSMSSandboxAccountStatusWithContextStub
+	fakeReturns := fake.getSMSSandboxAccountStatusWithContextReturns
+	fake.recordInvocation("GetSMSSandboxAccountStatusWithContext", []interface{}{arg1, arg2, arg3})
+	fake.getSMSSandboxAccountStatusWithContextMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3...)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) GetSMSSandboxAccountStatusWithContextCallCount() int {
+	fake.getSMSSandboxAccountStatusWithContextMutex.RLock()
+	defer fake.getSMSSandboxAccountStatusWithContextMutex.RUnlock()
+	return len(fake.getSMSSandboxAccountStatusWithContextArgsForCall)
+}
+
+func (fake *FakeSNSAPI) GetSMSSandboxAccountStatusWithContextCalls(stub func(aws.Context, *sns.GetSMSSandboxAccountStatusInput, ...request.Option) (*sns.GetSMSSandboxAccountStatusOutput, error)) {
+	fake.getSMSSandboxAccountStatusWithContextMutex.Lock()
+	defer fake.getSMSSandboxAccountStatusWithContextMutex.Unlock()
+	fake.GetSMSSandboxAccountStatusWithContextStub = stub
+}
+
+func (fake *FakeSNSAPI) GetSMSSandboxAccountStatusWithContextArgsForCall(i int) (aws.Context, *sns.GetSMSSandboxAccountStatusInput, []request.Option) {
+	fake.getSMSSandboxAccountStatusWithContextMutex.RLock()
+	defer fake.getSMSSandboxAccountStatusWithContextMutex.RUnlock()
+	argsForCall := fake.getSMSSandboxAccountStatusWithContextArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeSNSAPI) GetSMSSandboxAccountStatusWithContextReturns(result1 *sns.GetSMSSandboxAccountStatusOutput, result2 error) {
+	fake.getSMSSandboxAccountStatusWithContextMutex.Lock()
+	defer fake.getSMSSandboxAccountStatusWithContextMutex.Unlock()
+	fake.GetSMSSandboxAccountStatusWithContextStub = nil
+	fake.getSMSSandboxAccountStatusWithContextReturns = struct {
+		result1 *sns.GetSMSSandboxAccountStatusOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) GetSMSSandboxAccountStatusWithContextReturnsOnCall(i int, result1 *sns.GetSMSSandboxAccountStatusOutput, result2 error) {
+	fake.getSMSSandboxAccountStatusWithContextMutex.Lock()
+	defer fake.getSMSSandboxAccountStatusWithContextMutex.Unlock()
+	fake.GetSMSSandboxAccountStatusWithContextStub = nil
+	if fake.getSMSSandboxAccountStatusWithContextReturnsOnCall == nil {
+		fake.getSMSSandboxAccountStatusWithContextReturnsOnCall = make(map[int]struct {
+			result1 *sns.GetSMSSandboxAccountStatusOutput
+			result2 error
+		})
+	}
+	fake.getSMSSandboxAccountStatusWithContextReturnsOnCall[i] = struct {
+		result1 *sns.GetSMSSandboxAccountStatusOutput
 		result2 error
 	}{result1, result2}
 }
@@ -3954,11 +5177,11 @@ func (fake *FakeSNSAPI) GetSubscriptionAttributesRequestReturnsOnCall(i int, res
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) GetSubscriptionAttributesWithContext(arg1 context.Context, arg2 *sns.GetSubscriptionAttributesInput, arg3 ...request.Option) (*sns.GetSubscriptionAttributesOutput, error) {
+func (fake *FakeSNSAPI) GetSubscriptionAttributesWithContext(arg1 aws.Context, arg2 *sns.GetSubscriptionAttributesInput, arg3 ...request.Option) (*sns.GetSubscriptionAttributesOutput, error) {
 	fake.getSubscriptionAttributesWithContextMutex.Lock()
 	ret, specificReturn := fake.getSubscriptionAttributesWithContextReturnsOnCall[len(fake.getSubscriptionAttributesWithContextArgsForCall)]
 	fake.getSubscriptionAttributesWithContextArgsForCall = append(fake.getSubscriptionAttributesWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.GetSubscriptionAttributesInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -3981,13 +5204,13 @@ func (fake *FakeSNSAPI) GetSubscriptionAttributesWithContextCallCount() int {
 	return len(fake.getSubscriptionAttributesWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) GetSubscriptionAttributesWithContextCalls(stub func(context.Context, *sns.GetSubscriptionAttributesInput, ...request.Option) (*sns.GetSubscriptionAttributesOutput, error)) {
+func (fake *FakeSNSAPI) GetSubscriptionAttributesWithContextCalls(stub func(aws.Context, *sns.GetSubscriptionAttributesInput, ...request.Option) (*sns.GetSubscriptionAttributesOutput, error)) {
 	fake.getSubscriptionAttributesWithContextMutex.Lock()
 	defer fake.getSubscriptionAttributesWithContextMutex.Unlock()
 	fake.GetSubscriptionAttributesWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) GetSubscriptionAttributesWithContextArgsForCall(i int) (context.Context, *sns.GetSubscriptionAttributesInput, []request.Option) {
+func (fake *FakeSNSAPI) GetSubscriptionAttributesWithContextArgsForCall(i int) (aws.Context, *sns.GetSubscriptionAttributesInput, []request.Option) {
 	fake.getSubscriptionAttributesWithContextMutex.RLock()
 	defer fake.getSubscriptionAttributesWithContextMutex.RUnlock()
 	argsForCall := fake.getSubscriptionAttributesWithContextArgsForCall[i]
@@ -4148,11 +5371,11 @@ func (fake *FakeSNSAPI) GetTopicAttributesRequestReturnsOnCall(i int, result1 *r
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) GetTopicAttributesWithContext(arg1 context.Context, arg2 *sns.GetTopicAttributesInput, arg3 ...request.Option) (*sns.GetTopicAttributesOutput, error) {
+func (fake *FakeSNSAPI) GetTopicAttributesWithContext(arg1 aws.Context, arg2 *sns.GetTopicAttributesInput, arg3 ...request.Option) (*sns.GetTopicAttributesOutput, error) {
 	fake.getTopicAttributesWithContextMutex.Lock()
 	ret, specificReturn := fake.getTopicAttributesWithContextReturnsOnCall[len(fake.getTopicAttributesWithContextArgsForCall)]
 	fake.getTopicAttributesWithContextArgsForCall = append(fake.getTopicAttributesWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.GetTopicAttributesInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -4175,13 +5398,13 @@ func (fake *FakeSNSAPI) GetTopicAttributesWithContextCallCount() int {
 	return len(fake.getTopicAttributesWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) GetTopicAttributesWithContextCalls(stub func(context.Context, *sns.GetTopicAttributesInput, ...request.Option) (*sns.GetTopicAttributesOutput, error)) {
+func (fake *FakeSNSAPI) GetTopicAttributesWithContextCalls(stub func(aws.Context, *sns.GetTopicAttributesInput, ...request.Option) (*sns.GetTopicAttributesOutput, error)) {
 	fake.getTopicAttributesWithContextMutex.Lock()
 	defer fake.getTopicAttributesWithContextMutex.Unlock()
 	fake.GetTopicAttributesWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) GetTopicAttributesWithContextArgsForCall(i int) (context.Context, *sns.GetTopicAttributesInput, []request.Option) {
+func (fake *FakeSNSAPI) GetTopicAttributesWithContextArgsForCall(i int) (aws.Context, *sns.GetTopicAttributesInput, []request.Option) {
 	fake.getTopicAttributesWithContextMutex.RLock()
 	defer fake.getTopicAttributesWithContextMutex.RUnlock()
 	argsForCall := fake.getTopicAttributesWithContextArgsForCall[i]
@@ -4340,11 +5563,11 @@ func (fake *FakeSNSAPI) ListEndpointsByPlatformApplicationPagesReturnsOnCall(i i
 	}{result1}
 }
 
-func (fake *FakeSNSAPI) ListEndpointsByPlatformApplicationPagesWithContext(arg1 context.Context, arg2 *sns.ListEndpointsByPlatformApplicationInput, arg3 func(*sns.ListEndpointsByPlatformApplicationOutput, bool) bool, arg4 ...request.Option) error {
+func (fake *FakeSNSAPI) ListEndpointsByPlatformApplicationPagesWithContext(arg1 aws.Context, arg2 *sns.ListEndpointsByPlatformApplicationInput, arg3 func(*sns.ListEndpointsByPlatformApplicationOutput, bool) bool, arg4 ...request.Option) error {
 	fake.listEndpointsByPlatformApplicationPagesWithContextMutex.Lock()
 	ret, specificReturn := fake.listEndpointsByPlatformApplicationPagesWithContextReturnsOnCall[len(fake.listEndpointsByPlatformApplicationPagesWithContextArgsForCall)]
 	fake.listEndpointsByPlatformApplicationPagesWithContextArgsForCall = append(fake.listEndpointsByPlatformApplicationPagesWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListEndpointsByPlatformApplicationInput
 		arg3 func(*sns.ListEndpointsByPlatformApplicationOutput, bool) bool
 		arg4 []request.Option
@@ -4368,13 +5591,13 @@ func (fake *FakeSNSAPI) ListEndpointsByPlatformApplicationPagesWithContextCallCo
 	return len(fake.listEndpointsByPlatformApplicationPagesWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) ListEndpointsByPlatformApplicationPagesWithContextCalls(stub func(context.Context, *sns.ListEndpointsByPlatformApplicationInput, func(*sns.ListEndpointsByPlatformApplicationOutput, bool) bool, ...request.Option) error) {
+func (fake *FakeSNSAPI) ListEndpointsByPlatformApplicationPagesWithContextCalls(stub func(aws.Context, *sns.ListEndpointsByPlatformApplicationInput, func(*sns.ListEndpointsByPlatformApplicationOutput, bool) bool, ...request.Option) error) {
 	fake.listEndpointsByPlatformApplicationPagesWithContextMutex.Lock()
 	defer fake.listEndpointsByPlatformApplicationPagesWithContextMutex.Unlock()
 	fake.ListEndpointsByPlatformApplicationPagesWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) ListEndpointsByPlatformApplicationPagesWithContextArgsForCall(i int) (context.Context, *sns.ListEndpointsByPlatformApplicationInput, func(*sns.ListEndpointsByPlatformApplicationOutput, bool) bool, []request.Option) {
+func (fake *FakeSNSAPI) ListEndpointsByPlatformApplicationPagesWithContextArgsForCall(i int) (aws.Context, *sns.ListEndpointsByPlatformApplicationInput, func(*sns.ListEndpointsByPlatformApplicationOutput, bool) bool, []request.Option) {
 	fake.listEndpointsByPlatformApplicationPagesWithContextMutex.RLock()
 	defer fake.listEndpointsByPlatformApplicationPagesWithContextMutex.RUnlock()
 	argsForCall := fake.listEndpointsByPlatformApplicationPagesWithContextArgsForCall[i]
@@ -4468,11 +5691,11 @@ func (fake *FakeSNSAPI) ListEndpointsByPlatformApplicationRequestReturnsOnCall(i
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) ListEndpointsByPlatformApplicationWithContext(arg1 context.Context, arg2 *sns.ListEndpointsByPlatformApplicationInput, arg3 ...request.Option) (*sns.ListEndpointsByPlatformApplicationOutput, error) {
+func (fake *FakeSNSAPI) ListEndpointsByPlatformApplicationWithContext(arg1 aws.Context, arg2 *sns.ListEndpointsByPlatformApplicationInput, arg3 ...request.Option) (*sns.ListEndpointsByPlatformApplicationOutput, error) {
 	fake.listEndpointsByPlatformApplicationWithContextMutex.Lock()
 	ret, specificReturn := fake.listEndpointsByPlatformApplicationWithContextReturnsOnCall[len(fake.listEndpointsByPlatformApplicationWithContextArgsForCall)]
 	fake.listEndpointsByPlatformApplicationWithContextArgsForCall = append(fake.listEndpointsByPlatformApplicationWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListEndpointsByPlatformApplicationInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -4495,13 +5718,13 @@ func (fake *FakeSNSAPI) ListEndpointsByPlatformApplicationWithContextCallCount()
 	return len(fake.listEndpointsByPlatformApplicationWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) ListEndpointsByPlatformApplicationWithContextCalls(stub func(context.Context, *sns.ListEndpointsByPlatformApplicationInput, ...request.Option) (*sns.ListEndpointsByPlatformApplicationOutput, error)) {
+func (fake *FakeSNSAPI) ListEndpointsByPlatformApplicationWithContextCalls(stub func(aws.Context, *sns.ListEndpointsByPlatformApplicationInput, ...request.Option) (*sns.ListEndpointsByPlatformApplicationOutput, error)) {
 	fake.listEndpointsByPlatformApplicationWithContextMutex.Lock()
 	defer fake.listEndpointsByPlatformApplicationWithContextMutex.Unlock()
 	fake.ListEndpointsByPlatformApplicationWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) ListEndpointsByPlatformApplicationWithContextArgsForCall(i int) (context.Context, *sns.ListEndpointsByPlatformApplicationInput, []request.Option) {
+func (fake *FakeSNSAPI) ListEndpointsByPlatformApplicationWithContextArgsForCall(i int) (aws.Context, *sns.ListEndpointsByPlatformApplicationInput, []request.Option) {
 	fake.listEndpointsByPlatformApplicationWithContextMutex.RLock()
 	defer fake.listEndpointsByPlatformApplicationWithContextMutex.RUnlock()
 	argsForCall := fake.listEndpointsByPlatformApplicationWithContextArgsForCall[i]
@@ -4530,6 +5753,326 @@ func (fake *FakeSNSAPI) ListEndpointsByPlatformApplicationWithContextReturnsOnCa
 	}
 	fake.listEndpointsByPlatformApplicationWithContextReturnsOnCall[i] = struct {
 		result1 *sns.ListEndpointsByPlatformApplicationOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbers(arg1 *sns.ListOriginationNumbersInput) (*sns.ListOriginationNumbersOutput, error) {
+	fake.listOriginationNumbersMutex.Lock()
+	ret, specificReturn := fake.listOriginationNumbersReturnsOnCall[len(fake.listOriginationNumbersArgsForCall)]
+	fake.listOriginationNumbersArgsForCall = append(fake.listOriginationNumbersArgsForCall, struct {
+		arg1 *sns.ListOriginationNumbersInput
+	}{arg1})
+	stub := fake.ListOriginationNumbersStub
+	fakeReturns := fake.listOriginationNumbersReturns
+	fake.recordInvocation("ListOriginationNumbers", []interface{}{arg1})
+	fake.listOriginationNumbersMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersCallCount() int {
+	fake.listOriginationNumbersMutex.RLock()
+	defer fake.listOriginationNumbersMutex.RUnlock()
+	return len(fake.listOriginationNumbersArgsForCall)
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersCalls(stub func(*sns.ListOriginationNumbersInput) (*sns.ListOriginationNumbersOutput, error)) {
+	fake.listOriginationNumbersMutex.Lock()
+	defer fake.listOriginationNumbersMutex.Unlock()
+	fake.ListOriginationNumbersStub = stub
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersArgsForCall(i int) *sns.ListOriginationNumbersInput {
+	fake.listOriginationNumbersMutex.RLock()
+	defer fake.listOriginationNumbersMutex.RUnlock()
+	argsForCall := fake.listOriginationNumbersArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersReturns(result1 *sns.ListOriginationNumbersOutput, result2 error) {
+	fake.listOriginationNumbersMutex.Lock()
+	defer fake.listOriginationNumbersMutex.Unlock()
+	fake.ListOriginationNumbersStub = nil
+	fake.listOriginationNumbersReturns = struct {
+		result1 *sns.ListOriginationNumbersOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersReturnsOnCall(i int, result1 *sns.ListOriginationNumbersOutput, result2 error) {
+	fake.listOriginationNumbersMutex.Lock()
+	defer fake.listOriginationNumbersMutex.Unlock()
+	fake.ListOriginationNumbersStub = nil
+	if fake.listOriginationNumbersReturnsOnCall == nil {
+		fake.listOriginationNumbersReturnsOnCall = make(map[int]struct {
+			result1 *sns.ListOriginationNumbersOutput
+			result2 error
+		})
+	}
+	fake.listOriginationNumbersReturnsOnCall[i] = struct {
+		result1 *sns.ListOriginationNumbersOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersPages(arg1 *sns.ListOriginationNumbersInput, arg2 func(*sns.ListOriginationNumbersOutput, bool) bool) error {
+	fake.listOriginationNumbersPagesMutex.Lock()
+	ret, specificReturn := fake.listOriginationNumbersPagesReturnsOnCall[len(fake.listOriginationNumbersPagesArgsForCall)]
+	fake.listOriginationNumbersPagesArgsForCall = append(fake.listOriginationNumbersPagesArgsForCall, struct {
+		arg1 *sns.ListOriginationNumbersInput
+		arg2 func(*sns.ListOriginationNumbersOutput, bool) bool
+	}{arg1, arg2})
+	stub := fake.ListOriginationNumbersPagesStub
+	fakeReturns := fake.listOriginationNumbersPagesReturns
+	fake.recordInvocation("ListOriginationNumbersPages", []interface{}{arg1, arg2})
+	fake.listOriginationNumbersPagesMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersPagesCallCount() int {
+	fake.listOriginationNumbersPagesMutex.RLock()
+	defer fake.listOriginationNumbersPagesMutex.RUnlock()
+	return len(fake.listOriginationNumbersPagesArgsForCall)
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersPagesCalls(stub func(*sns.ListOriginationNumbersInput, func(*sns.ListOriginationNumbersOutput, bool) bool) error) {
+	fake.listOriginationNumbersPagesMutex.Lock()
+	defer fake.listOriginationNumbersPagesMutex.Unlock()
+	fake.ListOriginationNumbersPagesStub = stub
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersPagesArgsForCall(i int) (*sns.ListOriginationNumbersInput, func(*sns.ListOriginationNumbersOutput, bool) bool) {
+	fake.listOriginationNumbersPagesMutex.RLock()
+	defer fake.listOriginationNumbersPagesMutex.RUnlock()
+	argsForCall := fake.listOriginationNumbersPagesArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersPagesReturns(result1 error) {
+	fake.listOriginationNumbersPagesMutex.Lock()
+	defer fake.listOriginationNumbersPagesMutex.Unlock()
+	fake.ListOriginationNumbersPagesStub = nil
+	fake.listOriginationNumbersPagesReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersPagesReturnsOnCall(i int, result1 error) {
+	fake.listOriginationNumbersPagesMutex.Lock()
+	defer fake.listOriginationNumbersPagesMutex.Unlock()
+	fake.ListOriginationNumbersPagesStub = nil
+	if fake.listOriginationNumbersPagesReturnsOnCall == nil {
+		fake.listOriginationNumbersPagesReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.listOriginationNumbersPagesReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersPagesWithContext(arg1 aws.Context, arg2 *sns.ListOriginationNumbersInput, arg3 func(*sns.ListOriginationNumbersOutput, bool) bool, arg4 ...request.Option) error {
+	fake.listOriginationNumbersPagesWithContextMutex.Lock()
+	ret, specificReturn := fake.listOriginationNumbersPagesWithContextReturnsOnCall[len(fake.listOriginationNumbersPagesWithContextArgsForCall)]
+	fake.listOriginationNumbersPagesWithContextArgsForCall = append(fake.listOriginationNumbersPagesWithContextArgsForCall, struct {
+		arg1 aws.Context
+		arg2 *sns.ListOriginationNumbersInput
+		arg3 func(*sns.ListOriginationNumbersOutput, bool) bool
+		arg4 []request.Option
+	}{arg1, arg2, arg3, arg4})
+	stub := fake.ListOriginationNumbersPagesWithContextStub
+	fakeReturns := fake.listOriginationNumbersPagesWithContextReturns
+	fake.recordInvocation("ListOriginationNumbersPagesWithContext", []interface{}{arg1, arg2, arg3, arg4})
+	fake.listOriginationNumbersPagesWithContextMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4...)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersPagesWithContextCallCount() int {
+	fake.listOriginationNumbersPagesWithContextMutex.RLock()
+	defer fake.listOriginationNumbersPagesWithContextMutex.RUnlock()
+	return len(fake.listOriginationNumbersPagesWithContextArgsForCall)
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersPagesWithContextCalls(stub func(aws.Context, *sns.ListOriginationNumbersInput, func(*sns.ListOriginationNumbersOutput, bool) bool, ...request.Option) error) {
+	fake.listOriginationNumbersPagesWithContextMutex.Lock()
+	defer fake.listOriginationNumbersPagesWithContextMutex.Unlock()
+	fake.ListOriginationNumbersPagesWithContextStub = stub
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersPagesWithContextArgsForCall(i int) (aws.Context, *sns.ListOriginationNumbersInput, func(*sns.ListOriginationNumbersOutput, bool) bool, []request.Option) {
+	fake.listOriginationNumbersPagesWithContextMutex.RLock()
+	defer fake.listOriginationNumbersPagesWithContextMutex.RUnlock()
+	argsForCall := fake.listOriginationNumbersPagesWithContextArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersPagesWithContextReturns(result1 error) {
+	fake.listOriginationNumbersPagesWithContextMutex.Lock()
+	defer fake.listOriginationNumbersPagesWithContextMutex.Unlock()
+	fake.ListOriginationNumbersPagesWithContextStub = nil
+	fake.listOriginationNumbersPagesWithContextReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersPagesWithContextReturnsOnCall(i int, result1 error) {
+	fake.listOriginationNumbersPagesWithContextMutex.Lock()
+	defer fake.listOriginationNumbersPagesWithContextMutex.Unlock()
+	fake.ListOriginationNumbersPagesWithContextStub = nil
+	if fake.listOriginationNumbersPagesWithContextReturnsOnCall == nil {
+		fake.listOriginationNumbersPagesWithContextReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.listOriginationNumbersPagesWithContextReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersRequest(arg1 *sns.ListOriginationNumbersInput) (*request.Request, *sns.ListOriginationNumbersOutput) {
+	fake.listOriginationNumbersRequestMutex.Lock()
+	ret, specificReturn := fake.listOriginationNumbersRequestReturnsOnCall[len(fake.listOriginationNumbersRequestArgsForCall)]
+	fake.listOriginationNumbersRequestArgsForCall = append(fake.listOriginationNumbersRequestArgsForCall, struct {
+		arg1 *sns.ListOriginationNumbersInput
+	}{arg1})
+	stub := fake.ListOriginationNumbersRequestStub
+	fakeReturns := fake.listOriginationNumbersRequestReturns
+	fake.recordInvocation("ListOriginationNumbersRequest", []interface{}{arg1})
+	fake.listOriginationNumbersRequestMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersRequestCallCount() int {
+	fake.listOriginationNumbersRequestMutex.RLock()
+	defer fake.listOriginationNumbersRequestMutex.RUnlock()
+	return len(fake.listOriginationNumbersRequestArgsForCall)
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersRequestCalls(stub func(*sns.ListOriginationNumbersInput) (*request.Request, *sns.ListOriginationNumbersOutput)) {
+	fake.listOriginationNumbersRequestMutex.Lock()
+	defer fake.listOriginationNumbersRequestMutex.Unlock()
+	fake.ListOriginationNumbersRequestStub = stub
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersRequestArgsForCall(i int) *sns.ListOriginationNumbersInput {
+	fake.listOriginationNumbersRequestMutex.RLock()
+	defer fake.listOriginationNumbersRequestMutex.RUnlock()
+	argsForCall := fake.listOriginationNumbersRequestArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersRequestReturns(result1 *request.Request, result2 *sns.ListOriginationNumbersOutput) {
+	fake.listOriginationNumbersRequestMutex.Lock()
+	defer fake.listOriginationNumbersRequestMutex.Unlock()
+	fake.ListOriginationNumbersRequestStub = nil
+	fake.listOriginationNumbersRequestReturns = struct {
+		result1 *request.Request
+		result2 *sns.ListOriginationNumbersOutput
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersRequestReturnsOnCall(i int, result1 *request.Request, result2 *sns.ListOriginationNumbersOutput) {
+	fake.listOriginationNumbersRequestMutex.Lock()
+	defer fake.listOriginationNumbersRequestMutex.Unlock()
+	fake.ListOriginationNumbersRequestStub = nil
+	if fake.listOriginationNumbersRequestReturnsOnCall == nil {
+		fake.listOriginationNumbersRequestReturnsOnCall = make(map[int]struct {
+			result1 *request.Request
+			result2 *sns.ListOriginationNumbersOutput
+		})
+	}
+	fake.listOriginationNumbersRequestReturnsOnCall[i] = struct {
+		result1 *request.Request
+		result2 *sns.ListOriginationNumbersOutput
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersWithContext(arg1 aws.Context, arg2 *sns.ListOriginationNumbersInput, arg3 ...request.Option) (*sns.ListOriginationNumbersOutput, error) {
+	fake.listOriginationNumbersWithContextMutex.Lock()
+	ret, specificReturn := fake.listOriginationNumbersWithContextReturnsOnCall[len(fake.listOriginationNumbersWithContextArgsForCall)]
+	fake.listOriginationNumbersWithContextArgsForCall = append(fake.listOriginationNumbersWithContextArgsForCall, struct {
+		arg1 aws.Context
+		arg2 *sns.ListOriginationNumbersInput
+		arg3 []request.Option
+	}{arg1, arg2, arg3})
+	stub := fake.ListOriginationNumbersWithContextStub
+	fakeReturns := fake.listOriginationNumbersWithContextReturns
+	fake.recordInvocation("ListOriginationNumbersWithContext", []interface{}{arg1, arg2, arg3})
+	fake.listOriginationNumbersWithContextMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3...)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersWithContextCallCount() int {
+	fake.listOriginationNumbersWithContextMutex.RLock()
+	defer fake.listOriginationNumbersWithContextMutex.RUnlock()
+	return len(fake.listOriginationNumbersWithContextArgsForCall)
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersWithContextCalls(stub func(aws.Context, *sns.ListOriginationNumbersInput, ...request.Option) (*sns.ListOriginationNumbersOutput, error)) {
+	fake.listOriginationNumbersWithContextMutex.Lock()
+	defer fake.listOriginationNumbersWithContextMutex.Unlock()
+	fake.ListOriginationNumbersWithContextStub = stub
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersWithContextArgsForCall(i int) (aws.Context, *sns.ListOriginationNumbersInput, []request.Option) {
+	fake.listOriginationNumbersWithContextMutex.RLock()
+	defer fake.listOriginationNumbersWithContextMutex.RUnlock()
+	argsForCall := fake.listOriginationNumbersWithContextArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersWithContextReturns(result1 *sns.ListOriginationNumbersOutput, result2 error) {
+	fake.listOriginationNumbersWithContextMutex.Lock()
+	defer fake.listOriginationNumbersWithContextMutex.Unlock()
+	fake.ListOriginationNumbersWithContextStub = nil
+	fake.listOriginationNumbersWithContextReturns = struct {
+		result1 *sns.ListOriginationNumbersOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) ListOriginationNumbersWithContextReturnsOnCall(i int, result1 *sns.ListOriginationNumbersOutput, result2 error) {
+	fake.listOriginationNumbersWithContextMutex.Lock()
+	defer fake.listOriginationNumbersWithContextMutex.Unlock()
+	fake.ListOriginationNumbersWithContextStub = nil
+	if fake.listOriginationNumbersWithContextReturnsOnCall == nil {
+		fake.listOriginationNumbersWithContextReturnsOnCall = make(map[int]struct {
+			result1 *sns.ListOriginationNumbersOutput
+			result2 error
+		})
+	}
+	fake.listOriginationNumbersWithContextReturnsOnCall[i] = struct {
+		result1 *sns.ListOriginationNumbersOutput
 		result2 error
 	}{result1, result2}
 }
@@ -4598,6 +6141,132 @@ func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutReturnsOnCall(i int, result1 *sn
 	}{result1, result2}
 }
 
+func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutPages(arg1 *sns.ListPhoneNumbersOptedOutInput, arg2 func(*sns.ListPhoneNumbersOptedOutOutput, bool) bool) error {
+	fake.listPhoneNumbersOptedOutPagesMutex.Lock()
+	ret, specificReturn := fake.listPhoneNumbersOptedOutPagesReturnsOnCall[len(fake.listPhoneNumbersOptedOutPagesArgsForCall)]
+	fake.listPhoneNumbersOptedOutPagesArgsForCall = append(fake.listPhoneNumbersOptedOutPagesArgsForCall, struct {
+		arg1 *sns.ListPhoneNumbersOptedOutInput
+		arg2 func(*sns.ListPhoneNumbersOptedOutOutput, bool) bool
+	}{arg1, arg2})
+	stub := fake.ListPhoneNumbersOptedOutPagesStub
+	fakeReturns := fake.listPhoneNumbersOptedOutPagesReturns
+	fake.recordInvocation("ListPhoneNumbersOptedOutPages", []interface{}{arg1, arg2})
+	fake.listPhoneNumbersOptedOutPagesMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutPagesCallCount() int {
+	fake.listPhoneNumbersOptedOutPagesMutex.RLock()
+	defer fake.listPhoneNumbersOptedOutPagesMutex.RUnlock()
+	return len(fake.listPhoneNumbersOptedOutPagesArgsForCall)
+}
+
+func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutPagesCalls(stub func(*sns.ListPhoneNumbersOptedOutInput, func(*sns.ListPhoneNumbersOptedOutOutput, bool) bool) error) {
+	fake.listPhoneNumbersOptedOutPagesMutex.Lock()
+	defer fake.listPhoneNumbersOptedOutPagesMutex.Unlock()
+	fake.ListPhoneNumbersOptedOutPagesStub = stub
+}
+
+func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutPagesArgsForCall(i int) (*sns.ListPhoneNumbersOptedOutInput, func(*sns.ListPhoneNumbersOptedOutOutput, bool) bool) {
+	fake.listPhoneNumbersOptedOutPagesMutex.RLock()
+	defer fake.listPhoneNumbersOptedOutPagesMutex.RUnlock()
+	argsForCall := fake.listPhoneNumbersOptedOutPagesArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutPagesReturns(result1 error) {
+	fake.listPhoneNumbersOptedOutPagesMutex.Lock()
+	defer fake.listPhoneNumbersOptedOutPagesMutex.Unlock()
+	fake.ListPhoneNumbersOptedOutPagesStub = nil
+	fake.listPhoneNumbersOptedOutPagesReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutPagesReturnsOnCall(i int, result1 error) {
+	fake.listPhoneNumbersOptedOutPagesMutex.Lock()
+	defer fake.listPhoneNumbersOptedOutPagesMutex.Unlock()
+	fake.ListPhoneNumbersOptedOutPagesStub = nil
+	if fake.listPhoneNumbersOptedOutPagesReturnsOnCall == nil {
+		fake.listPhoneNumbersOptedOutPagesReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.listPhoneNumbersOptedOutPagesReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutPagesWithContext(arg1 aws.Context, arg2 *sns.ListPhoneNumbersOptedOutInput, arg3 func(*sns.ListPhoneNumbersOptedOutOutput, bool) bool, arg4 ...request.Option) error {
+	fake.listPhoneNumbersOptedOutPagesWithContextMutex.Lock()
+	ret, specificReturn := fake.listPhoneNumbersOptedOutPagesWithContextReturnsOnCall[len(fake.listPhoneNumbersOptedOutPagesWithContextArgsForCall)]
+	fake.listPhoneNumbersOptedOutPagesWithContextArgsForCall = append(fake.listPhoneNumbersOptedOutPagesWithContextArgsForCall, struct {
+		arg1 aws.Context
+		arg2 *sns.ListPhoneNumbersOptedOutInput
+		arg3 func(*sns.ListPhoneNumbersOptedOutOutput, bool) bool
+		arg4 []request.Option
+	}{arg1, arg2, arg3, arg4})
+	stub := fake.ListPhoneNumbersOptedOutPagesWithContextStub
+	fakeReturns := fake.listPhoneNumbersOptedOutPagesWithContextReturns
+	fake.recordInvocation("ListPhoneNumbersOptedOutPagesWithContext", []interface{}{arg1, arg2, arg3, arg4})
+	fake.listPhoneNumbersOptedOutPagesWithContextMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4...)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutPagesWithContextCallCount() int {
+	fake.listPhoneNumbersOptedOutPagesWithContextMutex.RLock()
+	defer fake.listPhoneNumbersOptedOutPagesWithContextMutex.RUnlock()
+	return len(fake.listPhoneNumbersOptedOutPagesWithContextArgsForCall)
+}
+
+func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutPagesWithContextCalls(stub func(aws.Context, *sns.ListPhoneNumbersOptedOutInput, func(*sns.ListPhoneNumbersOptedOutOutput, bool) bool, ...request.Option) error) {
+	fake.listPhoneNumbersOptedOutPagesWithContextMutex.Lock()
+	defer fake.listPhoneNumbersOptedOutPagesWithContextMutex.Unlock()
+	fake.ListPhoneNumbersOptedOutPagesWithContextStub = stub
+}
+
+func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutPagesWithContextArgsForCall(i int) (aws.Context, *sns.ListPhoneNumbersOptedOutInput, func(*sns.ListPhoneNumbersOptedOutOutput, bool) bool, []request.Option) {
+	fake.listPhoneNumbersOptedOutPagesWithContextMutex.RLock()
+	defer fake.listPhoneNumbersOptedOutPagesWithContextMutex.RUnlock()
+	argsForCall := fake.listPhoneNumbersOptedOutPagesWithContextArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+}
+
+func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutPagesWithContextReturns(result1 error) {
+	fake.listPhoneNumbersOptedOutPagesWithContextMutex.Lock()
+	defer fake.listPhoneNumbersOptedOutPagesWithContextMutex.Unlock()
+	fake.ListPhoneNumbersOptedOutPagesWithContextStub = nil
+	fake.listPhoneNumbersOptedOutPagesWithContextReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutPagesWithContextReturnsOnCall(i int, result1 error) {
+	fake.listPhoneNumbersOptedOutPagesWithContextMutex.Lock()
+	defer fake.listPhoneNumbersOptedOutPagesWithContextMutex.Unlock()
+	fake.ListPhoneNumbersOptedOutPagesWithContextStub = nil
+	if fake.listPhoneNumbersOptedOutPagesWithContextReturnsOnCall == nil {
+		fake.listPhoneNumbersOptedOutPagesWithContextReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.listPhoneNumbersOptedOutPagesWithContextReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutRequest(arg1 *sns.ListPhoneNumbersOptedOutInput) (*request.Request, *sns.ListPhoneNumbersOptedOutOutput) {
 	fake.listPhoneNumbersOptedOutRequestMutex.Lock()
 	ret, specificReturn := fake.listPhoneNumbersOptedOutRequestReturnsOnCall[len(fake.listPhoneNumbersOptedOutRequestArgsForCall)]
@@ -4662,11 +6331,11 @@ func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutRequestReturnsOnCall(i int, resu
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutWithContext(arg1 context.Context, arg2 *sns.ListPhoneNumbersOptedOutInput, arg3 ...request.Option) (*sns.ListPhoneNumbersOptedOutOutput, error) {
+func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutWithContext(arg1 aws.Context, arg2 *sns.ListPhoneNumbersOptedOutInput, arg3 ...request.Option) (*sns.ListPhoneNumbersOptedOutOutput, error) {
 	fake.listPhoneNumbersOptedOutWithContextMutex.Lock()
 	ret, specificReturn := fake.listPhoneNumbersOptedOutWithContextReturnsOnCall[len(fake.listPhoneNumbersOptedOutWithContextArgsForCall)]
 	fake.listPhoneNumbersOptedOutWithContextArgsForCall = append(fake.listPhoneNumbersOptedOutWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListPhoneNumbersOptedOutInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -4689,13 +6358,13 @@ func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutWithContextCallCount() int {
 	return len(fake.listPhoneNumbersOptedOutWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutWithContextCalls(stub func(context.Context, *sns.ListPhoneNumbersOptedOutInput, ...request.Option) (*sns.ListPhoneNumbersOptedOutOutput, error)) {
+func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutWithContextCalls(stub func(aws.Context, *sns.ListPhoneNumbersOptedOutInput, ...request.Option) (*sns.ListPhoneNumbersOptedOutOutput, error)) {
 	fake.listPhoneNumbersOptedOutWithContextMutex.Lock()
 	defer fake.listPhoneNumbersOptedOutWithContextMutex.Unlock()
 	fake.ListPhoneNumbersOptedOutWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutWithContextArgsForCall(i int) (context.Context, *sns.ListPhoneNumbersOptedOutInput, []request.Option) {
+func (fake *FakeSNSAPI) ListPhoneNumbersOptedOutWithContextArgsForCall(i int) (aws.Context, *sns.ListPhoneNumbersOptedOutInput, []request.Option) {
 	fake.listPhoneNumbersOptedOutWithContextMutex.RLock()
 	defer fake.listPhoneNumbersOptedOutWithContextMutex.RUnlock()
 	argsForCall := fake.listPhoneNumbersOptedOutWithContextArgsForCall[i]
@@ -4854,11 +6523,11 @@ func (fake *FakeSNSAPI) ListPlatformApplicationsPagesReturnsOnCall(i int, result
 	}{result1}
 }
 
-func (fake *FakeSNSAPI) ListPlatformApplicationsPagesWithContext(arg1 context.Context, arg2 *sns.ListPlatformApplicationsInput, arg3 func(*sns.ListPlatformApplicationsOutput, bool) bool, arg4 ...request.Option) error {
+func (fake *FakeSNSAPI) ListPlatformApplicationsPagesWithContext(arg1 aws.Context, arg2 *sns.ListPlatformApplicationsInput, arg3 func(*sns.ListPlatformApplicationsOutput, bool) bool, arg4 ...request.Option) error {
 	fake.listPlatformApplicationsPagesWithContextMutex.Lock()
 	ret, specificReturn := fake.listPlatformApplicationsPagesWithContextReturnsOnCall[len(fake.listPlatformApplicationsPagesWithContextArgsForCall)]
 	fake.listPlatformApplicationsPagesWithContextArgsForCall = append(fake.listPlatformApplicationsPagesWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListPlatformApplicationsInput
 		arg3 func(*sns.ListPlatformApplicationsOutput, bool) bool
 		arg4 []request.Option
@@ -4882,13 +6551,13 @@ func (fake *FakeSNSAPI) ListPlatformApplicationsPagesWithContextCallCount() int 
 	return len(fake.listPlatformApplicationsPagesWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) ListPlatformApplicationsPagesWithContextCalls(stub func(context.Context, *sns.ListPlatformApplicationsInput, func(*sns.ListPlatformApplicationsOutput, bool) bool, ...request.Option) error) {
+func (fake *FakeSNSAPI) ListPlatformApplicationsPagesWithContextCalls(stub func(aws.Context, *sns.ListPlatformApplicationsInput, func(*sns.ListPlatformApplicationsOutput, bool) bool, ...request.Option) error) {
 	fake.listPlatformApplicationsPagesWithContextMutex.Lock()
 	defer fake.listPlatformApplicationsPagesWithContextMutex.Unlock()
 	fake.ListPlatformApplicationsPagesWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) ListPlatformApplicationsPagesWithContextArgsForCall(i int) (context.Context, *sns.ListPlatformApplicationsInput, func(*sns.ListPlatformApplicationsOutput, bool) bool, []request.Option) {
+func (fake *FakeSNSAPI) ListPlatformApplicationsPagesWithContextArgsForCall(i int) (aws.Context, *sns.ListPlatformApplicationsInput, func(*sns.ListPlatformApplicationsOutput, bool) bool, []request.Option) {
 	fake.listPlatformApplicationsPagesWithContextMutex.RLock()
 	defer fake.listPlatformApplicationsPagesWithContextMutex.RUnlock()
 	argsForCall := fake.listPlatformApplicationsPagesWithContextArgsForCall[i]
@@ -4982,11 +6651,11 @@ func (fake *FakeSNSAPI) ListPlatformApplicationsRequestReturnsOnCall(i int, resu
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) ListPlatformApplicationsWithContext(arg1 context.Context, arg2 *sns.ListPlatformApplicationsInput, arg3 ...request.Option) (*sns.ListPlatformApplicationsOutput, error) {
+func (fake *FakeSNSAPI) ListPlatformApplicationsWithContext(arg1 aws.Context, arg2 *sns.ListPlatformApplicationsInput, arg3 ...request.Option) (*sns.ListPlatformApplicationsOutput, error) {
 	fake.listPlatformApplicationsWithContextMutex.Lock()
 	ret, specificReturn := fake.listPlatformApplicationsWithContextReturnsOnCall[len(fake.listPlatformApplicationsWithContextArgsForCall)]
 	fake.listPlatformApplicationsWithContextArgsForCall = append(fake.listPlatformApplicationsWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListPlatformApplicationsInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -5009,13 +6678,13 @@ func (fake *FakeSNSAPI) ListPlatformApplicationsWithContextCallCount() int {
 	return len(fake.listPlatformApplicationsWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) ListPlatformApplicationsWithContextCalls(stub func(context.Context, *sns.ListPlatformApplicationsInput, ...request.Option) (*sns.ListPlatformApplicationsOutput, error)) {
+func (fake *FakeSNSAPI) ListPlatformApplicationsWithContextCalls(stub func(aws.Context, *sns.ListPlatformApplicationsInput, ...request.Option) (*sns.ListPlatformApplicationsOutput, error)) {
 	fake.listPlatformApplicationsWithContextMutex.Lock()
 	defer fake.listPlatformApplicationsWithContextMutex.Unlock()
 	fake.ListPlatformApplicationsWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) ListPlatformApplicationsWithContextArgsForCall(i int) (context.Context, *sns.ListPlatformApplicationsInput, []request.Option) {
+func (fake *FakeSNSAPI) ListPlatformApplicationsWithContextArgsForCall(i int) (aws.Context, *sns.ListPlatformApplicationsInput, []request.Option) {
 	fake.listPlatformApplicationsWithContextMutex.RLock()
 	defer fake.listPlatformApplicationsWithContextMutex.RUnlock()
 	argsForCall := fake.listPlatformApplicationsWithContextArgsForCall[i]
@@ -5044,6 +6713,326 @@ func (fake *FakeSNSAPI) ListPlatformApplicationsWithContextReturnsOnCall(i int, 
 	}
 	fake.listPlatformApplicationsWithContextReturnsOnCall[i] = struct {
 		result1 *sns.ListPlatformApplicationsOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbers(arg1 *sns.ListSMSSandboxPhoneNumbersInput) (*sns.ListSMSSandboxPhoneNumbersOutput, error) {
+	fake.listSMSSandboxPhoneNumbersMutex.Lock()
+	ret, specificReturn := fake.listSMSSandboxPhoneNumbersReturnsOnCall[len(fake.listSMSSandboxPhoneNumbersArgsForCall)]
+	fake.listSMSSandboxPhoneNumbersArgsForCall = append(fake.listSMSSandboxPhoneNumbersArgsForCall, struct {
+		arg1 *sns.ListSMSSandboxPhoneNumbersInput
+	}{arg1})
+	stub := fake.ListSMSSandboxPhoneNumbersStub
+	fakeReturns := fake.listSMSSandboxPhoneNumbersReturns
+	fake.recordInvocation("ListSMSSandboxPhoneNumbers", []interface{}{arg1})
+	fake.listSMSSandboxPhoneNumbersMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersCallCount() int {
+	fake.listSMSSandboxPhoneNumbersMutex.RLock()
+	defer fake.listSMSSandboxPhoneNumbersMutex.RUnlock()
+	return len(fake.listSMSSandboxPhoneNumbersArgsForCall)
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersCalls(stub func(*sns.ListSMSSandboxPhoneNumbersInput) (*sns.ListSMSSandboxPhoneNumbersOutput, error)) {
+	fake.listSMSSandboxPhoneNumbersMutex.Lock()
+	defer fake.listSMSSandboxPhoneNumbersMutex.Unlock()
+	fake.ListSMSSandboxPhoneNumbersStub = stub
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersArgsForCall(i int) *sns.ListSMSSandboxPhoneNumbersInput {
+	fake.listSMSSandboxPhoneNumbersMutex.RLock()
+	defer fake.listSMSSandboxPhoneNumbersMutex.RUnlock()
+	argsForCall := fake.listSMSSandboxPhoneNumbersArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersReturns(result1 *sns.ListSMSSandboxPhoneNumbersOutput, result2 error) {
+	fake.listSMSSandboxPhoneNumbersMutex.Lock()
+	defer fake.listSMSSandboxPhoneNumbersMutex.Unlock()
+	fake.ListSMSSandboxPhoneNumbersStub = nil
+	fake.listSMSSandboxPhoneNumbersReturns = struct {
+		result1 *sns.ListSMSSandboxPhoneNumbersOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersReturnsOnCall(i int, result1 *sns.ListSMSSandboxPhoneNumbersOutput, result2 error) {
+	fake.listSMSSandboxPhoneNumbersMutex.Lock()
+	defer fake.listSMSSandboxPhoneNumbersMutex.Unlock()
+	fake.ListSMSSandboxPhoneNumbersStub = nil
+	if fake.listSMSSandboxPhoneNumbersReturnsOnCall == nil {
+		fake.listSMSSandboxPhoneNumbersReturnsOnCall = make(map[int]struct {
+			result1 *sns.ListSMSSandboxPhoneNumbersOutput
+			result2 error
+		})
+	}
+	fake.listSMSSandboxPhoneNumbersReturnsOnCall[i] = struct {
+		result1 *sns.ListSMSSandboxPhoneNumbersOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersPages(arg1 *sns.ListSMSSandboxPhoneNumbersInput, arg2 func(*sns.ListSMSSandboxPhoneNumbersOutput, bool) bool) error {
+	fake.listSMSSandboxPhoneNumbersPagesMutex.Lock()
+	ret, specificReturn := fake.listSMSSandboxPhoneNumbersPagesReturnsOnCall[len(fake.listSMSSandboxPhoneNumbersPagesArgsForCall)]
+	fake.listSMSSandboxPhoneNumbersPagesArgsForCall = append(fake.listSMSSandboxPhoneNumbersPagesArgsForCall, struct {
+		arg1 *sns.ListSMSSandboxPhoneNumbersInput
+		arg2 func(*sns.ListSMSSandboxPhoneNumbersOutput, bool) bool
+	}{arg1, arg2})
+	stub := fake.ListSMSSandboxPhoneNumbersPagesStub
+	fakeReturns := fake.listSMSSandboxPhoneNumbersPagesReturns
+	fake.recordInvocation("ListSMSSandboxPhoneNumbersPages", []interface{}{arg1, arg2})
+	fake.listSMSSandboxPhoneNumbersPagesMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersPagesCallCount() int {
+	fake.listSMSSandboxPhoneNumbersPagesMutex.RLock()
+	defer fake.listSMSSandboxPhoneNumbersPagesMutex.RUnlock()
+	return len(fake.listSMSSandboxPhoneNumbersPagesArgsForCall)
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersPagesCalls(stub func(*sns.ListSMSSandboxPhoneNumbersInput, func(*sns.ListSMSSandboxPhoneNumbersOutput, bool) bool) error) {
+	fake.listSMSSandboxPhoneNumbersPagesMutex.Lock()
+	defer fake.listSMSSandboxPhoneNumbersPagesMutex.Unlock()
+	fake.ListSMSSandboxPhoneNumbersPagesStub = stub
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersPagesArgsForCall(i int) (*sns.ListSMSSandboxPhoneNumbersInput, func(*sns.ListSMSSandboxPhoneNumbersOutput, bool) bool) {
+	fake.listSMSSandboxPhoneNumbersPagesMutex.RLock()
+	defer fake.listSMSSandboxPhoneNumbersPagesMutex.RUnlock()
+	argsForCall := fake.listSMSSandboxPhoneNumbersPagesArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersPagesReturns(result1 error) {
+	fake.listSMSSandboxPhoneNumbersPagesMutex.Lock()
+	defer fake.listSMSSandboxPhoneNumbersPagesMutex.Unlock()
+	fake.ListSMSSandboxPhoneNumbersPagesStub = nil
+	fake.listSMSSandboxPhoneNumbersPagesReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersPagesReturnsOnCall(i int, result1 error) {
+	fake.listSMSSandboxPhoneNumbersPagesMutex.Lock()
+	defer fake.listSMSSandboxPhoneNumbersPagesMutex.Unlock()
+	fake.ListSMSSandboxPhoneNumbersPagesStub = nil
+	if fake.listSMSSandboxPhoneNumbersPagesReturnsOnCall == nil {
+		fake.listSMSSandboxPhoneNumbersPagesReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.listSMSSandboxPhoneNumbersPagesReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersPagesWithContext(arg1 aws.Context, arg2 *sns.ListSMSSandboxPhoneNumbersInput, arg3 func(*sns.ListSMSSandboxPhoneNumbersOutput, bool) bool, arg4 ...request.Option) error {
+	fake.listSMSSandboxPhoneNumbersPagesWithContextMutex.Lock()
+	ret, specificReturn := fake.listSMSSandboxPhoneNumbersPagesWithContextReturnsOnCall[len(fake.listSMSSandboxPhoneNumbersPagesWithContextArgsForCall)]
+	fake.listSMSSandboxPhoneNumbersPagesWithContextArgsForCall = append(fake.listSMSSandboxPhoneNumbersPagesWithContextArgsForCall, struct {
+		arg1 aws.Context
+		arg2 *sns.ListSMSSandboxPhoneNumbersInput
+		arg3 func(*sns.ListSMSSandboxPhoneNumbersOutput, bool) bool
+		arg4 []request.Option
+	}{arg1, arg2, arg3, arg4})
+	stub := fake.ListSMSSandboxPhoneNumbersPagesWithContextStub
+	fakeReturns := fake.listSMSSandboxPhoneNumbersPagesWithContextReturns
+	fake.recordInvocation("ListSMSSandboxPhoneNumbersPagesWithContext", []interface{}{arg1, arg2, arg3, arg4})
+	fake.listSMSSandboxPhoneNumbersPagesWithContextMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3, arg4...)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersPagesWithContextCallCount() int {
+	fake.listSMSSandboxPhoneNumbersPagesWithContextMutex.RLock()
+	defer fake.listSMSSandboxPhoneNumbersPagesWithContextMutex.RUnlock()
+	return len(fake.listSMSSandboxPhoneNumbersPagesWithContextArgsForCall)
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersPagesWithContextCalls(stub func(aws.Context, *sns.ListSMSSandboxPhoneNumbersInput, func(*sns.ListSMSSandboxPhoneNumbersOutput, bool) bool, ...request.Option) error) {
+	fake.listSMSSandboxPhoneNumbersPagesWithContextMutex.Lock()
+	defer fake.listSMSSandboxPhoneNumbersPagesWithContextMutex.Unlock()
+	fake.ListSMSSandboxPhoneNumbersPagesWithContextStub = stub
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersPagesWithContextArgsForCall(i int) (aws.Context, *sns.ListSMSSandboxPhoneNumbersInput, func(*sns.ListSMSSandboxPhoneNumbersOutput, bool) bool, []request.Option) {
+	fake.listSMSSandboxPhoneNumbersPagesWithContextMutex.RLock()
+	defer fake.listSMSSandboxPhoneNumbersPagesWithContextMutex.RUnlock()
+	argsForCall := fake.listSMSSandboxPhoneNumbersPagesWithContextArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersPagesWithContextReturns(result1 error) {
+	fake.listSMSSandboxPhoneNumbersPagesWithContextMutex.Lock()
+	defer fake.listSMSSandboxPhoneNumbersPagesWithContextMutex.Unlock()
+	fake.ListSMSSandboxPhoneNumbersPagesWithContextStub = nil
+	fake.listSMSSandboxPhoneNumbersPagesWithContextReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersPagesWithContextReturnsOnCall(i int, result1 error) {
+	fake.listSMSSandboxPhoneNumbersPagesWithContextMutex.Lock()
+	defer fake.listSMSSandboxPhoneNumbersPagesWithContextMutex.Unlock()
+	fake.ListSMSSandboxPhoneNumbersPagesWithContextStub = nil
+	if fake.listSMSSandboxPhoneNumbersPagesWithContextReturnsOnCall == nil {
+		fake.listSMSSandboxPhoneNumbersPagesWithContextReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.listSMSSandboxPhoneNumbersPagesWithContextReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersRequest(arg1 *sns.ListSMSSandboxPhoneNumbersInput) (*request.Request, *sns.ListSMSSandboxPhoneNumbersOutput) {
+	fake.listSMSSandboxPhoneNumbersRequestMutex.Lock()
+	ret, specificReturn := fake.listSMSSandboxPhoneNumbersRequestReturnsOnCall[len(fake.listSMSSandboxPhoneNumbersRequestArgsForCall)]
+	fake.listSMSSandboxPhoneNumbersRequestArgsForCall = append(fake.listSMSSandboxPhoneNumbersRequestArgsForCall, struct {
+		arg1 *sns.ListSMSSandboxPhoneNumbersInput
+	}{arg1})
+	stub := fake.ListSMSSandboxPhoneNumbersRequestStub
+	fakeReturns := fake.listSMSSandboxPhoneNumbersRequestReturns
+	fake.recordInvocation("ListSMSSandboxPhoneNumbersRequest", []interface{}{arg1})
+	fake.listSMSSandboxPhoneNumbersRequestMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersRequestCallCount() int {
+	fake.listSMSSandboxPhoneNumbersRequestMutex.RLock()
+	defer fake.listSMSSandboxPhoneNumbersRequestMutex.RUnlock()
+	return len(fake.listSMSSandboxPhoneNumbersRequestArgsForCall)
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersRequestCalls(stub func(*sns.ListSMSSandboxPhoneNumbersInput) (*request.Request, *sns.ListSMSSandboxPhoneNumbersOutput)) {
+	fake.listSMSSandboxPhoneNumbersRequestMutex.Lock()
+	defer fake.listSMSSandboxPhoneNumbersRequestMutex.Unlock()
+	fake.ListSMSSandboxPhoneNumbersRequestStub = stub
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersRequestArgsForCall(i int) *sns.ListSMSSandboxPhoneNumbersInput {
+	fake.listSMSSandboxPhoneNumbersRequestMutex.RLock()
+	defer fake.listSMSSandboxPhoneNumbersRequestMutex.RUnlock()
+	argsForCall := fake.listSMSSandboxPhoneNumbersRequestArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersRequestReturns(result1 *request.Request, result2 *sns.ListSMSSandboxPhoneNumbersOutput) {
+	fake.listSMSSandboxPhoneNumbersRequestMutex.Lock()
+	defer fake.listSMSSandboxPhoneNumbersRequestMutex.Unlock()
+	fake.ListSMSSandboxPhoneNumbersRequestStub = nil
+	fake.listSMSSandboxPhoneNumbersRequestReturns = struct {
+		result1 *request.Request
+		result2 *sns.ListSMSSandboxPhoneNumbersOutput
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersRequestReturnsOnCall(i int, result1 *request.Request, result2 *sns.ListSMSSandboxPhoneNumbersOutput) {
+	fake.listSMSSandboxPhoneNumbersRequestMutex.Lock()
+	defer fake.listSMSSandboxPhoneNumbersRequestMutex.Unlock()
+	fake.ListSMSSandboxPhoneNumbersRequestStub = nil
+	if fake.listSMSSandboxPhoneNumbersRequestReturnsOnCall == nil {
+		fake.listSMSSandboxPhoneNumbersRequestReturnsOnCall = make(map[int]struct {
+			result1 *request.Request
+			result2 *sns.ListSMSSandboxPhoneNumbersOutput
+		})
+	}
+	fake.listSMSSandboxPhoneNumbersRequestReturnsOnCall[i] = struct {
+		result1 *request.Request
+		result2 *sns.ListSMSSandboxPhoneNumbersOutput
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersWithContext(arg1 aws.Context, arg2 *sns.ListSMSSandboxPhoneNumbersInput, arg3 ...request.Option) (*sns.ListSMSSandboxPhoneNumbersOutput, error) {
+	fake.listSMSSandboxPhoneNumbersWithContextMutex.Lock()
+	ret, specificReturn := fake.listSMSSandboxPhoneNumbersWithContextReturnsOnCall[len(fake.listSMSSandboxPhoneNumbersWithContextArgsForCall)]
+	fake.listSMSSandboxPhoneNumbersWithContextArgsForCall = append(fake.listSMSSandboxPhoneNumbersWithContextArgsForCall, struct {
+		arg1 aws.Context
+		arg2 *sns.ListSMSSandboxPhoneNumbersInput
+		arg3 []request.Option
+	}{arg1, arg2, arg3})
+	stub := fake.ListSMSSandboxPhoneNumbersWithContextStub
+	fakeReturns := fake.listSMSSandboxPhoneNumbersWithContextReturns
+	fake.recordInvocation("ListSMSSandboxPhoneNumbersWithContext", []interface{}{arg1, arg2, arg3})
+	fake.listSMSSandboxPhoneNumbersWithContextMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3...)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersWithContextCallCount() int {
+	fake.listSMSSandboxPhoneNumbersWithContextMutex.RLock()
+	defer fake.listSMSSandboxPhoneNumbersWithContextMutex.RUnlock()
+	return len(fake.listSMSSandboxPhoneNumbersWithContextArgsForCall)
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersWithContextCalls(stub func(aws.Context, *sns.ListSMSSandboxPhoneNumbersInput, ...request.Option) (*sns.ListSMSSandboxPhoneNumbersOutput, error)) {
+	fake.listSMSSandboxPhoneNumbersWithContextMutex.Lock()
+	defer fake.listSMSSandboxPhoneNumbersWithContextMutex.Unlock()
+	fake.ListSMSSandboxPhoneNumbersWithContextStub = stub
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersWithContextArgsForCall(i int) (aws.Context, *sns.ListSMSSandboxPhoneNumbersInput, []request.Option) {
+	fake.listSMSSandboxPhoneNumbersWithContextMutex.RLock()
+	defer fake.listSMSSandboxPhoneNumbersWithContextMutex.RUnlock()
+	argsForCall := fake.listSMSSandboxPhoneNumbersWithContextArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersWithContextReturns(result1 *sns.ListSMSSandboxPhoneNumbersOutput, result2 error) {
+	fake.listSMSSandboxPhoneNumbersWithContextMutex.Lock()
+	defer fake.listSMSSandboxPhoneNumbersWithContextMutex.Unlock()
+	fake.ListSMSSandboxPhoneNumbersWithContextStub = nil
+	fake.listSMSSandboxPhoneNumbersWithContextReturns = struct {
+		result1 *sns.ListSMSSandboxPhoneNumbersOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) ListSMSSandboxPhoneNumbersWithContextReturnsOnCall(i int, result1 *sns.ListSMSSandboxPhoneNumbersOutput, result2 error) {
+	fake.listSMSSandboxPhoneNumbersWithContextMutex.Lock()
+	defer fake.listSMSSandboxPhoneNumbersWithContextMutex.Unlock()
+	fake.ListSMSSandboxPhoneNumbersWithContextStub = nil
+	if fake.listSMSSandboxPhoneNumbersWithContextReturnsOnCall == nil {
+		fake.listSMSSandboxPhoneNumbersWithContextReturnsOnCall = make(map[int]struct {
+			result1 *sns.ListSMSSandboxPhoneNumbersOutput
+			result2 error
+		})
+	}
+	fake.listSMSSandboxPhoneNumbersWithContextReturnsOnCall[i] = struct {
+		result1 *sns.ListSMSSandboxPhoneNumbersOutput
 		result2 error
 	}{result1, result2}
 }
@@ -5238,11 +7227,11 @@ func (fake *FakeSNSAPI) ListSubscriptionsByTopicPagesReturnsOnCall(i int, result
 	}{result1}
 }
 
-func (fake *FakeSNSAPI) ListSubscriptionsByTopicPagesWithContext(arg1 context.Context, arg2 *sns.ListSubscriptionsByTopicInput, arg3 func(*sns.ListSubscriptionsByTopicOutput, bool) bool, arg4 ...request.Option) error {
+func (fake *FakeSNSAPI) ListSubscriptionsByTopicPagesWithContext(arg1 aws.Context, arg2 *sns.ListSubscriptionsByTopicInput, arg3 func(*sns.ListSubscriptionsByTopicOutput, bool) bool, arg4 ...request.Option) error {
 	fake.listSubscriptionsByTopicPagesWithContextMutex.Lock()
 	ret, specificReturn := fake.listSubscriptionsByTopicPagesWithContextReturnsOnCall[len(fake.listSubscriptionsByTopicPagesWithContextArgsForCall)]
 	fake.listSubscriptionsByTopicPagesWithContextArgsForCall = append(fake.listSubscriptionsByTopicPagesWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListSubscriptionsByTopicInput
 		arg3 func(*sns.ListSubscriptionsByTopicOutput, bool) bool
 		arg4 []request.Option
@@ -5266,13 +7255,13 @@ func (fake *FakeSNSAPI) ListSubscriptionsByTopicPagesWithContextCallCount() int 
 	return len(fake.listSubscriptionsByTopicPagesWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) ListSubscriptionsByTopicPagesWithContextCalls(stub func(context.Context, *sns.ListSubscriptionsByTopicInput, func(*sns.ListSubscriptionsByTopicOutput, bool) bool, ...request.Option) error) {
+func (fake *FakeSNSAPI) ListSubscriptionsByTopicPagesWithContextCalls(stub func(aws.Context, *sns.ListSubscriptionsByTopicInput, func(*sns.ListSubscriptionsByTopicOutput, bool) bool, ...request.Option) error) {
 	fake.listSubscriptionsByTopicPagesWithContextMutex.Lock()
 	defer fake.listSubscriptionsByTopicPagesWithContextMutex.Unlock()
 	fake.ListSubscriptionsByTopicPagesWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) ListSubscriptionsByTopicPagesWithContextArgsForCall(i int) (context.Context, *sns.ListSubscriptionsByTopicInput, func(*sns.ListSubscriptionsByTopicOutput, bool) bool, []request.Option) {
+func (fake *FakeSNSAPI) ListSubscriptionsByTopicPagesWithContextArgsForCall(i int) (aws.Context, *sns.ListSubscriptionsByTopicInput, func(*sns.ListSubscriptionsByTopicOutput, bool) bool, []request.Option) {
 	fake.listSubscriptionsByTopicPagesWithContextMutex.RLock()
 	defer fake.listSubscriptionsByTopicPagesWithContextMutex.RUnlock()
 	argsForCall := fake.listSubscriptionsByTopicPagesWithContextArgsForCall[i]
@@ -5366,11 +7355,11 @@ func (fake *FakeSNSAPI) ListSubscriptionsByTopicRequestReturnsOnCall(i int, resu
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) ListSubscriptionsByTopicWithContext(arg1 context.Context, arg2 *sns.ListSubscriptionsByTopicInput, arg3 ...request.Option) (*sns.ListSubscriptionsByTopicOutput, error) {
+func (fake *FakeSNSAPI) ListSubscriptionsByTopicWithContext(arg1 aws.Context, arg2 *sns.ListSubscriptionsByTopicInput, arg3 ...request.Option) (*sns.ListSubscriptionsByTopicOutput, error) {
 	fake.listSubscriptionsByTopicWithContextMutex.Lock()
 	ret, specificReturn := fake.listSubscriptionsByTopicWithContextReturnsOnCall[len(fake.listSubscriptionsByTopicWithContextArgsForCall)]
 	fake.listSubscriptionsByTopicWithContextArgsForCall = append(fake.listSubscriptionsByTopicWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListSubscriptionsByTopicInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -5393,13 +7382,13 @@ func (fake *FakeSNSAPI) ListSubscriptionsByTopicWithContextCallCount() int {
 	return len(fake.listSubscriptionsByTopicWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) ListSubscriptionsByTopicWithContextCalls(stub func(context.Context, *sns.ListSubscriptionsByTopicInput, ...request.Option) (*sns.ListSubscriptionsByTopicOutput, error)) {
+func (fake *FakeSNSAPI) ListSubscriptionsByTopicWithContextCalls(stub func(aws.Context, *sns.ListSubscriptionsByTopicInput, ...request.Option) (*sns.ListSubscriptionsByTopicOutput, error)) {
 	fake.listSubscriptionsByTopicWithContextMutex.Lock()
 	defer fake.listSubscriptionsByTopicWithContextMutex.Unlock()
 	fake.ListSubscriptionsByTopicWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) ListSubscriptionsByTopicWithContextArgsForCall(i int) (context.Context, *sns.ListSubscriptionsByTopicInput, []request.Option) {
+func (fake *FakeSNSAPI) ListSubscriptionsByTopicWithContextArgsForCall(i int) (aws.Context, *sns.ListSubscriptionsByTopicInput, []request.Option) {
 	fake.listSubscriptionsByTopicWithContextMutex.RLock()
 	defer fake.listSubscriptionsByTopicWithContextMutex.RUnlock()
 	argsForCall := fake.listSubscriptionsByTopicWithContextArgsForCall[i]
@@ -5494,11 +7483,11 @@ func (fake *FakeSNSAPI) ListSubscriptionsPagesReturnsOnCall(i int, result1 error
 	}{result1}
 }
 
-func (fake *FakeSNSAPI) ListSubscriptionsPagesWithContext(arg1 context.Context, arg2 *sns.ListSubscriptionsInput, arg3 func(*sns.ListSubscriptionsOutput, bool) bool, arg4 ...request.Option) error {
+func (fake *FakeSNSAPI) ListSubscriptionsPagesWithContext(arg1 aws.Context, arg2 *sns.ListSubscriptionsInput, arg3 func(*sns.ListSubscriptionsOutput, bool) bool, arg4 ...request.Option) error {
 	fake.listSubscriptionsPagesWithContextMutex.Lock()
 	ret, specificReturn := fake.listSubscriptionsPagesWithContextReturnsOnCall[len(fake.listSubscriptionsPagesWithContextArgsForCall)]
 	fake.listSubscriptionsPagesWithContextArgsForCall = append(fake.listSubscriptionsPagesWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListSubscriptionsInput
 		arg3 func(*sns.ListSubscriptionsOutput, bool) bool
 		arg4 []request.Option
@@ -5522,13 +7511,13 @@ func (fake *FakeSNSAPI) ListSubscriptionsPagesWithContextCallCount() int {
 	return len(fake.listSubscriptionsPagesWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) ListSubscriptionsPagesWithContextCalls(stub func(context.Context, *sns.ListSubscriptionsInput, func(*sns.ListSubscriptionsOutput, bool) bool, ...request.Option) error) {
+func (fake *FakeSNSAPI) ListSubscriptionsPagesWithContextCalls(stub func(aws.Context, *sns.ListSubscriptionsInput, func(*sns.ListSubscriptionsOutput, bool) bool, ...request.Option) error) {
 	fake.listSubscriptionsPagesWithContextMutex.Lock()
 	defer fake.listSubscriptionsPagesWithContextMutex.Unlock()
 	fake.ListSubscriptionsPagesWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) ListSubscriptionsPagesWithContextArgsForCall(i int) (context.Context, *sns.ListSubscriptionsInput, func(*sns.ListSubscriptionsOutput, bool) bool, []request.Option) {
+func (fake *FakeSNSAPI) ListSubscriptionsPagesWithContextArgsForCall(i int) (aws.Context, *sns.ListSubscriptionsInput, func(*sns.ListSubscriptionsOutput, bool) bool, []request.Option) {
 	fake.listSubscriptionsPagesWithContextMutex.RLock()
 	defer fake.listSubscriptionsPagesWithContextMutex.RUnlock()
 	argsForCall := fake.listSubscriptionsPagesWithContextArgsForCall[i]
@@ -5622,11 +7611,11 @@ func (fake *FakeSNSAPI) ListSubscriptionsRequestReturnsOnCall(i int, result1 *re
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) ListSubscriptionsWithContext(arg1 context.Context, arg2 *sns.ListSubscriptionsInput, arg3 ...request.Option) (*sns.ListSubscriptionsOutput, error) {
+func (fake *FakeSNSAPI) ListSubscriptionsWithContext(arg1 aws.Context, arg2 *sns.ListSubscriptionsInput, arg3 ...request.Option) (*sns.ListSubscriptionsOutput, error) {
 	fake.listSubscriptionsWithContextMutex.Lock()
 	ret, specificReturn := fake.listSubscriptionsWithContextReturnsOnCall[len(fake.listSubscriptionsWithContextArgsForCall)]
 	fake.listSubscriptionsWithContextArgsForCall = append(fake.listSubscriptionsWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListSubscriptionsInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -5649,13 +7638,13 @@ func (fake *FakeSNSAPI) ListSubscriptionsWithContextCallCount() int {
 	return len(fake.listSubscriptionsWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) ListSubscriptionsWithContextCalls(stub func(context.Context, *sns.ListSubscriptionsInput, ...request.Option) (*sns.ListSubscriptionsOutput, error)) {
+func (fake *FakeSNSAPI) ListSubscriptionsWithContextCalls(stub func(aws.Context, *sns.ListSubscriptionsInput, ...request.Option) (*sns.ListSubscriptionsOutput, error)) {
 	fake.listSubscriptionsWithContextMutex.Lock()
 	defer fake.listSubscriptionsWithContextMutex.Unlock()
 	fake.ListSubscriptionsWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) ListSubscriptionsWithContextArgsForCall(i int) (context.Context, *sns.ListSubscriptionsInput, []request.Option) {
+func (fake *FakeSNSAPI) ListSubscriptionsWithContextArgsForCall(i int) (aws.Context, *sns.ListSubscriptionsInput, []request.Option) {
 	fake.listSubscriptionsWithContextMutex.RLock()
 	defer fake.listSubscriptionsWithContextMutex.RUnlock()
 	argsForCall := fake.listSubscriptionsWithContextArgsForCall[i]
@@ -5816,11 +7805,11 @@ func (fake *FakeSNSAPI) ListTagsForResourceRequestReturnsOnCall(i int, result1 *
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) ListTagsForResourceWithContext(arg1 context.Context, arg2 *sns.ListTagsForResourceInput, arg3 ...request.Option) (*sns.ListTagsForResourceOutput, error) {
+func (fake *FakeSNSAPI) ListTagsForResourceWithContext(arg1 aws.Context, arg2 *sns.ListTagsForResourceInput, arg3 ...request.Option) (*sns.ListTagsForResourceOutput, error) {
 	fake.listTagsForResourceWithContextMutex.Lock()
 	ret, specificReturn := fake.listTagsForResourceWithContextReturnsOnCall[len(fake.listTagsForResourceWithContextArgsForCall)]
 	fake.listTagsForResourceWithContextArgsForCall = append(fake.listTagsForResourceWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListTagsForResourceInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -5843,13 +7832,13 @@ func (fake *FakeSNSAPI) ListTagsForResourceWithContextCallCount() int {
 	return len(fake.listTagsForResourceWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) ListTagsForResourceWithContextCalls(stub func(context.Context, *sns.ListTagsForResourceInput, ...request.Option) (*sns.ListTagsForResourceOutput, error)) {
+func (fake *FakeSNSAPI) ListTagsForResourceWithContextCalls(stub func(aws.Context, *sns.ListTagsForResourceInput, ...request.Option) (*sns.ListTagsForResourceOutput, error)) {
 	fake.listTagsForResourceWithContextMutex.Lock()
 	defer fake.listTagsForResourceWithContextMutex.Unlock()
 	fake.ListTagsForResourceWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) ListTagsForResourceWithContextArgsForCall(i int) (context.Context, *sns.ListTagsForResourceInput, []request.Option) {
+func (fake *FakeSNSAPI) ListTagsForResourceWithContextArgsForCall(i int) (aws.Context, *sns.ListTagsForResourceInput, []request.Option) {
 	fake.listTagsForResourceWithContextMutex.RLock()
 	defer fake.listTagsForResourceWithContextMutex.RUnlock()
 	argsForCall := fake.listTagsForResourceWithContextArgsForCall[i]
@@ -6008,11 +7997,11 @@ func (fake *FakeSNSAPI) ListTopicsPagesReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeSNSAPI) ListTopicsPagesWithContext(arg1 context.Context, arg2 *sns.ListTopicsInput, arg3 func(*sns.ListTopicsOutput, bool) bool, arg4 ...request.Option) error {
+func (fake *FakeSNSAPI) ListTopicsPagesWithContext(arg1 aws.Context, arg2 *sns.ListTopicsInput, arg3 func(*sns.ListTopicsOutput, bool) bool, arg4 ...request.Option) error {
 	fake.listTopicsPagesWithContextMutex.Lock()
 	ret, specificReturn := fake.listTopicsPagesWithContextReturnsOnCall[len(fake.listTopicsPagesWithContextArgsForCall)]
 	fake.listTopicsPagesWithContextArgsForCall = append(fake.listTopicsPagesWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListTopicsInput
 		arg3 func(*sns.ListTopicsOutput, bool) bool
 		arg4 []request.Option
@@ -6036,13 +8025,13 @@ func (fake *FakeSNSAPI) ListTopicsPagesWithContextCallCount() int {
 	return len(fake.listTopicsPagesWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) ListTopicsPagesWithContextCalls(stub func(context.Context, *sns.ListTopicsInput, func(*sns.ListTopicsOutput, bool) bool, ...request.Option) error) {
+func (fake *FakeSNSAPI) ListTopicsPagesWithContextCalls(stub func(aws.Context, *sns.ListTopicsInput, func(*sns.ListTopicsOutput, bool) bool, ...request.Option) error) {
 	fake.listTopicsPagesWithContextMutex.Lock()
 	defer fake.listTopicsPagesWithContextMutex.Unlock()
 	fake.ListTopicsPagesWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) ListTopicsPagesWithContextArgsForCall(i int) (context.Context, *sns.ListTopicsInput, func(*sns.ListTopicsOutput, bool) bool, []request.Option) {
+func (fake *FakeSNSAPI) ListTopicsPagesWithContextArgsForCall(i int) (aws.Context, *sns.ListTopicsInput, func(*sns.ListTopicsOutput, bool) bool, []request.Option) {
 	fake.listTopicsPagesWithContextMutex.RLock()
 	defer fake.listTopicsPagesWithContextMutex.RUnlock()
 	argsForCall := fake.listTopicsPagesWithContextArgsForCall[i]
@@ -6136,11 +8125,11 @@ func (fake *FakeSNSAPI) ListTopicsRequestReturnsOnCall(i int, result1 *request.R
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) ListTopicsWithContext(arg1 context.Context, arg2 *sns.ListTopicsInput, arg3 ...request.Option) (*sns.ListTopicsOutput, error) {
+func (fake *FakeSNSAPI) ListTopicsWithContext(arg1 aws.Context, arg2 *sns.ListTopicsInput, arg3 ...request.Option) (*sns.ListTopicsOutput, error) {
 	fake.listTopicsWithContextMutex.Lock()
 	ret, specificReturn := fake.listTopicsWithContextReturnsOnCall[len(fake.listTopicsWithContextArgsForCall)]
 	fake.listTopicsWithContextArgsForCall = append(fake.listTopicsWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.ListTopicsInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -6163,13 +8152,13 @@ func (fake *FakeSNSAPI) ListTopicsWithContextCallCount() int {
 	return len(fake.listTopicsWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) ListTopicsWithContextCalls(stub func(context.Context, *sns.ListTopicsInput, ...request.Option) (*sns.ListTopicsOutput, error)) {
+func (fake *FakeSNSAPI) ListTopicsWithContextCalls(stub func(aws.Context, *sns.ListTopicsInput, ...request.Option) (*sns.ListTopicsOutput, error)) {
 	fake.listTopicsWithContextMutex.Lock()
 	defer fake.listTopicsWithContextMutex.Unlock()
 	fake.ListTopicsWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) ListTopicsWithContextArgsForCall(i int) (context.Context, *sns.ListTopicsInput, []request.Option) {
+func (fake *FakeSNSAPI) ListTopicsWithContextArgsForCall(i int) (aws.Context, *sns.ListTopicsInput, []request.Option) {
 	fake.listTopicsWithContextMutex.RLock()
 	defer fake.listTopicsWithContextMutex.RUnlock()
 	argsForCall := fake.listTopicsWithContextArgsForCall[i]
@@ -6330,11 +8319,11 @@ func (fake *FakeSNSAPI) OptInPhoneNumberRequestReturnsOnCall(i int, result1 *req
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) OptInPhoneNumberWithContext(arg1 context.Context, arg2 *sns.OptInPhoneNumberInput, arg3 ...request.Option) (*sns.OptInPhoneNumberOutput, error) {
+func (fake *FakeSNSAPI) OptInPhoneNumberWithContext(arg1 aws.Context, arg2 *sns.OptInPhoneNumberInput, arg3 ...request.Option) (*sns.OptInPhoneNumberOutput, error) {
 	fake.optInPhoneNumberWithContextMutex.Lock()
 	ret, specificReturn := fake.optInPhoneNumberWithContextReturnsOnCall[len(fake.optInPhoneNumberWithContextArgsForCall)]
 	fake.optInPhoneNumberWithContextArgsForCall = append(fake.optInPhoneNumberWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.OptInPhoneNumberInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -6357,13 +8346,13 @@ func (fake *FakeSNSAPI) OptInPhoneNumberWithContextCallCount() int {
 	return len(fake.optInPhoneNumberWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) OptInPhoneNumberWithContextCalls(stub func(context.Context, *sns.OptInPhoneNumberInput, ...request.Option) (*sns.OptInPhoneNumberOutput, error)) {
+func (fake *FakeSNSAPI) OptInPhoneNumberWithContextCalls(stub func(aws.Context, *sns.OptInPhoneNumberInput, ...request.Option) (*sns.OptInPhoneNumberOutput, error)) {
 	fake.optInPhoneNumberWithContextMutex.Lock()
 	defer fake.optInPhoneNumberWithContextMutex.Unlock()
 	fake.OptInPhoneNumberWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) OptInPhoneNumberWithContextArgsForCall(i int) (context.Context, *sns.OptInPhoneNumberInput, []request.Option) {
+func (fake *FakeSNSAPI) OptInPhoneNumberWithContextArgsForCall(i int) (aws.Context, *sns.OptInPhoneNumberInput, []request.Option) {
 	fake.optInPhoneNumberWithContextMutex.RLock()
 	defer fake.optInPhoneNumberWithContextMutex.RUnlock()
 	argsForCall := fake.optInPhoneNumberWithContextArgsForCall[i]
@@ -6460,6 +8449,200 @@ func (fake *FakeSNSAPI) PublishReturnsOnCall(i int, result1 *sns.PublishOutput, 
 	}{result1, result2}
 }
 
+func (fake *FakeSNSAPI) PublishBatch(arg1 *sns.PublishBatchInput) (*sns.PublishBatchOutput, error) {
+	fake.publishBatchMutex.Lock()
+	ret, specificReturn := fake.publishBatchReturnsOnCall[len(fake.publishBatchArgsForCall)]
+	fake.publishBatchArgsForCall = append(fake.publishBatchArgsForCall, struct {
+		arg1 *sns.PublishBatchInput
+	}{arg1})
+	stub := fake.PublishBatchStub
+	fakeReturns := fake.publishBatchReturns
+	fake.recordInvocation("PublishBatch", []interface{}{arg1})
+	fake.publishBatchMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) PublishBatchCallCount() int {
+	fake.publishBatchMutex.RLock()
+	defer fake.publishBatchMutex.RUnlock()
+	return len(fake.publishBatchArgsForCall)
+}
+
+func (fake *FakeSNSAPI) PublishBatchCalls(stub func(*sns.PublishBatchInput) (*sns.PublishBatchOutput, error)) {
+	fake.publishBatchMutex.Lock()
+	defer fake.publishBatchMutex.Unlock()
+	fake.PublishBatchStub = stub
+}
+
+func (fake *FakeSNSAPI) PublishBatchArgsForCall(i int) *sns.PublishBatchInput {
+	fake.publishBatchMutex.RLock()
+	defer fake.publishBatchMutex.RUnlock()
+	argsForCall := fake.publishBatchArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeSNSAPI) PublishBatchReturns(result1 *sns.PublishBatchOutput, result2 error) {
+	fake.publishBatchMutex.Lock()
+	defer fake.publishBatchMutex.Unlock()
+	fake.PublishBatchStub = nil
+	fake.publishBatchReturns = struct {
+		result1 *sns.PublishBatchOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) PublishBatchReturnsOnCall(i int, result1 *sns.PublishBatchOutput, result2 error) {
+	fake.publishBatchMutex.Lock()
+	defer fake.publishBatchMutex.Unlock()
+	fake.PublishBatchStub = nil
+	if fake.publishBatchReturnsOnCall == nil {
+		fake.publishBatchReturnsOnCall = make(map[int]struct {
+			result1 *sns.PublishBatchOutput
+			result2 error
+		})
+	}
+	fake.publishBatchReturnsOnCall[i] = struct {
+		result1 *sns.PublishBatchOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) PublishBatchRequest(arg1 *sns.PublishBatchInput) (*request.Request, *sns.PublishBatchOutput) {
+	fake.publishBatchRequestMutex.Lock()
+	ret, specificReturn := fake.publishBatchRequestReturnsOnCall[len(fake.publishBatchRequestArgsForCall)]
+	fake.publishBatchRequestArgsForCall = append(fake.publishBatchRequestArgsForCall, struct {
+		arg1 *sns.PublishBatchInput
+	}{arg1})
+	stub := fake.PublishBatchRequestStub
+	fakeReturns := fake.publishBatchRequestReturns
+	fake.recordInvocation("PublishBatchRequest", []interface{}{arg1})
+	fake.publishBatchRequestMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) PublishBatchRequestCallCount() int {
+	fake.publishBatchRequestMutex.RLock()
+	defer fake.publishBatchRequestMutex.RUnlock()
+	return len(fake.publishBatchRequestArgsForCall)
+}
+
+func (fake *FakeSNSAPI) PublishBatchRequestCalls(stub func(*sns.PublishBatchInput) (*request.Request, *sns.PublishBatchOutput)) {
+	fake.publishBatchRequestMutex.Lock()
+	defer fake.publishBatchRequestMutex.Unlock()
+	fake.PublishBatchRequestStub = stub
+}
+
+func (fake *FakeSNSAPI) PublishBatchRequestArgsForCall(i int) *sns.PublishBatchInput {
+	fake.publishBatchRequestMutex.RLock()
+	defer fake.publishBatchRequestMutex.RUnlock()
+	argsForCall := fake.publishBatchRequestArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeSNSAPI) PublishBatchRequestReturns(result1 *request.Request, result2 *sns.PublishBatchOutput) {
+	fake.publishBatchRequestMutex.Lock()
+	defer fake.publishBatchRequestMutex.Unlock()
+	fake.PublishBatchRequestStub = nil
+	fake.publishBatchRequestReturns = struct {
+		result1 *request.Request
+		result2 *sns.PublishBatchOutput
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) PublishBatchRequestReturnsOnCall(i int, result1 *request.Request, result2 *sns.PublishBatchOutput) {
+	fake.publishBatchRequestMutex.Lock()
+	defer fake.publishBatchRequestMutex.Unlock()
+	fake.PublishBatchRequestStub = nil
+	if fake.publishBatchRequestReturnsOnCall == nil {
+		fake.publishBatchRequestReturnsOnCall = make(map[int]struct {
+			result1 *request.Request
+			result2 *sns.PublishBatchOutput
+		})
+	}
+	fake.publishBatchRequestReturnsOnCall[i] = struct {
+		result1 *request.Request
+		result2 *sns.PublishBatchOutput
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) PublishBatchWithContext(arg1 aws.Context, arg2 *sns.PublishBatchInput, arg3 ...request.Option) (*sns.PublishBatchOutput, error) {
+	fake.publishBatchWithContextMutex.Lock()
+	ret, specificReturn := fake.publishBatchWithContextReturnsOnCall[len(fake.publishBatchWithContextArgsForCall)]
+	fake.publishBatchWithContextArgsForCall = append(fake.publishBatchWithContextArgsForCall, struct {
+		arg1 aws.Context
+		arg2 *sns.PublishBatchInput
+		arg3 []request.Option
+	}{arg1, arg2, arg3})
+	stub := fake.PublishBatchWithContextStub
+	fakeReturns := fake.publishBatchWithContextReturns
+	fake.recordInvocation("PublishBatchWithContext", []interface{}{arg1, arg2, arg3})
+	fake.publishBatchWithContextMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3...)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) PublishBatchWithContextCallCount() int {
+	fake.publishBatchWithContextMutex.RLock()
+	defer fake.publishBatchWithContextMutex.RUnlock()
+	return len(fake.publishBatchWithContextArgsForCall)
+}
+
+func (fake *FakeSNSAPI) PublishBatchWithContextCalls(stub func(aws.Context, *sns.PublishBatchInput, ...request.Option) (*sns.PublishBatchOutput, error)) {
+	fake.publishBatchWithContextMutex.Lock()
+	defer fake.publishBatchWithContextMutex.Unlock()
+	fake.PublishBatchWithContextStub = stub
+}
+
+func (fake *FakeSNSAPI) PublishBatchWithContextArgsForCall(i int) (aws.Context, *sns.PublishBatchInput, []request.Option) {
+	fake.publishBatchWithContextMutex.RLock()
+	defer fake.publishBatchWithContextMutex.RUnlock()
+	argsForCall := fake.publishBatchWithContextArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeSNSAPI) PublishBatchWithContextReturns(result1 *sns.PublishBatchOutput, result2 error) {
+	fake.publishBatchWithContextMutex.Lock()
+	defer fake.publishBatchWithContextMutex.Unlock()
+	fake.PublishBatchWithContextStub = nil
+	fake.publishBatchWithContextReturns = struct {
+		result1 *sns.PublishBatchOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) PublishBatchWithContextReturnsOnCall(i int, result1 *sns.PublishBatchOutput, result2 error) {
+	fake.publishBatchWithContextMutex.Lock()
+	defer fake.publishBatchWithContextMutex.Unlock()
+	fake.PublishBatchWithContextStub = nil
+	if fake.publishBatchWithContextReturnsOnCall == nil {
+		fake.publishBatchWithContextReturnsOnCall = make(map[int]struct {
+			result1 *sns.PublishBatchOutput
+			result2 error
+		})
+	}
+	fake.publishBatchWithContextReturnsOnCall[i] = struct {
+		result1 *sns.PublishBatchOutput
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeSNSAPI) PublishRequest(arg1 *sns.PublishInput) (*request.Request, *sns.PublishOutput) {
 	fake.publishRequestMutex.Lock()
 	ret, specificReturn := fake.publishRequestReturnsOnCall[len(fake.publishRequestArgsForCall)]
@@ -6524,11 +8707,11 @@ func (fake *FakeSNSAPI) PublishRequestReturnsOnCall(i int, result1 *request.Requ
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) PublishWithContext(arg1 context.Context, arg2 *sns.PublishInput, arg3 ...request.Option) (*sns.PublishOutput, error) {
+func (fake *FakeSNSAPI) PublishWithContext(arg1 aws.Context, arg2 *sns.PublishInput, arg3 ...request.Option) (*sns.PublishOutput, error) {
 	fake.publishWithContextMutex.Lock()
 	ret, specificReturn := fake.publishWithContextReturnsOnCall[len(fake.publishWithContextArgsForCall)]
 	fake.publishWithContextArgsForCall = append(fake.publishWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.PublishInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -6551,13 +8734,13 @@ func (fake *FakeSNSAPI) PublishWithContextCallCount() int {
 	return len(fake.publishWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) PublishWithContextCalls(stub func(context.Context, *sns.PublishInput, ...request.Option) (*sns.PublishOutput, error)) {
+func (fake *FakeSNSAPI) PublishWithContextCalls(stub func(aws.Context, *sns.PublishInput, ...request.Option) (*sns.PublishOutput, error)) {
 	fake.publishWithContextMutex.Lock()
 	defer fake.publishWithContextMutex.Unlock()
 	fake.PublishWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) PublishWithContextArgsForCall(i int) (context.Context, *sns.PublishInput, []request.Option) {
+func (fake *FakeSNSAPI) PublishWithContextArgsForCall(i int) (aws.Context, *sns.PublishInput, []request.Option) {
 	fake.publishWithContextMutex.RLock()
 	defer fake.publishWithContextMutex.RUnlock()
 	argsForCall := fake.publishWithContextArgsForCall[i]
@@ -6586,6 +8769,200 @@ func (fake *FakeSNSAPI) PublishWithContextReturnsOnCall(i int, result1 *sns.Publ
 	}
 	fake.publishWithContextReturnsOnCall[i] = struct {
 		result1 *sns.PublishOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) PutDataProtectionPolicy(arg1 *sns.PutDataProtectionPolicyInput) (*sns.PutDataProtectionPolicyOutput, error) {
+	fake.putDataProtectionPolicyMutex.Lock()
+	ret, specificReturn := fake.putDataProtectionPolicyReturnsOnCall[len(fake.putDataProtectionPolicyArgsForCall)]
+	fake.putDataProtectionPolicyArgsForCall = append(fake.putDataProtectionPolicyArgsForCall, struct {
+		arg1 *sns.PutDataProtectionPolicyInput
+	}{arg1})
+	stub := fake.PutDataProtectionPolicyStub
+	fakeReturns := fake.putDataProtectionPolicyReturns
+	fake.recordInvocation("PutDataProtectionPolicy", []interface{}{arg1})
+	fake.putDataProtectionPolicyMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) PutDataProtectionPolicyCallCount() int {
+	fake.putDataProtectionPolicyMutex.RLock()
+	defer fake.putDataProtectionPolicyMutex.RUnlock()
+	return len(fake.putDataProtectionPolicyArgsForCall)
+}
+
+func (fake *FakeSNSAPI) PutDataProtectionPolicyCalls(stub func(*sns.PutDataProtectionPolicyInput) (*sns.PutDataProtectionPolicyOutput, error)) {
+	fake.putDataProtectionPolicyMutex.Lock()
+	defer fake.putDataProtectionPolicyMutex.Unlock()
+	fake.PutDataProtectionPolicyStub = stub
+}
+
+func (fake *FakeSNSAPI) PutDataProtectionPolicyArgsForCall(i int) *sns.PutDataProtectionPolicyInput {
+	fake.putDataProtectionPolicyMutex.RLock()
+	defer fake.putDataProtectionPolicyMutex.RUnlock()
+	argsForCall := fake.putDataProtectionPolicyArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeSNSAPI) PutDataProtectionPolicyReturns(result1 *sns.PutDataProtectionPolicyOutput, result2 error) {
+	fake.putDataProtectionPolicyMutex.Lock()
+	defer fake.putDataProtectionPolicyMutex.Unlock()
+	fake.PutDataProtectionPolicyStub = nil
+	fake.putDataProtectionPolicyReturns = struct {
+		result1 *sns.PutDataProtectionPolicyOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) PutDataProtectionPolicyReturnsOnCall(i int, result1 *sns.PutDataProtectionPolicyOutput, result2 error) {
+	fake.putDataProtectionPolicyMutex.Lock()
+	defer fake.putDataProtectionPolicyMutex.Unlock()
+	fake.PutDataProtectionPolicyStub = nil
+	if fake.putDataProtectionPolicyReturnsOnCall == nil {
+		fake.putDataProtectionPolicyReturnsOnCall = make(map[int]struct {
+			result1 *sns.PutDataProtectionPolicyOutput
+			result2 error
+		})
+	}
+	fake.putDataProtectionPolicyReturnsOnCall[i] = struct {
+		result1 *sns.PutDataProtectionPolicyOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) PutDataProtectionPolicyRequest(arg1 *sns.PutDataProtectionPolicyInput) (*request.Request, *sns.PutDataProtectionPolicyOutput) {
+	fake.putDataProtectionPolicyRequestMutex.Lock()
+	ret, specificReturn := fake.putDataProtectionPolicyRequestReturnsOnCall[len(fake.putDataProtectionPolicyRequestArgsForCall)]
+	fake.putDataProtectionPolicyRequestArgsForCall = append(fake.putDataProtectionPolicyRequestArgsForCall, struct {
+		arg1 *sns.PutDataProtectionPolicyInput
+	}{arg1})
+	stub := fake.PutDataProtectionPolicyRequestStub
+	fakeReturns := fake.putDataProtectionPolicyRequestReturns
+	fake.recordInvocation("PutDataProtectionPolicyRequest", []interface{}{arg1})
+	fake.putDataProtectionPolicyRequestMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) PutDataProtectionPolicyRequestCallCount() int {
+	fake.putDataProtectionPolicyRequestMutex.RLock()
+	defer fake.putDataProtectionPolicyRequestMutex.RUnlock()
+	return len(fake.putDataProtectionPolicyRequestArgsForCall)
+}
+
+func (fake *FakeSNSAPI) PutDataProtectionPolicyRequestCalls(stub func(*sns.PutDataProtectionPolicyInput) (*request.Request, *sns.PutDataProtectionPolicyOutput)) {
+	fake.putDataProtectionPolicyRequestMutex.Lock()
+	defer fake.putDataProtectionPolicyRequestMutex.Unlock()
+	fake.PutDataProtectionPolicyRequestStub = stub
+}
+
+func (fake *FakeSNSAPI) PutDataProtectionPolicyRequestArgsForCall(i int) *sns.PutDataProtectionPolicyInput {
+	fake.putDataProtectionPolicyRequestMutex.RLock()
+	defer fake.putDataProtectionPolicyRequestMutex.RUnlock()
+	argsForCall := fake.putDataProtectionPolicyRequestArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeSNSAPI) PutDataProtectionPolicyRequestReturns(result1 *request.Request, result2 *sns.PutDataProtectionPolicyOutput) {
+	fake.putDataProtectionPolicyRequestMutex.Lock()
+	defer fake.putDataProtectionPolicyRequestMutex.Unlock()
+	fake.PutDataProtectionPolicyRequestStub = nil
+	fake.putDataProtectionPolicyRequestReturns = struct {
+		result1 *request.Request
+		result2 *sns.PutDataProtectionPolicyOutput
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) PutDataProtectionPolicyRequestReturnsOnCall(i int, result1 *request.Request, result2 *sns.PutDataProtectionPolicyOutput) {
+	fake.putDataProtectionPolicyRequestMutex.Lock()
+	defer fake.putDataProtectionPolicyRequestMutex.Unlock()
+	fake.PutDataProtectionPolicyRequestStub = nil
+	if fake.putDataProtectionPolicyRequestReturnsOnCall == nil {
+		fake.putDataProtectionPolicyRequestReturnsOnCall = make(map[int]struct {
+			result1 *request.Request
+			result2 *sns.PutDataProtectionPolicyOutput
+		})
+	}
+	fake.putDataProtectionPolicyRequestReturnsOnCall[i] = struct {
+		result1 *request.Request
+		result2 *sns.PutDataProtectionPolicyOutput
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) PutDataProtectionPolicyWithContext(arg1 aws.Context, arg2 *sns.PutDataProtectionPolicyInput, arg3 ...request.Option) (*sns.PutDataProtectionPolicyOutput, error) {
+	fake.putDataProtectionPolicyWithContextMutex.Lock()
+	ret, specificReturn := fake.putDataProtectionPolicyWithContextReturnsOnCall[len(fake.putDataProtectionPolicyWithContextArgsForCall)]
+	fake.putDataProtectionPolicyWithContextArgsForCall = append(fake.putDataProtectionPolicyWithContextArgsForCall, struct {
+		arg1 aws.Context
+		arg2 *sns.PutDataProtectionPolicyInput
+		arg3 []request.Option
+	}{arg1, arg2, arg3})
+	stub := fake.PutDataProtectionPolicyWithContextStub
+	fakeReturns := fake.putDataProtectionPolicyWithContextReturns
+	fake.recordInvocation("PutDataProtectionPolicyWithContext", []interface{}{arg1, arg2, arg3})
+	fake.putDataProtectionPolicyWithContextMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3...)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) PutDataProtectionPolicyWithContextCallCount() int {
+	fake.putDataProtectionPolicyWithContextMutex.RLock()
+	defer fake.putDataProtectionPolicyWithContextMutex.RUnlock()
+	return len(fake.putDataProtectionPolicyWithContextArgsForCall)
+}
+
+func (fake *FakeSNSAPI) PutDataProtectionPolicyWithContextCalls(stub func(aws.Context, *sns.PutDataProtectionPolicyInput, ...request.Option) (*sns.PutDataProtectionPolicyOutput, error)) {
+	fake.putDataProtectionPolicyWithContextMutex.Lock()
+	defer fake.putDataProtectionPolicyWithContextMutex.Unlock()
+	fake.PutDataProtectionPolicyWithContextStub = stub
+}
+
+func (fake *FakeSNSAPI) PutDataProtectionPolicyWithContextArgsForCall(i int) (aws.Context, *sns.PutDataProtectionPolicyInput, []request.Option) {
+	fake.putDataProtectionPolicyWithContextMutex.RLock()
+	defer fake.putDataProtectionPolicyWithContextMutex.RUnlock()
+	argsForCall := fake.putDataProtectionPolicyWithContextArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeSNSAPI) PutDataProtectionPolicyWithContextReturns(result1 *sns.PutDataProtectionPolicyOutput, result2 error) {
+	fake.putDataProtectionPolicyWithContextMutex.Lock()
+	defer fake.putDataProtectionPolicyWithContextMutex.Unlock()
+	fake.PutDataProtectionPolicyWithContextStub = nil
+	fake.putDataProtectionPolicyWithContextReturns = struct {
+		result1 *sns.PutDataProtectionPolicyOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) PutDataProtectionPolicyWithContextReturnsOnCall(i int, result1 *sns.PutDataProtectionPolicyOutput, result2 error) {
+	fake.putDataProtectionPolicyWithContextMutex.Lock()
+	defer fake.putDataProtectionPolicyWithContextMutex.Unlock()
+	fake.PutDataProtectionPolicyWithContextStub = nil
+	if fake.putDataProtectionPolicyWithContextReturnsOnCall == nil {
+		fake.putDataProtectionPolicyWithContextReturnsOnCall = make(map[int]struct {
+			result1 *sns.PutDataProtectionPolicyOutput
+			result2 error
+		})
+	}
+	fake.putDataProtectionPolicyWithContextReturnsOnCall[i] = struct {
+		result1 *sns.PutDataProtectionPolicyOutput
 		result2 error
 	}{result1, result2}
 }
@@ -6718,11 +9095,11 @@ func (fake *FakeSNSAPI) RemovePermissionRequestReturnsOnCall(i int, result1 *req
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) RemovePermissionWithContext(arg1 context.Context, arg2 *sns.RemovePermissionInput, arg3 ...request.Option) (*sns.RemovePermissionOutput, error) {
+func (fake *FakeSNSAPI) RemovePermissionWithContext(arg1 aws.Context, arg2 *sns.RemovePermissionInput, arg3 ...request.Option) (*sns.RemovePermissionOutput, error) {
 	fake.removePermissionWithContextMutex.Lock()
 	ret, specificReturn := fake.removePermissionWithContextReturnsOnCall[len(fake.removePermissionWithContextArgsForCall)]
 	fake.removePermissionWithContextArgsForCall = append(fake.removePermissionWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.RemovePermissionInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -6745,13 +9122,13 @@ func (fake *FakeSNSAPI) RemovePermissionWithContextCallCount() int {
 	return len(fake.removePermissionWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) RemovePermissionWithContextCalls(stub func(context.Context, *sns.RemovePermissionInput, ...request.Option) (*sns.RemovePermissionOutput, error)) {
+func (fake *FakeSNSAPI) RemovePermissionWithContextCalls(stub func(aws.Context, *sns.RemovePermissionInput, ...request.Option) (*sns.RemovePermissionOutput, error)) {
 	fake.removePermissionWithContextMutex.Lock()
 	defer fake.removePermissionWithContextMutex.Unlock()
 	fake.RemovePermissionWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) RemovePermissionWithContextArgsForCall(i int) (context.Context, *sns.RemovePermissionInput, []request.Option) {
+func (fake *FakeSNSAPI) RemovePermissionWithContextArgsForCall(i int) (aws.Context, *sns.RemovePermissionInput, []request.Option) {
 	fake.removePermissionWithContextMutex.RLock()
 	defer fake.removePermissionWithContextMutex.RUnlock()
 	argsForCall := fake.removePermissionWithContextArgsForCall[i]
@@ -6912,11 +9289,11 @@ func (fake *FakeSNSAPI) SetEndpointAttributesRequestReturnsOnCall(i int, result1
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) SetEndpointAttributesWithContext(arg1 context.Context, arg2 *sns.SetEndpointAttributesInput, arg3 ...request.Option) (*sns.SetEndpointAttributesOutput, error) {
+func (fake *FakeSNSAPI) SetEndpointAttributesWithContext(arg1 aws.Context, arg2 *sns.SetEndpointAttributesInput, arg3 ...request.Option) (*sns.SetEndpointAttributesOutput, error) {
 	fake.setEndpointAttributesWithContextMutex.Lock()
 	ret, specificReturn := fake.setEndpointAttributesWithContextReturnsOnCall[len(fake.setEndpointAttributesWithContextArgsForCall)]
 	fake.setEndpointAttributesWithContextArgsForCall = append(fake.setEndpointAttributesWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.SetEndpointAttributesInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -6939,13 +9316,13 @@ func (fake *FakeSNSAPI) SetEndpointAttributesWithContextCallCount() int {
 	return len(fake.setEndpointAttributesWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) SetEndpointAttributesWithContextCalls(stub func(context.Context, *sns.SetEndpointAttributesInput, ...request.Option) (*sns.SetEndpointAttributesOutput, error)) {
+func (fake *FakeSNSAPI) SetEndpointAttributesWithContextCalls(stub func(aws.Context, *sns.SetEndpointAttributesInput, ...request.Option) (*sns.SetEndpointAttributesOutput, error)) {
 	fake.setEndpointAttributesWithContextMutex.Lock()
 	defer fake.setEndpointAttributesWithContextMutex.Unlock()
 	fake.SetEndpointAttributesWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) SetEndpointAttributesWithContextArgsForCall(i int) (context.Context, *sns.SetEndpointAttributesInput, []request.Option) {
+func (fake *FakeSNSAPI) SetEndpointAttributesWithContextArgsForCall(i int) (aws.Context, *sns.SetEndpointAttributesInput, []request.Option) {
 	fake.setEndpointAttributesWithContextMutex.RLock()
 	defer fake.setEndpointAttributesWithContextMutex.RUnlock()
 	argsForCall := fake.setEndpointAttributesWithContextArgsForCall[i]
@@ -7106,11 +9483,11 @@ func (fake *FakeSNSAPI) SetPlatformApplicationAttributesRequestReturnsOnCall(i i
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) SetPlatformApplicationAttributesWithContext(arg1 context.Context, arg2 *sns.SetPlatformApplicationAttributesInput, arg3 ...request.Option) (*sns.SetPlatformApplicationAttributesOutput, error) {
+func (fake *FakeSNSAPI) SetPlatformApplicationAttributesWithContext(arg1 aws.Context, arg2 *sns.SetPlatformApplicationAttributesInput, arg3 ...request.Option) (*sns.SetPlatformApplicationAttributesOutput, error) {
 	fake.setPlatformApplicationAttributesWithContextMutex.Lock()
 	ret, specificReturn := fake.setPlatformApplicationAttributesWithContextReturnsOnCall[len(fake.setPlatformApplicationAttributesWithContextArgsForCall)]
 	fake.setPlatformApplicationAttributesWithContextArgsForCall = append(fake.setPlatformApplicationAttributesWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.SetPlatformApplicationAttributesInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -7133,13 +9510,13 @@ func (fake *FakeSNSAPI) SetPlatformApplicationAttributesWithContextCallCount() i
 	return len(fake.setPlatformApplicationAttributesWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) SetPlatformApplicationAttributesWithContextCalls(stub func(context.Context, *sns.SetPlatformApplicationAttributesInput, ...request.Option) (*sns.SetPlatformApplicationAttributesOutput, error)) {
+func (fake *FakeSNSAPI) SetPlatformApplicationAttributesWithContextCalls(stub func(aws.Context, *sns.SetPlatformApplicationAttributesInput, ...request.Option) (*sns.SetPlatformApplicationAttributesOutput, error)) {
 	fake.setPlatformApplicationAttributesWithContextMutex.Lock()
 	defer fake.setPlatformApplicationAttributesWithContextMutex.Unlock()
 	fake.SetPlatformApplicationAttributesWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) SetPlatformApplicationAttributesWithContextArgsForCall(i int) (context.Context, *sns.SetPlatformApplicationAttributesInput, []request.Option) {
+func (fake *FakeSNSAPI) SetPlatformApplicationAttributesWithContextArgsForCall(i int) (aws.Context, *sns.SetPlatformApplicationAttributesInput, []request.Option) {
 	fake.setPlatformApplicationAttributesWithContextMutex.RLock()
 	defer fake.setPlatformApplicationAttributesWithContextMutex.RUnlock()
 	argsForCall := fake.setPlatformApplicationAttributesWithContextArgsForCall[i]
@@ -7300,11 +9677,11 @@ func (fake *FakeSNSAPI) SetSMSAttributesRequestReturnsOnCall(i int, result1 *req
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) SetSMSAttributesWithContext(arg1 context.Context, arg2 *sns.SetSMSAttributesInput, arg3 ...request.Option) (*sns.SetSMSAttributesOutput, error) {
+func (fake *FakeSNSAPI) SetSMSAttributesWithContext(arg1 aws.Context, arg2 *sns.SetSMSAttributesInput, arg3 ...request.Option) (*sns.SetSMSAttributesOutput, error) {
 	fake.setSMSAttributesWithContextMutex.Lock()
 	ret, specificReturn := fake.setSMSAttributesWithContextReturnsOnCall[len(fake.setSMSAttributesWithContextArgsForCall)]
 	fake.setSMSAttributesWithContextArgsForCall = append(fake.setSMSAttributesWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.SetSMSAttributesInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -7327,13 +9704,13 @@ func (fake *FakeSNSAPI) SetSMSAttributesWithContextCallCount() int {
 	return len(fake.setSMSAttributesWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) SetSMSAttributesWithContextCalls(stub func(context.Context, *sns.SetSMSAttributesInput, ...request.Option) (*sns.SetSMSAttributesOutput, error)) {
+func (fake *FakeSNSAPI) SetSMSAttributesWithContextCalls(stub func(aws.Context, *sns.SetSMSAttributesInput, ...request.Option) (*sns.SetSMSAttributesOutput, error)) {
 	fake.setSMSAttributesWithContextMutex.Lock()
 	defer fake.setSMSAttributesWithContextMutex.Unlock()
 	fake.SetSMSAttributesWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) SetSMSAttributesWithContextArgsForCall(i int) (context.Context, *sns.SetSMSAttributesInput, []request.Option) {
+func (fake *FakeSNSAPI) SetSMSAttributesWithContextArgsForCall(i int) (aws.Context, *sns.SetSMSAttributesInput, []request.Option) {
 	fake.setSMSAttributesWithContextMutex.RLock()
 	defer fake.setSMSAttributesWithContextMutex.RUnlock()
 	argsForCall := fake.setSMSAttributesWithContextArgsForCall[i]
@@ -7494,11 +9871,11 @@ func (fake *FakeSNSAPI) SetSubscriptionAttributesRequestReturnsOnCall(i int, res
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) SetSubscriptionAttributesWithContext(arg1 context.Context, arg2 *sns.SetSubscriptionAttributesInput, arg3 ...request.Option) (*sns.SetSubscriptionAttributesOutput, error) {
+func (fake *FakeSNSAPI) SetSubscriptionAttributesWithContext(arg1 aws.Context, arg2 *sns.SetSubscriptionAttributesInput, arg3 ...request.Option) (*sns.SetSubscriptionAttributesOutput, error) {
 	fake.setSubscriptionAttributesWithContextMutex.Lock()
 	ret, specificReturn := fake.setSubscriptionAttributesWithContextReturnsOnCall[len(fake.setSubscriptionAttributesWithContextArgsForCall)]
 	fake.setSubscriptionAttributesWithContextArgsForCall = append(fake.setSubscriptionAttributesWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.SetSubscriptionAttributesInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -7521,13 +9898,13 @@ func (fake *FakeSNSAPI) SetSubscriptionAttributesWithContextCallCount() int {
 	return len(fake.setSubscriptionAttributesWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) SetSubscriptionAttributesWithContextCalls(stub func(context.Context, *sns.SetSubscriptionAttributesInput, ...request.Option) (*sns.SetSubscriptionAttributesOutput, error)) {
+func (fake *FakeSNSAPI) SetSubscriptionAttributesWithContextCalls(stub func(aws.Context, *sns.SetSubscriptionAttributesInput, ...request.Option) (*sns.SetSubscriptionAttributesOutput, error)) {
 	fake.setSubscriptionAttributesWithContextMutex.Lock()
 	defer fake.setSubscriptionAttributesWithContextMutex.Unlock()
 	fake.SetSubscriptionAttributesWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) SetSubscriptionAttributesWithContextArgsForCall(i int) (context.Context, *sns.SetSubscriptionAttributesInput, []request.Option) {
+func (fake *FakeSNSAPI) SetSubscriptionAttributesWithContextArgsForCall(i int) (aws.Context, *sns.SetSubscriptionAttributesInput, []request.Option) {
 	fake.setSubscriptionAttributesWithContextMutex.RLock()
 	defer fake.setSubscriptionAttributesWithContextMutex.RUnlock()
 	argsForCall := fake.setSubscriptionAttributesWithContextArgsForCall[i]
@@ -7688,11 +10065,11 @@ func (fake *FakeSNSAPI) SetTopicAttributesRequestReturnsOnCall(i int, result1 *r
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) SetTopicAttributesWithContext(arg1 context.Context, arg2 *sns.SetTopicAttributesInput, arg3 ...request.Option) (*sns.SetTopicAttributesOutput, error) {
+func (fake *FakeSNSAPI) SetTopicAttributesWithContext(arg1 aws.Context, arg2 *sns.SetTopicAttributesInput, arg3 ...request.Option) (*sns.SetTopicAttributesOutput, error) {
 	fake.setTopicAttributesWithContextMutex.Lock()
 	ret, specificReturn := fake.setTopicAttributesWithContextReturnsOnCall[len(fake.setTopicAttributesWithContextArgsForCall)]
 	fake.setTopicAttributesWithContextArgsForCall = append(fake.setTopicAttributesWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.SetTopicAttributesInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -7715,13 +10092,13 @@ func (fake *FakeSNSAPI) SetTopicAttributesWithContextCallCount() int {
 	return len(fake.setTopicAttributesWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) SetTopicAttributesWithContextCalls(stub func(context.Context, *sns.SetTopicAttributesInput, ...request.Option) (*sns.SetTopicAttributesOutput, error)) {
+func (fake *FakeSNSAPI) SetTopicAttributesWithContextCalls(stub func(aws.Context, *sns.SetTopicAttributesInput, ...request.Option) (*sns.SetTopicAttributesOutput, error)) {
 	fake.setTopicAttributesWithContextMutex.Lock()
 	defer fake.setTopicAttributesWithContextMutex.Unlock()
 	fake.SetTopicAttributesWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) SetTopicAttributesWithContextArgsForCall(i int) (context.Context, *sns.SetTopicAttributesInput, []request.Option) {
+func (fake *FakeSNSAPI) SetTopicAttributesWithContextArgsForCall(i int) (aws.Context, *sns.SetTopicAttributesInput, []request.Option) {
 	fake.setTopicAttributesWithContextMutex.RLock()
 	defer fake.setTopicAttributesWithContextMutex.RUnlock()
 	argsForCall := fake.setTopicAttributesWithContextArgsForCall[i]
@@ -7882,11 +10259,11 @@ func (fake *FakeSNSAPI) SubscribeRequestReturnsOnCall(i int, result1 *request.Re
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) SubscribeWithContext(arg1 context.Context, arg2 *sns.SubscribeInput, arg3 ...request.Option) (*sns.SubscribeOutput, error) {
+func (fake *FakeSNSAPI) SubscribeWithContext(arg1 aws.Context, arg2 *sns.SubscribeInput, arg3 ...request.Option) (*sns.SubscribeOutput, error) {
 	fake.subscribeWithContextMutex.Lock()
 	ret, specificReturn := fake.subscribeWithContextReturnsOnCall[len(fake.subscribeWithContextArgsForCall)]
 	fake.subscribeWithContextArgsForCall = append(fake.subscribeWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.SubscribeInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -7909,13 +10286,13 @@ func (fake *FakeSNSAPI) SubscribeWithContextCallCount() int {
 	return len(fake.subscribeWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) SubscribeWithContextCalls(stub func(context.Context, *sns.SubscribeInput, ...request.Option) (*sns.SubscribeOutput, error)) {
+func (fake *FakeSNSAPI) SubscribeWithContextCalls(stub func(aws.Context, *sns.SubscribeInput, ...request.Option) (*sns.SubscribeOutput, error)) {
 	fake.subscribeWithContextMutex.Lock()
 	defer fake.subscribeWithContextMutex.Unlock()
 	fake.SubscribeWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) SubscribeWithContextArgsForCall(i int) (context.Context, *sns.SubscribeInput, []request.Option) {
+func (fake *FakeSNSAPI) SubscribeWithContextArgsForCall(i int) (aws.Context, *sns.SubscribeInput, []request.Option) {
 	fake.subscribeWithContextMutex.RLock()
 	defer fake.subscribeWithContextMutex.RUnlock()
 	argsForCall := fake.subscribeWithContextArgsForCall[i]
@@ -8076,11 +10453,11 @@ func (fake *FakeSNSAPI) TagResourceRequestReturnsOnCall(i int, result1 *request.
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) TagResourceWithContext(arg1 context.Context, arg2 *sns.TagResourceInput, arg3 ...request.Option) (*sns.TagResourceOutput, error) {
+func (fake *FakeSNSAPI) TagResourceWithContext(arg1 aws.Context, arg2 *sns.TagResourceInput, arg3 ...request.Option) (*sns.TagResourceOutput, error) {
 	fake.tagResourceWithContextMutex.Lock()
 	ret, specificReturn := fake.tagResourceWithContextReturnsOnCall[len(fake.tagResourceWithContextArgsForCall)]
 	fake.tagResourceWithContextArgsForCall = append(fake.tagResourceWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.TagResourceInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -8103,13 +10480,13 @@ func (fake *FakeSNSAPI) TagResourceWithContextCallCount() int {
 	return len(fake.tagResourceWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) TagResourceWithContextCalls(stub func(context.Context, *sns.TagResourceInput, ...request.Option) (*sns.TagResourceOutput, error)) {
+func (fake *FakeSNSAPI) TagResourceWithContextCalls(stub func(aws.Context, *sns.TagResourceInput, ...request.Option) (*sns.TagResourceOutput, error)) {
 	fake.tagResourceWithContextMutex.Lock()
 	defer fake.tagResourceWithContextMutex.Unlock()
 	fake.TagResourceWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) TagResourceWithContextArgsForCall(i int) (context.Context, *sns.TagResourceInput, []request.Option) {
+func (fake *FakeSNSAPI) TagResourceWithContextArgsForCall(i int) (aws.Context, *sns.TagResourceInput, []request.Option) {
 	fake.tagResourceWithContextMutex.RLock()
 	defer fake.tagResourceWithContextMutex.RUnlock()
 	argsForCall := fake.tagResourceWithContextArgsForCall[i]
@@ -8270,11 +10647,11 @@ func (fake *FakeSNSAPI) UnsubscribeRequestReturnsOnCall(i int, result1 *request.
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) UnsubscribeWithContext(arg1 context.Context, arg2 *sns.UnsubscribeInput, arg3 ...request.Option) (*sns.UnsubscribeOutput, error) {
+func (fake *FakeSNSAPI) UnsubscribeWithContext(arg1 aws.Context, arg2 *sns.UnsubscribeInput, arg3 ...request.Option) (*sns.UnsubscribeOutput, error) {
 	fake.unsubscribeWithContextMutex.Lock()
 	ret, specificReturn := fake.unsubscribeWithContextReturnsOnCall[len(fake.unsubscribeWithContextArgsForCall)]
 	fake.unsubscribeWithContextArgsForCall = append(fake.unsubscribeWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.UnsubscribeInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -8297,13 +10674,13 @@ func (fake *FakeSNSAPI) UnsubscribeWithContextCallCount() int {
 	return len(fake.unsubscribeWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) UnsubscribeWithContextCalls(stub func(context.Context, *sns.UnsubscribeInput, ...request.Option) (*sns.UnsubscribeOutput, error)) {
+func (fake *FakeSNSAPI) UnsubscribeWithContextCalls(stub func(aws.Context, *sns.UnsubscribeInput, ...request.Option) (*sns.UnsubscribeOutput, error)) {
 	fake.unsubscribeWithContextMutex.Lock()
 	defer fake.unsubscribeWithContextMutex.Unlock()
 	fake.UnsubscribeWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) UnsubscribeWithContextArgsForCall(i int) (context.Context, *sns.UnsubscribeInput, []request.Option) {
+func (fake *FakeSNSAPI) UnsubscribeWithContextArgsForCall(i int) (aws.Context, *sns.UnsubscribeInput, []request.Option) {
 	fake.unsubscribeWithContextMutex.RLock()
 	defer fake.unsubscribeWithContextMutex.RUnlock()
 	argsForCall := fake.unsubscribeWithContextArgsForCall[i]
@@ -8464,11 +10841,11 @@ func (fake *FakeSNSAPI) UntagResourceRequestReturnsOnCall(i int, result1 *reques
 	}{result1, result2}
 }
 
-func (fake *FakeSNSAPI) UntagResourceWithContext(arg1 context.Context, arg2 *sns.UntagResourceInput, arg3 ...request.Option) (*sns.UntagResourceOutput, error) {
+func (fake *FakeSNSAPI) UntagResourceWithContext(arg1 aws.Context, arg2 *sns.UntagResourceInput, arg3 ...request.Option) (*sns.UntagResourceOutput, error) {
 	fake.untagResourceWithContextMutex.Lock()
 	ret, specificReturn := fake.untagResourceWithContextReturnsOnCall[len(fake.untagResourceWithContextArgsForCall)]
 	fake.untagResourceWithContextArgsForCall = append(fake.untagResourceWithContextArgsForCall, struct {
-		arg1 context.Context
+		arg1 aws.Context
 		arg2 *sns.UntagResourceInput
 		arg3 []request.Option
 	}{arg1, arg2, arg3})
@@ -8491,13 +10868,13 @@ func (fake *FakeSNSAPI) UntagResourceWithContextCallCount() int {
 	return len(fake.untagResourceWithContextArgsForCall)
 }
 
-func (fake *FakeSNSAPI) UntagResourceWithContextCalls(stub func(context.Context, *sns.UntagResourceInput, ...request.Option) (*sns.UntagResourceOutput, error)) {
+func (fake *FakeSNSAPI) UntagResourceWithContextCalls(stub func(aws.Context, *sns.UntagResourceInput, ...request.Option) (*sns.UntagResourceOutput, error)) {
 	fake.untagResourceWithContextMutex.Lock()
 	defer fake.untagResourceWithContextMutex.Unlock()
 	fake.UntagResourceWithContextStub = stub
 }
 
-func (fake *FakeSNSAPI) UntagResourceWithContextArgsForCall(i int) (context.Context, *sns.UntagResourceInput, []request.Option) {
+func (fake *FakeSNSAPI) UntagResourceWithContextArgsForCall(i int) (aws.Context, *sns.UntagResourceInput, []request.Option) {
 	fake.untagResourceWithContextMutex.RLock()
 	defer fake.untagResourceWithContextMutex.RUnlock()
 	argsForCall := fake.untagResourceWithContextArgsForCall[i]
@@ -8530,227 +10907,203 @@ func (fake *FakeSNSAPI) UntagResourceWithContextReturnsOnCall(i int, result1 *sn
 	}{result1, result2}
 }
 
+func (fake *FakeSNSAPI) VerifySMSSandboxPhoneNumber(arg1 *sns.VerifySMSSandboxPhoneNumberInput) (*sns.VerifySMSSandboxPhoneNumberOutput, error) {
+	fake.verifySMSSandboxPhoneNumberMutex.Lock()
+	ret, specificReturn := fake.verifySMSSandboxPhoneNumberReturnsOnCall[len(fake.verifySMSSandboxPhoneNumberArgsForCall)]
+	fake.verifySMSSandboxPhoneNumberArgsForCall = append(fake.verifySMSSandboxPhoneNumberArgsForCall, struct {
+		arg1 *sns.VerifySMSSandboxPhoneNumberInput
+	}{arg1})
+	stub := fake.VerifySMSSandboxPhoneNumberStub
+	fakeReturns := fake.verifySMSSandboxPhoneNumberReturns
+	fake.recordInvocation("VerifySMSSandboxPhoneNumber", []interface{}{arg1})
+	fake.verifySMSSandboxPhoneNumberMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) VerifySMSSandboxPhoneNumberCallCount() int {
+	fake.verifySMSSandboxPhoneNumberMutex.RLock()
+	defer fake.verifySMSSandboxPhoneNumberMutex.RUnlock()
+	return len(fake.verifySMSSandboxPhoneNumberArgsForCall)
+}
+
+func (fake *FakeSNSAPI) VerifySMSSandboxPhoneNumberCalls(stub func(*sns.VerifySMSSandboxPhoneNumberInput) (*sns.VerifySMSSandboxPhoneNumberOutput, error)) {
+	fake.verifySMSSandboxPhoneNumberMutex.Lock()
+	defer fake.verifySMSSandboxPhoneNumberMutex.Unlock()
+	fake.VerifySMSSandboxPhoneNumberStub = stub
+}
+
+func (fake *FakeSNSAPI) VerifySMSSandboxPhoneNumberArgsForCall(i int) *sns.VerifySMSSandboxPhoneNumberInput {
+	fake.verifySMSSandboxPhoneNumberMutex.RLock()
+	defer fake.verifySMSSandboxPhoneNumberMutex.RUnlock()
+	argsForCall := fake.verifySMSSandboxPhoneNumberArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeSNSAPI) VerifySMSSandboxPhoneNumberReturns(result1 *sns.VerifySMSSandboxPhoneNumberOutput, result2 error) {
+	fake.verifySMSSandboxPhoneNumberMutex.Lock()
+	defer fake.verifySMSSandboxPhoneNumberMutex.Unlock()
+	fake.VerifySMSSandboxPhoneNumberStub = nil
+	fake.verifySMSSandboxPhoneNumberReturns = struct {
+		result1 *sns.VerifySMSSandboxPhoneNumberOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) VerifySMSSandboxPhoneNumberReturnsOnCall(i int, result1 *sns.VerifySMSSandboxPhoneNumberOutput, result2 error) {
+	fake.verifySMSSandboxPhoneNumberMutex.Lock()
+	defer fake.verifySMSSandboxPhoneNumberMutex.Unlock()
+	fake.VerifySMSSandboxPhoneNumberStub = nil
+	if fake.verifySMSSandboxPhoneNumberReturnsOnCall == nil {
+		fake.verifySMSSandboxPhoneNumberReturnsOnCall = make(map[int]struct {
+			result1 *sns.VerifySMSSandboxPhoneNumberOutput
+			result2 error
+		})
+	}
+	fake.verifySMSSandboxPhoneNumberReturnsOnCall[i] = struct {
+		result1 *sns.VerifySMSSandboxPhoneNumberOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) VerifySMSSandboxPhoneNumberRequest(arg1 *sns.VerifySMSSandboxPhoneNumberInput) (*request.Request, *sns.VerifySMSSandboxPhoneNumberOutput) {
+	fake.verifySMSSandboxPhoneNumberRequestMutex.Lock()
+	ret, specificReturn := fake.verifySMSSandboxPhoneNumberRequestReturnsOnCall[len(fake.verifySMSSandboxPhoneNumberRequestArgsForCall)]
+	fake.verifySMSSandboxPhoneNumberRequestArgsForCall = append(fake.verifySMSSandboxPhoneNumberRequestArgsForCall, struct {
+		arg1 *sns.VerifySMSSandboxPhoneNumberInput
+	}{arg1})
+	stub := fake.VerifySMSSandboxPhoneNumberRequestStub
+	fakeReturns := fake.verifySMSSandboxPhoneNumberRequestReturns
+	fake.recordInvocation("VerifySMSSandboxPhoneNumberRequest", []interface{}{arg1})
+	fake.verifySMSSandboxPhoneNumberRequestMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) VerifySMSSandboxPhoneNumberRequestCallCount() int {
+	fake.verifySMSSandboxPhoneNumberRequestMutex.RLock()
+	defer fake.verifySMSSandboxPhoneNumberRequestMutex.RUnlock()
+	return len(fake.verifySMSSandboxPhoneNumberRequestArgsForCall)
+}
+
+func (fake *FakeSNSAPI) VerifySMSSandboxPhoneNumberRequestCalls(stub func(*sns.VerifySMSSandboxPhoneNumberInput) (*request.Request, *sns.VerifySMSSandboxPhoneNumberOutput)) {
+	fake.verifySMSSandboxPhoneNumberRequestMutex.Lock()
+	defer fake.verifySMSSandboxPhoneNumberRequestMutex.Unlock()
+	fake.VerifySMSSandboxPhoneNumberRequestStub = stub
+}
+
+func (fake *FakeSNSAPI) VerifySMSSandboxPhoneNumberRequestArgsForCall(i int) *sns.VerifySMSSandboxPhoneNumberInput {
+	fake.verifySMSSandboxPhoneNumberRequestMutex.RLock()
+	defer fake.verifySMSSandboxPhoneNumberRequestMutex.RUnlock()
+	argsForCall := fake.verifySMSSandboxPhoneNumberRequestArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeSNSAPI) VerifySMSSandboxPhoneNumberRequestReturns(result1 *request.Request, result2 *sns.VerifySMSSandboxPhoneNumberOutput) {
+	fake.verifySMSSandboxPhoneNumberRequestMutex.Lock()
+	defer fake.verifySMSSandboxPhoneNumberRequestMutex.Unlock()
+	fake.VerifySMSSandboxPhoneNumberRequestStub = nil
+	fake.verifySMSSandboxPhoneNumberRequestReturns = struct {
+		result1 *request.Request
+		result2 *sns.VerifySMSSandboxPhoneNumberOutput
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) VerifySMSSandboxPhoneNumberRequestReturnsOnCall(i int, result1 *request.Request, result2 *sns.VerifySMSSandboxPhoneNumberOutput) {
+	fake.verifySMSSandboxPhoneNumberRequestMutex.Lock()
+	defer fake.verifySMSSandboxPhoneNumberRequestMutex.Unlock()
+	fake.VerifySMSSandboxPhoneNumberRequestStub = nil
+	if fake.verifySMSSandboxPhoneNumberRequestReturnsOnCall == nil {
+		fake.verifySMSSandboxPhoneNumberRequestReturnsOnCall = make(map[int]struct {
+			result1 *request.Request
+			result2 *sns.VerifySMSSandboxPhoneNumberOutput
+		})
+	}
+	fake.verifySMSSandboxPhoneNumberRequestReturnsOnCall[i] = struct {
+		result1 *request.Request
+		result2 *sns.VerifySMSSandboxPhoneNumberOutput
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) VerifySMSSandboxPhoneNumberWithContext(arg1 aws.Context, arg2 *sns.VerifySMSSandboxPhoneNumberInput, arg3 ...request.Option) (*sns.VerifySMSSandboxPhoneNumberOutput, error) {
+	fake.verifySMSSandboxPhoneNumberWithContextMutex.Lock()
+	ret, specificReturn := fake.verifySMSSandboxPhoneNumberWithContextReturnsOnCall[len(fake.verifySMSSandboxPhoneNumberWithContextArgsForCall)]
+	fake.verifySMSSandboxPhoneNumberWithContextArgsForCall = append(fake.verifySMSSandboxPhoneNumberWithContextArgsForCall, struct {
+		arg1 aws.Context
+		arg2 *sns.VerifySMSSandboxPhoneNumberInput
+		arg3 []request.Option
+	}{arg1, arg2, arg3})
+	stub := fake.VerifySMSSandboxPhoneNumberWithContextStub
+	fakeReturns := fake.verifySMSSandboxPhoneNumberWithContextReturns
+	fake.recordInvocation("VerifySMSSandboxPhoneNumberWithContext", []interface{}{arg1, arg2, arg3})
+	fake.verifySMSSandboxPhoneNumberWithContextMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3...)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSNSAPI) VerifySMSSandboxPhoneNumberWithContextCallCount() int {
+	fake.verifySMSSandboxPhoneNumberWithContextMutex.RLock()
+	defer fake.verifySMSSandboxPhoneNumberWithContextMutex.RUnlock()
+	return len(fake.verifySMSSandboxPhoneNumberWithContextArgsForCall)
+}
+
+func (fake *FakeSNSAPI) VerifySMSSandboxPhoneNumberWithContextCalls(stub func(aws.Context, *sns.VerifySMSSandboxPhoneNumberInput, ...request.Option) (*sns.VerifySMSSandboxPhoneNumberOutput, error)) {
+	fake.verifySMSSandboxPhoneNumberWithContextMutex.Lock()
+	defer fake.verifySMSSandboxPhoneNumberWithContextMutex.Unlock()
+	fake.VerifySMSSandboxPhoneNumberWithContextStub = stub
+}
+
+func (fake *FakeSNSAPI) VerifySMSSandboxPhoneNumberWithContextArgsForCall(i int) (aws.Context, *sns.VerifySMSSandboxPhoneNumberInput, []request.Option) {
+	fake.verifySMSSandboxPhoneNumberWithContextMutex.RLock()
+	defer fake.verifySMSSandboxPhoneNumberWithContextMutex.RUnlock()
+	argsForCall := fake.verifySMSSandboxPhoneNumberWithContextArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeSNSAPI) VerifySMSSandboxPhoneNumberWithContextReturns(result1 *sns.VerifySMSSandboxPhoneNumberOutput, result2 error) {
+	fake.verifySMSSandboxPhoneNumberWithContextMutex.Lock()
+	defer fake.verifySMSSandboxPhoneNumberWithContextMutex.Unlock()
+	fake.VerifySMSSandboxPhoneNumberWithContextStub = nil
+	fake.verifySMSSandboxPhoneNumberWithContextReturns = struct {
+		result1 *sns.VerifySMSSandboxPhoneNumberOutput
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSNSAPI) VerifySMSSandboxPhoneNumberWithContextReturnsOnCall(i int, result1 *sns.VerifySMSSandboxPhoneNumberOutput, result2 error) {
+	fake.verifySMSSandboxPhoneNumberWithContextMutex.Lock()
+	defer fake.verifySMSSandboxPhoneNumberWithContextMutex.Unlock()
+	fake.VerifySMSSandboxPhoneNumberWithContextStub = nil
+	if fake.verifySMSSandboxPhoneNumberWithContextReturnsOnCall == nil {
+		fake.verifySMSSandboxPhoneNumberWithContextReturnsOnCall = make(map[int]struct {
+			result1 *sns.VerifySMSSandboxPhoneNumberOutput
+			result2 error
+		})
+	}
+	fake.verifySMSSandboxPhoneNumberWithContextReturnsOnCall[i] = struct {
+		result1 *sns.VerifySMSSandboxPhoneNumberOutput
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeSNSAPI) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.addPermissionMutex.RLock()
-	defer fake.addPermissionMutex.RUnlock()
-	fake.addPermissionRequestMutex.RLock()
-	defer fake.addPermissionRequestMutex.RUnlock()
-	fake.addPermissionWithContextMutex.RLock()
-	defer fake.addPermissionWithContextMutex.RUnlock()
-	fake.checkIfPhoneNumberIsOptedOutMutex.RLock()
-	defer fake.checkIfPhoneNumberIsOptedOutMutex.RUnlock()
-	fake.checkIfPhoneNumberIsOptedOutRequestMutex.RLock()
-	defer fake.checkIfPhoneNumberIsOptedOutRequestMutex.RUnlock()
-	fake.checkIfPhoneNumberIsOptedOutWithContextMutex.RLock()
-	defer fake.checkIfPhoneNumberIsOptedOutWithContextMutex.RUnlock()
-	fake.confirmSubscriptionMutex.RLock()
-	defer fake.confirmSubscriptionMutex.RUnlock()
-	fake.confirmSubscriptionRequestMutex.RLock()
-	defer fake.confirmSubscriptionRequestMutex.RUnlock()
-	fake.confirmSubscriptionWithContextMutex.RLock()
-	defer fake.confirmSubscriptionWithContextMutex.RUnlock()
-	fake.createPlatformApplicationMutex.RLock()
-	defer fake.createPlatformApplicationMutex.RUnlock()
-	fake.createPlatformApplicationRequestMutex.RLock()
-	defer fake.createPlatformApplicationRequestMutex.RUnlock()
-	fake.createPlatformApplicationWithContextMutex.RLock()
-	defer fake.createPlatformApplicationWithContextMutex.RUnlock()
-	fake.createPlatformEndpointMutex.RLock()
-	defer fake.createPlatformEndpointMutex.RUnlock()
-	fake.createPlatformEndpointRequestMutex.RLock()
-	defer fake.createPlatformEndpointRequestMutex.RUnlock()
-	fake.createPlatformEndpointWithContextMutex.RLock()
-	defer fake.createPlatformEndpointWithContextMutex.RUnlock()
-	fake.createTopicMutex.RLock()
-	defer fake.createTopicMutex.RUnlock()
-	fake.createTopicRequestMutex.RLock()
-	defer fake.createTopicRequestMutex.RUnlock()
-	fake.createTopicWithContextMutex.RLock()
-	defer fake.createTopicWithContextMutex.RUnlock()
-	fake.deleteEndpointMutex.RLock()
-	defer fake.deleteEndpointMutex.RUnlock()
-	fake.deleteEndpointRequestMutex.RLock()
-	defer fake.deleteEndpointRequestMutex.RUnlock()
-	fake.deleteEndpointWithContextMutex.RLock()
-	defer fake.deleteEndpointWithContextMutex.RUnlock()
-	fake.deletePlatformApplicationMutex.RLock()
-	defer fake.deletePlatformApplicationMutex.RUnlock()
-	fake.deletePlatformApplicationRequestMutex.RLock()
-	defer fake.deletePlatformApplicationRequestMutex.RUnlock()
-	fake.deletePlatformApplicationWithContextMutex.RLock()
-	defer fake.deletePlatformApplicationWithContextMutex.RUnlock()
-	fake.deleteTopicMutex.RLock()
-	defer fake.deleteTopicMutex.RUnlock()
-	fake.deleteTopicRequestMutex.RLock()
-	defer fake.deleteTopicRequestMutex.RUnlock()
-	fake.deleteTopicWithContextMutex.RLock()
-	defer fake.deleteTopicWithContextMutex.RUnlock()
-	fake.getEndpointAttributesMutex.RLock()
-	defer fake.getEndpointAttributesMutex.RUnlock()
-	fake.getEndpointAttributesRequestMutex.RLock()
-	defer fake.getEndpointAttributesRequestMutex.RUnlock()
-	fake.getEndpointAttributesWithContextMutex.RLock()
-	defer fake.getEndpointAttributesWithContextMutex.RUnlock()
-	fake.getPlatformApplicationAttributesMutex.RLock()
-	defer fake.getPlatformApplicationAttributesMutex.RUnlock()
-	fake.getPlatformApplicationAttributesRequestMutex.RLock()
-	defer fake.getPlatformApplicationAttributesRequestMutex.RUnlock()
-	fake.getPlatformApplicationAttributesWithContextMutex.RLock()
-	defer fake.getPlatformApplicationAttributesWithContextMutex.RUnlock()
-	fake.getSMSAttributesMutex.RLock()
-	defer fake.getSMSAttributesMutex.RUnlock()
-	fake.getSMSAttributesRequestMutex.RLock()
-	defer fake.getSMSAttributesRequestMutex.RUnlock()
-	fake.getSMSAttributesWithContextMutex.RLock()
-	defer fake.getSMSAttributesWithContextMutex.RUnlock()
-	fake.getSubscriptionAttributesMutex.RLock()
-	defer fake.getSubscriptionAttributesMutex.RUnlock()
-	fake.getSubscriptionAttributesRequestMutex.RLock()
-	defer fake.getSubscriptionAttributesRequestMutex.RUnlock()
-	fake.getSubscriptionAttributesWithContextMutex.RLock()
-	defer fake.getSubscriptionAttributesWithContextMutex.RUnlock()
-	fake.getTopicAttributesMutex.RLock()
-	defer fake.getTopicAttributesMutex.RUnlock()
-	fake.getTopicAttributesRequestMutex.RLock()
-	defer fake.getTopicAttributesRequestMutex.RUnlock()
-	fake.getTopicAttributesWithContextMutex.RLock()
-	defer fake.getTopicAttributesWithContextMutex.RUnlock()
-	fake.listEndpointsByPlatformApplicationMutex.RLock()
-	defer fake.listEndpointsByPlatformApplicationMutex.RUnlock()
-	fake.listEndpointsByPlatformApplicationPagesMutex.RLock()
-	defer fake.listEndpointsByPlatformApplicationPagesMutex.RUnlock()
-	fake.listEndpointsByPlatformApplicationPagesWithContextMutex.RLock()
-	defer fake.listEndpointsByPlatformApplicationPagesWithContextMutex.RUnlock()
-	fake.listEndpointsByPlatformApplicationRequestMutex.RLock()
-	defer fake.listEndpointsByPlatformApplicationRequestMutex.RUnlock()
-	fake.listEndpointsByPlatformApplicationWithContextMutex.RLock()
-	defer fake.listEndpointsByPlatformApplicationWithContextMutex.RUnlock()
-	fake.listPhoneNumbersOptedOutMutex.RLock()
-	defer fake.listPhoneNumbersOptedOutMutex.RUnlock()
-	fake.listPhoneNumbersOptedOutRequestMutex.RLock()
-	defer fake.listPhoneNumbersOptedOutRequestMutex.RUnlock()
-	fake.listPhoneNumbersOptedOutWithContextMutex.RLock()
-	defer fake.listPhoneNumbersOptedOutWithContextMutex.RUnlock()
-	fake.listPlatformApplicationsMutex.RLock()
-	defer fake.listPlatformApplicationsMutex.RUnlock()
-	fake.listPlatformApplicationsPagesMutex.RLock()
-	defer fake.listPlatformApplicationsPagesMutex.RUnlock()
-	fake.listPlatformApplicationsPagesWithContextMutex.RLock()
-	defer fake.listPlatformApplicationsPagesWithContextMutex.RUnlock()
-	fake.listPlatformApplicationsRequestMutex.RLock()
-	defer fake.listPlatformApplicationsRequestMutex.RUnlock()
-	fake.listPlatformApplicationsWithContextMutex.RLock()
-	defer fake.listPlatformApplicationsWithContextMutex.RUnlock()
-	fake.listSubscriptionsMutex.RLock()
-	defer fake.listSubscriptionsMutex.RUnlock()
-	fake.listSubscriptionsByTopicMutex.RLock()
-	defer fake.listSubscriptionsByTopicMutex.RUnlock()
-	fake.listSubscriptionsByTopicPagesMutex.RLock()
-	defer fake.listSubscriptionsByTopicPagesMutex.RUnlock()
-	fake.listSubscriptionsByTopicPagesWithContextMutex.RLock()
-	defer fake.listSubscriptionsByTopicPagesWithContextMutex.RUnlock()
-	fake.listSubscriptionsByTopicRequestMutex.RLock()
-	defer fake.listSubscriptionsByTopicRequestMutex.RUnlock()
-	fake.listSubscriptionsByTopicWithContextMutex.RLock()
-	defer fake.listSubscriptionsByTopicWithContextMutex.RUnlock()
-	fake.listSubscriptionsPagesMutex.RLock()
-	defer fake.listSubscriptionsPagesMutex.RUnlock()
-	fake.listSubscriptionsPagesWithContextMutex.RLock()
-	defer fake.listSubscriptionsPagesWithContextMutex.RUnlock()
-	fake.listSubscriptionsRequestMutex.RLock()
-	defer fake.listSubscriptionsRequestMutex.RUnlock()
-	fake.listSubscriptionsWithContextMutex.RLock()
-	defer fake.listSubscriptionsWithContextMutex.RUnlock()
-	fake.listTagsForResourceMutex.RLock()
-	defer fake.listTagsForResourceMutex.RUnlock()
-	fake.listTagsForResourceRequestMutex.RLock()
-	defer fake.listTagsForResourceRequestMutex.RUnlock()
-	fake.listTagsForResourceWithContextMutex.RLock()
-	defer fake.listTagsForResourceWithContextMutex.RUnlock()
-	fake.listTopicsMutex.RLock()
-	defer fake.listTopicsMutex.RUnlock()
-	fake.listTopicsPagesMutex.RLock()
-	defer fake.listTopicsPagesMutex.RUnlock()
-	fake.listTopicsPagesWithContextMutex.RLock()
-	defer fake.listTopicsPagesWithContextMutex.RUnlock()
-	fake.listTopicsRequestMutex.RLock()
-	defer fake.listTopicsRequestMutex.RUnlock()
-	fake.listTopicsWithContextMutex.RLock()
-	defer fake.listTopicsWithContextMutex.RUnlock()
-	fake.optInPhoneNumberMutex.RLock()
-	defer fake.optInPhoneNumberMutex.RUnlock()
-	fake.optInPhoneNumberRequestMutex.RLock()
-	defer fake.optInPhoneNumberRequestMutex.RUnlock()
-	fake.optInPhoneNumberWithContextMutex.RLock()
-	defer fake.optInPhoneNumberWithContextMutex.RUnlock()
-	fake.publishMutex.RLock()
-	defer fake.publishMutex.RUnlock()
-	fake.publishRequestMutex.RLock()
-	defer fake.publishRequestMutex.RUnlock()
-	fake.publishWithContextMutex.RLock()
-	defer fake.publishWithContextMutex.RUnlock()
-	fake.removePermissionMutex.RLock()
-	defer fake.removePermissionMutex.RUnlock()
-	fake.removePermissionRequestMutex.RLock()
-	defer fake.removePermissionRequestMutex.RUnlock()
-	fake.removePermissionWithContextMutex.RLock()
-	defer fake.removePermissionWithContextMutex.RUnlock()
-	fake.setEndpointAttributesMutex.RLock()
-	defer fake.setEndpointAttributesMutex.RUnlock()
-	fake.setEndpointAttributesRequestMutex.RLock()
-	defer fake.setEndpointAttributesRequestMutex.RUnlock()
-	fake.setEndpointAttributesWithContextMutex.RLock()
-	defer fake.setEndpointAttributesWithContextMutex.RUnlock()
-	fake.setPlatformApplicationAttributesMutex.RLock()
-	defer fake.setPlatformApplicationAttributesMutex.RUnlock()
-	fake.setPlatformApplicationAttributesRequestMutex.RLock()
-	defer fake.setPlatformApplicationAttributesRequestMutex.RUnlock()
-	fake.setPlatformApplicationAttributesWithContextMutex.RLock()
-	defer fake.setPlatformApplicationAttributesWithContextMutex.RUnlock()
-	fake.setSMSAttributesMutex.RLock()
-	defer fake.setSMSAttributesMutex.RUnlock()
-	fake.setSMSAttributesRequestMutex.RLock()
-	defer fake.setSMSAttributesRequestMutex.RUnlock()
-	fake.setSMSAttributesWithContextMutex.RLock()
-	defer fake.setSMSAttributesWithContextMutex.RUnlock()
-	fake.setSubscriptionAttributesMutex.RLock()
-	defer fake.setSubscriptionAttributesMutex.RUnlock()
-	fake.setSubscriptionAttributesRequestMutex.RLock()
-	defer fake.setSubscriptionAttributesRequestMutex.RUnlock()
-	fake.setSubscriptionAttributesWithContextMutex.RLock()
-	defer fake.setSubscriptionAttributesWithContextMutex.RUnlock()
-	fake.setTopicAttributesMutex.RLock()
-	defer fake.setTopicAttributesMutex.RUnlock()
-	fake.setTopicAttributesRequestMutex.RLock()
-	defer fake.setTopicAttributesRequestMutex.RUnlock()
-	fake.setTopicAttributesWithContextMutex.RLock()
-	defer fake.setTopicAttributesWithContextMutex.RUnlock()
-	fake.subscribeMutex.RLock()
-	defer fake.subscribeMutex.RUnlock()
-	fake.subscribeRequestMutex.RLock()
-	defer fake.subscribeRequestMutex.RUnlock()
-	fake.subscribeWithContextMutex.RLock()
-	defer fake.subscribeWithContextMutex.RUnlock()
-	fake.tagResourceMutex.RLock()
-	defer fake.tagResourceMutex.RUnlock()
-	fake.tagResourceRequestMutex.RLock()
-	defer fake.tagResourceRequestMutex.RUnlock()
-	fake.tagResourceWithContextMutex.RLock()
-	defer fake.tagResourceWithContextMutex.RUnlock()
-	fake.unsubscribeMutex.RLock()
-	defer fake.unsubscribeMutex.RUnlock()
-	fake.unsubscribeRequestMutex.RLock()
-	defer fake.unsubscribeRequestMutex.RUnlock()
-	fake.unsubscribeWithContextMutex.RLock()
-	defer fake.unsubscribeWithContextMutex.RUnlock()
-	fake.untagResourceMutex.RLock()
-	defer fake.untagResourceMutex.RUnlock()
-	fake.untagResourceRequestMutex.RLock()
-	defer fake.untagResourceRequestMutex.RUnlock()
-	fake.untagResourceWithContextMutex.RLock()
-	defer fake.untagResourceWithContextMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

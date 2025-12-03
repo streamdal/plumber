@@ -696,26 +696,6 @@ func (fake *FakeSubscription) UnsubscribeReturnsOnCall(i int, result1 error) {
 func (fake *FakeSubscription) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.clearMaxPendingMutex.RLock()
-	defer fake.clearMaxPendingMutex.RUnlock()
-	fake.closeMutex.RLock()
-	defer fake.closeMutex.RUnlock()
-	fake.deliveredMutex.RLock()
-	defer fake.deliveredMutex.RUnlock()
-	fake.droppedMutex.RLock()
-	defer fake.droppedMutex.RUnlock()
-	fake.isValidMutex.RLock()
-	defer fake.isValidMutex.RUnlock()
-	fake.maxPendingMutex.RLock()
-	defer fake.maxPendingMutex.RUnlock()
-	fake.pendingMutex.RLock()
-	defer fake.pendingMutex.RUnlock()
-	fake.pendingLimitsMutex.RLock()
-	defer fake.pendingLimitsMutex.RUnlock()
-	fake.setPendingLimitsMutex.RLock()
-	defer fake.setPendingLimitsMutex.RUnlock()
-	fake.unsubscribeMutex.RLock()
-	defer fake.unsubscribeMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

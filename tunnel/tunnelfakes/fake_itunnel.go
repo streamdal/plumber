@@ -6,9 +6,7 @@ import (
 	"sync"
 
 	"github.com/batchcorp/collector-schemas/build/go/protos/events"
-
 	"github.com/batchcorp/plumber-schemas/build/go/protos/records"
-
 	"github.com/streamdal/plumber/tunnel"
 )
 
@@ -296,14 +294,6 @@ func (fake *FakeITunnel) StartReturnsOnCall(i int, result1 error) {
 func (fake *FakeITunnel) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.closeMutex.RLock()
-	defer fake.closeMutex.RUnlock()
-	fake.deleteMutex.RLock()
-	defer fake.deleteMutex.RUnlock()
-	fake.readMutex.RLock()
-	defer fake.readMutex.RUnlock()
-	fake.startMutex.RLock()
-	defer fake.startMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
